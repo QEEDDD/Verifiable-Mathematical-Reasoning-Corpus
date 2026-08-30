@@ -1,6 +1,8 @@
 # Verifiable-Mathematical-Reasoning-Corpus
 
-Provenance and verificationThis work was developed in collaboration with a large language model(ChatGPT·Claude). The statements, proofs, and choice of methods were arrived atinteractively.
+Provenance and verificationThis work was developed in collaboration with a large language model(ChatGPT·Claude). 
+
+The statements, proofs, and choice of methods were arrived atinteractively.
 
 Verifiable here means: every quantitative claim ships a script that recomputes it. 
 
