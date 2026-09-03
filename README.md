@@ -10,6 +10,6 @@ Verifiable here means: every quantitative claim ships a script that recomputes i
 
 No formal (Lean/Coq) artifacts are included.
 
-A growing collection of verified mathematical reasoning, with recomputation scripts for every quantitative claim.
+A growing collection of verifiable mathematical reasoning, with recomputation scripts for every quantitative claim.
 
 License: CC BY 4.0
