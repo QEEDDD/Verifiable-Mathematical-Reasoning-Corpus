@@ -1,0 +1,1042 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathpazo}
+\usepackage[expansion=false]{microtype}
+\usepackage[a4paper,margin=29mm,headheight=22pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,tabularx,array}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{url}
+\usepackage{seqsplit}
+\usepackage[colorlinks=true,linkcolor=MidnightBlue,urlcolor=MidnightBlue,citecolor=MidnightBlue]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\tcbuselibrary{skins,breakable}
+
+\definecolor{navy}{HTML}{17365D}
+\definecolor{bluegray}{HTML}{49677F}
+\definecolor{pale}{HTML}{F3F7FA}
+\definecolor{passgreen}{HTML}{1B6E43}
+\definecolor{xpassblue}{HTML}{315A8A}
+\definecolor{cpassviolet}{HTML}{694A86}
+\definecolor{openred}{HTML}{9B2C2C}
+\definecolor{rulegray}{HTML}{CBD5DF}
+
+\hypersetup{
+  pdftitle={Moving-Level Trace Towers: Barrier-Escape Addendum},
+  pdfsubject={Moving-prime transpositions, density-one selection, local Faber transfer, and a large-order regular-polygon limit},
+  pdfkeywords={trace polynomial, monodromy, Newton polygon, Morse polynomial, polyexponential}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{bluegray}Moving-Level Trace Towers}
+\fancyhead[R]{\small\color{bluegray}Barrier-Escape Addendum v2.4}
+\fancyfoot[C]{\small\color{bluegray}\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegray}\leaders\hrule height \headrulewidth\hfill}}
+
+\titleformat{\section}
+  {\Large\bfseries\color{navy}}{\thesection.}{0.7em}{}
+\titleformat{\subsection}
+  {\large\bfseries\color{navy}}{\thesubsection.}{0.7em}{}
+\titlespacing*{\section}{0pt}{2.4ex plus .5ex minus .2ex}{1.1ex}
+\titlespacing*{\subsection}{0pt}{2.0ex plus .4ex minus .2ex}{0.8ex}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.52em}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize]{leftmargin=1.5em,itemsep=.25em,topsep=.35em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=.35em,topsep=.35em}
+\renewcommand{\arraystretch}{1.18}
+
+\newtheoremstyle{keio}
+  {0.9em}{0.7em}{\itshape}{}% space, body, indent
+  {\bfseries\color{navy}}{.}{0.55em}{}
+\theoremstyle{keio}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newtheoremstyle{keioinput}
+  {0.9em}{0.7em}{}{}% space, body, indent
+  {\bfseries\color{navy}}{.}{0.55em}{}
+\theoremstyle{keioinput}
+\newtheorem*{structural}{Structural input}
+\newtheorem*{problem}{Window-prime selection problem}
+
+\newcommand{\UPASS}{\textcolor{passgreen}{\textsf{U-PASS}}}
+\newcommand{\XPASS}{\textcolor{xpassblue}{\textsf{X-PASS}}}
+\newcommand{\CPASS}{\textcolor{cpassviolet}{\textsf{C-PASS}}}
+\newcommand{\OPEN}{\textcolor{openred}{\textsf{OPEN}}}
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\F}{\mathbf{F}}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\Ein}{\operatorname{Ein}}
+
+\newtcolorbox{statusbox}{
+  colback=pale,colframe=rulegray,boxrule=.55pt,arc=1.5mm,
+  left=2.5mm,right=2.5mm,top=1.8mm,bottom=1.8mm
+}
+\newtcolorbox{notebox}{
+  colback=white,colframe=navy,boxrule=.65pt,arc=1.5mm,
+  borderline west={2.2pt}{0pt}{navy},
+  left=3mm,right=2.5mm,top=2mm,bottom=2mm
+}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+\thispagestyle{empty}
+\vspace*{20mm}
+{\color{navy}\rule{\textwidth}{1.2pt}}\\[12mm]
+{\Huge\bfseries\color{navy}Moving-Level Trace Towers\par}
+\vspace{4mm}
+{\LARGE\bfseries Barrier-Escape Addendum\par}
+\vspace{8mm}
+{\large Moving-prime transpositions, density-one selection, local Faber transfer,\par
+and a large-order regular-polygon limit\par}
+\vfill
+\begin{statusbox}
+\textbf{Status legend.}
+\UPASS{} denotes an unconditional theorem with a complete proof;
+\XPASS{} denotes an unconditional finite theorem with exact reproducible
+computation; \CPASS{} denotes a proved implication from an explicitly
+displayed open hypothesis; and \OPEN{} denotes a statement not proved and
+never used silently as input to an unconditional claim.
+\end{statusbox}
+\vfill
+{\large Version 2.4\par}
+{\small 1 September 2026\par}
+\vspace{7mm}
+{\color{navy}\rule{\textwidth}{1.2pt}}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+\pagenumbering{roman}
+
+\begin{abstract}
+Let
+\[
+E_q(z)=\Ein_q(z)
+=\sum_{n\ge 1}\frac{(-1)^{n-1}}{n!n^q}z^n,
+\qquad
+P_{q,m}(X)=-m[z^m]\log(1-XE_q(z)).
+\]
+Earlier work proves that every $P_{q,m}$ is absolutely indecomposable and
+that, for $m\ge3$, its geometric monodromy lies in $\{A_m,S_m\}$. The
+unresolved odd-degree problem was to produce an odd finite branch packet
+without assuming the full Trace--Morse conjecture.
+
+This addendum develops several compatible ways around that gate. Prime
+degree is Morse for every order. A strict window prime with square-free
+residual derivative yields an isolated simple critical value and hence a
+transposition. The criterion supplies the all-order family $m=p+2$, closes
+the former first gaps $m=403$ and $m=441$, proves $S_m$ for every
+$q\ge1$, $2\le m\le1001$, and proves $S_m$ for the original $q=1$ tower
+through $m=10^6$. For fixed $m$, scaled traces converge effectively as
+$q\to\infty$ to a binomial with regular-polygon critical data, and are
+therefore eventually Morse.
+
+The local proof depends only on a finite-jet single-spike condition and
+transfers to other Faber towers; the logarithmic--Stirling tower yields an
+unconditional $S_{p+2}$ family. For $q=1$, the remaining prime choice is a
+shifted divisor problem for discriminants. Conditional on square-freeness
+of every even residual derivative in characteristic zero, the criterion
+holds for a density-one set of odd degrees, with exceptional count
+$O_\varepsilon(X^{15/16+\varepsilon})$. Unconditionally, every even row has
+at least half of its derivative roots simple, every prime-successor row is
+fully separable, and the original tower is exactly certified through
+residual row $5000$.
+
+These results do \emph{not} prove the irrationality or transcendence of
+Euler's constant. They deliberately avoid the approximation, reflexivity,
+order-ledger, and limiting-measure barriers: the proofs take place at finite
+level over $\Q$, finite fields, and local fields.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\section{Why this is the viable side of the barrier ledger}
+
+The arithmetic-barrier analysis rules out several tempting direct attacks
+on $\gamma$. The present route changes the target rather than disguising the
+same obstruction.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.42\textwidth}>{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Barrier in the direct special-value problem} &
+\textbf{Why it is not used here}\\
+\midrule
+Factorial denominator cost exceeds analytic Pad\'e gain &
+No rational approximation to $\gamma$ is formed.\\
+Shift/reflexivity makes finite $\Ein$-data $\gamma$-blind &
+The objects are finite polynomials over $\Q$, not invariant formulas intended to recover $\gamma$.\\
+Adding Gamma jets creates unknown tails faster than equations &
+No jet closure or zero-removal theorem is invoked.\\
+Pointwise algebraic independence does not pass to a limiting measure &
+No pointwise-to-limit exchange occurs.\\
+Period-matrix invertibility does not imply evaluation injectivity &
+No motivic or period injectivity claim occurs.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The role of the period and barrier studies is therefore architectural. They
+identify finite-level monodromy as a gate where genuine progress is
+possible. None of the theorems below assumes the conjectural statements of
+the reference designated ``[001].''
+
+\section{Structural input from the trace tower}
+
+The coefficient identity
+\[
+[X^k]P_{q,m}(X)=\frac{m}{k}[z^m]E_q(z)^k
+\]
+shows that $P_{q,m}\in\Q[X]$, is monic of degree $m$, and has constant term
+zero. Write
+\[
+G^{\mathrm{geom}}_{q,m}
+=\Gal\bigl(P_{q,m}(X)-T\,/\,\overline{\Q}(T)\bigr),
+\]
+\[
+G^{\mathrm{arith}}_{q,m}
+=\Gal\bigl(P_{q,m}(X)-T\,/\,\Q(T)\bigr).
+\]
+
+We use the previously audited structural theorem.
+
+\begin{structural}[\UPASS]
+For every $q\ge1$ and $m\ge2$, the polynomial $P_{q,m}$ is
+indecomposable over $\overline{\Q}$. For $m\ge3$,
+\[
+G^{\mathrm{geom}}_{q,m}\in\{A_m,S_m\}.
+\]
+For even $m$, the inertia cycle at infinity is odd, and therefore
+\[
+G^{\mathrm{geom}}_{q,m}=G^{\mathrm{arith}}_{q,m}=S_m.
+\]
+\end{structural}
+
+The input is proved by normalized Faber right-factor rigidity, an exact
+$2$-adic nonvanishing theorem for the reciprocal of $E_q$, and the
+classification of primitive polynomial monodromy. The present addendum
+only has to manufacture one odd finite branch cycle in odd degree.
+
+\section{Prime degree: a complete Morse theorem}
+
+Write
+\[
+A_q(z)=\frac{E_q(z)}z
+=\sum_{n\ge0}a_nz^n,
+\qquad
+a_n=\frac{(-1)^n}{(n+1)!(n+1)^q},
+\]
+and
+\[
+P'_{q,m}(X)=\sum_{j=0}^{m-1}d_jX^j.
+\]
+Direct coefficient extraction gives
+\begin{equation}
+\boxed{d_j=m[z^{m-j-1}]A_q(z)^{j+1}.}
+\label{eq:dj}
+\end{equation}
+
+\begin{theorem}[Prime-degree Morse theorem; \UPASS]\label{thm:prime}
+Let $m\ge3$ be prime. For every $q\ge1$, $P_{q,m}$ is Morse and
+\begin{equation}
+\boxed{G^{\mathrm{geom}}_{q,m}=G^{\mathrm{arith}}_{q,m}=S_m.}
+\label{eq:prime-mon}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Work over $\Q_m$. Formula~\eqref{eq:dj} gives
+\[
+v_m(d_0)=-q,
+\qquad
+v_m(d_j)\ge1\quad(1\le j\le m-2),
+\qquad
+v_m(d_{m-1})=1.
+\]
+Thus the Newton polygon of $P'_{q,m}$ is the single edge
+\[
+(0,-q)\longrightarrow(m-1,1).
+\]
+Every critical point $\alpha_i$ has valuation
+\[
+v_m(\alpha_i)=-\frac{q+1}{m-1}.
+\]
+After a ramified base extension the edge residual is a binomial
+$u+vY^{m-1}$. Its derivative is nonzero because $m\nmid m-1$, so its
+$m-1$ roots are simple and have distinct leading residues $y_i$.
+
+Let $c_k=[X^k]P_{q,m}$. Then $c_1=d_0$, $v_m(c_k)\ge1$ for
+$2\le k\le m-1$, and $c_m=1$. At every critical point,
+$\alpha_i^m$ is the unique term of smallest valuation in
+$P_{q,m}(\alpha_i)$. Indeed,
+\[
+v_m(c_1\alpha_i)-v_m(\alpha_i^m)=1,
+\]
+and, for $2\le k\le m-1$,
+\[
+v_m(c_k\alpha_i^k)-v_m(\alpha_i^m)
+\ge1+\frac{(m-k)(q+1)}{m-1}>0.
+\]
+The leading critical-value residues are therefore $y_i^m$. Since all
+$y_i^{m-1}$ equal the same nonzero constant, $y_i^m=Cy_i$, and these
+residues are pairwise distinct. All critical points are simple and all
+critical values are distinct, so $P_{q,m}$ is Morse. Its finite branch
+cycles are transpositions and generate $S_m$. The arithmetic group contains
+the geometric one.
+\end{proof}
+
+This is an infinite, computation-free theorem: it settles every prime
+degree simultaneously for every polyexponential order.
+
+\section{A moving-prime isolated transposition}
+
+Let $m\ge7$ be odd and choose a prime
+\begin{equation}
+\frac{m+1}{2}<p<m,
+\qquad
+r=m-p.
+\label{eq:window}
+\end{equation}
+Then $r$ is even and $2\le r\le p-2$. The relevant valuations of the
+coefficients of $A_q$ are
+\[
+v_p(a_n)=
+\begin{cases}
+0,&0\le n\le p-2,\\
+-(q+1),&n=p-1,\\
+-1,&p\le n\le m-1.
+\end{cases}
+\]
+Because $m\le2p-2$, at most one exceptional factor can occur in any
+composition contributing to~\eqref{eq:dj}. The exact lowest terms give the
+three-edge Newton polygon
+\begin{equation}
+(0,-1)\longrightarrow(1,-q-1)
+\longrightarrow(r,-q-1)\longrightarrow(m-1,0).
+\label{eq:threeedge}
+\end{equation}
+The critical points split into one point of valuation $q$, $r-1$ unit
+points, and $p-1$ points of valuation $-(q+1)/(p-1)$. The first point
+$\alpha$ is simple, and its critical value $b=P_{q,m}(\alpha)$ satisfies
+\begin{equation}
+\boxed{v_p(b)=q-1.}
+\label{eq:bval}
+\end{equation}
+
+Define the residual lower-row derivative
+\[
+R_{q,r}(X)=P'_{q,r}(X)\bmod p.
+\]
+Keeping the horizontal-edge principal terms gives, up to a nonzero scalar,
+\begin{equation}
+p^{q+1}P_{q,m}(X)\equiv\frac{X^2}{r}R_{q,r}(X)\pmod p,
+\label{eq:lowerP}
+\end{equation}
+and differentiation gives
+\begin{equation}
+p^{q+1}P'_{q,m}(X)
+\equiv\frac{X}{r}\bigl(2R_{q,r}(X)+XR'_{q,r}(X)\bigr)\pmod p.
+\label{eq:lowerPd}
+\end{equation}
+The only potentially dangerous denominator when recovering $P$ from $P'$ is
+removed by Frobenius:
+\begin{equation}
+d_{p-1}=m[z^r]A_q(z)^p
+\equiv m[z^r]A_q(z^p)=0\pmod p
+\qquad(0<r<p).
+\label{eq:frob}
+\end{equation}
+
+\begin{theorem}[Window-prime criterion; \UPASS]\label{thm:window}
+If
+\begin{equation}
+\gcd(P'_{q,r},P''_{q,r})=1
+\quad\text{in }\F_p[X],
+\label{eq:gcd}
+\end{equation}
+then
+\begin{equation}
+\boxed{G^{\mathrm{geom}}_{q,m}=G^{\mathrm{arith}}_{q,m}=S_m.}
+\label{eq:window-mon}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+If a unit critical point $\beta$ had a critical value of elevated
+valuation, \eqref{eq:lowerP}--\eqref{eq:lowerPd} would force
+\[
+R_{q,r}(\bar\beta)=R'_{q,r}(\bar\beta)=0,
+\]
+contradicting~\eqref{eq:gcd}. Thus all unit critical values have valuation
+$-(q+1)$.
+
+On the final edge the principal derivative is
+$d_rX^r+mX^{m-1}$. At any of its critical points the principal critical
+value is
+\[
+d_rX^{r+1}
+\left(\frac1{r+1}-\frac1m\right)
+=d_rX^{r+1}\frac{p-1}{m(r+1)},
+\]
+so its valuation is
+\[
+-\frac{m(q+1)}{p-1}<0.
+\]
+Hence $b$ is the unique critical value of valuation $q-1$, and it is
+supported by the single simple point $\alpha$. Its inertia is a
+transposition. The pre-existing indecomposability theorem gives primitivity,
+and a primitive group containing a transposition is $S_m$. The arithmetic
+conclusion follows.
+\end{proof}
+
+The old degree-$m$ discriminant problem has therefore descended to a gcd for
+a derivative of degree $r-1=m-p-1$.
+
+\begin{corollary}[An all-order infinite family; \UPASS]\label{cor:shifted}
+For every prime $p\ge5$, every $q\ge1$, and $m=p+2$,
+\begin{equation}
+\boxed{G^{\mathrm{geom}}_{q,p+2}=G^{\mathrm{arith}}_{q,p+2}=S_{p+2}.}
+\label{eq:shifted}
+\end{equation}
+\end{corollary}
+
+Indeed $r=2$, so $P'_{q,2}\bmod p$ is linear and square-free. In
+particular, the former first odd geometric gap $m=403=401+2$ and the former
+first odd-square arithmetic gap $m=441=439+2$ are closed for every $q$,
+without a full discriminant calculation.
+
+\section{Exact finite rectangles}
+
+For $p>r$, the reduction of $P_{q,r}$ depends only on $q\bmod(p-1)$. The
+criterion can therefore certify infinitely many orders by a finite
+residue-class computation.
+
+\begin{theorem}[All orders through degree 1001; \XPASS]\label{thm:1001}
+For every $q\ge1$ and $2\le m\le1001$,
+\begin{equation}
+\boxed{G^{\mathrm{geom}}_{q,m}=G^{\mathrm{arith}}_{q,m}=S_m.}
+\label{eq:1001}
+\end{equation}
+\end{theorem}
+
+The exact audit finds one window prime working for every residue of $q$ in
+492 odd degrees. Prime-degree \cref{thm:prime} handles
+$m=3,5,11,17,167,577$. Only two composite degrees require combined
+certificates:
+\begin{itemize}
+\item At $m=27$, the primes $17,19,23$ leave the single progression
+$q\equiv1075\pmod{1584}$. Modulo $28$, this progression occupies the seven
+classes $3,7,11,15,19,23,27$. For each class, reduction modulo $29$ gives
+two regular specializations of
+$\operatorname{Disc}_X(P_{q,27}(X)-T)$ with opposite quadratic character:
+\end{itemize}
+
+\begin{center}
+\small
+\begin{tabular}{@{}rcc@{}}
+\toprule
+$q\bmod 28$ & square $(T,D(T))$ & nonsquare $(T,D(T))$\\
+\midrule
+3  & $(3,7)$  & $(0,17)$\\
+7  & $(0,16)$ & $(4,11)$\\
+11 & $(0,22)$ & $(5,27)$\\
+15 & $(2,16)$ & $(1,12)$\\
+19 & $(1,16)$ & $(0,18)$\\
+23 & $(0,22)$ & $(1,15)$\\
+27 & $(0,22)$ & $(1,3)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Hence none of the seven discriminant polynomials is a constant times a
+square, supplying the required odd geometric branch packet.
+
+\begin{itemize}
+\item At $m=989$, the bad order residues for $p=919$ are odd, while those
+for $p=929$ are even. Their simultaneous CRT locus is empty.
+\end{itemize}
+
+The script and captured stdout are:
+\begin{itemize}
+\item \nolinkurl{trace_allq_modp_audit.py}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{36ba3fd004df1e5a56a7bb6c61ed49cf7542d6f7c934ba458f88c1ebe105c31c}};
+\item \nolinkurl{trace_allq_modp_audit_1001.txt}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{1d4867aa086b4315d45d70c52ef27090ad4d1c256cd956cb6b18d72a8be374be}}.
+\end{itemize}
+
+\begin{notebox}
+This theorem asserts full symmetric monodromy. It does \emph{not} assert
+that every polynomial in this rectangle is Morse.
+\end{notebox}
+
+\begin{theorem}[Original tower through degree one million; \XPASS]\label{thm:million}
+For every $2\le m\le10^6$,
+\begin{equation}
+\boxed{G^{\mathrm{geom}}_{1,m}=G^{\mathrm{arith}}_{1,m}=S_m.}
+\label{eq:million}
+\end{equation}
+\end{theorem}
+
+For each odd $7\le m\le10^6$, an exact finite-field search tests the largest
+strict-window prime and, only when necessary, the second largest. The largest
+residual degree is $114$. The largest-prime choice fails only at
+$(m,p,r)=(215,211,4)$ and $(69649,69623,26)$; the second prime works in both
+cases. Even degrees are structural, and prime degrees also follow from
+\cref{thm:prime} independently of the audit.
+
+The script and captured stdout are:
+\begin{itemize}
+\item \nolinkurl{window_prime_selection_audit.py}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{e2eb3b8a14f758d84c0d80a4ed3c0ed11a3cf7eb38e3935960be3122d8fdcbf0}};
+\item \nolinkurl{window_prime_selection_audit_1000000.txt}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{51d3a027e9f0ce42f4918b39058288cdfdf808e25ded994ed009a701bc7c44f5}}.
+\end{itemize}
+
+Again, this is a monodromy theorem, not an all-degree Morse theorem.
+
+\section{Large order: complex regular polygons replace real critical points}
+
+Put
+\[
+G_q(z)=\sum_{n\ge1}\frac{z^n}{n!n^q},
+\qquad
+h_{q;m,k}=[z^m]G_q(z)^k>0.
+\]
+Then
+\begin{equation}
+P_{q,m}(X)
+=\sum_{k=1}^m(-1)^{m-k}\frac{m}{k}h_{q;m,k}X^k.
+\label{eq:P-positive}
+\end{equation}
+If $n_1+\cdots+n_k=m$ with every $n_i\ge1$, the product of the parts
+satisfies
+\begin{equation}
+n_1\cdots n_k\ge m-k+1.
+\label{eq:parts}
+\end{equation}
+For $2\le r\le m-1$, define
+\begin{equation}
+\lambda_{m,r}=\frac{m^{(r-1)/(m-1)}}r,
+\qquad
+\theta_m=\max_{2\le r\le m-1}\lambda_{m,r}<1.
+\label{eq:theta}
+\end{equation}
+The strict inequality follows from the strict decrease of
+$x\mapsto\log x/(x-1)$ on $(1,\infty)$.
+
+Let
+\[
+s_q=m^{-q/(m-1)},
+\qquad
+\widetilde P_{q,m}(y)
+=m^{qm/(m-1)}P_{q,m}(s_qy).
+\]
+The endpoint terms $k=1,m$ remain, while
+\eqref{eq:parts}--\eqref{eq:theta} suppress every intermediate term
+exponentially.
+
+\begin{theorem}[Effective large-order Morse theorem; \UPASS]\label{thm:largeq}
+For every fixed $m\ge2$,
+\begin{equation}
+\boxed{
+\widetilde P_{q,m}(y)
+\longrightarrow
+S_m(y):=y^m+\frac{(-1)^{m-1}}{(m-1)!}y
+\quad(q\to\infty)}
+\label{eq:limit}
+\end{equation}
+coefficientwise and locally uniformly, with error
+$O_{m,R}(\theta_m^q)$ on $|y|\le R$. Consequently there is an effectively
+computable $Q(m)$ such that, for every $q\ge Q(m)$,
+\begin{equation}
+\boxed{
+P_{q,m}\text{ is Morse},
+\qquad
+G^{\mathrm{geom}}_{q,m}=G^{\mathrm{arith}}_{q,m}=S_m.}
+\label{eq:largeq-mon}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The derivative of the limit is
+\[
+S_m'(y)=my^{m-1}+\frac{(-1)^{m-1}}{(m-1)!}.
+\]
+Its roots satisfy
+\[
+y^{m-1}=\frac{(-1)^m}{m!},
+\]
+so they are the distinct vertices of a regular $(m-1)$-gon. At a critical
+point $y_j$,
+\[
+S_m(y_j)=(-1)^{m-1}\frac{m-1}{m!}y_j,
+\]
+and these critical values are another set of pairwise distinct regular
+polygon vertices. Thus $S_m$ is Morse. The Morse locus is Zariski open in
+coefficient space; alternatively, disjoint Rouch\'e circles around these
+explicit roots and their separated values give an effective bound. The
+exponential coefficient estimate therefore proves~\eqref{eq:largeq-mon}.
+\end{proof}
+
+For fixed odd $m$, the limiting critical equation has no real root. Hence
+sufficiently large $q$ has no real critical point at all. The smallest exact
+example is $(q,m)=(2,3)$. A uniform real-transposition strategy is therefore
+false; complex critical-value separation is the correct replacement.
+
+\section{Local Faber transfer beyond the polyexponential tower}
+
+The moving-prime mechanism is a finite-jet theorem, not a peculiarity of
+the differential equation for $E_q$. Let $L$ be a complete discretely
+valued characteristic-zero field with residue characteristic $p\ge5$,
+uniformizer $\pi$, and residue field $k$. For
+\[
+f(z)=zA(z),\qquad A(z)=\sum_{n\ge0}a_nz^n,\qquad a_0=1,
+\]
+put $P_m^f=-m[z^m]\log(1-Xf(z))$. Suppose $m=p+r$,
+$2\le r\le p-2$, and, for integers $h>s\ge0$,
+\begin{equation}
+\begin{array}{ll}
+v(a_n)\ge0 &(0\le n\le p-2),\\
+v(a_{r-1})=0,\quad v(a_{p-1})=-h,\\
+v(a_n)\ge-s &(p\le n\le m-2),\\
+v(a_{m-1})=-s.
+\end{array}
+\label{eq:spike}
+\end{equation}
+Let $\bar A_{<p}$ be the reduction of the integral truncation below
+degree $p-1$, and define
+\begin{equation}
+R_r(X)=\overline{(P_r^f)'(X)}
+=r\sum_{j=1}^r[z^{r-j}]\bar A_{<p}(z)^jX^{j-1}.
+\label{eq:R-general}
+\end{equation}
+
+\begin{theorem}[Single-spike Faber transfer; \UPASS]\label{thm:transfer}
+Under \eqref{eq:spike}, the derivative Newton polygon is exactly
+\begin{equation}
+(0,-s)\longrightarrow(1,-h)\longrightarrow(r,-h)
+\longrightarrow(m-1,0).
+\label{eq:spike-NP}
+\end{equation}
+If $\gcd(R_r,R_r')=1$ in $k[X]$, then $P_m^f$ has a critical value
+supported by exactly one simple critical point. The three critical-point
+clusters and their critical-value valuations are
+\begin{equation}
+\begin{array}{c|c|c}
+\text{number}&v(\text{critical point})&v(\text{critical value})\\ \hline
+1&h-s&h-2s\\
+r-1&0&-h\\
+p-1&-h/(p-1)&-mh/(p-1).
+\end{array}
+\label{eq:cluster-table}
+\end{equation}
+Thus its geometric inertia contains a transposition. If the coefficients
+lie in a number field $K$, the local hypotheses hold in a completion $K_v$
+or a valued extension, and $P_m^f$ is indecomposable over $\overline K$,
+then both its geometric and arithmetic monodromy groups are $S_m$.
+\end{theorem}
+
+\begin{proof}
+The universal identities
+\begin{equation}
+[X^k]P_m^f=\frac mk[z^{m-k}]A^k,
+\qquad
+[X^j](P_m^f)'=m[z^{m-j-1}]A^{j+1}
+\label{eq:faber-universal}
+\end{equation}
+show that at most one copy of the unique deep coefficient $a_{p-1}$ can
+enter. Exact endpoint terms give \eqref{eq:spike-NP}. If
+$\eta=\overline{\pi^ha_{p-1}}$, the horizontal initial forms are
+\begin{equation}
+\operatorname{in}_{-h}(P_m^f)
+=\frac{\bar m\eta}{r}X^2R_r(X),
+\qquad
+\operatorname{in}_{-h}((P_m^f)')
+=\frac{\bar m\eta}{r}X(2R_r+XR_r').
+\label{eq:initial-forms}
+\end{equation}
+The apparent coefficient $[X^p]P_m^f=d_{p-1}/p$ is integral because
+$[z^r]A^p\in p\mathcal O_L$ for $0<r<p$. Consequently the gcd condition
+prevents cancellation of every unit-cluster critical value. The length-one
+edge gives one simple point $\alpha$, and its derivative equation yields
+$v(P_m^f(\alpha))=h-2s$. The other two values in
+\eqref{eq:cluster-table} follow from \eqref{eq:initial-forms} and the
+final-edge binomial. Since
+\[
+-\frac{mh}{p-1}<-h<h-2s,
+\]
+the value at $\alpha$ is globally isolated. Primitive polynomial monodromy
+containing a transposition is $S_m$.
+\end{proof}
+
+For $r=2$, $R_2$ is linear, so the gcd condition is automatic. This
+immediately transfers the local branch construction, for integers
+$\tau\ge1$ and $\sigma,\tau\ge1$, respectively, to
+\begin{equation}
+\operatorname{Li}_\tau(z)=\sum_{N\ge1}\frac{z^N}{N^\tau}
+\quad\text{and}\quad
+f_{\sigma,\tau}(z)=\sum_{N\ge1}\frac{z^N}{(N!)^\sigma N^\tau},
+\label{eq:transfer-families}
+\end{equation}
+with depths $(h,s)=(\tau,0)$ and $(\sigma+\tau,\sigma)$ over $\Q_p$,
+respectively. These give a transposition; full $S_m$ additionally requires
+indecomposability.
+
+There is one unconditional new global example. For
+$f(z)=-\log(1-z)$,
+\begin{equation}
+P_m^f(X)=\sum_{k=1}^m
+\frac{(k-1)!\,|s(m,k)|}{(m-1)!}X^k.
+\label{eq:stirling}
+\end{equation}
+Moreover
+\[
+\frac z{-\log(1-z)}=\int_0^1(1-z)^t\,dt
+\]
+has a nonzero coefficient in every positive degree. Hence every Faber
+right-factor obstruction $d_b=[z^b](1/f)=[z^{b+1}](z/f)$ is nonzero, so
+all the polynomials in \eqref{eq:stirling} are absolutely indecomposable.
+\Cref{thm:transfer} therefore gives
+\begin{equation}
+\boxed{
+\Gal(P_{p+2}^f(X)-T/\overline{\Q}(T))
+=\Gal(P_{p+2}^f(X)-T/\Q(T))=S_{p+2}
+\quad(p\ge5\text{ prime})}
+\label{eq:stirling-mon}
+\end{equation}
+for the logarithmic--Stirling trace tower. No literature-priority claim is
+made without a dedicated search.
+
+\section{Shifted discriminants, partial separability, and conditional density one}
+
+For the original order $q=1$, put
+\begin{equation}
+F_r(X)=(r!)^2P'_{1,r}(X)\in\mathbf Z[X],
+\qquad
+\Delta_r=\operatorname{Disc}(F_r).
+\label{eq:Delta}
+\end{equation}
+The integrality follows termwise from $\prod n_i!\mid r!$ and
+$\prod n_i\mid r!$ for every composition $n_1+\cdots+n_k=r$. If $p>r$,
+the leading coefficient $r(r!)^2$ is a unit modulo $p$, so
+\begin{equation}
+\boxed{
+P'_{1,r}\bmod p\text{ is not square-free}
+\quad\Longleftrightarrow\quad p\mid\Delta_r.}
+\label{eq:Delta-equivalence}
+\end{equation}
+Coefficient majorization by $(e^z-1)^k$, followed by Mahler's
+discriminant bound, gives whenever $\Delta_r\ne0$
+\begin{equation}
+\log|\Delta_r|=O(r^2\log r),
+\qquad
+\omega(\Delta_r)=O(r^2\log r).
+\label{eq:Delta-bound}
+\end{equation}
+
+\begin{notebox}
+\textbf{Hypothesis DS (\OPEN).} Every even residual derivative
+$P'_{1,r}$, $r\ge2$, is square-free over $\Q$, equivalently
+$\Delta_r\ne0$.
+\end{notebox}
+
+\begin{theorem}[Unconditional partial separability; \UPASS]\label{thm:partial-sep}
+Let $r=2s$. For every $q\ge1$, the derivative $P'_{q,r}$ has at least
+$s$ simple roots. After the dyadic normalization
+\[
+c_q=2^{q+1},\qquad
+\widehat P_{q,r}(X)=c_q^rP_{q,r}(X/c_q),
+\]
+these are exactly the unit roots, while every possible repeated root lies
+in the strict positive-valuation disk. Moreover, for every odd prime $p$
+and every $q\ge1$,
+\begin{equation}
+\boxed{P'_{q,p+1}(X)\text{ is square-free over }\Q.}
+\label{eq:prime-successor}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Put $f_q(z)=E_q(c_qz)/c_q$. Exact coefficient valuations give the
+order-independent reduction
+\[
+f_q(z)\equiv z+z^2\pmod2.
+\]
+If $a=v_2(r)$, coefficient extraction then yields
+\begin{equation}
+2^{-a}\widehat P'_{q,2s}(X)\equiv
+X^{s-1}\Lambda_{2s+1}(X)\pmod2,
+\label{eq:lambda-reduction}
+\end{equation}
+\begin{equation}
+\Lambda_{2s+1}(X)=
+\sum_{j=0}^s\binom{s+j}{s-j}X^j.
+\label{eq:lambda}
+\end{equation}
+The Lucas recurrence $L_0=0,L_1=X$,
+$L_n=X(L_{n-1}+L_{n-2})$ gives
+$L_{2s+1}=X^{s+1}\Lambda_{2s+1}$. Its nonzero roots are
+$X=\zeta+\zeta^{-1}$ for nontrivial $(2s+1)$-st roots of unity, modulo
+$\zeta\leftrightarrow\zeta^{-1}$. Hence $\Lambda_{2s+1}$ has $s$
+distinct nonzero roots and simple Hensel lifts, proving the first assertion.
+
+For $m=p+1$, the $p$-adic Newton polygon of $P'_{q,m}$ is
+\begin{equation}
+(0,-1)\longrightarrow(1,-q-1)\longrightarrow(p,0).
+\label{eq:prime-successor-NP}
+\end{equation}
+The first edge is linear; after adjoining a uniformizer for the possibly
+fractional second slope, its nonzero-root initial binomial has exponent gap
+$p-1$, prime to $p$. Thus all roots are simple.
+\end{proof}
+
+\begin{corollary}[Exact residual rectangle; \XPASS]\label{cor:residual-5000}
+For the original order, exact finite-field computation proves
+\begin{equation}
+\boxed{P'_{1,r}\text{ is square-free for every even }2\le r\le5000.}
+\label{eq:residual-5000}
+\end{equation}
+\end{corollary}
+
+At the single good prime $998244353$, exact convolution and polynomial gcd
+arithmetic certify \eqref{eq:residual-5000}. Leading coefficients stay
+nonzero modulo this prime; for odd $3\le s\le4999$, those of the polar and
+its derivative are $s+1$ and $(s-1)(s+1)$, respectively. Thus the relevant
+degrees are preserved. The same run, together with the trivial constant
+case $s=1$, also certifies every odd polar $2H_s+XH_s'$ for
+$1\le s\le4999$, where
+$H_s=\sum_k[z^s](-E_1(-z))^kX^{k-1}$.
+
+The exact audit has SHA-256 hashes
+\begin{itemize}
+\item \nolinkurl{even_derivative_separability_audit.cpp}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{d9c6f7c6438a9e7bf5d0aed50bbce727f460efcacc720f520c97b444b3f83b4d}};
+\item \nolinkurl{even_derivative_separability_audit_5000.txt}\\[-.15em]
+\textcolor{bluegray}{\small SHA-256: }
+\texttt{\small\seqsplit{1e4b4073527d7d2543c8a087c37f0888fdbd99c7ca2b7880a418e7c533e6617b}}.
+\end{itemize}
+This does not prove DS: in row $r=10$, a later inner Newton face already
+has inseparable residual polynomial $1+Y^2$ over $\F_2$.
+
+\begin{theorem}[Conditional density-one selection; \CPASS]\label{thm:density-one}
+Assume DS. Let $\mathcal E(X)$ be the odd $m\le X$ for which no prime
+$(m+1)/2<p<m$ passes the residual gcd criterion \eqref{eq:gcd}. Then, for
+every $\varepsilon>0$,
+\begin{equation}
+\boxed{\#\mathcal E(X)\ll_\varepsilon X^{15/16+\varepsilon}.}
+\label{eq:density-one}
+\end{equation}
+In particular, under DS the original trace tower has symmetric geometric
+and arithmetic monodromy for a density-one set of odd degrees.
+\end{theorem}
+
+\begin{proof}
+In a dyadic interval $[X,2X]$, let $p<m$ be the largest prime and write
+$r=m-p$. Set $H=X^{5/16}$. If $r\le H$ and $m$ is exceptional, then
+\eqref{eq:Delta-equivalence}--\eqref{eq:Delta-bound} give
+\[
+\#\{m:r\le H,\ p\mid\Delta_r\}
+\ll\sum_{r\le H}r^2\log r
+\ll H^3\log H.
+\]
+The remaining integers lie more than $H$ places into a prime gap. The
+\href{https://arxiv.org/abs/1201.1787}{Maynard--Peck mean-square gap bound}
+\[
+\sum_{p_n\le x}(p_{n+1}-p_n)^2
+\ll_\varepsilon x^{5/4+\varepsilon}
+\]
+implies that their number is
+$O_\varepsilon(X^{5/4+\varepsilon}/H)$. Balancing the two estimates gives
+\eqref{eq:density-one}; dyadic summation completes the proof.
+\end{proof}
+
+The exact equivalence \eqref{eq:Delta-equivalence} also explains why
+prime-gap bounds alone do not prove selection in every degree: one must
+exclude the correlated divisibilities $m-r\mid\Delta_r$ for several
+offsets. Already at $m=215$, the largest window prime $211$ is bad in row
+$r=4$, although the next prime works. Thus a canonical nearest-prime proof
+is false even though the selectable-prime criterion survives.
+
+\section{Exact negative results that prevent a false proof}
+
+The failed routes are useful because they make the remaining gap precise.
+\begin{enumerate}
+\item A simple real critical point does not suffice: another critical point
+can share its critical value. For $q=1$, every odd degree has a simple
+positive critical point, but global value separation remains necessary.
+\item The natural coefficient triangle is not totally positive. At $q=1$
+it already has an exact negative $9\times9$ minor. A proof cannot cite global
+$TP_\infty$.
+\item The dyadic derivative analysis isolates a simple outer critical
+cluster, but coefficient Newton polygons alone do not exclude an exact
+collision with a shallower cluster.
+\item The moving-prime criterion is sufficient, not automatic. For odd
+composite $m$, Bertrand applied to $(m+1)/2$ supplies a prime
+$(m+1)/2<p<m$; compositeness excludes the only possible upper endpoint
+$p=m$. Bertrand says nothing, however, about residual square-freeness for
+an eligible prime.
+\end{enumerate}
+
+\section{The remaining theorem gate}
+
+The cleanest unresolved statement is now finite-field rather than
+transcendental.
+
+\begin{problem}[\OPEN]
+Prove that for every $q\ge1$ and every sufficiently large odd composite $m$,
+at least one prime $p=p(q,m)$
+\[
+\frac{m+1}{2}<p<m
+\]
+makes
+\[
+\gcd(P'_{q,m-p},P''_{q,m-p})=1\pmod p.
+\]
+\end{problem}
+
+For the original order $q=1$, exact computation verifies this through
+$m=10^6$, always using one of the two largest eligible primes. Under DS,
+\cref{thm:density-one} proves it for a density-one set, but no argument
+currently promotes that finite fact to all $m$. A proof would close the
+remaining odd composite degree problem by \cref{thm:window}.
+
+An alternative is to continue the polar expansion at a multiple residual
+root and prove that its lifted critical value cannot meet the isolated value
+of~\eqref{eq:bval}. This is the precise local collision problem left by the
+present work.
+
+\section{Integration map for the main manuscript}
+
+This addendum is designed to be inserted immediately after the existing
+section on universal level-trace polynomials. A conservative revision should
+make the following changes elsewhere in the manuscript.
+\begin{enumerate}\sloppy
+\item Add to the abstract the prime-degree Morse theorem, the moving-prime
+criterion, the all-order rectangle $m\le1001$, and the original-order range
+$m\le10^6$.
+\item Replace every statement that $m=403$ is the first unresolved geometric
+degree and $m=441$ the first unresolved arithmetic odd-square degree.
+\Cref{cor:shifted} closes both for every $q$.
+\item Retain the existing arithmetic-barrier section, but add a forward
+reference explaining that the monodromy work escapes the barrier by staying
+at finite algebraic level. Do not present it as a route to the transcendence
+of $\gamma$.
+\item Keep the distinction between the Morse theorem and the group theorem:
+prime degrees and sufficiently large orders are Morse; the finite rectangles
+assert $S_m$ and need not be labelled Morse.
+\item Replace the old full-discriminant computational emphasis by the
+residual derivative certificate. The full discriminant is retained only for
+the exceptional $m=27$ residue progression.
+\item In the final open-problem list, promote the window-prime selection
+problem and the lifted residual-collision problem. Keep $\gamma$'s arithmetic
+nature explicitly open.
+\item Add the finite-jet Faber transfer theorem as the conceptual endpoint
+of the local argument, with the logarithmic--Stirling family as an
+unconditional application.
+\item State the shifted-discriminant formulation and the DS-conditional
+density-one theorem in a separate paragraph whose conditional status is
+visible in both the theorem title and claim table.
+\item {\raggedright Record the unconditional dyadic half-separation theorem,
+the all-order prime-successor residual family, and the exact DS audit through
+5000; retain full DS as an open hypothesis.\par}
+\end{enumerate}
+
+\section{Claim ledger and realistic value}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}X>{\centering\arraybackslash}p{.16\textwidth}>{\raggedright\arraybackslash}p{.27\textwidth}@{}}
+\toprule
+\textbf{Result} & \textbf{Status} & \textbf{Scope}\\
+\midrule
+All-$(q,m)$ indecomposability and $A_m/S_m$ reduction & \UPASS & $q\ge1,m\ge2$; reduction for $m\ge3$\\
+Prime-degree Morse and $S_m$ & \UPASS & Every $q$, every prime $m\ge3$\\
+Window-prime isolated-transposition criterion & \UPASS & Every qualifying $(q,m,p)$\\
+Shifted-prime family $m=p+2$ & \UPASS & Every $q$, infinitely many odd $m$\\
+Large-order Morse theorem & \UPASS & Fixed $m$, all sufficiently large $q$\\
+Single-spike Faber transfer theorem & \UPASS & Transposition under \eqref{eq:spike}; $S_m$ with indecomposability\\
+Logarithmic--Stirling $S_{p+2}$ family & \UPASS & Every prime $p\ge5$\\
+All orders through $m=1001$ & \XPASS & Every $q\ge1$\\
+Original tower through $m=10^6$ & \XPASS & $q=1$\\
+At least half of every even derivative row simple & \UPASS & Every $q\ge1$, every even row\\
+Prime-successor residual rows square-free & \UPASS & $r=p+1$, every odd prime $p$, every $q$\\
+Residual DS through row 5000 & \XPASS & $q=1$, every even $r\le5000$\\
+Density-one odd-degree selection & \CPASS & $q=1$, conditional on DS\\
+Characteristic-zero residual separability (DS) & \OPEN & Every even residual row\\
+All odd composite degrees & \OPEN & Selection/local-collision lemma missing\\
+Irrationality or transcendence of $\gamma$ & \OPEN & Untouched\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The package is a material increase in the paper's value: it replaces a
+global discriminant search by a local recursive certificate, proves new
+infinite regimes in two trace families, transfers the mechanism beyond
+$\Ein_q$, and expands exact coverage by several orders of magnitude. The
+shifted-discriminant formulation also reduces a large part of the asymptotic
+obstruction to the explicit hypothesis DS. It is not yet an Annals-level
+closure of the full two-parameter problem. The natural high-tier target is
+DS together with window-prime selection, or an unconditional global
+critical-value separation theorem; either would turn the present
+architecture into a full all-odd result.
+
+\section{Reproducibility map}
+
+\begin{itemize}\raggedright
+\item \nolinkurl{TRACE_MONODROMY_ALL_Q.md}: structural Faber and monodromy input.
+\item \nolinkurl{ODD_TRACE_MODP_ROUTE.md}: prime-degree and moving-prime proofs.
+\item \nolinkurl{ODD_TRACE_PADIC_ROUTE.md}: independent derivation of the
+isolated-branch criterion and the $q=1$ audit.
+\item \nolinkurl{ODD_TRACE_REAL_CRITICAL_ROUTE.md}: large-order
+regular-polygon theorem and exact failure of the uniform real route.
+\item \nolinkurl{TRACE_DERIVATIVE_STRUCTURE_ROUTE.md}: second-kind Faber and
+dyadic local critical-cluster identities.
+\item \nolinkurl{ABSTRACT_FABER_MOVING_PRIME_TRANSFER.md}: complete local
+transfer theorem and polylogarithmic, hypergeometric, and logarithmic
+applications.
+\item \nolinkurl{ABSTRACT_FABER_TRANSFER_REFEREE.md}: independent hostile
+audit of the transfer theorem.
+\item \nolinkurl{WINDOW_PRIME_SELECTION_AUDIT.md}: shifted-discriminant
+reduction, conditional density-one theorem, and exact million-degree audit.
+\item \nolinkurl{WINDOW_PRIME_SELECTION_REFEREE.md}: independent audit of the
+selection theorem and computation.
+\item \nolinkurl{EVEN_DERIVATIVE_SEPARABILITY.md}: dyadic half-separation,
+prime-shift families, and exact residual-row audit through 5000.
+\item \nolinkurl{EVEN_DERIVATIVE_SEPARABILITY_REFEREE.md}: independent audit
+of the DS partial results and finite computation.
+\item \nolinkurl{trace_allq_modp_audit.py}: all-order finite-field audit
+through degree 1001.
+\item \nolinkurl{window_prime_selection_audit.py}: original-order selection
+audit through degree one million.
+\end{itemize}
+
+\vfill
+\begin{statusbox}
+\small
+\textbf{Status reminder.} \UPASS{} means unconditional theorem with complete
+proof; \XPASS{} means unconditional finite theorem with exact reproducible
+computation; \CPASS{} means a proved implication from an explicitly stated
+open hypothesis; \OPEN{} means not proved and never silently used as theorem
+input.
+\end{statusbox}
+
+\end{document}
