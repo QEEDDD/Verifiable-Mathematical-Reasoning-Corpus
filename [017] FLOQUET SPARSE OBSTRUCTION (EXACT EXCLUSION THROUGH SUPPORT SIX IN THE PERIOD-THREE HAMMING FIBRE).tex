@@ -1,0 +1,961 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs,array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{needspace}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\tr}{tr}
+\newcommand{\C}{\mathbf C}
+\newcommand{\F}{\mathbf F}
+\newcommand{\Q}{\mathbf Q}
+\newcommand{\T}{\mathbf T}
+\newcommand{\Z}{\mathbf Z}
+
+\title[Floquet sparse obstruction]{Floquet Sparse Obstruction:
+Exact Exclusion Through Support Six in the Period-Three Hamming Fibre}
+\author{KEIO}
+\date{September 4, 2026}
+
+\hypersetup{
+  pdftitle={Floquet Sparse Obstruction: Exact Exclusion Through Support Six in the Period-Three Hamming Fibre},
+  pdfauthor={KEIO},
+  pdfsubject={Floquet isospectrality and sparse diagonal perturbations},
+  pdfkeywords={Floquet isospectrality, Hamming graph, sparse potential, Groebner basis, exact computation}
+}
+
+\subjclass[2020]{Primary 47B36; Secondary 05C50, 13P10, 35P05}
+\keywords{Floquet isospectrality, discrete Schr\"odinger operator,
+Hamming graph, sparse diagonal perturbation, exact computation,
+Gr\"obner basis}
+
+\begin{document}
+
+\begin{abstract}
+Let $\Delta$ be the adjacency-form discrete Laplacian on $\Z^d$, and let
+$V\colon\Z^d\to\C$ be $(3\Z)^d$-periodic.  We study complex potentials for
+which $\Delta+V$ and $\Delta$ are Floquet isospectral.  At zero
+quasimomentum the Floquet matrix is the adjacency matrix of the Hamming graph
+$H(d,3)$.  Trace identities at this single fibre show, by a completely
+human-checkable argument, that every nonzero isospectral diagonal shift of
+this fibre has at least five nonzero entries for every $d\geq1$.  For
+$d\geq3$, equality of the first five traces on a support of size at most four
+has a unique nonzero form: an induced claw with centre value $-1$ and leaf
+values $1,i,-i$.  Its sixth trace has the nonzero defect $-12(2d-5)$, so the
+sixth moment is sharp for this sparse trace test.
+
+For the smallest unresolved rectangular period, $(3\Z)^3$, we strengthen the
+lower bound to seven by an exact computer-assisted proof.  The resolvent of
+$H(3,3)$ depends only on Hamming distance.  The matrix determinant lemma
+therefore reduces supports of sizes five and six to, respectively, 104 and
+320 distance-matrix types.  After imposing exact support by Rabinowitsch
+extension, every resulting extension ideal has reduced Gr\"obner basis
+$\{1\}$ over $\Q$.  The computation uses exact rational polynomial arithmetic; an
+independent orbit and Burnside audit verifies the completeness of the type
+lists, and a deterministic transcript digest records every type.  Thus every
+nonzero shift of support at most six is detected already at the periodic
+fibre.  This closes the support-at-most-six stratum of the open $(3,3,3)$
+problem, but does not decide whether a nonzero potential of unrestricted
+support exists.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+For $n\in\Z^d$ put
+\[
+ (\Delta f)(n)=\sum_{\lVert n-m\rVert_1=1} f(m).
+\]
+Let $V$ be $(3\Z)^d$-periodic and identify a fundamental cell with
+$\mathcal F_d=\{0,1,2\}^d$.  Put
+$\T=\{z\in\C:|z|=1\}$.  For $z=(z_1,\ldots,z_d)\in\T^d$, the Floquet
+matrix $L_V(z)$ is defined by
+\[
+ (L_V(z)f)(n)=V(n)f(n)+
+ \sum_{j=1}^d\bigl(\eta_j^+(n)f(n+e_j)
+              +\eta_j^-(n)f(n-e_j)\bigr),
+\]
+where the arguments of $f$ are reduced modulo $3$ and
+\[
+ \eta_j^+(n)=\begin{cases}z_j,&n_j=2,\\1,&n_j\neq2,\end{cases}
+ \qquad
+ \eta_j^-(n)=\begin{cases}z_j^{-1},&n_j=0,\\1,&n_j\neq0.\end{cases}
+\]
+We say that $V$ is \emph{Floquet isospectral to zero} when
+\begin{equation}\label{eq:floquet-definition}
+ \det(xI-L_V(z))=\det(xI-L_0(z))
+ \qquad(z\in\T^d).
+\end{equation}
+The trace and spectral-invariant approach to discrete periodic inverse
+problems goes back at least to Kappeler~\cite{kappeler1989}; see also
+Liu~\cite{liu2023}, Saburova's complete invariant system for periodic
+graphs~\cite{saburova2026}, and the algebraic framework surveyed by Shipman
+and Sottile~\cite{shipman2026}.  Real-valued potentials isospectral to zero
+are rigid, whereas nonzero complex examples occur for several larger
+periods.  Faust, Liu, Matos, Plute, Robinson, Tao, Tran and Zhuang gave
+explicit complex examples, including a support-four construction with
+values $1+i,1-i,-1+i,-1-i$ for even periods at least four~\cite{faust2024}.
+
+Cobb, Faust and Kretschmer proved existence when at least one rectangular
+period exceeds $3$, and rigidity when all periods are at most $3$ and at
+most two of them equal $3$~\cite{cobb2026}.  Thus $(3,3,3)$ is the smallest
+rectangular period not covered by their classification; they also record
+that generating its full $27$-variable spectral-invariant ideal was beyond
+the direct methods they attempted.  The general period-classification
+problem and the all-period-three barrier are stated explicitly in
+\cite[Problem~1]{faustideal2026}.
+
+This paper does not solve the unrestricted $(3,3,3)$ case.  It isolates a
+sparse stratum and replaces the full ideal by exact low-rank determinant
+identities at one necessary Floquet fibre.  The result is an exact exclusion
+through support six, together with a finite decision procedure for every
+fixed Hamming-fibre support size.  Here ``exact'' refers to exhaustive type
+enumeration and rational polynomial arithmetic; it does not assert that a
+support-seven solution exists.
+
+\begin{theorem}[Human Hamming-fibre obstruction]\label{thm:human}
+Let $d\geq1$, let $A_d=A(H(d,3))$, and let $D$ be a complex diagonal
+matrix.  If
+$A_d+D$ and $A_d$ have the same characteristic polynomial, then
+\[
+ D\neq0\quad\Longrightarrow\quad
+ |\supp D|\geq5.
+\]
+\end{theorem}
+
+\begin{theorem}[Exact $H(3,3)$ obstruction]\label{thm:computer}
+Let $A=A(H(3,3))$ and let $D$ be a complex diagonal matrix.  If $A+D$ and
+$A$ have the same characteristic polynomial, then
+\[
+ D\neq0\quad\Longrightarrow\quad
+ \boxed{|\supp D|\geq7}.
+\]
+The exclusion of supports five and six is computer-assisted and uses exact
+arithmetic over $\Q$.
+\end{theorem}
+
+\begin{corollary}[Floquet consequence]\label{cor:floquet}
+If a $(3\Z)^3$-periodic complex potential $V$ is Floquet isospectral to
+zero, then $V=0$ or its support in a fundamental cell has size at least
+seven.
+\end{corollary}
+
+\begin{corollary}[Non-vacuity at the periodic fibre]\label{cor:nonvacuity}
+There exists a nonzero complex diagonal matrix $D$ such that $A(H(3,3))+D$
+and $A(H(3,3))$ have the same characteristic polynomial, and every such
+$D$ has support at least seven.
+\end{corollary}
+
+\begin{proof}
+The graph $H(3,3)$ is neither edgeless nor complete.  The fixed-matrix
+existence theorem of Cobb--Faust--Kretschmer
+\cite[Corollary~B]{cobb2026} therefore supplies a nonzero isospectral
+diagonal shift.  Its support bound is Theorem~\ref{thm:computer}.  This
+fixed-fibre existence statement does not imply simultaneous isospectrality
+at all Floquet phases.
+\end{proof}
+
+The proof of Theorem~\ref{thm:human} uses only traces through order six and a
+nine-row graph table.  Theorem~\ref{thm:computer} uses the determinant lemma,
+the Hamming association scheme and Rabinowitsch-extended coefficient ideals.  The
+calculation is finite because the zero-quasimomentum resolvent is a function
+of pairwise Hamming distance.  No floating-point arithmetic, numerical root
+test or tolerance enters the calculation.
+
+We are not aware of a previously stated support lower bound of this form.
+That literature assessment is not a priority certificate; the claim should
+be revisited after expert feedback.
+
+\section{The zero Floquet fibre}
+
+Write
+\[
+ \mathcal F_d=(\Z/3\Z)^d.
+\]
+At $z=(1,\ldots,1)$ the free Floquet matrix is
+\[
+ A_d=A(H(d,3)),
+ \qquad H(d,3)=K_3\mathbin{\square}\cdots\mathbin{\square}K_3.
+\]
+For a diagonal matrix $D$ indexed by $\mathcal F_d$, set
+\[
+ \supp D=\{a\in\mathcal F_d:D_{aa}\neq0\}.
+\]
+Let $D$ be any complex diagonal matrix such that $A_d+D$ and $A_d$ have
+the same characteristic polynomial.  Newton identities then give
+\begin{equation}\label{eq:trace-equality}
+ \tr(A_d+D)^k=\tr A_d^k\qquad(k\geq1).
+\end{equation}
+For a Floquet-isospectral potential one takes
+$D=\operatorname{diag}(V|_{\mathcal F_d})$; equation
+\eqref{eq:floquet-definition} implies the required finite-matrix hypothesis.
+Only this necessary zero-quasimomentum condition will be used.
+These power traces are the single-fibre specialization of the spectral
+invariants studied more generally in~\cite{saburova2026}.
+
+The following elementary local identities are immediate from the product
+graph:
+\begin{equation}\label{eq:local-walks}
+ (A_d)_{xx}=0,\qquad
+ (A_d^2)_{xx}=2d,\qquad
+ (A_d^3)_{xx}=2d,
+\end{equation}
+and
+\begin{equation}\label{eq:common-neighbour}
+ (A_d^2)_{xy}=1\qquad(x\sim y).
+\end{equation}
+Every edge lies in a unique triangle: its endpoints differ in one coordinate,
+and the third symbol in that coordinate gives the unique common neighbour
+adjacent to both within the same coordinate fibre.
+
+\begin{lemma}[The first three moments]\label{lem:first-three}
+Let $v_1,\ldots,v_r$ be the nonzero entries of $D$, and put
+$p_j=\sum_{a=1}^r v_a^j$.  If \eqref{eq:trace-equality} holds for
+$k=1,2,3$, then
+\[
+ p_1=p_2=p_3=0.
+\]
+\end{lemma}
+
+\begin{proof}
+The first trace gives $p_1=0$.  Since $A_d$ has zero diagonal,
+\[
+ \tr(A_d+D)^2-\tr A_d^2=p_2.
+\]
+For the third power, cyclicity of trace and \eqref{eq:local-walks} give
+\[
+ \tr(A_d+D)^3-\tr A_d^3
+ =p_3+3\tr(A_d^2D)=p_3+6dp_1=p_3.
+\]
+\end{proof}
+
+\begin{corollary}[Value-level obstruction]\label{cor:value-levels}
+Every nonzero isospectral diagonal shift of $A_d$ assumes at least four
+distinct nonzero values on its support.
+\end{corollary}
+
+\begin{proof}
+Suppose the distinct nonzero values are $a_1,\ldots,a_s$, with positive
+multiplicities $m_1,\ldots,m_s$, where $s\leq3$.  Lemma~\ref{lem:first-three}
+gives
+\[
+ \sum_{j=1}^s m_j a_j^k=0\qquad(k=1,2,3).
+\]
+The first $s$ equations have coefficient matrix
+$(a_j^k)_{1\leq k,j\leq s}$, whose determinant is a nonzero Vandermonde
+factor because the $a_j$ are nonzero and distinct.  Hence every $m_j=0$, a
+contradiction.
+\end{proof}
+
+\section{A human proof through support four}
+
+\begin{lemma}[Newton reduction]\label{lem:newton}
+No nonzero isospectral diagonal shift of $A_d$ has support at most three.
+If its support has size four, then for some $\alpha\in\C^\times$ its four
+values are
+\begin{equation}\label{eq:four-values}
+ \alpha\{1,-1,i,-i\}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Newton's identities and Lemma~\ref{lem:first-three} give
+$e_1=e_2=e_3=0$ for the elementary symmetric functions of the nonzero
+values.  If $r\leq3$, the product $e_r$ is therefore zero, contrary to the
+definition of the support.  If $r=4$, the monic polynomial with roots
+$v_1,\ldots,v_4$ has the form $X^4+e_4$, which yields
+\eqref{eq:four-values} after choosing a fourth root.
+\end{proof}
+
+Let $S$ be a four-point support and write
+$v_x=\alpha\omega_x$, where the labels on $S$ are the four fourth roots of
+unity.  From the graph induced on $S$ define
+\begin{equation}\label{eq:ET}
+ E=\sum_{\{x,y\}\in E(S)}\omega_x\omega_y,
+ \qquad
+ T=\sum_{\{x,y\}\in E(S)}
+ \omega_x\omega_y(\omega_x+\omega_y).
+\end{equation}
+
+\begin{lemma}[Trace four and trace five]\label{lem:trace45}
+Assume that $D$ has four-point support and write its values as
+$v_x=\alpha\omega_x$ as above.  Under the first-three-moment relations,
+\begin{align}
+ \tr(A_d+D)^4-\tr A_d^4
+   &=4\alpha^2(E+\alpha^2),\label{eq:trace4}\\
+ \tr(A_d+D)^5-\tr A_d^5
+   &=5\alpha^2(2E+\alpha T).\label{eq:trace5}
+\end{align}
+Consequently a four-point candidate must satisfy
+\begin{equation}\label{eq:ET-condition}
+ E\neq0,\qquad T^2+4E=0,
+ \qquad \alpha=-\frac{2E}{T}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The graph is vertex-transitive, so $(A_d^j)_{xx}$ is independent of $x$;
+hence every cyclic word containing exactly one $D$ is a multiple of $p_1$.
+ At order four, cyclic word classes give
+\[
+ \tr(A_d+D)^4-\tr A_d^4
+ =\tr D^4+2\tr(A_dD A_dD),
+\]
+after the terms containing $p_1,p_2,p_3$ are removed.  Since
+$\tr D^4=4\alpha^4$ and
+$\tr(A_dD A_dD)=2\alpha^2E$, this is \eqref{eq:trace4}.  At order five, the only surviving cyclic
+classes are $A_d^2DA_dD$ and $A_dDA_dD^2$.  Using
+$(A_d^2)_{xy}=1$ on an edge, their total contribution is
+\[
+ 10\alpha^2E+5\alpha^3T,
+\]
+while $\tr D^5=\alpha^5\sum\omega_x=0$.  This is
+\eqref{eq:trace5}.  If both differences vanish, then
+$\alpha^2=-E$, so $E\neq0$, and $\alpha T=-2E$.  Eliminating $\alpha$
+gives \eqref{eq:ET-condition}.
+\end{proof}
+
+There are eleven unlabelled simple graphs on four vertices.  The unique
+triangle property excludes $K_4$ and the diamond.  Fixing one root label to
+$1$ leaves six permutations of the other labels.  This normalization is
+lossless: for any fourth root $\zeta$, replacing
+$(\alpha,\omega_x)$ by $(\alpha/\zeta,\zeta\omega_x)$ preserves every
+value $v_x$ and the trace conditions.  Direct substitution in
+\eqref{eq:ET-condition} gives the complete table below.
+
+\begin{table}[htbp]
+\centering
+\caption{The complete trace-four/five test after normalizing one root label
+to $1$.  Graphs $K_4$ and the diamond cannot occur in $H(d,3)$.}
+\label{tab:four-point}
+\begin{tabular}{lrr}
+\toprule
+Induced graph & labelings with $E\neq0$ & survive traces $4,5$\\
+\midrule
+$4K_1$       &0&0\\
+$K_2+2K_1$   &6&0\\
+$P_3+K_1$    &4&0\\
+$K_3+K_1$    &6&0\\
+$K_{1,3}$    &6&6\\
+$2K_2$       &4&0\\
+$P_4$        &6&0\\
+paw          &4&0\\
+$C_4$        &4&0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the claw, let $c$ be the root label at the centre.  The leaf labels are
+the other three roots, whence
+\[
+ E=-c^2,\qquad T=-2c^3.
+\]
+The trace equations force $\alpha c=-1$.  Thus the centre has value $-1$
+and the leaf values are $\{1,i,-i\}$.  Independent leaves adjacent to a
+common vertex must lie in three distinct coordinate directions.  Such a claw
+exists exactly when $d\geq3$, and all such configurations are conjugate
+under $\Aut H(d,3)$.
+
+\begin{lemma}[The sixth-trace defect]\label{lem:trace6}
+For the formal claw candidate just described,
+\begin{equation}\label{eq:sixth-defect}
+ \tr(A_d+D)^6-\tr A_d^6=-12(2d-5).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Group the words of length six by cyclic rotation.  After the all-$A$ word is
+removed, the exact contributions are as follows.  They can be checked from
+the distance-walk recurrence
+\[
+ w_{\ell+1}(h)
+ =h\,w_\ell(h-1)+h\,w_\ell(h)+2(d-h)w_\ell(h+1),
+ \qquad w_0(h)=\mathbf 1_{h=0},
+\]
+where $w_\ell(h)=(A_d^\ell)_{xy}$ whenever the Hamming distance from $x$ to
+$y$ is $h$, together with multiplication on the four supported vertices.
+\begin{table}[htbp]
+\centering
+\caption{Cyclic word contributions for the formal claw.}
+\label{tab:trace-six}
+\begin{tabular}{lrr@{\qquad}lrr}
+\toprule
+word & mult. & trace & word & mult. & trace\\
+\midrule
+$A^5D$     &6&0          &$A^4D^2$   &6&0\\
+$A^3DAD$   &6&$-12d+6$   &$A^2DA^2D$ &3&6\\
+$A^3D^3$   &6&0          &$A^2DAD^2$ &6&2\\
+$A^2D^2AD$ &6&2          &$ADADAD$    &2&0\\
+$A^2D^4$   &6&$8d$       &$ADAD^3$    &6&$-2$\\
+$AD^2AD^2$ &3&$-2$       &$AD^5$      &6&0\\
+$D^6$      &1&0          &&&\\
+\bottomrule
+\end{tabular}
+\end{table}
+The entries follow by multiplying on the four supported vertices, using
+\eqref{eq:local-walks}--\eqref{eq:common-neighbour} and the fact that the
+three leaves occupy distinct coordinate directions.  Multiplicity times
+trace, summed over Table~\ref{tab:trace-six}, is $-12(2d-5)$.  The ancillary
+verifier performs this calculation symbolically in $d$ from the displayed
+distance recurrence and asserts all thirteen rows separately.
+\end{proof}
+
+\begin{proposition}[Sharp five-moment classification]\label{prop:five-moment}
+Let $d\geq3$ and $0<|\supp D|\leq4$.  Then
+\[
+ \tr(A_d+D)^k=\tr A_d^k\qquad(1\leq k\leq5)
+\]
+if and only if the support is an induced claw and, after permuting its
+leaves, the values are
+\[
+ D_{\mathrm{centre}}=-1,
+ \qquad
+ (D_{\mathrm{leaf},1},D_{\mathrm{leaf},2},D_{\mathrm{leaf},3})=(1,i,-i).
+\]
+Every such shift has sixth-trace defect $-12(2d-5)\neq0$.  In particular,
+order six is sharp for detecting all nonzero shifts of support at most four
+by consecutive power traces.
+\end{proposition}
+
+\begin{proof}
+Necessity is Lemma~\ref{lem:newton}, Table~\ref{tab:four-point}, and the
+calculation following that table.  Conversely, the displayed claw has
+$p_1=p_2=p_3=0$, $E=-c^2$, $T=-2c^3$, and $\alpha c=-1$, so
+Lemma~\ref{lem:trace45} verifies the first five traces.  The last assertion
+is Lemma~\ref{lem:trace6}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:human}]
+Lemma~\ref{lem:newton} excludes support at most three in every dimension.
+For $d=1$ this exhausts the three-vertex cell.  For $d=2$, the neighbours of
+a vertex induce two disjoint copies of $K_2$, one for each coordinate
+direction, so they contain no independent three-set and hence no induced
+claw.  Table~\ref{tab:four-point} therefore excludes support four.  For
+$d\geq3$, the same table leaves only the formal claw and
+Lemma~\ref{lem:trace6} excludes it because $-12(2d-5)\neq0$.
+\end{proof}
+
+\section{Distance resolvents of period-three Hamming graphs}
+
+For $0\leq j,h\leq d$, define the ternary Krawtchouk polynomial
+\begin{equation}\label{eq:krawtchouk}
+ K_j^{(d)}(h)=\sum_{\ell=0}^j(-1)^\ell2^{j-\ell}
+ \binom{h}{\ell}\binom{d-h}{j-\ell},
+\end{equation}
+with the usual convention for binomial coefficients outside their range,
+and put $\theta_j=2d-3j$.
+
+\begin{proposition}[Hamming resolvent]\label{prop:general-resolvent}
+For vertices $a,b\in\mathcal F_d$ at Hamming distance $h$,
+\begin{equation}\label{eq:general-resolvent}
+ ((xI-A_d)^{-1})_{ab}
+ =3^{-d}\sum_{j=0}^d\frac{K_j^{(d)}(h)}{x-\theta_j}.
+\end{equation}
+In particular, after multiplication by the minimal polynomial
+\[
+ m_d(x)=\prod_{j=0}^d(x-\theta_j),
+\]
+the matrix
+\[
+ N_d(x)=m_d(x)(xI-A_d)^{-1}
+\]
+has polynomial entries over $\Q$, each determined only by $h$.
+\end{proposition}
+
+\begin{proof}
+The characters of $\mathcal F_d$ diagonalize $A_d$.  A character with
+exactly $j$ nontrivial coordinates has eigenvalue $\theta_j$; summing the
+rank-one character projectors of that weight gives kernel
+$3^{-d}K_j^{(d)}(h)$.  The spectral decomposition yields
+\eqref{eq:general-resolvent}.  The eigenvalues $\theta_0,\ldots,\theta_d$
+are distinct, so their product is the minimal polynomial and clears every
+denominator.
+\end{proof}
+
+\subsection{The case \texorpdfstring{$H(3,3)$}{H(3,3)}}
+
+From now on $d=3$ and $A=A_3$.  Its distinct eigenvalues are
+$6,3,0,-3$, so its minimal polynomial is
+\begin{equation}\label{eq:m}
+ m(x)=x(x-6)(x-3)(x+3).
+\end{equation}
+For vertices $a,b\in\F_3^3$, let $\delta(a,b)$ be their Hamming distance and
+define
+\begin{align}
+ n_0(x)&=x^3-6x^2-3x+24,\nonumber\\
+ n_1(x)&=x(x-5),\nonumber\\
+ n_2(x)&=2(x-3),\label{eq:numerators}\\
+ n_3(x)&=6.\nonumber
+\end{align}
+Let $N(x)$ be the $27$-by-$27$ matrix with
+$N_{ab}(x)=n_{\delta(a,b)}(x)$.
+
+\begin{proposition}[Distance resolvent]\label{prop:resolvent}
+One has the polynomial matrix identity
+\begin{equation}\label{eq:resolvent-identity}
+ (xI-A)N(x)=m(x)I.
+\end{equation}
+Consequently
+\[
+ (xI-A)^{-1}_{ab}=\frac{n_{\delta(a,b)}(x)}{m(x)}
+\]
+away from the spectrum of $A$.
+\end{proposition}
+
+\begin{proof}
+Both sides lie in the Bose--Mesner algebra of the Hamming association
+scheme.  Multiplication by $A$ counts one-step changes from each distance
+class.  Substitution of the four polynomials in \eqref{eq:numerators} into
+these four distance recurrences gives \eqref{eq:resolvent-identity}.
+The ancillary verifier also checks all $27^2$ entries symbolically over
+$\Z[x]$ before any support calculation begins.
+\end{proof}
+
+\section{A finite Rabinowitsch ideal for a prescribed support}
+
+Fix $S\subset\F_3^3$ of size $r$.  Let $U_S$ be the $27$-by-$r$ coordinate
+embedding, write $D_S=\operatorname{diag}(v_0,\ldots,v_{r-1})$, set
+$D=U_SD_SU_S^{\mathsf T}$, and let $N_S(x)=U_S^{\mathsf T}N(x)U_S$.
+
+\begin{proposition}[Determinant-lemma reduction]\label{prop:detlemma}
+The zero-fibre matrices $A+D$ and $A$ have the same characteristic
+polynomial if and only if the following polynomial vanishes identically in
+$x$:
+\begin{equation}\label{eq:spectral-polynomial}
+ F_S^{(r)}(x;v)=
+ \sum_{\varnothing\neq T\subseteq\{0,\ldots,r-1\}}
+ (-1)^{|T|}m(x)^{r-|T|}
+ \left(\prod_{j\in T}v_j\right)
+ \det N_S(x)[T,T].
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+For generic $x$, the matrix determinant lemma and
+Proposition~\ref{prop:resolvent} give
+\[
+ \frac{\det(xI-A-D)}{\det(xI-A)}
+ =\det\left(I_r-D_S\frac{N_S(x)}{m(x)}\right).
+\]
+Expand the determinant by principal minors, subtract $1$, and multiply by
+$m(x)^r$.  This is \eqref{eq:spectral-polynomial}.  Since both sides are
+rational functions, the resulting identity is also sufficient.
+\end{proof}
+
+Let $I_S^{(r)}$ be the ideal over $\Q$ generated by the coefficients in $x$
+of $F_S^{(r)}$ after the trace equation
+\begin{equation}\label{eq:trace-eliminate}
+ v_{r-1}=-(v_0+\cdots+v_{r-2})
+\end{equation}
+has been substituted.  Exact support is imposed by a new variable $u$ and
+the Rabinowitsch equation
+\begin{equation}\label{eq:rabinowitsch}
+ u\prod_{j=0}^{r-1}v_j-1=0,
+\end{equation}
+again after \eqref{eq:trace-eliminate}.  Denote the resulting extension ideal
+by
+\begin{equation}\label{eq:extension-ideal}
+ J_S^{(r)}=
+ I_S^{(r)}+\left(u\prod_{j=0}^{r-1}v_j-1\right)
+ \subset\Q[u,v_0,\ldots,v_{r-2}].
+\end{equation}
+
+\begin{corollary}[Exact unit-ideal criterion]\label{cor:unit}
+There is no complex zero-fibre isospectral diagonal shift with exact support
+$S$ if and only if $J_S^{(r)}=(1)$.  Equivalently, any reduced
+Gr\"obner basis of $J_S^{(r)}$ is $\{1\}$.
+\end{corollary}
+
+\begin{proof}
+Equation \eqref{eq:rabinowitsch} is solvable precisely when every $v_j$ is
+nonzero.  Proposition~\ref{prop:detlemma} identifies the remaining
+coefficient equations with isospectrality.  The assertion is therefore the
+weak Nullstellensatz and the standard unit-ideal criterion for a Gr\"obner
+basis~\cite{cox}.
+\end{proof}
+
+The matrix $N_S$ depends, up to simultaneous row and column permutation,
+only on the abstract pairwise Hamming-distance matrix of $S$.  Thus one
+unit-ideal calculation per distance type is exhaustive.  This reduction is
+valid specifically at zero quasimomentum; it must not be transferred to a
+nonzero Floquet phase without a new argument.
+
+\begin{proposition}[Finite exact decidability]\label{prop:finite-decision}
+For every fixed pair $(d,r)$ with $1\leq r\leq3^d$, the existence of an
+isospectral diagonal shift of $A(H(d,3))$ with exact support $r$ is decidable
+by a finite exact computation over $\Q$, with one Rabinowitsch-extended
+coefficient ideal for each realizable $r$-point Hamming-distance type.
+\end{proposition}
+
+\begin{proof}
+There are finitely many $r$-subsets of $\mathcal F_d$ and hence finitely many
+distance types.  Proposition~\ref{prop:general-resolvent} supplies a common
+rational resolvent denominator and a numerator kernel determined by the
+distance matrix.  The determinant-lemma construction above therefore gives
+one ideal $J_S^{(r)}$ over $\Q$ per type.  Exact-support existence for that
+type is equivalent to this ideal being proper by
+Corollary~\ref{cor:unit}; a terminating Gr\"obner-basis computation decides
+the question.  This is a decidability statement, not a claim of practical
+complexity uniformly in $(d,r)$.
+\end{proof}
+
+\Needspace{8\baselineskip}
+\section{Exact exclusion of support five}\label{sec:support-five}
+
+\begin{lemma}[Five-point completeness]\label{lem:five-completeness}
+The $\binom{27}{5}=80{,}730$ five-subsets form $105$ orbits under
+\[
+ \Aut H(3,3)\cong(S_3)^3\rtimes S_3,
+ \qquad |\Aut H(3,3)|=1296,
+\]
+and these orbits determine exactly $104$ abstract pairwise Hamming-distance
+types.
+\end{lemma}
+
+\begin{proof}
+The primary verifier enumerates all five-subsets and minimizes the ten-entry
+upper-triangular distance word over all $5!$ point relabelings.  Independently,
+the completeness auditor partitions all subsets by union-find under eight
+generators of $(S_3)^3\rtimes S_3$, obtains $105$ orbits, and only then
+canonicalizes their distance matrices.  Both routes give $104$ types and the
+same serialized-key digest displayed below.  The passage from $105$ orbits
+to $104$ distance types is valid because $N_S(x)$ is determined entirely by
+the pairwise Hamming-distance matrix.
+\end{proof}
+
+For every type the verifier constructs \eqref{eq:spectral-polynomial}, makes
+the exact substitution $v_4=-(v_0+\cdots+v_3)$, appends
+\eqref{eq:rabinowitsch}, and computes a Gr\"obner basis over $\Q$ in the
+variables $u,v_0,\ldots,v_3$ using graded reverse lexicographic order.
+
+\begin{proposition}[Support-five exclusion]\label{prop:support5}
+All $104$ Rabinowitsch extension ideals have Gr\"obner basis $\{1\}$.  Hence
+there is no exact-support-five zero-fibre isospectral shift on $H(3,3)$.
+\end{proposition}
+
+\begin{proof}[Exact computer-assisted proof]
+Lemma~\ref{lem:five-completeness} makes the type list exhaustive.  For each
+type, the verifier constructs $F_S^{(5)}$, extracts every coefficient in
+$x$, performs the trace substitution, and constructs $J_S^{(5)}$ from
+\eqref{eq:extension-ideal}.  Exact arithmetic over $\Q$ returns the reduced
+basis $\{1\}$ for each of the $104$ ideals.  Corollary~\ref{cor:unit} excludes
+exact support five for every type.
+\end{proof}
+
+The sorted distance keys, serialized as comma-separated entries with one key
+per line, have SHA-256 digest
+\begin{center}
+{\small\texttt{222cdf7f5c212970fb39bf5e723bfcf29dfdfa72c6bd77ab9f25c10e5686cea9}}.
+\end{center}
+The reference run used Python 3.12.13 and SymPy 1.14.0 and returned
+$104/104$ unit ideals.
+
+\section{Exact exclusion of support six}\label{sec:support-six}
+
+\begin{lemma}[Six-point completeness]\label{lem:six-completeness}
+The six-point support counts are those in Table~\ref{tab:six-counts}.
+\begin{table}[htbp]
+\centering
+\caption{Exact combinatorial counts for six-point supports.}
+\label{tab:six-counts}
+\begin{tabular}{lr}
+\toprule
+quantity & exact value\\
+\midrule
+six-subsets & $\binom{27}{6}=296{,}010$\\
+automorphism group order & $1{,}296$\\
+automorphism orbits & $321$\\
+pairwise-distance types & $320$\\
+\bottomrule
+\end{tabular}
+\end{table}
+Exactly two nonconjugate automorphism orbits share one abstract distance
+matrix; all other distance types contain one orbit.
+\end{lemma}
+
+\begin{proof}
+One exact computation partitions all $296{,}010$ subset masks by union-find
+under eight generators of the automorphism group.  A separate Burnside sum
+over all $1{,}296$ group elements gives
+\[
+ \frac{1}{1296}\sum_{g\in\Aut H(3,3)}
+ \#\operatorname{Fix}_{\binom{\mathcal F_3^3}{6}}(g)
+ =\frac{416{,}016}{1{,}296}=321,
+\]
+independently confirming completeness.  Canonicalizing the fifteen-entry
+distance words of the $321$ orbit representatives gives $320$ types, with
+one distance word occurring twice.  The two representatives and their
+distinct coordinate-fibre profiles are recorded by the ancillary auditor.
+\end{proof}
+
+The distinction in the final two rows is essential.  Exactly two
+nonconjugate automorphism orbits share one abstract distance matrix.  They
+may be coalesced here only because the resolvent kernel in
+Proposition~\ref{prop:resolvent} is distance-dependent.
+
+For each of the $320$ types, the support-six verifier repeats the construction
+of Section~\ref{sec:support-five} with $v_5=-(v_0+\cdots+v_4)$.
+
+\begin{proposition}[Support-six exclusion]\label{prop:support6}
+All $320$ Rabinowitsch extension ideals have Gr\"obner basis $\{1\}$ over
+$\Q$.  Hence no zero-fibre isospectral diagonal shift on $H(3,3)$ has
+exact support six.
+\end{proposition}
+
+\begin{proof}[Exact computer-assisted proof]
+Lemma~\ref{lem:six-completeness} makes the distance-type list exhaustive.
+For every type, the support-six verifier constructs $F_S^{(6)}$, extracts
+all coefficients in $x$, performs the trace substitution, and constructs
+$J_S^{(6)}$.  All $320$ exact reduced bases over $\Q$ are $\{1\}$.
+Corollary~\ref{cor:unit} therefore excludes exact support six.
+\end{proof}
+
+The exact JSONL computation transcript records one header, $320$ sorted type
+records and one summary record.  Its principal digests are
+\begin{table}[htbp]
+\centering
+\caption{Digests for the support-six release.  The first two are
+deterministic mathematical digests; the last is an archival file-integrity
+digest.}
+\label{tab:six-digests}
+\begin{tabular}{l>{\raggedright\arraybackslash}p{0.58\textwidth}}
+\toprule
+object & SHA-256\\
+\midrule
+sorted distance keys &
+\shortstack[l]{\scriptsize\texttt{b7a0ff2f436adb2f9eed342cf33324b4}\\
+\scriptsize\texttt{45cb118672017d5e8eb6beb619037ecb}}\\
+canonical transcript &
+\shortstack[l]{\scriptsize\texttt{192dddaf12e4622821aec0f58ff4b95e}\\
+\scriptsize\texttt{d46e853f14333c44a665c3fb0d0ada1e}}\\
+complete JSONL file &
+\shortstack[l]{\scriptsize\texttt{c0c64dc9f4ca7bfd8b63cbbcd08ea47}\\
+\scriptsize\texttt{368948aeb31917067cf1397d9f86c7257}}\\
+\bottomrule
+\end{tabular}
+\end{table}
+The reference run returned $320/320$ unit ideals and no nonunit index.
+Types $1$, $90$, $160$ and $320$ were recomputed in fresh processes and
+reproduced their stored ideal hashes.  A separate union-find/Burnside program
+reproduced the $321$ orbits, the $320$ types and the distance-key digest.
+The complete-file digest is expected to change on a fresh run because the
+log includes process identifiers, platform data and timings; it authenticates
+the distributed file only.  The canonical transcript digest omits those
+ephemeral fields and is the reproducible comparison target.
+
+\begin{proof}[Proof of Theorem~\ref{thm:computer}]
+Theorem~\ref{thm:human} excludes support at most four.  Propositions
+\ref{prop:support5} and~\ref{prop:support6}, through
+Corollary~\ref{cor:unit}, exclude exact supports five and six.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:floquet}]
+Full Floquet isospectrality implies equality of the characteristic
+polynomials at zero quasimomentum, so Theorem~\ref{thm:computer} applies.
+\end{proof}
+
+\section{Product transfer and cylinder potentials}
+
+Let $1\leq k<d$ and let $V_0$ be a $(3\Z)^k$-periodic potential.  Its
+\emph{cylinder lift} to $\Z^d$ is
+\[
+ V(n_1,\ldots,n_d)=V_0(n_1,\ldots,n_k).
+\]
+
+\begin{proposition}[Cylinder equivalence]\label{prop:cylinder}
+The cylinder lift $V$ is Floquet isospectral to zero on $\Z^d$ if and only
+if $V_0$ is Floquet isospectral to zero on $\Z^k$.
+\end{proposition}
+
+\begin{proof}
+Write $z=(z',z'')$.  In the product basis the Floquet matrix is the
+Kronecker sum
+\[
+ L_V^{(d)}(z)=L_{V_0}^{(k)}(z')\otimes I
+             +I\otimes L_0^{(d-k)}(z'').
+\]
+If the two $k$-dimensional matrices are isospectral for every $z'$, their
+Kronecker sums with the same second factor are isospectral, proving one
+direction.  Conversely, equality of the two $d$-dimensional characteristic
+polynomials implies, for every integer $m\geq1$, equality of power traces
+and hence of trace exponentials near $t=0$.  Using
+\[
+ \tr e^{t(X\otimes I+I\otimes B)}
+   =(\tr e^{tX})(\tr e^{tB}),
+\]
+the common factor $\tr e^{tB}$ can be cancelled near zero because its value
+at $t=0$ is $3^{d-k}$.  Thus the trace exponentials, and therefore the
+characteristic polynomials, of $L_{V_0}^{(k)}(z')$ and $L_0^{(k)}(z')$
+agree for every $z'$.
+\end{proof}
+
+\begin{corollary}[Sparse cylinder obstruction]\label{cor:cylinder}
+If $d\geq3$ and a nonzero $(3\Z)^d$-periodic Floquet-isospectral potential
+is, up to a coordinate permutation, a cylinder lift from three coordinate
+factors, then its support in a fundamental cell satisfies
+\[
+ |\supp V|\geq7\cdot3^{d-3}.
+\]
+A cylinder depending on at most two coordinates must be zero.
+\end{corollary}
+
+\begin{proof}
+For $d=3$ the first assertion is Corollary~\ref{cor:floquet}.  For $d>3$,
+Proposition~\ref{prop:cylinder} and that corollary give
+$|\supp V_0|\geq7$, and the lift repeats each supported value $3^{d-3}$
+times.  The assertion for at most two active coordinates follows from the
+small-period rigidity part of \cite[Theorem~C]{cobb2026}.
+\end{proof}
+
+\section{Reproducibility protocol}
+
+The ancillary files are:
+\begin{itemize}[leftmargin=2em]
+\item \texttt{verify\_floquet\_333\_sparse.py}, for the support-four trace
+table, the symbolic sixth-trace calculation, the resolvent identity and all
+support-five ideals;
+\item \texttt{verify\_floquet\_333\_support6.py}, for the orbit reduction,
+all support-six ideals, the JSONL transcript and deterministic comparison
+with a stored reference run;
+\item \texttt{audit\_h333\_support6\_completeness.py}, for the independent
+union-find and Burnside audit;
+\item \texttt{floquet\_support6\_certificate.jsonl}, the complete hashed
+support-six computation transcript;
+\item \texttt{requirements.txt}, pinning the symbolic-algebra dependency;
+\item the ancillary manifest, for release-file hashes and the reference
+environment.
+\end{itemize}
+The three principal commands are
+\begin{verbatim}
+python verify_floquet_333_sparse.py --quiet
+python audit_h333_support6_completeness.py \
+  --show-collision --cross-check-five
+python verify_floquet_333_support6.py --workers 6 \
+  --output /tmp/floquet_support6_check.jsonl --force \
+  --reference floquet_support6_certificate.jsonl
+\end{verbatim}
+The reference environment was Python 3.12.13 with SymPy 1.14.0
+\cite{sympy}.  One reference run took about $240$ seconds for support five
+and $912$ seconds for support six; runtimes are not part of the result.
+Mathematical verification consists of checking the symbolic trace and
+resolvent identities, reproducing the orbit and type counts, recomputing
+every reduced basis, and comparing every deterministic type record with the
+stored transcript.  The comparison deliberately ignores process identifiers,
+platform strings and timings.  The JSONL file is an exact computation
+transcript, not a standalone formal Nullstellensatz certificate containing
+multiplier identities; independent verification therefore reruns the
+Gr\"obner computations.
+
+\Needspace{8\baselineskip}
+\section{Scope and open directions}
+
+The exact status is:
+\begin{table}[htbp]
+\centering
+\caption{Proved and open strata.}
+\label{tab:status}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.43\textwidth}
+                >{\raggedright\arraybackslash}p{0.43\textwidth}}
+\toprule
+stratum & status\\
+\midrule
+support at most $3$, every $d\geq1$ & impossible by traces $1$--$3$\\
+support $4$, every $d\geq1$ & impossible by traces through order $6$\\
+support $5$ in $(3\Z)^3$ & exact computer-assisted impossibility\\
+support $6$ in $(3\Z)^3$ & exact computer-assisted impossibility\\
+nonzero periodic-fibre shift on $H(3,3)$ & exists, necessarily support $\geq7$\\
+exact support $7$ in $H(3,3)$ & open\\
+unrestricted $(3,3,3)$ existence & open\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The nearest finite continuation is support seven, but its orbit count and
+seven-variable Rabinowitsch ideals are materially larger.  A potentially more
+global approach is to combine several roots-of-unity quasimomenta.  The
+present proof deliberately uses only $z=1$; a few nonzero phases may impose
+incompatible low-rank resolvent identities simultaneously and could obstruct
+many support sizes at once.  Neither continuation is asserted here.  Nor does
+the $d=3$ computation exclude arbitrary supports five or six in dimensions
+$d>3$; only the cylinder consequence in Corollary~\ref{cor:cylinder} is
+claimed across dimensions.
+
+\section*{Data and code availability}
+
+The exact scripts and the full JSONL transcript are supplied with the source
+archive accompanying this manuscript.  No proprietary solver or
+floating-point computation is required.
+
+\begin{thebibliography}{99}
+
+\bibitem{cobb2026}
+J.~Cobb, M.~Faust and A.~Kretschmer,
+\emph{Inverse eigenvalue problems, Floquet isospectrality and the
+Hilbert--Chow morphism},
+arXiv:2601.09604 (2026).
+
+\bibitem{cox}
+D.~Cox, J.~Little and D.~O'Shea,
+\emph{Ideals, Varieties, and Algorithms},
+Springer, Cham, 2015.
+
+\bibitem{faustideal2026}
+M.~Faust, L.~Friedman, G.~O'Malley, R.~Ramos and A.~Sharma,
+\emph{Algebraic properties of the ideal of spectral invariants for the
+discrete Laplacian},
+arXiv:2602.08304 (2026).
+
+\bibitem{faust2024}
+M.~Faust, W.~Liu, R.~Matos, J.~Plute, J.~Robinson, Y.~Tao, E.~Tran and
+C.~Zhuang,
+\emph{Floquet isospectrality of the zero potential for discrete periodic
+Schr\"odinger operators},
+J. Math. Phys. \textbf{65} (2024), 073501.
+
+\bibitem{kappeler1989}
+T.~Kappeler,
+\emph{Isospectral potentials on a discrete lattice. III},
+Trans. Amer. Math. Soc. \textbf{314} (1989), 815--824.
+
+\bibitem{liu2023}
+W.~Liu,
+\emph{Floquet isospectrality for periodic graph operators},
+J. Differential Equations \textbf{374} (2023), 642--653.
+
+\bibitem{saburova2026}
+N.~Saburova,
+\emph{Spectral invariants for discrete Schr\"odinger operators on periodic
+graphs},
+arXiv:2504.03282v3 (2026).
+
+\bibitem{shipman2026}
+S.~P.~Shipman and F.~Sottile,
+\emph{Algebraic aspects of periodic graph operators},
+in \emph{Operator Theory}, Springer, Cham, 2026, pp.~3513--3553;
+arXiv:2502.03659v2.
+
+\bibitem{sympy}
+A.~Meurer et al.,
+\emph{SymPy: symbolic computing in Python},
+PeerJ Computer Science \textbf{3} (2017), e103.
+
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,446 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+\title{Arithmetic Constraints on a Hypothetically Algebraic Mills Constant:\\Gap Divisibility, Transcendental Exponents, and Cubic Reconstruction}
+\begin{document}
+\maketitle
+\begin{abstract}
+Assuming that the least Mills constant is algebraic, Saito's reduction produces a totally real cubic Pisot power with restricted conjugates. We derive exact arithmetic consequences for the resulting least-prime gaps above prime cubes. The gaps form a divisibility chain, obey a cubic asymptotic law, and have a well-defined transcendental power-law exponent strictly between $1/2$ and $21/40$. Consecutive primes in the hypothetical tower determine the powered cubic minimal polynomial by centered reduction. The multiplicative gap increments are norms from a fixed imaginary quadratic field and satisfy a one-jump valuation restriction. The same hypothetical branch forces infinitely many failures of Cram\'er, Andrica, Legendre, and weak Grimm assertions. These are implications of algebraicity, not proofs that the Mills constant is transcendental. An appendix treats the distinct square-exponent constant, proving endpoint bounds and a conditional power-saving criterion while identifying its remaining quadratic recurrence obstruction.
+\end{abstract}
+\tableofcontents
+
+\section{Definitions, external inputs, and scope}
+Let $A$ denote the smallest real number greater than one such that
+\[
+ \floor{A^{3^k}}\text{ is prime for every integer }k\ge1.
+\]
+This is the standard least Mills constant. Existence is classical; minimality and the arithmetic of $A$ are treated in \cite{saito-irrational,saito-variants}. Saito proved its irrationality. We investigate what would follow if it were nonetheless algebraic.
+
+The essential external input is the following specific specialization, which we attribute entirely to Saito.
+\begin{theorem}[Saito's reduction, external input]\label{thm:saito}
+If $A$ is algebraic, there exists an integer $m\ge1$ such that $\beta=A^{3^m}$ is a totally real cubic Pisot number. Its conjugates can be labelled
+\[
+ \beta,\ -\rho,\ \gamma,\qquad 0<\sigma:=|\gamma|<\rho<1,
+\]
+with
+\begin{equation}\label{eq:saito-bound}
+ \rho\le\min(\sigma^{17/23},\beta^{-17/40}).
+\end{equation}
+\end{theorem}
+This is Theorem~1.7 of \cite{saito-variants}, applied to the exponent sequence $3^k$. The theorem, its Pisot reduction, and the bound \eqref{eq:saito-bound} are not proved anew here. We also use the Baker--Harman--Pintz short-interval theorem \cite{bhp}, which implies
+\begin{equation}\label{eq:bhp}
+ \operatorname{nextprime}(x)-x=O(x^{21/40})\qquad(x\to\infty).
+\end{equation}
+Only this established exponent is used for the main results.
+
+From now until the appendix, every statement about the actual Mills tower is under the hypothesis that $A$ is algebraic. Put
+\[
+ p_r=\floor{\beta^{3^r}},\quad g_r=p_{r+1}-p_r^3,\quad x_r=p_r^3,
+ \quad C=\Norm_{\Q(\beta)/\Q}(\beta),\quad N=|C|.
+\]
+All asymptotic assertions concern sufficiently large $r$. The symbols $p_r$ denote primes from a very sparse tower, not consecutive primes in the ordinary enumeration. The pair $p_r^3,p_{r+1}$ will instead be related by a least-prime property proved below.
+
+\begin{theorem}[Main gap constraints; \sourceT{14,25,30}]\label{thm:main}
+Under the algebraicity hypothesis,
+\begin{gather}
+ p_{r+1}=\operatorname{nextprime}(p_r^3),\qquad
+ g_r\mid g_{r+1},\qquad \frac{9g_{r+1}}{g_r^3}\longrightarrow1,
+ \qquad \frac{g_r}{p_r}\longrightarrow\infty,\label{eq:main1}\\
+ g_r=x_r^{\kappa+o(1)},\qquad
+ \kappa=\frac{2+\log\rho/\log\beta}{3}\text{ is transcendental},\label{eq:main2}\\
+ \frac12+\frac{\log N}{6\log\beta}<\kappa<\frac{21}{40}.\label{eq:main3}
+\end{gather}
+For every $s\ge1$, one also has
+\[
+ g_r\mid g_{r+s},\qquad p_{r+s}\equiv p_r^{3^s}\pmod{g_r},
+ \qquad p_{r+1}\equiv p_r\pmod3.
+\]
+\end{theorem}
+The transcendence in \eqref{eq:main2} is a statement about the exponent of a hypothetical gap sequence. It is not a transcendence proof for $A$ and cannot be read as one. The last implication remains compatible with the known unconditional prime-gap bound.
+
+\section{Why minimality gives the next prime}
+\begin{lemma}[Eventual least-prime choice]\label{lem:least}
+For the least Mills constant, $p_{r+1}=\operatorname{nextprime}(p_r^3)$ for all sufficiently large $r$, without assuming algebraicity.
+\end{lemma}
+\begin{proof}
+The elementary floor relations imply $p_{r+1}\ge p_r^3$ and $p_{r+1}<(p_r+1)^3$. Since a cube of a prime is composite, the first inequality is strict. By \eqref{eq:bhp}, every sufficiently large prime $q$ has a prime successor above $q^3$ satisfying
+\[
+ q^3<\operatorname{nextprime}(q^3)<(q+1)^3-1.
+\]
+Indeed the error is $O(q^{63/40})=o(q^2)$.
+
+Suppose that at a sufficiently late stage a smaller prime $q$ lies strictly between $p_r^3$ and $p_{r+1}$. Start with this $q$ and continue choosing least primes above successive cubes. The strict upper inequality just obtained makes the corresponding intervals
+\[
+ [q_j^{1/3^{m+j}},(q_j+1)^{1/3^{m+j}})
+\]
+nested, with each later closed interval strictly inside the earlier upper endpoint. Their left endpoints increase and are bounded, so they define a limiting real number with precisely the chosen prime floors. All earlier floors are preserved, because each interval is nested in the original $p_r$ interval, itself nested in its predecessors. The new limiting number is less than $A$: already its first replaced interval has upper endpoint at most $(q+1)^{1/3^{m+r+1}}<p_{r+1}^{1/3^{m+r+1}}\le A$. This contradicts minimality.
+\end{proof}
+This argument uses eventual extension of every sufficiently large prime cylinder. It neither certifies a particular numerical decimal expansion of $A$ nor assumes that a chosen early prime tower is the least one.
+
+\section{Cubic trace algebra and divisibility}
+By Theorem~\ref{thm:saito}, the sum of the two small conjugates at the odd power $3^r$ is eventually in $(-1,0)$. Therefore
+\[
+ p_r=\Tr(\beta^{3^r}).
+\]
+Write $M=3^r$ and
+\[
+ X=\beta^M,\quad Y=(-\rho)^M=-\rho^M,\quad Z=\gamma^M,
+ \quad b_r=XY+XZ+YZ,\quad e_r=XYZ=C^M.
+\]
+These symmetric quantities are integers. A Pisot number and each of its positive integral powers generate the same field: an embedding fixing the power must send the original Pisot number to a conjugate of the same modulus greater than one, hence fixes it. The polynomial
+\begin{equation}\label{eq:poweredpoly}
+ X^3-p_rX^2+b_rX-e_r
+\end{equation}
+is therefore the actual minimal polynomial of $\beta^{3^r}$.
+
+For clarity, in identities involving the state write $p,b,e$ in place of $p_r,b_r,e_r$, and use primes to mean the next state, not primality. Newton's identities give
+\begin{equation}\label{eq:state}
+ p'=p^3-3bp+3e,\qquad b'=b^3-3ebp+3e^2,\qquad e'=e^3.
+\end{equation}
+Set
+\begin{equation}\label{eq:h}
+ h=e-bp=\frac{g_r}{3}.
+\end{equation}
+The identity
+\begin{equation}\label{eq:pairsum}
+ h=-(X+Y)(Y+Z)(Z+X)
+\end{equation}
+follows by expanding the product. Since $(u^3+v^3)=(u+v)(u^2-uv+v^2)$,
+\begin{equation}\label{eq:F}
+ h'=hF,
+ \qquad F=\prod_{i<j}(X_i^2-X_iX_j+X_j^2),
+ \quad (X_1,X_2,X_3)=(X,Y,Z).
+\end{equation}
+The quantity $F$ is a symmetric polynomial in algebraic integers, hence an integer. It is positive because all three roots are real and $u^2-uv+v^2>0$ for nonzero real pairs. As $h>0$ by Lemma~\ref{lem:least}, we obtain $h\mid h'$ and therefore $g_r\mid g_{r+1}$.
+
+Iterating divisibility gives $g_r\mid g_{r+s}$. The recurrence $p_{j+1}=p_j^3+g_j$ then proves the nested congruences in Theorem~\ref{thm:main}. Also $p'\equiv p^3\equiv p\pmod3$. Finally
+\begin{equation}\label{eq:gcd}
+ \gcd(p_r,g_r)=1,
+\end{equation}
+since otherwise the prime $p_r$ would divide the distinct prime $p_{r+1}$.
+
+\section{The exact gap exponent}
+As $r\to\infty$, one has $Z/Y\to0$ and $Y/X\to0$. Equations \eqref{eq:pairsum} and \eqref{eq:h} yield
+\begin{equation}\label{eq:asymptotic}
+ p_r\sim\beta^{3^r},\qquad
+ h_r\sim(\beta^2\rho)^{3^r},\qquad
+ g_r\sim3(\beta^2\rho)^{3^r}.
+\end{equation}
+Thus $h_{r+1}/h_r^3\to1$, or equivalently $9g_{r+1}/g_r^3\to1$. Dividing logarithms in \eqref{eq:asymptotic} proves the exact exponent formula \eqref{eq:main2}.
+
+Because $N=\beta\rho\sigma$ is a positive integer and $\sigma<\rho$,
+\[
+ N<\beta\rho^2,\qquad
+ \rho>\sqrt{N/\beta}.
+\]
+This implies
+\[
+ \kappa>\frac12+\frac{\log N}{6\log\beta}\ge\frac12.
+\]
+It also shows $\beta\rho>1$, and hence $g_r/p_r\sim3(\beta\rho)^{3^r}\to\infty$. The upper conjugate bound \eqref{eq:saito-bound} gives $\kappa\le21/40$ before its arithmetic nature is considered.
+
+\begin{lemma}[Two-conjugate multiplicative independence]\label{lem:independence}
+For the totally real cubic Pisot number in Theorem~\ref{thm:saito}, the ratio $\log\rho/\log\beta$ is irrational.
+\end{lemma}
+\begin{proof}
+If the ratio were rational and negative, there would be positive integers $u,v$ with $\beta^u\rho^v=1$. Put $\alpha_1=\beta$, $\alpha_2=-\rho$, and $\alpha_3=\gamma$. Then
+\[
+ \alpha_1^u\alpha_2^v=(-1)^v.
+\]
+The Galois group of an irreducible cubic is either $S_3$ or $A_3$. In the first case apply the transposition interchanging $\alpha_1,\alpha_2$, and divide. It follows that $(\alpha_1/\alpha_2)^{u-v}=1$. Distinct absolute values force $u=v$. Then $|\alpha_1\alpha_2|=1$, so the absolute norm equals $|\alpha_3|<1$, contradicting that it is a nonzero integer.
+
+In the cyclic case, put $\ell_i=\log|\alpha_i|$ and apply the three cyclic conjugations. They give
+\[
+ u\ell_1+v\ell_2=0,\qquad u\ell_2+v\ell_3=0,\qquad
+ u\ell_3+v\ell_1=0.
+\]
+The determinant is $u^3+v^3>0$, so all $\ell_i$ vanish, contrary to $\beta>1$.
+\end{proof}
+\begin{proposition}[Transcendental exponent; \sourceT{30}]\label{prop:kappa}
+The exponent $\kappa$ is transcendental, and the upper endpoint in \eqref{eq:main3} is strict.
+\end{proposition}
+\begin{proof}
+Let $t=\log\rho/\log\beta$. By Lemma~\ref{lem:independence}, it is irrational. If it were algebraic, the Gelfond--Schneider theorem \cite{schneider} would make $\beta^t$ transcendental, whereas $\beta^t=\rho$ is algebraic. Hence $t$, and its nonconstant rational affine transform $\kappa=(2+t)/3$, are transcendental. Equality $\kappa=21/40$ is impossible because that endpoint is rational.
+\end{proof}
+This completes the proof of Theorem~\ref{thm:main}. An additional useful consequence is
+\begin{equation}\label{eq:norm-bound}
+ \frac{\log N}{\log\beta}<\frac3{20}.
+\end{equation}
+If $N>1$, this implies $\beta>N^{20/3}$. The integer norm therefore restricts the height of a possible algebraic candidate as well as the gap exponent.
+
+\section{Centered reconstruction from two tower primes}
+For an odd positive integer $p$, define $\operatorname{cres}_p(n)$ to be the unique integer congruent to $n$ modulo $p$ in $(-p/2,p/2)$.
+\begin{theorem}[Cubic reconstruction; \sourceT{33}]\label{thm:reconstruct}
+For all sufficiently large $r$, the two primes $p_r,p_{r+1}$ determine the polynomial \eqref{eq:poweredpoly} uniquely by
+\begin{equation}\label{eq:reconstruct}
+ h_r=\frac{p_{r+1}-p_r^3}{3},\qquad
+ e_r=\operatorname{cres}_{p_r}(h_r),\qquad
+ b_r=\frac{e_r-h_r}{p_r}.
+\end{equation}
+The reconstructed states satisfy
+\begin{equation}\label{eq:hstate}
+ p'=p^3+3h,\qquad b'=b^3+3bph+3h^2,\qquad e'=e^3.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Since $|e_r|/p_r\sim(\rho\sigma)^{3^r}\to0$, one eventually has $|e_r|<p_r/2$. Equation \eqref{eq:h} gives $h_r\equiv e_r\pmod{p_r}$, so centered reduction recovers $e_r$ uniquely. It then recovers $b_r$. Substituting $e=h+bp$ into \eqref{eq:state} yields \eqref{eq:hstate} by expansion. The original powered cubic has degree three, as observed before \eqref{eq:poweredpoly}, so the recovered polynomial is its minimal polynomial.
+\end{proof}
+For finite data this is an exact test of a proposed cubic shadow from that stage onward. A failure in an early segment does not exclude a shadow beginning at a later, unknown stage. To disprove algebraicity by this method one must force failures at arbitrarily large indices.
+
+\begin{example}[Trace structure does not imply least-prime structure]
+Consider $f(X)=X^3-41X^2-13X-1$, with initial state $(p,b,e)=(41,-13,1)$. Endpoint signs locate the roots in $(41,42)$, $(-183/1000,-182/1000)$, and $(-133/1000,-132/1000)$. The rational-root test excludes $\pm1$, so the large root is a real cubic Pisot number. Here
+\[
+ h=534,\qquad p'=70523,\qquad b'=-595,\qquad e'=1.
+\]
+Centered reduction gives $534\equiv1\pmod{41}$ and recovers $(b,e)=(-13,1)$ exactly. The multiplier is $F=78579$. Nevertheless
+\[
+ 41^3=68921<68927<70523,
+\]
+and $68927$ is prime (by trial division by primes at most $262$). Thus this first trace transition cannot be a late least-Mills transition. In fact $70523=109\cdot647$ is itself composite; primality of that trace is not needed for the least-prime failure. The point is that the exact cubic identities alone do not force the required prime choices.
+\end{example}
+
+\section{Quadratic norms and restricted valuation growth}
+Let $K=\Q(\beta)$ and let $d_K>0$ be its field discriminant. The discriminant $\Delta_r$ of the powered minimal polynomial satisfies
+\begin{equation}\label{eq:discindex}
+ \Delta_r=d_K I_r^2,\qquad I_r=[\mathcal O_K:\Z[\beta^{3^r}]]\in\N.
+\end{equation}
+\begin{theorem}[Fixed quadratic norm; \sourceT{33}]\label{thm:norm}
+Set $U_r=6e_r+h_r$ and $F_r=h_{r+1}/h_r$. Then
+\begin{equation}\label{eq:normidentity}
+ 4F_r=U_r^2+3\Delta_r,
+ \qquad
+ F_r=\Norm_{\Q(\sqrt{-3d_K})/\Q}
+ \left(\frac{U_r+I_r\sqrt{-3d_K}}2\right).
+\end{equation}
+Every odd prime inert in the fixed field $\Q(\sqrt{-3d_K})$ occurs in $F_r$ to an even exponent.
+\end{theorem}
+\begin{proof}
+For $\Delta=p^2b^2-4b^3-4p^3e-27e^2+18pbe$, expand \eqref{eq:F} in symmetric functions. With $h=e-bp$, the result is
+\[
+ F=h^2-3\bigl(b^3+ep(p^2-4b)+3e^2\bigr).
+\]
+Substituting this formula and the displayed expression for $\Delta$ gives $4F=(6e+h)^2+3\Delta$ by cancellation of coefficients. Now apply \eqref{eq:discindex}. The element displayed in \eqref{eq:normidentity} has integer trace $U_r$ and integer norm $F_r$, so it is an algebraic integer. If a prime is inert in the quadratic field, the residue degree of its unique prime ideal is two; taking ideal norms shows that its valuation in an element norm is even.
+\end{proof}
+The quadratic field in this theorem is fixed with $\beta$. It does not vary freely with the index, even though the order discriminants $\Delta_r$ do vary.
+
+\begin{theorem}[One-jump law; \sourceT{33}]\label{thm:onejump}
+Let $\ell\ge5$ be prime, $\ell\nmid C$, and suppose $\ell\mid h_r$ at some stage. Among all later transitions, $v_\ell(h_j)$ can increase at most once. If $\ell\equiv5\pmod6$, it never increases.
+\end{theorem}
+\begin{proof}
+Divisibility persists by \eqref{eq:F}. Because $e_j\not\equiv0\pmod\ell$ and $h_j=e_j-b_jp_j\equiv0$, both $p_j,b_j$ are nonzero modulo $\ell$. Define $t_j=p_j^2/b_j\in\mathbb F_\ell^\times$. Reducing \eqref{eq:hstate} modulo $\ell$ gives
+\[
+ t_{j+1}=t_j^3.
+\]
+The symmetric expression for $F$ in Theorem~\ref{thm:norm}, using $e_j=b_jp_j\pmod\ell$, gives
+\[
+ F_j\equiv-3b_j^3(t_j^2-t_j+1)\pmod\ell.
+\]
+A valuation increase requires $t_j^2-t_j+1=0$. For $\ell\ge5$ its roots are primitive sixth roots of unity, and cubing sends them to $-1$. The point $-1$ is fixed under cubing, but is not a root of $t^2-t+1$ modulo such a prime. There can therefore be only one increase. If $\ell\equiv5\pmod6$, the field has no primitive sixth root of unity and no increase occurs at all.
+\end{proof}
+The theorem bounds the number of increases, not the numerical size of the unique possible increase.
+
+\begin{proposition}[Discriminant square-class certificate]\label{prop:discstep}
+The consecutive powered discriminants satisfy
+\[
+ \Delta_{r+1}=\Delta_r D_r^2,
+ \qquad D_r=p_r^2b_r^2-p_r^3e_r-b_r^3\in\Z.
+\]
+\end{proposition}
+\begin{proof}
+For each pair, $X_i^3-X_j^3=(X_i-X_j)(X_i^2+X_iX_j+X_j^2)$. Multiply the squares over the three pairs. The symmetric expansion of the product of the second factors is $p^2b^2-p^3e-b^3$.
+\end{proof}
+Three consecutive tower primes therefore suffice to test the two reconstructed states, the cube recurrence, and this discriminant square-class transition. Root isolation can additionally test irreducibility, total reality, and the precise conjugate inequalities required by Theorem~\ref{thm:saito}.
+
+\section{Consequences for named prime-gap assertions}
+\begin{theorem}[Three-conjecture implication; \sourceT{30}]\label{thm:three}
+If the least Mills constant is algebraic, then each of the following assertions fails at infinitely many places:
+\begin{enumerate}[label=(\roman*)]
+\item the Cram\'er bound $P_{n+1}-P_n=O((\log P_n)^2)$ for consecutive primes;
+\item Andrica's inequality $\sqrt{P_{n+1}}-\sqrt{P_n}<1$;
+\item Legendre's assertion that every open interval $(n^2,(n+1)^2)$ contains a prime.
+\end{enumerate}
+In particular, the truth of any one of these assertions implies that $A$ is transcendental.
+\end{theorem}
+\begin{proof}
+Put $Q_r=\operatorname{nextprime}(x_r)=p_{r+1}$ and let $L_r$ be the largest prime below $x_r=p_r^3$. Then $L_r,Q_r$ are consecutive primes and
+\[
+ Q_r-L_r\ge Q_r-x_r=g_r=x_r^{\kappa+o(1)},\qquad\kappa>\tfrac12.
+\]
+Also $L_r\asymp x_r$ by Bertrand's theorem, and $Q_r\sim x_r$ by \eqref{eq:bhp}. Thus the gap exceeds every fixed multiple of $(\log L_r)^2$, proving (i), while
+\[
+ \sqrt{Q_r}-\sqrt{L_r}
+ =\frac{Q_r-L_r}{\sqrt{Q_r}+\sqrt{L_r}}
+ \ge x_r^{\kappa-1/2+o(1)}\longrightarrow\infty,
+\]
+proving (ii).
+
+For (iii), $x_r$ is not a square. Let $n_r=\ceil{\sqrt{x_r}}$. Then $x_r<n_r^2$ and $(n_r+1)^2-x_r=O(\sqrt{x_r})=o(g_r)$. For large $r$ the entire interval $(n_r^2,(n_r+1)^2)$ lies in $(x_r,Q_r)$, which has no primes by the least-prime property. The indices increase without bound, giving infinitely many different failures.
+\end{proof}
+The theorem does not adjudicate any of the three conjectures: it proves an implication from the unestablished assumption that $A$ is algebraic. Some weaker consequences of prime-gap conjectures for Mills constants already follow from Saito's general results. Our specific conclusion records the exact gap exponent and the locations of the hypothetical failures.
+
+\section{Weak Grimm failures and optional short-interval inputs}
+For $n\ge1$, define
+\[
+ g_1(n)=\max\left\{k:\ 
+ \omega\!\left(\prod_{j=1}^{\ell}(n+j)\right)\ge\ell
+ \text{ for every }1\le\ell\le k\right\},
+\]
+where $\omega$ counts distinct prime factors. The weak Grimm assertion states that a block $n+1,\ldots,n+k$ of composite integers has at least $k$ distinct prime factors in its product. It is weaker than the requirement of assigning a different prime divisor to each term.
+
+Theorem~3 of Laishram--Murty \cite{laishram-murty} gives, unconditionally for sufficiently large $n$,
+\begin{equation}\label{eq:g1bound}
+ g_1(n)<n^{\nu},\qquad \nu=\frac12-\frac1{390}.
+\end{equation}
+\begin{theorem}[Mills--weak Grimm implication; \sourceT{35}]\label{thm:grimm}
+If $A$ is algebraic, then for every sufficiently large $r$ there is an integer $\ell_r$ with $1\le\ell_r<g_r$ such that
+\[
+ x_r+1,\ldots,x_r+\ell_r\text{ are all composite},\qquad
+ \omega\!\left(\prod_{j=1}^{\ell_r}(x_r+j)\right)<\ell_r.
+\]
+Thus either $A$ is transcendental or weak Grimm has infinitely many counterexamples starting immediately above Mills-tower prime cubes.
+\end{theorem}
+\begin{proof}
+Since $g_r=x_r^{\kappa+o(1)}$ and $\kappa>1/2>\nu$, one has $g_1(x_r)+1<g_r$ for large $r$. By the definition of $g_1$, the first failing prefix has length $\ell_r=g_1(x_r)+1$. Every term in that prefix is composite because $p_{r+1}$ is the first prime above $x_r$. The failure is exactly the displayed strict inequality. As $x_r$ tends to infinity through distinct cubes, the blocks give infinitely many counterexamples.
+\end{proof}
+
+\begin{proposition}[Substitution of another exponent]\label{prop:theta}
+If one additionally has a uniform bound
+$\operatorname{nextprime}(x)-x=O(x^\theta)$ with rational $\theta<1$, the hypothetical exponent satisfies $\kappa<\theta$. In particular the extra input $\theta=13/25$ would imply
+\[
+ \tfrac12<\kappa<\tfrac{13}{25},\qquad
+ -\tfrac12<\frac{\log\rho}{\log\beta}<-\tfrac{11}{25}.
+\]
+\end{proposition}
+\begin{proof}
+The exact asymptotic exponent gives $\kappa\le\theta$; equality is excluded by transcendence of $\kappa$ and rationality of $\theta$. The logarithmic bounds follow from $\log\rho/\log\beta=3\kappa-2$.
+\end{proof}
+\begin{audit}
+Source T35 also cited Li's preprint \cite{li} as an input for $\theta=13/25$. That preprint asserts the required $0.52$ short-interval conclusion. This manuscript has not independently audited its analytic and numerical sieve proof, and does not replace the main bound $21/40$ by it. Proposition~\ref{prop:theta} specifies the additional hypothesis under which the narrower interval follows. None of the earlier conclusions requires this optional input.
+\end{audit}
+
+\section{What would complete the Mills argument?}
+The reconstruction framework turns hypothetical algebraicity into an explicit integer dynamics. Several sufficient routes to contradiction are now precise. For example, any one of the following statements at arbitrarily large indices of the actual least-prime tower would suffice:
+\begin{enumerate}
+\item $g_r\nmid g_{r+1}$;
+\item $g_r=O(p_r)$ along an infinite subsequence;
+\item the centered-reconstructed norms fail $e_{r+1}=e_r^3$;
+\item the reconstructed polynomials fail the cubic state recurrence or the required real-root configuration.
+\end{enumerate}
+No such infinite-failure theorem is established here. Finite computations, even many successful tests, cannot prove that every late state is inconsistent. Conversely, finding failures in an initial finite segment cannot eliminate the possibility that the Pisot reduction begins later.
+
+The source correspondence is as follows: T14 provides pair-sum divisibility, T25 the exact critical exponent, T30 its transcendence and named gap consequences, T33 centered reconstruction and quadratic-norm restrictions, and T35 the weak Grimm linkage and optional exponent substitution. The appendix retains T53 as a separate square-exponent problem. All non-elementary external inputs have been named at the point of use; the manuscript makes no assertion that these connections or their general algebraic ingredients have no precedents.
+
+\appendix
+\section{The square-exponent constant and endpoint repulsion}
+The number $\xi_2=\xi(2^k)$ is defined as the least $\xi>1$ such that $\floor{\xi^{2^k}}$ is prime for all $k\ge1$. Its existence is included in the prime-representing-constant results discussed by Saito \cite{saito-irrational,saito-variants}. It is different from the least Mills constant. In fact the elementary results in this appendix apply to any real $\xi>1$ with prime floors at all square-tower indices.
+
+Set $x_k=\xi^{2^k}$, $p_k=\floor{x_k}$, and $d_k=p_{k+1}-p_k^2$.
+\begin{theorem}[Endpoint inequalities; \sourceT{53}]\label{thm:endpoint}
+For all sufficiently large $k$,
+\[
+ 2\le d_k\le2p_k-2,\qquad d_k\equiv0\pmod2,
+ \qquad \|x_k\|>\frac1{p_k+1}>\frac1{2x_k}.
+\]
+\end{theorem}
+\begin{proof}
+Write $x=p+\vartheta$, with $p=\floor x>2$ prime and $0\le\vartheta<1$. The number $q=\floor{x^2}$ is also an odd prime. Hence $d=q-p^2$ is positive and even. The candidates $p^2$ and $p^2+1$ are composite. At the other endpoint, $(p+1)^2-1=p(p+2)$ is composite and $(p+1)^2-2$ is even. Thus
+\[
+ p^2+2\le q\le(p+1)^2-3=p^2+2p-2.
+\]
+The lower inequality gives
+\[
+ \vartheta\ge\sqrt{p^2+2}-p
+ =\frac2{\sqrt{p^2+2}+p}>\frac1{p+1}.
+\]
+Since $x^2<q+1\le(p+1)^2-2$, the quantity $u=1-\vartheta$ satisfies
+\[
+ u=\frac{(p+1)^2-x^2}{p+1+x}>\frac1{p+1}.
+\]
+Taking the smaller of $u$ and $\vartheta$ proves the norm bound. Finally $p+1<2x$ for $p>1$.
+\end{proof}
+These bounds do not provide the upper power-saving estimate needed in the next result.
+
+\section{A conditional power-saving threshold}
+We use one further external input, Saito's Lemma~6.1 in \cite{saito-variants}: if an algebraic number $\alpha>1$ satisfies
+\[
+ \|\alpha^{n_j}\|\le K\alpha^{-\delta n_j}
+\]
+for an increasing infinite sequence of positive integers $n_j$ and fixed $K,\delta>0$, then some positive integer $g$, dividing all sufficiently late $n_j$, makes $\alpha^g$ Pisot of degree at most $1+1/\delta$. This is a Diophantine-approximation result, not a consequence of elementary floor manipulation.
+
+\begin{theorem}[Square-tower threshold; \sourceT{53}]\label{thm:squarethreshold}
+Suppose $d_k\le p_k^{1-\delta}$ for infinitely many $k$, where $0<\delta<1$ is fixed. Then $\xi$ is irrational. If $\delta>1/2$, it is transcendental. If $1/3<\delta\le1/2$ and $\xi$ is algebraic, a power $\xi^{2^h}$ must be a non-totally-real cubic Pisot number.
+\end{theorem}
+\begin{proof}
+At each of the assumed indices, with $x=p+\vartheta$, the upper inequality $x^2<p^2+d+1$ gives
+\[
+ 0<\vartheta<\frac{d+1}{2p}\ll p^{-\delta}\ll\xi^{-\delta2^k}.
+\]
+If $\xi$ is algebraic, apply the preceding external lemma to this subsequence. Since $g$ divides sufficiently large powers of $2$, it is itself $2^h$. Thus $\beta=\xi^{2^h}$ is Pisot of degree $\ell\le1+1/\delta$.
+
+If $\xi$ were rational, $\beta$ would be rational and an algebraic integer, hence an integer. Then its later integral powers would have composite floors, a contradiction. More generally $\ell=1$ is excluded for the same reason.
+
+If $\beta$ is totally real, its small conjugates raised to any sufficiently large even power have a positive sum tending to zero. Thus $\{\beta^{2^{k-h}}\}\to1$, contradicting the displayed fractional parts tending to zero along the selected indices. All quadratic Pisot numbers are totally real. Hence any remaining algebraic case has degree at least three and is not totally real. If $\delta>1/2$, the degree bound is strictly below three and no case remains. If $1/3<\delta\le1/2$, the only possible remaining integer degree is three.
+\end{proof}
+The hypothesis concerns the specified tower's own $d_k$. A global prime-gap estimate, or numerical evidence that some early $d_k$ are small, does not automatically imply it. No such infinite power saving is proved here for $\xi_2$.
+
+\section{The surviving quadratic recurrence mechanism}
+The next computation describes what a quadratic Pisot power would look like when no power-saving assumption is imposed.
+\begin{proposition}[Quadratic tower; \sourceT{53}]\label{prop:quadratic}
+Let $\beta>1$ be a quadratic Pisot number with conjugate $\gamma$, minimal polynomial $X^2-aX+b$, and $T_n=\beta^n+\gamma^n$. Suppose the floors $p_k=\floor{\beta^{2^k}}$ are prime for all sufficiently large $k$. Then
+\[
+ p_k=T_{2^k}-1,\qquad T_{2n}=T_n^2-2b^n,
+\]
+$a$ is even, and $\beta\ge1+\sqrt2$. If an odd prime $\ell\mid b$, $\ell\nmid a$ has $\ord_\ell(a)$ a power of two, such a prime tail is impossible. In the unit case $b=\pm1$,
+\[
+ p_{k+1}=p_k^2+2p_k-2,\qquad
+ p_k+2=(p_{k_0}+2)\prod_{i=k_0}^{k-1}p_i
+\]
+for all sufficiently large $k\ge k_0$.
+\end{proposition}
+\begin{proof}
+For large even $n$, $0<\gamma^n<1$, so $\floor{\beta^n}=T_n-1$. Squaring $T_n$ gives the recurrence. Modulo two, $T_{2n}\equiv T_n^2\equiv T_n$, hence $T_{2^k}\equiv a$. Since eventual primes are odd, $a$ is even. If $a\ge4$, then $\beta=a-\gamma>3>1+\sqrt2$. For $a=2$, the roots are $1\pm\sqrt{1-b}$. Irreducibility and $|\gamma|<1$ force $b\in\{-2,-1\}$, and the smaller possible dominant root is $1+\sqrt2$. Positive $\beta>1$ and $|\gamma|<1$ exclude $a\le0$.
+
+If $\ell\mid b$ but $\ell\nmid a$, then $T_n\equiv a^n\pmod\ell$ by the quadratic recurrence or the roots $0,a$ modulo $\ell$. A power-of-two order makes $a^{2^k}=1$ for large $k$, so $\ell\mid p_k$, contradicting primality as $p_k\to\infty$.
+
+For $b=\pm1$ and $k\ge1$, one has $b^{2^k}=1$. Substitute $T_{2^k}=p_k+1$ into the doubling recurrence. The identity $p_{k+1}+2=p_k(p_k+2)$ telescopes to the stated product.
+\end{proof}
+In the unit recurrence an earlier odd prime term does not propagate as a divisor: modulo such a term the next value is $-2$, which is fixed by the map $x\mapsto x^2+2x-2$. This explains a concrete limitation of simple repeated-divisor arguments. It does not prove that the recurrence is eventually prime, and does not decide the irrationality or transcendence of $\xi_2$ without the extra hypothesis of Theorem~\ref{thm:squarethreshold}.
+
+\begin{thebibliography}{9}
+\bibitem{saito-irrational} K. Saito, \emph{Mills' constant is irrational}, Mathematika \textbf{71} (2025), no.~3, e70027; \href{https://doi.org/10.1112/mtk.70027}{doi:10.1112/mtk.70027}; \url{https://arxiv.org/abs/2404.19461}.
+\bibitem{saito-variants} K. Saito, \emph{Transcendency of variants of Mills' constant}, arXiv:2508.16068v3 (7 December 2025), Theorem~1.7 and Lemma~6.1; \url{https://arxiv.org/abs/2508.16068}.
+\bibitem{bhp} R. C. Baker, G. Harman, and J. Pintz, \emph{The difference between consecutive primes, II}, Proceedings of the London Mathematical Society (3) \textbf{83} (2001), 532--562; \href{https://doi.org/10.1112/plms/83.3.532}{doi:10.1112/plms/83.3.532}.
+\bibitem{schneider} T. Schneider, \emph{Transzendenzuntersuchungen periodischer Funktionen I. Transzendenz von Potenzen}, Journal f\"ur die reine und angewandte Mathematik \textbf{172}, 65--69; \url{https://eudml.org/doc/149900}. The classical Gelfond--Schneider theorem is used only in Proposition~\ref{prop:kappa}.
+\bibitem{laishram-murty} S. Laishram and M. R. Murty, \emph{Grimm's conjecture and smooth numbers}, Michigan Mathematical Journal \textbf{61} (2012), 151--160; \href{https://doi.org/10.1307/mmj/1331222852}{doi:10.1307/mmj/1331222852}; \url{https://arxiv.org/abs/1306.0765}.
+\bibitem{li} R. Li, \emph{The number of primes in short intervals and numerical calculations for Harman's sieve}, arXiv:2308.04458v8 (2025); \url{https://arxiv.org/abs/2308.04458}. Cited solely as the optional input discussed after Proposition~\ref{prop:theta}.
+\end{thebibliography}
+\end{document}

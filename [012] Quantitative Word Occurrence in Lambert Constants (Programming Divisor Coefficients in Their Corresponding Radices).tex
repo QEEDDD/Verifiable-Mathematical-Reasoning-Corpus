@@ -1,0 +1,398 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+
+\title{Quantitative Word Occurrence in Lambert Constants\\\large Programming Divisor Coefficients in Their Corresponding Radices}
+\begin{document}
+\maketitle
+\begin{abstract}
+For each integer $b\ge2$, let $L_b=\sum_{m\ge1}(b^m-1)^{-1}$. We prove that every fixed finite word over $\{0,\ldots,b-1\}$ occurs at least $N\exp\{-K_{b,u}(\log N)^{1/5}\log\log N\}$ times among the first $N$ starting positions of the base-$b$ expansion of $L_b$, for all sufficiently large $N$. The proof adapts the Chinese-remainder, prime-progression, and average-tail construction used by Campbell for the binary word $11$. A single prescribed divisor value supplies the chosen radix cylinder, while exact valuations force the neighboring terms to contribute integers. We give the full general-radix tail estimate and keep a quantitative count when intersecting the prime progression with the good-tail set. At $b=2$ this yields all binary words in the Erd\H{o}s--Borwein constant. The assertion concerns the family $L_b$ in matching bases; it does not concern the fixed number $L_2$ in every base, and it establishes neither normality nor transcendence.
+\end{abstract}
+\noindent\textbf{Keywords.} Lambert series; radix expansion; divisor function; finite word; arithmetic progression; Chinese remainder theorem.
+
+\section{The statement and its precise scope}
+For a positive integer $n$, write $d(n)$ for its number of positive divisors. Absolute convergence and rearrangement of nonnegative terms give
+\begin{equation}\label{eq:Lambert}
+ L_b:=\sum_{m=1}^{\infty}\frac1{b^m-1}
+ =\sum_{m=1}^{\infty}\sum_{j=1}^{\infty}b^{-mj}
+ =\sum_{n=1}^{\infty}d(n)b^{-n},\qquad b\in\Z,\ b\ge2.
+\end{equation}
+The number $L_2$ is the Erd\H{o}s--Borwein constant. Erd\H{o}s proved irrationality for each such $L_b$ \cite{Erdos}; the negative-integer-base issue is treated by Vandehey \cite{Vandehey}. Here only positive integer bases occur.
+
+Let $\epsilon_1\epsilon_2\cdots$ be the digits after the radix point in the greedy base-$b$ expansion of $L_b$. A finite word $u=u_1\cdots u_h$ has length $h\ge1$, digits $0\le u_i<b$, and value
+\[
+ w(u)=\sum_{i=1}^h u_i b^{h-i},\qquad0\le w(u)<b^h.
+\]
+Define its occurrence count by starting positions:
+\[
+ C_{b,u}(N)=\#\{1\le n\le N:(\epsilon_n,\ldots,\epsilon_{n+h-1})=u\}.
+\]
+The last digit of a counted word may occur after position $N$; replacing this convention by words wholly within the first $N$ digits changes the count by at most $h-1$.
+
+\begin{theorem}[Source T42]\label{thm:main}
+For every fixed integer $b\ge2$ and every fixed finite base-$b$ word $u$, there exist constants $K_{b,u}>0$ and $N_0(b,u)$ such that
+\begin{equation}\label{eq:main}
+ C_{b,u}(N)\ge N\exp\!\left\{-K_{b,u}(\log N)^{1/5}\log\log N\right\}
+ \qquad(N\ge N_0(b,u)).
+\end{equation}
+In particular, every finite base-$b$ word occurs infinitely often in the base-$b$ expansion of $L_b$.
+\end{theorem}
+
+Campbell \cite{Campbell} proves the infinitely many occurrences of $11$ in the binary expansion of $L_2$, answering Crandall's earlier question \cite{Crandall}. Campbell's concluding question asks about all binary words. The present proof retains his overall arithmetic architecture and replaces the anchor divisor value $6$ by a value depending on the word and the base. The logarithmic exponent $1/5$ reflects the parameters used here; no optimality is claimed.
+
+The internal source T41--T42 already records that an earlier internal manuscript treated qualitative all-word occurrence for $b=2$. Accordingly, this text consolidates that case with a quantitative family statement rather than counting it as a second independent resolution. A separate historical-priority claim is not part of Theorem~\ref{thm:main}.
+
+\section{Radix cylinders and a programmable anchor}
+For a real number $x$, the first $h$ greedy digits of its fractional part form the word $u$ precisely when
+\[
+ \{x\}\in I_u:=\left[\frac{w}{b^h},\frac{w+1}{b^h}\right).
+\]
+Consequently an occurrence starting at $n$ in $L_b$ is equivalent to $\{b^{n-1}L_b\}\in I_u$. In the construction below the fractional part lies strictly between the endpoints, so terminating-expansion conventions do not affect any certified occurrence.
+
+\begin{lemma}[Anchor choice]\label{lem:anchor}
+There is an even integer $D\ge4$ satisfying
+\begin{equation}\label{eq:anchor}
+ D\equiv bw\pmod {b^{h+1}}.
+\end{equation}
+For $a=D/2-1\ge1$ and distinct primes $q,p$,
+\[
+ d(q^ap)=D,
+ \qquad
+ \left\{\frac{D}{b^{h+1}}\right\}=\frac{w}{b^h}.
+\]
+\end{lemma}
+\begin{proof}
+If $b$ is even, both $bw$ and the modulus are even, so a sufficiently large representative of the residue class is even and at least four. If $b$ is odd, consecutive representatives alternate in parity; again choose a large even one. Multiplicativity gives $d(q^ap)=2(a+1)=D$. Dividing \eqref{eq:anchor} by $b^{h+1}$ gives the fractional-part identity.
+\end{proof}
+
+\begin{lemma}[Cylinder certificate]\label{lem:cylinder}
+Suppose $n\ge1$, $k>h$, and
+\[
+ d(n+h)=D,\quad b^{j+1}\mid d(n+j)\ (0\le j<k,\ j\ne h),
+ \quad \sum_{\ell\ge k}d(n+\ell)b^{-\ell}\le b^{-k/2}.
+\]
+If $k/2+1>h$, then the word $u$ occurs starting at position $n$ in $L_b$.
+\end{lemma}
+\begin{proof}
+Multiplying \eqref{eq:Lambert} by $b^{n-1}$ and separating the exceptional coefficient gives
+\begin{align*}
+ b^{n-1}L_b={}&\sum_{t<n}d(t)b^{n-1-t}
+ +\sum_{\substack{0\le j<k\\j\ne h}}\frac{d(n+j)}{b^{j+1}}
+ +\frac{D}{b^{h+1}}+R_{n,k},\\
+ R_{n,k}={}&\sum_{\ell\ge k}d(n+\ell)b^{-\ell-1}.
+\end{align*}
+The first two sums are integers. Also
+\[
+ 0<R_{n,k}\le b^{-1-k/2}<b^{-h}.
+\]
+Together with Lemma~\ref{lem:anchor}, this places the fractional part strictly between $w/b^h$ and $(w+1)/b^h$. If $w=b^h-1$, the upper bound is still strictly below one. The argument therefore also handles all-zero words and leading zeroes.
+\end{proof}
+
+\section{The prime-progression input}
+We use the following established consequence of the work of Alford, Granville and Pomerance \cite{AGP}, in the formulation used by Vandehey \cite{Vandehey} and Campbell \cite[Lemma~1]{Campbell}.
+
+\begin{theorem}[AGP progression bound]\label{thm:AGP}
+Fix $0<\delta<5/12$. There are constants $X_0(\delta)$ and $J(\delta)$ such that, for $X\ge X_0(\delta)$, there is a set $\mathcal D(X)$ of at most $J(\delta)$ integers, each greater than $\log X$, with the following property. If $1\le B\le X^\delta$, no element of $\mathcal D(X)$ divides $B$, and $\gcd(s,B)=1$, then
+\[
+ \pi(X;B,s)\ge\frac{X}{2\varphi(B)\log X}.
+\]
+\end{theorem}
+
+Only $\delta=1/4$ is needed. The exceptional set need not be explicitly determined to prove existence: sufficiently many primes remain after all possibly obstructing prime factors in our chosen interval are removed.
+
+For large $X$, define
+\begin{equation}\label{eq:parameters}
+ \Lambda=\log_b X,\qquad k=\floor{\Lambda^{1/10}},
+ \qquad L=\floor{\Lambda^2}.
+\end{equation}
+All sufficiently-large qualifications below may depend on the fixed base $b$ and word $u$. In particular we require $k>h$, $L>k$, and $L^a>h$.
+
+\begin{lemma}[Safe primes]\label{lem:safe}
+We can choose pairwise distinct primes $q_0$ and $p_{j,t}$ in $(L,2L)$, indexed by
+\[
+ 0\le j<k,\quad j\ne h,\quad1\le t\le j+1,
+\]
+such that, with
+\begin{equation}\label{eq:moduli}
+ P_j=\prod_{t=1}^{j+1}p_{j,t},\qquad
+ A=q_0^{a+1}\prod_{\substack{0\le j<k\\j\ne h}}P_j^b,
+ \qquad B=A/q_0^a,
+\end{equation}
+no member of $\mathcal D(X)$ divides $B$. Moreover,
+\begin{equation}\label{eq:Bbound}
+ \log B=O_b\bigl((\log X)^{1/5}\log\log X\bigr),
+ \qquad B\le X^{1/4}
+\end{equation}
+for sufficiently large $X$.
+\end{lemma}
+\begin{proof}
+Remove from $(L,2L)$ every prime dividing a member $\Delta\in\mathcal D(X)$ with $\Delta\le X^{1/4}$. Each such $\Delta$ has at most $(\log X)/(4\log L)$ prime factors greater than $L$. The number removed is therefore $O(\log X/\log L)$. The prime number theorem gives $\gg L/\log L$ primes in $(L,2L)$, which is more than enough for the $O(k^2)$ required choices.
+
+Since $B=q_0\prod_{j\ne h}P_j^b$,
+\[
+ \log B\le\left(1+b\sum_{j=0}^{k-1}(j+1)\right)\log(2L)
+ =O_b(k^2\log L)=o(\log X).
+\]
+This proves \eqref{eq:Bbound}. If some $\Delta\in\mathcal D(X)$ divided $B$, then $\Delta\le B\le X^{1/4}$, and every prime factor of $\Delta$ would be one of the selected primes. Such a prime was removed by definition. This contradiction proves exception avoidance.
+\end{proof}
+
+\section{Chinese remainders and exact divisor values}
+Choose the unique $r\in\{0,\ldots,A-1\}$ satisfying
+\begin{equation}\label{eq:CRT}
+ \begin{split}
+ r&\equiv q_0^a-h\pmod {q_0^{a+1}},\\
+ r&\equiv P_j^{b-1}-j\pmod {P_j^b}\qquad(0\le j<k,\ j\ne h).
+ \end{split}
+\end{equation}
+All moduli are pairwise coprime. Define
+\[
+ M=\floor{X/B}+1,\quad s=(r+h)/q_0^a,
+ \quad n_m=r+mA\quad(0\le m<M).
+\]
+
+\begin{lemma}[Primitive prime fiber]\label{lem:fiber}
+The integer $s$ satisfies $1\le s<B$ and $\gcd(s,B)=1$. At least $M/(4\log X)$ values of $m\in[0,M)$ satisfy
+\[
+ s+mB\text{ is prime},\qquad d(n_m+h)=D.
+\]
+For every $m\in[0,M)$ and every $0\le j<k$ with $j\ne h$,
+\[
+ b^{j+1}\mid d(n_m+j)
+\]
+whenever the argument $n_m+j$ is positive.
+\end{lemma}
+\begin{proof}
+The first congruence in \eqref{eq:CRT} makes $s$ integral and gives $s\equiv1\pmod {q_0}$. Since $r+h>0$, we have $s\ge1$. The inequalities $r<A$ and $q_0^a>h$ give $s<B+1$, hence $s\le B$; equality is excluded by reduction modulo $q_0$.
+
+If $p_{j,t}\mid s$, then $p_{j,t}\mid r+h$. But \eqref{eq:CRT} also gives $p_{j,t}\mid r+j$, so $p_{j,t}\mid h-j$. This is impossible because $0<|h-j|<k<L<p_{j,t}$. Thus $s$ is coprime to every prime factor of $B$.
+
+Apply Theorem~\ref{thm:AGP}. Every prime $p\le X$ congruent to $s\pmod B$ has the unique form $p=s+mB$ with $m\ge0$ and $m<X/B<M$. For large $X$, the number of such primes is at least
+\[
+ \frac{X}{2\varphi(B)\log X}\ge\frac{X}{2B\log X}
+ \ge\frac{M}{4\log X}.
+\]
+On this fiber,
+\[
+ n_m+h=q_0^a(s+mB)=q_0^ap.
+\]
+Since $p\equiv1\pmod{q_0}$, $p\ne q_0$, and Lemma~\ref{lem:anchor} gives $d(n_m+h)=D$. This also ensures $n_m\ge1$ for all these prime-fiber values, because $q_0^ap>h$.
+
+For the other indices, $n_m+j\equiv P_j^{b-1}\pmod{P_j^b}$. Hence at each of the distinct primes $p_{j,t}$ the valuation of $n_m+j$ is exactly $b-1$. Each such prime contributes the factor $b$ to the divisor count. There are $j+1$ of them, proving the stated divisibility.
+\end{proof}
+
+\section{A complete general-radix tail estimate}
+The tail is controlled on average over the full progression. It is not necessary to estimate the divisor function along primes.
+
+\begin{lemma}[Primitive progression average]\label{lem:average}
+Let $v,A,M$ be positive integers with $\gcd(v,A)=1$, and suppose $v+(M-1)A\le Y$, $Y\ge3$. Then
+\[
+ \sum_{m=0}^{M-1}d(v+mA)
+ \le2M\left(1+\tfrac12\log Y\right)+2\sqrt Y.
+\]
+If $\sqrt Y\le M\log Y$, this is at most $5M\log Y$.
+\end{lemma}
+\begin{proof}
+Pairing divisors gives $d(t)\le2\sum_{q\le\sqrt Y,\,q\mid t}1$ for $1\le t\le Y$. If $\gcd(q,A)>1$, then $q\mid v+mA$ is impossible. If $\gcd(q,A)=1$, the allowed $m$ form one residue class modulo $q$, with at most $M/q+1$ members. Therefore the sum is at most
+\[
+ 2\sum_{q\le\sqrt Y}(M/q+1)
+ \le2M(1+\tfrac12\log Y)+2\sqrt Y.
+\]
+The final assertion follows from $Y\ge3$ and the stated bound for $\sqrt Y$.
+\end{proof}
+
+\begin{lemma}[Average-tail certificate]\label{lem:tail}
+Fix $b\ge2$. Suppose $1\le k<L/2$, $A,M\ge1$, $r\ge0$, and $Y\ge3$ satisfy
+\begin{equation}\label{eq:tailhyp}
+ Y\le b^L,\qquad \sqrt Y\le M\log Y,\qquad
+ r+L-1+(M-1)A\le Y.
+\end{equation}
+Assume also that every prime $p\mid A$ exceeds $L$ and has an assigned $j_p\in\{0,\ldots,k-1\}$ such that $p\mid r+j_p$. For all sufficiently large $L$, there is a constant $c_b>0$ such that
+\[
+ \#\left\{0\le m<M:\sum_{\ell\ge k}d(r+mA+\ell)b^{-\ell}>b^{-k/2}\right\}
+ \le c_bM(\log Y)b^{-k/2}.
+\]
+\end{lemma}
+\begin{proof}
+For $k\le\ell<L$, $\gcd(r+\ell,A)=1$. Indeed, if $p$ divided both, it would divide $\ell-j_p$, whereas $0<\ell-j_p<L<p$. Lemma~\ref{lem:average} therefore gives
+\begin{align*}
+ S_1&:=\sum_{\ell=k}^{L-1}b^{-\ell}\sum_{m=0}^{M-1}d(r+mA+\ell)\\
+ &\le5M\log Y\sum_{\ell\ge k}b^{-\ell}
+ =\frac{5b}{b-1}M\log Y\,b^{-k}.
+\end{align*}
+For $\ell\ge L$, the elementary bound $d(t)\le2\sqrt t$ gives
+\[
+ S_2:=\sum_{\ell\ge L}b^{-\ell}\sum_{m=0}^{M-1}d(r+mA+\ell)
+ \le2M\sum_{\ell\ge L}b^{-\ell}\sqrt{Y+\ell}.
+\]
+Use $\sqrt{Y+\ell}\le\sqrt Y+\sqrt\ell$. Since $Y\le b^L$, the first resulting sum is at most $c_b b^{-L/2}$. For the second, write $\ell=L+t$ and use $\sqrt{L+t}\le\sqrt L+\sqrt t$ to obtain $O_b((\sqrt L+1)b^{-L})=O_b(b^{-L/2})$. Because $L/2>k$, it follows that $S_2=O_b(Mb^{-k})$. Thus
+\[
+ \sum_{m=0}^{M-1}\sum_{\ell\ge k}d(r+mA+\ell)b^{-\ell}
+ \le c_b M\log Y\,b^{-k}.
+\]
+Each bad index contributes more than $b^{-k/2}$, and division by this threshold proves the result.
+\end{proof}
+
+The proof is the corresponding-radix version of the average-tail argument in \cite{Campbell}. Every hypothesis has been retained, including the placement of the prime divisors of $A$ above $L$, which is what makes the intermediate tail shifts coprime to $A$.
+
+\section{Quantitative intersection and source T41}
+\begin{proposition}[Programming many cylinders; source T41]\label{prop:program}
+Fix $b,u,D,a$ as above. For all sufficiently large $X$, at least $M/(8\log X)$ indices $0\le m<M$ from the construction satisfy simultaneously
+\[
+ n_m\ge1,\quad d(n_m+h)=D,\quad
+ b^{j+1}\mid d(n_m+j)\ (0\le j<k,\ j\ne h),
+\]
+and
+\[
+ \sum_{\ell\ge k}d(n_m+\ell)b^{-\ell}\le b^{-k/2}.
+\]
+All their starting positions satisfy
+\begin{equation}\label{eq:position}
+ n_m\le2(2L)^a X.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Set $Y=2q_0^aX$. Since $a$ is fixed and $q_0<2L$, we have $\log Y=\log X+O_{b,u}(\log\log X)$. Thus $Y\le b^L$ eventually. Also $M\ge X/B\ge X^{3/4}$, whereas $\sqrt Y=O_{b,u}(X^{1/2}(\log X)^a)$; this verifies the second condition of \eqref{eq:tailhyp}.
+
+For the last condition, use $r<A=q_0^aB$ and $M-1=\floor{X/B}$:
+\[
+ r+L-1+(M-1)A<q_0^aB+L+q_0^aX\le2q_0^aX=Y
+\]
+for large $X$, since $B\le X^{1/4}$. Every prime divisor of $A$ exceeds $L$. Assign $j_{q_0}=h$ and $j_{p_{j,t}}=j$; the CRT congruences give the required divisibilities. Therefore Lemma~\ref{lem:tail} applies.
+
+The bad-tail count is
+\[
+ O_b\bigl(M\log Y\,b^{-k/2}\bigr)=o_{b,u}(M/\log X),
+\]
+because $k\asymp_b(\log X)^{1/10}$, so $b^{k/2}$ dominates every fixed power of $\log X$. Choose $X$ large enough to make the bad count at most $M/(8\log X)$. Lemma~\ref{lem:fiber} provides at least $M/(4\log X)$ prime-fiber indices; subtracting all bad indices leaves the claimed number. The other divisibilities hold for every member of the full progression and so survive this intersection.
+
+Finally, $n_m\le r+(M-1)A<q_0^a(B+X)\le2q_0^aX<2(2L)^aX$, proving \eqref{eq:position}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+For sufficiently large $X$, the inequalities $k>h$ and $k/2+1>h$ hold. Each position given by Proposition~\ref{prop:program} is then an occurrence by Lemma~\ref{lem:cylinder}. The positions are distinct because $A>0$.
+
+For a given sufficiently large $N$, choose the real parameter
+\[
+ X=X_N:=\frac{N}{2^{a+2}(\log_bN)^{2a}}.
+\]
+Then $X\to\infty$, $X\le N$, and $L\le(\log_bN)^2$. Equation~\eqref{eq:position} implies $n_m\le N/2<N$. Their number is at least
+\[
+ \frac{M}{8\log X}\ge\frac{X}{8B\log X}.
+\]
+Taking logarithms of this lower bound and using \eqref{eq:Bbound},
+\begin{align*}
+ \log\frac{X}{8B\log X}
+ &\ge\log N-O_{b,u}(\log\log N)
+    -O_b\bigl((\log N)^{1/5}\log\log N\bigr)\\
+ &\ge\log N-K_{b,u}(\log N)^{1/5}\log\log N
+\end{align*}
+for a suitable constant and all sufficiently large $N$. Exponentiating proves \eqref{eq:main}.
+\end{proof}
+
+\section{Examples and qualitative consequences}
+The anchor is independent of $X$ once $b$ and $u$ are fixed. Several choices are recorded below; they illustrate the programming step, not small practical thresholds for the full construction.
+
+\begin{center}
+\begin{tabular}{rrrrrr}
+\toprule
+Base $b$ & Word $u$ & Length $h$ & Value $w$ & Anchor $D$ & $a=D/2-1$\\
+\midrule
+2 & $11$ & 2 & 3 & 6 & 2\\
+2 & $00$ & 2 & 0 & 8 & 3\\
+2 & $01$ & 2 & 1 & 10 & 4\\
+3 & $12$ & 2 & 5 & 42 & 20\\
+10 & $05$ & 2 & 5 & 50 & 24\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For example, the decimal word $05$ corresponds to $w/b^h=5/100$. Choosing $D=50$ places $D/10^3$ at precisely that cylinder's left endpoint. The tail is positive and eventually less than $10^{-2}$, so the resulting fractional part lies strictly between $0.05$ and $0.06$. The number to which this example applies is $L_{10}$, not the decimal expansion of $L_2$.
+
+\begin{corollary}
+For each $b\ge2$ and each $h\ge1$, all $b^h$ words of length $h$ occur in the base-$b$ expansion of $L_b$. Its factor complexity is therefore exactly $b^h$ at length $h$, and its digit sequence is not eventually periodic.
+\end{corollary}
+\begin{proof}
+Apply Theorem~\ref{thm:main} to every word of the fixed length. The upper bound $b^h$ for complexity is tautological. An eventually periodic sequence of period $r$ has at most $r$ factors of a fixed length starting in its periodic tail, whereas each of the $b^h$ words occurs infinitely often. Choosing $h$ with $b^h>r$ is a contradiction.
+\end{proof}
+
+In particular the argument also implies irrationality, although that fact is classical. The proof did not need to assume irrationality for the cylinder step because all its certificates lie strictly inside the cylinder. The bound \eqref{eq:main} may equivalently be summarized as $C_{b,u}(N)\ge N^{1-o(1)}$, with $b,u$ fixed.
+
+\section{Limitations, provenance, and possible extensions}
+The normalization in the theorem must be preserved when comparing it to other radix results. It asserts
+\[
+ \text{for every fixed }b:\quad L_b\text{ has every finite word in base }b.
+\]
+It does not assert that $L_2$ has this property in bases $3,10$, or all bases simultaneously. Changing $b$ changes both the constant and its expansion.
+
+The lower bound also does not give a positive limiting frequency. Normality would require
+\[
+ C_{b,u}(N)/N\longrightarrow b^{-h}
+\]
+for each word of length $h$. The lower proportion furnished here is exponentially small on a logarithmic scale and tends to zero. No upper distribution estimate or asymptotic frequency is proved. Full word occurrence by itself is compatible with many different frequency behaviors.
+
+There is likewise no transcendence conclusion. Rational nonperiodicity gives irrationality, but a base expansion containing every finite word is not, by itself, a known obstruction to algebraicity. The divisor coefficients $d(n)$ in \eqref{eq:Lambert} are not digits, and the proof deliberately accounts for their carries through exact divisibility and a tail margin.
+
+The main imported arithmetic input is the AGP progression estimate. The remaining proofs are explicit: safe-prime selection, a primitive residue, exact valuations, an average divisor estimate, and the conversion from the scale parameter $X$ to every sufficiently large $N$. The construction is asymptotic and the constants depend on the prescribed word. For long words the anchor exponent $a$ may be very large; this paper does not present a practical algorithm for finding early occurrences.
+
+\begin{audit}
+This standalone manuscript develops source blocks T41 and T42 and retains the quantitative count rather than only selecting one successful index. The qualitative binary case already appears in an earlier internal manuscript, as recorded in the source audit. Campbell's published preprint supplies the existing $11$ case and the architecture of the method; CRT, exact valuations, and the AGP theorem are established ingredients. The claimed contribution is the arbitrary anchor and corresponding-radix quantitative application, subject to independent mathematical review and a separate check for earlier equivalent formulations.
+\end{audit}
+
+\begin{thebibliography}{9}
+\bibitem{AGP}
+W. R. Alford, A. Granville and C. Pomerance,
+\emph{There are infinitely many Carmichael numbers},
+Annals of Mathematics (2) \textbf{139} (1994), 703--722.
+\url{https://math.dartmouth.edu/~carlp/PDF/paper95.pdf}.
+\bibitem{Campbell}
+J. M. Campbell,
+\emph{On the binary digits of the Erd\H{o}s--Borwein constant},
+arXiv:2605.24160v1 (2026).
+\url{https://arxiv.org/abs/2605.24160}.
+\bibitem{Vandehey}
+J. Vandehey,
+\emph{On an incomplete argument of Erd\H{o}s on the irrationality of Lambert series},
+Integers \textbf{13} (2013), Paper A58.
+\url{https://arxiv.org/abs/1206.0340}.
+\bibitem{Erdos}
+P. Erd\H{o}s,
+\emph{On arithmetical properties of Lambert series},
+Journal of the Indian Mathematical Society (N.S.) \textbf{12} (1948), 63--66.
+\bibitem{Crandall}
+R. Crandall,
+\emph{The googol-th bit of the Erd\H{o}s--Borwein constant},
+Integers \textbf{12} (2012), 811--840.
+\bibitem{Audit}
+Keio, \emph{Internal research audit, source blocks T41--T42},
+unpublished working document, 27 August 2026.
+\end{thebibliography}
+\end{document}

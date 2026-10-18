@@ -1,0 +1,679 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+\title{Rational Perron Bases with Irrational Characteristic Roots\\\large Cubic chamber moments and arithmetic barriers for Catalan approximations}
+\begin{document}
+\maketitle
+\begin{abstract}
+We construct rational solutions of second-order recurrences whose cumulative denominators grow at most exponentially, although their distinct Perron ratio limits are irrational. The main construction integrates integer powers of a monic cubic between consecutive integer roots. An explicit differential certificate produces a common recurrence with coefficients in $\Q(n)$, and its limiting characteristic roots are the two critical values of the cubic. The family $t(t-1)(t-m)$, $m\ge3$, gives infinitely many counterexamples to the geometric-denominator conjecture stated by Zudilin in 2002, including the rational-function coefficient variant suggested there. A separate floor construction realizes prescribed opposite-sign Perron modes on synchronized rational grids. For the diamond $|x|+|y|\le1$, a cyclotomic norm argument gives an integer-polynomial lower bound $4^{-\deg P}$, excluding a specific sufficient condition for Catalan irrationality. Appendices distinguish exact two-parameter identities from finite computational evidence. The minimal denominators of the associated Catalan Hankel polynomials are freshly reproduced through size $20$ using an embedded exact-arithmetic program. No irrationality or transcendence conclusion for Catalan's constant is claimed.
+\end{abstract}
+\noindent\textbf{Keywords:} Perron recurrence; rational moments; geometric denominators; Catalan constant; integer Chebyshev problem; Hankel determinant.
+
+\section{The problem and the scope of the results}
+Let $\operatorname{den}(r)$ denote the positive denominator of a rational number $r$ in lowest terms, with $\operatorname{den}(0)=1$. We say that a rational sequence $(u_n)_{n\ge0}$ has the \emph{geometric denominator property} if
+\[
+ \lcm\{\operatorname{den}(u_0),\ldots,\operatorname{den}(u_n)\}\le C^{n+1}
+\]
+for some fixed $C\ge1$. A pair of sequences has the joint property if one exponential bound clears both initial segments. The joint property follows from the two individual properties, but an explicit common denominator is useful in constructions.
+
+Consider a recurrence
+\begin{equation}\label{eq:perron}
+ u_{n+1}+a_nu_n+b_nu_{n-1}=0,\qquad n\ge1,
+\end{equation}
+where $a_n,b_n\in\Q$, $b_n\ne0$, and
+\[
+ a_n\longrightarrow a_\infty\in\Q,\qquad
+ b_n\longrightarrow b_\infty\in\Q.
+\]
+Suppose the roots of $T^2+a_\infty T+b_\infty$ satisfy
+$0<|\lambda_1|<|\lambda_2|$. A \emph{rational Perron basis} means two rational-valued independent solutions with successive ratios tending to $\lambda_1$ and $\lambda_2$, respectively.
+
+The conjecture in Section 4 of Zudilin's 2002 paper \cite{Z02} asserts that a rational Perron basis satisfying the geometric denominator condition forces both characteristic roots to be rational. Its footnote proposes rational-function recurrence coefficients as an alternative hypothesis. The constructions below refute both assertions as stated. They concern the general recurrence principle, not the arithmetic nature of the particular constant that motivated it.
+
+\begin{theorem}[Main counterexample family; \sourceT{15}]\label{thm:main}
+For every integer $m\ge3$, set
+\[
+ F_m(t)=t(t-1)(t-m),\quad
+ X_n=\int_0^1F_m(t)^n\,dt,\quad
+ Y_n=\int_1^mF_m(t)^n\,dt.
+\]
+Then $X_n,Y_n\in\Q$, both sequences have a joint geometric denominator bound, and they solve a common nonsingular second-order recurrence over $\Q(n)$. They form a Perron basis with irrational characteristic roots of distinct nonzero absolute values.
+\end{theorem}
+
+The proof occupies Sections \ref{sec:cubic}--\ref{sec:family}. The construction is finite and exact: a reader can verify its defining polynomial identity without guessing a recurrence. Section \ref{sec:floor} gives a second construction with prescribed characteristic roots. Section \ref{sec:diamond} treats a different obstruction, in polynomial sup norms. Appendices \ref{sec:two} and \ref{sec:hankel} record the Catalan computations with their normalizations and finite ranges explicit.
+
+The source identifiers T10, T15, T16, T19, and T20 refer to the author's research audit. They are provenance labels rather than external theorem numbers. The main proofs are reproduced here in full. The use of creative telescoping, algebraic norms, Gram determinants, and exact interpolation is classical; no claim of a new general principle is attached to these tools. Priority for the particular constructions and applications requires a separate literature assessment.
+
+\section{Rational chamber moments and their common recurrence}\label{sec:cubic}
+Let
+\[
+ F(t)=(t-r_1)(t-r_2)(t-r_3)\in\Z[t],\qquad r_1<r_2<r_3,
+\]
+where all $r_i$ are integers. Put
+\[
+ s=\frac{r_1+r_2+r_3}{3},\qquad
+ f(x)=F(x+s)=x^3+px+q,\qquad
+ \Delta=-4p^3-27q^2>0.
+\]
+Although $s,p,q$ need not be integral, they are rational. Define the two chamber moments
+\[
+ I_n^{(1)}=\int_{r_1}^{r_2}F(t)^n\,dt,\qquad
+ I_n^{(2)}=\int_{r_2}^{r_3}F(t)^n\,dt.
+\]
+
+\begin{lemma}[A common denominator]\label{lem:lcm}
+Write $D_N=\lcm(1,2,\ldots,N)$. For $0\le k\le n$ and $j=1,2$,
+\[
+ D_{3n+1}I_k^{(j)}\in\Z.
+\]
+Consequently both moment sequences jointly have the geometric denominator property.
+\end{lemma}
+\begin{proof}
+Expanding $F(t)^k=\sum_{\ell=0}^{3k}c_{k,\ell}t^\ell$ with integral coefficients gives
+\[
+ I_k^{(j)}=\sum_{\ell=0}^{3k}
+ c_{k,\ell}\frac{r_{j+1}^{\ell+1}-r_j^{\ell+1}}{\ell+1}.
+\]
+Every denominator $\ell+1$ divides $D_{3n+1}$. Finally $\log D_N=O(N)$, the elementary Chebyshev bound. For completeness, the primes in $(N/2,N]$ divide an appropriate central binomial coefficient, whose logarithm is $O(N)$. Dyadic summation bounds $\vartheta(N)=\sum_{p\le N}\log p$ by $O(N)$. Summing $\vartheta(N^{1/k})$ over $k\ge1$ then gives $\log D_N=O(N)$. The implied constant is absolute.
+\end{proof}
+
+The recurrence is encoded in one polynomial of degree four.
+\begin{lemma}[Exact differential certificate]\label{lem:certificate}
+For $n\ge1$, let
+\[
+ R_n(x)=3(3n+2)x^4+3p(5n+4)x^2-3qx+4(n+1)p^2.
+\]
+Then
+\begin{align}\label{eq:cert}
+ (R_nf^n)'={}&\bigl(3(3n+2)(3n+4)f^2
+ -27q(n+1)(2n+1)f\notag\\
+ &\hspace{38mm}-\Delta n(n+1)\bigr)f^{n-1}.
+\end{align}
+\end{lemma}
+\begin{proof}
+It suffices to check the polynomial identity
+\[
+ R_n'f+nR_nf'
+ =3(3n+2)(3n+4)f^2-27q(n+1)(2n+1)f-\Delta n(n+1).
+\]
+Substitute $f=x^3+px+q$ and $f'=3x^2+p$. Terms of degree $6,4,3,2,1,0$ agree after collecting coefficients; the coefficient of degree $5$ vanishes on both sides. Equivalently, move the right side to the left and use $\Delta=-4p^3-27q^2$ to obtain the zero polynomial in $\Z[n,p,q,x]$. Multiplication by $f^{n-1}$ yields \eqref{eq:cert}. An executable symbolic check is included in Appendix \ref{sec:code}.
+\end{proof}
+
+\begin{proposition}[The chamber recurrence]\label{prop:recurrence}
+Each sequence $I_n=I_n^{(1)}$ and $I_n=I_n^{(2)}$ satisfies
+\begin{equation}\label{eq:cubicrec}
+ 3(3n+2)(3n+4)I_{n+1}
+ -27q(n+1)(2n+1)I_n
+ -\Delta n(n+1)I_{n-1}=0
+\end{equation}
+for all $n\ge1$. The normalized coefficients lie in $\Q(n)$, and the limiting characteristic polynomial is
+\begin{equation}\label{eq:characteristic}
+ T^2-2qT-\frac{\Delta}{27}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Translate each chamber by $t=x+s$ and integrate \eqref{eq:cert}. Both endpoints are zeros of $f$, so the boundary term $R_nf^n$ vanishes for $n\ge1$. This gives \eqref{eq:cubicrec}. Its leading coefficient is positive, while its coefficient of $I_{n-1}$ is nonzero. Dividing by the leading coefficient and taking $n\to\infty$ gives $a_\infty=-2q$ and $b_\infty=-\Delta/27$.
+\end{proof}
+
+The singular-looking restriction $n\ge1$ is essential only for the vanishing of the endpoint term. No recurrence at $n=0$ is needed: $I_0,I_1$ specify each solution, and \eqref{eq:cubicrec} evolves it uniquely. Thus no omitted initial index is being used to evade a denominator or independence condition.
+
+\section{Critical values are the Perron modes}\label{sec:critical}
+We give a direct proof of the ratio limits instead of relying on an abstract asymptotic theorem.
+
+\begin{lemma}[Ratio of continuous moments]\label{lem:ratio}
+Let $g\ge0$ be continuous on a nondegenerate compact interval and let $M=\max g>0$. Assume the set $\{g>M-\epsilon\}$ has positive length for every $\epsilon>0$. Then
+\[
+ \frac{\int g^{n+1}}{\int g^n}\longrightarrow M.
+\]
+\end{lemma}
+\begin{proof}
+The ratio is at most $M$. Fix $0<\epsilon<M/2$ and divide the interval into $A=\{g>M-\epsilon\}$ and its complement. The set $B=\{g>M-\epsilon/2\}$ has positive length, so
+\[
+ \frac{\int_{A^c}g^n}{\int g^n}
+ \le\frac{|J|(M-\epsilon)^n}{|B|(M-\epsilon/2)^n}\longrightarrow0.
+\]
+The ratio is at least $(M-\epsilon)\int_Ag^n/\int g^n$. Therefore its lower limit is at least $M-\epsilon$, and $\epsilon\downarrow0$ finishes the proof.
+\end{proof}
+
+Because $F$ is positive on $(r_1,r_2)$ and negative on $(r_2,r_3)$, each chamber has one nondegenerate extremum. Let $c_+>0$ be its positive maximum and $c_-<0$ its negative minimum. Applying Lemma \ref{lem:ratio} to $F$ and $-F$, respectively, yields
+\begin{equation}\label{eq:ratios}
+ \frac{I_{n+1}^{(1)}}{I_n^{(1)}}\longrightarrow c_+,
+ \qquad
+ \frac{I_{n+1}^{(2)}}{I_n^{(2)}}\longrightarrow c_-.
+\end{equation}
+In particular neither moment sequence has a zero term.
+
+\begin{proposition}[Critical spectrum]\label{prop:critical}
+The two critical values of $f=x^3+px+q$ are exactly the roots of \eqref{eq:characteristic}.
+\end{proposition}
+\begin{proof}
+The critical points are $x=\pm\sqrt{-p/3}$. At either point,
+\[
+ f(x)=q+\frac{2p}{3}x.
+\]
+The sum of the two values is $2q$, and their product is
+\[
+ q^2+\frac{4p^3}{27}=-\frac{\Delta}{27}.
+\]
+These are precisely the sum and product of the roots of \eqref{eq:characteristic}.
+\end{proof}
+
+\begin{corollary}[Independence]
+The two chamber sequences are linearly independent solutions over $\R$. If $q\ne0$, their ratio limits have distinct absolute values and form a Perron basis after ordering by absolute value.
+\end{corollary}
+\begin{proof}
+Proportional nonzero sequences have the same successive ratio; \eqref{eq:ratios} has limits of opposite signs. Since the product of the critical values is negative, equality of their absolute values would mean their sum is zero, hence $q=0$.
+\end{proof}
+
+This proves a structural statement stronger than an isolated computed recurrence. Rationality and denominator control come from the arithmetic endpoints, while the irrational growth modes come from interior critical points. The recurrence connects the two without requiring critical points or values to be rational.
+
+\section{An explicit infinite family}\label{sec:family}
+For $F_m=t(t-1)(t-m)$, direct expansion gives
+\begin{equation}\label{eq:params}
+ p=-\frac{m^2-m+1}{3},\qquad
+ q=-\frac{(m+1)(2m-1)(m-2)}{27},\qquad
+ \Delta=m^2(m-1)^2.
+\end{equation}
+Let $d=m^2-m+1$. Its critical values are
+\begin{equation}\label{eq:familyroots}
+ c_\pm=q\pm\frac{2d^{3/2}}{27}.
+\end{equation}
+For $m\ge3$,
+\[
+ (m-1)^2<d<m^2.
+\]
+Thus $d$ is a positive nonsquare integer, and $d^{3/2}=d\sqrt d$ is irrational. Both values in \eqref{eq:familyroots} are irrational. Also $q<0$, so $0<c_+<|c_-|$. Propositions \ref{prop:recurrence} and \ref{prop:critical}, together with Lemma \ref{lem:lcm}, now prove Theorem \ref{thm:main}.
+
+\begin{example}[The case $m=3$]
+For $F=t(t-1)(t-3)$ the recurrence becomes
+\begin{equation}\label{eq:m3}
+ 3(3n+2)(3n+4)I_{n+1}
+ +20(n+1)(2n+1)I_n
+ -36n(n+1)I_{n-1}=0.
+\end{equation}
+The initial data are
+\[
+ X_0=1,\quad X_1=\frac5{12},\qquad
+ Y_0=2,\quad Y_1=-\frac83.
+\]
+The initial determinant $X_0Y_1-X_1Y_0=-7/2$ is nonzero. The characteristic roots are
+\[
+ \frac{-20+14\sqrt7}{27},\qquad
+ \frac{-20-14\sqrt7}{27}.
+\]
+Each entry, including the common denominator $D_{3n+1}$, is directly checkable from the defining integrals.
+\end{example}
+
+\begin{corollary}[A rational approximation limit does not repair the assertion]\label{cor:apery}
+For every $m\ge3$, there are two dominant rational solutions $U_n,V_n$ of the same recurrence with joint geometric denominators such that
+\[
+ \frac{V_n}{U_n}\longrightarrow1\in\Q,
+ \qquad U_n-V_n\text{ is a recessive solution}.
+\]
+The characteristic roots remain irrational.
+\end{corollary}
+\begin{proof}
+Take $U_n=Y_n$ and $V_n=Y_n-X_n$. Since $|c_+|<|c_-|$, the moment concentration argument also gives $|X_n/Y_n|\to0$ exponentially. For example, choose $\eta>0$ with $c_++\eta<|c_-|-\eta$ and use upper and lower moment bounds around the two extrema. Then $V_n/U_n=1-X_n/Y_n\to1$ and $U_n-V_n=X_n$.
+\end{proof}
+
+The solutions $U,V$ in this corollary are not the Perron basis used to refute the conjecture: both are dominant. The actual Perron basis is $X,Y$. This distinction prevents a common logical error in arguments involving a rational limit of two solutions.
+
+\section{Synchronized grids and inverse recurrence construction}\label{sec:floor}
+The chamber construction has rational-function coefficients but does not prescribe an arbitrary quadratic characteristic polynomial. A second construction does so for opposite-sign roots.
+
+\begin{theorem}[Prescribed Perron modes; \sourceT{10}]\label{thm:floor}
+Suppose $\alpha<0<\beta$, $0<|\alpha|<\beta$, and $\alpha+\beta,\alpha\beta\in\Q$. Choose an integer $q\ge2$ with $q|\alpha|>1$. Define
+\[
+ x_n=\frac{(-1)^n\floor{(q|\alpha|)^n}}{q^n},\qquad
+ y_n=\frac{\floor{(q\beta)^n}}{q^n}\quad(n\ge0).
+\]
+These rational sequences have common cumulative denominator dividing $q^n$. They form a Perron basis of one rational-coefficient recurrence \eqref{eq:perron} with limiting characteristic roots $\alpha,\beta$.
+\end{theorem}
+\begin{proof}
+The floor errors satisfy
+\[
+ |x_n-\alpha^n|<q^{-n},\qquad |y_n-\beta^n|<q^{-n}.
+\]
+Hence $x_n/\alpha^n\to1$ and $y_n/\beta^n\to1$, proving the required ratio limits. Also $x_n$ alternates sign and never vanishes, while $y_n>0$. Set
+\[
+ \mathcal D_n=x_ny_{n-1}-y_nx_{n-1}.
+\]
+Writing $r_n=x_n/x_{n-1}<0$ and $s_n=y_n/y_{n-1}>0$ gives
+$\mathcal D_n=x_{n-1}y_{n-1}(r_n-s_n)\ne0$.
+
+Define
+\begin{align*}
+ a_n&=\frac{y_{n+1}x_{n-1}-x_{n+1}y_{n-1}}{\mathcal D_n},\\
+ b_n&=\frac{y_nx_{n+1}-x_ny_{n+1}}{\mathcal D_n}.
+\end{align*}
+Cramer's rule gives \eqref{eq:perron} for both sequences. In terms of their ratios,
+\[
+ a_n=\frac{s_ns_{n+1}-r_nr_{n+1}}{r_n-s_n},\qquad
+ b_n=\frac{r_ns_n(r_{n+1}-s_{n+1})}{r_n-s_n}.
+\]
+Taking limits gives $a_n\to-(\alpha+\beta)$ and $b_n\to\alpha\beta$. The signs also show $b_n<0$, so the recurrence is nonsingular. All values and coefficients are rational, and $q^n$ clears both initial segments.
+\end{proof}
+
+\begin{example}[The characteristic roots in the Catalan-motivated conjecture]
+Take
+\[
+ \alpha=\frac{11-5\sqrt5}{2},\qquad
+ \beta=\frac{11+5\sqrt5}{2},\qquad q=100.
+\]
+Then $\alpha\beta=-1$, $\alpha+\beta=11$, and $q|\alpha|>1$. Theorem \ref{thm:floor} gives the characteristic polynomial $T^2-11T-1$ with both basis solutions on exponential rational grids.
+\end{example}
+
+\begin{proposition}[Coefficient convergence and height]
+In Theorem \ref{thm:floor}, the coefficients satisfy
+\[
+ a_n+(\alpha+\beta),\ b_n-\alpha\beta
+ =O\bigl((q|\alpha|)^{-n}\bigr).
+\]
+Their rational heights are bounded by $C^{n+1}$ for a constant depending on $\alpha,\beta,q$.
+\end{proposition}
+\begin{proof}
+The relative errors in $x_n,y_n$ are respectively $O((q|\alpha|)^{-n})$ and $O((q\beta)^{-n})$. Substitution into the ratio formulas proves the first assertion because $r_n-s_n\to\alpha-\beta\ne0$. For heights, clear the explicit powers of $q$ in the Cramer formulas. Each resulting numerator and denominator is an integer combination of products of the floor numerators, all of which are bounded exponentially in $n$. Reducing a fraction cannot increase the maximum of the absolute numerator and denominator.
+\end{proof}
+
+In the displayed quadratic example, the error rate is $(\beta/100)^n$. Thus a further requirement of exponentially bounded rational heights for the recurrence coefficients does not restore the proposed conclusion. The stronger restriction $a_n,b_n\in\Q(n)$ is addressed by the cubic construction, not by this floor construction.
+
+\section{An integer-polynomial obstruction on the diamond}\label{sec:diamond}
+Let
+\[
+ S=\{(x,y)\in\R^2:|x|+|y|\le1\},\qquad
+ \|P\|_S=\max_{(x,y)\in S}|P(x,y)|.
+\]
+For total degree at most $n$, put
+\[
+ t_n(S)=\inf\{\|P\|_S:0\ne P\in\Z[x,y],\ \deg P\le n\}.
+\]
+Its normalized limit, or equivalently its infimum through the standard submultiplicativity argument, is the integer Chebyshev constant $t_\Z(S)$.
+
+\begin{theorem}[Joint cyclotomic norm bound; \sourceT{16}]\label{thm:diamond}
+Every nonzero $P\in\Z[x,y]$ of total degree $n$ satisfies
+\[
+ \|P\|_S\ge4^{-n}.
+\]
+Consequently $t_\Z(S)\ge1/4$.
+\end{theorem}
+\begin{proof}
+The square $[-1/2,1/2]^2$ lies in $S$. Values
+\[
+ \left(\frac{\zeta+\zeta^{-1}}4,
+       \frac{\eta+\eta^{-1}}4\right),
+\]
+with $\zeta,\eta$ roots of unity, form a dense subset of this square. Since a nonzero polynomial cannot vanish on an open real rectangle, choose one such pair where $P$ is nonzero. Let $K=\Q(\zeta,\eta)$ and put
+\[
+ B=4^nP\left(\frac{\zeta+\zeta^{-1}}4,
+             \frac{\eta+\eta^{-1}}4\right).
+\]
+A monomial $x^ay^b$ contributes an integer multiple of
+$4^{n-a-b}(\zeta+\zeta^{-1})^a(\eta+\eta^{-1})^b$. The total-degree condition gives $n-a-b\ge0$, so $B$ is a nonzero algebraic integer.
+
+Every embedding of $K$ into $\C$ sends roots of unity to roots of unity. Its two cosine coordinates remain real and in $[-1/2,1/2]$. Therefore every conjugate of $B$ has absolute value at most $4^n\|P\|_S$. Taking the field norm gives
+\[
+ 1\le|N_{K/\Q}(B)|\le(4^n\|P\|_S)^{[K:\Q]}.
+\]
+Taking the $[K:\Q]$-th root proves the inequality. For degree at most $n$ the same lower bound holds, so it also applies to $t_n(S)$.
+\end{proof}
+
+The use of total degree is important: the same power $4^n$ clears both coordinate denominators at once. Clearing each variable separately with an exponent $n$ would produce the weaker bound $16^{-n}$.
+
+\begin{corollary}[Exclusion of a specified sufficient condition]\label{cor:barrier}
+For every $\epsilon>0$, there is no sequence of nonzero integral polynomials $P_j$ with $\deg P_j\to\infty$ and
+\[
+ \bigl(2(e+\epsilon)^{3/2}\bigr)^{\deg P_j}\|P_j\|_S\longrightarrow0.
+\]
+\end{corollary}
+\begin{proof}
+The displayed quantity is at least
+$((e+\epsilon)^{3/2}/2)^{\deg P_j}$, which tends to infinity.
+\end{proof}
+
+This is the sup-norm hypothesis in Remark 8.3.4 of Eskandari--Murty--Nemoto \cite{EMN}, for their symmetrized domain. The corollary rules out that particular use of uniform denominator bounds for simple-pole forms. It does not exclude improvements obtained from actual denominator cancellations, signed integral estimates, or poles of increasing order. Algebraic-integer norm methods in the multivariate integer Chebyshev problem have an established history; see Borwein--Pritsker \cite{BP}.
+
+\appendix
+\section{Two-parameter Catalan identities and their verification}\label{sec:two}
+Write $G=\sum_{j\ge0}(-1)^j/(2j+1)^2$. The source T19 defines
+\begin{equation}\label{eq:Iab}
+ I_{a,b}=\int_0^1\!\int_0^1
+ \frac{x^{b-1/2}(1-x)^{a+1}y^a(1-y)^{b+1/2}}{(1-xy)^{a+1}}\,dx\,dy,
+ \qquad a,b\in\Z_{\ge0}.
+\end{equation}
+These integrals converge. Membership in $\Q+\Q G$ follows from the half-integral parameter case of \cite[Theorem 3]{Z02}. An explicit parameter check uses
+\[
+ (a_1,a_2,a_3)=(a+1,b+\tfrac12,a+1),\qquad
+ b_2=b_3=a+b+\tfrac52.
+\]
+The relevant five $c$-parameters are
+\[
+ (c_{00},c_{21},c_{22},c_{33},c_{31})
+ =(b+\tfrac32,b-\tfrac12,a+1,b+\tfrac12,a),
+\]
+and all ten parameters exceed $-1$, as required.
+
+Here is a constructive method for extracting coefficients. With $B$ the Euler beta integral, define
+\[
+ t_k=B(k+\tfrac12,2)B(k+1,\tfrac32),\qquad t_0=\frac89,
+ \qquad \rho(k)=\frac{t_{k+1}}{t_k}
+ =\frac{(k+1)(k+\tfrac12)}{(k+\tfrac52)^2}.
+\]
+Expanding $(1-xy)^{-a-1}$ and integrating termwise gives
+\[
+ I_{a,b}=\sum_{k\ge0}t_kR_{a,b}(k),\qquad
+ R_{a,b}(k)=
+ \frac{(a+1)(k+1)_a^2(k+\tfrac12)_b(\tfrac32)_b}
+ {(k+\tfrac52)_{a+b}^2},
+\]
+where $(z)_j=z(z+1)\cdots(z+j-1)$ and $(z)_0=1$. Monotone convergence justifies the expansion because the summands are nonnegative.
+
+Put $d=a+b$ and $Q_d(k)=(k+5/2)_d^2$. A certificate consists of $A\in\Q$ and $P\in\Q[k]$ such that
+\begin{equation}\label{eq:gosper}
+ R_{a,b}(k)=A+\rho(k)\frac{P(k+1)}{Q_d(k+1)}
+                 -\frac{P(k)}{Q_d(k)}.
+\end{equation}
+If $\deg P\le2d+1$, the terminal contribution vanishes: $t_k=O(k^{-7/2})$ and $P(k)/Q_d(k)=O(k)$. Summing the identity gives
+\begin{equation}\label{eq:certsum}
+ I_{a,b}=A I_{0,0}-\frac89\frac{P(0)}{Q_d(0)},\qquad
+ I_{0,0}=12G-10.
+\end{equation}
+The last base evaluation also follows by setting $n=1$ in the integral representation following Theorem 2 of \cite{Z02}.
+
+\begin{proposition}[Fresh exact low-index certificates]\label{prop:low}
+Equation \eqref{eq:gosper} holds for the following entries:
+\begin{align*}
+ (a,b)=(0,1):&\quad A=-\frac53,
+ &P(k)&=-\frac{(k+3)(2k+5)^2}{6};\\
+ (a,b)=(1,0):&\quad A=\frac{11}{8},
+ &P(k)&=-\frac{(2k-9)(2k+5)^2}{32};\\
+ (a,b)=(1,1):&\quad A=-\frac{115}{24},
+ &P(k)&=-\frac{(2k+7)^2}{384}
+ \bigl(184k^3+1436k^2+3442k+3225\bigr).
+\end{align*}
+Thus
+\[
+ I_{0,1}=-20G+\frac{166}{9},\quad
+ I_{1,0}=\frac{33}{2}G-\frac{59}{4},\quad
+ I_{1,1}=-\frac{115}{2}G+\frac{1897}{36}.
+\]
+\end{proposition}
+\begin{proof}
+Multiply \eqref{eq:gosper} by $Q_d(k)(k+5/2+d)^2$. Because
+\[
+ \frac{Q_d(k+1)}{Q_d(k)}
+ =\frac{(k+5/2+d)^2}{(k+5/2)^2},
+\]
+the result is a polynomial identity. Direct expansion verifies each displayed certificate. Equation \eqref{eq:certsum} then evaluates the integrals.
+\end{proof}
+
+\begin{audit}[The larger T19 computation]
+The source audit reports certificates for all $121$ pairs $0\le a,b\le10$, and rectangular and triangular determinant diagnostics. In its notation $\Theta_E=-\log(\det M_E(G))/\log D_E$, the reported rectangular values for sizes $1$ through $5$ are $0.966,0.834,0.782,0.744,0.730$; the reported triangular values for sizes $1$ through $6$ are $0.783,0.714,0.632,0.630,0.613,0.602$. Here $M_E$ is the moment matrix indexed by the stated finite set and $D_E$ its coefficient clearing denominator. Their full certificate files were not present in the material used to prepare this paper. Accordingly those larger two-parameter calculations are recorded as source-reported observations, not as independently reproduced theorems here. Proposition \ref{prop:low} is independently checked, and the diagonal calculation in the next appendix is reproduced through size $20$. The existence of a certificate of degree at most $2(a+b)+1$ for every pair is not asserted solely from a finite test.
+\end{audit}
+
+\section{Positive Hankel polynomials and exact denominator cost}\label{sec:hankel}
+We fix the normalization explicitly:
+\begin{equation}\label{eq:moment}
+ M_n=I_{n,n}=\int_0^1\!\int_0^1 z(x,y)^n w(x,y)\,dx\,dy,
+\end{equation}
+where
+\[
+ z=\frac{x(1-x)y(1-y)}{1-xy},\qquad
+ w=\frac{x^{-1/2}(1-x)(1-y)^{1/2}}{1-xy}.
+\]
+\begin{audit}[Normalization correction]
+The source T20 printed $(1-y)^{3/2}$ in the base weight, whereas the diagonal family in T19 has $(1-y)^{1/2}$. We use \eqref{eq:moment} throughout. Its exact coefficient denominators reproduce every reported T20 value, including the complete size-$20$ factorization. Thus the printed weight and the actual denominator data must not be treated as identical without this correction.
+\end{audit}
+
+Write $M_n=a_nG+b_n$ with the coefficients specified below, and define
+\[
+ H_N(X)=\det\bigl(a_{i+j}X+b_{i+j}\bigr)_{0\le i,j<N}\in\Q[X].
+\]
+For $X=G$ this is the moment Gram determinant. Push $w(x,y)\,dx\,dy$ forward by $z$ to a finite positive measure $\mu$. Its support is the full interval $[0,\varepsilon]$, where
+\[
+ \varepsilon=\frac{5\sqrt5-11}{2}.
+\]
+To verify the maximum, use $u=xy$, for which
+$(1-x)(1-y)=1-x-y+u\le(1-\sqrt u)^2$. Equality occurs when $x=y=t$, reducing the maximization to $t^2(1-t)/(1+t)$. Its unique interior maximum is at $t=(\sqrt5-1)/2$ and equals $t^5=\varepsilon$.
+
+\begin{proposition}[Positivity and an analytic upper bound]\label{prop:gram}
+For every $N\ge1$, $H_N(G)>0$, and
+\[
+ \limsup_{N\to\infty}H_N(G)^{1/N^2}\le\frac{\varepsilon}{4}.
+\]
+\end{proposition}
+\begin{proof}
+For a nonzero real polynomial $P$, the integral $\int P(t)^2\,d\mu(t)$ is strictly positive because the support contains an interval. Thus the monomials $1,t,\ldots,t^{N-1}$ have a positive definite Gram matrix.
+
+Let $p_j$ be its monic orthogonal polynomials. Triangular change of basis gives
+$H_N(G)=\prod_{j=0}^{N-1}\int p_j^2\,d\mu$. Among all monic degree-$j$ polynomials, $p_j$ minimizes the squared norm, by orthogonality. For $j\ge1$, the monic shifted Chebyshev polynomial on $[0,\varepsilon]$ has sup norm $2(\varepsilon/4)^j$. Therefore
+\[
+ H_N(G)\le\mu([0,\varepsilon])^N4^{N-1}
+                  (\varepsilon/4)^{N(N-1)}.
+\]
+Taking $N^2$-th roots proves the stated bound. This is the familiar capacity scale in determinantal irrationality methods \cite{Z17}, with an elementary proof for this interval.
+\end{proof}
+
+The coefficients can be generated without numerical integration. Let $r_n(X)=u_nX-v_n$, with $r_0(X)=1$, $r_1(X)=6X-5$, and for $n\ge1$ set
+\begin{align*}
+ P_n&=(2n)^2(2n+1)^2(20n^2-20n+3),\\
+ Q_n&=3520n^6-2672n^4+196n^2-9,\\
+ R_n&=(2n)^2(2n+1)(2n-3)(20n^2+20n+3),\\
+ P_nr_{n+1}(X)&=Q_nr_n(X)+R_nr_{n-1}(X).
+\end{align*}
+The recurrence and its integral representation in \cite[Theorem 2]{Z02} give
+\begin{equation}\label{eq:Mnrec}
+ a_nX+b_n=\frac{2(-1)^n}{n+1}r_{n+1}(X).
+\end{equation}
+For example,
+\begin{align*}
+ M_0&=12G-10,\\
+ M_1&=-\frac{115}{2}G+\frac{1897}{36},\\
+ M_2&=\frac{6573}{16}G-\frac{301031}{800}.
+\end{align*}
+These agree with the independently obtained exact-difference coefficients.
+
+For a polynomial $H_N$, define its \emph{coefficient clearing denominator}
+\[
+ D_N^{\mathrm{coef}}=\lcm\{\operatorname{den}(c):c\text{ is a coefficient of }H_N\}
+ =2^{e_N}O_N,
+\]
+where $O_N$ is odd. This is a denominator of the polynomial, not a claim about the reduced denominator of the number $H_N(G)$ under an assumed value of $G$.
+
+\begin{proposition}[Fresh finite exact certificate; \sourceT{20}]\label{prop:finite}
+For each integer $2\le N\le20$,
+\[
+ O_N^{1/N^2}>\frac{67}{10}.
+\]
+The minimal $2$-adic clearing exponent at $N=20$ is $e_{20}=1462$, and
+\begin{align*}
+ O_{20}={}&3^{120}5^{80}7^{70}11^{40}13^{40}17^{39}19^{39}
+ 23^{40}29^{40}31^{40}37^{40}\\
+ &\cdot41^{38}43^{36}47^{32}53^{26}59^{20}61^{18}67^{12}71^8 73^6.
+\end{align*}
+\end{proposition}
+\begin{proof}[Exact computational proof]
+Generate the rational coefficients in \eqref{eq:Mnrec}. For fixed $N$, evaluate the determinant at the $N+1$ integers $0,\ldots,N$ with exact rational arithmetic. Since $\deg H_N\le N$, Newton interpolation reconstructs its coefficients uniquely. Reduce every coefficient and take the least common multiple of their positive denominators. This proves minimality of the resulting clearing denominator. Factor out $2$ and verify the integer inequality
+\[
+ 10^{N^2}O_N>67^{N^2}.
+\]
+The complete program performing these operations is printed in Appendix \ref{sec:code}; it was executed afresh for all $19$ sizes. Its factorizations and clearing exponents give the asserted values, without floating-point comparisons.
+\end{proof}
+
+\begin{center}
+\begin{tabular}{rrrrrr}
+\toprule
+$N$ & $e_N$ & $O_N^{1/N^2}$ & $N$ & $e_N$ & $O_N^{1/N^2}$\\
+\midrule
+2&3&6.708204&12&494&138.305171\\
+3&17&18.436858&13&587&155.508635\\
+4&38&27.675457&14&688&165.357397\\
+5&67&43.896976&15&796&167.228936\\
+6&104&68.625946&16&914&170.037150\\
+7&148&83.072085&17&1039&175.986903\\
+8&202&91.571488&18&1171&183.827535\\
+9&263&109.438808&19&1313&198.414495\\
+10&331&119.843183&20&1462&206.103039\\
+11&409&122.654969&&&\\
+\bottomrule
+\end{tabular}
+\end{center}
+All decimals in this table are display approximations to exact integers raised to $1/N^2$. The two smallest denominator identities are
+\[
+ O_2=3^4 5^2=2025,\qquad O_3=3^8 5^6 7^4=246140015625.
+\]
+For direct comparison, the first nontrivial polynomial is
+\[
+ H_2(X)=\frac{3247}{2}X^2-\frac{576839}{225}X+\frac{3195233}{3240},
+\]
+whose least clearing denominator is $16200=2^3\cdot2025$.
+
+\subsection{What denominator inequalities would suffice}
+Suppose, for a contradiction, that $G=p/q\in\Q$. Since $\deg H_N\le N$,
+\[
+ q^N D_N^{\mathrm{coef}}H_N(G)
+\]
+is a positive integer. Thus an irrationality proof would follow if this expression tended to zero. For example, Proposition \ref{prop:gram} gives the sufficient inequality
+\[
+ \limsup_{N\to\infty}(D_N^{\mathrm{coef}})^{1/N^2}<\frac4\varepsilon.
+\]
+The known coefficient bounds behind \eqref{eq:Mnrec} give a possibly nonminimal binary clearing exponent $4N^2+O(N\log N)$. Indeed, each coefficient at index $j$ has binary denominator at most $2^{4j+O(\log(j+2))}$; in a determinant term, $\sum_i(i+\pi(i))=N(N-1)$. Consequently a sufficient condition using this binary estimate is
+\[
+ \limsup_{N\to\infty}O_N^{1/N^2}<\frac1{4\varepsilon}
+ =\frac{11+5\sqrt5}{8}=2.772542\ldots.
+\]
+The finite values above are much larger. They do not prove an asymptotic lower bound, and the last displayed inequality is a sufficient benchmark for this estimate, not a logically necessary condition for every possible proof using these moments. Sharper decay, primitive-content cancellations, or other normalizations require their own analysis.
+
+The source observes the finite pattern
+\[
+ 2N<p<4N-3\quad\Longrightarrow\quad p^{4N-p-1}\mid O_N.
+\]
+No all-$N$ proof of this pattern is included. If proved, it would give an asymptotic obstruction for the chosen polynomial normalization by summing prime valuations. A finite verification through $20$ does not justify that passage to the limit.
+
+\section{Embedded exact-arithmetic verification}\label{sec:code}
+The following Python program uses \texttt{python-flint} for exact rational linear algebra. It recreates every coefficient denominator in Proposition \ref{prop:finite}. No external data file is read. The package was available as version 0.9.0 for the present verification. The proof uses only the exact operations implemented by the code; decimal root approximations are unnecessary.
+
+\begingroup\small
+\begin{verbatim}
+from flint import fmpq, fmpq_mat, fmpq_poly, fmpz
+
+# r[n] is the pair of coefficients of X and 1.
+r = [(fmpq(0), fmpq(1)), (fmpq(6), fmpq(-5))]
+for n in range(1, 39):
+    P = (2*n)**2*(2*n+1)**2*(20*n*n-20*n+3)
+    Q = 3520*n**6-2672*n**4+196*n*n-9
+    R = (2*n)**2*(2*n+1)*(2*n-3)*(20*n*n+20*n+3)
+    r.append(tuple((Q*r[n][i]+R*r[n-1][i])/P
+                   for i in range(2)))
+m = [tuple(2*(-1)**n*c/(n+1) for c in r[n+1])
+     for n in range(39)]
+X = fmpq_poly([0, 1])
+
+for N in range(2, 21):
+    values = []
+    for t in range(N+1):
+        matrix = fmpq_mat([
+            [m[i+j][0]*t+m[i+j][1] for j in range(N)]
+            for i in range(N)])
+        values.append(matrix.det())
+
+    # Newton interpolation at 0,1,...,N.
+    H = fmpq_poly([])
+    basis = fmpq_poly([1])
+    for k in range(N+1):
+        H += values[0]*basis
+        values = [values[j+1]-values[j]
+                  for j in range(len(values)-1)]
+        basis = basis*(X-k)/(k+1)
+
+    denominator = fmpz(1)
+    for c in H:
+        denominator = denominator.lcm(c.denominator)
+    odd = int(denominator)
+    e2 = 0
+    while odd % 2 == 0:
+        odd //= 2
+        e2 += 1
+    assert odd*10**(N*N) > 67**(N*N)
+    print(N, e2, fmpz(odd).factor())
+    if N == 20:
+        expected = (3**120 * 5**80 * 7**70 * 11**40 * 13**40
+                    * 17**39 * 19**39 * 23**40 * 29**40
+                    * 31**40 * 37**40 * 41**38 * 43**36
+                    * 47**32 * 53**26 * 59**20 * 61**18
+                    * 67**12 * 71**8 * 73**6)
+        assert odd == expected and e2 == 1462
+\end{verbatim}
+\endgroup
+
+The polynomial identity in Lemma \ref{lem:certificate} can also be checked in SymPy by the following independent expansion. This finite check supplements the displayed algebraic proof and does not replace a large-$n$ inference.
+\begingroup\small
+\begin{verbatim}
+import sympy as s
+x,p,q,n = s.symbols('x p q n')
+f = x**3+p*x+q
+D = -4*p**3-27*q**2
+R = (3*(3*n+2)*x**4+3*p*(5*n+4)*x**2
+     -3*q*x+4*(n+1)*p**2)
+left = s.diff(R,x)*f+n*R*s.diff(f,x)
+right = (3*(3*n+2)*(3*n+4)*f**2
+         -27*q*(n+1)*(2*n+1)*f-D*n*(n+1))
+assert s.expand(left-right) == 0
+\end{verbatim}
+\endgroup
+
+\section{Conclusions and remaining questions}
+The cubic chamber family supplies rational Perron bases with both geometric denominators and rational-function recurrence coefficients, while preserving irrational characteristic roots. Its proof separates three exact mechanisms: arithmetic endpoints control denominators, an exact differential controls the recurrence, and critical points control asymptotic ratios. The floor construction shows independently why coefficient limits and exponential height bounds cannot force rational growth modes.
+
+The diamond estimate excludes one stated sup-norm route for simple-pole Catalan forms. The Hankel computation measures the actual coefficient-denominator cost at finite sizes, but leaves its asymptotic growth open. These are different kinds of conclusions: a counterexample to a universal recurrence assertion, an unconditional exclusion of a sufficient condition, and a finite exact computation. None determines whether $G$ is rational, irrational, algebraic irrational, or transcendental.
+
+A useful next question is whether the observed high-prime divisor pattern in $O_N$ holds for every $N$. Another is whether a different Catalan moment module gives substantially smaller primitive denominators. Such questions require additional proofs; neither follows from the counterexample construction.
+
+\begin{thebibliography}{9}
+\bibitem{Z02}
+W.~Zudilin, \emph{A few remarks on linear forms involving Catalan's constant}, Chebyshevskii Sbornik \textbf{3}, no.~2(4) (2002), 60--70; English preprint,
+\href{https://arxiv.org/abs/math/0210423}{arXiv:math/0210423}. Section~4, Theorems~2--3.
+
+\bibitem{Z17}
+W.~Zudilin, \emph{A determinantal approach to irrationality}, Constructive Approximation \textbf{45} (2017), 301--310.
+\href{https://doi.org/10.1007/s00365-016-9333-7}{doi:10.1007/s00365-016-9333-7};
+\href{https://arxiv.org/abs/1507.05697}{arXiv:1507.05697}, version~2 (2016).
+
+\bibitem{EMN}
+P.~Eskandari, K.~Murty and Y.~Nemoto,
+\emph{Mixed motives and linear forms in the Catalan constant},
+\href{https://arxiv.org/abs/2510.20648}{arXiv:2510.20648}; version~2, Theorem~8.3.1 and Remark~8.3.4.
+
+\bibitem{BP}
+P.~B.~Borwein and I.~E.~Pritsker, \emph{The multivariate integer Chebyshev problem}, Constructive Approximation \textbf{30} (2009), 299--310;
+\href{https://arxiv.org/abs/1307.5456}{arXiv:1307.5456}.
+\end{thebibliography}
+\end{document}

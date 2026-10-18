@@ -1,0 +1,477 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+\title{Composite Terms in Sparse Cubic Pisot Floors:\\Alternating Shifts, $3$-Adic Limits, and Projective Return}
+\begin{document}
+\maketitle
+\begin{abstract}
+For a cubic Pisot number $\beta$, we study the integer sequence $\lfloor\beta^{3^r}\rfloor$. We prove that this sequence has infinitely many composite terms whenever the two non-dominant conjugates are non-real. For totally real cubic Pisot numbers we obtain coefficient obstructions, finite quadratic-character cycle criteria, and projective finite-field return criteria. These imply positive lower density of composite indices for several explicit infinite families. A counterexample shows that an individual prime term need not divide any later term. We also give a family with prime first terms but an eventual fixed-divisor progression, including a completely certified three-prime prefix. The results address proper parts of Saito's Problem~1.1; the totally real case in full, and the transcendence of Mills' constant, are not proved. The general trace congruences and finite-field facts are classical; the contribution examined here is their combination for the original sparse floor sequence.
+\end{abstract}
+\tableofcontents
+
+\section{Introduction and exact scope}
+A Pisot number is a real algebraic integer $\beta>1$ all of whose other conjugates have modulus less than one. Saito asked whether every cubic Pisot number satisfies
+\begin{equation}\label{eq:problem}
+ \#\{r\ge0:\floor{\beta^{3^r}}\text{ is composite}\}=\infty.
+\end{equation}
+This is Problem~1.1 in the arXiv version of \cite{saito-intervals}. Removing or adding finitely many initial indices does not change the question. Existing results for compositions with reversible recurrence sequences do not automatically apply to the exponent $3^r$.
+
+The first main result is the following.
+\begin{theorem}[Non-real cubic case; \sourceT{45}]\label{thm:complex}
+If $\beta$ is a cubic Pisot number with non-real conjugates, then \eqref{eq:problem} holds.
+\end{theorem}
+The second group of results concerns totally real $\beta$. Write its minimal polynomial as
+\begin{equation}\label{eq:f}
+ f(X)=X^3-aX^2+bX-c\in\Z[X],
+\end{equation}
+with roots $\beta,u,v$, and put $s=1$ if $u+v>0$ and $s=0$ if $u+v<0$.
+\begin{theorem}[Coefficient obstructions; \sourceT{34,36,50}]\label{thm:intro-real}
+If $s=0$ and $c\not\equiv ab\pmod3$, then \eqref{eq:problem} holds. If $s=1$ and $6\nmid c$, the same conclusion holds. More precisely, eventual primality would force
+\[
+ L_f:=\lim_{r\to\infty}\Tr(\beta^{3^r})=s+\varepsilon\quad\text{in }\Z_3
+ \qquad(\varepsilon\in\{-1,1\}).
+\]
+For either sign $\varepsilon$,
+\[
+ L_f=\varepsilon\quad\Longleftrightarrow\quad
+ a\equiv\varepsilon\pmod3,\qquad c\equiv ab\pmod3.
+\]
+\end{theorem}
+The third group consists of criteria producing arithmetic progressions of composite indices. They use divisors of a trace term, rather than requiring that the term itself be prime. In the zero-shift case, returning the ratios of the reduced conjugates suffices; the individual conjugates need not return.
+
+All proofs below are independent of the other eight manuscripts in the proposed series. Source identifiers refer to the author's supplied research audit and are retained only to make the editorial correspondence transparent. No claim of priority over all prior literature is made. The limitations are mathematical as well as bibliographical: even the union of our real criteria is not the full set of real cubic Pisot numbers.
+
+\section{Trace identities, shifts, and congruences}
+For the three roots $\alpha_1,\alpha_2,\alpha_3$ of \eqref{eq:f}, define
+\[
+ T_r=\sum_i\alpha_i^{3^r},\qquad
+ B_r=\sum_{i<j}(\alpha_i\alpha_j)^{3^r},\qquad E_r=c^{3^r}.
+\]
+These are integers, with initial state $(T_0,B_0,E_0)=(a,b,c)$. Newton's identities give the exact polynomial map
+\begin{equation}\label{eq:Phi}
+ \Phi(T,B,E)=(T^3-3BT+3E,\ B^3-3EBT+3E^2,\ E^3).
+\end{equation}
+In particular $T_r\equiv a\pmod3$ for every $r$.
+
+\begin{lemma}[Power fields]\label{lem:power-degree}
+For every positive integer $m$, a Pisot number $\beta$ satisfies $\Q(\beta^m)=\Q(\beta)$. Consequently its powered conjugates are distinct.
+\end{lemma}
+\begin{proof}
+Every embedding of $\Q(\beta)$ over $\Q(\beta^m)$ sends $\beta$ to a conjugate whose $m$th power is $\beta^m$. Such a conjugate has modulus $\beta>1$, and hence is $\beta$ itself. Characteristic zero extensions are separable, so the relative degree is one. Distinctness follows by extending embeddings from the equal fields.
+\end{proof}
+For real cubic roots, $|u|=|v|$ would mean $u=-v$, making $\beta=a\in\Z$, contrary to degree three. Thus $u+v\ne0$, and for all sufficiently large $r$,
+\begin{equation}\label{eq:floorreal}
+ \floor{\beta^{3^r}}=T_r-s.
+\end{equation}
+Indeed, the sum of the two small odd powers has the sign of the larger small root, which is also the sign of $u+v$, and tends to zero.
+
+\begin{lemma}[Ghost congruence]\label{lem:ghost}
+For every $r\ge0$,
+\begin{equation}\label{eq:ghost}
+ T_{r+1}-T_r\in3^{r+1}\Z.
+\end{equation}
+Consequently $L_f=\lim_r T_r$ exists in $\Z_3$ and
+\begin{equation}\label{eq:backward}
+ L_f-T_k\in3^{k+1}\Z_3\qquad(k\ge0).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let $A$ be an integral companion matrix of $f$. For any integral matrix and any prime $\ell$, write its trace of the $\ell^j$th power as a sum over closed words of length $\ell^j$ in its matrix indices. Cyclic rotation groups such words into orbits of length $1,\ell,\ldots,\ell^j$. A word obtained by repeating a primitive word of length $\ell^i$ contributes an integer weight raised to $\ell^{j-i}$. Hence there are integers $w$ (the weights of primitive cyclic words) such that
+\[
+ \Tr(A^{\ell^j})=\sum_{i=0}^j\ell^i\sum_{w\in\mathcal W_i}w^{\ell^{j-i}}.
+\]
+The new terms with $i=j$ are divisible by $\ell^j$. In the difference between the expressions for $j$ and $j-1$, every older term is also divisible by $\ell^j$, since
+$w^{\ell^h}-w^{\ell^{h-1}}$ is divisible by $\ell^h$ for integral $w$. The latter follows from Fermat's congruence and induction, using the binomial theorem (including $\ell\mid w$). Set $\ell=3$ and $j=r+1$. Summing the resulting congruences proves \eqref{eq:backward} and the Cauchy assertion.
+\end{proof}
+This is a standard trace/Witt congruence, not a new ingredient by itself.
+
+\begin{lemma}[Affine finite-field return]\label{lem:return}
+Let $p\nmid3c\operatorname{disc}(f)$ be prime. Let $d\in\{1,2,3\}$ be the splitting-field degree of $f\bmod p$, and suppose
+\[
+ p\mid T_r-s,\qquad v_3(p^d-1)\le r.
+\]
+Then there is an explicitly computable $K\ge1$ such that
+\[
+ p\mid T_{r+jK}-s\qquad(j\ge0).
+\]
+If \eqref{eq:floorreal} holds eventually, all sufficiently late members of this progression are composite.
+\end{lemma}
+\begin{proof}
+Write $p^d-1=3^tM$, where $(M,3)=1$ and $t\le r$. Take $K=\ord_M(3)$, setting $K=1$ for $M=1$. Then $p^d-1$ divides $3^r(3^{jK}-1)$. Each of the three nonzero roots in $\mathbb F_{p^d}$ therefore has the same power at indices $r+jK$ and $r$. Their sums return as well. Since $\beta^{3^n}$ tends to infinity, eventually the divisible floor exceeds $p$.
+\end{proof}
+Whenever shifts have a fixed period $h$, the same proof works after replacing $K$ by $hK$. This observation will be essential in the non-real case.
+
+\section{The non-real case}
+Write the small conjugates as $\alpha=\rho e^{i\theta}$ and $\bar\alpha$, with $0<\rho<1$. By Lemma~\ref{lem:power-degree}, $\alpha/\bar\alpha$ is not a root of unity. In particular $\cos(3^r\theta)$ never vanishes. For large $r$ define
+\[
+ s_r=\mathbf1_{\{\cos(3^r\theta)>0\}},\qquad
+ q_r=\floor{\beta^{3^r}}=T_r-s_r.
+\]
+\begin{lemma}\label{lem:both-signs}
+Both values $s_r=0$ and $s_r=1$ occur infinitely often.
+\end{lemma}
+\begin{proof}
+If the cosine and its next triple-angle cosine are both positive, the formula
+$\cos3x=\cos x(4\cos^2x-3)$ forces $\cos x>\sqrt3/2$; if both are negative it forces $\cos x<-\sqrt3/2$. Thus an eventually constant sign would put every sufficiently late angle within $\pi/6$ of $0$ or, respectively, $\pi$ modulo $2\pi$. Write these angles as a fixed centre plus $\delta_r$, where $|\delta_r|<\pi/6$. Tripling admits no branch change inside these intervals, so $\delta_{r+1}=3\delta_r$. Boundedness for all future $r$ implies $\delta_r=0$. This would make $(\alpha/\bar\alpha)^{3^r}=1$, a contradiction.
+\end{proof}
+Suppose, seeking a contradiction, that all sufficiently late $q_r$ are prime. They are then distinct, odd, and different from $3$. If $a\equiv0\pmod3$, the infinitely many indices with $s_r=0$ give multiples of $3$; if $a\equiv1\pmod3$, use $s_r=1$. Hence
+\begin{equation}\label{eq:a2}
+ a\equiv2\pmod3.
+\end{equation}
+Modulo $2$, the map \eqref{eq:Phi} becomes
+\[
+ (T,B,E)\longmapsto(T+BT+E,\ B+EBT+E,\ E).
+\]
+Its complete state graph is the following eight-state list:
+\[
+\begin{gathered}
+000\mapsto000,\quad001\mapsto111,\quad010\mapsto010,\quad
+011\leftrightarrow101,\\
+100\mapsto100,\quad110\mapsto010,\quad111\mapsto111.
+\end{gathered}
+\]
+In every cycle except $011\leftrightarrow101$, trace parity is constant. Oddness of $q_r$ would then force $s_r$ to be constant, contrary to Lemma~\ref{lem:both-signs}. Thus
+\begin{equation}\label{eq:alternating}
+ s_{r+1}=1-s_r
+\end{equation}
+for every sufficiently large $r$.
+
+Fix a large prime $q_r\nmid3c\operatorname{disc}(f)$. If $v_3(q_r^d-1)\le r$, the return proof with an even period gives $q_r\mid T_{r+2jK}-s_r=q_{r+2jK}$, a contradiction to eventual primality. Therefore
+\[
+ v_3(q_r^d-1)\ge r+1.
+\]
+For $d=1$ this forces $q_r\equiv1\pmod{3^{r+1}}$. For $d=2$ it forces $q_r\equiv\pm1\pmod{3^{r+1}}$. For $d=3$, it first forces $q_r\equiv1\pmod3$, and the lifting-the-exponent identity gives
+$v_3(q_r^3-1)=v_3(q_r-1)+1$, so $q_r\equiv1\pmod{3^r}$. Uniformly,
+\[
+ q_r\equiv\varepsilon_r\pmod{3^r},\qquad \varepsilon_r\in\{-1,1\}.
+\]
+By \eqref{eq:a2}, the sign is uniquely $\varepsilon_r=2s_r-1$. Hence
+\[
+ T_r\equiv3s_r-1\pmod{3^r}.
+\]
+The representatives on the right alternate between $-1$ and $2$. Their difference is $\pm3$, whereas \eqref{eq:ghost} requires $T_{r+1}-T_r\equiv0\pmod{3^r}$. For $r\ge2$ this is impossible. Theorem~\ref{thm:complex} follows.
+
+\section{Real shifts and a backward \texorpdfstring{$3$}{3}-adic obstruction}
+\begin{proposition}[Prime-tail rigidity; \sourceT{34,36}]\label{prop:prime-tail}
+For a totally real cubic Pisot number with shift $s$, if $T_r-s$ is eventually prime, there exists a fixed $\varepsilon\in\{-1,1\}$ such that
+\[
+ T_r-s\equiv\varepsilon\pmod{3^{r+1}}
+\]
+for every sufficiently large $r$. Consequently $L_f=s+\varepsilon$, and
+\[
+ T_k\equiv s+\varepsilon\pmod{3^{k+1}}\quad\text{for every }k\ge0.
+\]
+When $s=0$, also $3^{r+2}\mid T_{r+1}-T_r^3$ for large $r$.
+\end{proposition}
+\begin{proof}
+The affine-return contradiction used above first gives $T_r-s\equiv\pm1\pmod{3^r}$. The residue modulo $3$ fixes the sign independently of $r$. Apply this at index $r+1$ and bring the congruence back using \eqref{eq:ghost}; this raises the modulus for index $r$ to $3^{r+1}$. Letting $r$ tend to infinity gives $L_f=s+\varepsilon$, and \eqref{eq:backward} gives every earlier congruence. For $s=0$, cubing $T_r\equiv\varepsilon\pmod{3^{r+1}}$ gives $T_r^3\equiv\varepsilon\pmod{3^{r+2}}$, also satisfied by $T_{r+1}$.
+\end{proof}
+
+We make the coefficient consequences entirely explicit.
+\begin{lemma}[Residue dependence]\label{lem:teich}
+The limit $L_f$ depends only on $(a,b,c)\bmod3$. It is the sum, with multiplicities, of the Teichm\"uller representatives of the nonzero roots of $f\bmod3$ in an algebraic closure of $\mathbb F_3$.
+\end{lemma}
+\begin{proof}
+Work in a finite extension of $\Q_3$ containing all roots. A root of positive valuation has $3^r$th power tending to zero. For a unit root $x$, write $x=\omega(x)u$, where $\omega(x)$ is its prime-to-$3$ root-of-unity representative and $u$ is a principal unit. Then $u^{3^r}\to1$. Frobenius permutes the residual roots with their multiplicities, so $\sum\omega(x)^{3^r}=\sum\omega(x)$ for every $r$. Passing to the limit proves the assertion. This also covers repeated residual roots and ramified splitting fields.
+\end{proof}
+
+\begin{proposition}[Exact small-limit classification; \sourceT{36,50}]\label{prop:classify}
+For $\varepsilon=\pm1$,
+\[
+ L_f=\varepsilon\iff a\equiv\varepsilon\pmod3\text{ and }c\equiv ab\pmod3.
+\]
+Moreover,
+\[
+ L_f=0\iff a\equiv c\equiv0\pmod3,
+\quad
+ L_f=2\iff(a,b,c)\equiv(2,1,0)\pmod3.
+\]
+\end{proposition}
+\begin{proof}
+If $L_f=\varepsilon$, the congruences at $k=0,1$ give $a\equiv\varepsilon\pmod3$ and
+$a^3-3ab+3c\equiv\varepsilon\pmod9$. Since $a^3\equiv\varepsilon\pmod9$, necessarily $c\equiv ab\pmod3$. Conversely this factorizes the residual polynomial as $(X-\varepsilon)(X^2+b)$. The two roots of the quadratic are either zero or an opposite pair; their Teichm\"uller representatives sum to zero. Lemma~\ref{lem:teich} gives $L_f=\varepsilon$.
+
+For the two remaining assertions, the following complete residue computation supplies necessary conditions. Each entry is $L_f\bmod81$; rows are $b=0,1,2$ and columns are $c=0,1,2$:
+\[
+\begin{array}{c|ccc@{\qquad}c|ccc@{\qquad}c|ccc}
+ a=0&0&1&2&a=1&0&1&2&a=2&0&1&2\\\hline
+ b=0&0&3&78&b=0&1&58&7&b=0&80&74&23\\
+ b=1&0&21&60&b=1&79&1&4&b=1&2&77&80\\
+ b=2&0&39&42&b=2&22&52&1&b=2&59&80&29
+\end{array}
+\]
+These 27 entries are obtained by applying \eqref{eq:Phi} three times modulo $81$ to each representative $(a,b,c)\in\{0,1,2\}^3$: \eqref{eq:backward} fixes $T_3\bmod81$. Lemma~\ref{lem:teich} justifies using these representatives for arbitrary integral lifts. For sufficiency, the first surviving polynomial is $X(X^2+b)$, whose lifted root sum is zero. The second is $X(X-1)^2\bmod3$, whose lifted root sum is two.
+\end{proof}
+If $s=0$ and $c\not\equiv ab\pmod3$, Proposition~\ref{prop:classify} contradicts Proposition~\ref{prop:prime-tail}. If $s=1$, a prime tail forces $L_f\in\{0,2\}$, hence $3\mid c$. Oddness of $T_r-1$ requires $T_r\equiv0\pmod2$ eventually. The state graph in the preceding section shows that no cycle with $E\equiv1\pmod2$ has trace permanently zero. Thus $2\mid c$ also. This proves Theorem~\ref{thm:intro-real}.
+
+\begin{example}[A full infinite family]
+For every integer $A\ge4$, let $\beta_A$ be the large root of $X^3-AX^2+2$. The values at $-1,0,1,A-1,A$ locate the three roots in $(-1,0)$, $(0,1)$, and $(A-1,A)$. None of the possible rational roots $\pm1,\pm2$ occurs. Thus $\beta_A$ is cubic Pisot and the small-root sum $A-\beta_A$ is positive. Here $c=-2$, so infinitely many $\floor{\beta_A^{3^r}}$ are composite. This argument covers the entire indicated family, not merely sampled values of $A$.
+\end{example}
+
+\section{Positive-density obstructions and an anti-cascade}
+For a set $S\subseteq\Z_{\ge0}$, write
+$\underline d(S)=\liminf_{R\to\infty}|S\cap[0,R)|/R$.
+\begin{proposition}[Order-budget criterion; \sourceT{46}]\label{prop:density}
+For totally real cubic Pisot $\beta$, put $z=L_f-s$. If $z\notin\{-1,1\}$, the composite indices have positive lower density. The same holds when $z=-1$ and $\operatorname{disc}(f)$ is a square in $\Z$.
+\end{proposition}
+\begin{proof}
+If $z\ne\pm1$, both $v_3((T_r-s)-1)$ and $v_3((T_r-s)+1)$ are bounded for large $r$. At any sufficiently late prime term $q=T_r-s$, the quantity $v_3(q^d-1)$ is bounded uniformly for $d=1,2,3$ by the lifting-the-exponent formulas. Choosing $r$ beyond this bound gives an arithmetic progression of composite terms by Lemma~\ref{lem:return}. If no such late prime term exists, the whole tail is composite.
+
+If $z=-1$, then \eqref{eq:backward} implies $q\equiv-1\pmod3$ for large $r$. For unramified primes, square discriminant excludes a transposition of roots, so only splitting degrees $d=1$ and $d=3$ occur. In either case $3\nmid q^d-1$, and the same return argument works. The finitely many ramified primes cannot equal an unbounded late prime term.
+\end{proof}
+
+\begin{example}[A prime seed that never returns; \sourceT{46}]\label{ex:379}
+Let $f=X^3-7X^2-2X+2$. Its roots lie in $(-1,0)$, $(0,1)$, and $(7,8)$, and the rational-root test gives irreducibility. Its small-root sum is negative, so all odd powers have floor equal to trace. The first two states are
+\[
+ (T_0,B_0,E_0)=(7,-2,-2),\qquad (T_1,B_1,E_1)=(379,-80,-8).
+\]
+The number $379$ is prime by division by primes at most $19$. Modulo $379$, the state after index one passes through
+\[
+\begin{array}{c|rrr}
+ r&T_r&B_r&E_r\\\hline
+2&355&221&246\\3&173&367&195\\4&189&307&119\\
+5&12&136&125\\6&239&376&138\\7&251&336&86\\8&277&370&94\\9&173&367&195
+\end{array}
+\]
+Each row follows by direct substitution into \eqref{eq:Phi}; row nine repeats row three. No subsequent trace coordinate is zero. Thus $379$ divides none of the later floors. This disproves a general seed-propagation principle, but not Saito's problem: the next floor is
+$54\,530\,875=5^3\cdot7^2\cdot29\cdot307$.
+\end{example}
+
+\section{A quadratic-character cycle sieve}
+Assume $s=0$ and $L_f=-1$. If the discriminant is not a rational square, let $D$ be the fundamental discriminant of $\Q(\sqrt{\operatorname{disc}(f)})$, and let $\chi_D$ denote its quadratic character.
+\begin{theorem}[Resolvent cycle; \sourceT{50}]\label{thm:resolvent}
+Iterate \eqref{eq:Phi} modulo $|D|$. If its eventual cycle contains a state with $\chi_D(T)\ne-1$, the composite indices have positive lower density.
+\end{theorem}
+\begin{proof}
+Every cycle position corresponds to an infinite arithmetic progression of indices. If $\chi_D(T)=0$, fix a prime divisor of $\gcd(T,D)$ at that position; it divides every later trace at that position, proving the assertion.
+
+If $\chi_D(T)=1$, either all sufficiently late terms on that progression are composite, or it contains an arbitrarily late prime seed $q=T_r$ not dividing $3c\operatorname{disc}(f)$. The Frobenius permutation at $q$ is even: its sign is the quadratic character of the discriminant. Thus the factorization type is $1+1+1$ or $3$, with splitting degree one or three. As $L_f=-1$, one has $q\equiv-1\pmod3$, so $3\nmid q^d-1$. Lemma~\ref{lem:return} gives a composite progression. Both alternatives have positive lower density.
+\end{proof}
+\begin{example}
+For $f=X^3-8X^2-2X+1$, the sign tests as above give $s=0$. The discriminant is $2597=7^2\cdot53$ and $c-ab=15$, so $L_f=-1$ and $D=53$. The complete modulo-$53$ state cycle is
+\[
+ (8,51,52),(27,0,52),(17,3,52),(40,24,52),(8,12,52),(9,5,52).
+\]
+The characters of the trace coordinates are respectively $-1,-1,1,1,-1,1$. Theorem~\ref{thm:resolvent} therefore applies. This example is outside both the coefficient obstruction $c\not\equiv ab\pmod3$ and the square-discriminant criterion.
+\end{example}
+
+\section{Projective return and Frobenius restrictions}
+\begin{theorem}[Projective trace-zero return; \sourceT{51}]\label{thm:projective}
+Let $p\nmid3c\operatorname{disc}(f)$ divide $T_r$. In a splitting field modulo $p$, put $Y_i=\alpha_i^{3^r}$. Let $m$ be the exponent of the subgroup generated by all $Y_i/Y_j$. If $(m,3)=1$, there exists $K\ge1$ such that
+\[
+ p\mid T_{r+jK}\qquad(j\ge0).
+\]
+For a real Pisot number with zero shift this produces a composite progression. The condition on $m$ holds automatically in either case:
+\begin{enumerate}[label=(\roman*)]
+\item $r\ge1$ and $f\bmod p$ is irreducible;
+\item $f\bmod p$ has factorization type $1+2$, $v_3(p-1)=r+1$, and $c$ is a cube modulo $p$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Take $K=\ord_m(3)$, with the usual convention for $m=1$. Then
+$(Y_i/Y_1)^{3^{jK}}=Y_i/Y_1$ for every $i,j$. Thus a common nonzero scalar $\lambda_j$ satisfies $Y_i^{3^{jK}}=\lambda_jY_i$ for all $i$. Their sum remains zero.
+
+In the irreducible case the roots have the form $x,x^p,x^{p^2}$ in $\mathbb F_{p^3}$. Each ratio has norm one down to $\mathbb F_p$, so its order divides $p^2+p+1$. For $p\ne3$ this integer has $3$-adic valuation at most one. Raising all roots to $3^r$ with $r\ge1$ removes that part.
+
+For type $1+2$, write the roots as $x,y,y^p$, with $x\in\mathbb F_p$ and $y\in\mathbb F_{p^2}$. The hypothesis $v_3(p-1)=r+1$ implies $p\equiv1\pmod3$ and $3\nmid p+1$. Hence, after powering by $3^r$, the $3$-primary components of the roots are $\eta_1,\eta_2,\eta_2\in\mu_3$. The product is $c^{3^r}$. Since $c$ is a cube in $\mathbb F_p$, its $3$-primary component is annihilated by $3^r$. Therefore $\eta_1\eta_2^2=1$, which in $\mu_3$ is equivalent to $\eta_1=\eta_2$. All ratios have trivial $3$-primary part.
+\end{proof}
+The last proof uses zero trace essentially. A common scalar preserves $\sum Y_i=0$; it does not in general preserve $\sum Y_i=s$ when $s\ne0$. Nor does irreducibility of the original rational polynomial imply irreducibility modulo a given trace divisor.
+
+\section{Coefficient families and explicit covering progressions}
+For $A\ge4$ set
+\begin{equation}\label{eq:families}
+ f_A^-(X)=X^3-AX^2-2X+1,\qquad
+ f_A^+(X)=X^3-AX^2-2X+2.
+\end{equation}
+Each polynomial has one root in each of $(-1,0),(0,1),(A,A+1)$, by evaluating at the endpoints. The rational-root test excludes $\pm1$ for $f_A^-$ and $\pm1,\pm2$ for $f_A^+$. Their large roots are therefore cubic Pisot. If the small roots are $u<0<v$, their sum is $A-\beta<0$, so $|u|>v$ and
+\[
+ -1<u^N+v^N<0\qquad(N\text{ positive and odd}).
+\]
+Consequently floor and trace agree at every index considered below.
+
+\begin{theorem}[Density-one divisor families; \sourceT{52}]\label{thm:densityfamilies}
+For $f_A^-$, suppose $A$ has a prime divisor $p\equiv11$ or $14\pmod{15}$. For $f_A^+$, suppose it has an odd prime divisor $p\equiv2\pmod3$ with $\left(\frac{-19}{p}\right)=1$. In either case the corresponding composite indices have positive lower density. Each sufficient coefficient condition holds for a set of $A$ of natural density one. It also has relative density one within, respectively, $A\equiv2\pmod6$ and $A\equiv1\pmod6$.
+\end{theorem}
+\begin{proof}
+The discriminants are
+\[
+ \Delta_A^-=4A^3+4A^2+36A+5,\qquad
+ \Delta_A^+=4(2A^3+A^2+18A-19).
+\]
+For $p\mid A$, these reduce to $5$ and $-76$. In the first case the stated residue classes give $(5/p)=1$ and $p\equiv-1\pmod3$; in the second these facts follow from the hypotheses. Both discriminants are nonzero squares modulo $p$, and $p\nmid c$. Thus the splitting degree is $d=1$ or $3$, and $3\nmid p^d-1$. Since $p\mid T_0=A$, affine return applies already at index zero.
+
+The set of good primes in the first case is a union of two reduced classes modulo $15$. In the second it is a nonempty union of reduced classes modulo $57$; for example $p\equiv5\pmod{57}$ is good. Dirichlet's theorem with its standard reciprocal-prime-divergence consequence implies that each good-prime set $\mathcal P$ has $\sum_{p\in\mathcal P}1/p=\infty$. For any finite subset $F$, the integers avoiding divisibility by every $p\in F$ have density $\prod_{p\in F}(1-1/p)$. Letting $F$ increase shows upper density zero for integers with no good prime divisor. The same argument inside either progression modulo $6$ uses the Chinese remainder theorem; all good primes are coprime to $6$.
+\end{proof}
+The residue classes mentioned in the last sentence are the ones surviving the simplest parity and $3$-adic tests for these families. The density assertion refers to the coefficient parameter $A$, not to all cubic Pisot numbers and not to hypothetical Mills constants. In particular a coefficient detected through a proper divisor is composite from its first floor.
+
+\begin{theorem}[Prime-coefficient covers; \sourceT{52}]\label{thm:prime-coeff}
+If $A\equiv367\pmod{510}$, then the large root of $f_A^+$ satisfies
+\[
+ \floor{\beta^{3^r}}\text{ composite for every }r\ge1.
+\]
+There are infinitely many prime such $A$, and then $\floor\beta=A$ is prime. Separately, for a prime $A\equiv11\pmod{42}$, let $\beta$ be the large root of
+\[
+ g_A(X)=X^3-AX^2-X+5.
+\]
+Then $7\mid\floor{\beta^{3^{3+4j}}}$ for every $j\ge0$.
+\end{theorem}
+\begin{proof}
+For $f_A^+$, the initial states modulo $5$ and $17$ and their exact cycles are
+\[
+\begin{split}
+ (2,3,3)&\mapsto(4,0,2)\mapsto(0,2,3)\mapsto(4,0,2)\quad(\bmod5),\\
+ (10,15,15)&\leftrightarrow(0,3,9)\quad(\bmod17).
+\end{split}
+\]
+Thus $5\mid T_{2j}$ for $j\ge1$ and $17\mid T_{2j+1}$ for $j\ge0$. The traces exceed their displayed divisors. Since $\gcd(367,510)=1$, Dirichlet's theorem supplies infinitely many prime coefficients.
+
+For $g_A$, the prime coefficient is at least $11$. Endpoint signs put the roots in $(-1,0),(0,1),(A,A+1)$; the only possible rational roots $\pm1,\pm5$ are excluded. The negative small root dominates in modulus, giving zero shift for all odd powers. Modulo $7$ the initial state and orbit are
+\[
+ (4,6,2)\mapsto(5,0,1)\mapsto(2,3,1)\mapsto(0,5,1)
+ \mapsto(3,2,1)\mapsto(5,0,1).
+\]
+This proves the asserted progression. Again Dirichlet's theorem applies because $\gcd(11,42)=1$.
+\end{proof}
+These families also reach the small-conjugate region relevant to Saito's Mills reduction. For $f_A^+$ and $A\ge16$, write the small roots as $-\rho,\sigma$. Their defining equations give
+\[
+ A^{-1/2}<\sigma<\rho<2A^{-1/2}.
+\]
+For example, $\sigma<1/2$ follows from $f_A^+(1/2)<0$, and then $A\sigma^2=\sigma^3-2\sigma+2>1$; the bound on $\rho$ follows from $A\rho^2=2+2\rho-\rho^3<4$. It follows that
+\[
+ \rho\le\min(\sigma^{17/23},\beta^{-17/40})
+\]
+whenever $A$ is sufficiently large: it suffices that
+$A^3\ge2^{23}$ and $A^{20}\ge2^{40}(A+1)^{17}$.
+For $g_A$, similarly $\rho<\sqrt{6/A}$ and $\sigma>2/\sqrt A$; sufficient conditions are
+\[
+ A^6 2^{11}\ge3^{23},\qquad A^{20}\ge6^{20}(A+1)^{17}.
+\]
+Thus the progression arguments do not rely on large small-conjugates that are already excluded by Saito's bounds. They still remove only particular families.
+
+\section{Remaining cases and proof-status summary}
+The real prime-tail conditions reduce to $L_f-s\in\{-1,1\}$. In the zero-shift branch, the character sieve can fail when its whole cycle has value $-1$. Projective return removes irreducible cubic reduction but leaves completely split reductions with residual $3$-primary ratio orders. Type $1+2$ can also survive when the $3$-adic depth is larger than the exact one-place criterion, or when the norm has the wrong cubic residue. These are genuine gaps in coverage, not exceptional cases already proved absent.
+
+Saito's Mills reduction \cite{saito-variants} leaves a totally real cubic Pisot power with a dominant negative small conjugate and additional size bounds. The non-real theorem therefore does not by itself settle Mills' transcendence. The coefficient and projective tests provide possible exclusion certificates for real candidates; a theorem that forces such a certificate for every candidate is still missing.
+
+\begin{center}
+\begin{tabular}{p{.20\linewidth}p{.69\linewidth}}
+\toprule
+Source & Result included here\\\midrule
+T34, T36 & Prime-tail congruences, backward limit, real coefficient obstructions.\\
+T45 & All non-real cubic Pisot numbers: infinitely many composite terms.\\
+T46 & Positive-density order test and a complete counterexample to seed propagation.\\
+T50 & Exact small-limit classification and a resolvent-cycle sieve.\\
+T51 & Affine divisor return and projective trace-zero return.\\
+T52 & Density-one coefficient families, prime-coefficient covers, certified prefix below.\\\bottomrule
+\end{tabular}
+\end{center}
+
+\appendix
+\section{A reproducible three-prime prefix}
+For $A=171917$ in $g_A$, the first three traces are
+\begin{align*}
+ T_0&=171917,\\
+ T_1&=5081085138667949,\\
+ T_2&=131180540514334609193223651727726951788970456781.
+\end{align*}
+They are all prime; meanwhile $7\mid T_3$ by Theorem~\ref{thm:prime-coeff}. To make the primality claim independent of any missing computational attachment, we supply a finite recursive certificate below.
+
+The criterion used is elementary: if the complete prime factorization $N-1=\prod q^{e_q}$ is known and some integer $w$ satisfies
+\[
+ w^{N-1}\equiv1\pmod N,
+ \qquad \gcd(w^{(N-1)/q}-1,N)=1\quad\text{for every }q\mid N-1,
+\]
+then $N$ is prime. Indeed, for every prime $\ell\mid N$, the order of $w\bmod\ell$ is divisible by every $q^{e_q}$, so $N-1\mid\ell-1$ and $\ell\ge N$. The table records the full factorizations and a witness; all leaf primes below $100$ are certified by trial division. Every displayed congruence is checked by repeated squaring, so the table is a finite exact certificate rather than a probabilistic primality test.
+
+\begingroup\footnotesize
+\begin{longtable}{r p{.58\linewidth} r}
+\toprule $i$ & $q_i$ & witness $w_i$\\\midrule\endhead
+1 & $101$ & $2$\\
+2 & $109$ & $6$\\
+3 & $379$ & $2$\\
+4 & $401$ & $3$\\
+5 & $1153$ & $5$\\
+6 & $1973$ & $2$\\
+7 & $15233$ & $3$\\
+8 & $18181$ & $2$\\
+9 & $42979$ & $3$\\
+10 & $117041$ & $3$\\
+11 & $136949$ & $3$\\
+12 & $171917$ & $2$\\
+13 & $936329$ & $3$\\
+14 & $968521$ & $19$\\
+15 & $2589611$ & $2$\\
+16 & $67329887$ & $5$\\
+17 & $95295139957$ & $2$\\
+18 & $1492680710537$ & $3$\\
+19 & $1876079971369$ & $11$\\
+20 & $534986915718599$ & $7$\\
+21 & $5081085138667949$ & $2$\\
+22 & $50604217057638774841123457$ & $3$\\
+23 & $18987511617729122825335826546470860526601$ & $3$\\
+24 & $131180540514334609193223651727726951788970456781$ & $2$\\
+\bottomrule\end{longtable}
+\begin{longtable}{r p{.77\linewidth}}
+\toprule $i$ & Factorization of $q_i-1$\\\midrule\endhead
+1 & $2^{2}\cdot 5^{2}$\\
+2 & $2^{2}\cdot 3^{3}$\\
+3 & $2\cdot 3^{3}\cdot 7$\\
+4 & $2^{4}\cdot 5^{2}$\\
+5 & $2^{7}\cdot 3^{2}$\\
+6 & $2^{2}\cdot 17\cdot 29$\\
+7 & $2^{7}\cdot 7\cdot 17$\\
+8 & $2^{2}\cdot 3^{2}\cdot 5\cdot q_{1}$\\
+9 & $2\cdot 3\cdot 13\cdot 19\cdot 29$\\
+10 & $2^{4}\cdot 5\cdot 7\cdot 11\cdot 19$\\
+11 & $2^{2}\cdot 7\cdot 67\cdot 73$\\
+12 & $2^{2}\cdot q_{9}$\\
+13 & $2^{3}\cdot q_{10}$\\
+14 & $2^{3}\cdot 3\cdot 5\cdot 7\cdot q_{5}$\\
+15 & $2\cdot 5\cdot 17\cdot q_{7}$\\
+16 & $2\cdot 13\cdot q_{15}$\\
+17 & $2^{2}\cdot 3^{3}\cdot 17\cdot q_{3}\cdot q_{11}$\\
+18 & $2^{3}\cdot q_{1}\cdot q_{6}\cdot q_{13}$\\
+19 & $2^{3}\cdot 3^{4}\cdot 43\cdot q_{16}$\\
+20 & $2\cdot 7\cdot q_{4}\cdot q_{17}$\\
+21 & $2^{2}\cdot 23\cdot 37\cdot q_{18}$\\
+22 & $2^{7}\cdot 7\cdot q_{2}\cdot q_{14}\cdot q_{20}$\\
+23 & $2^{3}\cdot 5^{2}\cdot q_{19}\cdot q_{22}$\\
+24 & $2^{2}\cdot 5\cdot 19\cdot q_{8}\cdot q_{23}$\\
+\bottomrule\end{longtable}\endgroup
+
+\begin{thebibliography}{9}
+\bibitem{saito-intervals} K. Saito, \emph{Intervals without primes near an iterated linear recurrence sequence}, arXiv:2504.14968v1 (2025); International Journal of Number Theory (2026), \href{https://doi.org/10.1142/S1793042126500685}{doi:10.1142/S1793042126500685}. Problem numbering here follows \href{https://arxiv.org/abs/2504.14968}{the arXiv version}.
+\bibitem{saito-variants} K. Saito, \emph{Transcendency of variants of Mills' constant}, arXiv:2508.16068v3 (7 December 2025), especially Theorem 1.7 and Lemmas 5.7, 5.10; \url{https://arxiv.org/abs/2508.16068}.
+\bibitem{saito-irrational} K. Saito, \emph{Mills' constant is irrational}, Mathematika \textbf{71} (2025), e70027; \url{https://arxiv.org/abs/2404.19461}.
+\bibitem{dubickas} A. Dubickas, \emph{Integer parts of powers of Pisot and Salem numbers}, Archiv der Mathematik \textbf{79} (2002), 252--257. Referenced through the explicit statements and proofs in \cite{saito-variants}.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,424 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+
+\title{Composite Integer Parts of Powers of Algebraic Units\\\large Pure Cubic Fields, Salem Numbers, and a K3 Application}
+\begin{document}
+\maketitle
+\begin{abstract}
+We study algebraic units whose power sequences have composite integer parts. For every cubefree integer $m>1$, every unit $\varepsilon>1$ in $\Q(\sqrt[3]{m})$, and every $n\ge1$, we prove that $\floor{\varepsilon^{6n}}$ is congruent to $2$ or $3$ modulo $6$ and is composite. The proof uses the discriminant square class $-3$ to restrict factorization modulo $2$ and $3$. An elementary norm estimate removes all initial exceptions without invoking the least-Pisot-number theorem. We also prove that every Salem number $\tau$ has an effectively computable positive power $\alpha$ for which $\floor{\alpha^n}$ is composite for every $n\ge1$. A norm estimate confines the difference between the trace and the integer part to a finite window, and a finite set of primes covers the moving residue. An exact quartic example admits exponent $260$. Finally, Brandhorst's stable realization theorem yields projective K3 automorphisms whose dynamical degrees satisfy the same compositeness property. The K3 assertion concerns powers and is a corollary, not a classification of individual dynamical degrees.
+\end{abstract}
+\noindent\textbf{Keywords.} Pisot number; Salem number; algebraic unit; trace congruence; composite integer part; K3 surface.
+
+\section{Introduction and principal results}
+For a real number $\alpha>1$, consider the integer sequence
+\[
+ a_n(\alpha)=\floor{\alpha^n},\qquad n\ge1.
+\]
+Compositeness along this sequence can arise from an arithmetic property of a nearby integer trace. If all other conjugates are small, that trace is particularly close to $\alpha^n$. If some conjugates lie on the unit circle, the error need not converge to zero; nevertheless, a bounded error can still suffice when its possible integer values are covered by several small prime divisors.
+
+Hahn, Ismailescu, Kim and Kim \cite{HIKK} give families of algebraic integers with eventually composite power floors. Their Conjecture~1 concerns the sixth powers of fundamental units in pure cubic fields. Their final section also asks for an explicit non-Pisot example with eventually composite power floors. The two results below address these particular statements, with an all-index conclusion. Statements about their mathematical implications are separate from claims of historical priority; this manuscript makes no assertion that a literature search proves the absence of earlier equivalent results.
+
+\begin{theorem}[Pure cubic units; source T54]\label{thm:cubic}
+Let $m>1$ be a cubefree positive integer, let $K=\Q(\sqrt[3]{m})$, and let $\varepsilon\in\mathcal O_K^\times$ satisfy $\varepsilon>1$ in the real embedding. Then, for every integer $n\ge1$,
+\[
+ \floor{\varepsilon^{6n}}\equiv2\ \text{or}\ 3\pmod6.
+\]
+Every integer in this sequence is composite.
+\end{theorem}
+
+In particular, taking $\varepsilon$ to be the fundamental unit proves the statement of \cite[Conjecture~1]{HIKK}, and the conclusion holds from $n=1$. The extension from a fundamental unit to all positive units is not counted as an independent phenomenon: the positive unit group here has rank one.
+
+\begin{theorem}[Salem power cover; source T60]\label{thm:salem}
+Let $\tau$ be a Salem number of degree $d\ge4$. There is an effectively computable integer $h\ge1$ such that
+\[
+ \floor{\tau^{hn}}\text{ is composite for every }n\ge1.
+\]
+The number $\tau^h$ is itself a Salem number of degree $d$. Each displayed integer has a prime divisor at most $2d-3$.
+\end{theorem}
+
+Here a Salem number has one real conjugate greater than one, its reciprocal, and all remaining conjugates on the unit circle; degree two is excluded in our convention. Thus Theorem~\ref{thm:salem} gives a non-Pisot example in the sense of \cite[Section~7]{HIKK}. It supplies neither a rational noninteger example nor a transcendental example.
+
+The common mechanism is elementary once suitable error control is established. We first state it separately, then prove the cubic and Salem estimates. A final geometric application uses an established existence theorem and the elementary behavior of dynamical degree under iteration.
+
+\section{Trace corrections and finite prime covers}
+Let $\alpha>1$ be an algebraic integer of degree $d$, with conjugates $\alpha=\alpha_1,\ldots,\alpha_d$. Write
+\[
+ T_r=\Tr_{\Q(\alpha)/\Q}(\alpha^r)=\sum_{j=1}^d\alpha_j^r,
+ \qquad E_r=\sum_{j=2}^d\alpha_j^r.
+\]
+Then $T_r\in\Z$ and $E_r$ is real. There is an exact identity, including cases where $E_r$ happens to be an integer:
+\begin{equation}\label{eq:floor}
+ \floor{\alpha^r}=T_r-\ceil{E_r}.
+\end{equation}
+Indeed, for every integer $T$ and real $x$, $\floor{T-x}=T-\ceil{x}$.
+
+\begin{lemma}[Finite-cover criterion]\label{lem:cover}
+Let $M\ge2$, $t\in\Z$, and $Q\subset\Z$ be finite. Suppose that for every $n\ge1$ an exponent $r_n$ satisfies
+\[
+ T_{r_n}\equiv t\pmod M,\qquad \ceil{E_{r_n}}\in Q.
+\]
+Suppose that each integer $t-q$, $q\in Q$, has a prime divisor $p_q\mid M$, and that
+\[
+ \floor{\alpha^{r_n}}>\max_{q\in Q}p_q\qquad(n\ge1).
+\]
+Then every $\floor{\alpha^{r_n}}$ is composite.
+\end{lemma}
+\begin{proof}
+For the actual value $q=\ceil{E_{r_n}}$, equation~\eqref{eq:floor} gives
+$\floor{\alpha^{r_n}}\equiv t-q\pmod {p_q}$. Thus $p_q$ divides the floor. The strict size inequality makes this a proper prime divisor.
+\end{proof}
+
+The prime is allowed to depend on $n$. This distinction is essential for the Salem argument: a uniformly bounded correction does not generally identify one prime dividing all terms. No probabilistic statement about primality enters the criterion.
+
+\begin{lemma}[Residue-field power sums]\label{lem:residue}
+Let $F\in\Z[X]$ be monic of degree $d$ and let $p\nmid F(0)$. If all roots of its reduction modulo $p$, counted with multiplicity, belong to $\mathbb F_{p^e}$, then its $N$th power sum satisfies
+\[
+ s_N(F)\equiv d\pmod p\qquad\text{whenever }p^e-1\mid N.
+\]
+\end{lemma}
+\begin{proof}
+Every reduced root is nonzero and therefore has multiplicative order dividing $p^e-1$. Its $N$th power is one. Reduction of the integral power sum equals the sum of these powers with their multiplicities. Repeated roots cause no difficulty.
+\end{proof}
+
+\section{The arithmetic of pure cubic units}
+\subsection{Signature, norm, and discriminant square class}
+Set $r=\sqrt[3]{m}$. Since $m$ is cubefree and greater than one, $X^3-m$ is irreducible over $\Q$ and $K$ has signature $(1,1)$. A unit $\varepsilon>1$ cannot be rational, because the only rational algebraic-integer units are $\pm1$. Since $[K:\Q]=3$, it follows that $K=\Q(\varepsilon)$.
+
+Let $\rho,\overline\rho$ be its nonreal conjugates. Its norm is positive and is an integer unit, whence
+\begin{equation}\label{eq:norm1}
+ \Norm_{K/\Q}(\varepsilon)=\varepsilon|\rho|^2=1,
+ \qquad |\rho|=\varepsilon^{-1/2}.
+\end{equation}
+In particular, $\varepsilon$ is a cubic Pisot number. Its minimal polynomial has the form
+\begin{equation}\label{eq:poly}
+ F(X)=X^3-aX^2+bX-1,\qquad a,b\in\Z.
+\end{equation}
+
+\begin{lemma}\label{lem:disc}
+The discriminant of $F$ equals $-3q^2$ for an integer $q\ne0$.
+\end{lemma}
+\begin{proof}
+The discriminant of the basis $(1,r,r^2)$ is $-27m^2$. The basis $(1,\varepsilon,\varepsilon^2)$ is related to it by an invertible rational matrix, so its discriminant is $-27m^2u^2=-3(3mu)^2$ for some $u\in\Q^\times$. This is also the polynomial discriminant of $F$ and is an integer. Write $3mu=v/w$ in lowest terms. Integrality implies $w^2\mid3$, hence $w=1$. Thus $q=v\in\Z\setminus\{0\}$.
+\end{proof}
+
+This argument avoids a case distinction for integral bases when $m\equiv\pm1\pmod9$. It also avoids an assumption that $\Z[\varepsilon]$ is the full ring of integers. All possible basis indices are absorbed by the discriminant square class.
+
+\subsection{Local factorization at two and three}
+The polynomial discriminant in the variables of \eqref{eq:poly} is
+\begin{equation}\label{eq:discformula}
+ \operatorname{disc}(F)=a^2b^2-4b^3-4a^3-27+18ab.
+\end{equation}
+
+\begin{lemma}\label{lem:mod2}
+The reduction of $F$ modulo $2$ is either
+\[
+ (X+1)^3\qquad\text{or}\qquad (X+1)(X^2+X+1).
+\]
+Consequently $\Tr(\varepsilon^{6n})\equiv1\pmod2$ for all $n\ge1$.
+\end{lemma}
+\begin{proof}
+The two irreducible monic cubics over $\mathbb F_2$ with constant term one are $X^3+X+1$ and $X^3+X^2+1$. They correspond to $a,b$ of opposite parity. In either case, direct reduction of \eqref{eq:discformula} gives
+\[
+ \operatorname{disc}(F)\equiv1\pmod8.
+\]
+For completeness, if $a$ is even and $b$ is odd, $a^2+2ab\equiv0\pmod8$ and $-4b^3-27\equiv1\pmod8$. If $a$ is odd and $b$ is even, $b^2+2ab\equiv0\pmod8$ and $-4a^3-27\equiv1\pmod8$.
+On the other hand, $-3q^2$ modulo $8$ belongs to $\{0,4,5\}$. Irreducibility is therefore impossible. The two remaining monic cubics with constant term one are precisely the displayed polynomials. Their roots are in $\mathbb F_4^\times$, and Lemma~\ref{lem:residue} applies because $3\mid6n$.
+\end{proof}
+
+\begin{lemma}\label{lem:mod3}
+The reduction of $F$ modulo $3$ is either
+\[
+ (X-1)^3\qquad\text{or}\qquad (X+1)^2(X-1).
+\]
+Consequently $\Tr(\varepsilon^{6n})\equiv0\pmod3$ for all $n\ge1$.
+\end{lemma}
+\begin{proof}
+The discriminant vanishes modulo $3$, so $F$ has a repeated factor. If $F'=0$, then $F=X^3-1=(X-1)^3$. Otherwise a repeated irreducible factor has degree one, since twice its degree is at most three; the remaining factor also has degree one. All roots therefore lie in $\mathbb F_3^\times=\{1,-1\}$. Their product is one, so either all three are one or exactly two are minus one. Their even powers are all one, and the power sum is $3=0$ in $\mathbb F_3$.
+\end{proof}
+
+Combining the two congruences yields
+\begin{equation}\label{eq:trace6}
+ \Tr(\varepsilon^{6n})\equiv3\pmod6\qquad(n\ge1).
+\end{equation}
+The local argument uses repeated roots with multiplicity; an unramified hypothesis at $3$ would be both unnecessary and incorrect here.
+
+\section{Removing every initial exception}
+The trace congruence alone gives eventual information because the other two conjugates decay. To start at $n=1$, we need a uniform numerical inequality. A simple integer norm is sufficient.
+
+\begin{lemma}[An elementary lower bound]\label{lem:small}
+Every unit $\varepsilon>1$ generating a cubic field of signature $(1,1)$ satisfies $\varepsilon>127/100$. In particular, $\varepsilon^3>2$.
+\end{lemma}
+\begin{proof}
+By \eqref{eq:norm1},
+\[
+ 1\le |\Norm(1-\varepsilon)|
+ =(\varepsilon-1)|1-\rho|^2
+ \le(\varepsilon-1)(1+\varepsilon^{-1/2})^2.
+\]
+The norm is a nonzero integer. Suppose first that $1<\varepsilon\le5/4$. Then the last expression is strictly less than $4(\varepsilon-1)\le1$, a contradiction. If instead $5/4<\varepsilon\le127/100$, then
+\[
+ \varepsilon^{-1/2}<\frac2{\sqrt5}<\frac9{10},
+ \qquad
+ (\varepsilon-1)(1+\varepsilon^{-1/2})^2
+ <\frac{27}{100}\left(\frac{19}{10}\right)^2
+ =\frac{9747}{10000}<1.
+\]
+This is again impossible. Finally $(127/100)^3=2048383/1000000>2$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:cubic}]
+Let $U_n=\Tr(\varepsilon^{6n})$. Equation~\eqref{eq:norm1} and Lemma~\ref{lem:small} imply
+\[
+ |\rho^{6n}+\overline\rho^{\,6n}|
+ \le2\varepsilon^{-3n}<1\qquad(n\ge1).
+\]
+Thus \eqref{eq:floor} gives $\floor{\varepsilon^{6n}}\in\{U_n-1,U_n\}$. This statement remains valid if the conjugate sum vanishes. By \eqref{eq:trace6}, the possible residues are $2$ and $3$ modulo $6$. Also $\varepsilon^{6n}>4$, so the floor is at least $4$. If its residue is $2$ it has proper divisor $2$; if its residue is $3$ it has proper divisor $3$. Hence it is composite.
+\end{proof}
+
+\begin{corollary}\label{cor:cubicsparse}
+For $\varepsilon$ as in Theorem~\ref{thm:cubic} and any integer $j\ge1$, set $\beta=\varepsilon^{2j}$. Then $\floor{\beta^{3^r}}$ is composite for every $r\ge1$.
+\end{corollary}
+\begin{proof}
+The exponent equals $2j3^r=6(j3^{r-1})$, so Theorem~\ref{thm:cubic} applies without a change in the underlying integer-part operation.
+\end{proof}
+
+\begin{example}
+Let $r=\sqrt[3]{2}$ and $\varepsilon=1+r+r^2$. Since $(r-1)(1+r+r^2)=1$, this is a unit. Its minimal polynomial is $X^3-3X^2-3X-1$. The trace sequence $V_k=\Tr(\varepsilon^k)$ is specified by
+\[
+ V_0=3,\quad V_1=3,\quad V_2=15,\qquad
+ V_k=3V_{k-1}+3V_{k-2}+V_{k-3}.
+\]
+The first three sixth-power floors are $3243$, $10517258$, and $34107811455$, with residues $3,2,3$ modulo $6$. These numerical illustrations are not used to establish the theorem; its proof simultaneously treats all indices and all admissible fields.
+\end{example}
+
+\section{A norm gap for Salem traces}
+Let $\tau$ be Salem of degree $d=2s+2$, $s\ge1$. Write its conjugates as
+\[
+ \tau,\ \tau^{-1},\ \zeta_1,\ \overline\zeta_1,\ldots,
+ \zeta_s,\ \overline\zeta_s,\qquad |\zeta_j|=1.
+\]
+No $\zeta_j$ is a root of unity: otherwise the irreducible minimal polynomial of $\tau$ would divide a cyclotomic polynomial, forcing $\tau$ itself to be a root of unity.
+
+\begin{lemma}[Strict correction window]\label{lem:salemgap}
+For every $r\ge1$,
+\[
+ -(d-2)< E_r:=\tau^{-r}+\sum_{j=1}^s(\zeta_j^r+\overline\zeta_j^{\,r})<d-2.
+\]
+Consequently,
+\[
+ d-\ceil{E_r}\in\{2,3,\ldots,2d-3\}.
+\]
+\end{lemma}
+\begin{proof}
+Set $a=\tau^{-r}\in(0,1)$ and $x_j=|1-\zeta_j^r|^2>0$. The norm of the nonzero algebraic integer $\tau^r-1$ gives
+\[
+ 1\le|\Norm(\tau^r-1)|
+ =\frac{(1-a)^2}{a}\prod_{j=1}^s x_j.
+\]
+Hence $\prod_jx_j\ge a/(1-a)^2>a$. If $\sum_jx_j\le a$, the arithmetic--geometric mean inequality would give
+\[
+ \prod_jx_j\le(a/s)^s\le a,
+\]
+in contradiction to the previous bound. Thus $\sum_jx_j>a$. Since
+\[
+ E_r=a+2s-\sum_jx_j,
+\]
+we obtain $E_r<2s=d-2$. The lower bound follows directly from
+$E_r\ge a-2s>-(d-2)$. Taking ceilings gives
+$\ceil{E_r}\in\{-d+3,\ldots,d-2\}$, which is the asserted integer window.
+\end{proof}
+
+The strict upper endpoint is the role of the norm estimate. Bounding each unit-circle conjugate separately only gives $E_r\le d-2+\tau^{-r}$, which could permit a residual integer equal to one. Such a residue has no prime divisor, so the naive bound is insufficient for the next construction.
+
+\section{Effective finite-ring return and the Salem theorem}
+Let $P$ be the minimal polynomial of $\tau$ and let $C$ be its integral companion matrix. Its determinant is one because $P$ is monic reciprocal of even degree with constant term one. Therefore, for every $M\ge2$,
+\[
+ C\bmod M\in\operatorname{GL}_d(\Z/M\Z).
+\]
+This finite group contains a positive power of $C$ equal to the identity.
+
+\begin{lemma}\label{lem:matrix}
+For every $M\ge2$ there is an effectively computable $h_0\ge1$ such that
+\[
+ \Tr(\tau^{h_0n})=\operatorname{tr}(C^{h_0n})\equiv d\pmod M
+ \qquad(n\ge1).
+\]
+\end{lemma}
+\begin{proof}
+Compute successive powers of $C$ modulo $M$ until the identity is reached. Finiteness and invertibility ensure termination. Every multiple of the return exponent also gives the identity, whose trace is $d$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:salem}]
+Take the squarefree modulus
+\[
+ M_d=\prod_{p\le2d-3}p,
+\]
+where the product runs over primes. Choose $h_0$ as in Lemma~\ref{lem:matrix} and then a multiple $h$ of $h_0$ large enough that
+\begin{equation}\label{eq:size}
+ \floor{\tau^h}>2d-3.
+\end{equation}
+For $r=hn$, Lemma~\ref{lem:salemgap} and the trace return give
+\[
+ \floor{\tau^r}\equiv d-\ceil{E_r}=R_r\pmod {M_d},
+ \qquad 2\le R_r\le2d-3.
+\]
+Choose any prime divisor $p$ of $R_r$. Then $p\mid M_d$ and $p\mid\floor{\tau^r}$. Equation~\eqref{eq:size} and monotonicity give $\floor{\tau^r}>2d-3\ge p$. This proves compositeness and the prime-divisor bound.
+
+Effectivity includes the size step: isolate $\tau$ by rational intervals and choose a rational $u$ with $1<u<\tau$. Successive multiples $h$ of $h_0$ can be tested until $u^h>2d-2$. All such tests use rational or integer arithmetic.
+
+Finally $\Q(\tau^h)=\Q(\tau)$. Any embedding of $\Q(\tau)$ fixing $\tau^h$ sends $\tau$ to a conjugate whose $h$th power is $\tau^h$, hence whose modulus is $\tau$. The only conjugate with that modulus is $\tau$. Separability therefore forces the relative extension to have degree one. Its conjugates are the $h$th powers of the original conjugates, so $\tau^h$ is a Salem number of the same degree.
+\end{proof}
+
+\begin{remark}[Bounds and computation]
+The construction is effective but is not offered as an efficient exponent-minimization algorithm. Because $M_d$ is squarefree, one may work modulo its prime factors separately. For example, the integer
+\[
+ \lcm_{p\mid M_d}|\operatorname{GL}_d(\mathbb F_p)|,
+ \qquad |\operatorname{GL}_d(\mathbb F_p)|=\prod_{i=0}^{d-1}(p^d-p^i),
+\]
+is a valid universal matrix-return exponent for that degree and modulus. A much smaller trace-return exponent may suffice even when the matrix itself has not returned to the identity.
+\end{remark}
+
+\section{An exact quartic certificate}
+Consider
+\[
+ P(X)=X^4-X^3-X^2-X+1.
+\]
+Modulo $2$ it becomes $\Phi_5(X)$, which is irreducible because the order of $2$ modulo $5$ is $4$. Thus $P$ is irreducible over $\Q$. The substitution $y=X+X^{-1}$ gives
+\[
+ X^{-2}P(X)=y^2-y-3,
+ \qquad y_\pm=\frac{1\pm\sqrt{13}}2.
+\]
+Here $y_+>2$ and $-2<y_-<2$. The roots associated with $y_+$ are a positive reciprocal pair $\tau,\tau^{-1}$ with $\tau>1$, and those associated with $y_-$ are nonreal of modulus one. Therefore $\tau$ is a quartic Salem number.
+
+Take the companion convention
+\[
+ C=\begin{pmatrix}
+ 0&0&0&-1\\1&0&0&1\\0&1&0&1\\0&0&1&1
+ \end{pmatrix}.
+\]
+Repeated squaring in $\Z/30\Z$ yields
+\begin{equation}\label{eq:cert}
+ C^{260}\equiv
+ \begin{pmatrix}
+ 21&10&20&10\\20&11&20&10\\20&10&21&10\\20&10&20&11
+ \end{pmatrix}=I+N\pmod {30}.
+\end{equation}
+Direct multiplication gives $N^2\equiv0$ and $\operatorname{tr}N\equiv0\pmod{30}$. Thus
+\[
+ C^{260n}\equiv I+nN\pmod {30},\qquad
+ \Tr(\tau^{260n})\equiv4\pmod {30}
+\]
+for every $n\ge1$. Lemma~\ref{lem:salemgap} leaves only the four residual integers $2,3,4,5$, covered by the primes $2,3,5$.
+
+To verify the size condition without decimal approximations, note that $y_+>13/6=3/2+2/3$, whence $\tau>3/2$. Therefore $\tau^{260}>\tau^6>(3/2)^6=729/64>11$, so its floor is at least $11$ and exceeds every covering prime. We conclude that
+\[
+ \floor{(\tau^{260})^n}\text{ is composite for every }n\ge1.
+\]
+The exponent $260$ in this certificate is a trace-return exponent; \eqref{eq:cert} does not assert $C^{260}\equiv I\pmod {30}$.
+
+\section{A corollary for projective K3 dynamics}
+For an automorphism $F$ of a compact complex surface, write $\lambda(F)$ for its first dynamical degree. The basic iteration identity is
+\[
+ \lambda(F^r)=\lambda(F)^r\qquad(r\ge1).
+\]
+We invoke the following existing geometric theorem, without reproving its lattice-theoretic content.
+
+\begin{theorem}[Brandhorst \cite{Brandhorst}, Theorem 1.1]\label{thm:brand}
+If $\tau$ is a Salem number of degree $d$, then some positive power of $\tau$ is the dynamical degree of an automorphism of a complex projective K3 surface if and only if $d\le20$.
+\end{theorem}
+
+\begin{corollary}\label{cor:k3}
+For every Salem number $\tau$ of degree at most $20$, there are a positive integer $H$, a complex projective K3 surface $X$, and an automorphism $G$ of $X$ such that
+\[
+ \lambda(G)=\tau^H,\qquad
+ \floor{\lambda(G)^n}\text{ is composite for every }n\ge1.
+\]
+\end{corollary}
+\begin{proof}
+By Theorem~\ref{thm:brand}, choose $m\ge1$ and $F$ on a projective K3 surface with $\lambda(F)=\tau^m$. Choose $h$ from Theorem~\ref{thm:salem}, put $H=\lcm(m,h)$, and set $G=F^{H/m}$. Then $\lambda(G)=\tau^H$. Since $H$ is a multiple of $h$, every exponent $Hn$ belongs to the sequence already covered by Theorem~\ref{thm:salem}.
+\end{proof}
+
+This conclusion is a combination of two theorems through iteration. It does not decide whether $\tau$ itself is realizable, and it does not assert compositeness of numbers of fixed points or periodic points. Those geometric counts are not, in general, the floor of a power of the dynamical degree.
+
+\section{Scope, dependencies, and outstanding questions}
+The two principal arguments share the finite-cover criterion but use different sources of error control. In the cubic setting the conjugate error decays, and the discriminant fixes a short return exponent. In the Salem setting the error need not decay; an integer norm removes the dangerous endpoint, while a larger finite modulus permits several possible prime divisors.
+
+\begin{center}
+\begin{tabular}{p{0.25\textwidth}p{0.32\textwidth}p{0.32\textwidth}}
+\toprule
+Feature & Pure cubic units & Salem units\\
+\midrule
+Exponent & $6n$ for every $n\ge1$ & $hn$ for effective $h$\\
+Trace modulus & $6$ & $\prod_{p\le2d-3}p$\\
+Correction & ceiling in $\{0,1\}$ & ceiling in $\{-d+3,\ldots,d-2\}$\\
+Prime cover & $\{2,3\}$ & primes at most $2d-3$\\
+Size input & elementary integer norm & sufficiently large multiple of $h_0$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These theorems do not prove a degree-independent lower bound for Salem numbers. The exponent $h$ can grow with the degree and with the arithmetic of the minimal polynomial. Nor do they settle a prime-generating constant's transcendence, the full cubic Pisot sparse-exponent problem, or a classification of K3 dynamical degrees.
+
+The effective Salem construction raises concrete questions: how small can its prime cover be; when can a trace return be substantially shorter than a matrix return; and for which Salem numbers does one prime alone cover all floors along a power subsequence? These are distinct from asserting that the exponent can be bounded uniformly over all degrees.
+
+\begin{audit}
+This manuscript develops source blocks T54 and T60 of the internal research audit. The local and norm arguments above are supplied in full; the K3 corollary additionally uses Brandhorst's published theorem. The quartic matrix identity is a finite certificate and the displayed cubic values are illustrations. The earlier survey-style source used the least-Pisot-number theorem for the cubic size bound; Lemma~\ref{lem:small} replaces that input by an elementary proof. Historical novelty remains a separate bibliographic question and is not inferred from an unsuccessful search.
+\end{audit}
+
+\begin{thebibliography}{9}
+\bibitem{HIKK}
+S. Hahn, D. Ismailescu, G. Kim and M. Kim,
+\emph{Explicit Algebraic Numbers all whose Integer Parts of Powers are Composite},
+arXiv:2608.05309v1 (2026), especially Conjecture~1 and Section~7.
+\url{https://arxiv.org/abs/2608.05309}.
+\bibitem{Brandhorst}
+S. Brandhorst,
+\emph{On the stable dynamical spectrum of complex surfaces},
+Mathematische Annalen \textbf{377} (2020), 421--434.
+\url{https://doi.org/10.1007/s00208-020-01978-7}.
+\bibitem{Dubickas}
+A. Dubickas,
+\emph{Integer parts of powers of Pisot and Salem numbers},
+Archiv der Mathematik \textbf{79} (2002), 252--257.
+\bibitem{AlkauskasDubickas}
+G. Alkauskas and A. Dubickas,
+\emph{Prime and composite numbers as integer parts of powers},
+Acta Mathematica Hungarica \textbf{105} (2004), 249--256.
+\bibitem{Cass}
+D. Cass, \emph{Integer parts of powers of quadratic units},
+Proceedings of the American Mathematical Society \textbf{101} (1987), 610--612.
+\bibitem{Audit}
+Keio, \emph{Internal research audit, source blocks T54 and T60},
+unpublished working document, 27 August 2026.
+\end{thebibliography}
+\end{document}

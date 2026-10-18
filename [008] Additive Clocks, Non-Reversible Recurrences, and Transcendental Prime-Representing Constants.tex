@@ -1,0 +1,916 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!50!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small Keio / Research manuscript}\fancyhead[R]{\small September 2026}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{criterion}[theorem]{Criterion}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{audit}[theorem]{Proof-status note}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\N}{\mathbb N}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\Qbar}{\overline{\mathbb Q}}
+\DeclareMathOperator{\Tr}{Tr}\DeclareMathOperator{\Norm}{N}\DeclareMathOperator{\trdeg}{trdeg}\DeclareMathOperator{\ord}{ord}\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\Ein}{Ein}\DeclareMathOperator{\Ei}{Ei}\DeclareMathOperator{\Ci}{Ci}\DeclareMathOperator{\Chi}{Chi}\DeclareMathOperator{\Li}{Li}
+\newcommand{\floor}[1]{\left\lfloor #1\right\rfloor}\newcommand{\ceil}[1]{\left\lceil #1\right\rceil}
+\newcommand{\sourceT}[1]{\textup{[source T#1]}}
+\author{Keio}
+\date{5 September 2026\\\small Standalone research draft; source audit identifiers retained}
+\title{Additive Clocks, Non-Reversible Recurrences,\\ and Transcendental Prime-Representing Constants}
+\newcommand{\PP}{\mathcal P}
+\newcommand{\WW}{\mathcal W}
+\newcommand{\dens}{\mathrm d}
+\begin{document}
+\maketitle
+\begin{abstract}
+For integers $a\ge2$, $b\ge1$ and $\varepsilon\in\{-1,1\}$, the
+sequence $ba^n+\varepsilon n$ visits every residue class modulo every
+positive integer with positive natural density. We prove this by
+induction on the modulus, lowering an eventual period to its greatest
+common divisor with the modulus. The sequences admit an inhomogeneous
+recurrence of order two but no reversible integer recurrence, even
+after changing the order. Pulling back a theorem of Dubickas gives
+positive lower density of simultaneous composite values in each fixed
+integer window about $\lfloor\alpha^{ba^n+\varepsilon n}\rfloor$ for
+every Pisot or Salem number $\alpha$. This supplies sequences requested
+in Saito's Problem~1.7. A separate application of Saito's Type-B
+criterion proves transcendence of the least prime-representing
+constants for $ba^k\pm k$ when $a\ge3$, and for two carefully indexed
+alternating-sign sequences. For the negative-sign family, we also
+prove an exponentially sharp asymptotic about the algebraic anchor
+$2^{1/(a-1)}$. The anchor itself fails infinitely many prime conditions.
+The manuscript distinguishes proved applications from the external
+transcendence criterion and makes no claim to resolve Mills'
+constant or to replace prime search by a numerical approximation.
+\end{abstract}
+
+\section{The questions and the organizing principle}
+The non-reversible recurrence problem asks for an integer sequence
+$R(n)$, governed by a linear recurrence with a constant inhomogeneous
+term, such that
+\[
+ \floor{\alpha^{R(n)}}
+\]
+is composite infinitely often for every Pisot number $\alpha$.
+This is Problem~1.7 in Saito's preprint \cite{SaitoIntervals}. The
+sequence is to be chosen independently of $\alpha$. Non-reversibility
+means that the trailing recurrence coefficient cannot be $1$ or
+$-1$; below we prove the stronger fact that no other recurrence
+representation makes our sequences reversible.
+
+Our examples are
+\begin{equation}\label{eq:clock}
+ R_{a,b,\varepsilon}(n)=ba^n+\varepsilon n,
+ \qquad a\ge2,\ b\ge1,\ \varepsilon\in\{-1,1\}.
+\end{equation}
+The same elementary congruence property has another application.
+For a positive integer sequence $C=(C_k)_{k\ge1}$, define
+\begin{equation}\label{eq:Wdef}
+ \WW(C)=\{x>1:\floor{x^{C_k}}\in\PP\text{ for all }k\ge1\},
+ \qquad \xi(C)=\min\WW(C)
+\end{equation}
+whenever the minimum exists; $\PP$ is the set of positive primes.
+For the exponent sequences $C_k=ba^k+\varepsilon k$, $a\ge3$, the
+congruence property verifies all arithmetic assumptions of Saito's
+Type-B theorem \cite{SaitoVariants}. It follows that every one of these
+specified minima exists and is transcendental.
+
+The term \emph{additive clock} refers simply to the linear term
+$\varepsilon n$. When the exponential part returns modulo $q$, this
+term moves by $\varepsilon t$, where $t$ is an eventual period.
+Although this increment may fail to generate all residues modulo
+$q$, it generates all residues compatible modulo $\gcd(t,q)$.
+The latter modulus is strictly smaller. Induction completes the
+missing residues.
+
+The general congruence theorem is the shared input, not a new proof of
+Saito's transcendence theorem. We give proofs of the congruence,
+recurrence, pullback, braid and asymptotic statements, while explicitly
+citing the two external number-theoretic inputs. Source identifiers
+T47--T49 and T56--T57 refer to the author's initial research notes.
+The special case T48 is absorbed into the stronger coefficient theorem.
+
+\section{Every residue occurs with positive density}
+For $S\subseteq\N$, let $\dens(S)$ denote its natural density when
+that density exists, and let $\underline{\dens}(S)$ denote its lower
+natural density.
+
+\begin{theorem}[Universal residues; \sourceT{47}, \sourceT{56(a)}]
+\label{thm:residues}
+Fix the parameters in \eqref{eq:clock}. For every integer $q\ge1$
+and every $c\in\Z$, the set
+\[
+ S(q,c)=\{n\ge1:R_{a,b,\varepsilon}(n)\equiv c\pmod q\}
+\]
+has positive natural density. It is an eventually periodic subset of
+$\N$, and it contains all sufficiently large members of at least one
+arithmetic progression.
+\end{theorem}
+
+\begin{lemma}[A short eventual period]\label{lem:period}
+Let $a\ge2$ and $q>1$. There exist positive integers $e,t$ such that
+\begin{equation}\label{eq:period}
+ a^{n+t}\equiv a^n\pmod q\quad(n\ge e),\qquad 1\le t<q.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $q=uv$, where every prime divisor of $u$ divides $a$ and
+$\gcd(a,v)=1$. More precisely, $u$ is the product of the prime-power
+factors of $q$ supported on primes dividing $a$. Thus $\gcd(u,v)=1$.
+For all sufficiently large $n$, $u\mid a^n$. If $v>1$, choose
+$t=\ord_v(a)$. Then
+\[
+ t\le\varphi(v)<v\le q,
+\]
+and \eqref{eq:period} follows from the Chinese remainder theorem.
+If $v=1$, choose $t=1<q$, since the exponential part is eventually
+zero modulo $q$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:residues}]
+We first prove the existence of arbitrarily large solutions, using
+strong induction on $q$. For $q=1$ every index works. Suppose $q>1$,
+and take $e,t$ as in Lemma~\ref{lem:period}. Set
+\[
+ g=\gcd(t,q)<q.
+\]
+By the induction hypothesis, there are arbitrarily large $n\ge e$
+with $R_{a,b,\varepsilon}(n)\equiv c\pmod g$. For such an $n$, the
+linear congruence
+\begin{equation}\label{eq:jcong}
+ \varepsilon jt\equiv c-R_{a,b,\varepsilon}(n)\pmod q
+\end{equation}
+is solvable because its right-hand side is divisible by $g$.
+Choose a nonnegative solution $j$ and put $N=n+jt$. The period
+identity gives $a^N\equiv a^n\pmod q$, so
+\[
+ R_{a,b,\varepsilon}(N)
+ \equiv R_{a,b,\varepsilon}(n)+\varepsilon jt
+ \equiv c\pmod q.
+\]
+Since $N\ge n$, solutions can be chosen arbitrarily large. The
+coefficient $b$ is unchanged throughout and imposes no coprimality
+condition.
+
+Now put $Q=\lcm(q,t)$. For every $n\ge e$,
+\[
+ R_{a,b,\varepsilon}(n+Q)
+ \equiv R_{a,b,\varepsilon}(n)\pmod q.
+\]
+Thus $S(q,c)$, apart from finitely many indices, is a union of residue
+classes modulo $Q$. At least one such class is present by the first
+part of the proof. Consequently its density exists and is at least
+$1/Q>0$.
+\end{proof}
+
+\begin{remark}[Surjectivity is not uniform distribution]
+The theorem supplies at least one eventual index class for each target
+residue. It does not assert that the $q$ residues have equal density.
+The period $Q$ may depend on $a$ and $q$, and different residues can
+have different numbers of representatives modulo $Q$.
+\end{remark}
+
+\section{Intrinsic non-reversibility}
+An integer sequence $R$ is an inhomogeneous linear recurrence sequence
+of order $d$ if, for fixed integers $a_0,\ldots,a_{d-1},c$ with
+$a_0\ne0$,
+\[
+ R(n+d)=a_{d-1}R(n+d-1)+\cdots+a_0R(n)+c.
+\]
+Such a representation is reversible when $a_0=\pm1$. In a sequence
+with several possible recurrence representations, merely displaying
+one with $a_0\ne\pm1$ does not exclude a hidden reversible one. We
+therefore check all integer representations at once.
+
+\begin{proposition}\label{prop:nonrev}
+The sequence in \eqref{eq:clock} is positive and strictly increasing
+for $n\ge1$. It satisfies the order-two relation
+\begin{equation}\label{eq:recurrence}
+ R(n+2)=(a+1)R(n+1)-aR(n)+\varepsilon(1-a).
+\end{equation}
+Every integer inhomogeneous recurrence representation of this
+sequence has trailing coefficient divisible by $a$. In particular,
+none is reversible.
+\end{proposition}
+\begin{proof}
+The exponential and linear terms directly verify
+\eqref{eq:recurrence}. Positivity follows from
+$ba^n-n\ge2^n-n\ge1$. Also
+\[
+ R(n+1)-R(n)=b(a-1)a^n+\varepsilon\ge1.
+\]
+Let $E$ be the shift operator, and suppose $Q(E)R$ is constant for
+some monic integer polynomial $Q$ associated to an inhomogeneous
+recurrence. The exponential term in $Q(E)R$ is $ba^nQ(a)$;
+the coefficient of $n$ is $\varepsilon Q(1)$. An exponential plus
+a polynomial can be constant for all positive $n$ only if
+\[
+ Q(a)=0,\qquad Q(1)=0.
+\]
+Since $a\ne1$, the monic polynomial $(X-a)(X-1)$ divides $Q$ in
+$\Z[X]$. Thus $a\mid Q(0)$. The trailing coefficient of the
+recurrence is $-Q(0)$ and therefore cannot be $1$ or $-1$.
+This also shows directly that the homogeneous minimal annihilator is
+$(X-a)(X-1)^2$.
+\end{proof}
+
+The term ``order two'' in Proposition~\ref{prop:nonrev} refers to a
+recurrence with a constant inhomogeneous term. Its homogeneous
+annihilator has degree three. Conflating these two conventions would
+misstate the non-reversibility conclusion.
+
+\section{Pulling back composite progressions}
+We use the following established result as an external input. It is
+Theorem~1.1 of Dubickas \cite{Dubickas}, also recorded as (D1) in
+\cite{SaitoIntervals}.
+
+\begin{theorem}[Dubickas, external input]\label{thm:Dub}
+Let $(T_m)_{m\ge1}$ be an unbounded integer linear recurrence sequence.
+For each integer $J\ge1$, there are positive integers $L,m_0$ and
+primes $p_j$, $|j|\le J$, such that
+\[
+ p_j\mid T_{Lk+m_0}+j\qquad(k\ge1,\ |j|\le J).
+\]
+The primes $p_j$ need not be distinct.
+\end{theorem}
+
+We pass from trace sequences to floors with a bounded-error argument.
+This step only requires a finite collection of available divisors.
+It does not require one particular prime to divide every floor value
+with the same external shift.
+
+\begin{lemma}[Composite floor windows]\label{lem:floorAP}
+Let $\alpha$ be a Pisot or Salem number, and fix $H\ge0$. There
+exist positive integers $L,m_0,K$ such that
+\begin{equation}\label{eq:floorAP}
+ \floor{\alpha^{Lk+m_0}}+h
+ \quad\text{is composite for all }k\ge K,\quad |h|\le H.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let $d$ be the degree of $\alpha$ and let
+$\alpha=\alpha_1,\ldots,\alpha_d$ be its conjugates. The integer
+trace sequence
+\[
+ T_m=\sum_{i=1}^d\alpha_i^m
+\]
+satisfies the linear recurrence given by the monic minimal polynomial.
+For a Pisot number the other conjugates have modulus less than $1$;
+for a Salem number they have modulus at most $1$. Hence
+\[
+ |T_m-\alpha^m|\le d-1,\qquad
+ e_m:=\floor{\alpha^m}-T_m\in\Z,\quad |e_m|\le d.
+\]
+The same bound shows $T_m\to\infty$, so the trace recurrence is
+unbounded. Apply Theorem~\ref{thm:Dub} with $J=H+d$. Along the
+resulting progression, every $T_{Lk+m_0}+j$, $|j|\le J$, has the
+fixed divisor $p_j$. For sufficiently large $k$, all these positive
+integers exceed all the finitely many primes $p_j$. Finally,
+\[
+ \floor{\alpha^{Lk+m_0}}+h
+ =T_{Lk+m_0}+(e_{Lk+m_0}+h),
+\]
+and $|e_{Lk+m_0}+h|\le J$. Choosing the available prime for this
+integer shift proves proper divisibility and \eqref{eq:floorAP}.
+\end{proof}
+
+\begin{theorem}[A solution of the non-reversible construction problem;
+\sourceT{49}]\label{thm:composite}
+For every $a\ge2$, $b\ge1$, $\varepsilon=\pm1$, every Pisot or
+Salem number $\alpha$, and every integer $H\ge0$, the set
+\[
+ \left\{n\ge1:
+ \floor{\alpha^{ba^n+\varepsilon n}}+h\text{ is composite for all }
+ h\in\Z,\ |h|\le H\right\}
+\]
+has positive lower natural density.
+\end{theorem}
+\begin{proof}
+Choose $L,m_0,K$ from Lemma~\ref{lem:floorAP}. By
+Theorem~\ref{thm:residues}, the set
+\[
+ S=\{n\ge1:R_{a,b,\varepsilon}(n)\equiv m_0\pmod L\}
+\]
+has positive natural density. Since $R_{a,b,\varepsilon}(n)\to\infty$,
+all sufficiently large $n\in S$ satisfy
+$R_{a,b,\varepsilon}(n)=Lk_n+m_0$ with $k_n\ge K$.
+Equation~\eqref{eq:floorAP} applies to each of them. Removing finitely
+many indices from $S$ leaves its density unchanged, proving the
+claimed lower density.
+\end{proof}
+
+Taking $b=1$, $H=0$ and restricting to Pisot numbers gives the exact
+construction asked for in Saito's Problem~1.7. The clock is independent
+of $\alpha$, and Proposition~\ref{prop:nonrev} verifies the required
+non-reversibility. The Salem and fixed-window statements are further
+applications of the same proof. The theorem does not replace the
+exponent $3^r$ in the separate cubic Pisot problem by an equivalent
+one: $a^r\pm r$ is a different sequence.
+
+\section{The external Type-B criterion, with all hypotheses}
+The following is the transcendence conclusion of Theorem~2.3 in
+Saito's version~3 \cite{SaitoVariants}, expressed directly in terms of
+the exponent sequence. This is an external theorem, not a lemma
+proved in this manuscript.
+
+\begin{criterion}[Saito Type B]\label{crit:typeB}
+Let $C_k\in\N$, set $c_1=C_1$ and $c_{k+1}=C_{k+1}/C_k$, and assume
+\begin{align*}
+ &\textup{(B1)}\quad c_1\ge1,\qquad
+ \textup{(B2)}\quad c_{k+1}\ge2\ (k\ge1),\\
+ &\textup{(B3)}\quad\limsup_{k\to\infty}c_{k+1}>40/19,\qquad
+ \textup{(B4)}\quad C_k=c_1\cdots c_k\in\N.
+\end{align*}
+Choose sufficiently small $\eta>0$ so that
+$I=\{k:c_{k+1}\ge40/19+\eta\}$ is infinite. Assume also
+\begin{align*}
+ \textup{(B5)}\quad&\forall m\ge1\ \exists k\in I,
+ \quad k>m,\quad C_m\mid C_k;\\
+ \textup{(B6)}\quad&\forall m,L\ge1\ \exists k\in I,
+ \quad k>m,\quad C_k\equiv C_m\pmod{LC_m}.
+\end{align*}
+Then $\xi(C)$ exists and is transcendental.
+\end{criterion}
+
+The existence of a minimum causes no extra difficulty once the
+prime-representing set is nonempty. We include the basic order
+argument, which is also useful for understanding the exact endpoints
+of the intervals used later.
+
+\begin{lemma}[Existence of a minimum from nonemptiness]\label{lem:min}
+If $C_k$ are positive integers and $\WW(C)\ne\varnothing$, then
+$\WW(C)$ has a minimum.
+\end{lemma}
+\begin{proof}
+Let $x=\inf\WW(C)$. The first prime condition gives
+$x\ge2^{1/C_1}>1$. There is a sequence $x_j\in\WW(C)$ with
+$x_j\ge x$ and $x_j\to x$. For each fixed $k$, the values
+$x_j^{C_k}$ approach $x^{C_k}$ from above. For all sufficiently
+large $j$, their floors equal $\floor{x^{C_k}}$, including when
+$x^{C_k}$ itself is an integer. This eventually constant floor is
+prime because every $x_j\in\WW(C)$. Thus $x\in\WW(C)$.
+\end{proof}
+
+Criterion~\ref{crit:typeB} is used only after checking every one of its
+hypotheses. In particular, a congruence result at arbitrarily large
+indices does not automatically place those indices in $I$. Here we
+will have $I$ cofinite, making the required intersection explicit.
+
+\section{Transcendence for all coefficients and both signs}
+\begin{theorem}[Coefficient family; \sourceT{48}, \sourceT{56(a)}]
+\label{thm:family}
+For every integer $a\ge3$, every integer $b\ge1$, and both choices
+of $\varepsilon\in\{-1,1\}$, the constant
+\[
+ \xi\bigl((ba^k+\varepsilon k)_{k\ge1}\bigr)
+\]
+exists and is transcendental.
+\end{theorem}
+\begin{proof}
+Put $C_k=ba^k+\varepsilon k$. Then $C_1=ba+\varepsilon\ge2$,
+and every $C_k$ is a positive integer. Moreover,
+\begin{equation}\label{eq:ratioineq}
+ C_{k+1}-2C_k=b(a-2)a^k+\varepsilon(1-k)>0.
+\end{equation}
+For $\varepsilon=-1$ both terms on the right are nonnegative and the
+first is positive. For $\varepsilon=1$, use
+$b(a-2)a^k\ge3^k>k-1$. This verifies (B1), (B2) and (B4).
+Also
+\[
+ \frac{C_{k+1}}{C_k}\longrightarrow a>40/19,
+\]
+so (B3) holds. Fix any sufficiently small
+$0<\eta<a-40/19$. Then $I$ in Criterion~\ref{crit:typeB} is cofinite.
+
+For a given $m$, apply Theorem~\ref{thm:residues} with modulus
+$C_m$ and target $0$. It supplies arbitrarily large $k$ with
+$C_m\mid C_k$. Choose one with $k>m$ and $k\in I$, verifying (B5).
+For given $m,L$, apply the same theorem with modulus $LC_m$ and
+target $C_m$. Again choose a sufficiently large solution in $I$;
+this gives (B6). Criterion~\ref{crit:typeB} proves the assertion.
+\end{proof}
+
+For $a=3$, $b=1$, the first few exponents are
+\[
+ (3^k-k)_{k\ge1}=(2,7,24,77,238,\ldots),
+\]
+\[
+ (3^k+k)_{k\ge1}=(4,11,30,85,248,\ldots).
+\]
+These are two different exponent sequences defining two minima. Their
+transcendence follows from the same theorem, but this does not
+establish that the minima are unequal or order them relative to
+Mills' constant.
+
+\begin{corollary}[Adjacent coefficient lines]\label{cor:adjacent}
+Let $A_k=3^k-k$ and $B_k=3^k+k$. For every integer $r\ge0$, both
+exponent sequences
+\[
+ (r+1)A_k+rB_k=(2r+1)3^k-k,
+\]
+\[
+ rA_k+(r+1)B_k=(2r+1)3^k+k
+\]
+define transcendental least prime-representing constants.
+\end{corollary}
+\begin{proof}
+Apply Theorem~\ref{thm:family} with $a=3$, $b=2r+1$ and the
+corresponding sign.
+\end{proof}
+The coefficient theorem also covers even $b$, which are not obtained
+from these adjacent nonnegative coefficient pairs. Nothing in the
+congruence proof depended on $b$ being odd.
+
+\section{Alternating signs and the necessary indexing}
+Define
+\begin{equation}\label{eq:braids}
+ P_k=3^k+(-1)^k k,\qquad Q_k=3^k-(-1)^k k.
+\end{equation}
+The notation $P_k$ here is an exponent sequence, not a prime. We
+spell out the starting indices because one of the sequences fails a
+Type-B growth condition at its first step.
+
+\begin{lemma}[Residues of the braids]\label{lem:braidres}
+Each sequence in \eqref{eq:braids} visits every residue class modulo
+every positive integer with positive natural density.
+\end{lemma}
+\begin{proof}
+For either fixed sign $\varepsilon$, one has
+$3^k+\varepsilon k\equiv1+k\pmod2$.
+First suppose $q$ is even and a residue $c$ modulo $q$ is given.
+The required index parity is $t\equiv c-1\pmod2$. On that parity,
+$P_k=3^k+\varepsilon k$ with $\varepsilon=(-1)^t$.
+Theorem~\ref{thm:residues} for this fixed sign supplies positive-density
+solutions modulo $q$, and the congruence modulo $2$ forces every one
+of them to have parity $t$. They are therefore solutions for $P_k$.
+For $Q_k$, choose $\varepsilon=-(-1)^t$ instead.
+
+If $q$ is odd, choose a lift $c'$ modulo $2q$ with $c'\equiv c\pmod q$
+and any prescribed parity. Apply the even-modulus argument to $2q$.
+This supplies a positive-density subset of the desired solutions
+modulo $q$. Finally, both braid sequences are eventually periodic
+modulo $q$: combine an eventual period of $3^k$ with the periods
+$q$ of $k$ and $2$ of $(-1)^k$. Thus their full solution sets have
+natural densities, which must be positive.
+\end{proof}
+
+\begin{theorem}[Braid constants; \sourceT{56(b)}]\label{thm:braids}
+Both
+\[
+ \xi\bigl((P_k)_{k\ge1}\bigr)
+ \quad\text{and}\quad
+ \xi\bigl((Q_k)_{k\ge2}\bigr)
+\]
+exist and are transcendental. In the second expression the sequence
+is reindexed from $1$, namely $C_j=Q_{j+1}$.
+\end{theorem}
+\begin{proof}
+Direct subtraction gives
+\begin{align*}
+ P_{k+1}-2P_k&=3^k-(-1)^k(3k+1),\\
+ Q_{k+1}-2Q_k&=3^k+(-1)^k(3k+1).
+\end{align*}
+For $k\ge2$, the inequality $3^k>3k+1$ follows by induction, so both
+differences are positive. Also $P_1=2$, $P_2=11$ satisfy the first
+growth condition for the $P$ sequence. For the $Q$ sequence,
+$Q_1=4$, $Q_2=7$ give $Q_2<2Q_1$, explaining the stated truncation.
+The reindexed sequence starts at $Q_2=7$ and has all subsequent
+ratios greater than $2$. Both ratios tend to $3$.
+
+Consequently (B1)--(B4) hold for the two stated sequences, and $I$ is
+cofinite. Lemma~\ref{lem:braidres}, unaffected by deleting finitely
+many indices, verifies (B5) and (B6) exactly as in the proof of
+Theorem~\ref{thm:family}. Apply Criterion~\ref{crit:typeB}.
+\end{proof}
+
+The proof makes no assertion about the minimum defined by the full
+$Q$ sequence starting at $k=1$. Removing a prime condition can change
+the minimum, so a tail theorem must not be silently promoted to the
+full sequence.
+
+\section{Scaling, synchronization and elementary combinations}
+\begin{proposition}[Exact scaling; \sourceT{56(c)}]\label{prop:scaling}
+If $C$ is a positive integer sequence with $\WW(C)\ne\varnothing$
+and $d\ge1$ is an integer, then
+\[
+ \xi\bigl((dC_k)_{k\ge1}\bigr)=\xi(C)^{1/d}.
+\]
+\end{proposition}
+\begin{proof}
+For $x>1$,
+\[
+ x\in\WW(dC)\quad\Longleftrightarrow\quad x^d\in\WW(C).
+\]
+The map $x\mapsto x^d$ is an increasing bijection of $(1,\infty)$.
+It therefore carries the minimum of the first set to the minimum of
+the second, which exists by Lemma~\ref{lem:min}.
+\end{proof}
+
+For $A_k=3^k-k$, $B_k=3^k+k$ and $M=\xi((3^k)_{k\ge1})$,
+Proposition~\ref{prop:scaling} gives
+\begin{equation}\label{eq:Millsboundary}
+ \xi((A_k+B_k)_{k\ge1})=\sqrt M.
+\end{equation}
+This is an identity about the \emph{sum of exponent sequences}. It is
+not an identity involving $\xi(A)+\xi(B)$ or $\xi(A)\xi(B)$.
+The transcendence of the left side is equivalent to that of $M$;
+the separate transcendence statements for $\xi(A)$ and $\xi(B)$ do
+not decide it.
+
+\begin{proposition}[A simultaneous-return obstruction;
+\sourceT{56(d)}]\label{prop:sync}
+For every $m\ge1$, no integer $k>m$ satisfies both
+\[
+ A_k\equiv A_m\pmod{3^{m+1}},\qquad
+ B_k\equiv B_m\pmod{3^{m+1}}.
+\]
+\end{proposition}
+\begin{proof}
+Since $2$ is invertible modulo $3^{m+1}$, adding the two congruences
+would give $3^k\equiv3^m\pmod{3^{m+1}}$. But $k\ge m+1$ makes
+the left side zero and the right side nonzero modulo this modulus.
+\end{proof}
+
+The proposition does not contradict individual Type-B returns. Their
+indices need not coincide. It rules out this particular attempt to
+synchronize the two returns and cancel the linear terms, rather than
+all possible relations between the two constants.
+
+\begin{corollary}[Elementary combinations; \sourceT{56(e)}]
+\label{cor:combinations}
+Let $\alpha=\xi(A)$ and $\beta=\xi(B)$. At least two of
+\[
+ \alpha+\beta,\qquad \alpha\beta,\qquad \alpha/\beta
+\]
+are transcendental. Also $\alpha+i\beta$ is transcendental.
+\end{corollary}
+\begin{proof}
+Both $\alpha$ and $\beta$ are positive transcendental numbers by
+Theorem~\ref{thm:family}. If their sum and product were algebraic,
+they would be roots of a quadratic polynomial with algebraic
+coefficients. If their sum and ratio were algebraic, then
+$\beta=(\alpha+\beta)/(1+\alpha/\beta)$ would be algebraic.
+If their product and ratio were algebraic, then
+$\alpha^2=(\alpha\beta)(\alpha/\beta)$ would be algebraic.
+Every case contradicts the transcendence of $\alpha$ or $\beta$.
+Finally, the real and imaginary parts of an algebraic complex number
+are algebraic, excluding algebraicity of $\alpha+i\beta$.
+\end{proof}
+These are algebraic consequences of the two known transcendental
+values. They do not imply algebraic independence.
+
+\section{An algebraic anchor that fails infinitely many conditions}
+For the rest of the manuscript let
+\begin{equation}\label{eq:anchor}
+ C_k=a^k-k,\quad \xi_a=\xi(C),\quad R_a=2^{1/(a-1)},
+ \quad r_a=\frac{a^2-2}{a-1}=a+1-\frac1{a-1},
+ \qquad a\ge3.
+\end{equation}
+The constant $R_a$ is the smallest number compatible with a first
+prime value at the first exponent. It is a useful scale, but it does
+not satisfy the full prime conditions.
+
+\begin{proposition}[Exact anchor obstruction; \sourceT{57(a)}]
+\label{prop:anchor}
+For every integer $a\ge3$,
+\[
+ \xi_a>R_a.
+\]
+For every $k>1$ with $k\equiv1\pmod{a-1}$, the value
+$R_a^{C_k}$ is an integer power of $2$ with exponent greater than $1$,
+and hence its floor is composite.
+\end{proposition}
+\begin{proof}
+The first prime condition gives
+$\xi_a^{a-1}\ge2$, so $\xi_a\ge R_a$. Since
+$a\equiv1\pmod{a-1}$,
+\[
+ C_k\equiv1-k\pmod{a-1}.
+\]
+At the stated indices $m_k=C_k/(a-1)$ is a positive integer greater
+than $1$. Therefore
+$R_a^{C_k}=2^{m_k}$ is composite. Such indices are infinite, so
+$R_a\notin\WW(C)$ and the lower bound for its minimum is strict.
+\end{proof}
+
+This strict inequality is independent of the transcendence proof.
+For example, $R_3=\sqrt2$ gives floors $2$ and $11$ at exponents
+$2$ and $7$, but at the next exponent $24$ it gives $4096$. Agreement
+with the first two prime conditions therefore provides no all-index
+certificate.
+
+\section{Short prime intervals and nested prime cylinders}
+The analytic external input is the Baker--Harman--Pintz prime interval
+theorem \cite{BHP}, in the right-interval form also stated in
+\cite[Theorem~1.6]{SaitoVariants}. With
+\[
+ \theta=21/40,
+\]
+there is a constant $X_0$ such that, for every $X\ge X_0$, a prime
+exists strictly between $X$ and $X+X^\theta$, with the upper endpoint
+allowed. The usual quantitative version gives many primes, so
+excluding a possible prime at $X$ does not alter this assertion for
+sufficiently large $X$. No explicit numerical $X_0$ is used here.
+
+\begin{lemma}[Room for the next cylinder]\label{lem:room}
+For every $p\ge2$ and every real $r\ge3$,
+\[
+ (p+1)^r-p^r>p^{\theta r}+1.
+\]
+\end{lemma}
+\begin{proof}
+The integral form of the mean value estimate gives
+$(p+1)^r-p^r>rp^{r-1}$. Since
+\[
+ r-1-\theta r=(19/40)r-1\ge17/40>0,
+\]
+one has $rp^{r-1}\ge3p^{\theta r}>p^{\theta r}+1$.
+\end{proof}
+
+\begin{lemma}[A branch beginning at $2$]\label{lem:branch}
+There exists an integer $a_0$ such that, for every integer $a\ge a_0$,
+a number $A_a\in\WW((a^k-k)_{k\ge1})$ can be chosen with
+\[
+ \floor{A_a^{a-1}}=2.
+\]
+Writing $X=2^{r_a}$, it can be chosen so that
+\begin{equation}\label{eq:branchbound}
+ R_a<A_a<(X+X^\theta+1)^{1/(a^2-2)}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $r_k=C_{k+1}/C_k$. Direct calculation gives
+\begin{equation}\label{eq:ratiominus}
+ r_k=a+\frac{(a-1)k-1}{a^k-k}>a\ge3.
+\end{equation}
+Choose $a_0$ so that $2^{r_a}\ge X_0$ for $a\ge a_0$; this is
+possible because $r_a\to\infty$. Start with $p_1=2$ and choose
+recursively a prime satisfying
+\[
+ p_k^{r_k}<p_{k+1}\le p_k^{r_k}+(p_k^{r_k})^\theta.
+\]
+The inputs to the prime interval theorem remain above $X_0$:
+$p_k$ strictly increases and $r_k\ge3$, while the initial input is
+$2^{r_a}$; more directly, for $k\ge2$, $p_k>2^{r_a}$.
+Lemma~\ref{lem:room} gives
+\[
+ p_{k+1}+1<(p_k+1)^{r_k}.
+\]
+Consequently the compact intervals
+\[
+ I_k=[p_k^{1/C_k},(p_k+1)^{1/C_k}]
+\]
+satisfy $I_{k+1}\subset\operatorname{int}(I_k)$. Their nonempty
+nested intersection contains a point $A_a$. For each fixed $k$,
+this point belongs to $I_{k+1}$ and therefore to the interior of
+$I_k$. It follows that $\floor{A_a^{C_k}}=p_k$ for every $k$.
+In particular its first floor is $2$.
+
+At $k=1$, the upper bound on the chosen second prime is
+$p_2\le X+X^\theta$. Since $A_a$ lies strictly inside $I_2$,
+$A_a<(p_2+1)^{1/(a^2-2)}$, proving the upper bound in
+\eqref{eq:branchbound}. The lower bound follows either from strict
+containment in $I_1$ or from Proposition~\ref{prop:anchor}.
+\end{proof}
+
+\section{The transcendental boundary layer}
+\begin{theorem}[Root normalization; \sourceT{57(b)--(c)}]
+\label{thm:boundary}
+For all sufficiently large integers $a$,
+\begin{equation}\label{eq:boundarybound}
+ 0<\log\frac{\xi_a}{R_a}
+ \le\frac{\log(1+2^{-19r_a/40}+2^{-r_a})}{a^2-2},
+ \qquad \floor{\xi_a^{a-1}}=2.
+\end{equation}
+As $a\to\infty$ through integers,
+\begin{align}
+ \xi_a&=2^{1/(a-1)}
+ \left(1+O\left(\frac{2^{-19a/40}}{a^2}\right)\right),
+ \label{eq:xiasym}\\
+ \Theta_a:=\xi_a^{a-1}
+ &=2\left(1+O\left(\frac{2^{-19a/40}}a\right)\right),
+ \label{eq:thetaasym}\\
+ (a-1)(\xi_a-1)&\longrightarrow\log2.
+ \label{eq:limit}
+\end{align}
+For every integer $a\ge3$, $\Theta_a$ is transcendental and
+$\Theta_a>2$.
+\end{theorem}
+\begin{proof}
+By minimality and Lemma~\ref{lem:branch}, $\xi_a\le A_a$ for all
+$a\ge a_0$. The branch has $A_a<3^{1/(a-1)}$, while
+Proposition~\ref{prop:anchor} gives $\xi_a>2^{1/(a-1)}$.
+Thus the minimum also has first floor $2$.
+
+Let $X=2^{r_a}$. Since $X^{1/(a^2-2)}=R_a$,
+\eqref{eq:branchbound} implies
+\[
+ 1<\frac{\xi_a}{R_a}
+ <(1+X^{-19/40}+X^{-1})^{1/(a^2-2)}.
+\]
+Taking logarithms proves \eqref{eq:boundarybound} (and a strict upper
+bound would also be valid). Because
+$r_a=a+1-1/(a-1)$ and $\log(1+u)\le u$ for $u\ge0$,
+\[
+ \log(\xi_a/R_a)=O(2^{-19a/40}/a^2).
+\]
+Exponentiating gives \eqref{eq:xiasym}, and multiplying this
+logarithmic estimate by $a-1$ gives \eqref{eq:thetaasym}.
+Finally,
+$2^{1/(a-1)}=1+\log2/(a-1)+O(a^{-2})$, so
+\eqref{eq:limit} follows.
+
+Theorem~\ref{thm:family} proves $\xi_a$ transcendental for every
+$a\ge3$, not merely for large $a$. A positive integer power of a
+transcendental number is transcendental: otherwise it would make the
+original number algebraic over $\Qbar$. Thus $\Theta_a$ is
+transcendental. Its strict lower bound follows from
+Proposition~\ref{prop:anchor}.
+\end{proof}
+
+The convergence in \eqref{eq:thetaasym} supplies an explicit family
+of transcendental numbers approaching the algebraic value $2$.
+It does not suggest that a limit of transcendental numbers must be
+transcendental. The threshold $a_0$ comes from the asymptotic prime
+interval input and is not numerically specified by this proof.
+In particular, the first-floor assertion in
+\eqref{eq:boundarybound} has not been proved here for every $a\ge3$.
+
+\section{Exact correction coordinates and finite prefixes}
+Define the positive correction coordinate
+\begin{equation}\label{eq:tau}
+ \tau_a=\log(\xi_a^{a-1}/2).
+\end{equation}
+Theorem~\ref{thm:boundary} gives
+$\tau_a=O(2^{-19a/40}/a)$. At a given exponent $C_k=a^k-k$,
+a proposed prime value imposes an exact interval condition.
+
+\begin{proposition}[Prime-cylinder coordinates; \sourceT{57(d)}]
+\label{prop:tau}
+Let $x=R_a\exp(\tau/(a-1))$, where $\tau\in\R$. For a positive
+integer $p$,
+\[
+ \floor{x^{C_k}}=p
+\]
+holds if and only if
+\begin{equation}\label{eq:tauinterval}
+ \frac{a-1}{C_k}\log p-\log2
+ \le\tau<
+ \frac{a-1}{C_k}\log(p+1)-\log2.
+\end{equation}
+\end{proposition}
+\begin{proof}
+The floor equality is equivalent to
+$p\le x^{C_k}<p+1$. Substitute the expression for $x$, take
+logarithms and multiply by $(a-1)/C_k>0$.
+\end{proof}
+
+For a finite prime list $p_1,\ldots,p_m$, simultaneous compatibility
+means that the corresponding half-open intervals
+\eqref{eq:tauinterval} have a nonempty intersection. There is no need
+to rely on rounded root values when certifying their endpoints:
+for positive integers $u,v,d,e$,
+\[
+ u^{1/d}<v^{1/e}\quad\Longleftrightarrow\quad u^e<v^d.
+\]
+Thus the required comparisons can be reduced to exact integers.
+The interval width at exponent $C_k$ equals
+\[
+ \frac{a-1}{C_k}\log\left(1+\frac1p\right)
+ \sim\frac{a-1}{C_kp}.
+\]
+It becomes small as the output prime and the exponent grow. A tiny
+relative correction can therefore change a floor by an integer, and
+many more output digits can require many more digits of the constant.
+
+For example, when $a=4$ the first exponents are $3,14,61$.
+The anchor $2^{1/3}$ gives
+\[
+ \floor{(2^{1/3})^{14}}=25=5^2.
+\]
+Choosing the prime $29$ and putting $x=29^{1/14}$ gives exactly
+\[
+ \floor{x^3}=2,\qquad\floor{x^{14}}=29,
+\]
+since $2^{14}<29^3<3^{14}$. This verifies two prime conditions.
+It does not identify the global minimum $\xi_4$ or establish that
+this particular finite prefix is indefinitely extendible.
+
+\section{What the two-stage construction does and does not give}
+A useful unconditional finite-prefix statement follows from the
+classical Bertrand theorem. We include its proof to separate it from
+the asymptotic use of short prime intervals above.
+
+\begin{proposition}[A two-prime prefix for every $a\ge3$]
+\label{prop:two}
+Let $X=2^{r_a}$, and let $p$ be the smallest prime strictly greater
+than $X$. Then
+\[
+ y=p^{1/(a^2-2)}
+ \quad\text{satisfies}\quad
+ \floor{y^{a-1}}=2,\qquad\floor{y^{a^2-2}}=p.
+\]
+\end{proposition}
+\begin{proof}
+Let $m=\ceil X$. Bertrand's theorem supplies a prime $q$ with
+$m<q<2m$. Hence $X<p\le q<2\ceil X<2(X+1)$.
+Since $r_a\ge7/2$,
+\[
+ (3/2)^{r_a}\ge(3/2)^{7/2}>4
+ \quad\Longrightarrow\quad3^{r_a}>4X>2(X+1).
+\]
+Thus $2^{r_a}<p<3^{r_a}$. Taking $r_a$-th roots gives
+$2<y^{a-1}<3$, while the other power equals the prime $p$ itself.
+\end{proof}
+
+The proposition begins with a selected and certified prime $p$.
+It records how that prime is encoded in a two-stage constant.
+It does not produce a prime without finding one, does not give the
+exact global minimum, and does not make the uncorrected value
+$\floor{2^{r_a}}$ prime. For sufficiently large $a$, the short-interval
+argument can instead choose the smallest prime above $X$ inside the
+Baker--Harman--Pintz interval and extend that prefix through nested
+cylinders. The numerical threshold remains unspecified.
+
+\section{Scope and source correspondence}
+Theorems~\ref{thm:residues} and \ref{thm:composite} retain the
+source content T47 and T49, with the coefficient extension from T56.
+Theorem~\ref{thm:family} combines T48 and T56(a), so the
+$b=1$ special case is not counted as an additional independent
+method. Theorem~\ref{thm:braids} and
+Propositions~\ref{prop:scaling}--\ref{prop:sync} contain the remaining
+structural portions of T56. Sections~9--13 establish T57 with its
+large-$a$ quantifiers explicit. The separate source item T53,
+concerning $\xi(2^k)$, is not part of this manuscript.
+
+The general congruence lemma applies already at $a=2$, but the
+transcendence application in Theorem~\ref{thm:family} is stated only
+for $a\ge3$. The limit of consecutive ratios must exceed $40/19$
+to invoke the external criterion used here. An endpoint argument for
+$a=2$ would require additional input.
+
+The set
+\[
+ \{x>1:\floor{x^{3^k-k}}\text{ and }\floor{x^{3^k+k}}
+ \text{ are prime for every }k\ge1\}
+\]
+is not proved nonempty here. The two separate nonempty sets need not
+intersect. Interleaving their exponent sequences gives adjacent ratios
+approaching $1$ within each pair, so the Type-B growth assumptions
+cannot simply be inherited. Likewise, no monotonicity of $\xi(C)$
+under pointwise comparison of different exponent sequences has been
+proved.
+
+The logical contribution to Problem~1.7 is an explicit family of
+intrinsically non-reversible recurrences with universal congruence
+visitation, combined with an established composite-progression input.
+The transcendence contribution is verification of a separate,
+established criterion for new explicit exponent families and their
+stated braid variants. Neither contribution settles the transcendence
+of the classical Mills constant, and neither is presented as a proof
+of historical firstness. All historical priority assertions would
+require an independent literature audit beyond the proof checks
+recorded here.
+
+\begin{thebibliography}{9}
+\bibitem{SaitoIntervals}
+K.~Saito, \emph{Intervals without primes near an iterated linear
+recurrence sequence}, arXiv:2504.14968, version~1, 21 April 2025,
+Problem~1.7 and the introductory statement (D1).
+\href{https://arxiv.org/abs/2504.14968}{arXiv:2504.14968}.
+Published in \emph{International Journal of Number Theory} (2026),
+\href{https://doi.org/10.1142/S1793042126500685}
+{doi:10.1142/S1793042126500685}.
+\bibitem{SaitoVariants}
+K.~Saito, \emph{Transcendency of variants of Mills' constant},
+arXiv:2508.16068, version~3, 7 December 2025, Theorems~1.6 and~2.3.
+\href{https://arxiv.org/abs/2508.16068v3}{arXiv:2508.16068v3}.
+\bibitem{Dubickas}
+A.~Dubickas, \emph{Intervals without primes near elements of linear
+recurrence sequences}, International Journal of Number Theory
+\textbf{14} (2018), no.~2, 567--579.
+\href{https://doi.org/10.1142/S1793042118500355}
+{doi:10.1142/S1793042118500355}.
+\bibitem{BHP}
+R.~C.~Baker, G.~Harman and J.~Pintz,
+\emph{The difference between consecutive primes, II},
+Proceedings of the London Mathematical Society (3)
+\textbf{83} (2001), no.~3, 532--562.
+\href{https://doi.org/10.1112/plms/83.3.532}
+{doi:10.1112/plms/83.3.532}.
+\end{thebibliography}
+\end{document}
