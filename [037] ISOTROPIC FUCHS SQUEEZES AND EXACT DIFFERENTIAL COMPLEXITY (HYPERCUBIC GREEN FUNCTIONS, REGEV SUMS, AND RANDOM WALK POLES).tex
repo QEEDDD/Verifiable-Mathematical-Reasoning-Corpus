@@ -1,0 +1,2120 @@
+\documentclass[11pt]{amsart}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=green!40!black,urlcolor=blue!60!black]{hyperref}
+
+\hypersetup{pdftitle={Isotropic Fuchs Squeezes and Exact Differential Complexity},pdfauthor={KEIO},pdfsubject={Differential Galois groups, Regev sums, and random walk poles}}
+
+\newtheorem{theorem}{Theorem}
+\renewcommand{\thetheorem}{\Alph{theorem}}
+\newtheorem{corA}{Corollary}
+\renewcommand{\thecorA}{A\arabic{corA}}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{proposition}[thm]{Proposition}
+\newtheorem{lemma}[thm]{Lemma}
+\newtheorem{corollary}[thm]{Corollary}
+\newtheorem{fact}[thm]{Fact}
+\theoremstyle{definition}
+\newtheorem{definition}[thm]{Definition}
+\newtheorem{remark}[thm]{Remark}
+\newtheorem{example}[thm]{Example}
+\newtheorem{problem}[thm]{Problem}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\cB}{\mathcal B}
+\newcommand{\cM}{\mathcal M}
+\newcommand{\cL}{\mathcal L}
+\newcommand{\GL}{\mathrm{GL}}
+\newcommand{\SL}{\mathrm{SL}}
+\newcommand{\Sp}{\mathrm{Sp}}
+\newcommand{\SO}{\mathrm{SO}}
+\newcommand{\Ort}{\mathrm{O}}
+\newcommand{\Sym}{\mathrm{Sym}}
+\newcommand{\lc}{\mathrm{lc}}
+\newcommand{\rk}{\mathrm{rk}}
+\newcommand{\Res}{\operatorname{Res}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\ff}[2]{[#1]_{#2}}
+\newcommand{\Lie}{\operatorname{Lie}}
+
+\begin{filecontents*}[overwrite]{verify_isotropic.py}
+#!/usr/bin/env python3
+"""Exact, deterministic checks for the Isotropic Squeeze manuscript.
+
+Requires Python 3 and SymPy.  No numerical recurrence guessing is used.
+Run: python3 verify_isotropic.py
+"""
+import json
+from collections import Counter
+from math import factorial
+from pathlib import Path
+from time import perf_counter
+import sympy as sp
+
+th, x, z, T = sp.symbols('theta x z T')
+
+
+def compositions(total, slots):
+    if slots == 1:
+        yield (total,)
+    else:
+        for first in range(total + 1):
+            for rest in compositions(total - first, slots - 1):
+                yield (first,) + rest
+
+
+def convolve(a, b, size):
+    c = [sp.S.Zero] * size
+    for i, ai in enumerate(a):
+        for j, bj in enumerate(b[:size-i]):
+            c[i+j] += ai*bj
+    return c
+
+
+def check_bessel():
+    output = []
+    size = 25
+    f = [sp.Rational(1, factorial(j)**2) for j in range(size)]
+    f_power = [sp.S.One] + [sp.S.Zero]*(size-1)
+    for d in range(1, 11):
+        old, cur = {0: sp.S.One}, {0: th}
+        for j in range(1, d+1):
+            nxt = {k: sp.expand((th+2*k)*v) for k, v in cur.items()}
+            for k, v in old.items():
+                nxt[k+1] = sp.expand(nxt.get(k+1, 0)-j*(d-j+1)*v)
+            old, cur = cur, nxt
+        P = {k: v/factorial(d) for k, v in cur.items()}
+        A = {0: th**d/sp.factorial(d)}
+        for k, p in P.items():
+            assert sp.expand(p.subs(th, -th-2*k)-(-1)**(d+1)*p) == 0
+            if k:
+                A[k] = sp.expand(p*sp.prod(th+i for i in range(1, 2*k)))
+        for k, a in A.items():
+            assert sp.degree(a, th) == d
+            assert sp.expand(a.subs(th, -th-2*k)-(-1)**d*a) == 0
+        lead = sum(4**k*x**k*sp.Poly(a, th).LC() for k, a in A.items())
+        expected = sp.prod(1-4*(d-2*b)**2*x for b in range((d+1)//2))/factorial(d)
+        assert sp.expand(lead-expected) == 0
+        f_power = convolve(f_power, f, size)
+        w = [factorial(2*j)*f_power[j] for j in range(size)]
+        for m in range(size):
+            residue = sum(4**k*a.subs(th, 2*m-2*k)*w[m-k]
+                          for k, a in A.items() if k <= m)
+            assert residue == 0, (d, m, residue)
+        output.append({'d': d, 'order': d, 'span': len(A)-1,
+                       'even_coefficients_checked': size})
+    return output
+
+
+EXPECTED = {
+    (2,4): (T-16)*(T+4),
+    (3,4): (T-81)*(T-1)**2*(T*T+14*T+625),
+    (4,4): (T-256)*(T-16)**2*(T+4)**2*(T+64)*(T*T-56*T+10000),
+    (5,4): (T-625)*(T-81)**2*(T-1)**3*(T*T-322*T+83521)*(T*T+14*T+625)**2*(T*T+238*T+28561),
+    (2,6): (T-64)*(T-1)*(T+27),
+    (3,6): (T-729)*(T-64)*(T-1)**3*(T+27)**2*(T*T+286*T+117649),
+    (2,8): (T-256)*(T-16)*(T*T+136*T+16),
+    (2,10): (T-1024)*(T*T-123*T+1)*(T*T+625*T+3125),
+}
+
+
+def check_regev_table():
+    output = []
+    for (k, beta), expected in EXPECTED.items():
+        phi = sp.Poly(sp.cyclotomic_poly(beta, z), z, domain=sp.QQ)
+        def red(p):
+            return sp.rem(sp.Poly(p, z, domain=sp.QQ), phi).as_expr()
+        count = Counter()
+        zeros = 0
+        for c in compositions(k, beta):
+            xi = red(sum(c[j]*z**j for j in range(beta)))
+            if xi == 0:
+                zeros += 1
+            else:
+                count[red(xi**beta)] += 1
+        coeffs = [sp.S.One]  # ascending powers of T
+        for rho, multiplicity in count.items():
+            assert multiplicity % beta == 0
+            for _ in range(multiplicity//beta):
+                new = [sp.S.Zero]*(len(coeffs)+1)
+                for i, a in enumerate(coeffs):
+                    new[i] = red(new[i]-rho*a)
+                    new[i+1] = red(new[i+1]+a)
+                coeffs = new
+        assert all(a.is_Integer for a in coeffs)
+        characteristic = sum(a*T**j for j, a in enumerate(coeffs))
+        assert sp.expand(characteristic-expected) == 0, (k, beta)
+        rank = int(sp.binomial(k+beta-1, k))
+        assert len(coeffs)-1 == (rank-zeros)//beta
+        output.append({'k': k, 'beta': beta, 'R': rank, 'Z': zeros,
+                       's': len(coeffs)-1,
+                       'characteristic_polynomial': str(sp.factor(characteristic))})
+    return output
+
+
+def partitions(n, ceiling=None):
+    if n == 0:
+        yield ()
+        return
+    if ceiling is None:
+        ceiling = n
+    for first in range(min(n, ceiling), 0, -1):
+        for rest in partitions(n-first, first):
+            yield (first,) + rest
+
+
+def tableaux(shape):
+    hooks = 1
+    for i, length in enumerate(shape):
+        for j in range(length):
+            hooks *= length-j + sum(row > j for row in shape[i+1:])
+    return factorial(sum(shape))//hooks
+
+
+def check_vandermonde():
+    checked = []
+    for k, beta in [(2,2), (2,4), (2,6), (3,2), (3,4), (4,4)]:
+        for n in range(9):
+            partition_sum = sum(tableaux(lam)**beta for lam in partitions(n) if len(lam) <= k)
+            total = sp.S.Zero
+            for c in compositions(n+k*(k-1)//2, k):
+                delta = sp.prod(c[i]-c[j] for i in range(k) for j in range(i+1, k))
+                if delta:
+                    total += sp.Rational(int(delta)**beta, sp.prod(factorial(t)**beta for t in c))
+            vdm = total*factorial(n)**beta/factorial(k)
+            assert vdm == partition_sum, (k, beta, n)
+            checked.append([k, beta, n])
+    return {'parameter_pairs': 6, 'n_min': 0, 'n_max': 8,
+            'exact_equalities_checked': len(checked)}
+
+
+def check_hankel():
+    size = 13
+    m = [(-1)**j * sp.factorial2(2*j-1)**3 / (sp.factorial2(2*j)*4**j)
+         for j in range(size)]
+    current = [sp.S.One]+[sp.S.Zero]*(size-1)
+    count = 0
+    for half_n in range(1, 11):
+        current = convolve(current, m, size)
+        for j, a in enumerate(current):
+            assert (-1)**j*a > 0
+            count += 1
+    assert m[:3] == [1, -sp.Rational(1,8), sp.Rational(27,128)]
+    return {'even_n_min': 2, 'even_n_max': 20, 'j_min': 0, 'j_max': 12,
+            'strict_sign_checks': count}
+
+
+def main():
+    start = perf_counter()
+    result = {'arithmetic': 'exact rational and cyclotomic; no floating-point assertions',
+              'bessel': check_bessel(), 'regev_table': check_regev_table(),
+              'vandermonde': check_vandermonde(), 'hankel': check_hankel()}
+    result['elapsed_seconds'] = round(perf_counter()-start, 3)
+    result['status'] = 'all assertions passed'
+    dest = Path(__file__).with_name('verification_results.json')
+    dest.write_text(json.dumps(result, indent=2)+'\n')
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == '__main__':
+    main()
+
+\end{filecontents*}
+
+\begin{document}
+
+\title[Isotropic squeezes and exact differential complexity]{Isotropic Fuchs Squeezes and Exact Differential Complexity:\\Hypercubic Green Functions, Regev Sums, and Random Walk Poles}
+
+\author{KEIO}\date{21 October 2026}
+\thanks{Research preprint. Not peer reviewed. Prepared with AI assistance; exact checks are reproducible from the Python script embedded in the accompanying self-contained TeX source.}
+
+\subjclass[2020]{Primary 34M35; Secondary 05A15, 05A17, 05E10, 33C10, 34M15, 60G50, 82B41}
+\keywords{lattice Green function, hypercubic lattice, Fuchs relation, monodromy, differential Galois group, maximal unipotent monodromy, symmetric powers of Bessel operators, Regev sums, standard Young tableaux of bounded height, P-recursive sequences, minimal recurrence, Newton polygon, uniform random walks, Mellin transform}
+
+\begin{abstract}
+We study exact differential orders, algebraic relations, and Mellin poles
+for three families built from Bessel and generalized hypergeometric functions.
+An isotropic Fuchs squeeze proves irreducibility of self-dual Fuchsian
+operators from a single maximally unipotent point, rank-one local monodromy,
+and an exponent inequality.  Applied to the hypercubic lattice Green
+function in dimension $d$, it yields a minimal operator of order $d$,
+full group $\Ort(d)$ for odd $d$ and $\Sp(d)$ for even $d$, and a
+polynomial recurrence of minimum order $\lceil d/2\rceil$ and degree $d$.
+A separated singularity argument determines the joint group in all
+finite sets of dimensions; the only joint jet relations are the
+individual odd-dimensional quadrics.
+
+For bounded-height Regev sums of even exponent $\beta$, the minimal
+ODE has order $R=\binom{k+\beta-1}{k}$ and the minimum recurrence order is
+$(R-Z)/\beta$, where $Z$ counts zero-sum multisets of $\beta$-th roots
+of unity.  A finite-length lattice estimate proves the matching upper
+bound.  We give explicit zero-sum generating functions, extend the
+order theorem to every nonzero homogeneous Laurent-polynomial observable,
+and determine its Regev specialization's full Veronese ideal of jet
+relations.  The latter has transcendence degree $\beta$; an application
+of Siegel--Shidlovskii gives an exact reconstruction theorem at every
+nonzero algebraic point.
+
+For planar random walks we determine the forced Mellin poles and their
+orders, including the complete pole set when the number of unit steps
+is divisible by four. For seven unit steps, an explicit sign estimate
+proves that every negative even integer is an actual simple pole.  Signed resonances extend the analysis to unequal
+lengths.  Paired length classes and a stable triangle chamber give further
+complete pole classifications.  Classical ingredients and already known
+special cases are identified explicitly.
+\end{abstract}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+This paper develops methods from Bessel--Toeplitz determinants \cite{KBT} and vertex balance \cite{KVB} to obtain uniform structural results for three families of functions built from Bessel functions. Each question asks for exact information (the order of a minimal equation, its monodromy, the order of poles) that had been observed or conjectured from computer data. In each case the answer comes from local data that can be computed exactly, combined with one global constraint: the Fuchs relation in Theorem~\ref{thm:A}, a finite-length formal-lattice estimate in Theorem~\ref{thm:B}, and the analytic structure of a Mellin transform in Theorem~\ref{thm:C}. Table~\ref{tab:status} at the end of this introduction locates these results relative to the cited literature. The results are stated with complete proofs below; this comparison does not assert that every consequence is historically new.
+
+Throughout, $\theta=z\,d/dz$ (or $x\,d/dx$, $t\,d/dt$), $\ff ma=m(m-1)\cdots(m-a+1)$, and $\ff\theta a=\theta(\theta-1)\cdots(\theta-a+1)$.
+
+\subsection{Hypercubic lattices}
+Let $a_d(n)$ be the number of closed walks of length $n$ from the origin on $\Z^d$ with steps $\pm e_1,\dots,\pm e_d$, and let
+\[
+P_d(z)=\sum_{n\ge0}a_d(n)z^n
+\]
+be the lattice Green function of the hypercubic (simple cubic) lattice. In one dimension the exponential generating function of closed walks is $I_0(2u)=\sum_mu^{2m}/m!^2$, so
+\begin{equation}\label{eq:ad}
+a_d(n)=n!\,[u^n]\,I_0(2u)^d,\qquad P_d(z)=\int_0^\infty e^{-s}I_0(2zs)^d\,ds\quad(|z|<1/(2d)).
+\end{equation}
+Thus $P_1=(1-4z^2)^{-1/2}$ and $P_2(z)=\frac2\pi K(4z)$. For $d\le5$ linear differential equations for $P_d$ are listed in \cite{Gut10}. Hassani, Maillard and Zenine state the order-$d$, irreducibility and maximal-unipotence pattern and display further operators \cite[Appendix~A.1.1]{HMZ25}, and they conjecture that the differential Galois group of a minimal operator annihilating the diagonal of a rational function is orthogonal or symplectic according as the minimal number $N_{\rm var}$ of variables in such a representation is even or odd \cite[\S1.5]{HMZ25}; for the hypercubic lattice they take $N_{\rm var}=d+1$. Earlier, Boukraa, Hassani, Maillard and Weil observed that the operators of many lattice Green functions are irreducible and homomorphic to their adjoints \cite{BHMW14}.
+
+To state the result, let $\cB_d=\sum_{k\ge0}t^{2k}P^{(d)}_k(\theta)$ be the symmetric $d$-th power of the Bessel operator $\theta^2-t^2$, normalized so that $P^{(d)}_0=\theta^{d+1}/d!$. It is given by the continuant recursion of Bronstein, Mulders and Weil and of Borwein and Salvy, recalled in \eqref{eq:cont}; for instance $\cB_1=\theta^2-t^2$ and $\cB_2=\frac12\theta^3-2t^2(\theta+1)$. Put $K=\lceil d/2\rceil$ and
+\begin{equation}\label{eq:Ld}
+L_d=\sum_{k=0}^{K}4^kz^{2k}A_k(\theta),\qquad A_k(\theta)=P^{(d)}_k(\theta)\,(\theta+1)(\theta+2)\cdots(\theta+2k-1),
+\end{equation}
+so $A_0=\theta^d/d!$. For example $2L_2=\theta^2-16z^2(\theta+1)^2$.
+
+\begin{theorem}\label{thm:A}
+Let $d\ge2$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $L_dP_d=0$, and $L_d$ is irreducible over $\C(z)$. Hence $L_d$ is the minimal operator of $P_d$; it has order $d$.
+\item The leading coefficient of $L_d$ in the basis $\partial_z^j$ is $\frac{z^d}{d!}\prod_{0\le b<d/2}\bigl(1-4(d-2b)^2z^2\bigr)$. Every zero of it is a singular point with nontrivial local monodromy; there are no finite apparent singularities. For odd $d$, infinity is an apparent singularity, removed locally by writing $y=w\widetilde y$ with $w=1/z$.
+\item At $z=0$ all local exponents are $0$ and the monodromy is maximally unipotent \textup{(}one Jordan block of size $d$\textup{)}. At each of the $2K$ points $z=\pm1/(2(d-2b))$, $0\le b<d/2$, the exponents are $0,1,\dots,d-2$ and $\frac{d-2}2$, and the local monodromy is a reflection if $d$ is odd and a transvection if $d$ is even. At $z=\infty$ the exponents are $1,2,\dots,d$ and the monodromy is trivial if $d$ is odd; they are $1,\dots,d-1$ and $\frac d2$, and the monodromy is a transvection, if $d$ is even.
+\item The differential Galois group of $L_d$, over $\C(z)$ and over $\C(z^2)$, is $\Ort(d)$ if $d$ is odd and $\Sp(d)$ if $d$ is even.
+\end{enumerate}
+\end{theorem}
+
+The highest power of the logarithm at the origin is $d-1$ by (iii), and $P_d$ is the diagonal of a rational function in $d+1$ variables \cite{HMZ25}, so $N_{\rm var}\le d+1$. So Theorem~\ref{thm:A} proves the orthogonal/symplectic character predicted of \cite{HMZ25}, stated in terms of their conjectural value $N_{\rm var}=n_{\log}+2=d+1$, for hypercubic lattices of all dimensions. It does not prove the conjectural lower bound $N_{\rm var}\ge d+1$ for arbitrary diagonal representations. A related diamond-lattice statement is treated by other means in \cite[Cor.~E]{KBan2}; none of its assertions is needed below. The monodromy group is generated by pseudo-reflections (at most $d+1$ of them), and their product is the inverse of the maximally unipotent monodromy at the origin. For $d=3$, $\Ort(3)$ has identity component $\SO(3)\cong\mathrm{PSL}_2$, in accordance with the classical fact that the simple cubic lattice Green function is the square of a solution of a second order (Heun) equation \cite[\S7.2]{HMZ25}.
+
+\begin{corA}\label{cor:A1}
+Let $d\ge2$. If $d$ is even, $P_d,P_d',\dots,P_d^{(d-1)}$ are algebraically independent over $\C(z)$. If $d\ge3$ is odd, they satisfy exactly one algebraic relation over $\C(z)$ up to multiples; it is a nondegenerate homogeneous quadric $\sum_{i,j<d}q_{ij}(z)P_d^{(i)}P_d^{(j)}=0$.
+\end{corA}
+
+\begin{corA}\label{cor:A2}
+Let $d\ge2$ and $w_d(n)=a_d(2n)$. Then
+\begin{equation}\label{eq:walkrec}
+\sum_{k=0}^{K}4^kA_k(2n-2k)\,w_d(n-k)=0\qquad(n\ge1),
+\end{equation}
+a recurrence of order $K=\lceil d/2\rceil$ whose coefficients have degree exactly $d$. Every recurrence with polynomial coefficients satisfied by $w_d$ has order at least $\lceil d/2\rceil$ and degree at least $d$, and up to shifts of $n$ and constant factors \eqref{eq:walkrec} is the only recurrence of order $\lceil d/2\rceil$ and degree $d$.
+\end{corA}
+
+Since $w_d(n)=\binom{2n}nW_d(2n)$, where $W_d(2n)=\sum_{|a|=n}\binom n{a}^2$ are the even moments of Theorem~\ref{thm:C}, the statement about the order is equivalent to \cite[Thm.~1.7(c)]{KVB}; here it comes out of the irreducibility.
+
+\subsection{Regev sums}
+For $\beta\ge1$ and $k\ge1$ consider
+\[
+y_{k}^{(\beta)}(n)=\sum_{\lambda\vdash n,\ \ell(\lambda)\le k}(f^\lambda)^\beta,
+\]
+where $f^\lambda$ is the number of standard Young tableaux of shape $\lambda$. For $\beta=1$ these count involutions, and for $\beta=2$ permutations, without a decreasing subsequence of length $k+1$. Regev determined their asymptotics \cite{Reg81}. Gessel's work shows that $y^{(\beta)}_k$ is P-recursive for every positive integer $\beta$ \cite{Ges90}, and Bergeron and Gascon computed equations for small parameters \cite{BG00}. The case $\beta=2$ and its connection with the conjectures of \cite{BFK95,BG00} are treated in the related preprint \cite{KBT}. In her survey of standard Young tableaux of bounded height, Mishna asks: ``Can we usefully bound the annihilating differential operators or determine asymptotic formulas for arbitrary $\beta$?'' \cite[\S4]{Mis19}. We answer the first part of this question for even $\beta$.
+
+Let $\mu_\beta$ be the group of $\beta$-th roots of unity. For $\xi\in\C$ let $N_{k,\beta}(\xi)$ be the number of $k$-element multisets $\{\omega_1,\dots,\omega_k\}$ of elements of $\mu_\beta$ with $\omega_1+\dots+\omega_k=\xi$, and put
+\[
+R_{k,\beta}=\binom{k+\beta-1}{k},\qquad Z_{k,\beta}=N_{k,\beta}(0),\qquad s_{k,\beta}=\frac{R_{k,\beta}-Z_{k,\beta}}{\beta}.
+\]
+Since $N_{k,\beta}(\zeta\xi)=N_{k,\beta}(\xi)$ for $\zeta\in\mu_\beta$, the nonzero sums $\xi$ fall into $\mu_\beta$-orbits of size $\beta$, so $s_{k,\beta}$ is an integer, and $N_{k,\beta}(\xi)$ depends only on $\rho=\xi^\beta$. Let $\Xi_{k,\beta}$ be the set of these values $\rho=\xi^\beta$, $\xi\ne0$, $N_{k,\beta}(\xi)>0$, write $m(\rho)=N_{k,\beta}(\xi)$, and put
+\[
+\chi_{k,\beta}(T)=\prod_{\rho\in\Xi_{k,\beta}}(T-\rho)^{m(\rho)}\in\Z[T],\qquad\deg\chi_{k,\beta}=s_{k,\beta}.
+\]
+
+The polynomial $\chi_{k,\beta}$ has integer coefficients: its roots are
+algebraic integers and the root multiset, with multiplicities, is invariant
+under the cyclotomic Galois group.  Also $|\xi|\le k$, with equality only
+when all $k$ roots coincide; these multisets give the single simple root
+$k^\beta$ after taking $\beta$-th powers.
+
+\begin{theorem}\label{thm:B}
+Let $\beta\ge2$ be even, $k\ge1$, and $G(x)=\sum_{n\ge0}y^{(\beta)}_k(n)\,x^n/(n!)^\beta$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item The minimal differential operator of $G$ over $\C(x)$ has order $R_{k,\beta}$. Its differential Galois group is the image of $\Sp_\beta$ in $\GL(\Sym^k\C^\beta)$.
+\item Every linear recurrence with polynomial coefficients satisfied by $y^{(\beta)}_k$ has order at least $s_{k,\beta}$, and there is one of order $s_{k,\beta}$.
+\item If $\sum_{j=0}^{s}q_j(n)\,y^{(\beta)}_k(n-j)=0$ for $n\ge n_0$, with $s=s_{k,\beta}$ and $q_j\in\C[n]$ not all zero, and $J$ is the set of $j$ for which $\deg q_j$ is maximal, then $0,s\in J$ and $\sum_{j\in J}\lc(q_j)\,T^{s-j}=\lc(q_0)\,\chi_{k,\beta}(T)$.
+\end{enumerate}
+\end{theorem}
+
+The unique root of $\chi_{k,\beta}$ of maximum modulus is $k^\beta$, with multiplicity one; it gives the exponential growth $k^{\beta n}$ in Regev's asymptotics. For $\beta=2$ one has $Z_{k,2}=1$ or $0$ according as $k$ is even or odd, so $s_{k,2}=\lceil k/2\rceil$ and $\chi_{k,2}(T)=\prod_{0\le b<k/2}(T-(k-2b)^2)$, as in \cite{BFK95,KBT}. For $\beta=4$, a multiset of fourth roots of unity has sum zero exactly when $1,-1$ and $i,-i$ occur equally often, so $Z_{k,4}=k/2+1$ for even $k$ and $0$ for odd $k$. Table~\ref{tab:regev} lists further cases; each of them was checked by computer (Section~\ref{sec:comp}). For odd $\beta$ the method does not apply; that case remains outside the theorem.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}rrrrrl@{}}
+\toprule
+$k$&$\beta$&$R_{k,\beta}$&$Z_{k,\beta}$&$s_{k,\beta}$&$\chi_{k,\beta}(T)$\\
+\midrule
+2&4&10&2&2&$(T-16)(T+4)$\\
+3&4&20&0&5&$(T-81)(T-1)^2(T^2+14T+625)$\\
+4&4&35&3&8&$(T-256)(T-16)^2(T+4)^2(T+64)(T^2-56T+10000)$\\
+5&4&56&0&14&$(T-625)(T-81)^2(T-1)^3(T^2-322T+83521)$\\
+&&&&&$\quad\times(T^2+14T+625)^2(T^2+238T+28561)$\\
+2&6&21&3&3&$(T-64)(T-1)(T+27)$\\
+3&6&56&2&9&$(T-729)(T-64)(T-1)^3(T+27)^2(T^2+286T+117649)$\\
+2&8&36&4&4&$(T-256)(T-16)(T^2+136T+16)$\\
+2&10&55&5&5&$(T-1024)(T^2-123T+1)(T^2+625T+3125)$\\
+\bottomrule
+\end{tabular}
+\caption{The invariants of Theorem~\ref{thm:B} for some even $\beta$. The zero-sum counts and characteristic polynomials were checked by exact cyclotomic arithmetic; the recurrence orders follow from Theorem~\ref{thm:B}, not from numerical guessing. See Section~\ref{sec:comp}.}\label{tab:regev}
+\end{table}
+
+\subsection{Random walk integrals}
+Let
+\[
+W_n(s)=\int_{[0,1]^n}\Bigl|\sum_{k=1}^ne^{2\pi ix_k}\Bigr|^s\,dx_1\cdots dx_n,
+\]
+the $s$-th moment of the distance from the origin after $n$ unit steps in uniformly random directions. Borwein, Nuyens, Straub and Wan showed that $W_n$ extends to a meromorphic function on $\C$ whose poles lie at negative integers and have order at most two \cite[Thm.~5]{BNSW11}; $W_3$ has simple poles and $W_4$ double poles at $-2,-4,\dots$ \cite{BNSW11,BSWZ12}. Borwein, Nuyens, Straub and Wan~\cite[Remark~5]{BNSW11}
+predicted the negative even pole family, an additional family
+$-n/2-2j$ for even $n$, and higher order where the two families overlap.
+The odd-step simple-pole conjecture was also stated in~\cite{BSW13}
+and proved by Zhou~\cite[Theorem~5.2]{Zho19}.  The argument below gives
+another proof of that already known assertion and determines the
+nonoscillating pole family for even $n$.
+
+\begin{theorem}\label{thm:C}
+Let $n\ge2$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item Every pole of $W_n$ lies in $\{-2,-4,-6,\dots\}$, or, if $n$ is even, in $\{-n/2-2j:j\ge0\}$. No pole has order three or more.
+\item If $n$ is odd, every pole of $W_n$ is simple.
+\item If $n$ is even, every point $s=-n/2-2j$, $j\ge0$, is a pole of $W_n$, of order exactly two if $4\mid n$ and of order exactly one if $n\equiv2\pmod4$. Every other pole is simple.
+\item If $4\mid n$, every negative even integer is an actual pole:
+$-2p$ is simple for $1\le p<n/4$ and double for $p\ge n/4$.
+\item For $n=7$, all negative even integers are actual simple poles.
+The residue at $-2$ is positive, and every subsequent residue is negative.
+\end{enumerate}
+In particular, $W_n$ has a pole of order two if and only if $4\mid n$.
+\end{theorem}
+
+Part~(ii) is Zhou's theorem, with a different proof. The leading Laurent coefficients are explicit (Proposition~\ref{prop:Wcoef}); for $n=4$ the double-pole coefficient is $\frac3{2\pi^2}$, agreeing with \cite[Example~4]{BSWZ12}. Theorem~\ref{thm:C} establishes the orders predicted in \cite[Rem.~5]{BNSW11}; the remaining nonvanishing question is settled below when $4\mid n$ (Corollary~\ref{cor:C-complete-four}). For $n=2$ none of the negative even integers is a pole, since $W_2(s)=\binom{s}{s/2}$.
+
+\subsection{Methods}
+Theorem~\ref{thm:A}(i) rests on the following criterion (Proposition~\ref{prop:squeeze}). Let $L$ be a Fuchsian operator on $\PP^1$ whose solution space carries a nondegenerate monodromy-invariant bilinear form. Suppose that at one point $p_0$ the indicial polynomial has a single root, that at the other finite singular points the local monodromy $T$ has $\rk(T-1)\le1$ and the integral exponents are nonnegative, and that the exponents at a further point $p_\infty$ are large compared with the one at $p_0$. Then $L$ is irreducible. The proof squeezes an invariant subspace twice: maximal unipotent monodromy at $p_0$ makes any two invariant subspaces intersect, so a proper invariant subspace would produce an isotropic one, which must consist of holomorphic solutions at every pseudo-reflection point. The Fuchs relation for the corresponding factor then fails. This refines the Fuchs--Abel squeeze of \cite{KBT,KVB}: the isotropy step disposes of the negative contributions that make the plain squeeze inconclusive in even dimensions.
+
+To apply the criterion we need the local exponents of $L_d$ and an invariant form. The exponents at the singular points $z=\pm1/(2(d-2b))$ are computed with the $\eta$-identity of \cite{KVB}, which reads them off from the formal solutions of the symmetric power $\cB_d$ at infinity (vertex balance). The invariant form comes from a symmetry of the continuant that defines $\cB_d$: its coefficients $j(d-j+1)$ are palindromic, which makes $\cB_d$, and then $L_d$, formally self-adjoint for the anti-involution $\theta\mapsto-\theta$ (Lemma~\ref{lem:bessel}(c)). The Galois group then follows from a theorem of Kazhdan--Margulis, Gabber and Beukers--Heckman on Lie algebras normalized by pseudo-reflections, as in \cite{KBan2}.
+
+For Theorem~\ref{thm:B}, Gessel's determinantal approach is replaced by a Vandermonde formula that is available for even $\beta$: $G$ is a homogeneous polynomial of degree $k$ in the jets of the hypergeometric function ${}_0F_{\beta-1}(;1,\dots,1;x)$. Katz's theorem that the differential Galois group of $\theta^\beta-x$ is $\Sp_\beta$ \cite{Kat87} gives (i). For (ii), every annihilating operator must carry all exponential factors $e^{\beta\xi x^{1/\beta}}$ of the minimal one at $x=\infty$; a weight argument on the Newton polygon gives the lower bound. The upper bound comes from a finite-dimensional quotient of formal lattices, with different shifts for the regular and irregular parts at infinity. The regular part, of rank $Z_{k,\beta}$, does not cost anything, which is why $Z_{k,\beta}$ is subtracted.
+
+Theorem~\ref{thm:C} follows from the Mellin--Bessel representation of $W_n$: the poles at $-2p$ come from a Gamma factor, the poles at $-n/2-2j$ from the non-oscillating part of the asymptotic expansion of $J_0(t)^n$, which exists only for even $n$ and contains only even powers of $1/t$. The two families meet exactly when $4\mid n$, and the double poles do not cancel because the asymptotic coefficients of $J_0^2+Y_0^2$ alternate in sign.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{5.4cm}>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.6cm}@{}}
+\toprule
+Statement&Previously&Here\\
+\midrule
+$P_d$: operator of order $d$ for all $d$&listed in low dimensions \cite{Gut10}; general pattern \cite{HMZ25}&explicit, Thm.~\ref{thm:A}(i)\\
+$P_d$: minimality, irreducibility&stated/discussed \cite{BHMW14,HMZ25}&Thm.~\ref{thm:A}(i)\\
+$P_d$: local monodromy, MUM&MUM reported \cite{HMZ25}&Thm.~\ref{thm:A}(ii),(iii)\\
+$P_d$: full $\Ort(d)$ / $\Sp(d)$&orthogonal/symplectic character predicted \cite[\S1.5]{HMZ25}&Thm.~\ref{thm:A}(iv)\\
+walks on $\Z^d$: minimal order $\lceil d/2\rceil$&equivalent to \cite[Thm.~1.7(c)]{KVB}&reproved; degree $d$, Cor.~\ref{cor:A2}\\
+Regev sums, even $\beta$: ODE order, Galois group&$\beta=2$ \cite{KBT}; question \cite[\S4]{Mis19}&Thm.~\ref{thm:B}(i)\\
+Regev sums, even $\beta$: recurrence order, characteristic polynomial&$\beta=2$ \cite{KBT}&Thm.~\ref{thm:B}(ii),(iii)\\
+$W_n$, $n$ odd: simple poles&conj.\ \cite{BNSW11,BSW13}, proved \cite{Zho19}&new proof, Thm.~\ref{thm:C}(ii)\\
+$W_n$, $n$ even: pole orders, $4\mid n$&conjectured \cite[Rem.~5]{BNSW11}&Thm.~\ref{thm:C}(iii)\\
+\bottomrule
+\end{tabular}
+\caption{Relation to the cited literature; the table is not an exhaustive priority claim.}\label{tab:status}
+\end{table}
+
+\subsection{Further structural conclusions}
+Theorem~\ref{thm:joint-hypercubic} proves that the simultaneous Galois group
+in any finite set of distinct dimensions is the full product.  In
+particular, $P_2,P_3,\ldots$ are algebraically independent, and
+Corollary~\ref{cor:joint-relations} gives all relations among their jets.
+For Regev sums, Theorem~\ref{thm:observable-universality} makes the order
+formula independent of the chosen homogeneous observable, while
+Proposition~\ref{prop:zero-sum-series} gives closed zero-sum generating
+functions.  Theorems~\ref{thm:regev-veronese} and~\ref{thm:regev-values}
+describe every jet relation and the corresponding fields of values at
+nonzero algebraic points.  The random-walk extensions below separate
+resonant unequal lengths from a chamber where every negative even
+integer is an actual simple pole. Theorem~\ref{thm:seven-step-poles}
+also determines the complete seven-step pole set and every residue sign.
+
+\subsection*{Organization}
+Section~\ref{sec:fuchs} collects facts on Fuchsian operators and proves the isotropic squeeze. Section~\ref{sec:bessel} treats the symmetric powers of the Bessel operator. Theorem~\ref{thm:A} and its corollaries are proved in Section~\ref{sec:A}, Theorem~\ref{thm:B} in Section~\ref{sec:B}, and Theorem~\ref{thm:C} in Section~\ref{sec:C}. Section~\ref{sec:comp} describes the computer checks, and Section~\ref{sec:open} lists what remains open.
+\section{Fuchsian operators, invariant forms and the isotropic squeeze}\label{sec:fuchs}
+
+\subsection{Exponents}
+We work in $\C(z)\langle\partial\rangle$, $\partial=d/dz$. Every operator with coefficients in $\C[z,z^{-1}]$ can be written uniquely as a $\theta$-form $\sum_jz^jA_j(\theta)$ with $A_j\in\C[\theta]$. Let $L$ have order $r$ and let $p\in\PP^1$. In the local coordinate $u=z-p$ (or $u=1/z$ at $p=\infty$), write $L=u^v\bigl(B_0(\theta_u)+uB_1(\theta_u)+\cdots\bigr)$ with $B_0\ne0$ and $\theta_u=u\,d/du$. The point $p$ is a regular singular (or ordinary) point exactly when $\deg B_0=r$ (Fuchs' criterion), and then $B_0$ is the \emph{indicial polynomial} of $L$ at $p$; its roots, with multiplicity, are the \emph{local exponents}. At an ordinary point they are $0,1,\dots,r-1$. We put
+\[
+\delta_p(L)=\sum(\text{exponents of }L\text{ at }p)-\binom r2 .
+\]
+$L$ is \emph{Fuchsian} if every point of $\PP^1$ is ordinary or regular singular. The local monodromy at $p$ has the eigenvalues $e^{2\pi i\rho}$, $\rho$ running through the exponents.
+
+\begin{fact}[Fuchs' relation]\label{fact:fuchs}
+If $L$ is Fuchsian of order $r$, then $\sum_{p\in\PP^1}\delta_p(L)=-2\binom r2$; see, e.g., \cite{Inc56,Har20}.
+\end{fact}
+
+\begin{fact}[right factors]\label{fact:factor}
+Let $L=QR$ in $\C(z)\langle\partial\rangle$ with $L$ Fuchsian. Then $R$ is Fuchsian, and at every point $p$ the exponents of $R$ form a sub-multiset of those of $L$.
+\end{fact}
+
+\begin{proof}
+The solutions of $R$ are solutions of $L$, hence of moderate growth at every point, so $R$ is Fuchsian. In the notation above, $Q=u^{v'}(Q_0(\theta_u)+\cdots)$ and $R=u^{v}(B_0(\theta_u)+\cdots)$, and since $\theta_uu^v=u^v(\theta_u+v)$, the indicial polynomial of $L$ is $Q_0(\theta_u+v)B_0(\theta_u)$.
+\end{proof}
+
+\begin{fact}[holomorphic solution spaces]\label{fact:holo}
+Let $R$ have order $r$ and be regular singular at $p$, and suppose that every local solution of $R$ at $p$ is holomorphic at $p$. Then the exponents of $R$ at $p$ are $r$ distinct nonnegative integers, so $\delta_p(R)\ge0$.
+\end{fact}
+
+\begin{proof}
+By Gaussian elimination there is a basis $y_1,\dots,y_r$ of solutions with distinct orders of vanishing $v_1<\dots<v_r$ at $p$. The lowest term $u^{v_i}$ of $y_i$ is annihilated by the indicial polynomial, so the $v_i$ are $r$ distinct roots of a polynomial of degree $r$, hence all of its roots. As $v_i\ge i-1$, their sum is at least $\binom r2$.
+\end{proof}
+
+A solution that is single-valued near a regular singular point $p$ is meromorphic at $p$, and its order at $p$ is an exponent. Hence, \emph{if all integral exponents at $p$ are nonnegative, the single-valued local solutions at $p$ are exactly the holomorphic ones.} We use this repeatedly.
+
+\begin{lemma}[maximal unipotent monodromy]\label{lem:mum}
+If the indicial polynomial of $L$ at $p$ is $c(\theta_u-e)^r$, then the local monodromy at $p$ is $e^{2\pi ie}$ times a unipotent transformation with a single Jordan block. Its eigenvectors are the multiples of the unique solution of the form $u^e h(u)$ with $h$ holomorphic and $h(0)=1$.
+\end{lemma}
+
+\begin{proof}
+Since $e$ is the only root, the Frobenius method \cite{Inc56} gives a basis of solutions
+\[
+y_m=\sum_{i=0}^m\binom mi\,u^eh_{m-i}(u)\log^iu\qquad(0\le m<r),
+\]
+with $h_j$ holomorphic, $h_0(0)=1$ and $h_j(0)=0$ for $j\ge1$. Continuation around $p$ sends $\log u$ to $\log u+2\pi i$, so $(e^{-2\pi ie}T-1)^{r-1}y_{r-1}=(2\pi i)^{r-1}(r-1)!\,y_0\neq0$.
+\end{proof}
+
+\begin{lemma}[simple zero of the leading coefficient]\label{lem:simplezero}
+Let $M=a_n\partial^n+a_{n-1}\partial^{n-1}+\dots+a_0$ have coefficients holomorphic near $p$, with $a_n(p)=0\ne a_n'(p)$, and put $\gamma=n-1-a_{n-1}(p)/a_n'(p)$. Suppose $\gamma\notin\{n-1,n,n+1,\dots\}$. Then $p$ is a regular singular point with exponents $0,1,\dots,n-2,\gamma$, the holomorphic local solutions form a space of dimension exactly $n-1$, and the local monodromy $T$ satisfies $\rk(T-1)\le1$. If $\gamma\notin\Z$, then $T$ is a pseudo-reflection with eigenvalue $e^{2\pi i\gamma}$. If $\gamma\in\{0,1,\dots,n-2\}$, then $T$ is a transvection, that is, unipotent with $\rk(T-1)=1$.
+\end{lemma}
+
+\begin{proof}
+Each $a_j/a_n$ has at most a simple pole at $p$, so $p$ is regular singular, and the indicial polynomial is $\ff\rho{n-1}\bigl(a_n'(p)(\rho-n+1)+a_{n-1}(p)\bigr)$. Put $u=z-p$ and substitute $y=\sum_mc_mu^m$. In the coefficient of $u^m$ in $My$, the coefficient $c_{m+n-1}$ occurs with the factor $\frac{(m+n-1)!}{m!}\bigl(a_n'(p)m+a_{n-1}(p)\bigr)=\frac{(m+n-1)!}{m!}a_n'(p)(m+n-1-\gamma)$, and all other $c_i$ that occur have $i<m+n-1$. By hypothesis the factor does not vanish for $m\ge0$, so $c_0,\dots,c_{n-2}$ can be chosen freely and determine a unique formal solution, which converges because $p$ is regular singular. Hence the holomorphic solutions form a space of dimension $n-1$; they are fixed by $T$, so $\rk(T-1)\le1$. If $\gamma\notin\Z$, there is a solution $u^\gamma h(u)$, $h(0)=1$, with eigenvalue $e^{2\pi i\gamma}\ne1$. If $\gamma\in\{0,\dots,n-2\}$, all exponents are integers and $T$ is unipotent. If $T$ were $1$, all solutions would be single-valued, hence holomorphic, which contradicts the dimension count.
+\end{proof}
+
+\subsection{Pseudo-reflections and invariant forms}
+A \emph{pseudo-reflection} is a $T\in\GL(V)$ with $\rk(T-1)=1$; then $(T-1)v=\lambda(v)a$ for a vector $a\ne0$ and a linear form $\lambda\neq0$. A \emph{reflection} is a pseudo-reflection of order two, and a \emph{transvection} is a unipotent pseudo-reflection.
+
+\begin{lemma}\label{lem:pseudo}
+Let $B$ be a nondegenerate bilinear form on a finite-dimensional space $V$, preserved by a pseudo-reflection $T$ with $(T-1)v=\lambda(v)a$.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item If $U\subseteq V$ is $T$-stable and $B(U,U)=0$, then $U\subseteq\ker(T-1)$.
+\item If $B$ is symmetric, then $B(a,a)\ne0$ and $Tv=v-2\frac{B(v,a)}{B(a,a)}a$; in particular $T$ is a reflection.
+\item If $B$ is alternating, then $Tv=v+cB(a,v)a$ for some $c\ne0$; in particular $T$ is a transvection.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Invariance of $B$ means
+\begin{equation}\label{eq:inv}
+\lambda(w)B(v,a)+\lambda(v)B(a,w)+\lambda(v)\lambda(w)B(a,a)=0\qquad\text{for all }v,w\in V.
+\end{equation}
+(a) Suppose $y\in U$ with $\lambda(y)\ne0$. Then $a=\lambda(y)^{-1}(Ty-y)\in U$, so $B(y,a)=B(a,a)=0$, and \eqref{eq:inv} with $v=y$ gives $\lambda(y)B(a,w)=0$ for all $w$. Hence $a=0$ by nondegeneracy, a contradiction.
+
+(b) Taking $v=w$ in \eqref{eq:inv} gives $\lambda(v)\bigl(2B(a,v)+\lambda(v)B(a,a)\bigr)=0$. If $B(a,a)=0$ then $\lambda(v)B(a,v)=0$ for all $v$, which is impossible since $\lambda$ and $B(a,\cdot)$ are nonzero linear forms. So $B(a,a)\ne0$, and $\lambda(v)=-2B(a,v)/B(a,a)$ off the hyperplane $\ker\lambda$, hence everywhere.
+
+(c) Now $B(a,a)=0$ and \eqref{eq:inv} says $\lambda(v)B(a,w)=\lambda(w)B(a,v)$, so $\lambda$ is a multiple of $B(a,\cdot)$. Then $(T-1)^2=0$ because $\lambda(a)=cB(a,a)=0$.
+\end{proof}
+
+Let $\dagger$ be the anti-involution of $\C(z)\langle\theta\rangle$ with $z^\dagger=z$ and $\theta^\dagger=-\theta$, and let $L^*$ be the formal adjoint ($\partial^*=-\partial$, $z^*=z$). Since $z^{-1}\theta z=\theta+1$, both $L\mapsto L^*$ and $L\mapsto z^{-1}L^\dagger z$ are anti-automorphisms sending $\theta$ to $-\theta-1$ and fixing $z$, so
+\begin{equation}\label{eq:adj}
+L^*=z^{-1}L^\dagger z .
+\end{equation}
+For a $\theta$-form, $(\sum_jz^jA_j(\theta))^\dagger=\sum_jz^jA_j(-\theta-j)$, because $A(-\theta)z^j=z^jA(-\theta-j)$.
+
+\begin{lemma}\label{lem:form}
+If $L^\dagger=\varepsilon L$ with $\varepsilon=\pm1$, then the solution space of $L$ near any nonsingular point carries a nondegenerate bilinear form that is invariant under analytic continuation.
+\end{lemma}
+
+\begin{proof}
+By \eqref{eq:adj}, $L^*=\varepsilon z^{-1}Lz$, so $y\mapsto z^{-1}y$ maps solutions of $L$ to solutions of $L^*$, compatibly with continuation in $\C^\times$. The Lagrange identity $vL(y)-yL^*(v)=\partial\,\mathfrak B(y,v)$ holds with a bilinear concomitant $\mathfrak B(y,v)=\sum_{i,j<r}c_{ij}(z)y^{(i)}v^{(j)}$ whose matrix $(c_{ij})$ is triangular with respect to the antidiagonal, with $\pm$ the leading coefficient of $L$ on the antidiagonal \cite{Inc56}. Hence $\mathfrak B(y,v)$ is constant for $L(y)=L^*(v)=0$, the pairing between the two solution spaces is perfect, and it is preserved by continuation. Put $B(y_1,y_2)=\mathfrak B(y_1,z^{-1}y_2)$.
+\end{proof}
+
+\subsection{The isotropic squeeze}
+
+\begin{proposition}\label{prop:squeeze}
+Let $L$ be a Fuchsian operator of order $d\ge1$ on $\PP^1$, $V$ its solution space at a base point, and $\Gamma\subseteq\GL(V)$ its monodromy group. Assume:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $V$ carries a nondegenerate $\Gamma$-invariant bilinear form $B$;
+\item at a point $p_0$ the indicial polynomial of $L$ has a single root $e_0$ \textup{(}of multiplicity $d$\textup{)};
+\item at a point $p_\infty\ne p_0$ every exponent $\rho$ satisfies $\operatorname{Re}\rho+\operatorname{Re}e_0>0$;
+\item at every other singular point $p$ the local monodromy $T_p$ satisfies $\rk(T_p-1)\le1$, and all integral exponents at $p$ are nonnegative.
+\end{enumerate}
+Then $V$ is an irreducible $\Gamma$-module.
+\end{proposition}
+
+\begin{proof}
+By Lemma~\ref{lem:mum} the local monodromy at $p_0$ has a single Jordan block, so its invariant subspaces form a chain, and every nonzero invariant subspace contains its eigenline. Hence any two nonzero $\Gamma$-invariant subspaces have nonzero intersection.
+
+Let $W\ne0$ be invariant and $W^\perp=\{v:B(w,v)=0\ \forall w\in W\}$, which is invariant and has dimension $d-\dim W$. Suppose $W\ne V$. Then $W^\perp\ne0$, so $U=W\cap W^\perp$ is a nonzero invariant subspace with $B(U,U)=0$. Let $r=\dim U$ and let $L_U$ be the monic operator whose solution space is $U$; its coefficients are single-valued and of moderate growth, hence rational, and $L_U$ is a right factor of $L$. We compute $\delta_p(L_U)$.
+
+At $p_0$, by Fact~\ref{fact:factor}, all exponents of $L_U$ equal $e_0$, so $\delta_{p_0}=re_0-\binom r2$. At $p_\infty$, again by Fact~\ref{fact:factor}, $\operatorname{Re}\delta_{p_\infty}>-re_0'-\binom r2$, where $e_0'=\operatorname{Re}e_0$. At a singular point $p$ as in (d), Lemma~\ref{lem:pseudo}(a) (or $T_p=1$) gives $U\subseteq\ker(T_p-1)$, so the elements of $U$ are single-valued near $p$, hence holomorphic by (d), and $\delta_p(L_U)\ge0$ by Fact~\ref{fact:holo}. At every other point, including the singular points of $L_U$ that are ordinary for $L$, the solutions of $L$ and hence those of $L_U$ are holomorphic, and $\delta_p(L_U)\ge0$. Summing,
+\[
+\operatorname{Re}\sum_p\delta_p(L_U)>re_0'-\binom r2-re_0'-\binom r2=-2\binom r2,
+\]
+contradicting Fact~\ref{fact:fuchs}. So $W=V$.
+\end{proof}
+
+Under the hypotheses of Proposition~\ref{prop:squeeze}, Schur's lemma shows that $B$ is unique up to a scalar; since the transpose of $B$ is also invariant, $B$ is symmetric or alternating.
+
+\begin{corollary}\label{cor:galois}
+In the situation of Proposition~\ref{prop:squeeze}, let $G$ be the differential Galois group of $L$, and suppose some $T_p$ in \textup{(d)} is $\ne1$. If $d=2$ then $B$ is alternating and $G=\SL_2$. If $d\ge3$ and $B$ is alternating, then $G=\Sp(V,B)$. If $d\ge3$ and $B$ is symmetric, then $G^0=\SO(V,B)$, and $G=\Ort(V,B)$ if some $T_p$ is a reflection. A nontrivial $T_p$ is a reflection if $B$ is symmetric and a transvection if $B$ is alternating.
+\end{corollary}
+
+\begin{proof}
+The last sentence is Lemma~\ref{lem:pseudo}(b),(c). Since $L$ is Fuchsian, $G$ is the Zariski closure of $\Gamma$ \cite[Thm.~5.8]{vdPS03}. As $V$ is irreducible under $G$, the unipotent radical of $G$ has a nonzero fixed space that is $G$-stable, so it acts trivially; thus $G$ and $G^0$ are reductive. The unipotent part $u$ of the monodromy at $p_0$ lies in $G$, and in $G^0$ because the Zariski closure of $\langle u\rangle$ is connected. By Lemma~\ref{lem:mum}, $u$ has a single Jordan block, so the $u$-stable subspaces form a chain. As $V|_{G^0}$ is semisimple, it is irreducible. By Schur's lemma the center of $G^0$ acts by scalars preserving $B$, that is, by $\pm1$, so $G^0$ is semisimple, and $\mathfrak g=\Lie(G^0)$ is a semisimple Lie algebra acting irreducibly on $V$, preserving $B$ and normalized by the pseudo-reflection $T_p\in G$. By the theorem of Kazhdan--Margulis, Gabber and Beukers--Heckman \cite[Thm.~1.5]{Kat90}, \cite{BH89}, $\mathfrak g$ is $\mathfrak{sl}(V)$, $\mathfrak{so}(V,B')$ or $\mathfrak{sp}(V,B')$ for a nondegenerate form $B'$. For $d\ge3$, $\mathfrak{sl}(V)$ preserves no nonzero bilinear form, and since the invariant forms of the irreducible $\mathfrak g$ are multiples of $B$, $\mathfrak g=\mathfrak{so}(V,B)$ or $\mathfrak{sp}(V,B)$ according to the type of $B$. For $d=2$ the only possibility is $\mathfrak{sl}_2=\mathfrak{sp}_2$, and $B$ is alternating because $\mathfrak{sl}_2$ preserves no symmetric form. Since $\Sp$ is connected and $G\subseteq\Sp(V,B)$ or $\Ort(V,B)$, the claims follow; a reflection has determinant $-1$, so it is not in $\SO(V,B)$.
+\end{proof}
+\section{Symmetric powers of the Bessel operator}\label{sec:bessel}
+
+Fix $n\ge1$ and work in $\C[t]\langle\theta\rangle$, $\theta=t\,d/dt$, where $\theta t^2=t^2(\theta+2)$. Following Bronstein, Mulders and Weil \cite{BMW97} and Borwein and Salvy \cite{BS08}, define
+\begin{equation}\label{eq:cont}
+L_0=1,\quad L_1=\theta,\quad L_{j+1}=\theta L_j-c_j\,t^2L_{j-1},\qquad c_j=j(n-j+1)\quad(1\le j\le n),
+\end{equation}
+and $\cB_n=L_{n+1}/n!$. Write $\cB_n=\sum_{k\ge0}t^{2k}P^{(n)}_k(\theta)$ and $\chi_n(\mu)=\sum_k\bigl([\theta^{n+1-2k}]P^{(n)}_k\bigr)\mu^{n+1-2k}$. We often drop the superscript $(n)$.
+
+\begin{lemma}\label{lem:bessel}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\cB_n(y_1\cdots y_n)=0$ for all solutions $y_1,\dots,y_n$ of $\theta^2y=t^2y$ in any commutative differential ring containing $\C(t)$ and $\C$.
+\item $P_0=\theta^{n+1}/n!$, $\deg P_k\le n+1-2k$, and $\chi_n(\mu)=\frac1{n!}\prod_{b=0}^n(\mu-n+2b)$.
+\item $\cB_n^\dagger=(-1)^{n+1}\cB_n$; equivalently $P_k(-\theta-2k)=(-1)^{n+1}P_k(\theta)$ for all $k$.
+\item Let $K_n=\lfloor(n+1)/2\rfloor$. Then $P_k=0$ for $k>K_n$. If $n$ is odd, $P_{K_n}$ is a nonzero constant; if $n$ is even, $P_{K_n}(\theta)=c(\theta+n/2)$ with $c\ne0$. All leading coefficients $[\theta^{n+1-2k}]P_k$, $0\le k\le K_n$, are nonzero.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) For a solution $y$ put $Y_j=\ff nj\,y^{n-j}(\theta y)^j$. Since $\theta^2y=t^2y$,
+\[
+\theta Y_j=\ff nj(n-j)\,y^{n-j-1}(\theta y)^{j+1}+\ff nj j\,t^2y^{n-j+1}(\theta y)^{j-1}=Y_{j+1}+c_jt^2Y_{j-1},
+\]
+so $Y_j=L_jy^n$ by induction, and $L_{n+1}y^n=Y_{n+1}=0$. Applying this to $y=\sum_is_iy_i$ and taking the coefficient of $s_1\cdots s_n$ gives the claim.
+
+(b) Give $t$ and $\theta$ weight one. Since $[\theta,t^2]=2t^2$ has weight two, the weight-$(j+1)$ part of $L_{j+1}$ satisfies the commutative recursion $\Lambda_{j+1}=\mu\Lambda_j-c_j\Lambda_{j-1}$ with $\mu$ in place of $\theta$ and $t=1$. So $\deg P_k\le n+1-2k$, and $n!\chi_n(\mu)=\Lambda_{n+1}(\mu)$ is the characteristic polynomial of any tridiagonal matrix with zero diagonal whose off-diagonal products are $c_1,\dots,c_n$. One such matrix is the matrix of $D=Y\partial_X+X\partial_Y$ on homogeneous polynomials of degree $n$ in the basis $X^{n-j}Y^j$: indeed $D(X^{n-j}Y^j)=(n-j)X^{n-j-1}Y^{j+1}+jX^{n-j+1}Y^{j-1}$, and the product of the entries in positions $(j,j+1)$ and $(j+1,j)$ is $(j+1)(n-j)=c_{j+1}$. As $D$ is the derivation of $\Sym^n\C^2$ induced by $\left(\begin{smallmatrix}0&1\\1&0\end{smallmatrix}\right)$, which has eigenvalues $\pm1$, its eigenvalues are $n-2b$, $0\le b\le n$. This is the Sylvester--Kac matrix \cite{Kac47}. The $t$-free part of $L_{j+1}$ is $\theta^{j+1}$, so $P_0=\theta^{n+1}/n!$.
+
+(c) By \eqref{eq:cont}, $L_{n+1}$ is the sum, over all sets $M$ of pairwise disjoint pairs $\{j,j+1\}\subseteq\{1,\dots,n+1\}$, of the word obtained by reading the positions $n+1,n,\dots,1$ from left to right, writing $\theta$ for an unmatched position and $-c_jt^2$ for a pair $\{j,j+1\}\in M$. Applying $\dagger$ reverses each word and multiplies it by $(-1)^{n+1-2|M|}$. Under the reflection $j\mapsto n+2-j$ of positions, the pair $\{j,j+1\}$ goes to $\{j',j'+1\}$ with $j'=n+1-j$, and $c_{j'}=c_j$. So the reversed word of $M$ is the word of the reflected set, and $L_{n+1}^\dagger=(-1)^{n+1}L_{n+1}$. For the equivalent form note $(t^{2k}P_k(\theta))^\dagger=P_k(-\theta)t^{2k}=t^{2k}P_k(-\theta-2k)$.
+
+(d) The bound $\deg P_k\le n+1-2k$ gives $P_k=0$ for $k>K_n$, and by (b) the leading coefficients are the coefficients of $\chi_n$, all nonzero because $\chi_n(\mu)=\frac1{n!}\mu^{\epsilon}\prod_{0\le b<n/2}(\mu^2-(n-2b)^2)$ with $\epsilon\in\{0,1\}$. For even $n$, $P_{K_n}$ has degree one and, by (c) with $k=n/2$, $P_{K_n}(-\theta-n)=-P_{K_n}(\theta)$; so its root is $-n/2$.
+\end{proof}
+
+\begin{lemma}\label{lem:formal}
+For each $b\in\{0,\dots,n\}$, $\cB_n$ has a formal solution $e^{(n-2b)t}t^{-n/2}\bigl(1+\sum_{i\ge1}c_{b,i}t^{-i}\bigr)$ at $t=\infty$.
+\end{lemma}
+
+\begin{proof}
+The equation $\theta^2y=t^2y$ has the formal solutions $y_\pm=e^{\pm t}t^{-1/2}(1+O(t^{-1}))$ (the Hankel expansions of $I_0$ and $K_0$ up to constants). Apply Lemma~\ref{lem:bessel}(a) to $y_+^{n-b}y_-^b$ in a differential field containing these formal series.
+\end{proof}
+
+The following identity is the ``$\eta$-identity'' of \cite[Lemma~2.7]{KVB}; we include the short proof. It converts information about formal solutions at $t=\infty$ (the vertices of the Newton polygon) into the subleading coefficients of a $\theta$-form.
+
+\begin{lemma}[$\eta$-identity]\label{lem:eta}
+Let $\Theta=\sum_{k=0}^{K}t^{2k}Q_k(\theta)$ with $\deg Q_k\le N-2k$, and suppose
+\[
+\chi(\mu):=\sum_k[\theta^{N-2k}]Q_k\,\mu^{N-2k}=c\prod_{b=1}^N(\mu-\mu_b),\qquad c\ne0,
+\]
+with pairwise distinct $\mu_b$. If for every $b$ the operator $\Theta$ has a formal solution $e^{\mu_bt}t^{-g_b}(1+\sum_{i\ge1}c_{b,i}t^{-i})$, then
+\begin{equation}\label{eq:eta}
+\sum_k[\theta^{N-2k-1}]Q_k\,\mu^{N-2k-1}=c\sum_{b=1}^Ng_b\prod_{b'\ne b}(\mu-\mu_{b'})-\frac\mu2\chi''(\mu).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Write $d_k=N-2k$ and $Q_k=a_k\theta^{d_k}+s_k\theta^{d_k-1}+\cdots$. Since $\theta(e^{\mu t}t^{-g}h)=e^{\mu t}t^{-g}(\mu t-g+\theta)h$, we must expand $Q_k(\mu t-g+\theta)$ on $h=1+c_1t^{-1}+\cdots$. In $(\mu t+\theta-g)^{d}$, the terms with exactly one factor $\theta-g$, in position $p$ from the right, contribute $(\mu t)^{d-1}(p-1-g)+O(t^{d-2})$, because $(\theta-g)t^{p-1}=t^{p-1}(\theta+p-1-g)$ and $\theta h=O(t^{-1})$. Their sum is $\mu^{d-1}t^{d-1}(\binom d2-dg)$. Hence the coefficient of $t^{N-1}$ in $e^{-\mu t}t^g\,\Theta(e^{\mu t}t^{-g}h)$ is
+\[
+\sum_ks_k\mu^{d_k-1}+\frac\mu2\chi''(\mu)-g\chi'(\mu)+c_1\chi(\mu).
+\]
+For $\mu=\mu_b$, $g=g_b$ this vanishes, and $\chi(\mu_b)=0$. The polynomial $\sum_ks_k\mu^{d_k-1}+\frac\mu2\chi''(\mu)$ has degree at most $N-1$ and takes the value $g_b\chi'(\mu_b)=cg_b\prod_{b'\ne b}(\mu_b-\mu_{b'})$ at the $N$ points $\mu_b$, so Lagrange interpolation gives \eqref{eq:eta}.
+\end{proof}
+
+\begin{corollary}\label{cor:sub}
+Put $s_k=[\theta^{n-2k}]P^{(n)}_k$. Then $\sum_ks_k\mu^{n-2k}=\frac n2\chi_n'(\mu)-\frac\mu2\chi_n''(\mu)$.
+\end{corollary}
+
+\begin{proof}
+Apply Lemma~\ref{lem:eta} with $N=n+1$, $Q_k=P^{(n)}_k$, $\mu_b=n-2b$ and $g_b=n/2$ (Lemmas~\ref{lem:bessel}(b) and~\ref{lem:formal}), and use $c\sum_b\prod_{b'\ne b}(\mu-\mu_{b'})=\chi_n'(\mu)$.
+\end{proof}
+\section{The hypercubic lattice: proof of \texorpdfstring{Theorem~\ref{thm:A}}{Theorem A}}\label{sec:A}
+
+Fix $d\ge2$, write $P_k=P^{(d)}_k$, $\chi=\chi_d$, $K=\lceil d/2\rceil=K_d$, and let $L_d$ and $A_k$ be as in \eqref{eq:Ld}. Since $(\theta+1)\cdots(\theta+2k-1)$ is monic, Lemma~\ref{lem:bessel}(d) shows that $\deg A_k=d$ for $0\le k\le K$.
+
+\subsection{The operator}
+
+\begin{proposition}\label{prop:Ld}
+$L_dP_d=0$, and $L_d^\dagger=(-1)^dL_d$.
+\end{proposition}
+
+\begin{proof}
+Let $f(u)=I_0(2u)^d=\sum_mc_mu^m$, so $c_m=a_d(m)/m!$ by \eqref{eq:ad}. Since $I_0(t)$ solves $\theta^2y=t^2y$, Lemma~\ref{lem:bessel}(a) with $t=2u$ (and $\theta_t=\theta_u$) gives $\sum_k4^ku^{2k}P_k(\theta)f=0$, that is, $\sum_k4^kP_k(m-2k)c_{m-2k}=0$ for all $m\ge0$. Multiplying by $m!$,
+\[
+\sum_k4^kP_k(m-2k)\,(m-2k+1)(m-2k+2)\cdots m\;a_d(m-2k)=0\qquad(m\ge0).
+\]
+As the coefficient of $z^m$ in $z^{2k}F(\theta)P_d$ is $F(m-2k)a_d(m-2k)$, this says that
+\[
+Q=\sum_k4^kz^{2k}P_k(\theta)(\theta+1)\cdots(\theta+2k)
+\]
+annihilates $P_d$. Now $\theta z^{2k}A_k(\theta)=z^{2k}(\theta+2k)A_k(\theta)$, and $(\theta+2k)A_k=P_k(\theta)(\theta+1)\cdots(\theta+2k)$ for $k\ge1$, while $\theta A_0=\theta^{d+1}/d!=P_0$. Hence $Q=\theta L_d$, so $L_dP_d$ is a constant, and its value at $z=0$ is $A_0(0)a_d(0)=0$.
+
+By Lemma~\ref{lem:bessel}(c), $P_k(-\theta-2k)=(-1)^{d+1}P_k(\theta)$. Therefore
+\[
+A_k(-\theta-2k)=P_k(-\theta-2k)\prod_{i=1}^{2k-1}(-\theta-2k+i)=(-1)^{d+1}P_k(\theta)\,(-1)^{2k-1}\prod_{i=1}^{2k-1}(\theta+i)=(-1)^dA_k(\theta),
+\]
+and $(z^{2k}A_k(\theta))^\dagger=z^{2k}A_k(-\theta-2k)$ (Section~\ref{sec:fuchs}).
+\end{proof}
+
+\subsection{Local data}
+In the basis $\partial^j$ we have $\theta^m=z^m\partial^m+\binom m2z^{m-1}\partial^{m-1}+\cdots$. Put $\alpha_k=[\theta^d]A_k=[\theta^{d+1-2k}]P_k$ and $s_k=[\theta^{d-2k}]P_k$; then $[\theta^{d-1}]A_k=s_k+\alpha_kk(2k-1)$, because $(\theta+1)\cdots(\theta+2k-1)=\theta^{2k-1}+k(2k-1)\theta^{2k-2}+\cdots$. Hence
+\begin{equation}\label{eq:dform}
+L_d=z^d\alpha(z)\,\partial^d+z^{d-1}\eta(z)\,\partial^{d-1}+\cdots,
+\end{equation}
+where
+\[
+\alpha(z)=\sum_k4^k\alpha_kz^{2k},\qquad\eta(z)=\sum_k4^kz^{2k}\Bigl(\tbinom d2\alpha_k+s_k+\alpha_kk(2k-1)\Bigr).
+\]
+
+\begin{lemma}\label{lem:alpha}
+\textup{(a)} $\alpha(z)=\frac1{d!}\prod_{0\le b<d/2}\bigl(1-4(d-2b)^2z^2\bigr)$.
+
+\textup{(b)} At every zero $z_*$ of $\alpha$, $\eta(z_*)=\frac d2\,z_*\alpha'(z_*)$.
+\end{lemma}
+
+\begin{proof}
+Put $\mu=1/(2z)$, so that $4^kz^{2k}=\mu^{-2k}$, and $\Phi(\mu)=\sum_k\alpha_k\mu^{-2k}=\mu^{-d-1}\chi(\mu)$. Part (a) follows from Lemma~\ref{lem:bessel}(b): $\chi(\mu)=\frac1{d!}\mu^\epsilon\prod_{0\le b<d/2}(\mu^2-(d-2b)^2)$ with $\epsilon=d+1-2K$. The zeros of $\alpha$ are the points $z_*=1/(2\mu_*)$ with $\chi(\mu_*)=0$, $\mu_*\ne0$; they are simple.
+
+For (b), let $D=\mu\,d/d\mu$, so that $D\mu^{-2k}=-2k\mu^{-2k}$ and $\sum_kk(2k-1)\alpha_k\mu^{-2k}=\frac12(D^2\Phi+D\Phi)$. At $\mu_*$ we have $\chi(\mu_*)=0$, hence, with $N=d+1$,
+\[
+\Phi=0,\qquad D\Phi=\mu_*^{1-N}\chi'(\mu_*),\qquad D^2\Phi=\mu_*^{2-N}\chi''(\mu_*)+(1-2N)\mu_*^{1-N}\chi'(\mu_*).
+\]
+By Corollary~\ref{cor:sub}, $\sum_ks_k\mu^{-2k}=\mu^{1-N}\bigl(\frac d2\chi'(\mu)-\frac\mu2\chi''(\mu)\bigr)$. Adding up,
+\begin{align*}
+\eta(z_*)&=\tbinom d2\cdot0+\tfrac12\mu_*^{2-N}\chi''+(1-N)\mu_*^{1-N}\chi'+\tfrac d2\mu_*^{1-N}\chi'-\tfrac12\mu_*^{2-N}\chi''\\
+&=-\tfrac d2\,\mu_*^{1-N}\chi'(\mu_*).
+\end{align*}
+On the other hand $d\mu/dz=-2\mu^2$, so
+\[
+z_*\alpha'(z_*)=\tfrac1{2\mu_*}\cdot(-2\mu_*^2)\,\Phi'(\mu_*)=-D\Phi(\mu_*)=-\mu_*^{1-N}\chi'(\mu_*).
+\] Since $\chi'(\mu_*)\ne0$, (b) follows.
+\end{proof}
+
+\begin{proposition}\label{prop:local}
+The operator $L_d$ is Fuchsian. Its singular points are $0$, $\infty$ and the $2K$ zeros $z_b^\pm=\pm1/(2(d-2b))$, $0\le b<d/2$, of $\alpha$, and the local data are as stated in Theorem~\ref{thm:A}\textup{(iii)}.
+\end{proposition}
+
+\begin{proof}
+By \eqref{eq:dform} and Lemma~\ref{lem:alpha}(a), the finite singular points are among $0$ and the $z_b^\pm$.
+
+\emph{At $0$.} The $\theta$-form of $L_d$ starts with $A_0(\theta)=\theta^d/d!$, so $0$ is regular singular with indicial polynomial $\theta^d/d!$, and Lemma~\ref{lem:mum} gives a single unipotent Jordan block whose eigenline is spanned by $P_d$.
+
+\emph{At $z_b^\pm$.} Apply Lemma~\ref{lem:simplezero} to \eqref{eq:dform} with $n=d$, $a_d=z^d\alpha$ and $a_{d-1}=z^{d-1}\eta$. At $z_*=z_b^\pm$ we get $a_{d-1}(z_*)/a_d'(z_*)=\eta(z_*)/(z_*\alpha'(z_*))=d/2$ by Lemma~\ref{lem:alpha}(b), so $\gamma=d-1-d/2=(d-2)/2$. For odd $d$, $\gamma\notin\Z$ and the monodromy is a pseudo-reflection with eigenvalue $e^{2\pi i\gamma}=-1$, a reflection. For even $d$, $\gamma\in\{0,\dots,d-2\}$ and the monodromy is a transvection.
+
+\emph{At $\infty$.} Let $w=1/z$, so $\theta_z=-\theta_w$ and $L_d=w^{-2K}\sum_{j=0}^Kw^{2j}B_j(\theta_w)$ with $B_j(\theta)=4^{K-j}A_{K-j}(-\theta)$. Since $w^{-1}\theta_ww=\theta_w+1$, $y$ is a solution of $L_d$ if and only if $\tilde y=y/w$ is a solution of $\tilde L=\sum_jw^{2j}\tilde B_j(\theta_w)$, $\tilde B_j(\theta)=B_j(\theta+1)=4^{K-j}A_{K-j}(-\theta-1)$. As $A_k$ contains the factor $(\theta+1)\cdots(\theta+2k-1)$, $\tilde B_j$ vanishes at $\theta=0,1,\dots,2(K-j)-2$, so in the basis $\ff\theta l=w^l\partial_w^l$ we have $\tilde B_j=\sum_{l\ge2(K-j)-1}\beta_{jl}\ff\theta l$, and
+\[
+w^{2j}\tilde B_j(\theta_w)=\sum_l\beta_{jl}\,w^{2j+l}\partial_w^l\qquad\text{with }2j+l\ge2K-1.
+\]
+If $d$ is odd, then $2K-1=d$, so $\tilde L=w^d\tilde L'$ where $\tilde L'$ has coefficients holomorphic at $w=0$. The coefficient of $\partial_w^d$ in $\tilde L'$ at $w=0$ is $\beta_{0d}=\lc(\tilde B_0)\ne0$ by Lemma~\ref{lem:bessel}(d). So $w=0$ is an ordinary point of $\tilde L'$: all $\tilde y$ are holomorphic, the monodromy at $\infty$ is trivial, and the exponents of $L_d$ at $\infty$ are $1,\dots,d$.
+
+If $d$ is even, then $2K=d$ and $P_K(\theta)=c(\theta+d/2)$ with $c\ne0$ (Lemma~\ref{lem:bessel}(d)), so
+\[
+\tilde B_0(\theta)=4^KP_K(-\theta-1)\prod_{i=1}^{d-1}(-\theta-1+i)=4^Kc\,(\theta+1-\tfrac d2)\ff\theta{d-1}=4^Kc\bigl(\ff\theta d+\tfrac d2\ff\theta{d-1}\bigr).
+\]
+Now $\tilde L=w^{d-1}\tilde L'$, where $\tilde L'$ has holomorphic coefficients, the coefficient of $\partial_w^d$ is $4^Kcw+O(w^3)$, and the coefficient of $\partial_w^{d-1}$ is $4^Kc\frac d2+O(w^2)$ (the terms with $j\ge1$ carry a factor $w^{2j}$). Lemma~\ref{lem:simplezero} applies with $\gamma=d-1-\frac d2=\frac d2-1\in\{0,\dots,d-2\}$: the monodromy is a transvection, and the exponents of $\tilde L'$ are $0,\dots,d-2,\frac d2-1$, so those of $L_d$ are $1,\dots,d-1,\frac d2$.
+
+All singular points are regular singular, so $L_d$ is Fuchsian.
+\end{proof}
+
+\subsection{Proof of \texorpdfstring{Theorem~\ref{thm:A}}{Theorem A}}
+(i) By Propositions~\ref{prop:Ld} and~\ref{prop:local}, $L_dP_d=0$ and $L_d$ is Fuchsian. By Proposition~\ref{prop:Ld} and Lemma~\ref{lem:form}, its solution space $V$ carries a nondegenerate invariant bilinear form. We apply Proposition~\ref{prop:squeeze} with $p_0=0$ (indicial polynomial $\theta^d/d!$, $e_0=0$) and $p_\infty=\infty$ (all exponents $\ge1$); at the remaining singular points $z_b^\pm$ the monodromy is a pseudo-reflection and the exponents $0,\dots,d-2,\frac{d-2}2$ are nonnegative. Hence $V$ is irreducible under monodromy. If $R$ were a right factor of $L_d$ of order $0<r<d$ over $\C(z)$, its solutions would form an invariant subspace of dimension $r$. So $L_d$ is irreducible, and since the minimal operator of $P_d$ is a right factor of $L_d$, it equals $L_d$ up to a factor from $\C(z)$.
+
+(ii) The leading coefficient is $z^d\alpha(z)$ by \eqref{eq:dform}, and Lemma~\ref{lem:alpha}(a) gives its form. The monodromy at $0$ is a Jordan block of size $d\ge2$, and at each $z_b^\pm$ it is a pseudo-reflection; so no zero of the leading coefficient is an apparent singularity.
+
+(iii) This is Proposition~\ref{prop:local}.
+
+(iv) By (i), Proposition~\ref{prop:squeeze} applies, and the monodromies at $z_b^\pm$ are nontrivial. For odd $d\ge3$ they are reflections, so the form is symmetric and $G=\Ort(d)$ by Corollary~\ref{cor:galois}. For even $d$ they are transvections, so the form is alternating and $G=\Sp(d)$ ($G=\SL_2=\Sp(2)$ for $d=2$). Over $\C(x)$, $x=z^2$, the same argument applies to $L_d=\sum_k4^kx^kA_k(2\theta_x)$: the anti-involution $\dagger$ is the same, $x=0$ has indicial polynomial $(2\theta_x)^d/d!$, the points $x_b=1/(4(d-2b)^2)$ have the same local data as $z_b^+$ because $x-x_b$ is a local coordinate at $z_b^+$, and the exponents at $x=\infty$ are those at $z=\infty$ divided by $2$, hence positive. \qed
+
+\begin{remark}
+For $d=1$, $L_1=\theta-4z^2(\theta+1)=z\bigl((1-4z^2)\partial-4z\bigr)$, the point $z=0$ is apparent, and $P_1=(1-4z^2)^{-1/2}$ has Galois group $\Ort(1)=\{\pm1\}$.
+\end{remark}
+
+\subsection{Algebraic relations}
+
+\begin{proof}[Proof of Corollary~\ref{cor:A1}]
+Let $E$ be a Picard--Vessiot extension of $\C(z)$ for $L_d$ containing $P_d$, and let $G$ act on the solution space $V\subset E$. By the Galois correspondence, the transcendence degree of $F=\C(z)(P_d,\dots,P_d^{(d-1)})$ over $\C(z)$ equals the dimension of the orbit $G\cdot P_d$ \cite[Ch.~1]{vdPS03}. For even $d$, $G=\Sp(d)$ is transitive on $V\setminus\{0\}$, so the transcendence degree is $d$.
+
+Let $d\ge3$ be odd and let $B$ be the invariant symmetric form. The local monodromy $T_0$ at $0$ is unipotent with a single Jordan block, $P_d$ spans its fixed line, and $N=\log T_0$ satisfies $B(Nv,w)=-B(v,Nw)$. Writing $P_d=N^{d-1}v$ we get $B(P_d,P_d)=\pm B(v,N^{2d-2}v)=0$, because $N^d=0$. By Witt's theorem, $\Ort(V,B)$ acts transitively on the nonzero isotropic vectors, a set of dimension $d-1$; so the transcendence degree is $d-1$. By the construction in Lemma~\ref{lem:form}, $B(y_1,y_2)=\sum_{i,j<d}q_{ij}(z)y_1^{(i)}y_2^{(j)}$ with a symmetric matrix $(q_{ij})\in\GL_d(\C(z))$, so $q=\sum q_{ij}X_iX_j$ vanishes at $X_i=P_d^{(i)}$. The ideal of algebraic relations is a prime ideal of height one in $\C(z)[X_0,\dots,X_{d-1}]$, hence principal, generated by an irreducible polynomial dividing $q$. A nondegenerate quadratic form in at least three variables is irreducible, so the ideal is generated by $q$.
+\end{proof}
+
+\subsection{Walks}
+
+\begin{proof}[Proof of Corollary~\ref{cor:A2}]
+Let $Q_d(x)=\sum_nw_d(n)x^n$, so $P_d(z)=Q_d(z^2)$ ($a_d(m)=0$ for odd $m$). With $\theta_z=2\theta_x$, $L_d=M_d:=\sum_{k=0}^K4^kx^kA_k(2\theta_x)$, and the coefficient of $x^n$ in $M_dQ_d$ is the left side of \eqref{eq:walkrec}. The coefficients have degree $\deg A_k=d$.
+
+Let $\sum_{j=0}^sq_j(n)w_d(n-j)=0$ for $n\ge n_0$, with $q_0q_s\ne0$, and put $M=\sum_jx^jq_j(\theta_x+j)$. Then $MQ_d=r$ is a polynomial. The operator $M$ commutes with analytic continuation, so it maps the monodromy orbit of $Q_d$ to the single function $r$; this orbit spans the solution space $V$ of $M_d$, which is irreducible by Theorem~\ref{thm:A}(i), so $M(V)\subseteq\C r$ and $\ker(M|_V)$ is an invariant subspace of dimension at least $d-1\ge1$. Hence $\ker(M|_V)=V$, $r=MQ_d=0$, and $M$ annihilates $Q_d$. Consequently $M$ has order $\max_j\deg q_j\ge d$; this is the bound on the degree.
+
+All solutions of $M_d$ are solutions of $M$. At each of the $K$ points $x_b=1/(4(d-2b)^2)$, $0\le b<d/2$, the local monodromy of $M_d$ is nontrivial, so $x_b$ is a singular point of $M$, that is, a zero of its leading coefficient $x^{D}\lambda(x)$, where $D=\max_j\deg q_j$ and $\lambda(x)=\sum_{j:\deg q_j=D}\lc(q_j)x^j$. As $\deg\lambda\le s$, we get $s\ge K$.
+
+Finally, let $s=K$ and $D=d$. Then $\lambda$ is a multiple of $\prod_b(x-x_b)$, and $M=pM_d$ for some $p\in\C(x)$ because both have order $d$ and $M_d$ is the minimal operator. Writing $M_d=\sum_i\pi_i(x)\theta_x^i$ with $\pi_i\in\C[x]$, the polynomials $\pi_i$ have no common zero $x_b$: otherwise $(x-x_b)^{-1}M_d$ would be an operator with polynomial coefficients and nonzero leading coefficient at $x_b$, so $x_b$ would be an ordinary point of it, contradicting the nontrivial monodromy. Since the $\pi_i$ have no common zero at all (their common zeros are zeros of $\pi_d$, whose zeros are the $x_b$), and $p\pi_i\in\C[x]$ for all $i$ because $M$ has polynomial coefficients, $p$ is a polynomial. The span of $pM_d$ is the span of $p$ plus $K$, so $p$ is a monomial, which amounts to a shift of $n$ and a constant factor.
+\end{proof}
+
+\begin{remark}
+For $d=4$ the operator is the Calabi--Yau operator of \cite[\S2.2]{Gut10}, with differential Galois group $\Sp(4)$, and for $d=5$ the group is $\Ort(5)$, whose identity component $\SO(5)$ is isogenous to $\Sp(4)$. This is consistent with the relation, mentioned in \cite{Gut10}, between the five-dimensional equation and a fourth order Calabi--Yau equation; we do not prove such a relation here.
+\end{remark}
+\section{Joint monodromy in different dimensions}\label{sec:joint-hypercubic}
+Theorem~\ref{thm:A} also determines the algebraic relations between
+hypercubic Green functions in different dimensions.  The fact needed in
+addition to the individual groups is the separated outer singularity:
+$1/(2d)$ is a singular point for $L_d$ and an ordinary point for every
+$L_e$ with $2\le e<d$.
+
+\begin{lemma}[Normal generation by a rank-one element]\label{lem:normal-rankone}
+Over $\C$, a nontrivial transvection normally generates $\Sp(V)$ as a
+closed algebraic subgroup, and a reflection normally generates
+$\Ort(V,B)$ when $B$ is nondegenerate symmetric.
+\end{lemma}
+\begin{proof}
+For the symplectic assertion, the transvection has the form
+$1+c\,v\otimes B(v,\cdot)$ with $v\ne0$ and $c\ne0$.
+The Zariski closure of its powers contains
+$1+t\,v\otimes B(v,\cdot)$ for every $t\in\C$.
+The symplectic group is transitive on nonzero vectors.  The Lie algebra
+of a closed normal subgroup containing the transvection therefore
+contains $w\otimes B(w,\cdot)$ for every $w\in V$.
+These endomorphisms span $\mathfrak{sp}(V)$: under the identification
+$\mathfrak{sp}(V)\cong\Sym^2 V$ they correspond to the squares $w^2$,
+which span $\Sym^2V$ by polarization.  Connectedness of $\Sp(V)$ proves
+the assertion.  For the orthogonal assertion, all reflections are
+conjugate over $\C$, since their reflecting lines are nonisotropic and
+an isometry between such lines extends to $V$.  The Cartan--Dieudonn\'e
+theorem says that reflections generate the orthogonal group.
+\end{proof}
+
+\begin{thm}[Independence of dimensions]\label{thm:joint-hypercubic}
+Let $\mathcal D\subseteq\{2,3,4,\ldots\}$ be a finite nonempty set,
+and consider the direct sum of the differential equations $L_d$, for
+$d\in\mathcal D$, over $K=\C(z)$.  Its differential Galois group is
+\[
+ \prod_{\substack{d\in\mathcal D\\d\ \mathrm{even}}}\Sp(d)
+ \ \times\!
+ \prod_{\substack{d\in\mathcal D\\d\ \mathrm{odd}}}\Ort(d),
+\]
+acting in the indicated standard representations.
+The same assertion holds over $\C(x)$ for the equations of
+$Q_d(x)=P_d(\sqrt{x})$.
+\end{thm}
+\begin{proof}
+The Picard--Vessiot group $H$ of the direct sum is a closed subgroup of
+$\prod_{d\in\mathcal D}G_d$ whose projection to every factor is
+surjective; here $G_d$ is the group given by Theorem~\ref{thm:A}.
+All equations are regular singular, so $H$ is also the Zariski closure
+of their simultaneous monodromy group.
+Let $D=\max\mathcal D$.  A small loop around $z=1/(2D)$ has trivial
+monodromy in every factor $d<D$ and a nontrivial transvection or
+reflection $T_D$ in the last factor.  Thus
+$(1,\ldots,1,T_D)\in H$.
+The group
+\[
+ N_D=\{g\in G_D:(1,\ldots,1,g)\in H\}
+\]
+is closed and normal in $G_D$, because $H\longrightarrow G_D$ is
+surjective.  Lemma~\ref{lem:normal-rankone} gives $N_D=G_D$.
+The image of $H$ in the remaining factors is their simultaneous
+Picard--Vessiot group, which is their full product by induction on
+$|\mathcal D|$.  Since the last factor itself lies in $H$, this proves
+that $H$ is the full product.  Over $\C(x)$ the identical argument uses
+$x=1/(4D^2)$ and Theorem~\ref{thm:A}(iv).
+\end{proof}
+
+\begin{corollary}[All joint algebraic relations]\label{cor:joint-relations}
+For $\mathcal D$ as above, set
+\[
+ K_{\mathcal D}=\C(z)\bigl(P_d^{(j)}:
+                    d\in\mathcal D,\ 0\le j<d\bigr).
+\]
+Then
+\[
+ \operatorname{trdeg}_{\C(z)}K_{\mathcal D}
+ =\sum_{\substack{d\in\mathcal D\\d\ \mathrm{even}}}d
+  +\sum_{\substack{d\in\mathcal D\\d\ \mathrm{odd}}}(d-1).
+\]
+Moreover, the ideal of algebraic relations in
+$\C(z)[X_{d,j}:d\in\mathcal D,\ 0\le j<d]$ is generated by the
+individual nondegenerate quadrics of Corollary~\ref{cor:A1}, one for
+each odd $d\in\mathcal D$.  In particular, the infinite family
+$P_2(z),P_3(z),P_4(z),\ldots$ is algebraically independent over $\C(z)$.
+\end{corollary}
+\begin{proof}
+By Theorem~\ref{thm:joint-hypercubic}, the orbit of the tuple $(P_d)_d$
+is the product of its individual orbits.  Its dimension is the sum
+of their dimensions, computed in the proof of
+Corollary~\ref{cor:A1}.  The differential Galois correspondence gives
+the stated transcendence degree.
+
+Let $J$ be the ideal generated by the separate odd-dimensional
+quadrics.  Each nondegenerate quadric has rank at least three and is
+geometrically integral over $\C(z)$.  Since the quadrics use disjoint
+sets of variables, their product variety is geometrically integral;
+thus $J$ is prime.  Its codimension is the number of odd dimensions.
+The ideal of actual relations is a prime containing $J$, and the
+transcendence-degree formula gives exactly the same codimension.
+Hence the two prime ideals are equal.
+
+Finally, the projection of each individual orbit closure onto its
+coordinate $X_{d,0}$ is dominant.  This is immediate for an affine
+space; for a nondegenerate quadric cone in at least three variables,
+it follows because a nonzero linear form cannot vanish on the entire
+cone and the cone is closed under scalar multiplication.
+The product projection onto $(X_{d,0})_{d\in\mathcal D}$ is therefore
+dominant.  No nonzero polynomial in the functions $(P_d)_{d\in\mathcal D}$
+can vanish.  As $\mathcal D$ was arbitrary, this proves the last claim.
+\end{proof}
+
+\section{Regev sums of even exponent: proof of \texorpdfstring{Theorem~\ref{thm:B}}{Theorem B}}\label{sec:B}
+
+Fix an even $\beta\ge2$ and $k\ge1$; write $y=y^{(\beta)}_k$, $R=R_{k,\beta}$, $Z=Z_{k,\beta}$, $s=s_{k,\beta}$, $I=R-Z=\beta s$, $K_0=\C(x)$ and $\theta=x\,d/dx$.
+
+\subsection{A Vandermonde formula}
+Let $F(x)=\sum_{m\ge0}x^m/(m!)^\beta={}_0F_{\beta-1}(;1,\dots,1;x)$, so that $\theta^\beta F=xF$.
+
+\begin{lemma}\label{lem:vdm}
+Let $\Delta(\theta_1,\dots,\theta_k)=\prod_{i<j}(\theta_i-\theta_j)$, with $\theta_i=x_i\partial_{x_i}$. Then
+\[
+G(x)=\frac{x^{-\binom k2}}{k!}\Bigl[\Delta(\theta_1,\dots,\theta_k)^\beta\prod_{i=1}^kF(x_i)\Bigr]_{x_1=\dots=x_k=x}.
+\]
+Consequently $G=x^{-\binom k2}\,\Omega(F,\theta F,\dots,\theta^{\beta-1}F)$ for a homogeneous polynomial $\Omega$ of degree $k$ with coefficients in $\C[x]$.
+\end{lemma}
+
+\begin{proof}
+For $\lambda\vdash n$ with $\ell(\lambda)\le k$ put $l_i=\lambda_i+k-i$ (with $\lambda_i=0$ for $i>\ell(\lambda)$), so that $l_1>\dots>l_k\ge0$ and $\sum_il_i=n+\binom k2$. The Frobenius formula $f^\lambda=n!\,\Delta(l)/\prod_il_i!$ gives
+\[
+G(x)=x^{-\binom k2}\sum_{l_1>\dots>l_k\ge0}\frac{\Delta(l)^\beta}{\prod_i(l_i!)^\beta}\,x^{l_1+\dots+l_k}.
+\]
+Since $\beta$ is even, $\Delta(l)^\beta$ is symmetric in $l$ and vanishes when two $l_i$ coincide, so the sum equals $\frac1{k!}\sum_{l\in\N^k}$, which is the bracket. Expanding $\Delta^\beta$ into monomials and reducing $\theta^eF$ with $\theta^\beta F=xF$ gives $\Omega$.
+\end{proof}
+
+\subsection{The minimal operator and its Galois group}
+Let $\mathcal N=K_0\langle\theta\rangle/K_0\langle\theta\rangle(\theta^\beta-x)$, with basis $e_j=\theta^j$ ($0\le j<\beta$), and let $E$ be a Picard--Vessiot extension of $K_0$ for $\theta^\beta-x$ containing $F$; let $V\subset E$ be the solution space and $H$ the differential Galois group.
+
+\begin{thm}[{Katz \cite[Corollary~4.4.8]{Kat87}; see also \cite{BBH88}, \cite[Ch.~3]{Kat90}}]\label{thm:katz}
+For even $\beta$, $H=\Sp(V)$ for a nondegenerate alternating form on $V$.
+\end{thm}
+
+\begin{proof}[Proof of Theorem~\ref{thm:B}(i)]
+The map $V\to E$, $v\mapsto\Phi(v)=x^{-\binom k2}\Omega(v,\theta v,\dots,\theta^{\beta-1}v)$ is a homogeneous polynomial map of degree $k$, so $\Phi(v)=\tilde\Phi(v^k)$ for a linear map $\tilde\Phi:\Sym^kV\to E$. Since the automorphisms in $H$ commute with $\theta$ and fix $\C(x)$, $\tilde\Phi$ is $H$-equivariant. The solution space of the minimal operator of $G=\Phi(F)$ is the span of the orbit $H\cdot G$, which is $\tilde\Phi$ of the span of $\{v^k:v\in H\cdot F\}$. By Theorem~\ref{thm:katz}, $H\cdot F=V\setminus\{0\}$, and the $k$-th powers span $\Sym^kV$. The representation $\Sym^kV$ of $\Sp(V)$ is irreducible, so the $H$-equivariant map $\tilde\Phi$, which is nonzero because $G\ne0$, is injective. Hence the minimal operator $\mathcal L_G$ has order $\dim\Sym^kV=R$, and its Galois group is the image of $H$ on $\tilde\Phi(\Sym^kV)\cong\Sym^kV$.
+\end{proof}
+
+Let $\Psi:\Sym^k\mathcal N\to E$ send a monomial in the $e_j$ to the same monomial in the $\theta^jF$. By the Leibniz rule $\Psi$ is a morphism of differential modules, so its image is a differential submodule of $E$ of rank at most $R$. It contains $x^{\binom k2}G=\Omega(F,\dots,\theta^{\beta-1}F)$, and $K_0\langle\theta\rangle(x^{\binom k2}G)=K_0\langle\theta\rangle G$ because $x^{\pm1}\in K_0$. Since $K_0\langle\theta\rangle G$ has rank $R$, $\Psi$ is injective with image $K_0\langle\theta\rangle G$:
+\begin{equation}\label{eq:symk}
+\mathcal M:=K_0\langle\theta\rangle\,G\;\cong\;\Sym^k\mathcal N .
+\end{equation}
+
+\subsection{Formal structure at infinity}
+Let $t=x^{1/\beta}$, so $\theta=\theta_t/\beta$, and let $\hat K=\C((x^{-1}))$, $\hat K_t=\C((t^{-1}))$.
+
+\begin{lemma}\label{lem:Nformal}
+For each $\omega\in\mu_\beta$, $\theta^\beta-x$ has a formal solution $y_\omega=e^{\beta\omega t}t^{-(\beta-1)/2}(1+O(t^{-1}))$. Consequently $\hat K_t\otimes\mathcal N\cong\bigoplus_{\omega\in\mu_\beta}E^{\beta\omega t}\otimes\mathcal R_\omega$ with $\mathcal R_\omega$ regular singular of rank one, and the part of $\hat K_t\otimes\Sym^k\mathcal N$ with exponential factor $e^{\beta\xi t}$ has rank $N_{k,\beta}(\xi)$.
+\end{lemma}
+
+\begin{proof}
+Conjugating by $e^{\beta\omega t}$ replaces $\theta$ by $\omega t+\theta_t/\beta$. In $(\omega t+\theta_t/\beta)^\beta$ the term $\omega^\beta t^\beta=t^\beta$ cancels against $x=t^\beta$, and the terms with one factor $\theta_t/\beta$ give $\omega^{\beta-1}t^{\beta-1}(\theta_t+\frac{\beta-1}2)$, because $\sum_{p}t^p\theta_tt^{\beta-1-p}=t^{\beta-1}(\beta\theta_t+\binom\beta2)$. All other terms have lower powers of $t$. So the conjugated operator has top coefficient $\omega^{\beta-1}t^{\beta-1}(\theta_t+\frac{\beta-1}2)$, and the Frobenius method at $t=\infty$ gives a unique formal solution $t^{-(\beta-1)/2}(1+O(t^{-1}))$. The $\beta$ formal solutions have distinct exponential factors, so they span the formal solution space, which gives the decomposition. Taking $\Sym^k$ gives $\bigoplus_{\{\omega_1,\dots,\omega_k\}}E^{\beta(\omega_1+\dots+\omega_k)t}\otimes(\mathcal R_{\omega_1}\otimes\cdots\otimes\mathcal R_{\omega_k})$, over all $k$-element multisets.
+\end{proof}
+
+By \eqref{eq:symk} and Lemma~\ref{lem:Nformal}, for every $\xi\in\C$ the minimal operator $\mathcal L_G$ has exactly $N_{k,\beta}(\xi)$ linearly independent solutions of the form $e^{\beta\xi t}u$ with $u$ in the Nilsson class $\mathcal U=\bigcup_\alpha t^\alpha\hat K_t[\log t]$, inside the universal Picard--Vessiot ring of $\hat K$ \cite[Ch.~3]{vdPS03}. For $\xi=0$ these form the regular part, of rank $Z$; all other parts have slope $1/\beta$.
+
+\subsection{The lower bound}
+For an operator $L=\sum_{j=j_0}^{j_1}x^jA_j(\theta)$ with $A_{j_0}A_{j_1}\ne0$, its \emph{span} is $j_1-j_0$. Put $D=\max_j(\beta j+\deg A_j)$, $J=\{j:\beta j+\deg A_j=D\}$, $j^*=\max J$, and
+\[
+p_L(\rho)=\sum_{j\in J}\lc(A_j)\,\rho^{j^*-j},\qquad\text{so }\deg p_L=j^*-\min J\le j_1-j_0,\ p_L(0)\ne0 .
+\]
+
+\begin{lemma}\label{lem:newton}
+Let $\xi\ne0$, and let $\nu(\xi)$ be the dimension of the space of solutions of $L$ of the form $e^{\beta\xi t}u$, $u\in\mathcal U$. Then $\nu(\xi)\le$ the multiplicity of $\xi^\beta$ as a root of $p_L$.
+\end{lemma}
+
+\begin{proof}
+Let $L_\xi=e^{-\beta\xi t}Le^{\beta\xi t}=\sum_jt^{\beta j}A_j(\xi t+\theta_t/\beta)$; we must bound the number of solutions of $L_\xi$ in $\mathcal U$. Write $L_\xi=\sum_mt^m\Lambda_m(\theta_t)$. By the Frobenius method, the dimension of the solution space of $L_\xi$ in $\mathcal U$ is at most $\deg\Lambda_{m^*}$, where $m^*$ is the largest $m$ with $\Lambda_m\ne0$: the leading term of a solution is annihilated by $\Lambda_{m^*}(\theta_t)$, whose kernel on $\bigoplus_\alpha t^\alpha\C[\log t]$ has dimension $\deg\Lambda_{m^*}$, and solutions can be chosen with linearly independent leading terms.
+
+Give $t$ and $\theta_t$ weight one. Every term of $L$ has weight at most $D$, and conjugation preserves weights, so $\deg\Lambda_{D-i}\le i$; in the commutative associated graded ring the weight-$D$ part of $L_\xi$ is
+\[
+\sum_{j\in J}\lc(A_j)\,t^{\beta j}(\xi t+\theta_t/\beta)^{D-\beta j}=\sum_{i\ge0}\frac{\chi_L^{(i)}(\xi)}{i!\,\beta^i}\,t^{D-i}\theta_t^{\,i},\qquad\chi_L(\xi)=\sum_{j\in J}\lc(A_j)\,\xi^{D-\beta j}.
+\]
+Thus $[\theta_t^i]\Lambda_{D-i}=\chi_L^{(i)}(\xi)/(i!\beta^i)$. Let $\nu$ be the multiplicity of $\xi$ as a root of $\chi_L$. Then $\deg\Lambda_{D-i}<i$ for $i<\nu$ and $\deg\Lambda_{D-\nu}=\nu$, so $m^*\ge D-\nu$ and $\deg\Lambda_{m^*}\le\nu$. Finally $\chi_L(\xi)=\xi^{D-\beta j^*}p_L(\xi^\beta)$, and since $\xi\mapsto\xi^\beta$ is locally biholomorphic at $\xi\ne0$, $\nu$ is the multiplicity of $\xi^\beta$ as a root of $p_L$.
+\end{proof}
+
+\begin{proposition}\label{prop:lower}
+If $L\ne0$ and $LG=0$, then the multiplicity of every $\rho\in\Xi_{k,\beta}$ as a root of $p_L$ is at least $m(\rho)$, and the span of $L$ is at least $s$.
+\end{proposition}
+
+\begin{proof}
+$L=P\mathcal L_G$ for some $P$, so every solution of $\mathcal L_G$ is a solution of $L$. Let $\rho=\xi^\beta\in\Xi_{k,\beta}$. By the remark after Lemma~\ref{lem:Nformal}, $\mathcal L_G$ has $N_{k,\beta}(\xi)=m(\rho)$ independent solutions $e^{\beta\xi t}u$, so Lemma~\ref{lem:newton} gives the first claim. Distinct $\rho$ are distinct roots, so $j_1-j_0\ge\deg p_L\ge\sum_{\rho\in\Xi}m(\rho)=s$.
+\end{proof}
+
+\subsection{The upper bound}
+Let $\Lambda_{\mathcal N}=\bigoplus_{j<\beta}\C[x]\,\theta^jF\subset\mathcal N$ (identifying $e_j$ with $\theta^jF$); it is a $\theta$-stable $\C[x]$-lattice because $\theta^\beta F=xF$. Then $\Lambda=x^{-\binom k2}\Psi(\Sym^k\Lambda_{\mathcal N})$ is a $\theta$-stable $\C[x]$-lattice of $\mathcal M$ (note $\theta x^{-a}=x^{-a}(\theta-a)$), and it contains $G$ by Lemma~\ref{lem:vdm}. Note that $\mathcal M$, like $\mathcal N$, has no singular points in $\C^\times$.
+
+Let $\hat{\mathcal M}=\hat K\otimes\mathcal M=\hat{\mathcal M}_0\oplus\hat{\mathcal M}_{>0}$ be the decomposition into the regular part and the part of slope $1/\beta$; it is defined over $\hat K$ and $\theta$-stable \cite[Ch.~3]{vdPS03}, and the ranks are $Z$ and $I$.
+
+\begin{lemma}\label{lem:lattices}
+There are $\C[[x^{-1}]]$-lattices $\Lambda_0\subset\hat{\mathcal M}_0$ and $\Lambda_{>0}\subset\hat{\mathcal M}_{>0}$ with $\theta\Lambda_0\subseteq\Lambda_0$ and $\theta^i\Lambda_{>0}\subseteq x^{\lceil i/\beta\rceil}\Lambda_{>0}$ for all $i\ge0$.
+\end{lemma}
+
+\begin{proof}
+A regular singular formal connection has a $\theta$-stable lattice \cite{Del70}, which gives $\Lambda_0$. For the other part, put $f_j=t^{-j}\theta^jF\in\hat K_t\otimes\mathcal N$. Then $\theta f_j=-\frac j\beta f_j+tf_{j+1}$ for $j<\beta-1$ and $\theta f_{\beta-1}=-\frac{\beta-1}\beta f_{\beta-1}+tf_0$, so the $\C[[t^{-1}]]$-lattice $\Lambda^t_{\mathcal N}$ spanned by the $f_j$ satisfies $\theta\Lambda^t_{\mathcal N}\subseteq t\Lambda^t_{\mathcal N}$, and so does $\Lambda^t=\Sym^k\Lambda^t_{\mathcal N}$. The Galois group $\mu_\beta$ of $\hat K_t/\hat K$, acting on coefficients, multiplies $f_j$ by a root of unity, so $\Lambda^t$ is Galois-stable. Let $\pi$ be the projection to $\hat K_t\otimes\hat{\mathcal M}_{>0}$; it is $\theta$-equivariant and Galois-equivariant. Then $\Lambda_{>0}=\pi(\Lambda^t)^{\mu_\beta}$ is a lattice in $\hat{\mathcal M}_{>0}$, and
+\[
+\theta^i\Lambda_{>0}\subseteq\bigl(t^i\pi(\Lambda^t)\bigr)^{\mu_\beta}\subseteq\bigl(x^{\lceil i/\beta\rceil}\pi(\Lambda^t)\bigr)^{\mu_\beta}=x^{\lceil i/\beta\rceil}\Lambda_{>0},
+\]
+because $t^i=x^{\lceil i/\beta\rceil}t^{i-\beta\lceil i/\beta\rceil}$ and $t^{-1}$ preserves $\pi(\Lambda^t)$.
+\end{proof}
+
+% Replace Proposition prop:upper and its proof with this version.
+\begin{proposition}\label{prop:upper}
+There is a nonzero operator $L=\sum_{j=0}^s x^jA_j(\theta)$ with $LG=0$.
+\end{proposition}
+
+\begin{proof}
+Put $\mathcal O=\C[[x^{-1}]]$ and
+$\mathcal L=\Lambda_0\oplus\Lambda_{>0}$.  Choose an integer $c$ such that
+$G\in x^c\mathcal L$.  The vector space
+\[
+ V_c=\Lambda\cap x^c\mathcal L
+\]
+is finite dimensional over $\C$.  Indeed, in a $\C[x]$-basis of $\Lambda$
+the formal lattice $x^c\mathcal L$ is contained in
+$x^b\mathcal O^R$ for some integer $b$; its intersection with
+$\C[x]^R$ therefore consists of polynomial vectors of bounded degree.
+For integers $\nu_0,\nu_1\ge c$, the quotient
+\[
+ \frac{x^{\nu_0}\Lambda_0\oplus x^{\nu_1}\Lambda_{>0}}
+ {x^c\Lambda_0\oplus x^c\Lambda_{>0}}
+\]
+has dimension $Z(\nu_0-c)+I(\nu_1-c)$ over $\C$.
+The natural map into this quotient has kernel $V_c$, whence
+\begin{equation}\label{eq:lattice-index-bound}
+ \dim_\C\bigl(\Lambda\cap
+   (x^{\nu_0}\Lambda_0\oplus x^{\nu_1}\Lambda_{>0})\bigr)
+ \le \dim_\C V_c+Z(\nu_0-c)+I(\nu_1-c).
+\end{equation}
+This is a finite-length lattice estimate; no algebraization of the formal
+lattices is needed.
+
+Since $\theta^i x^c=x^c(\theta+c)^i$, Lemma~\ref{lem:lattices} gives
+\[
+ \theta^iG\in x^c\Lambda_0\oplus
+ x^{c+\lceil i/\beta\rceil}\Lambda_{>0}.
+\]
+Thus the $(s+1)(m+1)$ elements $x^j\theta^iG$ with
+$0\le j\le s$ and $0\le i\le m$ lie in the intersection in
+\eqref{eq:lattice-index-bound} with
+$\nu_0=c+s$ and $\nu_1=c+s+\lceil m/\beta\rceil$.
+Its dimension is at most
+\[
+ \dim_\C V_c+Rs+I\lceil m/\beta\rceil
+ \le sm+C,
+\]
+where $C$ is independent of $m$, because $I=\beta s$.
+For sufficiently large $m$ this is smaller than
+$(s+1)(m+1)=sm+s+m+1$.  A nontrivial linear dependence gives the desired
+operator.  The monomials $x^j\theta^i$ are linearly independent in the
+Ore algebra, so the resulting operator is nonzero.
+\end{proof}
+
+\subsection{Recurrences}
+
+\begin{proof}[Proof of Theorem~\ref{thm:B}(ii),(iii)]
+Write $c(n)=y(n)/(n!)^\beta$, so that $G=\sum_nc(n)x^n$. If $L=\sum_{j=0}^{s'}x^jA_j(\theta)$ annihilates $G$, then $\sum_jA_j(n-j)c(n-j)=0$ for all $n$, and multiplying by $(n!)^\beta$ gives the recurrence
+\[
+\sum_{j=0}^{s'}A_j(n-j)\,\ff nj^{\beta}\,y(n-j)=0
+\]
+of order $s'$. By Proposition~\ref{prop:upper} there is one of order $s$.
+
+Conversely let $\sum_{j=0}^{s'}q_j(n)y(n-j)=0$ for $n\ge n_0$, with $q_0q_{s'}\ne0$. Increase $n_0$ if necessary so that $n_0\ge s'$. Substituting $y(m)=(m!)^\beta c(m)$ and dividing by $((n-s')!)^\beta$, we get $\sum_j\tilde q_j(n)c(n-j)=0$ with $\tilde q_j(n)=q_j(n)\ff{n-j}{s'-j}^\beta$, so $L=\sum_jx^j\tilde q_j(\theta+j)$ satisfies $LG\in\C[x]$, and $L'=\prod_{i<n_0}(\theta-i)\,L$ annihilates $G$. The operator $L'$ has the same span $s'$ as $L$, and $\prod_{i<n_0}(\theta-i)\,x^j\tilde q_j(\theta+j)=x^j\prod_i(\theta+j-i)\,\tilde q_j(\theta+j)$, so for $L'$ the numbers $\beta j+\deg A_j$ equal $\deg q_j+\beta s'+n_0$, the set $J$ is $\{j:\deg q_j=\max\}$, and $\lc(A_j)=\lc(q_j)$. By Proposition~\ref{prop:lower}, $s'\ge s$, which proves (ii).
+
+If $s'=s$, then $\deg p_{L'}\le s$ and $p_{L'}$ has every $\rho\in\Xi$ as a root of multiplicity at least $m(\rho)$, where $\sum m(\rho)=s$. Hence $\deg p_{L'}=s$, so $0,s\in J$, and $p_{L'}(T)=\sum_{j\in J}\lc(q_j)T^{s-j}=\lc(q_0)\chi_{k,\beta}(T)$. This is (iii).
+\end{proof}
+
+\begin{remark}
+The group in (i) is $\Sp_\beta$ if $k$ is odd and $\Sp_\beta/\{\pm1\}$ if $k$ is even. The proof establishes the minimum recurrence order but does not claim a sharp degree bound for minimum-order recurrences.
+\end{remark}
+\subsection{Independence of the homogeneous observable}
+
+The proof of Theorem~\ref{thm:B} identifies a property of the symmetric
+power module, not just of the particular Vandermonde expression.
+
+\begin{thm}\label{thm:observable-universality}
+Let $\beta\ge2$ be even, let $k\ge1$, and let
+$P\in\C[x,x^{-1}][X_0,\ldots,X_{\beta-1}]$ be a nonzero homogeneous
+polynomial of degree $k$.  Put
+\[
+ H(x)=P\bigl(F(x),\theta F(x),\ldots,\theta^{\beta-1}F(x)\bigr).
+\]
+Then $H\ne0$, its minimal differential operator has order $R_{k,\beta}$
+and Galois group $\operatorname{im}(\Sp_\beta\to
+\GL(\Sym^k\C^\beta))$, and the minimum span of a nonzero Laurent-polynomial
+operator annihilating $H$ is $s_{k,\beta}$.
+Choose any integer $a$ such that $x^aH$ is holomorphic at zero, and write
+\[
+ x^aH(x)=\sum_{n\ge0}\frac{h(n)}{(n!)^\beta}x^n.
+\]
+The sequence $h(n)$ has minimum polynomial-recurrence order $s_{k,\beta}$.
+Every recurrence of that order has the leading characteristic polynomial
+$\chi_{k,\beta}$ in the sense of Theorem~\ref{thm:B}\textup{(iii)}.
+\end{thm}
+
+\begin{proof}
+The functions $F,\theta F,\ldots,\theta^{\beta-1}F$ are algebraically
+independent over $\C(x)$: the differential Galois group $\Sp_\beta$
+acts transitively on nonzero vectors of the solution space of
+$\theta^\beta-x$, so the field generated by the jet of a nonzero solution
+has transcendence degree $\beta$.  Thus $H\ne0$.
+Polarizing $P$ gives a nonzero equivariant map from the irreducible
+representation $\Sym^k\C^\beta$ into the Picard--Vessiot field.
+Exactly as in the proof of Theorem~\ref{thm:B}\textup{(i)}, this map is
+injective and the differential module generated by $H$ is
+$\Sym^k\mathcal N$.
+
+Its formal exponential factors and their multiplicities are therefore
+those of Lemma~\ref{lem:Nformal}, so Proposition~\ref{prop:lower} applies.
+Choose $b$ large enough that $H$ belongs to
+$x^{-b}\Psi(\Sym^k\Lambda_{\mathcal N})$; this is a
+$\theta$-stable $\C[x]$-lattice.  The proof of
+Proposition~\ref{prop:upper}, using this lattice, gives an annihilator of
+span $s_{k,\beta}$.  Multiplication by $x^a$ preserves this argument and
+these formal exponential factors.  The coefficient conversion in the
+proof of Theorem~\ref{thm:B}\textup{(ii),(iii)} now gives both recurrence
+claims.
+\end{proof}
+
+\subsection{Exact zero-sum counts and explicit orders}
+
+The zero-sum correction $Z_{k,\beta}$ can be computed without enumerating
+multisets.  The following identities make the order in
+Theorem~\ref{thm:B} explicit for every even $\beta$ with at most one odd
+prime divisor.  They are elementary cyclotomic consequences, in the
+classical setting of vanishing sums of roots of unity; see
+Lam and Leung~\cite{LL00}.
+
+\begin{proposition}\label{prop:zero-sum-series}
+For $m\ge2$, let
+$\mathcal Z_m(u)=\sum_{k\ge0}Z_{k,m}u^k$, with $Z_{0,m}=1$.
+Let $d=\operatorname{rad}(m)$ be the product of the distinct prime divisors
+of $m$, and put $h=m/d$.  Then
+\begin{equation}\label{eq:radical-reduction}
+ \mathcal Z_m(u)=\mathcal Z_d(u)^h.
+\end{equation}
+In particular,
+\begin{align}
+ \mathcal Z_{2^a}(u)&=(1-u^2)^{-2^{a-1}} &&(a\ge1),\label{eq:two-power-count}\\
+ \mathcal Z_{2^a p^b}(u)
+ &=\left(\frac{1+u^p}{(1-u^p)(1-u^2)^p}\right)^{2^{a-1}p^{b-1}}
+ &&(a,b\ge1,\ p\text{ an odd prime}).\label{eq:two-prime-count}
+\end{align}
+Consequently, if $\beta=2^a$, the minimal recurrence order is
+\begin{equation}\label{eq:two-power-order}
+ s_{k,\beta}=\frac1\beta\left[
+  \binom{k+\beta-1}{\beta-1}
+  -\mathbf1_{2\mid k}\binom{k/2+\beta/2-1}{\beta/2-1}
+ \right].
+\end{equation}
+For $\beta=2^a p^b$, the coefficient of $u^k$ in
+\eqref{eq:two-prime-count} gives the correction in the same formula
+$s_{k,\beta}=\beta^{-1}\bigl(\binom{k+\beta-1}{\beta-1}-Z_{k,\beta}\bigr)$.
+\end{proposition}
+
+\begin{proof}
+Choose a primitive $m$-th root $\zeta$.  Since
+$[\Q(\zeta):\Q(\zeta^h)]=\varphi(m)/\varphi(d)=h$, the elements
+$1,\zeta,\ldots,\zeta^{h-1}$ are a basis over $\Q(\zeta^h)$.
+Each $m$-th root has a unique expression
+$\zeta^r(\zeta^h)^j$ with $0\le r<h$ and $0\le j<d$.
+A multiset sum vanishes if and only if the $d$-th-root sum in each of
+these $h$ classes vanishes separately.  The sizes add, proving
+\eqref{eq:radical-reduction}.
+
+For $m=2$, vanishing means that $1$ and $-1$ have equal multiplicity,
+so $\mathcal Z_2(u)=(1-u^2)^{-1}$ and
+\eqref{eq:two-power-count} follows.
+For $m=2p$, write the roots as $\pm\eta^j$, $0\le j<p$, with $\eta$
+a primitive $p$-th root, and let $a_j,b_j$ be their multiplicities.
+The relation $\sum_j(a_j-b_j)\eta^j=0$ holds precisely when all
+$a_j-b_j$ equal one integer $c$, since the minimal polynomial of $\eta$
+is $1+T+\cdots+T^{p-1}$.
+Writing $r_j=\min(a_j,b_j)$, the total size is
+$2\sum_jr_j+p|c|$.  The parameters $(r_0,\ldots,r_{p-1},c)$ determine
+the multiset uniquely.  Hence
+\[
+ \mathcal Z_{2p}(u)
+ =\frac1{(1-u^2)^p}\sum_{c\in\Z}u^{p|c|}
+ =\frac{1+u^p}{(1-u^p)(1-u^2)^p}.
+\]
+Equation~\eqref{eq:two-prime-count} now follows from
+\eqref{eq:radical-reduction}; extracting coefficients proves
+\eqref{eq:two-power-order}.
+\end{proof}
+
+\begin{example}
+For $\beta=6$ the formula reads
+\[
+ Z_{k,6}=\mathbf1_{2\mid k}\binom{k/2+2}{2}
+ +2\!\!\sum_{\substack{1\le c\le k/3\\ k-3c\text{ even}}}
+       \binom{(k-3c)/2+2}{2}.
+\]
+Thus the minimum recurrence orders for $k=1,2,3,4,5,6$ are,
+respectively, $1,3,9,20,41,75$.
+For $\beta=8$ the corresponding orders are $1,4,15,40,99,212$.
+These are consequences of the exact theorem, rather than recurrence guesses.
+\end{example}
+
+% Add to bibliography:
+% \bibitem{LL00}
+% T.-Y.~Lam and K.~H.~Leung,
+% \emph{On vanishing sums of roots of unity},
+% J. Algebra \textbf{224} (2000), 91--109;
+% doi:10.1006/jabr.1999.8089; arXiv:math/9511209.
+
+\subsection{All algebraic relations and algebraic specializations}
+\label{sec:regev-relations}
+
+The order in Theorem~\ref{thm:B}(i) counts linear differential
+complexity.  The algebraic complexity of the same solution is much
+smaller: it is always $\beta$, independently of $k$.  We make this
+distinction precise, including the relations themselves.  This is a
+consequence of the symmetric-power identification, the classical
+Veronese construction, and the Siegel--Shidlovskii theorem; it does not
+require a further Galois-group computation.
+
+Put $f_j=\theta^jF$ for $0\le j<\beta$ and
+\[
+ \mathcal A=\{\alpha\in\N^\beta:|\alpha|=k\},\qquad
+ v=(f^\alpha)_{\alpha\in\mathcal A},
+\]
+\[
+ J=(G,G',\ldots,G^{(R-1)})^{\mathsf T},
+ \qquad R=\binom{k+\beta-1}{k}.
+\]
+Here primes denote ordinary derivatives with respect to $x$.  Fix an
+ordering of $\mathcal A$ once and for all.
+
+\begin{thm}[Veronese relations and reconstruction]
+\label{thm:regev-veronese}
+Let $\beta\ge2$ be even and $k\ge1$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item There is an effectively computable matrix
+\[
+ C_{k,\beta}(x)\in
+ \operatorname{Mat}_{R}(\Q[x,x^{-1}])\cap\GL_R(\Q(x))
+ \quad\hbox{such that}\quad J=C_{k,\beta}(x)v.
+\]
+Writing $X=C_{k,\beta}(x)^{-1}Y$, every polynomial relation over
+$\C(x)$ among the entries of $J$ is generated by the quadrics
+\begin{equation}\label{eq:veronese-quadrics}
+ X_\alpha X_\delta-X_\gamma X_\eta,
+ \qquad \alpha+\delta=\gamma+\eta,
+ \qquad \alpha,\delta,\gamma,\eta\in\mathcal A.
+\end{equation}
+In particular,
+\[
+ \operatorname{trdeg}_{\C(x)}
+ \C(x)(G,G',\ldots,G^{(R-1)})=\beta.
+\]
+\item If $M=\C(x)(f_0,\ldots,f_{\beta-1})$ and
+$L=\C(x)(G,G',\ldots,G^{(R-1)})$, then
+\[
+ L=M^{\mu_k},\qquad [M:L]=k,
+\]
+where $\zeta\in\mu_k$ acts simultaneously by $f_j\mapsto\zeta f_j$.
+Thus the jet of $G$ determines the base jet up to a common $k$-th root
+of unity.
+\end{enumerate}
+\end{thm}
+
+\begin{proof}
+First, $f_0,\ldots,f_{\beta-1}$ are algebraically independent over
+$\C(x)$.  Indeed, in a Picard--Vessiot field the stabilizer of $F$
+fixes exactly its full jet, and the orbit of $F$ under
+$\Sp_\beta$ is the set of nonzero vectors of its $\beta$-dimensional
+solution space.  The differential Galois correspondence therefore
+gives transcendence degree $\beta$ for the field generated by this
+jet.  Since the equation expresses all higher derivatives in terms
+of these $\beta$ entries, they are algebraically independent.
+
+The equation $\theta^\beta F=xF$ gives a first-order system
+$v'=B(x)v$ with $B(x)\in\operatorname{Mat}_R(\Q[x,x^{-1}])$.
+Lemma~\ref{lem:vdm} expresses $G=a_0(x)v$ with a row vector
+$a_0$ in the same Laurent-polynomial ring.  Define successively
+$a_{j+1}=a_j'+a_jB$ and let $C_{k,\beta}$ have rows
+$a_0,\ldots,a_{R-1}$.  Its determinant is nonzero: otherwise
+these rows would give an equation of order less than $R$ for $G$,
+contrary to Theorem~\ref{thm:B}(i).  This proves the matrix assertion.
+
+Because the $f_j$ are algebraically independent, the relations among
+$v$ form the kernel of the map
+\[
+ \C(x)[X_\alpha:\alpha\in\mathcal A]
+ \longrightarrow \C(x)[U_0,\ldots,U_{\beta-1}],
+ \qquad X_\alpha\longmapsto U^\alpha.
+\]
+This kernel is generated by \eqref{eq:veronese-quadrics}.  Here is an
+elementary verification.  Monomials in the source with different
+total exponent vectors in the $U_j$ cannot cancel.  Those with the
+same total exponent vector have the same number of factors, and
+their factors can be viewed as distributions of a fixed multiset
+of symbols into boxes of size $k$.  Any two such distributions are
+connected by exchanges of one symbol in one box with one symbol
+in another box: fill the first box with its prescribed symbols,
+then the second, and continue.  Each exchange replaces two
+multi-indices by two with the same sum, hence is one of the
+quadratic relations.  Every polynomial in the kernel is a linear
+combination of the resulting binomial relations.  The invertible
+change of coordinates $J=C_{k,\beta}v$ proves (i).
+
+For (ii), $L=\C(x)(f^\alpha:|\alpha|=k)$ is fixed by $\mu_k$.
+It contains $f_0^k$ and, if $j>0$, the ratios
+\[
+ \frac{f_j}{f_0}
+ =\frac{f_0^{k-1}f_j}{f_0^k}.
+\]
+Thus $M=L(f_0)$ has degree at most $k$.  Algebraic independence of
+the $f_j$ ensures that simultaneous multiplication by the $k$
+distinct $k$-th roots of unity gives $k$ distinct automorphisms of
+$M$ over $L$.  The degree is therefore exactly $k$, and the fixed
+field is $L$.
+\end{proof}
+
+\begin{thm}[Values at nonzero algebraic points]
+\label{thm:regev-values}
+Let $\alpha\in\overline{\Q}^{\times}$, and put
+$\Delta_{k,\beta}(x)=\det C_{k,\beta}(x)$ and
+$m_\alpha=\operatorname{ord}_{x=\alpha}\Delta_{k,\beta}(x)\ge0$.
+Then
+\begin{equation}\label{eq:regev-value-field}
+ \overline{\Q}\bigl(G^{(j)}(\alpha):0\le j\le R-1+m_\alpha\bigr)
+ =\overline{\Q}\bigl(f(\alpha)^\gamma:|\gamma|=k\bigr).
+\end{equation}
+This field has transcendence degree $\beta$ over
+$\overline{\Q}$, and its extension to
+$\overline{\Q}(f_0(\alpha),\ldots,f_{\beta-1}(\alpha))$
+has degree $k$.
+If $\Delta_{k,\beta}(\alpha)\ne0$, all algebraic relations among
+$G(\alpha),\ldots,G^{(R-1)}(\alpha)$ are the quadrics
+\eqref{eq:veronese-quadrics}, with
+$X=C_{k,\beta}(\alpha)^{-1}Y$ and coefficients in
+$\overline{\Q}$.
+\end{thm}
+
+\begin{proof}
+Set $x=t^\beta$ and $\mathcal F_j(t)=f_j(t^\beta)$.
+These are $E$-functions.  Indeed, the exponential Taylor
+coefficient of $\mathcal F_j$ at degree $\beta n$ is
+\[
+ n^j\frac{(\beta n)!}{(n!)^\beta},
+\]
+and all other coefficients are zero.  These coefficients are
+integers of at most exponential growth, since the multinomial
+coefficient is at most $\beta^{\beta n}$.  They satisfy the system
+\[
+ \mathcal F_j'=\frac\beta t\mathcal F_{j+1}
+ \quad(0\le j<\beta-1),\qquad
+ \mathcal F_{\beta-1}'=\beta t^{\beta-1}\mathcal F_0,
+\]
+whose only finite singular point is $0$.  Their algebraic
+independence over $\C(t)$ follows from the independence over
+$\C(x)$ proved above, because $\C(t)/\C(t^\beta)$ is algebraic.
+The Siegel--Shidlovskii theorem, in the form recalled in
+\cite[Theorem~1.1]{Beu06}, now implies that
+$f_0(\alpha),\ldots,f_{\beta-1}(\alpha)$ are algebraically
+independent: apply it at any algebraic $t\ne0$ with $t^\beta=\alpha$.
+
+All rows $a_j$ defined in the previous proof have Laurent-polynomial
+entries, so every derivative $G^{(j)}(\alpha)$ belongs to the
+right side of \eqref{eq:regev-value-field}.  Conversely, the identity
+\[
+ \operatorname{adj}(C_{k,\beta}(x))J(x)
+ =\Delta_{k,\beta}(x)v(x)
+\]
+can be differentiated $m_\alpha$ times and evaluated at $\alpha$.
+On the right all terms except
+$\Delta_{k,\beta}^{(m_\alpha)}(\alpha)v(\alpha)$ vanish; its
+coefficient is nonzero.  The left involves derivatives of $G$
+only through order $R-1+m_\alpha$, with algebraic coefficients.
+This proves the field equality.  Algebraic independence of the
+base values now gives both the transcendence-degree statement and
+the extension degree exactly as in
+Theorem~\ref{thm:regev-veronese}(ii).  If $m_\alpha=0$, the matrix
+specializes invertibly, and the elementary Veronese-kernel argument
+also specializes verbatim.
+\end{proof}
+
+\begin{example}
+For $k=\beta=2$, put $f_0=F$ and $f_1=\theta F$.  The
+Vandermonde formula gives $G=f_0^2-f_1^2/x$, and direct
+differentiation yields
+\[
+ f_0^2=G+xG',\qquad
+ f_0f_1=xG'+\frac{x^2}{2}G'',\qquad
+ f_1^2=x^2G'.
+\]
+The cyclic determinant is $-2/x^4$, so there are no exceptional
+nonzero points in this case.  The single generating relation is
+\[
+ \left(G'+\frac x2G''\right)^2=G'(G+xG').
+\]
+At every nonzero algebraic $x=\alpha$ this generates the full ideal
+of algebraic relations over $\overline{\Q}$ among the three
+values, whose transcendence degree is two.
+\end{example}
+
+\begin{remark}
+For $(k,\beta)=(3,4)$, the minimal equation has order $20$, but the
+field generated by its distinguished solution and its derivatives
+has transcendence degree $4$.  The nineteen derivatives therefore
+do not provide twenty algebraically independent functions.
+Theorems~\ref{thm:regev-veronese} and~\ref{thm:regev-values}
+describe the precise relations, and distinguish exceptional zeros
+of the cyclic determinant from genuine loss of arithmetic
+information: at an exceptional point a finite number of additional
+derivatives recovers the same monomial field.
+\end{remark}
+
+\section{Random walk integrals: proof of \texorpdfstring{Theorem~\ref{thm:C}}{Theorem C}}\label{sec:C}
+
+Let $n\ge2$ and let $S_n=\sum_{k\le n}e^{2\pi ix_k}$, so $W_n(s)=\mathbb E|S_n|^s$. For every $n\ge2$, $W_n$ is holomorphic for
+$\operatorname{Re}s>-1$, which suffices for the Mellin representation
+below.  To see the negative-moment bound, condition on all but one angle:
+for $0<\alpha<1$ the integral
+$\int_0^{2\pi}|z+e^{i\theta}|^{-\alpha}d\theta$ is uniformly bounded in
+$z$, by comparison near $|z|=1$ with
+$|\sin(\theta/2)|^{-\alpha}$.  The four-step planar density has a
+logarithmic singularity at the origin; no bounded-density assertion is
+needed.
+
+\subsection{The Bessel representation}
+
+\begin{lemma}\label{lem:mellin}
+For $-1<\operatorname{Re}s<0$,
+\begin{equation}\label{eq:mellin}
+W_n(s)=2^{s+1}\frac{\Gamma(1+s/2)}{\Gamma(-s/2)}\,I_n(s),\qquad I_n(s)=\int_0^\infty t^{-s-1}J_0(t)^n\,dt .
+\end{equation}
+\end{lemma}
+
+This representation is classical \cite[\S2]{BNSW11}; we include a proof to make the range of validity explicit.
+
+\begin{proof}
+For $0<\operatorname{Re}a<2$ the Fourier transform of $|\xi|^{-a}$ on $\mathbb R^2$ is
+\[
+\int_{\mathbb R^2}e^{i\langle\xi,y\rangle}|\xi|^{-a}\,d\xi=\pi2^{2-a}\frac{\Gamma(1-a/2)}{\Gamma(a/2)}|y|^{a-2}.
+\]
+Put $a=s+2$ and $\varphi_\varepsilon(\xi)=|\xi|^{-s-2}e^{-\varepsilon|\xi|^2}$. Since $\mathbb E\,e^{i\langle\xi,S_n\rangle}=J_0(|\xi|)^n$ and $\varphi_\varepsilon\in L^1$, Fubini gives
+\[
+\int_{\mathbb R^2}J_0(|\xi|)^n\varphi_\varepsilon(\xi)\,d\xi=\mathbb E\,\hat\varphi_\varepsilon(S_n),\qquad\hat\varphi_\varepsilon=\pi2^{-s}\tfrac{\Gamma(-s/2)}{\Gamma(1+s/2)}\,|y|^s*g_\varepsilon,
+\]
+with $g_\varepsilon$ a Gaussian of total mass one. As $\varepsilon\to0$ the left side tends to $2\pi\int_0^\infty t^{-s-1}J_0(t)^ndt$ by dominated convergence ($|J_0(t)|^n\le\min(1,Ct^{-n/2})$ and $-n/2\le-1<\operatorname{Re}s<0$). On the right, $|y|^\sigma*g_\varepsilon\to|y|^\sigma$ pointwise for $y\ne0$, and $|y|^\sigma*g_\varepsilon\le C_\sigma|y|^\sigma$ for $-2<\sigma<0$ by scaling; since $\mathbb E|S_n|^{\operatorname{Re}s}<\infty$, dominated convergence gives the limit $\pi2^{-s}\frac{\Gamma(-s/2)}{\Gamma(1+s/2)}W_n(s)$.
+\end{proof}
+
+\subsection{The non-oscillating part of \texorpdfstring{$J_0^n$}{J0 to the n}}
+By Hankel's expansion \cite[\S10.17]{DLMF},
+\[
+J_0(t)=\sqrt{\tfrac2{\pi t}}\Bigl(P(t)\cos\bigl(t-\tfrac\pi4\bigr)-Q(t)\sin\bigl(t-\tfrac\pi4\bigr)\Bigr),
+\]
+where $P$ has an asymptotic expansion in powers of $t^{-2}$ and $Q$ one in odd powers of $t^{-1}$, with remainder bounds of the order of the first omitted term. Writing the cosine and sine as exponentials,
+\[
+J_0(t)^n=\Bigl(\frac2{\pi t}\Bigr)^{n/2}2^{-n}\sum_{a=0}^n\binom na(P+iQ)^a(P-iQ)^{n-a}e^{i(2a-n)(t-\pi/4)}.
+\]
+Hence, for every $M$,
+\begin{equation}\label{eq:J0n}
+J_0(t)^n=\sum_{m\in\{-n,-n+2,\dots,n\}}e^{imt}\sum_{i<M}c_{m,i}\,t^{-n/2-i}+O(t^{-n/2-M})\qquad(t\to\infty),
+\end{equation}
+where the term $m=0$ occurs only for even $n$, and then
+\begin{equation}\label{eq:nonosc}
+\sum_ic_{0,i}t^{-i}=c_n\bigl(P^2+Q^2\bigr)^{n/2},\qquad c_n=\Bigl(\frac2\pi\Bigr)^{n/2}2^{-n}\binom n{n/2},
+\end{equation}
+as formal series. Since $\frac{\pi t}2(J_0^2+Y_0^2)=P^2+Q^2$, the expansion \cite[10.18.17]{DLMF} gives
+\[
+P^2+Q^2=\sum_{k\ge0}(-1)^k\,\frac{(2k-1)!!}{(2k)!!}\,\frac{((2k-1)!!)^2}{4^k}\,t^{-2k}=1-\frac1{8t^2}+\frac{27}{128t^4}-\cdots.
+\]
+Hence $c_{0,i}=0$ for odd $i$, and $c_{0,2j}=c_ne_{n,j}$, where
+\[
+\sum_{j\ge0}e_{n,j}u^j=\Bigl(\sum_{k\ge0}m_ku^k\Bigr)^{n/2},\qquad m_k=(-1)^k\frac{(2k-1)!!^3}{(2k)!!\,4^k}.
+\] Substituting $u=-v$ turns $\sum_km_ku^k$ into a series with positive coefficients, so
+\begin{equation}\label{eq:sign}
+(-1)^je_{n,j}>0\qquad\text{for all }j\ge0.
+\end{equation}
+
+\begin{lemma}\label{lem:In}
+$I_n$ extends meromorphically to $\operatorname{Re}s<0$. If $n$ is odd, it is holomorphic there. If $n$ is even, its poles in $\operatorname{Re}s<0$ are exactly the points $s=-n/2-2j$, $j\ge0$; they are simple, with residue $c_ne_{n,j}$.
+\end{lemma}
+
+\begin{proof}
+Split $I_n=\int_0^1+\int_1^\infty$. The first integral is holomorphic for $\operatorname{Re}s<0$. In the second, insert \eqref{eq:J0n}. The remainder contributes a function holomorphic for $\operatorname{Re}s>-n/2-M$. For $m\ne0$, $E_b(m)=\int_1^\infty t^{-b}e^{imt}dt$ is entire in $b$: integration by parts gives $E_b(m)=-\frac{e^{im}}{im}+\frac b{im}E_{b+1}(m)$, and iterating continues it to every half-plane. For $m=0$, $\int_1^\infty t^{-s-1-n/2-2j}dt=(s+n/2+2j)^{-1}$. Letting $M\to\infty$ proves the claim, the residues being nonzero by \eqref{eq:sign}.
+\end{proof}
+
+\subsection{Proof of \texorpdfstring{Theorem~\ref{thm:C}}{Theorem C}}
+By Lemma~\ref{lem:mellin} and Lemma~\ref{lem:In}, \eqref{eq:mellin} continues $W_n$ meromorphically to $\operatorname{Re}s<0$. There $1/\Gamma(-s/2)$ is entire and nonvanishing (as $-s/2$ has positive real part), and $\Gamma(1+s/2)$ has simple poles exactly at $s=-2p$, $p\ge1$, and no zeros. So in $\operatorname{Re}s<0$ the poles of $W_n$ lie in $\{-2p\}\cup\{\text{poles of }I_n\}$, and each factor contributes at most a simple pole; this proves (i). If $n$ is odd, $I_n$ is holomorphic and all poles are simple, which is (ii).
+
+Let $n$ be even and $s_j=-n/2-2j$. If $n\equiv2\pmod4$, then $s_j$ is an odd integer, so $\Gamma(1+s/2)$ is finite and nonzero at $s_j$ (its argument is a half-integer), and $W_n$ has a simple pole at $s_j$ with residue
+\[
+\Res_{s=s_j}W_n=2^{s_j+1}\frac{\Gamma(1+s_j/2)}{\Gamma(-s_j/2)}\,c_ne_{n,j}\ne0.
+\]
+If $4\mid n$, then $s_j=-2p$ with $p=n/4+j\ge1$, and near $s_j$ we have $\Gamma(1+s/2)=\frac{2(-1)^{p-1}}{(p-1)!}(s+2p)^{-1}+O(1)$ and $I_n(s)=c_ne_{n,j}(s+2p)^{-1}+O(1)$; hence $W_n$ has a pole of order exactly two at $s_j$. All other poles are of the form $-2p$ with $I_n$ holomorphic at $-2p$, hence simple. This proves (iii). Part~(iv) follows from Corollary~\ref{cor:C-complete-four} below, and part~(v) is Theorem~\ref{thm:seven-step-poles}. \qed
+
+\begin{proposition}\label{prop:Wcoef}
+Let $n$ be even and $j\ge0$. If $4\mid n$ and $p=n/4+j$, then
+\[
+\lim_{s\to-2p}(s+2p)^2W_n(s)=\frac{(-1)^{p-1}2^{2-2p}}{(p-1)!^2}\,c_n\,e_{n,j}.
+\]
+If $n\equiv2\pmod4$, the residue at $-n/2-2j$ is given in the proof above. For $n=4$ the first formula gives $\frac{3}{2\pi^2}$ at $s=-2$, in agreement with the expansion $W_4(s)=\frac3{2\pi^2}(s+2)^{-2}+\frac{9\log2}{2\pi^2}(s+2)^{-1}+O(1)$ proved in \cite[Example~4]{BSWZ12}. The present argument computes the double-pole coefficient, not the next Laurent coefficient.
+\end{proposition}
+
+\begin{proof}
+Multiply the two Laurent expansions in the proof of Theorem~\ref{thm:C}, using $2^{s+1}=2^{1-2p}$ and $\Gamma(-s/2)=(p-1)!$ at $s=-2p$.
+\end{proof}
+
+\begin{remark}
+Theorem~\ref{thm:C} alone does not decide whether every $s=-2p$ is a pole; Corollary~\ref{cor:C-complete-four} completes this question for $4\mid n$. At such a point not of the form $-n/2-2j$, the residue is a nonzero multiple of the continued value $I_n(-2p)$, a regularized moment $\int_0^\infty t^{2p-1}J_0(t)^n\,dt$; for $n=2$ all these values vanish. For $p<n/4$ the integral converges absolutely, and for $p=1$, $n\ge5$, it equals $2\pi$ times the density of $S_n$ at the origin, which is positive; compare \cite[Prop.~1]{BSW13} and \cite[\S5]{BSWZ12}.
+\end{remark}
+% Insert after the proof of Theorem C and Proposition Wcoef, before computations.
+\subsection{Completing the pole set when the number of steps is divisible by four}
+
+\begin{corollary}\label{cor:C-complete-four}
+For even $n$ and every integer $1\le p<n/4$, the point $-2p$ is an actual simple pole of $W_n$, and
+\[
+ \Res_{s=-2p}W_n(s)
+ =\frac{(-1)^{p-1}2^{2-2p}}{((p-1)!)^2}
+   \int_0^\infty t^{2p-1}J_0(t)^n\,dt\ne0.
+\]
+Consequently, if $4\mid n$, the pole set of $W_n$ is exactly
+$\{-2,-4,-6,\ldots\}$: the pole at $-2p$ is simple for $p<n/4$
+and double for $p\ge n/4$.
+\end{corollary}
+\begin{proof}
+The displayed integral converges absolutely because its integrand is
+$O(t^{2p-1-n/2})$ at infinity. It is strictly positive: $n$ is even,
+and $J_0(t)^n>0$ for all sufficiently small positive $t$.
+The residue follows by multiplying this value by the residue of the Gamma
+factor in \eqref{eq:mellin}. Theorem~\ref{thm:C} supplies every remaining
+pole when $4\mid n$ and excludes all other locations.
+\end{proof}
+
+\subsection{Unequal step lengths and resonant signed sums}\label{subsec:weighted-walks}
+
+Let $\boldsymbol a=(a_1,\ldots,a_n)$ with $a_i>0$, $n\ge2$, and set
+\[
+ W_{\boldsymbol a}(s)=\mathbb E\left|\sum_{i=1}^n a_i e^{i\Theta_i}\right|^s,
+ \qquad
+ I_{\boldsymbol a}(s)=\int_0^\infty t^{-s-1}\prod_{i=1}^nJ_0(a_it)\,dt,
+\]
+where the angles are independent and uniform. The proof of
+Lemma~\ref{lem:mellin} gives, on $-1<\operatorname{Re}s<0$,
+\begin{equation}\label{eq:weighted-mellin}
+ W_{\boldsymbol a}(s)=2^{s+1}
+ \frac{\Gamma(1+s/2)}{\Gamma(-s/2)}I_{\boldsymbol a}(s).
+\end{equation}
+For completeness, the required negative moment is finite on this strip
+without any regularity assumption on a planar density. Indeed, for
+$0<\alpha<1$ and fixed $a>0$, the circle integral
+$\int_0^{2\pi}|z+ae^{i\theta}|^{-\alpha}\,d\theta$ is bounded uniformly in
+$z\in\C$. When $|z|$ is close to $a$, this follows by comparison with
+$|\sin(\theta/2)|^{-\alpha}$; away from that annulus there is a positive
+lower bound for the distance. Condition on all but one angle.
+
+Define
+\[
+ b_j=\frac{((2j-1)!!)^2}{8^j j!}\quad(j\ge0),\qquad (-1)!!=1,
+ \qquad \mathcal E_{\boldsymbol a}
+ =\left\{\varepsilon\in\{\pm1\}^n:
+            \sum_i\varepsilon_i a_i=0\right\}.
+\]
+For $j\ge0$ put
+\begin{align}
+ B_{\varepsilon,j}
+ &=\sum_{j_1+\cdots+j_n=j}\prod_{i=1}^n
+        b_{j_i}\left(\frac{\varepsilon_i}{a_i}\right)^{j_i},\label{eq:weighted-B}\\
+ C_j(\boldsymbol a)
+ &=(2\pi)^{-n/2}\left(\prod_i a_i\right)^{-1/2}
+   (-i)^j\sum_{\varepsilon\in\mathcal E_{\boldsymbol a}}
+       e^{-\pi i\sum_i\varepsilon_i/4}B_{\varepsilon,j}.
+       \label{eq:weighted-C}
+\end{align}
+The number $C_j(\boldsymbol a)$ is real: pair $\varepsilon$ with
+$-\varepsilon$ and use $B_{-\varepsilon,j}=(-1)^jB_{\varepsilon,j}$.
+
+\begin{thm}[Signed-sum criterion for unequal lengths]
+\label{thm:weighted-resonance}
+The function $I_{\boldsymbol a}$ extends meromorphically to
+$\operatorname{Re}s<0$. Its only possible poles there are simple poles
+at $s=-n/2-j$, $j\ge0$, with residue $C_j(\boldsymbol a)$; such a point
+is a pole exactly when this coefficient is nonzero.
+The function $W_{\boldsymbol a}$ extends meromorphically to $\C$, and
+its poles lie in
+\[
+ \{-2p:p\ge1\}\ \cup\ \{-n/2-j:j\ge0\}.
+\]
+Every pole has order at most two. If $n$ is odd, all poles are simple.
+If $n$ is even, $-2p$ is a double pole exactly when
+$2p\ge n/2$ and $C_{2p-n/2}(\boldsymbol a)\ne0$.
+In particular, if $\mathcal E_{\boldsymbol a}$ is empty, every pole is
+simple and is a negative even integer.
+\end{thm}
+\begin{proof}
+Hankel's expansion, with the same remainder bounds as in
+\eqref{eq:J0n}, can be written
+\[
+ J_0(at)\sim\frac1{\sqrt{2\pi at}}
+ \sum_{\varepsilon=\pm1}e^{i\varepsilon(at-\pi/4)}
+ \sum_{j\ge0}b_j\left(\frac{-i\varepsilon}{at}\right)^j.
+\]
+On multiplying these expansions, the zero-frequency part is
+$\sum_{j\ge0}C_j(\boldsymbol a)t^{-n/2-j}$.
+Every nonzero frequency contributes an entire function of $s$ to the
+continued tail integral, by the integration-by-parts argument of
+Lemma~\ref{lem:In}. The zero-frequency terms contribute
+$C_j(\boldsymbol a)/(s+n/2+j)$. The remainder after any finite truncation
+is holomorphic on a leftward-growing half-plane. This proves the
+assertion for $I_{\boldsymbol a}$, including the noncancellation criterion.
+Multiplication by the Gamma factor in \eqref{eq:weighted-mellin} proves
+the pole assertions. Its simple poles are at negative even integers,
+which cannot coincide with $-n/2-j$ when $n$ is odd. For even $n$ the
+double-pole criterion follows from the nonzero residue of that Gamma
+factor. The original expectation is holomorphic on
+$\operatorname{Re}s>-1$, so this continuation covers the whole plane.
+\end{proof}
+
+\begin{corollary}[Four arbitrary steps]\label{cor:four-weighted}
+For four positive lengths, $W_{\boldsymbol a}$ has a double pole if and
+only if the lengths admit a partition into two pairs of equal sum.
+If $N_2$ is the number of two-element subsets $S\subseteq\{1,2,3,4\}$
+with $\sum_{i\in S}a_i=\sum_{i\notin S}a_i$, then
+\[
+ \lim_{s\to-2}(s+2)^2W_{\boldsymbol a}(s)
+ =\frac{N_2}{4\pi^2\sqrt{a_1a_2a_3a_4}}.
+\]
+\end{corollary}
+\begin{proof}
+For $n=4$ a balanced sign vector with two plus signs has
+$\sum_i\varepsilon_i=0$, and contributes $1$ to the sum defining $C_0$.
+A balanced sign vector with one or three plus signs has
+$\sum_i\varepsilon_i=\mp2$; its contribution to $C_0$ cancels with
+that of its negative. Thus
+$C_0=N_2/(4\pi^2\sqrt{\prod_i a_i})$.
+At $s=-2$, the residue of the Gamma factor in
+\eqref{eq:weighted-mellin} is $1$, proving the formula and sufficiency.
+If no balanced two-pair partition exists, all balanced sign vectors
+have one or three plus signs. Pairing their contributions in
+\eqref{eq:weighted-C} shows that $C_j=0$ for every even $j$,
+since $\cos(\pm\pi/2+\pi j/2)=0$. A double pole for $n=4$ would require
+an even $j$, so none exists.
+\end{proof}
+
+\begin{corollary}[Even multiplicities with independent lengths]
+\label{cor:paired-independent}
+Let the distinct lengths be $b_1,\ldots,b_r$, linearly independent over
+$\Q$, with positive multiplicities $m_1,\ldots,m_r$, and let
+$n=\sum_\ell m_\ell$.
+If some $m_\ell$ is odd, all poles of $W_{\boldsymbol a}$ are simple
+and lie at negative even integers.
+If every $m_\ell$ is even, write
+\[
+ c_{\boldsymbol a}=(2\pi)^{-n/2}
+ \prod_{\ell=1}^r\left[ b_\ell^{-m_\ell/2}
+ \binom{m_\ell}{m_\ell/2}\right],\qquad
+ \sum_{j\ge0}e_{\boldsymbol a,j}u^j
+ =\prod_{\ell=1}^r
+ \left(\sum_{k\ge0}m_k b_\ell^{-2k}u^k\right)^{m_\ell/2},
+\]
+where $m_k$ is the coefficient defined before \eqref{eq:sign}.
+Then $C_{2j}=c_{\boldsymbol a}e_{\boldsymbol a,j}$,
+$C_{2j+1}=0$, and $(-1)^je_{\boldsymbol a,j}>0$.
+Thus every $-n/2-2j$ is a pole, double if $4\mid n$ and simple if
+$n\equiv2\pmod4$; all other poles are simple negative even integers.
+If $4\mid n$, the pole set is exactly the negative even integers, with
+simple poles at $-2p$ for $p<n/4$ and double poles for $p\ge n/4$.
+\end{corollary}
+\begin{proof}
+Rational independence says that a signed sum of the lengths vanishes
+exactly when it has equally many positive and negative occurrences of
+each $b_\ell$. This is impossible if any multiplicity is odd.
+Otherwise, collecting the balanced terms separately in each block gives
+the formal zero-frequency factor
+\[
+ c_{\boldsymbol a}t^{-n/2}
+ \prod_{\ell=1}^r
+ \bigl(P(b_\ell t)^2+Q(b_\ell t)^2\bigr)^{m_\ell/2}.
+\]
+The coefficient formula and strict alternating signs follow from
+\eqref{eq:sign}, applied factor by factor. The weighted Mellin formula
+then gives the claimed poles. For $p<n/4$, its Bessel integral at
+$-2p$ converges absolutely and is strictly positive, since
+$\prod_\ell J_0(b_\ell t)^{m_\ell}$ is nonnegative and positive near
+zero. This supplies the remaining poles when $4\mid n$.
+\end{proof}
+
+\subsection{A chamber with every simple pole present}
+
+The signed-sum test determines higher-order poles, but Gamma-factor
+poles can still disappear. The following positivity argument gives an
+open family of unequal-length walks for which none disappears.
+
+\begin{thm}[Stable triangle chamber]\label{thm:triangle-chamber}
+Suppose that, after relabeling, three step lengths are $a,b,c>0$, and
+let $\delta$ be the sum of all remaining step lengths ($\delta=0$
+when $n=3$). Assume
+\begin{equation}\label{eq:triangle-chamber}
+ |a-b|+\delta<c<a+b-\delta.
+\end{equation}
+Then the poles of $W_{\boldsymbol a}$ are exactly the negative even
+integers, and every pole is simple with strictly positive residue.
+More precisely, let $R$ be the vector sum of the steps other than those
+of lengths $a,b$, and define, on $|a-b|<r<a+b$,
+\[
+ f_{a,b}(r)=\frac1{\pi^2
+ \sqrt{(a+b)^2-r^2}\sqrt{r^2-(a-b)^2}},\qquad
+ \mathcal D=\frac{d^2}{dr^2}+\frac1r\frac d{dr}.
+\]
+Then, for every $k\ge0$,
+\begin{equation}\label{eq:triangle-residue}
+ \Res_{s=-2k-2}W_{\boldsymbol a}(s)
+ =\frac{2\pi}{4^k(k!)^2}\,
+       \mathbb E\bigl[(\mathcal D^k f_{a,b})(|R|)\bigr]>0.
+\end{equation}
+In particular, the complete pole classification holds for every
+three-step walk whose lengths satisfy the strict triangle inequalities.
+\end{thm}
+\begin{proof}
+The planar density of the sum of the first two steps is $f_{a,b}$ on
+the displayed annulus and zero outside it. This follows by changing
+variables from the uniform relative angle to
+$r^2=a^2+b^2+2ab\cos\theta$.
+Put $A=(a-b)^2$, $B=(a+b)^2$, and
+$\gamma_j=\binom{2j}{j}/4^j>0$. On $\sqrt A<r<\sqrt B$,
+\begin{equation}\label{eq:two-step-positive-laurent}
+ f_{a,b}(r)
+ =\frac1{\pi^2\sqrt B}
+   \sum_{u,v\ge0}\gamma_u\gamma_v A^v B^{-u}
+                       r^{2u-2v-1}.
+\end{equation}
+The series and all its derivatives converge uniformly on compact
+subannuli; when $A=0$ retain only $v=0$.
+For every real $\alpha$,
+$\mathcal D r^\alpha=\alpha^2r^{\alpha-2}$.
+Since every exponent in \eqref{eq:two-step-positive-laurent} is odd,
+none of the factors in any iterated application of $\mathcal D$
+vanishes, and every term remains positive. Consequently
+\begin{equation}\label{eq:two-step-laplacian-positive}
+ (\mathcal D^k f_{a,b})(r)>0
+ \quad(k\ge0,\ |a-b|<r<a+b).
+\end{equation}
+The triangle inequality gives
+$c-\delta\le |R|\le c+\delta$; by
+\eqref{eq:triangle-chamber} this is a compact subannulus.
+The density $h(x)=\mathbb E[f_{a,b}(|x-R|)]$ of the full sum is therefore
+real analytic near $x=0$. Rotational invariance and the circle-mean
+Taylor formula give, for all sufficiently small $r$,
+\[
+ h(r)=\sum_{k\ge0}\frac{r^{2k}}{4^k(k!)^2}
+           \mathbb E\bigl[(\mathcal D^k f_{a,b})(|R|)\bigr].
+\]
+Uniform convergence on the compact subannulus justifies averaging this
+series; the circle-mean formula also follows directly by integrating
+the two-variable Taylor series, leaving the powers of the planar
+Laplacian. Every displayed coefficient is strictly positive by
+\eqref{eq:two-step-laplacian-positive}.
+Finally split
+$W_{\boldsymbol a}(s)=2\pi\int_0^\epsilon r^{s+1}h(r)\,dr+
+\mathbb E[|S|^s\mathbf1_{\{|S|\ge\epsilon\}}]$.
+The second term is entire. Termwise integration of the convergent first
+series gives exactly the simple poles $-2k-2$ with residues
+\eqref{eq:triangle-residue}. All these residues are positive, so no
+pole cancels, and no other poles occur.
+\end{proof}
+
+\begin{remark}
+The equal-length three-step pole formula is classical \cite{BNSW11,BSW13}. Condition~\eqref{eq:triangle-chamber} describes a full-dimensional open
+set of lengths for every $n\ge3$. It is preserved on adjoining
+sufficiently short steps. This nonvanishing statement uses positivity
+of iterated Laplacians, whereas the signed-sum criterion uses the
+oscillatory expansion at infinity. The assertions here are proved
+extensions within the present paper; no claim of historical priority
+for the unequal-length conclusions is required.
+\end{remark}
+
+\begin{corollary}[Arithmetic of the three-step residues]
+\label{cor:triangle-arithmetic}
+For a strict triangle with sides $a,b,c$, put
+\[
+ D(u)=4a^2b^2-(u-a^2-b^2)^2,\qquad
+ \mathcal T=u\frac{d^2}{du^2}+\frac d{du}.
+\]
+Then
+\[
+ \Res_{s=-2k-2}W_{(a,b,c)}(s)
+ =\frac{2}{\pi(k!)^2}
+   \left.(\mathcal T^kD(u)^{-1/2})\right|_{u=c^2}>0.
+\]
+If $a^2,b^2,c^2\in\Q$, all these residues are positive rational
+multiples of $2/(\pi\sqrt{D(c^2)})$. More generally, algebraic squared
+lengths give residues in $\overline\Q/\pi$.
+\end{corollary}
+\begin{proof}
+The change of variable $u=r^2$ gives $\mathcal D=4\mathcal T$ and
+$f_{a,b}(r)=\pi^{-2}D(u)^{-1/2}$. Substitute into
+\eqref{eq:triangle-residue}, where $|R|=c$ deterministically.
+Differentiation preserves $D(u)^{-1/2}\Q(a^2,b^2)(u)$, and
+$D(c^2)>0$ by the strict triangle inequalities. Evaluation and the
+positivity already proved give the arithmetic assertions.
+\end{proof}
+
+
+
+\subsection{The complete seven-step pole set}
+
+The nonvanishing question can also be settled for seven equal steps.
+We use Zhou's integral formula, and prove the sign inequality that
+was reported numerically after \cite[Theorem~4.2]{Zho19}.
+
+\begin{thm}[Seven-step residues]\label{thm:seven-step-poles}
+The poles of $W_7$ are exactly $-2,-4,-6,\ldots$, all simple.
+The residue at $-2$ is positive, and the residues at $-4,-6,-8,\ldots$
+are all strictly negative.
+\end{thm}
+\begin{proof}
+Write $I(t)=I_0(t)$, $K(t)=K_0(t)$, and
+\[
+ H(t)=I(t)K(t)^6-\frac{\pi^2}{2}I(t)^3K(t)^4,
+ \qquad A_k=\int_0^\infty t^{2k+1}H(t)\,dt.
+\]
+Zhou's formula \cite[Theorem~4.2]{Zho19} gives the convergent local
+expansion $p_7(x)=\sum_{k\ge0}r_{7,k}x^{2k+1}$ of the radial density,
+where
+\begin{equation}\label{eq:seven-residue-integral}
+ r_{7,k}=\frac{140}{4^k(k!)^2\pi^6}A_k.
+\end{equation}
+Thus $r_{7,k}$ is the residue of $W_7$ at $-2k-2$ whenever it is
+nonzero. All integrals $A_k$ converge absolutely by the standard
+small-argument and large-argument estimates for $I_0,K_0$.
+
+The ratio $K/I$ decreases strictly from infinity to zero. This follows
+already from $K>0$, $K'<0$, $I>0$, and $I'>0$ on $(0,\infty)$.
+Consequently $H$ has exactly one zero $t_0$, is positive before it,
+and is negative after it. We prove $A_1<0$ with explicit bounds.
+
+First, substitution in the integral for $K_0$ gives
+\[
+ K(t)\le \int_0^\infty e^{-te^u/2}\,du
+ =E_1(t/2)\le\log(2/t)-\gamma+t/2\quad(0<t\le1).
+\]
+Here the last inequality is the alternating series for $E_1$.
+The bound $\gamma>4/7$ follows from the trapezoidal estimate
+$\gamma>H_4-\log4-1/8=47/24-\log4$ and
+$\log4<1123/810<233/168$.  For the logarithm bound, use
+$\log2=2\sum_{j\ge0}((2j+1)3^{2j+1})^{-1}$ and bound its tail
+from $j=2$ by $1/540$.
+Using these bounds and $\log14<8/3$, we obtain
+$K(1/7)<13/6<\pi/\sqrt2$, while $I(1/7)\ge1$.
+Hence $t_0<1/7$. On $0<t<1/7$,
+\[
+ I(t)<e^{1/7}<\frac76,
+ \qquad K(t)<\log(2/t)-\frac12.
+\]
+Therefore the whole positive contribution to $A_1$ is less than
+\begin{align}
+ \int_0^{t_0}t^3H(t)\,dt
+ &<\frac76\int_0^{1/7}t^3
+                \left(\log(2/t)-\frac12\right)^6\,dt\notag\\
+ &<\frac{7}{6\cdot7^4}
+       \sum_{j=0}^6\binom6j\left(\frac{13}{6}\right)^{6-j}
+                       \frac{j!}{4^{j+1}}
+   =\frac{45493519}{1536288768}<\frac3{100}.
+   \label{eq:seven-positive-bound}
+\end{align}
+
+For the negative contribution, the substitution $v=t(\cosh u-1)$
+gives
+\[
+ K(t)=\frac{e^{-t}}{\sqrt{2t}}
+      \int_0^\infty e^{-v}v^{-1/2}
+                 \left(1+\frac v{2t}\right)^{-1/2}\,dv.
+\]
+The inequalities $1-x/2\le(1+x)^{-1/2}\le1$ imply
+\begin{equation}\label{eq:seven-K-bounds}
+ \sqrt{\frac\pi{2t}}e^{-t}\left(1-\frac1{8t}\right)
+ \le K(t)\le\sqrt{\frac\pi{2t}}e^{-t}.
+\end{equation}
+In particular, $K(t)/I(t)\le K(1)<1/2$ for $t\ge1$.
+Also $\cos\theta\ge1-\theta^2/2$ yields
+\[
+ I(t)\ge\frac{e^t}{\pi}\int_0^\pi e^{-t\theta^2/2}\,d\theta
+ >\frac{99}{100}\frac{e^t}{\sqrt{2\pi t}}\quad(t\ge1).
+\]
+For the last bound, the relative omitted Gaussian tail is at most
+$\sqrt2\,e^{-\pi^2t/2}/(\pi\sqrt{\pi t})<1/100$.
+Since $\pi^2/2-1/4>4$, it follows that, for $1\le t\le2$,
+$-H(t)>4I(t)^3K(t)^4$. Thus
+\begin{align}
+ -\int_1^2t^3H(t)\,dt
+ &>\frac{\sqrt\pi}{2^{3/2}}
+       \left(\frac{99}{100}\right)^3\left(\frac78\right)^4
+       \int_1^2t^{-1/2}e^{-t}\,dt\notag\\
+ &>\frac{\sqrt\pi}{4}
+       \left(\frac{99}{100}\right)^3\left(\frac78\right)^4e^{-2}
+ >\frac{4753}{144000}>\frac3{100}.
+ \label{eq:seven-negative-bound}
+\end{align}
+The penultimate bound uses
+$\sqrt\pi>7/4$, $(99/100)^3>97/100$,
+$(7/8)^4>7/12$, and $e^{-2}>2/15$.
+The positive contribution \eqref{eq:seven-positive-bound} is smaller
+than the negative contribution \eqref{eq:seven-negative-bound}; all
+other contributions after $t_0$ are negative. Hence $A_1<0$.
+
+For every $k\ge1$, the one-sign-change property gives
+\[
+ A_k-t_0^{2k-2}A_1
+ =\int_0^\infty t^3\bigl(t^{2k-2}-t_0^{2k-2}\bigr)H(t)\,dt\le0.
+\]
+Thus $A_k<0$ for all $k\ge1$, proving the required strict signs.
+Finally $r_{7,0}>0$: the seven-step planar density is continuous by
+absolute integrability of its characteristic function, and is positive
+at zero. To see the latter, choose directions forming a regular
+heptagon; the sum map from the angle torus to $\mathbb R^2$ has rank
+two there, so a neighborhood with positive angle measure contributes a
+strictly positive continuous density near zero. It follows that
+$r_{7,0}=2\pi$ times that planar density is positive.
+Theorem~\ref{thm:C} excludes all other pole locations and all multiple
+poles, completing the proof.
+\end{proof}
+
+\section{Exact checks}\label{sec:comp}
+
+The proofs do not depend on finite computations. The following checks were
+performed for this version using Python~3 and SymPy~1.14.0, with exact rational
+and cyclotomic arithmetic throughout.
+
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item For $1\le d\le10$, the continuant~\eqref{eq:cont} was constructed in
+normal form $\sum_k t^{2k}P_k(\theta)$. Both adjoint identities
+$P_k(-\theta-2k)=(-1)^{d+1}P_k(\theta)$ and
+$A_k(-\theta-2k)=(-1)^dA_k(\theta)$ were verified, as were
+$\deg A_k=d$ and the leading-coefficient product of
+Lemma~\ref{lem:alpha}. The coefficients of $L_dP_d$ through $z^{48}$
+vanished exactly. The walk numbers used in this check were obtained
+independently from the truncated product
+$I_0(2u)^d$ and~\eqref{eq:ad}.
+\item Every entry of Table~\ref{tab:regev} was verified by enumerating
+the nonnegative multiplicity vectors $(c_0,\ldots,c_{\beta-1})$ of total
+weight $k$. The root sum $\sum_jc_jz^j$ and its $\beta$-th power were
+reduced modulo the cyclotomic polynomial $\Phi_\beta(z)$. Counting the
+zero sums and grouping equal nonzero powers produced exactly the stated
+$R_{k,\beta}$, $Z_{k,\beta}$, $s_{k,\beta}$ and integer characteristic
+polynomials, including their multiplicities.
+\item The Vandermonde expression in Lemma~\ref{lem:vdm} agreed with
+independent hook-length sums for $0\le n\le8$ and
+$(k,\beta)=(2,2),(2,4),(2,6),(3,2),(3,4),(4,4)$, giving
+$54$ exact equalities.
+\item The first three coefficients of the Hankel amplitude square were
+$1,-1/8,27/128$. For every even $2\le n\le20$ and every $0\le j\le12$,
+the coefficient $e_{n,j}$ had the sign asserted in~\eqref{eq:sign},
+giving $130$ strict sign checks.
+\end{enumerate}
+
+These calculations check formulas and conventions. They are not proofs
+of minimality, irreducibility, or nonvanishing for all parameters; those
+conclusions use the arguments in the preceding sections. No numerical
+recurrence search or numerical evaluation of regularized Mellin integrals
+is used as evidence in this version.
+
+The exact verification script is embedded in the accompanying TeX source.
+Compiling that source writes a Python file named
+\texttt{verify\_isotropic.py}, without executing it.
+After installing SymPy, run the following command to reproduce the checks
+and write their JSON output:
+\begin{quote}\small\ttfamily
+python3 verify\_isotropic.py
+\end{quote}
+
+\section{Open problems}\label{sec:open}
+
+\begin{problem}[odd $\beta$]
+For odd $\beta$ the sum in Lemma~\ref{lem:vdm} runs over a Weyl chamber and is not a polynomial in jets, and Theorem~\ref{thm:B} does not apply. Determine the minimum differential and recurrence orders for odd $\beta$, including $k=2$. No odd-exponent order formula is asserted here.
+\end{problem}
+
+\begin{problem}[poles of $W_n$ at $-2p$]
+For odd $n\ge9$ and for $n\equiv2\pmod4$ with $n\ge6$, decide for which remaining $p$ the point $-2p$ is a pole of $W_n$ when it is not of the form $-n/2-2j$, that is, whether the continued value $I_n(-2p)$ is nonzero. Zhou proved the required positivity for $n=5$ \cite{Zho19}, and Theorem~\ref{thm:seven-step-poles} settles $n=7$. The cases $n=3$ and $4\mid n$, and the initial range $p<n/4$ for even $n$, are settled by Theorem~\ref{thm:triangle-chamber} and Corollary~\ref{cor:C-complete-four}. The residues are, up to explicit factors, the Taylor coefficients at $0$ of the radial density of $S_n$ (for odd $n$) or of its smooth part (for even $n$). Singularity analysis at the nearest singular circle of the density should give nonvanishing for all large $p$; a statement for all $p$ seems to need a new idea.
+\end{problem}
+
+\begin{problem}[face-centred cubic lattices]
+The minimal operators of the lattice Green functions of the $d$-dimensional face-centred cubic lattices have orders $3,4,6,8,11$ for $d=3,\dots,7$ (\cite{Kou13,ZHM15}), and their Galois groups are predicted to follow the same orthogonal/symplectic rule \cite{HMZ25}. These functions are not built from a single Bessel function, maximal unipotent monodromy already fails beyond dimension four \cite{HMZ25}, and Proposition~\ref{prop:squeeze} does not apply directly. A proof of an order formula would need the rank of a Gauss--Manin system with symmetries.
+\end{problem}
+
+\begin{problem}[isotropic squeezes elsewhere]
+Proposition~\ref{prop:squeeze} needs only local data and self-duality. Its application requires all four hypotheses, including the inequality for the exponents at the distinguished second point; self-duality and maximal unipotence alone are insufficient. It would be interesting to use it for other families of lattice Green functions and Feynman integrals, in particular for the simplicity of the thresholds of banana operators, which is still open \cite[Rem.~8.1]{KBan2}.
+\end{problem}
+\begin{thebibliography}{99}
+
+\bibitem{BBH88}
+F.~Beukers, W.~D.~Brownawell and G.~Heckman,
+\emph{Siegel normality},
+Ann. of Math. (2) \textbf{127} (1988), 279--308.
+
+\bibitem{BG00}
+F.~Bergeron and F.~Gascon,
+\emph{Counting Young tableaux of bounded height},
+J. Integer Seq. \textbf{3} (2000), Article 00.1.7.
+
+\bibitem{BFK95}
+F.~Bergeron, L.~Favreau and D.~Krob,
+\emph{Conjectures on the enumeration of tableaux of bounded height},
+Discrete Math. \textbf{139} (1995), 463--468.
+
+\bibitem{BH89}
+F.~Beukers and G.~Heckman,
+\emph{Monodromy for the hypergeometric function ${}_nF_{n-1}$},
+Invent. Math. \textbf{95} (1989), 325--354.
+
+\bibitem{BHMW14}
+S.~Boukraa, S.~Hassani, J.-M.~Maillard and J.-A.~Weil,
+\emph{Differential algebra on lattice Green functions and Calabi--Yau operators},
+arXiv:1311.2470 (2013).
+
+\bibitem{BMW97}
+M.~Bronstein, T.~Mulders and J.-A.~Weil,
+\emph{On symmetric powers of differential operators},
+in: Proc. ISSAC '97, ACM, New York, 1997, 156--163.
+
+\bibitem{BNSW11}
+J.~M.~Borwein, D.~Nuyens, A.~Straub and J.~Wan,
+\emph{Some arithmetic properties of short random walk integrals},
+Ramanujan J. \textbf{26} (2011), 109--132.
+
+\bibitem{BS08}
+J.~M.~Borwein and B.~Salvy,
+\emph{A proof of a recursion for Bessel moments},
+Experiment. Math. \textbf{17} (2008), 223--230.
+
+\bibitem{BSW13}
+J.~M.~Borwein, A.~Straub and J.~Wan,
+\emph{Three-step and four-step random walk integrals},
+Exp. Math. \textbf{22} (2013), 1--14.
+
+\bibitem{BSWZ12}
+J.~M.~Borwein, A.~Straub, J.~Wan and W.~Zudilin,
+\emph{Densities of short uniform random walks} (with an appendix by D.~Zagier),
+Canad. J. Math. \textbf{64} (2012), 961--990.
+
+\bibitem{Del70}
+P.~Deligne,
+\emph{\'Equations diff\'erentielles \`a points singuliers r\'eguliers},
+Lecture Notes in Math. 163, Springer, Berlin, 1970.
+
+\bibitem{DLMF}
+\emph{NIST Digital Library of Mathematical Functions}, \url{https://dlmf.nist.gov}, Chapter~10.
+
+\bibitem{Ges90}
+I.~M.~Gessel,
+\emph{Symmetric functions and P-recursiveness},
+J. Combin. Theory Ser. A \textbf{53} (1990), 257--285.
+
+\bibitem{Gut10}
+A.~J.~Guttmann,
+\emph{Lattice Green functions in all dimensions},
+J. Phys. A \textbf{43} (2010), 305205; arXiv:1004.1435.
+
+\bibitem{Har20}
+Y.~Haraoka,
+\emph{Linear Differential Equations in the Complex Domain},
+Lecture Notes in Math. 2271, Springer, Cham, 2020.
+
+\bibitem{HMZ25}
+S.~Hassani, J.-M.~Maillard and N.~Zenine,
+\emph{On the diagonals of rational functions: the minimal number of variables},
+J. Phys. A \textbf{58} (2025), 255202; arXiv:2502.05543.
+
+\bibitem{Inc56}
+E.~L.~Ince,
+\emph{Ordinary Differential Equations},
+Dover, New York, 1956.
+
+\bibitem{Kac47}
+M.~Kac,
+\emph{Random walk and the theory of Brownian motion},
+Amer. Math. Monthly \textbf{54} (1947), 369--391.
+
+\bibitem{Kat87}
+N.~M.~Katz,
+\emph{On the calculation of some differential Galois groups},
+Invent. Math. \textbf{87} (1987), 13--61.
+
+\bibitem{Kat90}
+N.~M.~Katz,
+\emph{Exponential Sums and Differential Equations},
+Ann. of Math. Stud. 124, Princeton Univ. Press, 1990.
+
+\bibitem{KBT}
+Keio,
+\emph{Bessel--Toeplitz determinants: minimal equations and exact recurrences for increasing subsequences, tableaux and matchings},
+preprint, October 2026.
+
+\bibitem{KVB}
+Keio,
+\emph{Vertex balance: minimal differential equations for traces of $\beta$-ensembles, Weyl chamber walks and Bessel moments},
+preprint, October 2026.
+
+\bibitem{KBan2}
+Keio,
+\emph{Banana integrals in two dimensions II: singular locus, big monodromy, and the inhomogeneous Picard--Fuchs equation},
+preprint, 2026.
+
+\bibitem{Kou13}
+C.~Koutschan,
+\emph{Lattice Green functions of the higher-dimensional face-centered cubic lattices},
+J. Phys. A \textbf{46} (2013), 125005; arXiv:1108.2164.
+
+\bibitem{Mis19}
+M.~Mishna,
+\emph{On standard Young tableaux of bounded height},
+in: Recent Trends in Algebraic Combinatorics, Assoc. Women Math. Ser. 16, Springer, Cham, 2019, 281--303; arXiv:1805.08130.
+
+\bibitem{Reg81}
+A.~Regev,
+\emph{Asymptotic values for degrees associated with strips of Young diagrams},
+Adv. Math. \textbf{41} (1981), 115--136.
+
+\bibitem{vdPS03}
+M.~van der Put and M.~F.~Singer,
+\emph{Galois Theory of Linear Differential Equations},
+Grundlehren Math. Wiss. 328, Springer, Berlin, 2003.
+
+\bibitem{ZHM15}
+N.~Zenine, S.~Hassani and J.-M.~Maillard,
+\emph{Lattice Green functions: the seven-dimensional face-centred cubic lattice},
+J. Phys. A \textbf{48} (2015), 035205; arXiv:1409.8615.
+
+\bibitem{Zho19}
+Y.~Zhou,
+\emph{On Borwein's conjectures for planar uniform random walks},
+J. Aust. Math. Soc. \textbf{107} (2019), 392--411.
+
+\bibitem{Beu06}
+F.~Beukers,
+\emph{A refined version of the Siegel--Shidlovskii theorem},
+Ann. of Math. (2) \textbf{163} (2006), 369--379,
+\url{https://doi.org/10.4007/annals.2006.163.369}.
+
+\bibitem{LL00}
+T.-Y.~Lam and K.~H.~Leung,
+\emph{On vanishing sums of roots of unity},
+J. Algebra \textbf{224} (2000), 91--109;
+\url{https://doi.org/10.1006/jabr.1999.8089}.
+
+\end{thebibliography}
+
+\end{document}
