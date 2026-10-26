@@ -1,0 +1,700 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Erdos's conjecture on sum f(n)/n holds for every non-square modulus},pdfauthor={Keio}}
+\DeclareTextFontCommand{\texttt}{\ttfamily\spaceskip=.5em plus .33em minus .1em\xspaceskip=\spaceskip\relax}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem*{mainA}{Theorem A}
+\newtheorem*{mainB}{Theorem B}
+\newtheorem*{mainC}{Theorem C}
+\newtheorem*{mainD}{Corollary D}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\providecommand{\C}{\mathbb C}
+\providecommand{\Q}{\mathbb Q}
+\providecommand{\Z}{\mathbb Z}
+\providecommand{\Qb}{\overline{\mathbb Q}}
+\newcommand{\Zt}{\mathbb Z_{(2)}}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Ok}{\mathcal O}
+\newcommand{\Nn}{\mathcal N}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\DeclareMathOperator{\rad}{rad}
+\DeclareMathOperator{\ind}{ind}
+\DeclareMathOperator{\pr}{pr}
+\numberwithin{equation}{section}
+
+\begin{document}
+\title[Erd\H{o}s's conjecture holds for every non-square modulus]{Erd\H{o}s's conjecture on $\sum f(n)/n$ holds\\ for every non-square modulus}
+\author{Keio}
+\date{24 October 2026}
+
+\begin{abstract}
+Let $f$ be periodic modulo $q$ with $f(n)=\pm1$ for $q\nmid n$ and $f(n)=0$ for $q\mid n$.
+Erd\H{o}s conjectured, in a letter to Livingston, that $\sum_{n\ge1}f(n)/n\neq0$ whenever the series converges; by Baker's theorem the sum is then transcendental.
+The conjecture was known for prime $q$, for $2\varphi(q)+1>q$ (Okada), for $q\equiv3\pmod4$ (Murty--Saradha) and for a set of $q\equiv1\pmod 4$ of lower density at least $0.82$ (Chatterjee--Murty).
+In a companion paper we showed that it fails for $q=105^2$ and asked whether all failures occur at square moduli.
+We prove that they do: \emph{Erd\H{o}s's conjecture holds for every modulus $q$ that is not a perfect square}, and for every such $q$ every convergent sum $\sum f(n)/n$ is transcendental.
+
+The proof is short and does not use computation.
+It rests on a \emph{parity transfer principle} for Okada's linear criterion for $\sum f(n)/n=0$.
+Fix a prime $p\mid q$ and keep only the conditions attached to Dirichlet characters of $2$-power order whose conductor is divisible by $p$.
+We show that every solution of this subsystem is a superposition of a part supported on the bottom layers, of functions independent of the $p$-coordinate, and of elementary \emph{telescoping} pairs, each of which moves mass from one divisor layer of $\Z/q\Z$ to the next through an Euler operator $\frac{2^{t}}{r-1}(r-T_r)$ that annihilates parity.
+As a consequence, for solutions whose values have constant parity on every layer, the conductor-$p$ projection is congruent modulo $2$ to the bottom layer, the residues $n$ with $\gcd(n,q)=q/p^j$, while Okada's logarithmic condition at $p$ forces this projection to be even.
+For an Erd\H{o}s function the bottom layers contribute $v_p(q)$ odd terms, so $v_p(q)$ must be even for every $p$.
+
+The same argument gives a general parity constraint for $2$-integral solutions, which we show is sharp: it describes exactly which parity patterns on the divisor layers occur. As a consequence the odd-valued version of the problem is completely classified: for odd $q>1$ there is a $q$-periodic $f$ with odd integer values off the multiples of $q$, vanishing period sum and $\sum f(n)/n=0$ if and only if $q$ is a square.
+Together with Okada's theorem and the companion paper this shows that $105^2$ is the least counterexample (now without computer assistance), that the conjecture fails for $q<195^2$ exactly when $q\in\{105^2,165^2\}$, and that every counterexample modulus is an odd square $q$ with $2\varphi(q)+1\le q$.
+\end{abstract}
+\maketitle
+\tableofcontents
+\section{Introduction}\label{sec:intro}
+
+\subsection{The conjecture}
+For an integer $q\ge2$, an \emph{Erd\H{o}s function modulo $q$} is a $q$-periodic $f\colon\Z\to\{-1,0,1\}$ with $f(n)=\pm1$ for $q\nmid n$ and $f(n)=0$ for $q\mid n$.
+Put $L(1,f)=\sum_{n\ge1}f(n)/n$.
+The series converges if and only if $\sum_{n=1}^{q}f(n)=0$; this is a sum of $q-1$ terms $\pm1$, so convergence forces $q$ to be odd.
+
+\begin{conjecture}[Erd\H{o}s; see Livingston \cite{Liv65}]\label{conj:erdos}
+If $f$ is an Erd\H{o}s function modulo $q$ and $\sum_{n=1}^{q}f(n)=0$, then $L(1,f)\neq0$.
+\end{conjecture}
+
+The question belongs to the circle of problems raised by Chowla \cite{Cho70} on the non-vanishing of $L(1,f)$ for periodic $f$.
+For algebraic-valued periodic $f$ the number $L(1,f)$ is either $0$ or transcendental, by Baker's theorem on linear forms in logarithms \cite{Bak75,BBW73,MS07}; so Conjecture~\ref{conj:erdos} says that every convergent Erd\H{o}s sum is transcendental.
+Baker, Birch and Wirsing \cite{BBW73} settled Chowla's question for prime moduli, which proves the conjecture for prime $q$.
+Okada \cite{Oka82} turned $L(1,f)=0$ into a system of $\varphi(q)+\omega(q)$ rational linear equations and proved the conjecture when $2\varphi(q)+1>q$.
+Murty and Saradha \cite{MS10} proved it for $q\equiv3\pmod4$; Chatterjee and Murty \cite{CM15} for a set of $q\equiv1\pmod 4$ of lower density at least $0.82$; Pathak \cite{Pat19} showed that it holds with probability one over Erd\H{o}s functions; Bharadwaj \cite{Bha22} recast Okada's criterion through primitive characters and found a further family of admissible moduli; Murty and Pathak \cite{MP22} gave a basis of the solution space of Okada's system.
+The case $q\equiv1\pmod 4$ is described as open in \cite{Pat19,MP22,Bha22}.
+
+In a companion paper \cite{Kei26} we showed that the conjecture is \emph{false}: there is an Erd\H{o}s function modulo $105^2=11025$, built from Legendre symbols, with vanishing sum, and there are further counterexamples modulo $165^2$, $315^2$, $495^2$ and $735^2$; the set of counterexample moduli is closed under multiplication.
+The counterexamples were found through a $2$-adic principle: since $\pm1\equiv1\pmod 2$, an Erd\H{o}s function with $L(1,f)=0$ is a solution of Okada's system all of whose values are odd.
+Every odd square has such ``odd'' solutions, and an exact computation showed that no odd non-square $q\le13105$ has one.
+We conjectured \cite[Conj.~5.3]{Kei26} that \emph{no odd non-square has an odd solution}; this would confine all counterexamples to square moduli.
+The present paper proves this conjecture.
+
+\subsection{Results}
+Let $\Zt$ be the ring of rationals with odd denominator; its elements are \emph{odd} or \emph{even} according to their residue modulo $2$.
+
+\begin{mainA}[Theorem~\ref{thm:main}]
+Let $q>1$ be an integer that is not a perfect square, and let $f\colon\Z\to\Zt$ be $q$-periodic with $f(n)$ odd for $q\nmid n$, $f(n)=0$ for $q\mid n$, and $\sum_{n=1}^{q}f(n)=0$.
+Then $\sum_{n\ge1}f(n)/n\neq0$.
+In particular Conjecture~\ref{conj:erdos} holds for every non-square $q$, and for such $q$ every convergent Erd\H{o}s sum $\sum f(n)/n$ is transcendental.
+\end{mainA}
+
+For odd squares the conclusion of Theorem~A fails, and the odd-valued version of Erd\H{o}s's problem is completely settled.
+
+\begin{mainB}[Theorem~\ref{thm:odd-classification}]
+Let $q>1$.
+There is a $q$-periodic $f\colon\Z\to\Z$ with $f(n)$ odd for $q\nmid n$, $f(n)=0$ for $q\mid n$, $\sum_{n=1}^{q}f(n)=0$ and $\sum_{n\ge1}f(n)/n=0$ if and only if $q$ is an odd perfect square.
+\end{mainB}
+
+Theorem~A is a special case of a general parity constraint on rational solutions of Okada's system.
+For a divisor $d>1$ of $q$, the \emph{layer} of level $d$ is the set of residues $n$ with $\gcd(n,q)=q/d$.
+
+\begin{mainC}[Parity transfer, Theorem~\ref{thm:transfer}]
+Let $q$ be odd and $p$ a prime divisor of $q$.
+Let $f\colon\Z\to\Zt$ be $q$-periodic with $f(0)=0$, $\sum_{n=1}^qf(n)=0$ and $\sum_{n\ge1}f(n)/n=0$, and suppose that on every layer of level $d$ with $p\mid d$ the values of $f$ have a constant parity $c_d\in\{0,1\}$.
+Then
+\[
+\sum_{j=1}^{v_p(q)}c_{p^j}\equiv0\pmod 2 .
+\]
+\end{mainC}
+
+Conversely, every family $(c_d)$ satisfying these congruences for all $p\mid q$ is the parity pattern of an integer-valued solution (Theorem~\ref{thm:sharp}), so Theorem~C describes exactly which layer parities occur among the rational solutions of Okada's system.
+The levels $p^j$ are the layers $\gcd(n,q)=q/p^j$, $1\le j\le v_p(q)$: the residues that are divisible by the full power of every prime of $q$ other than $p$.
+For an Erd\H{o}s function all $c_d$ equal $1$ and the sum is $v_p(q)$; taking $p$ with $v_p(q)$ odd gives Theorem~A.
+Theorem~C also covers functions with prescribed zeros (Corollary~\ref{cor:zeros}).
+
+Combining Theorem~A with Okada's theorem and with \cite{Kei26} gives the following picture.
+
+\begin{mainD}[Corollary~\ref{cor:picture}]
+\begin{enumerate}
+\item Every modulus for which Conjecture~\ref{conj:erdos} fails is an odd square $q$ with $2\varphi(q)+1\le q$.
+\item The least such modulus is $105^2=11025$; this statement no longer depends on computer verification.
+\item For $q<195^2=38025$ the conjecture fails exactly for $q=105^2$ and $q=165^2$; $195^2$ is the least modulus for which the truth of the conjecture is unknown.
+\end{enumerate}
+\end{mainD}
+
+\subsection{The principle}
+Okada's criterion is a family of linear conditions indexed by the primitive Dirichlet characters $\chi$ of conductor dividing $q$, plus one logarithmic condition for each prime $p\mid q$ (Theorem~\ref{thm:okada}).
+The condition for $\chi$ involves the layers $d$ divisible by the conductor of $\chi$, with weights given by the Euler factors $1-\chi(r)/r$ at the primes $r\mid d$ not dividing the conductor.
+Pushing every layer forward to the maximal $2$-power quotient of $(\Z/d\Z)^\times$ keeps all parity information, because the fibres have odd size, and only the characters of $2$-power order survive (Section~\ref{sec:shadow}).
+
+Fix a prime $p\mid q$ and look only at characters whose conductor is divisible by $p$.
+Aggregating the layers with the same set of prime divisors, the conditions say that a family of functions $\Gamma_J$ on small $2$-groups has no ``fully primitive'' Fourier component, where
+\[
+\Gamma_J=\sum_{L\supseteq J}\ \prod_{r\in L\smallsetminus J}\frac{r-T_r}{r-1}\ \pi_{L\to J}\Psi_L,
+\]
+$\Psi_L$ is the aggregated layer, $\pi_{L\to J}$ is a pushforward and $T_r$ is translation by the image of the prime $r$ (Section~\ref{sec:subsystem}).
+The operators $\frac{r-T_r}{r-1}$ are not $2$-integral.
+The key observation (Lemma~\ref{lem:telescope}) is that every solution of these conditions decomposes into a part supported on the bottom layer and elementary solutions of two kinds: functions independent of the $p$-coordinate, and \emph{telescoping pairs}, in which a function $\omega$ on one layer is balanced by $-R_r\omega$ on the layer obtained by removing the prime $r$, with
+\[
+R_r=\frac{2^{v_2(r-1)}}{r-1}\,(r-T_r)\in\Zt[T_r].
+\]
+In a telescoping pair the non-integral operators cancel exactly, and $R_r$ kills parity: $R_r\omega\equiv(1-T_r)\omega\equiv0\pmod2$ whenever $\omega$ has constant parity.
+Peeling off elementary solutions from the top layer downwards, one finds that, for a solution whose values have constant parity on each layer, the projection $\Gamma_\emptyset$ to the conductor-$p$ characters is congruent modulo $2$ to the bottom layer $\Psi_\emptyset$, which is the sum of the layers of levels $p,p^2,\dots,p^{v_p(q)}$.
+On the other hand, the characters of conductor exactly $p$ force $\Gamma_\emptyset$ to be constant, and Okada's logarithmic condition at $p$ makes this constant even.
+So the bottom layer is even.
+For an Erd\H{o}s function it is a sum of $v_p(q)$ odd functions, whence $v_p(q)$ is even.
+
+The previously known parity arguments are special cases.
+Murty and Saradha's proof for $q\equiv3\pmod4$ uses a single identity from the odd characters \cite{MS10,Kei26}; the residuacity criterion of \cite{Kei26} is the case in which all translations $T_r$ are trivial, so that no telescoping is needed.
+Computations in \cite{Kei26} had shown that keeping only quadratic characters, only odd or only even characters, or only characters supported on few primes is not enough; the telescoping structure explains why all characters with $p$ in the conductor must be used together.
+
+\subsection{Organization}
+Section~\ref{sec:shadow} recalls Okada's criterion and the pushforward to $2$-power quotients.
+Section~\ref{sec:subsystem} sets up the conductor-$p$ subsystem.
+Section~\ref{sec:telescope} contains the decomposition and telescoping lemmas, which are the heart of the paper.
+Section~\ref{sec:proofs} proves Theorems~A, B, C and Corollary~D.
+Section~\ref{sec:further} gives further consequences and remarks, including what remains open for square moduli and for the variant with $f(n)=\pm1$ for all $n$.
+Section~\ref{sec:computations} lists computations that corroborate the results; they are not used in any proof.
+\section{Okada's criterion and the pushforward to 2-power quotients}\label{sec:shadow}
+
+Throughout, $q\ge3$ is odd, $q=\prod_{p\mid q}p^{e_p}$, and $U_d=(\Z/d\Z)^\times$.
+For a divisor $d>1$ of $q$ the layer of level $d$ consists of the residues $n=(q/d)x$ with $x\in U_d$; the non-zero residues modulo $q$ are the disjoint union of the layers.
+For a $q$-periodic $f$ with $f(0)=0$ put
+\[
+f_d(x)=f\bigl((q/d)x\bigr)\quad(x\in U_d),\qquad S_d=\sum_{x\in U_d}f_d(x),\qquad \ip{f_d}{\chi}=\sum_{x\in U_d}f_d(x)\overline{\chi(x)}
+\]
+for Dirichlet characters $\chi$ modulo $d$, and for a prime $p\mid q$
+\[
+\varepsilon_p(d)=v_p(q/d)-\frac{[\,p\mid d\,]}{p-1}.
+\]
+Note that $\sum_{n=1}^qf(n)=\sum_{d\mid q,\,d>1}S_d$.
+
+\begin{theorem}[Okada \cite{Oka82}; layered form \cite{Bha22}, {\cite[Prop.~2.1, Thm.~2.2]{Kei26}}]\label{thm:okada}
+Let $f\colon\Z\to\Q$ be $q$-periodic with $f(0)=0$ and $\sum_{n=1}^{q}f(n)=0$.
+Then $\sum_{n\ge1}f(n)/n=0$ if and only if
+\begin{enumerate}
+\item[(A)] for every non-principal primitive Dirichlet character $\chi^*$ whose conductor $m$ divides $q$,
+\[
+\sum_{d:\ m\mid d\mid q}\frac{d}{\varphi(d)}\prod_{\substack{r\mid d\\ r\nmid m}}\Bigl(1-\frac{\chi^*(r)}{r}\Bigr)\ip{f_d}{\chi^*}=0,
+\]
+where $r$ runs over primes and $\chi^*$ is regarded as a character modulo $d$; and
+\item[(B)] for every prime $p\mid q$, $\sum_{d\mid q,\,d>1}S_d\,\varepsilon_p(d)=0$.
+\end{enumerate}
+\end{theorem}
+
+The sufficiency of (A) and (B) follows from the decomposition
+\begin{equation}\label{eq:decomp}
+\sum_{n\ge1}\frac{f(n)}n=\frac1q\sum_{\chi^*}\Bigl(\sum_{d}\frac{d}{\varphi(d)}\prod_{r\mid d,\,r\nmid m}\Bigl(1-\frac{\chi^*(r)}{r}\Bigr)\ip{f_d}{\chi^*}\Bigr)L(1,\chi^*)-\frac1q\sum_{p\mid q}\Bigl(\sum_dS_d\,\varepsilon_p(d)\Bigr)\log p,
+\end{equation}
+obtained by grouping $\sum f(n)n^{-s}$ according to $\gcd(n,q)$, expanding each $f_d$ in characters, and letting $s\to1^+$ \cite[Prop.~2.1]{Kei26}.
+Necessity is the substance of Okada's theorem.
+It combines Baker's theorem on linear forms in logarithms (which separates the logarithms $\log p$ and the even characters, whose $L(1,\chi^*)$ are linear forms in logarithms of cyclotomic units) with the rationality of $f$ and a Galois conjugation argument for the odd characters, whose values $L(1,\chi^*)$ are algebraic multiples of $\pi$; see \cite{BBW73,Oka82}, \cite[Thm.~4]{Bha22} for exactly this layered form, and the sketch in \cite[proof of Thm.~2.2]{Kei26}.
+Only the necessity of (A) for characters of $2$-power order and of (B) at one prime will be used below.
+
+\subsection{Pushforward to 2-power quotients}
+For an odd prime $r$ put $t_r=v_2(r-1)\ge1$ and $C_r=\Z/2^{t_r}\Z$.
+Fix a primitive root $g_r$ modulo $r$, and for an integer $x$ prime to $r$ let $\kappa_r(x)\in C_r$ be the residue modulo $2^{t_r}$ of the index of $x$ with respect to $g_r$ modulo $r$.
+For $d\mid q$ let
+\[
+Q_d=\prod_{r\mid d}C_r,\qquad \kappa_d\colon U_d\to Q_d,\quad x\mapsto\bigl(\kappa_r(x)\bigr)_{r\mid d}.
+\]
+
+\begin{lemma}\label{lem:quotient}
+\begin{enumerate}
+\item $\kappa_d$ is a surjective homomorphism whose kernel $H_d$ has odd order $\varphi(d)/|Q_d|$; it identifies $Q_d$ with the maximal $2$-power quotient of $U_d$.
+\item $\chi\mapsto\chi\circ\kappa_d$ is a bijection between the characters of $Q_d$ and the Dirichlet characters modulo $d$ of $2$-power order.
+Writing $\chi=\prod_{r\mid d}\chi_r$ with $\chi_r$ a character of $C_r$, the character $\chi\circ\kappa_d$ is induced by a primitive character of conductor $\prod_{r:\ \chi_r\neq1}r$.
+In particular the primitive characters of $2$-power order and conductor $m$ are the $\chi\circ\kappa_m$ with $\chi$ a character of $Q_m$ that is non-trivial on every factor $C_r$, $r\mid m$; we call such characters of $Q_m$ \emph{full}.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+By the Chinese remainder theorem $U_d\cong\prod_{r\mid d}U_{r^{v_r(d)}}$, and $U_{r^v}$ is cyclic of order $r^{v-1}(r-1)$, whose $2$-part has order $2^{t_r}$.
+The map $U_{r^v}\to C_r$, $x\mapsto\kappa_r(x)$, is the composite of reduction $U_{r^v}\to U_r$ with the surjection $U_r\cong\Z/(r-1)\to\Z/2^{t_r}$; it is surjective with kernel of order $r^{v-1}(r-1)/2^{t_r}$, which is odd.
+This proves (1), and (2) follows because a character of $C_r$ composed with $\kappa_r$ depends only on $x\bmod r$ and is non-trivial, hence primitive modulo $r$, unless it is trivial.
+\end{proof}
+
+For a $q$-periodic $f$ with $f(0)=0$ define the \emph{pushforward} of the layer $f_d$,
+\[
+\Phi_d\colon Q_d\to\Q,\qquad \Phi_d(y)=\sum_{x\in U_d:\ \kappa_d(x)=y}f_d(x).
+\]
+
+\begin{lemma}\label{lem:pushforward}
+\begin{enumerate}
+\item For every character $\chi$ of $Q_d$, $\sum_{y\in Q_d}\Phi_d(y)\overline{\chi(y)}=\ip{f_d}{\chi\circ\kappa_d}$; in particular $\sum_y\Phi_d(y)=S_d$.
+\item If $f_d$ takes values in $\Zt$ and has constant parity $c\in\{0,1\}$, then $\Phi_d$ takes values in $\Zt$ and has constant parity $c$, and $S_d$ is even.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) is immediate.
+(2) Each fibre of $\kappa_d$ has odd cardinality $|H_d|$, and a sum of an odd number of elements of $\Zt$ of parity $c$ has parity $c$.
+Finally $S_d=\sum_y\Phi_d(y)$ is a sum of $|Q_d|=2^{\sum_{r\mid d}t_r}$ terms of the same parity, an even number of terms because $d>1$.
+\end{proof}
+
+\begin{lemma}[The logarithmic condition at $p$]\label{lem:log}
+Let $p\mid q$.
+If $\sum_dS_d=0$ and $\sum_dS_d\varepsilon_p(d)=0$, then
+\[
+\sum_{d:\ p\mid d}S_d=-(p-1)\sum_{d:\ p\mid d}v_p(d)\,S_d .
+\]
+If moreover every $S_d$ with $p\mid d$ is even, then $\sum_{p\mid d}S_d\in2^{t_p+1}\Zt$.
+\end{lemma}
+
+\begin{proof}
+Multiply $\sum_dS_d\varepsilon_p(d)=0$ by $p-1$ and write $v_p(q/d)=e_p-v_p(d)$:
+\[
+(p-1)e_p\sum_dS_d-(p-1)\sum_dv_p(d)S_d-\sum_{p\mid d}S_d=0 .
+\]
+The first term vanishes, and $v_p(d)=0$ unless $p\mid d$.
+The last assertion follows since $v_2(p-1)=t_p$.
+\end{proof}
+\section{The conductor-\texorpdfstring{$p$}{p} subsystem}\label{sec:subsystem}
+
+Fix a prime $p\mid q$ and let $W$ be the set of the other prime divisors of $q$.
+For $L\subseteq W$ put
+\[
+m_L=p\prod_{r\in L}r,\qquad X_L=Q_{m_L}=C_p\times\prod_{r\in L}C_r .
+\]
+We regard $X_L$ as a product indexed by the set $\{p\}\cup L$ of its \emph{coordinates}.
+All functions on the groups $X_L$ take values in $\Q$; a function is \emph{$2$-integral} if its values lie in $\Zt$.
+
+\subsection{Operators}
+For $J\subseteq L\subseteq W$ the pushforward $\pi_{L\to J}$ along the coordinate projection $X_L\to X_J$ is $(\pi_{L\to J}F)(y)=\sum_{x\mapsto y}F(x)$.
+For $r\in W\smallsetminus J$ the prime $r$ is prime to $m_J$, and we let $h^J_r=\kappa_{m_J}(r)=(\kappa_s(r))_{s\in\{p\}\cup J}\in X_J$ be its image.
+On functions on $X_J$ define
+\[
+(T_rF)(x)=F(x+h^J_r),\qquad E_r=\frac{r-T_r}{r-1},\qquad R_r=2^{t_r}E_r=u_r\,(r-T_r),\quad u_r=\frac{2^{t_r}}{r-1}\in\Zt^\times,
+\]
+and $E_K=\prod_{r\in K}E_r$ for $K\subseteq W\smallsetminus J$ ($E_\emptyset=\mathrm{id}$).
+We record the elementary properties used below; for a function $F$ on $X_J$ and a character $\chi$ of $X_J$ write $\widehat F(\chi)=\sum_xF(x)\overline{\chi(x)}$.
+\begin{itemize}
+\item[(O1)] All $T_r$, $E_r$, $R_r$ commute with each other and with pushforwards: $\pi_{L\to J}\circ T_r=T_r\circ\pi_{L\to J}$ for $r\notin L$, because $h^L_r$ projects to $h^J_r$.
+\item[(O2)] $\widehat{T_rF}(\chi)=\chi(h^J_r)\widehat F(\chi)$ and hence $\widehat{E_rF}(\chi)=\frac{r-\chi(h^J_r)}{r-1}\widehat F(\chi)$. In particular $E_r$ preserves the total sum $\sum_xF(x)$, and maps constants to themselves.
+\item[(O3)] $R_r$ is a $\Zt$-linear combination of translations, so it maps $2$-integral functions to $2$-integral functions. If $F$ is $2$-integral of constant parity, then $R_rF=u_r(rF-T_rF)$ is even, since $r$ is odd and $F$ and $T_rF$ have the same parity everywhere.
+\item[(O4)] Translations preserve the property of being independent of a given coordinate (a function on $X_J$ is \emph{independent of the coordinate $i$} if it is constant on the fibres of the projection forgetting $i$).
+\end{itemize}
+
+\subsection{Functions without fully primitive part}
+For a finite abelian group $X=\prod_{i\in I}C_i$ with $I\neq\emptyset$ (each $C_i$ cyclic of $2$-power order $>1$), a character of $X$ is \emph{full} if it is non-trivial on every factor.
+Let $\Nn(X)$ be the space of functions $F$ on $X$ with $\widehat F(\chi)=0$ for all full $\chi$, and let $\mathcal I_i(X)$ be the space of functions independent of the coordinate $i$.
+In Lemma~\ref{lem:N} functions may be complex-valued; for a $\Q$-valued (or $2$-integral) $F\in\Nn(X)$ the summands can be chosen $\Q$-valued (or $2$-integral) by Lemma~\ref{lem:decomp}(1).
+
+\begin{lemma}\label{lem:N}
+$\Nn(X)=\sum_{i\in I}\mathcal I_i(X)$.
+If $|I|=1$, $\Nn(X)$ consists of the constant functions.
+\end{lemma}
+
+\begin{proof}
+A function independent of the coordinate $i$ is orthogonal to every character that is non-trivial on $C_i$, so $\mathcal I_i(X)\subseteq\Nn(X)$.
+Conversely, if $F\in\Nn(X)$, the Fourier expansion of $F$ involves only non-full characters, each of which is trivial on some factor $C_i$ and so lies in $\mathcal I_i(X)$.
+\end{proof}
+
+\subsection{The aggregated layers}
+Let $f$ be $q$-periodic with $f(0)=0$, let $\Phi_d$ be the pushforwards of Section~\ref{sec:shadow}, and for $L\subseteq W$ put
+\[
+\Psi_L=\sum_{d\mid q:\ \rad(d)=m_L}\Phi_d,\qquad\text{a function on }X_L .
+\]
+(All layers $d$ with $\rad(d)=m_L$ have $Q_d=X_L$; there are $e_p\prod_{r\in L}e_r$ of them.)
+In particular $\Psi_\emptyset=\Phi_p+\Phi_{p^2}+\dots+\Phi_{p^{e_p}}$ is the pushforward of the layers of levels $p,p^2,\dots,p^{e_p}$, which we call the \emph{bottom layers}.
+For a family $\Psi=(\Psi_L)_{L\subseteq W}$ of functions on the groups $X_L$ and $J\subseteq W$ define the function on $X_J$
+\begin{equation}\label{eq:Gamma}
+\Gamma_J(\Psi)=\sum_{L:\ J\subseteq L\subseteq W}E_{L\smallsetminus J}\,\pi_{L\to J}\Psi_L .
+\end{equation}
+
+\begin{proposition}\label{prop:subsystem}
+If $f$ satisfies condition \textup{(A)} of Theorem~\ref{thm:okada} for all primitive characters of $2$-power order whose conductor is divisible by $p$, then
+\[
+\Gamma_J(\Psi)\in\Nn(X_J)\qquad\text{for every }J\subseteq W .
+\]
+In particular $\Gamma_\emptyset(\Psi)$ is a constant function on $C_p$, equal to $2^{-t_p}\sum_{p\mid d}S_d$.
+\end{proposition}
+
+\begin{proof}
+By Lemma~\ref{lem:quotient}(2) the primitive characters of $2$-power order with conductor divisible by $p$ are the $\chi\circ\kappa_{m_J}$, $J\subseteq W$, $\chi$ a full character of $X_J$; the conductor is $m=m_J$.
+In condition (A) for $\chi^*=\chi\circ\kappa_{m_J}$, a divisor $d$ with $m_J\mid d$ has $\rad(d)=m_L$ for a unique $L\supseteq J$, and then
+\[
+\frac d{\varphi(d)}=\prod_{s\in\{p\}\cup L}\frac s{s-1},\qquad
+\prod_{r\mid d,\ r\nmid m_J}\Bigl(1-\frac{\chi^*(r)}r\Bigr)=\prod_{r\in L\smallsetminus J}\Bigl(1-\frac{\chi(h^J_r)}r\Bigr),
+\]
+since $\chi^*(r)=\chi(\kappa_{m_J}(r))=\chi(h^J_r)$.
+By Lemma~\ref{lem:pushforward}(1), $\ip{f_d}{\chi^*}=\widehat{\Phi_d}(\chi\circ\pr)=\widehat{\pi_{L\to J}\Phi_d}(\chi)$, where $\pr\colon X_L\to X_J$ is the projection.
+Summing over the $d$ with $\rad(d)=m_L$ and dividing by $\prod_{s\in\{p\}\cup J}\frac{s}{s-1}$, condition (A) becomes
+\[
+\sum_{L\supseteq J}\ \prod_{r\in L\smallsetminus J}\frac{r-\chi(h^J_r)}{r-1}\ \widehat{\pi_{L\to J}\Psi_L}(\chi)=0,
+\]
+which by (O2) says $\widehat{\Gamma_J(\Psi)}(\chi)=0$.
+As this holds for every full $\chi$, $\Gamma_J(\Psi)\in\Nn(X_J)$.
+For $J=\emptyset$, $X_\emptyset=C_p$ has one coordinate, so $\Gamma_\emptyset(\Psi)$ is constant by Lemma~\ref{lem:N}; by (O2) its total sum is $\sum_L\sum_{x\in X_L}\Psi_L(x)=\sum_{p\mid d}S_d$, and $|C_p|=2^{t_p}$.
+\end{proof}
+\section{Telescoping}\label{sec:telescope}
+
+In this section $p$ and $W$ are fixed as in Section~\ref{sec:subsystem}, and $\Psi=(\Psi_L)_{L\subseteq W}$ denotes an arbitrary family of functions $\Psi_L$ on $X_L$; it need not come from a periodic function.
+
+\subsection{Integral decomposition}
+
+\begin{lemma}\label{lem:decomp}
+Let $X=\prod_{i\in I}C_i$ be as in Lemma~\ref{lem:N} and let $F\in\Nn(X)$ be $2$-integral.
+\begin{enumerate}
+\item There are $2$-integral $F_i\in\mathcal I_i(X)$, $i\in I$, with $F=\sum_iF_i$.
+\item If $F$ has constant parity, the $F_i$ in \textup{(1)} can be chosen so that each of them has constant parity.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) For $i\in I$ let $\epsilon_i$ be the operator that replaces the $i$-th coordinate of the argument by $0$; the $\epsilon_i$ are commuting idempotents preserving $2$-integrality, and $\epsilon_i$ is the identity on $\mathcal I_i(X)$.
+Expanding $\prod_{i\in I}\bigl(\epsilon_i+(1-\epsilon_i)\bigr)=1$ gives $F=\sum_{A\subseteq I}F_A$ with $F_A=\prod_{i\in A}(1-\epsilon_i)\prod_{i\notin A}\epsilon_iF$.
+For $A=I$ we get $F_I=0$: by Lemma~\ref{lem:N}, $F$ is a sum of functions in the spaces $\mathcal I_i(X)$, and $\prod_{i\in I}(1-\epsilon_i)$ kills each of them.
+For $A\neq I$, $F_A$ is independent of every coordinate $i\notin A$; assigning each such $F_A$ to one $i\notin A$ gives the $F_i$.
+
+(2) Let $F$ have constant parity $c$, take $F=\sum_iF_i$ as in (1), and fix $i_0\in I$.
+Let $D_i$ be the function with values in $\{0,1\}$ congruent to $F_i$ modulo $2$ for $i\neq i_0$, and to $F_{i_0}-c$ for $i=i_0$; then $D_i\in\mathcal I_i(X)$ and $\sum_iD_i\equiv F-c\equiv0\pmod 2$.
+Hence $G=\frac12\sum_iD_i$ is $2$-integral and lies in $\Nn(X)$, so by (1) $G=\sum_iG_i$ with $2$-integral $G_i\in\mathcal I_i(X)$.
+Then $F_i'=F_i-D_i+2G_i$ satisfy $\sum_iF_i'=F$, $F'_i\in\mathcal I_i(X)$, $F'_i\equiv0$ for $i\ne i_0$ and $F'_{i_0}\equiv c\pmod 2$.
+\end{proof}
+
+\subsection{Elementary solutions}
+For $i\in L\subseteq W$ let $\pr_i\colon X_L\to X_{L\smallsetminus\{i\}}$ forget the coordinate $i$.
+
+\begin{lemma}\label{lem:elementary}
+\begin{enumerate}
+\item \textup{($\nu$-solutions)} Let $\emptyset\ne L_0\subseteq W$ and let $\nu$ be a function on $X_{L_0}$ independent of the coordinate $p$. Let $\Psi$ have $\Psi_{L_0}=\nu$ and $\Psi_L=0$ for $L\neq L_0$. Then $\Gamma_J(\Psi)\in\Nn(X_J)$ for all non-empty $J\subseteq W$, and $\Gamma_\emptyset(\Psi)$ is the constant $2^{-t_p}\sum_{x\in X_{L_0}}\nu(x)$.
+\item \textup{(Telescoping pairs)} Let $i\in L_0\subseteq W$, $K=L_0\smallsetminus\{i\}$, and let $\omega$ be a function on $X_K$. Let $\Psi$ have
+\[
+\Psi_{L_0}=\omega\circ\pr_i,\qquad \Psi_K=-R_i\,\omega,\qquad \Psi_L=0\ \ (L\neq L_0,K).
+\]
+Then $\Gamma_J(\Psi)\in\Nn(X_J)$ for all non-empty $J\subseteq W$, and $\Gamma_\emptyset(\Psi)=0$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(1) Only $L=L_0$ contributes to \eqref{eq:Gamma}, so $\Gamma_J(\Psi)=0$ unless $J\subseteq L_0$, and then $\Gamma_J(\Psi)=E_{L_0\smallsetminus J}\pi_{L_0\to J}\nu$.
+Since $p$ is a coordinate of $X_J$ that is not summed over, $\pi_{L_0\to J}\nu$ is independent of the coordinate $p$, and so is $\Gamma_J(\Psi)$ by (O4); it lies in $\Nn(X_J)$ by Lemma~\ref{lem:N}.
+For $J=\emptyset$, $\pi_{L_0\to\emptyset}\nu$ is a constant function on $C_p$ with total sum $\sum_x\nu(x)$, and $E_{L_0}$ fixes constants (O2).
+
+(2) Let $J\subseteq W$.
+If $J\not\subseteq L_0$, no term of \eqref{eq:Gamma} survives and $\Gamma_J(\Psi)=0$.
+If $i\in J\subseteq L_0$, only $L=L_0$ contributes, $\pi_{L_0\to J}$ does not sum over the coordinate $i$, and so $\Gamma_J(\Psi)=E_{L_0\smallsetminus J}\pi_{L_0\to J}(\omega\circ\pr_i)$ is independent of the coordinate $i$ by (O4), hence lies in $\Nn(X_J)$.
+Finally let $J\subseteq K$, so that both $L_0$ and $K$ contribute.
+Since $\omega\circ\pr_i$ does not depend on the coordinate $i$ and $|C_i|=2^{t_i}$, we have $\pi_{L_0\to J}(\omega\circ\pr_i)=2^{t_i}\pi_{K\to J}\omega$, and $E_{L_0\smallsetminus J}=E_iE_{K\smallsetminus J}$.
+Using (O1),
+\[
+\Gamma_J(\Psi)=E_iE_{K\smallsetminus J}\,2^{t_i}\pi_{K\to J}\omega-E_{K\smallsetminus J}\pi_{K\to J}R_i\omega
+=E_{K\smallsetminus J}\bigl(R_i\pi_{K\to J}\omega-R_i\pi_{K\to J}\omega\bigr)=0 .
+\]
+This covers $J=\emptyset$.
+\end{proof}
+
+The cancellation in (2) is the point of the construction: the operator $E_i=\frac{i-T_i}{i-1}$ is not $2$-integral, but in a telescoping pair it only occurs multiplied by $|C_i|=2^{t_i}$, as the $2$-integral operator $R_i$.
+
+\subsection{The telescoping lemma}
+
+\begin{lemma}[Telescoping lemma]\label{lem:telescope}
+Let $\Psi=(\Psi_L)_{L\subseteq W}$ be a family of $2$-integral functions such that
+\begin{enumerate}
+\item[(i)] $\Psi_L$ has constant parity for every non-empty $L\subseteq W$, and
+\item[(ii)] $\Gamma_J(\Psi)\in\Nn(X_J)$ for every non-empty $J\subseteq W$.
+\end{enumerate}
+Then $\Gamma_\emptyset(\Psi)$ is $2$-integral and $\Gamma_\emptyset(\Psi)\equiv\Psi_\emptyset\pmod 2$ at every point of $C_p$.
+\end{lemma}
+
+No condition is imposed on $\Psi_\emptyset$ or on $\Gamma_\emptyset(\Psi)$.
+
+\begin{proof}
+Let $h(\Psi)$ be the largest $|L|$ with $L\neq\emptyset$ and $\Psi_L\neq0$, and $h(\Psi)=0$ if there is none.
+We argue by induction on $h=h(\Psi)$.
+If $h=0$, then $\Gamma_\emptyset(\Psi)=\Psi_\emptyset$.
+
+Let $h\ge1$ and let $L$ be any set with $|L|=h$.
+All terms of $\Gamma_L(\Psi)$ except $\Psi_L$ come from sets strictly larger than $L$, which carry $0$; so $\Psi_L=\Gamma_L(\Psi)\in\Nn(X_L)$ by (ii).
+By Lemma~\ref{lem:decomp}, applied on $X_L$ with coordinate set $\{p\}\cup L$,
+\[
+\Psi_L=\nu_L+\sum_{i\in L}\omega_{L,i}\circ\pr_i,
+\]
+where $\nu_L$ is independent of the coordinate $p$, $\omega_{L,i}$ is a function on $X_{L\smallsetminus\{i\}}$, and all of them are $2$-integral of constant parity.
+Let $\Psi'$ be obtained from $\Psi$ by subtracting, for every $L$ with $|L|=h$, the $\nu$-solution attached to $(L,\nu_L)$ and the telescoping pairs attached to $(L,i,\omega_{L,i})$, $i\in L$ (Lemma~\ref{lem:elementary}).
+Explicitly, $\Psi'_L=0$ for $|L|\ge h$,
+\[
+\Psi'_K=\Psi_K+\sum_{\substack{i\in W\smallsetminus K}}R_i\,\omega_{K\cup\{i\},i}\qquad\text{for }|K|=h-1,
+\]
+and $\Psi'_L=\Psi_L$ for $|L|<h-1$.
+By (O3) each $R_i\omega_{K\cup\{i\},i}$ is $2$-integral and even, so $\Psi'$ consists of $2$-integral functions, $\Psi'_K\equiv\Psi_K\pmod 2$ for all $K$, and $\Psi'$ satisfies (i).
+It satisfies (ii) by linearity and Lemma~\ref{lem:elementary}.
+Since $h(\Psi')<h$, the induction hypothesis gives that $\Gamma_\emptyset(\Psi')$ is $2$-integral and $\Gamma_\emptyset(\Psi')\equiv\Psi'_\emptyset\equiv\Psi_\emptyset\pmod 2$.
+By Lemma~\ref{lem:elementary} again,
+\[
+\Gamma_\emptyset(\Psi)=\Gamma_\emptyset(\Psi')+\sum_{|L|=h}2^{-t_p}\sum_{x\in X_L}\nu_L(x),
+\]
+and $2^{-t_p}\sum_{x\in X_L}\nu_L(x)=\sum_{y\in\prod_{r\in L}C_r}\nu_L(0,y)$ is a sum of $\prod_{r\in L}2^{t_r}$ elements of $\Zt$ of the same parity, an even number of them since $L\neq\emptyset$.
+Hence $\Gamma_\emptyset(\Psi)$ is $2$-integral and $\Gamma_\emptyset(\Psi)\equiv\Psi_\emptyset\pmod2$.
+\end{proof}
+
+\begin{remark}\label{rem:span}
+The proof shows more: every family satisfying (ii) is the sum of a family supported on $L=\emptyset$, of $\nu$-solutions and of telescoping pairs, so these elementary solutions span the solution space of the conditions (ii).
+For instance, for $p=3$ and $W=\{5,7\}$ (the case $\rad(q)=105$) the $30$ unknowns $\Psi_L(x)$ are subject to conditions (ii) of rank $7$, leaving a space of dimension $23$; we checked the spanning statement numerically in several cases (Section~\ref{sec:computations}).
+\end{remark}
+
+\begin{example}[Two primes]\label{ex:two}
+Let $W=\{r\}$, write $a=t_p$, $b=t_r$, and let $y$, $z$ be the coordinates of $C_p$ and $C_r$.
+Condition (ii) says that $\Psi_{\{r\}}$ has no full Fourier component, i.e.\ $\Psi_{\{r\}}(y,z)=\nu(z)+\omega(y)$.
+Then $\pi_{\{r\}\to\emptyset}\Psi_{\{r\}}=\sum_z\nu(z)+2^b\omega$, and
+\[
+\Gamma_\emptyset(\Psi)=\Psi_\emptyset+E_r\Bigl(\sum_z\nu(z)+2^b\omega\Bigr)=\Psi_\emptyset+\sum_z\nu(z)+R_r\,\omega .
+\]
+If $\Psi_{\{r\}}$ has constant parity, one may take $\nu$ and $\omega$ of constant parity (Lemma~\ref{lem:decomp}), and then $\sum_z\nu(z)$ and $R_r\omega$ are even.
+For $q=p^{e}r^{f}$ with $e$ odd and an Erd\H{o}s function with $\sum_{n=1}^qf(n)=0$ and $\sum f(n)/n=0$, $\Psi_\emptyset=\sum_{j\le e}\Phi_{p^j}$ is odd, while $\Gamma_\emptyset(\Psi)$ is an even constant by Proposition~\ref{prop:subsystem} and Lemma~\ref{lem:log}; this is the whole proof in the case of two primes.
+\end{example}
+\section{Proofs of the main results}\label{sec:proofs}
+
+\begin{theorem}[Parity transfer; Theorem~C]\label{thm:transfer}
+Let $q$ be odd, $p\mid q$, and let $f\colon\Z\to\Zt$ be $q$-periodic with $f(0)=0$, $\sum_{n=1}^{q}f(n)=0$ and $\sum_{n\ge1}f(n)/n=0$.
+Suppose that for every divisor $d$ of $q$ with $p\mid d$ the layer function $f_d$ has constant parity $c_d\in\{0,1\}$.
+Then $\sum_{j=1}^{e_p}c_{p^j}\equiv0\pmod2$.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:pushforward}(2), for $p\mid d$ the pushforward $\Phi_d$ is $2$-integral of constant parity $c_d$, and $S_d$ is even.
+Hence every aggregated layer $\Psi_L$ ($L\subseteq W$) is $2$-integral of constant parity, and $\Psi_\emptyset=\sum_{j=1}^{e_p}\Phi_{p^j}$ has constant parity $c=\sum_jc_{p^j}\bmod 2$.
+By Theorem~\ref{thm:okada}, $f$ satisfies (A) and (B), and $\sum_dS_d=0$ by hypothesis.
+By Proposition~\ref{prop:subsystem}, $\Gamma_J(\Psi)\in\Nn(X_J)$ for all $J\subseteq W$, and $\Gamma_\emptyset(\Psi)$ is the constant $2^{-t_p}\sum_{p\mid d}S_d$, which lies in $2\Zt$ by Lemma~\ref{lem:log}.
+By the telescoping lemma (Lemma~\ref{lem:telescope}), $\Gamma_\emptyset(\Psi)\equiv\Psi_\emptyset\equiv c\pmod 2$.
+Therefore $c$ is even.
+\end{proof}
+
+The constraint of Theorem~\ref{thm:transfer} is the only one: every parity pattern that it allows occurs.
+
+\begin{theorem}[Sharpness]\label{thm:sharp}
+Let $q$ be odd and let $c_d\in\{0,1\}$ be given for every divisor $d>1$ of $q$.
+There is an integer-valued $q$-periodic $f$ with $f(0)=0$, $\sum_{n=1}^qf(n)=0$, $\sum_{n\ge1}f(n)/n=0$, and $f\equiv c_d\pmod 2$ on the layer of level $d$ for every $d$, if and only if
+\[
+\sum_{j=1}^{v_p(q)}c_{p^j}\equiv0\pmod 2\qquad\text{for every prime }p\mid q .
+\]
+\end{theorem}
+
+\begin{proof}
+Necessity is Theorem~\ref{thm:transfer}.
+The patterns satisfying the condition form an $\F_2$-vector space spanned by the indicators $e_d$ of the layers $d$ with at least two distinct prime factors and by the sums $e_{p^i}+e_{p^j}$ ($p\mid q$, $1\le i<j\le v_p(q)$); and if $f$, $g$ realize patterns $c$, $c'$, then $f+g$ realizes $c+c'$.
+So it suffices to realize the generators.
+In both constructions $\chi$ is the Legendre symbol modulo a prime $p\mid q$, regarded on $U_{d'}$ for every $d'$ with $p\mid d'$, and $f$ is supported on two layers on which it is a multiple of $\chi$.
+For such $f$ every period sum $S_{d'}$ vanishes and $\ip{f_{d'}}{\psi}=0$ for every primitive $\psi\neq\chi$, so by Theorem~\ref{thm:okada} only condition (A) for $\chi$ has to be checked; since $\ip{\chi}{\chi}=\varphi(d')$ on $U_{d'}$, the term of a layer $d'$ on which $f=\beta\chi$ is
+\[
+\beta\,d'\prod_{s\mid d',\,s\neq p}\Bigl(1-\frac{\chi(s)}{s}\Bigr).
+\]
+(a) Let $d$ have at least two distinct prime factors and let $p\neq r$ be two of them; let $v=v_r(d)$ and $d''=d/r^{v}$.
+Put $f=\chi$ on the layer $d$ and $f=\beta\chi$ on the layer $d''$, with $\beta=-r^{v-1}\bigl(r-\chi(r)\bigr)$.
+The terms of the two layers are $d''\,r^{v}\bigl(1-\frac{\chi(r)}r\bigr)P$ and $\beta d''P$ with the same $P=\prod_{s\mid d'',\,s\neq p}(1-\chi(s)/s)$, so they cancel.
+Since $r-\chi(r)$ is even, $f$ is odd on the layer $d$ and even elsewhere.
+(b) For $1\le i<j\le v_p(q)$ put $f=p^{j-i}\chi$ on the layer $p^i$ and $f=-\chi$ on the layer $p^j$; the two terms are $p^{j-i}p^{i}$ and $-p^{j}$.
+Here $f$ is odd exactly on these two layers.
+\end{proof}
+
+In particular, for $c_d=1$ for all $d$ (the parity pattern of an Erd\H{o}s function) the condition says that every $v_p(q)$ is even; for odd $q$, Theorem~\ref{thm:sharp} thus contains both directions of Theorem~B below.
+
+\begin{theorem}[Theorem~A]\label{thm:main}
+Let $q>1$ be an integer that is not a perfect square, and let $f\colon\Z\to\Zt$ be $q$-periodic with $f(n)$ odd for $q\nmid n$, $f(n)=0$ for $q\mid n$, and $\sum_{n=1}^qf(n)=0$.
+Then $\sum_{n\ge1}f(n)/n\neq0$.
+In particular, Conjecture~\ref{conj:erdos} holds for every non-square $q$, and for every non-square $q$ and every Erd\H{o}s function $f$ modulo $q$ with $\sum_{n=1}^qf(n)=0$ the number $\sum_{n\ge1}f(n)/n$ is transcendental.
+\end{theorem}
+
+\begin{proof}
+If $q$ is even, $\sum_{n=1}^{q}f(n)=\sum_{n=1}^{q-1}f(n)$ is a sum of an odd number of odd elements of $\Zt$, so it is not $0$ and there is nothing to prove.
+Let $q$ be odd.
+Since $q$ is not a square, there is a prime $p$ with $e_p=v_p(q)$ odd.
+If $\sum f(n)/n$ were $0$, Theorem~\ref{thm:transfer} would apply with $c_d=1$ for all $d$ and give $e_p\equiv0\pmod 2$, a contradiction.
+For an Erd\H{o}s function the sum is therefore a non-zero number of the form $\sum_{a=1}^{q-1}f(a)\cdot\bigl(-\tfrac1q\psi(a/q)\bigr)$, and such a number is transcendental by Baker's theorem \cite{BBW73,MS07}.
+\end{proof}
+
+For the converse direction in Theorem~B we use the composition lemma of \cite{Kei26}.
+
+\begin{lemma}[Composition {\cite[Lemma~3.5]{Kei26}}]\label{lem:compose}
+Let $f$ be $q$-periodic and $g$ be $N$-periodic, rational-valued, with $f(0)=g(0)=0$ and $\sum_{n=1}^qf(n)=\sum_{n=1}^Ng(n)=0$.
+Define the $qN$-periodic function $F(n)=f(n)$ for $q\nmid n$ and $F(n)=g(n/q)$ for $q\mid n$.
+Then $F(0)=0$, $\sum_{n=1}^{qN}F(n)=0$ and $\sum_{n\ge1}F(n)/n=\sum_{n\ge1}f(n)/n+\frac1q\sum_{m\ge1}g(m)/m$.
+\end{lemma}
+
+\begin{proof}
+Over a period, $\sum_{q\nmid n}F(n)=N\sum_{n=1}^qf(n)=0$ and $\sum_{q\mid n}F(n)=\sum_{m=1}^Ng(m)=0$.
+The series $\sum_{q\nmid n}f(n)/n=\sum_nf(n)/n$ and $\sum_mg(m)/(qm)$ converge, and their sum is $\sum_nF(n)/n$ (compare partial sums up to $x$).
+\end{proof}
+
+\begin{theorem}[Theorem~B]\label{thm:odd-classification}
+Let $q>1$.
+There is a $q$-periodic $f\colon\Z\to\Z$ with $f(n)$ odd for $q\nmid n$, $f(n)=0$ for $q\mid n$, $\sum_{n=1}^{q}f(n)=0$ and $\sum_{n\ge1}f(n)/n=0$ if and only if $q$ is an odd perfect square.
+\end{theorem}
+
+\begin{proof}
+If $q$ is not an odd square, no such $f$ exists by Theorem~\ref{thm:main} (for even squares by the parity argument at the beginning of its proof).
+Conversely, for an odd prime $\ell$ with Legendre symbol $\chi_\ell=(\frac{\cdot}{\ell})$ define the $\ell^2$-periodic function
+\[
+g_\ell(n)=\begin{cases}\ell\,\chi_\ell(n/\ell),& \ell\parallel n,\\ -\chi_\ell(n),&\ell\nmid n,\\ 0,&\ell^2\mid n.\end{cases}
+\]
+Its values off the multiples of $\ell^2$ are $\pm\ell$ and $\pm1$, which are odd, its period sum is $\ell\sum_{a=1}^{\ell-1}\chi_\ell(a)-\ell\sum_{a=1}^{\ell-1}\chi_\ell(a)=0$, and
+\[
+\sum_{n\ge1}\frac{g_\ell(n)}n=\sum_{\ell\nmid a}\frac{\ell\chi_\ell(a)}{\ell a}-\sum_{\ell\nmid n}\frac{\chi_\ell(n)}n=L(1,\chi_\ell)-L(1,\chi_\ell)=0,
+\]
+where the two series on the right converge, so that splitting the partial sums is legitimate.
+If $q=\ell_1^2\cdots\ell_k^2$ (primes $\ell_i$ not necessarily distinct), applying Lemma~\ref{lem:compose} $k-1$ times to $g_{\ell_1},\dots,g_{\ell_k}$ gives a $q$-periodic integer-valued $F$ with $F(0)=0$, vanishing period sum and $\sum F(n)/n=0$; its values at $q\nmid n$ are values of some $g_{\ell_i}$ at non-multiples of $\ell_i^2$, hence odd.
+\end{proof}
+
+In the language of \cite{Kei26}, Theorem~\ref{thm:main} says that every odd non-square is \emph{$2$-adically obstructed}: Okada's solution space contains no $2$-integral vector all of whose coordinates are odd.
+This is \cite[Conj.~5.3]{Kei26}, which had been verified there for $q\le13105$.
+
+\begin{corollary}[Corollary~D]\label{cor:picture}
+Let $\mathcal C$ be the set of moduli $q$ for which an Erd\H{o}s function $f$ with $\sum_{n=1}^qf(n)=0$ and $\sum f(n)/n=0$ exists.
+\begin{enumerate}
+\item Every $q\in\mathcal C$ is an odd perfect square with $2\varphi(q)+1\le q$.
+\item $\min\mathcal C=105^2=11025$.
+\item $\mathcal C\cap[1,195^2)=\{105^2,165^2\}$, and $195^2=38025$ is the least modulus for which it is not known whether it belongs to $\mathcal C$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(1) Convergence forces $q$ to be odd, Theorem~\ref{thm:main} forces it to be a square, and Okada's theorem \cite{Oka82} excludes $2\varphi(q)+1>q$.
+(2) $105^2\in\mathcal C$ by \cite[Thm.~3.1]{Kei26}, whose proof reduces to eleven rational identities.
+If $q=m^2<105^2$ is an odd square, then $m<105=3\cdot5\cdot7$ has at most two distinct prime factors, so $\varphi(q)/q=\varphi(m)/m\ge\frac23\cdot\frac45>\frac12$ and $q\notin\mathcal C$ by (1).
+(3) Similarly, an odd $m<195$ with at least three distinct prime factors is $105$ or $165$, and $165^2\in\mathcal C$ by \cite[Thm.~3.3]{Kei26} (verified there by exact computation of all of Okada's equations).
+For $m=195=3\cdot5\cdot13$ one has $\varphi(m)/m=96/195<\frac12$, so neither Okada's theorem nor Theorem~\ref{thm:main} applies; \cite[Sect.~6]{Kei26} shows only that a counterexample modulo $195^2$ cannot be invariant under the odd-order units.
+\end{proof}
+
+Before this work, part~(2) rested on the computer-assisted Theorems~5.6 and~5.9 of \cite{Kei26} (the $2$-adic obstruction for all odd non-squares $q\le13105$, established by $4938$ certificates); it is now a consequence of Theorem~\ref{thm:main}, Okada's theorem and one explicit example.
+
+\begin{remark}
+In particular Conjecture~\ref{conj:erdos} holds for all moduli outside the set of odd squares $q>1$, of which there are fewer than $\sqrt x/2$ up to $x$; previously it was known for a set of moduli $q\equiv1\pmod4$ of lower density at least $0.82$ \cite{CM15} (together with all $q\equiv3\pmod 4$ \cite{MS10}).
+On the other hand $\mathcal C$ is infinite, since it contains all powers of $105^2$ \cite[Thm.~3.6]{Kei26}.
+\end{remark}
+\section{Further consequences and remarks}\label{sec:further}
+
+\subsection{Prescribed zeros}
+Theorem~\ref{thm:transfer} applies to functions that vanish on several layers.
+
+\begin{corollary}\label{cor:zeros}
+Let $q$ be odd and let $\mathcal Z$ be a set of divisors of $q$ containing $q$.
+Let $f$ be $q$-periodic with $f(n)=0$ if $\gcd(n,q)\in\mathcal Z$ and $f(n)$ an odd element of $\Zt$ otherwise, and suppose $\sum_{n=1}^qf(n)=0$.
+If for some prime $p\mid q$ the number of $j\in\{1,\dots,v_p(q)\}$ with $q/p^j\notin\mathcal Z$ is odd, then $\sum_{n\ge1}f(n)/n\neq0$; if $f$ is rational-valued, the sum is transcendental.
+\end{corollary}
+
+\begin{proof}
+On the layer of level $d$ the values of $f$ have constant parity $c_d=[\,q/d\notin\mathcal Z\,]$; apply Theorem~\ref{thm:transfer}.
+\end{proof}
+
+For example, let $q$ be odd, let $N\mid q$, and let $f$ be $q$-periodic with $f(n)=0$ for $N\mid n$ and $f(n)=\pm1$ otherwise (so $f$ has the zeros of an Erd\H{o}s function modulo $N$ but only period $q$).
+Here $\mathcal Z=\{g\mid q:\ N\mid g\}$, and for each $p$ the number of $j$ with $N\nmid q/p^j$ equals $v_p(N)$.
+Hence \emph{if $N$ is not a square, every such $f$ with vanishing period sum has $\sum f(n)/n\neq0$}; for $N=q$ this is Theorem~\ref{thm:main}.
+
+\subsection{Remarks on the proof}
+\begin{remark}[The value at $0$]
+In Theorems~\ref{thm:transfer} and~\ref{thm:main} the condition $f(0)=0$ can be dropped for odd $q$.
+Indeed, Theorem~\ref{thm:okada} and Lemma~\ref{lem:log} remain valid if the layer $d=1$ (the residue $0$) is included in the sums over $d$, with $S_1=f(0)$ and $\varepsilon_p(1)=e_p$, and the layer $d=1$ enters neither the conductor-$p$ subsystem nor the sum $\sum_dv_p(d)S_d$.
+\end{remark}
+
+\begin{remark}[A pointwise statement]
+The telescoping lemma needs no hypothesis on the bottom layers.
+If the layers $f_d$ with $p\mid d$ and $d$ not a power of $p$ have constant parity, and the bottom sums $S_{p^j}$ are even, the proof of Theorem~\ref{thm:transfer} shows that for every $y\in C_p$ the number $\sum_{j=1}^{e_p}\sum_{x\in U_{p^j},\,\kappa_p(x)=y}f\bigl((q/p^j)x\bigr)$ is even.
+The hypothesis on the layers that are not powers of $p$ cannot be dropped: for $q=15$ the integer vector
+\[
+(f(1),\dots,f(14))=(0,0,-1,-1,3,2,-1,1,-2,-3,1,1,0,0)
+\]
+satisfies Okada's conditions (so $\sum f(n)/n=0$), but $f(5)=3$ and $f(10)=-3$ are odd while $v_3(15)=1$; here $f$ has mixed parity on the layers of levels $5$ and $15$.
+\end{remark}
+
+\begin{remark}[Earlier criteria as special cases]
+For $q\equiv3\pmod4$ the proof of Murty and Saradha \cite{MS10} (see \cite[Prop.~4.4]{Kei26}) uses one identity coming from the odd characters; such $q$ are non-squares, so Theorem~\ref{thm:main} contains their theorem.
+For odd prime powers $q=p^e$ the set $W$ is empty and $\Gamma_\emptyset(\Psi)=\Psi_\emptyset$, so no telescoping is needed.
+The residuacity criterion \cite[Thm.~5.4]{Kei26} (some $p\parallel q$ such that all other prime factors of $q$ are $2^{t_p}$-th power residues modulo $p$) is the case in which every translation $T_r$ acting on $C_p$ is trivial; then $E_r$ acts on functions on $C_p$ as the identity and $\Gamma_\emptyset(\Psi)=\sum_L\pi_{L\to\emptyset}\Psi_L$ is visibly congruent to $\Psi_\emptyset$.
+In general the translations $T_r$ are non-trivial and the operators $E_r$ have denominators; the telescoping lemma shows that these denominators always cancel modulo the conditions attached to the larger conductors.
+\end{remark}
+
+\begin{remark}[Which conditions are used]
+The proof of Theorem~\ref{thm:main} uses, for one prime $p$ with $v_p(q)$ odd, condition (A) for the primitive characters of $2$-power order whose conductor is divisible by $p$, condition (B) at $p$, and convergence.
+The computations reported in \cite[Sect.~6]{Kei26} show that this cannot be reduced much further: keeping only quadratic characters, or only characters supported on at most two primes, does not suffice in general.
+\end{remark}
+
+\subsection{Square moduli}
+For a square $q$ every $e_p$ is even, the bottom layers $\Psi_\emptyset$ of an Erd\H{o}s function are even, and the argument gives no information; indeed odd solutions of Okada's system exist for all odd squares (Theorem~\ref{thm:odd-classification}).
+Whether an Erd\H{o}s function, with values exactly $\pm1$, exists modulo a square $q$ with $2\varphi(q)+1\le q$ is a different question, which is not decided by parity.
+By Corollary~\ref{cor:picture} and \cite{Kei26}:
+
+\begin{problem}\label{prob:squares}
+Determine $\mathcal C$.
+It is a multiplicative semigroup of odd squares containing $105^2$, $165^2$, $315^2$, $495^2$, $735^2$ \cite[Thms.~3.1, 3.3, 3.4, 3.6]{Kei26} and contained in $\{q=m^2:\ m\ \text{odd},\ 2\varphi(q)+1\le q\}$.
+\end{problem}
+
+Table~\ref{tab:squares} lists the nineteen odd $m\le2000$ with $2\varphi(m^2)+1\le m^2$; for five of them $m^2\in\mathcal C$ is known, and the other fourteen are open.
+
+\begin{table}[ht]
+\centering
+\caption{Odd $m\le2000$ with $2\varphi(m^2)+1\le m^2$ (Okada's theorem does not apply to $q=m^2$).}\label{tab:squares}
+\begin{tabular}{@{}ll@{}}
+\toprule
+status of $m^2$ & $m$\\
+\midrule
+in $\mathcal C$ \cite{Kei26} & $105,\ 165,\ 315,\ 495,\ 735$\\
+open & $195,\ 525,\ 585,\ 825,\ 945,\ 975,\ 1155,\ 1365,\ 1485,\ 1575,\ 1755,\ 1785,\ 1815,\ 1995$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{The variant with \texorpdfstring{$f(n)=\pm1$}{f(n)=+-1} for all \texorpdfstring{$n$}{n}}
+Murty and Pathak \cite{MP22} considered $N$-periodic $f$ with $f(n)=\pm1$ for \emph{all} $n$, including $N\mid n$; convergence then forces $N$ to be even.
+They proved $L(1,f)\neq0$ for $N\equiv2\pmod4$, reported Tengely's example of such an $f$ with $L(1,f)=0$ for $N=36$ (the least possible period), and left $N\equiv0\pmod 4$ open.
+Our method does not apply directly at odd primes: for even $N$ the layers $d$ with $v_2(d)=1$ have trivial $2$-part $(\Z/2\Z)^\times$, and the Euler operator attached to the prime $2$ is $\frac{2}{1}\bigl(1-\frac{T_2}{2}\bigr)=2-T_2$, which does not annihilate parity.
+For instance, for $N=2p$ the conductor-$p$ conditions say that $\Phi_p+(2-T_2)\Phi_{2p}$ is constant on $C_p$, and $\Phi_p+(2-T_2)\Phi_{2p}\equiv\Phi_p+T_2\Phi_{2p}\equiv0\pmod 2$ holds automatically when $f=\pm1$; this is why Murty and Pathak work at the prime $2$ instead.
+Since $36=6^2$, it is natural to ask:
+
+\begin{problem}
+Let $N\equiv0\pmod4$ be a non-square and let $f$ be $N$-periodic with $f(n)=\pm1$ for all $n$ and $\sum_{n=1}^Nf(n)=0$. Is $\sum_{n\ge1}f(n)/n\neq0$?
+\end{problem}
+\section{Computational corroboration}\label{sec:computations}
+
+The proofs above do not use computation.
+The following checks, made with exact rational arithmetic (FLINT \cite{FLINT} and Python), corroborate them; the code and logs are in the supplementary material.
+
+\subsection{Agreement with the certificates of \texorpdfstring{\cite{Kei26}}{[Kei26]}}
+In \cite{Kei26} the non-existence of odd solutions was certified, for each of the $4938$ odd composite non-squares $q\le13105$, by an explicit $2$-integral combination of Okada's conditions with odd value on the all-ones vector, and odd solutions were exhibited for the $56$ odd squares in that range.
+Theorem~\ref{thm:main} explains all of these at once.
+
+\subsection{Support aggregation}
+For the existence of odd solutions of the conditions (A) for characters of $2$-power order together with (B) and convergence, only three data of $q$ matter: $\rad(q)$, the set $O$ of primes with $e_p$ odd, and the set $E_1$ of primes with $e_p=1$.
+Indeed, (A) depends only on the aggregates of the layers with a common radical, whose parities are $\prod_re_r\bmod2$; and the even sums $S_d$ can be redistributed among layers with a common radical without changing the aggregates, which turns (B) at $p$ into $\sum_{p\mid d}S_d=0$ if $e_p=1$ and into $\sum_{p\mid d}S_d\equiv0\pmod{2^{t_p+1}}$ if $e_p\ge2$.
+The resulting systems have $\prod_{r\mid q}(1+2^{t_r})-1$ unknowns, independently of the exponents, so one computation covers infinitely many moduli.
+We decided them by $2$-saturation of an exact kernel basis, as in \cite[Lemma~4.3]{Kei26}.
+\begin{itemize}
+\item For every odd squarefree $r\le1500$ with at least two prime factors and at most $1200$ unknowns, every $O\subseteq\{p\mid r\}$ with $E_1=\emptyset$, and also $O=E_1=\{p\mid r\}$: $2178$ systems, obstructed exactly when $O\neq\emptyset$.
+\item For $205$ radicals with four to six prime factors from $\{3,5,\dots,43\}$, namely the first $177$ with four prime factors (in lexicographic order) having at most $2500$ unknowns, all $21$ with five prime factors and at most $400$ unknowns, and all $7$ with six prime factors and at most $1200$ unknowns, and for $O=\emptyset$, $O=\{p\}$ for each $p\mid r$, $O=\{p\mid r\}$ (all with $E_1=\emptyset$) and $O=E_1=\{p\mid r\}$: $1470$ systems, obstructed exactly when $O\neq\emptyset$.
+\item For all $4994$ odd composite $q\le13105$ the aggregated decision agrees with ``$q$ is not a square'', and for the $404$ odd composite $q\le1200$ it agrees with the decision on the full system of \cite[Thm.~4.5]{Kei26}.
+\end{itemize}
+The full systems of \cite[Thm.~4.5]{Kei26} were also solved for some larger moduli: $3^35^27^2$, $3^25^27^211$, $3^35^37^2$, $3\cdot5^27^211^2$, $3^35^37^3$, $3^45^37^3$ and $3^35^47^3$ are obstructed, and $3^45^27^2=315^2$ and $3^25^27^211^2=1155^2$ are not.
+
+\subsection{The telescoping lemma}
+\begin{itemize}
+\item For nine configurations $(p,W)$ with up to four primes we formed random superpositions of a bottom layer, $\nu$-solutions and telescoping pairs with random $2$-integral data of constant parity, and checked in exact arithmetic that all conditions (ii) of Lemma~\ref{lem:telescope} hold, that $\Gamma_\emptyset$ is $2$-integral, and that $\Gamma_\emptyset\equiv\Psi_\emptyset\pmod2$.
+\item For eight of these configurations (all except $p=5$, $W=\{13,17\}$, whose solution space has dimension $151$) we compared ranks: the elementary solutions span the full solution space of the conditions (ii), as Remark~\ref{rem:span} asserts.
+\item In $353$ random tests (random prime sets with two to four primes, random $p$, and a random constant parity prescribed for every layer $\Psi_L$, $L\neq\emptyset$), the conductor-$p$ conditions together with the logarithmic condition at $p$ never had a $2$-integral solution with odd bottom layer, and always had one with even bottom layer; without the logarithmic condition at $p$ they always had one. So the parity transfer uses exactly the conditions in Theorem~\ref{thm:transfer}.
+\end{itemize}
+
+\subsection{Sharpness}
+For every odd composite $q<400$ ($122$ moduli) we computed, from the full system of \cite[Thm.~2.2]{Kei26} in all $q-1$ unknowns, the $\F_2$-space of layer parity patterns of $2$-integral solutions; in every case it coincides with the space described by Theorem~\ref{thm:sharp}.
+
+\subsection{An independent check}
+A separate program, written from the statements in this paper and from Okada's original equations \cite{Oka82} (no shared code), confirmed: the rank $\varphi(q)+\omega(q)$ of Okada's system and the existence of odd $2$-integral solutions exactly for the squares among $20$ moduli $q\le375$; Theorems~\ref{thm:transfer} and~\ref{thm:sharp} on the whole mod-$2$ solution space of these $20$ moduli; Proposition~\ref{prop:subsystem} and Lemma~\ref{lem:log} on exact solutions for twelve moduli and all their primes (including a control in which reversing the direction of the translations $T_r$ makes the test fail); and Lemmas~\ref{lem:elementary} and~\ref{lem:telescope}, including the spanning statement, in ten configurations $(p,W)$.
+\begin{thebibliography}{99}
+\bibitem{Bak75} A. Baker, \emph{Transcendental Number Theory}, Cambridge University Press, 1975.
+\bibitem{BBW73} A. Baker, B. J. Birch, E. A. Wirsing, On a problem of Chowla, \emph{J. Number Theory} \textbf{5} (1973), 224--236.
+\bibitem{Bha22} A. Bharadwaj, On primitivity and vanishing of Dirichlet series, \emph{Michigan Math. J.}, advance publication, doi:10.1307/mmj/20226269; arXiv:2204.03674 (2022).
+\bibitem{CM15} T. Chatterjee, M. R. Murty, On a conjecture of Erd\H{o}s and certain Dirichlet series, \emph{Pacific J. Math.} \textbf{275} (2015), no.~1, 103--113; arXiv:1501.04185.
+\bibitem{Cho70} S. Chowla, The nonexistence of nontrivial linear relations between the roots of a certain irreducible equation, \emph{J. Number Theory} \textbf{2} (1970), 120--123.
+\bibitem{Kei26} Keio, Erd\H{o}s's conjecture on $\sum f(n)/n$ is false: a $2$-adic shadow of Okada's criterion and the least counterexample $q=105^2$, manuscript, 24 October 2026.
+\bibitem{Liv65} A. E. Livingston, The series $\sum_1^\infty f(n)/n$ for periodic $f$, \emph{Canad. Math. Bull.} \textbf{8} (1965), 413--432.
+\bibitem{MP22} M. R. Murty, S. Pathak, The Okada space and vanishing of $L(1,f)$, \emph{Funct. Approx. Comment. Math.} \textbf{66} (2022), no.~1, 35--57; doi:10.7169/facm/1952.
+\bibitem{MS07} M. R. Murty, N. Saradha, Transcendental values of the digamma function, \emph{J. Number Theory} \textbf{125} (2007), 298--318.
+\bibitem{MS10} M. R. Murty, N. Saradha, Euler--Lehmer constants and a conjecture of Erd\H{o}s, \emph{J. Number Theory} \textbf{130} (2010), 2671--2682.
+\bibitem{Oka82} T. Okada, On a certain infinite series for a periodic arithmetical function, \emph{Acta Arith.} \textbf{40} (1982), 143--153.
+\bibitem{Pat19} S. Pathak, Distribution and non-vanishing of special values of $L$-series attached to Erd\H{o}s functions, \emph{Int. J. Number Theory} \textbf{15} (2019), no.~7; doi:10.1142/S1793042119500829; arXiv:1909.03972.
+\bibitem{FLINT} The FLINT team, \emph{FLINT: Fast Library for Number Theory}, \url{https://flintlib.org}; python-flint 0.9.
+\end{thebibliography}
+\end{document}

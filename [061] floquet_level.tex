@@ -1,0 +1,1495 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage[margin=1.05in]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem*{theoremA}{Theorem A}
+\newtheorem*{theoremB}{Theorem B}
+\newtheorem*{theoremC}{Theorem C}
+\newtheorem*{theoremD}{Theorem D}
+\newtheorem*{theoremE}{Theorem E}
+\newtheorem*{theoremF}{Theorem F}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\T}{\mathbb T}
+\newcommand{\cG}{\mathcal G}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Conv}{Conv}
+\DeclareMathOperator{\adj}{adj}
+
+\title[Level-set degenerations and node coordinates]{Floquet isospectrality to the discrete Laplacian:\\
+level-set degenerations, period lattices\\ and node coordinates}
+\author{Keio}
+\date{October 26, 2026}
+
+\hypersetup{
+  pdftitle={Floquet isospectrality to the discrete Laplacian: level-set degenerations, period lattices and node coordinates},
+  pdfauthor={Keio},
+  pdfkeywords={Floquet isospectrality, discrete Schroedinger operator, complex periodic potential, period lattice, rigidity}
+}
+
+\subjclass[2020]{Primary 47B36, 35P05; Secondary 39A12, 81Q10, 13P10}
+\keywords{Floquet isospectrality, discrete Schr\"odinger operator, complex
+periodic potential, period lattice, Borg-type rigidity, degeneration,
+Baker--Akhiezer function}
+
+\begin{document}
+
+\begin{abstract}
+Let $\Delta$ be the discrete Laplacian on $\Z^d$ and let $\Gamma\subset\Z^d$
+be a full-rank period lattice.  Faust, Friedman, O'Malley, Ramos and Sharma
+asked for the classification of the periods $\Gamma$ admitting a nonzero
+complex $\Gamma$-periodic potential $V$ such that $\Delta+V$ is Floquet
+isospectral to $\Delta$.  We introduce a \emph{level-set degeneration}
+method: the Floquet multipliers are sent to infinity along complex directions
+chosen so that the leading diagonal of the Floquet matrix is constant on a
+prescribed level set $K$ of the dual group.  In the limit the potential acts
+on $K$ by a group convolution, or by a fibred family of lower-dimensional
+Floquet problems, whose rigidity can be read off directly.
+
+The method gives a short, computer-free proof of the rectangular
+classification (nonzero potentials exist if and only if some period exceeds
+$3$); the rigid half of this classification was also obtained, by a
+perturbative pole-separation argument, in an unrefereed manuscript of the
+author.  For arbitrary lattices we prove: nonrigidity whenever some axis index
+$[\Z:\pi_j(\Gamma)]$ is at least $4$; rigidity of $\Gamma'\oplus2\Z$ whenever
+$\Gamma'$ is rigid; a recursive rigidity criterion, which gives for instance
+rigidity of $\Gamma'\oplus3\Z$ for all diagonal lattices $\Gamma'$; and a
+reduction of the full classification to a single \emph{off-axis vanishing}
+statement, together with exact identities for the minimal cycles of the
+Fourier support.  We verify the expected classification by exact symbolic
+computation for all planar lattices of index at most $10$ and for all cyclic
+lattices in $\Z^3$ of index at most $7$.
+
+For the one-dimensional Conjecture~2 of the same authors (existence of
+conjugate-reflection symmetric potentials Floquet isospectral to $0$) we
+construct potentials from Baker--Akhiezer functions with prescribed data at
+the double points of the free spectral curve.  For an odd period $q$ this
+gives a sufficient condition for the conjecture: a nonzero real solution of
+an explicit square system of $q-1$ multilinear equations with positive
+coefficients of Hirota type, subject to one open condition.  With interval
+Newton (Krawczyk) certificates in ball arithmetic for every prime $q$ with
+$5\le q\le 199$ and for $q=9$, we obtain Conjecture~2 for every period
+that is even, divisible by $9$, or divisible by a prime $p$ with $5\le p\le 199$;
+in particular for all periods $3<q\le 210$.  Neither the classification for general
+nonrectangular lattices nor Conjecture~2 for all odd periods is settled here;
+we state the expected answer (rigidity if and only if all axis indices are at
+most $3$) and a stronger separation conjecture.
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+%======================================================================
+\section{Introduction}\label{sec:intro}
+
+\subsection{The problem}
+For $n\in\Z^d$ let $(\Delta u)(n)=\sum_{j=1}^{d}\bigl(u(n+e_j)+u(n-e_j)\bigr)$.
+Let $\Gamma\subset\Z^d$ be a sublattice of finite index $N=[\Z^d:\Gamma]$ and
+let $V\colon\Z^d\to\C$ be $\Gamma$-periodic.  For a character
+$\chi\colon\Gamma\to\T$ the operator $\Delta+V$ preserves the $N$-dimensional
+space of $\chi$-quasiperiodic functions; its spectrum there is the Floquet
+spectrum $\sigma_V(\chi)$.  The operators $\Delta+V$ and $\Delta$ are
+\emph{Floquet isospectral} if $\sigma_V(\chi)=\sigma_0(\chi)$, with
+multiplicity, for every $\chi$.  We call $\Gamma$ \emph{rigid} if $V=0$ is the
+only $\Gamma$-periodic complex potential Floquet isospectral to $0$, and
+\emph{nonrigid} otherwise.
+
+For real potentials rigidity always holds (Kappeler~\cite{Kappeler1989}).  For
+complex potentials the situation is different: Faust, Liu, Matos, Plute,
+Robinson, Tao, Tran and Zhuang~\cite{FaustEtAl2024} produced explicit nonzero
+examples, and Cobb, Faust and Kretschmer~\cite[Theorem~C]{CFK2026} proved that a
+rectangular period $\Gamma=q_1\Z\oplus\cdots\oplus q_d\Z$ is nonrigid as soon as
+some $q_i>3$, and rigid when all $q_i\le3$ and at most two of them equal $3$.
+They identified $(3\Z)^3$ as the smallest open case \cite[Section~4.4]{CFK2026}.
+Faust, Friedman, O'Malley, Ramos and Sharma~\cite{FFORS2026} posed the general
+question:
+
+\begin{problem}[{\cite[Problem~1]{FFORS2026}}]\label{prob:FFORS}
+For the $\Z^d$-periodic grid graph, classify all periods $\Gamma$ for which
+there exist nonzero $\Gamma$-periodic potentials that are Floquet isospectral to
+the discrete Laplacian.
+\end{problem}
+
+They note that the problem is solved for $d=1$, open for $d\ge2$, and that
+even for rectangular periods the barrier is the case where all periods equal
+$3$.  For $d=2$ they observe that the lattices not contained in $q\Z\oplus\Z$
+or $\Z\oplus q\Z$ for some $q>3$ are the Hermite normal forms
+$\Gamma=(a,0)\Z\oplus(b,c)\Z$ with $\gcd(a,b),c\le3$ and report a symbolic check
+of all such lattices with $ac\le8$; in every dimension they prove rigidity of
+the lattice generated by $(a,0,\dots,0)$, $(1,1,0,\dots,0),\dots,(1,0,\dots,0,1)$
+\cite[Theorem~6.1]{FFORS2026}, which in $d=2$ is $(a,0)\Z\oplus(1,1)\Z$.
+
+In an earlier, unrefereed manuscript~\cite{KeioGPT} (Part~12) the author gave an
+argument that every rectangular period with all $q_j\le3$ is rigid, which
+together with \cite[Theorem~C]{CFK2026} would settle the rectangular case of
+Problem~\ref{prob:FFORS}.  That argument combined coordinate averaging with
+quadratic and cubic Rayleigh--Schr\"odinger identities and a separation of
+their linear poles.  The present paper develops a different, non-perturbative
+mechanism and applies it to arbitrary period lattices.  The nonrectangular
+case of Problem~\ref{prob:FFORS} is \emph{not} solved here; we state precisely
+what is proved and what remains (Section~\ref{sec:open}).
+
+\subsection{Notation}
+Write $\theta^n=\prod_j\theta_j^{n_j}$ for $\theta\in(\C^*)^d$ and $n\in\Z^d$.
+The \emph{dual group} of $\Gamma$ is
+\[
+ H=H(\Gamma)=\{\theta\in(\C^*)^d:\ \theta^\gamma=1\ \text{for all }\gamma\in\Gamma\},
+\]
+a finite subgroup of $\T^d$ of order $N$, Pontryagin dual to $\Z^d/\Gamma$.
+Every $\Gamma$-periodic $V$ has a unique expansion
+$V(n)=\sum_{h\in H}\widehat V(h)h^n$.  For $j\in[d]=\{1,\dots,d\}$ let
+\[
+ H_j=\{\theta\in H:\theta_j=1\},\qquad
+ A_j=\{\theta\in H:\theta_k=1\ (k\ne j)\},\qquad
+ H^\circ=H\setminus\textstyle\bigcup_jH_j .
+\]
+The \emph{axis index} is $g_j(\Gamma)=|A_j|=[\Z:\pi_j(\Gamma)]$, where $\pi_j$ is
+the $j$-th coordinate projection, and the \emph{directional period} is
+$m_j(\Gamma)=|\pi_j(H)|=\min\{m\ge1: me_j\in\Gamma\}$; always $g_j\mid m_j$.
+For rectangular $\Gamma$ one has $g_j=m_j=q_j$.  We write
+$\pi_{\hat\jmath}\colon\Z^d\to\Z^{d-1}$ for the projection forgetting the $j$-th
+coordinate.
+
+\subsection{Main results}
+
+\begin{theoremA}[Level-set degeneration; Theorem~\ref{thm:degeneration} and Lemma~\ref{lem:fibration}]
+Let $V$ be Floquet isospectral to $0$.  Let $J\subset[d]$, $\sigma\in\{\pm1\}^J$,
+$c\in(\C^*)^J$, and let $K\subset H$ be a level set of
+$\ell(\theta)=\sum_{j\in J}c_j\theta_j^{\sigma_j}$.  Then for all $s\in\C^J$
+and all $\xi\in(\C^*)^{[d]\setminus J}$ the $K\times K$ matrix
+$\diag\bigl(\sum_{j\in J}s_j\theta_j^{\sigma_j}+\sum_{j\notin J}(\xi_j\theta_j+\xi_j^{-1}\theta_j^{-1})\bigr)_{\theta\in K}
+ +\bigl(\widehat V(\theta'\theta^{-1})\bigr)_{\theta',\theta\in K}$
+has the same characteristic polynomial as its diagonal part.  If $K$ is a
+subgroup and $s=0$, this splits into a family of lower-dimensional Floquet
+isospectrality problems indexed by the characters of
+$K\cap\{\theta_j=1,\ j\notin J\}$.
+\end{theoremA}
+
+Choosing $J=\{j\}$ recovers the known fact that directional averages of an
+isospectral potential are isospectral (Corollary~\ref{cor:cluster});
+choosing $J=[d]$ with a ``balanced'' direction makes $K$ a cyclic group on
+which $\widehat V$ must vanish (Corollary~\ref{cor:crossing}).  This alone
+gives a one-paragraph proof that $(3\Z)^d$ is rigid for all $d$, and, with the
+fibration part of Theorem~A, a computer-free proof of:
+
+\begin{theoremB}[Rectangular periods; Theorems~\ref{thm:3Zd} and~\ref{thm:rect}]
+$q_1\Z\oplus\cdots\oplus q_d\Z$ is rigid if and only if $\max_jq_j\le3$.
+\end{theoremB}
+
+The nonrigid direction is \cite[Theorem~C]{CFK2026}, and the rigid direction
+was also obtained, by a different and perturbative argument, in the
+unrefereed manuscript~\cite{KeioGPT}.  The proof given here uses no
+perturbation expansion and no symbolic computation, and it extends beyond
+rectangular periods:
+
+\begin{theoremC}[Arbitrary periods; Section~\ref{sec:general}]
+Let $\Gamma\subset\Z^d$ be any full-rank lattice.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item If $g_j(\Gamma)\ge4$ for some $j$, then $\Gamma$ is nonrigid.
+\item For every lattice $\Gamma'\subset\Z^{d-1}$, $\Gamma'\oplus2\Z$ is rigid if and only if $\Gamma'$ is rigid.
+\item If $m_j(\Gamma)\le3$ for all $j$, then $\Gamma$ is rigid.
+\item \textup{(Criterion)} If all projections $\pi_{\hat\jmath}(\Gamma)$ are rigid and every
+$\eta\in H^\circ$, with the possible exception of one pair $\{h,h^{-1}\}$, lies
+in a ``balanced'' subgroup whose fibred lattice is rigid (Definition~\ref{def:resolvable}),
+then $\Gamma$ is rigid.  This recovers the rigidity of the diagonal lattices
+$\Gamma_{\varepsilon,N}=\{n:\sum_j\varepsilon_jn_j\equiv0\bmod N\}$
+\cite[Theorem~6.1]{FFORS2026} and shows that $\Gamma_{\varepsilon,N}\oplus3\Z$
+is rigid for all $\varepsilon$ and $N$ (Example~\ref{ex:new3D}); the
+directional periods of these lattices are unbounded.
+\end{enumerate}
+\end{theoremC}
+
+Part~(i) is a direct extension of an observation made in~\cite[Section~6]{FFORS2026}
+for $d=2$, and part~(iii) is an immediate consequence of Theorem~B; parts (ii)
+and (iv) appear to be new for nonrectangular lattices.
+Theorem~C(i) says that the condition $\max_jg_j(\Gamma)\le3$ is necessary for
+rigidity.  We expect it to be sufficient:
+
+\begin{conjecture}[Expected answer to Problem~\ref{prob:FFORS}]\label{conj:classification}
+A full-rank lattice $\Gamma\subset\Z^d$ is rigid if and only if
+$g_j(\Gamma)=[\Z:\pi_j(\Gamma)]\le3$ for every $j$.
+\end{conjecture}
+
+\begin{theoremD}[Reduction; Theorem~\ref{thm:reduction}, Remark~\ref{rem:liu} and Proposition~\ref{prop:mincycle}]
+Conjecture~\ref{conj:classification} holds in all dimensions if and only if,
+for every $d\ge2$ and every $\Gamma\subset\Z^d$ with $\max_jg_j(\Gamma)\le3$,
+every Floquet isospectral potential with $\supp\widehat V\subset H^\circ$
+vanishes.  For such potentials, $\widehat V(h)\widehat V(h^{-1})=0$ for every
+$h\in H^\circ$, and in dimension $2$ the minimal-length cycles of the support
+satisfy explicit residue identities.
+\end{theoremD}
+
+\begin{theoremE}[Computations; Section~\ref{sec:computations}]
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item Every planar lattice $(a,0)\Z\oplus(b,c)\Z$, $0\le b<a$, with $2\le ac\le10$ and
+$\gcd(a,b),c\le3$ is rigid \textup{(64 lattices; exact computation over cyclotomic fields)}.
+\item Every lattice in $\Z^3$ with cyclic dual group of order at most $7$ and all axis indices at most $3$ is rigid.
+\item For $\Gamma=4\Z\oplus2\Z$ every Floquet isospectral potential is a function of $n_1$ alone.
+\item For every prime $q$ with $5\le q\le 199$ and for $q=9$ there is a nonzero
+$q\Z$-periodic potential $(v_1,v_2,\dots,\overline{v_2},\overline{v_1})$
+Floquet isospectral to $0$ \textup{(Krawczyk certificates in ball arithmetic)}.
+Consequently Conjecture~2 of \cite{FFORS2026} holds for every $q>3$ that is
+even, divisible by $9$, or divisible by a prime $p$ with $5\le p\le 199$; in
+particular for all $3<q\le 210$.
+\end{enumerate}
+\end{theoremE}
+
+For one-dimensional potentials we also give an explicit construction.  Let
+$q=2m+1$ be odd, $\theta_l=e^{\pi il/q}$ for $1\le l\le 2m$, and
+$\omega=e^{2\pi i/q}$; the points $\theta_l^{\pm1}$ are the preimages of the
+double points of the free spectral curve.  Put
+$a_{lk}=\sin^2(\pi(k-l)/2q)/\sin^2(\pi(k+l)/2q)$, $A_I=\prod_{l<k\in I}a_{lk}$
+and $s(I)=\sum_{l\in I}l$ for $I\subset\{1,\dots,2m\}$.
+
+\begin{theoremF}[Node coordinates; Theorem~\ref{thm:nodes} and Corollary~\ref{cor:nodes}]
+If $\beta\in\C^{2m}$ is such that the polynomial
+$\tau(z)=\sum_{I}A_I\beta^Iz^{s(I)}$ agrees on the $q$-th roots of unity with
+$Cz^{\nu_0}$ for some $C\ne0$ and $\nu_0\in\Z/q$, then the Baker--Akhiezer
+function with node data $\beta$ defines a $q$-periodic potential $V$, given
+by an explicit ratio of such sums, which is Floquet isospectral to $0$, is
+nonzero when $\beta\ne0$, and satisfies $V_{-1-n}=\overline{V_n}$ when $\beta$ is
+real.  Hence, for an odd period $q$, a sufficient condition for Conjecture~2
+is a nonzero real solution $\beta$ of the square system of $q-1$ multilinear
+equations with positive coefficients expressing that $\tau$ has no Fourier
+mode on $\Z/q$ other than $\nu_0$, together with the open condition that the
+$\nu_0$-mode does not vanish.
+\end{theoremF}
+
+The construction is the discrete analogue of the description of finite-gap
+potentials by Baker--Akhiezer functions on a singular spectral curve; the
+point is that for the free curve all node data are explicit and the
+Schr\"odinger condition (constant off-diagonal entries) becomes the single
+statement that $\tau$ has one Fourier mode on $\Z/q$.  All real solutions we
+found numerically arise in this way (Remark~\ref{rem:nodesnum}).
+
+\subsection{Relation to earlier work}
+Asymptotic analysis of Bloch and Fermi varieties at infinity is a central
+tool in the work of Liu~\cite{Liu2022GAFA,LiuFermi,Liu2023JDE}, and
+coordinatewise averaging (our Corollary~\ref{cor:cluster}) appears explicitly
+in~\cite[Part~12]{KeioGPT}.  The new ingredient here is to
+degenerate along complex directions that are \emph{resonant} on a prescribed
+level set of the dual group, together with the observation that a resonant
+level set which is a subgroup turns the potential into a group convolution or
+a fibred family of Floquet problems.  The real case of separability is due to
+Liu~\cite{Liu2023JDE}; complete Floquet invariants for periodic graphs are due
+to Saburova~\cite{Saburova2026}; the algebraic background is surveyed by Shipman
+and Sottile~\cite{ShipmanSottile}.  Brysiewicz, Faust and Liu~\cite{BFL2026}
+recently showed that Fermi isospectral rigidity fails in dimension two.  The
+author's note~\cite{KeioSparse} excludes nonzero $(3\Z)^3$-periodic shifts of
+support at most six at the periodic fibre; that partial result is superseded by
+Theorem~B.
+
+Besides Problem~\ref{prob:FFORS}, \cite{FFORS2026} states two existence
+conjectures in dimension one: nonzero isospectral potentials of the
+reflection-antisymmetric form $(v_1,v_2,\dots,-v_2,-v_1)$ (Conjecture~1) and of
+the conjugate-reflection form $(v_1,v_2,\dots,\overline{v_2},\overline{v_1})$
+(Conjecture~2), both proved there for even periods (Conjecture~1 when $4\mid q$).
+An argument for Conjecture~1 for all periods, comparing the multiplicity of
+the origin with a Bezout number on the antisymmetric slice, is given in the
+author's unrefereed manuscript~\cite[Part~13]{KeioGPT}.
+Conjecture~2 asks for \emph{real} points of a real form, which counting
+arguments of that kind do not detect, and it is the one-dimensional question
+addressed in Section~\ref{sec:nodes}.  Baker--Akhiezer functions for periodic
+difference operators go back to van Moerbeke and Mumford~\cite{vMM1979}; our
+use of them is elementary and self-contained.
+
+\subsection{Organization}
+Section~\ref{sec:normal} sets up the Floquet normal form for an arbitrary
+period lattice.  Section~\ref{sec:degeneration} proves Theorem~A and its
+corollaries.  Section~\ref{sec:rect} proves Theorem~B.  Section~\ref{sec:general}
+treats arbitrary lattices (Theorems~C and~D).  Section~\ref{sec:nodes} proves
+Theorem~F.  Section~\ref{sec:computations} describes the computations
+(Theorem~E), and Section~\ref{sec:open} lists what remains open.
+
+%======================================================================
+\section{Floquet normal form for an arbitrary period}\label{sec:normal}
+
+For $w\in(\C^*)^d$ put $\lambda(w)=\sum_{j=1}^d(w_j+w_j^{-1})$.
+
+\begin{lemma}[Twisted Fourier basis]\label{lem:normal}
+Let $\zeta\in(\C^*)^d$ and let $\chi_\zeta(\gamma)=\zeta^\gamma$.  The functions
+$e_\theta(n)=(\zeta\theta)^n$, $\theta\in H$, form a basis of the space of
+$\chi_\zeta$-quasiperiodic functions, and
+\begin{equation}\label{eq:normal}
+ (\Delta+V)e_\theta=\lambda(\zeta\theta)\,e_\theta+\sum_{\theta'\in H}\widehat V(\theta'\theta^{-1})\,e_{\theta'} .
+\end{equation}
+Hence the Floquet matrix in this basis is
+$M_V(\zeta)=D(\zeta)+C_V$, where $D(\zeta)=\diag(\lambda(\zeta\theta))_{\theta\in H}$
+and $(C_V)_{\theta'\theta}=\widehat V(\theta'\theta^{-1})$.
+\end{lemma}
+
+\begin{proof}
+$e_\theta(n+\gamma)=\zeta^\gamma\theta^\gamma e_\theta(n)=\chi_\zeta(\gamma)e_\theta(n)$.
+The $e_\theta$ are independent because the characters $n\mapsto\theta^n$ of
+$\Z^d/\Gamma$ are distinct, and there are $N$ of them.  The formula follows
+from $\Delta(\zeta\theta)^n=\lambda(\zeta\theta)(\zeta\theta)^n$ and
+$V(n)e_\theta(n)=\sum_h\widehat V(h)e_{h\theta}(n)$.
+\end{proof}
+
+The map $\zeta\mapsto\chi_\zeta$ from $(\C^*)^d$ onto $\operatorname{Hom}(\Gamma,\C^*)$
+is surjective with fibres the cosets $\zeta H$, and $\zeta\in\T^d$ gives
+exactly the unitary characters.  Put $P_V(x,\zeta)=\det(x-M_V(\zeta))$.
+
+\begin{lemma}\label{lem:laurent}
+$V$ is Floquet isospectral to $0$ if and only if $P_V(x,\zeta)=P_0(x,\zeta)$
+as polynomials in $x$ with Laurent polynomial coefficients in $\zeta$.  In that
+case the identity holds for every $\zeta\in(\C^*)^d$.
+\end{lemma}
+
+\begin{proof}
+Isospectrality is the identity for $\zeta\in\T^d$, and a Laurent polynomial
+vanishing on $\T^d$ is zero.
+\end{proof}
+
+We record the symmetries used below.  For $g\in H$ let $T_g e_\theta=e_{g\theta}$.
+Then $M_V(\zeta g)=T_g^{-1}M_V(\zeta)T_g$, so $P_V(x,\zeta g)=P_V(x,\zeta)$.
+Since $\tr M_V=\tr D+N\widehat V(1)$, every isospectral potential satisfies
+\begin{equation}\label{eq:mean}
+ \widehat V(1)=0 .
+\end{equation}
+
+\begin{lemma}[Sublattices]\label{lem:sublattice}
+If $\Gamma'\subset\Gamma$ has finite index and $V$ is $\Gamma$-periodic and
+Floquet isospectral to $0$ with respect to $\Gamma$, then it is so with respect
+to $\Gamma'$.
+\end{lemma}
+
+\begin{proof}
+$H(\Gamma')\supset H(\Gamma)$ and, as a $\Gamma'$-periodic function, $V$ has
+Fourier support in $H(\Gamma)$.  Hence $M^{\Gamma'}_V(\zeta)$ is block diagonal
+along the cosets $\theta_iH(\Gamma)$, with blocks $M^{\Gamma}_V(\zeta\theta_i)$.
+\end{proof}
+
+\begin{lemma}[Irreducibility of the free Floquet polynomial]\label{lem:irreducible}
+Let $k\ge0$, let $G\subset\T^k$ be a finite subgroup with $\Lambda=G^\perp\subset\Z^k$,
+and let $z=(\zeta^{\mu_1},\dots,\zeta^{\mu_k})$ for a basis $(\mu_i)$ of $\Lambda$.
+Then $F_G(x,\zeta)=\prod_{g\in G}(x-\lambda(\zeta g))$ lies in $\C[z^{\pm1}][x]$
+and is irreducible there.  The same holds for the characteristic polynomial of
+any Floquet matrix $M^G_W(\zeta)$ of a $\Lambda$-periodic potential $W$, except
+irreducibility.  For $k=0$ we read $F_G=x$.
+\end{lemma}
+
+\begin{proof}
+The group $G$ acts on $\C(\zeta)$ by $\zeta\mapsto\zeta g$; a monomial
+$\zeta^n$ is invariant iff $n\in\Lambda$, so
+$\C[\zeta^{\pm1}]^G=\C[z^{\pm1}]$ and $\C(\zeta)^G\supset\C(z)$.  Choose a basis
+$f_1,\dots,f_k$ of $\Z^k$ and integers $d_i\ge1$ with
+$\Lambda=\bigoplus_id_i\Z f_i$ (Smith normal form).  Then
+$\C(\zeta)=\C(\zeta^{f_1},\dots,\zeta^{f_k})$ is purely transcendental in the
+$\zeta^{f_i}$ and $\C(z)=\C(\zeta^{d_1f_1},\dots,\zeta^{d_kf_k})$, so
+$[\C(\zeta):\C(z)]=\prod_id_i=[\Z^k:\Lambda]=|G|$, and $\C(z)=\C(\zeta)^G$ by
+Artin's theorem.  The conjugates $\lambda(\zeta g)$, $g\in G$, of
+$\lambda(\zeta)$ are pairwise distinct, because the coefficient of $\zeta_j$ in
+$\lambda(\zeta g)-\lambda(\zeta g')$ is $g_j-g'_j$.  Hence the minimal
+polynomial of $\lambda(\zeta)$ over $\C(z)$ has degree $|G|$ and equals $F_G$,
+which is monic with coefficients in $\C[\zeta^{\pm1}]^G=\C[z^{\pm1}]$; by Gauss's
+lemma it is irreducible in $\C[z^{\pm1}][x]$.  The invariance of
+$\det(x-M^G_W(\zeta))$ under $\zeta\mapsto\zeta g$ was noted above.
+\end{proof}
+
+%======================================================================
+\section{Level-set degenerations}\label{sec:degeneration}
+
+\subsection{The degeneration theorem}
+For $J\subset[d]$, $\sigma\in\{\pm1\}^J$ and $c\in(\C^*)^J$ put
+\[
+ \ell_{J,\sigma,c}(\theta)=\sum_{j\in J}c_j\theta_j^{\sigma_j}\qquad(\theta\in H).
+\]
+For $s\in\C^J$ and $\xi\in(\C^*)^{J^c}$, $J^c=[d]\setminus J$, put
+\[
+ \Delta_{s,\xi}(\theta)=\sum_{j\in J}s_j\theta_j^{\sigma_j}+\sum_{j\in J^c}\bigl(\xi_j\theta_j+\xi_j^{-1}\theta_j^{-1}\bigr).
+\]
+For $K\subset H$ write $C_K=(\widehat V(\theta'\theta^{-1}))_{\theta',\theta\in K}$.
+
+\begin{theorem}[Level-set degeneration]\label{thm:degeneration}
+Let $V$ be Floquet isospectral to $0$ and let $K$ be a nonempty level set of
+$\ell=\ell_{J,\sigma,c}$ in $H$.  Then for all $s\in\C^J$ and $\xi\in(\C^*)^{J^c}$,
+\begin{equation}\label{eq:degeneration}
+ \det\bigl(y-\diag(\Delta_{s,\xi})|_K-C_K\bigr)=\det\bigl(y-\diag(\Delta_{s,\xi})|_K\bigr)\qquad(y\in\C).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+For large $t>0$ define $\zeta(t)$ by $\zeta_j=(tc_j+s_j)^{\sigma_j}$ for $j\in J$
+and $\zeta_j=\xi_j$ for $j\in J^c$.  For $j\in J$ one has, for either sign,
+$\zeta_j\theta_j+\zeta_j^{-1}\theta_j^{-1}=(tc_j+s_j)\theta_j^{\sigma_j}+(tc_j+s_j)^{-1}\theta_j^{-\sigma_j}$.
+Hence
+\[
+ \lambda(\zeta(t)\theta)=t\,\ell(\theta)+\Delta_{s,\xi}(\theta)+r_t(\theta),\qquad r_t(\theta)=O(1/t).
+\]
+Let $\ell_0$ be the value of $\ell$ on $K$ and let
+$A(t)=(t\ell_0+y)I-M_V(\zeta(t))$.  Its diagonal entries are
+$t(\ell_0-\ell(\theta))+O(1)$, with $\ell_0-\ell(\theta)\ne0$ for $\theta\notin K$,
+and $y-\Delta_{s,\xi}(\theta)-\widehat V(1)-r_t(\theta)$ for $\theta\in K$; its
+off-diagonal entries are the constants $-\widehat V(\theta'\theta^{-1})$.  In the
+Leibniz expansion $\det A=\sum_\pi\operatorname{sgn}(\pi)\prod_\theta A_{\pi(\theta)\theta}$
+the term of $\pi$ is $O(t^{f(\pi)})$, uniformly for $y$ in compact sets, where
+$f(\pi)$ is the number of $\theta\notin K$ fixed by $\pi$.  Thus $f(\pi)\le N-|K|$,
+with equality exactly when $\pi$ fixes $H\setminus K$ pointwise.  Summing the
+latter terms,
+\[
+ \det A(t)=t^{N-|K|}\Bigl(\kappa_K\det\bigl(y-\diag(\Delta_{s,\xi})|_K-C_K\bigr)+O(1/t)\Bigr),
+ \qquad \kappa_K=\prod_{\theta\notin K}(\ell_0-\ell(\theta))\ne0 .
+\]
+The same computation with $V=0$ gives the right side of~\eqref{eq:degeneration}
+in place of the left.  By Lemma~\ref{lem:laurent} the two determinants agree
+for every $t$; divide by $\kappa_Kt^{N-|K|}$ and let $t\to\infty$.
+\end{proof}
+
+\begin{lemma}\label{lem:convolution}
+If $K$ is a finite abelian group and $f\colon K\to\C$, the matrix
+$(f(\theta'\theta^{-1}))_{\theta',\theta\in K}$ is diagonalized by the characters
+of $K$ with eigenvalues $\sum_kf(k)\chi(k)$.  In particular it is nilpotent only
+if $f=0$.
+\end{lemma}
+
+\begin{proof}
+Standard: $\sum_{\theta}f(\theta'\theta^{-1})\chi(\theta)^{-1}=\chi(\theta')^{-1}\sum_k f(k)\chi(k)$;
+nilpotency forces every Fourier coefficient of $f$ to vanish.
+\end{proof}
+
+\subsection{Cluster and crossing}
+
+\begin{corollary}[Directional averages]\label{cor:cluster}
+Let $V$ be Floquet isospectral to $0$ and $j\in[d]$.  The potential
+$V^{(j)}(n')=\sum_{h\in H_j}\widehat V(h)\,(\pi_{\hat\jmath}h)^{n'}$ on $\Z^{d-1}$,
+i.e.\ the average of $V$ along $e_j$, is $\pi_{\hat\jmath}(\Gamma)$-periodic and
+Floquet isospectral to $0$.  In particular, if $\pi_{\hat\jmath}(\Gamma)$ is
+rigid then $\widehat V|_{H_j}=0$.
+\end{corollary}
+
+\begin{proof}
+Take $J=\{j\}$ and $K=H_j$, the level set of $\ell=c_j\theta_j$ through $1$, and
+$s=0$.  The coordinate projection is injective on $H_j$ and
+$\pi_{\hat\jmath}(H_j)=\pi_{\hat\jmath}(\Gamma)^\perp$: indeed
+$\theta'\in\pi_{\hat\jmath}(\Gamma)^\perp$ iff $\theta'$ with $1$ inserted in
+position $j$ lies in $H$.  Thus~\eqref{eq:degeneration} is the statement that
+$M^{\pi_{\hat\jmath}(\Gamma)}_{V^{(j)}}(\xi)$ and
+$M^{\pi_{\hat\jmath}(\Gamma)}_0(\xi)$ have the same characteristic polynomial for
+every $\xi\in(\C^*)^{d-1}$.
+\end{proof}
+
+\begin{definition}[Balanced subgroups]\label{def:balanced}
+Let $J\subset[d]$, $\sigma\in\{\pm1\}^J$, and let $P$ be a partition of $J$ into
+blocks of size at least $2$.  Put
+\[
+ K_{J,\sigma,P}=\{\theta\in H:\ \theta_j^{\sigma_j}=\theta_k^{\sigma_k}\ \text{whenever $j,k$ lie in the same block of }P\}.
+\]
+An element $\eta\in H$ is \emph{$(J,\sigma,P)$-balanced} if $\eta\in K_{J,\sigma,P}$,
+and \emph{balanced} if it is $([d],\sigma,\{[d]\})$-balanced for some $\sigma$,
+i.e.\ $\eta_1^{\sigma_1}=\cdots=\eta_d^{\sigma_d}$.
+\end{definition}
+
+\begin{lemma}\label{lem:balanced-levelset}
+$K=K_{J,\sigma,P}$ is a subgroup of $H$, and for generic $c$ in
+$W_P=\{c\in\C^J:\sum_{j\in B}c_j=0\text{ for every block }B\}$ it is the level
+set of $\ell_{J,\sigma,c}$ through $1$, with all $c_j\ne0$.
+\end{lemma}
+
+\begin{proof}
+$K$ is the preimage of a subgroup under the homomorphism $\theta\mapsto(\theta_j^{\sigma_j})_{j\in J}$.
+For $\theta\in H$ put $w(\theta)=(\theta_j^{\sigma_j}-1)_{j\in J}$, so that
+$\ell_{J,\sigma,c}(\theta)-\ell_{J,\sigma,c}(1)=\langle c,w(\theta)\rangle$.  The
+annihilator of $W_P$ for this pairing is spanned by the block indicators, so
+$\langle c,w(\theta)\rangle=0$ for all $c\in W_P$ iff $w(\theta)$ is constant on
+every block, i.e.\ iff $\theta\in K$.  For $\theta\notin K$ the functional
+$c\mapsto\langle c,w(\theta)\rangle$ is not identically zero on $W_P$.  Since
+blocks have size $\ge2$, no coordinate functional vanishes on $W_P$.  Avoiding
+finitely many proper hyperplanes of $W_P$ gives the claim.
+\end{proof}
+
+\begin{corollary}[Crossing]\label{cor:crossing}
+If $V$ is Floquet isospectral to $0$ and $P$ is a partition of $[d]$ into blocks
+of size at least $2$, then $\widehat V$ vanishes on $K_{[d],\sigma,P}$ for every
+$\sigma$.  In particular $\widehat V(\eta)=0$ for every balanced $\eta\in H$.
+\end{corollary}
+
+\begin{proof}
+Theorem~\ref{thm:degeneration} with $J=[d]$, $s=0$ and Lemma~\ref{lem:balanced-levelset}
+show that $C_K$ is nilpotent, and Lemma~\ref{lem:convolution} gives
+$\widehat V|_K=0$.  For balanced $\eta$ take $P=\{[d]\}$.
+\end{proof}
+
+\subsection{Fibration}
+
+\begin{lemma}[Fibration]\label{lem:fibration}
+Let $K\subset H$ be a subgroup and $I\subset[d]$ a set of coordinates such that
+\begin{equation}\label{eq:fibre-hyp}
+ \det\Bigl(y-\diag\bigl(\textstyle\sum_{j\in I}\lambda_j(\xi_j\theta_j)\bigr)_{\theta\in K}-C_K\Bigr)
+ =\det\Bigl(y-\diag\bigl(\textstyle\sum_{j\in I}\lambda_j(\xi_j\theta_j)\bigr)_{\theta\in K}\Bigr)
+\end{equation}
+for all $\xi\in(\C^*)^I$, where $\lambda_j(w)=w+w^{-1}$.  Put
+$K_0=\{\kappa\in K:\kappa_j=1\ (j\in I)\}$ and $G=\pi_I(K)\subset\T^I$.  For a
+character $\psi$ of $K_0$ choose a character $\Psi$ of $K$ extending $\psi$ and
+define $F_\psi\colon G\to\C$ by
+\[
+ F_\psi(\pi_I k)=\Psi(k)^{-1}\sum_{\kappa\in K_0}\psi(\kappa)^{-1}\widehat V(k\kappa)\qquad(k\in K).
+\]
+Then $F_\psi$ is well defined and the $G^\perp$-periodic potential on $\Z^I$
+with Fourier coefficients $F_\psi$ is Floquet isospectral to $0$.
+Consequently, if $G^\perp\subset\Z^I$ is rigid, then $\widehat V|_K=0$.
+\end{lemma}
+
+\begin{proof}
+Write $\Delta_\xi$ for the diagonal operator in~\eqref{eq:fibre-hyp}; it depends
+only on $\pi_I\theta$, hence is constant on $K_0$-cosets.  For $f$ on $K$ write
+$f=\Psi g$.  Then $f(\theta\kappa)=\psi(\kappa)f(\theta)$ for all $\kappa\in K_0$
+iff $g$ is $K_0$-invariant, so this isotypic subspace $U_\psi$ is identified
+with functions on $K/K_0\cong G$.  For $f=\Psi g\in U_\psi$,
+\[
+ (C_Kf)(\theta')=\sum_{k\in K}\widehat V(k)\Psi(\theta'k^{-1})g(\theta'k^{-1})
+ =\Psi(\theta')\sum_{k_1\in K/K_0}\Bigl[\Psi(k_1)^{-1}\sum_{\kappa\in K_0}\psi(\kappa)^{-1}\widehat V(k_1\kappa)\Bigr]g(\theta'k_1^{-1}),
+\]
+and $\Delta_\xi(\Psi g)=\Psi\Delta_\xi g$.  Thus on $U_\psi$ the operator
+$\Delta_\xi+C_K$ is, in the coordinates $g$, the Floquet matrix
+$M^{G}_{W_\psi}(\xi)$ of the potential $W_\psi$ with Fourier coefficients
+$F_\psi$ (Lemma~\ref{lem:normal} for $\Z^I$ and $G^\perp$).  Well-definedness of
+$F_\psi$ on $G$ follows from the same computation.  Summing over $\psi$,
+\eqref{eq:fibre-hyp} becomes
+$\prod_{\psi}\det(y-M^G_{W_\psi}(\xi))=F_G(y,\xi)^{|K_0|}$.  Each factor on the
+left is monic in $y$ of degree $|G|$ with coefficients in $\C[z^{\pm1}]$, and
+$F_G$ is irreducible (Lemma~\ref{lem:irreducible}); unique factorization in
+$\C[z^{\pm1}][y]$ forces every factor to equal $F_G$.  If $G^\perp$ is rigid then
+every $F_\psi$ vanishes, and Fourier inversion on $K_0$ gives $\widehat V(k\kappa)=0$.
+\end{proof}
+
+Hypothesis~\eqref{eq:fibre-hyp} holds in two situations.  First, if $K$ is a
+level set of some $\ell_{J,\sigma,c}$ and $I=J^c$, by
+Theorem~\ref{thm:degeneration} with $s=0$.  Second, at \emph{special points}:
+if $K=H$, $I\subset[d]$, and the coordinates $j\notin I$ can be frozen at values
+$\zeta_j^*$ such that $\lambda_j(\zeta_j^*\theta_j)$ does not depend on
+$\theta\in H$, then~\eqref{eq:fibre-hyp} is Lemma~\ref{lem:laurent} at
+$\zeta_j=\zeta_j^*$.  This happens when $\pi_j(H)\subset\{\pm1\}$, with
+$\zeta_j^*=i$.
+
+\subsection{Single modes and pairs}
+
+\begin{lemma}[Single mode]\label{lem:singlemode}
+If $V$ is Floquet isospectral to $0$ and $\supp\widehat V\subset\{g\}$ for one
+$g\in H$, then $V=0$.
+\end{lemma}
+
+\begin{proof}
+By~\eqref{eq:mean} we may assume $g\ne1$; let $r$ be its order and
+$\alpha=\widehat V(g)$.  Then $C_V=\alpha T_g$ permutes each coset of $\langle g\rangle$
+cyclically, and for a diagonal $X$ and an $r$-cycle $P$ one has
+$\det(X-\alpha P)=\det X-\alpha^r$.  Hence
+$P_V(x,\zeta)=\prod_{\text{cosets }Q}\bigl(\prod_{\theta\in Q}(x-\lambda(\zeta\theta))-\alpha^r\bigr)$.
+The coefficient of $x^{N-r}$ differs from that of $P_0$ by $-(N/r)\alpha^r$.
+\end{proof}
+
+\begin{lemma}[Pairs]\label{lem:pair}
+Let $h\in H$ have at least two coordinates different from $1$, and let
+$\sigma\in\{\pm1\}^d$ be such that $w(h)=(h_j^{\sigma_j}-1)_j$ is not
+proportional to $w(g)$ for any $g\in H\setminus\{1,h\}$.  Then every isospectral
+$V$ satisfies $\widehat V(h)\widehat V(h^{-1})=0$.  If $h\in H^\circ$ is not
+balanced for $\sigma$ (that is, the numbers $h_j^{\sigma_j}$ are not all equal),
+the hypothesis holds for this $\sigma$; in particular it holds for every $\sigma$
+if $h\in H^\circ$ is not balanced.
+\end{lemma}
+
+\begin{proof}
+Take $J=[d]$ and $c$ generic in the hyperplane $\{\langle c,w(h)\rangle=0\}$; it
+contains vectors with all $c_j\ne0$ because $w(h)$ has two nonzero entries.
+As in Lemma~\ref{lem:balanced-levelset}, the level set through $1$ is
+$\{\theta:w(\theta)\in\C w(h)\}=\{1,h\}$.  By Theorem~\ref{thm:degeneration} and
+\eqref{eq:mean} the matrix $\left(\begin{smallmatrix}0&\widehat V(h^{-1})\\ \widehat V(h)&0\end{smallmatrix}\right)$
+is nilpotent.  For the last statement, suppose $w(g)=s_0\,w(h)$ for some
+$s_0\in\C$, so that $g^\sigma=(g_j^{\sigma_j})_j=\mathbf 1+s_0\,w(h)$ lies on the
+complex line $\{\mathbf 1+s\,w(h):s\in\C\}$ and on $\T^d$.  If $h\in H^\circ$ is
+not balanced for $\sigma$, there are $j,k$ with $w_j(h)\ne w_k(h)$, both nonzero.
+The sets $\{s:|1+s\,w_j(h)|=1\}$ and $\{s:|1+s\,w_k(h)|=1\}$ are circles with the
+different centres $-1/w_j(h)$ and $-1/w_k(h)$, both pass through $s=0$ and $s=1$
+(because $|1+w_j(h)|=|h_j^{\sigma_j}|=1$), and both contain $s_0$.  Two distinct
+circles meet in at most two points, so $s_0\in\{0,1\}$ and $g\in\{1,h\}$.
+\end{proof}
+
+%======================================================================
+\section{Rectangular periods}\label{sec:rect}
+
+\begin{theorem}\label{thm:3Zd}
+For every $d\ge1$ the lattice $(3\Z)^d$ is rigid.
+\end{theorem}
+
+\begin{proof}
+Here $H=\mu_3^d$, with $\mu_3=\{1,\omega,\omega^2\}$.  For $d=1$ write
+$M=D+C$; then $\sum_\theta\lambda(\zeta\theta)=0$, $C_{\theta\theta}=\widehat V(1)=0$
+and $(C^2)_{\theta\theta}=\sum_h\widehat V(h)\widehat V(h^{-1})$ is independent of $\theta$.
+Comparing $\tr M^2$ and $\tr M^3$ with $\tr D^2$ and $\tr D^3$ gives
+$6\widehat V(\omega)\widehat V(\omega^2)=0$ and
+$3(\widehat V(\omega)^3+\widehat V(\omega^2)^3)=0$, hence $V=0$.
+
+Let $d\ge2$ and assume the claim in dimension $d-1$.  Since
+$\pi_{\hat\jmath}((3\Z)^d)=(3\Z)^{d-1}$, Corollary~\ref{cor:cluster} gives
+$\widehat V=0$ on $\bigcup_jH_j$.  Let $\eta\in H^\circ=\{\omega,\omega^2\}^d$ and
+put $\sigma_j=1$ if $\eta_j=\omega$ and $\sigma_j=-1$ if $\eta_j=\omega^2$.  Then
+$\eta_j^{\sigma_j}=\omega$ for all $j$, so $\eta$ is balanced and
+Corollary~\ref{cor:crossing} gives $\widehat V(\eta)=0$.
+\end{proof}
+
+\begin{theorem}\label{thm:rect}
+$\Gamma=q_1\Z\oplus\cdots\oplus q_d\Z$ is rigid if and only if $\max_jq_j\le3$.
+\end{theorem}
+
+\begin{proof}
+If some $q_j\ge4$ then $g_j(\Gamma)=q_j\ge4$ and Proposition~\ref{prop:nonrigid}
+below applies.  Conversely let all $q_j\le3$; we induct on $d$.  For $d=1$:
+$q=1$ is~\eqref{eq:mean}; for $q=2$, $\det(x-M)$ differs from the free one by
+$-\widehat V(-1)^2$; $q=3$ is Theorem~\ref{thm:3Zd}.  Let $d\ge2$.  Every
+projection $\pi_{\hat\jmath}(\Gamma)$ is rectangular with periods $\le3$, so
+$\widehat V=0$ on $\bigcup_jH_j$ by induction and Corollary~\ref{cor:cluster}.  If
+some $q_j=1$ then $H^\circ=\emptyset$.  Otherwise let $A=\{j:q_j=3\}$ and
+$B=\{j:q_j=2\}$, so $H=\mu_3^A\times\mu_2^B$, and let $\eta\in H^\circ$; then
+$\eta_B=-\mathbf 1_B$ and $\eta_A\in\{\omega,\omega^2\}^A$.
+
+\emph{Case $|A|\ge2$.}  Choose $\sigma$ on $A$ with $\eta_j^{\sigma_j}=\omega$
+($j\in A$) and let $K=K_{A,\sigma,\{A\}}=\langle\eta_A\rangle\times\mu_2^B$.  By
+Lemma~\ref{lem:balanced-levelset}, Theorem~\ref{thm:degeneration} and
+Lemma~\ref{lem:fibration} with $I=B$, the fibred lattice is
+$\pi_B(K)^\perp=(2\Z)^B$, rigid by induction (or vacuous if $B=\emptyset$).
+Hence $\widehat V|_K=0$ and $\widehat V(\eta)=0$.
+
+\emph{Case $|A|\le1$, $|B|\ge2$.}  Let $K=K_{B,\sigma,\{B\}}=\mu_3^A\times\langle-\mathbf 1_B\rangle\ni\eta$
+(any $\sigma$).  Lemma~\ref{lem:fibration} with $I=A$ gives the fibred lattice
+$(3\Z)^A$, which is rigid; hence $\widehat V(\eta)=0$.
+
+\emph{Case $|A|=|B|=1$}, i.e.\ $\Gamma=3\Z\oplus2\Z$ up to order.  Here
+$H^\circ=\{\eta,\eta^{-1}\}$ with $\eta=(\omega,-1)$, which is not balanced, so
+Lemma~\ref{lem:pair} gives $\widehat V(\eta)\widehat V(\eta^{-1})=0$ and
+Lemma~\ref{lem:singlemode} gives $V=0$.
+\end{proof}
+
+\begin{remark}
+The proof uses no perturbation series, no pole separation and no symbolic
+computation.  CFK obtained the rigid cases with at most two periods equal to
+$3$ from symbolic computation in dimension $\le2$ and a dimension reduction
+for periods $1$ and $2$ \cite[Proposition~4.2]{CFK2026}, and noted that they
+could not find a reduction for period $3$ \cite[Section~4.4]{CFK2026}.  A
+reduction of this kind was first given in \cite[Part~12]{KeioGPT} by
+perturbative means; the crossing step of Theorem~\ref{thm:3Zd} is a
+non-perturbative one.
+\end{remark}
+
+%======================================================================
+\section{Arbitrary periods}\label{sec:general}
+
+\subsection{Nonrigidity}
+
+\begin{proposition}\label{prop:nonrigid}
+If $g_j(\Gamma)\ge4$ for some $j$, then $\Gamma$ is nonrigid.  More precisely,
+if $v\colon\Z\to\C$ is $g_j(\Gamma)$-periodic and Floquet isospectral to $0$,
+then $V(n)=v(n_j)$ is $\Gamma$-periodic and Floquet isospectral to $0$.
+\end{proposition}
+
+\begin{proof}
+Nonzero $q$-periodic one-dimensional potentials isospectral to $0$ exist for
+every $q\ge4$ \cite[Section~4.3 and Theorem~C]{CFK2026}.  Since
+$\pi_j(\Gamma)=g_j\Z$, $V$ is $\Gamma$-periodic, with $\supp\widehat V\subset A_j$.
+Then $M_V(\zeta)$ is block diagonal along the cosets $\theta_0A_j$, and the block
+of $\theta_0A_j$ is
+$\bigl(\sum_{k\ne j}\lambda_k(\zeta_k\theta_{0,k})\bigr)I+M^{g_j\Z}_v(\zeta_j\theta_{0,j})$,
+which is isospectral to its free counterpart.
+\end{proof}
+
+\subsection{Splitting off \texorpdfstring{$2\Z$}{2Z}}
+
+\begin{theorem}\label{thm:split2}
+For every full-rank lattice $\Gamma'\subset\Z^{d-1}$, the lattice
+$\Gamma'\oplus2\Z\subset\Z^d$ is rigid if and only if $\Gamma'$ is rigid.
+\end{theorem}
+
+\begin{proof}
+If $W$ is a nonzero $\Gamma'$-periodic potential isospectral to $0$, then
+$V(n',n_d)=W(n')$ is nonzero, $\Gamma'\oplus2\Z$-periodic and isospectral.
+Conversely let $\Gamma'$ be rigid and $V$ isospectral for
+$\Gamma=\Gamma'\oplus2\Z$, so $H=H'\times\{\pm1\}$.  Corollary~\ref{cor:cluster}
+with $j=d$ gives $\widehat V(\cdot,1)=0$.  Freeze $\zeta_d=i$; then
+$\lambda_d(i\theta_d)=0$ for $\theta_d=\pm1$, and Lemma~\ref{lem:fibration} applies
+to $K=H$, $I=[d-1]$, $K_0=\{1\}\times\{\pm1\}$, $G=H'$.  With
+$\Psi(\theta',\theta_d)=\psi(\theta_d)$ the fibred potentials are
+$F_\pm=\pm\widehat V(\cdot,-1)$, so $\widehat V(\cdot,-1)$ is the Fourier
+transform of a $\Gamma'$-periodic isospectral potential and vanishes.
+\end{proof}
+
+This extends the period-$2$ case of \cite[Proposition~4.2]{CFK2026} from
+rectangular to arbitrary $\Gamma'$.  The analogous statement for
+$\Gamma'\oplus3\Z$ holds for rectangular $\Gamma'$ (Theorem~\ref{thm:rect}) and
+for the diagonal lattices of Example~\ref{ex:diagonal} (Example~\ref{ex:new3D}),
+and is open in general (Section~\ref{sec:open}).
+
+\begin{corollary}\label{cor:directional}
+If $m_j(\Gamma)\le3$ for all $j$, then $\Gamma$ is rigid.
+\end{corollary}
+
+\begin{proof}
+$\Gamma\supset m_1\Z\oplus\cdots\oplus m_d\Z$; apply Lemma~\ref{lem:sublattice} and Theorem~\ref{thm:rect}.
+\end{proof}
+
+\subsection{A recursive criterion}
+
+\begin{definition}\label{def:resolvable}
+Let $d\ge2$ and $\Gamma\subset\Z^d$.  An element $\eta\in H^\circ$ is
+\emph{resolved} if it lies in a balanced subgroup $K=K_{J,\sigma,P}$
+(Definition~\ref{def:balanced}) whose \emph{fibred lattice}
+$\pi_{J^c}(K)^\perp\subset\Z^{J^c}$ is rigid; for $J=[d]$ the fibred lattice is
+the zero-dimensional lattice, which we regard as rigid.
+\end{definition}
+
+\begin{theorem}\label{thm:criterion}
+Let $d\ge2$ and suppose that every projection $\pi_{\hat\jmath}(\Gamma)$ is
+rigid.  If every element of $H^\circ$ is resolved, except possibly the two
+elements of one pair $\{h,h^{-1}\}$, then $\Gamma$ is rigid.
+\end{theorem}
+
+\begin{proof}
+By Corollary~\ref{cor:cluster}, $\supp\widehat V\subset H^\circ$.  For a resolved
+$\eta$ with $K=K_{J,\sigma,P}$, Lemma~\ref{lem:balanced-levelset},
+Theorem~\ref{thm:degeneration} with $s=0$, and Lemma~\ref{lem:fibration} with
+$I=J^c$ give $\widehat V|_K=0$ (for $J=[d]$ use Corollary~\ref{cor:crossing}).
+The remaining support lies in $\{h,h^{-1}\}$.  If $h$ were balanced for some
+$\sigma$, then $h$ and $h^{-1}$, which lie in the subgroup $K_{[d],\sigma,\{[d]\}}$,
+would be resolved (take $J=[d]$ and $P=\{[d]\}$) and the remaining support would
+be empty.  So we may assume that $h$ is not balanced; then by
+Lemma~\ref{lem:pair} at most one of $\widehat V(h)$, $\widehat V(h^{-1})$ is
+nonzero, and Lemma~\ref{lem:singlemode} finishes.
+\end{proof}
+
+\begin{example}[Diagonal lattices]\label{ex:diagonal}
+Let $\varepsilon\in\{\pm1\}^d$, $d\ge2$, $N\ge1$, and
+$\Gamma_{\varepsilon,N}=\{n\in\Z^d:\sum_j\varepsilon_jn_j\equiv0\pmod N\}$.  Then
+$H=\langle(u^{\varepsilon_1},\dots,u^{\varepsilon_d})\rangle$ with $u=e^{2\pi i/N}$,
+every element of $H$ is balanced (take $\sigma=\varepsilon$), and
+$\pi_{\hat\jmath}(\Gamma_{\varepsilon,N})=\Z^{d-1}$.  Hence $\Gamma_{\varepsilon,N}$ is
+rigid.  For $\varepsilon=(1,-1,\dots,-1)$ this is \cite[Theorem~6.1]{FFORS2026};
+the general sign pattern is equivalent to it under the reflections
+$n_j\mapsto-n_j$, which preserve $\Delta$.
+\end{example}
+
+\begin{example}[Splitting off $3\Z$ from diagonal lattices]\label{ex:new3D}
+Let $d\ge3$, $\varepsilon\in\{\pm1\}^{d-1}$, $N\ge1$, and
+$\Gamma=\Gamma_{\varepsilon,N}\oplus3\Z\subset\Z^d$ with
+$\Gamma_{\varepsilon,N}\subset\Z^{d-1}$ as in Example~\ref{ex:diagonal}.  Then
+$H=H'\times\mu_3$ with $H'=\langle(u^{\varepsilon_1},\dots,u^{\varepsilon_{d-1}})\rangle$,
+the directional periods are $(N,\dots,N,3)$ and the axis indices are
+$(1,\dots,1,3)$.  Every element of $H$ lies in
+$K=K_{[d-1],\varepsilon,\{[d-1]\}}$, so $K=H$, and its fibred lattice
+$\pi_{\{d\}}(K)^\perp=3\Z\subset\Z^{\{d\}}$ is rigid.  The projections are rigid:
+$\pi_{\hat d}(\Gamma)=\Gamma_{\varepsilon,N}$ (Example~\ref{ex:diagonal}), and
+$\pi_{\hat\jmath}(\Gamma)=\Z^{d-2}\oplus3\Z$ for $j<d$ (Theorem~\ref{thm:rect}).
+By Theorem~\ref{thm:criterion}, $\Gamma$ is rigid.  For $d=3$ and
+$\gcd(N,3)=1$ the Chinese remainder theorem identifies $\Gamma$ with
+$\{n:3(\varepsilon_1n_1+\varepsilon_2n_2)+Nn_3\equiv0\pmod{3N}\}$, whose dual group
+is cyclic of order $3N$.  For $N\ge4$ these lattices are neither rectangular
+nor covered by Corollary~\ref{cor:directional}.  The analogous statement with
+$2\Z$ in place of $3\Z$ is a special case of Theorem~\ref{thm:split2} and
+Example~\ref{ex:diagonal}.
+\end{example}
+
+\begin{example}[One unbalanced pair]\label{ex:pair}
+Let $\Gamma=\{n\in\Z^2:n_1+2n_2\equiv0\pmod 6\}=(6,0)\Z\oplus(4,1)\Z$, with
+axis indices $(2,1)$ and directional periods $(6,3)$.  With $u=e^{\pi i/3}$,
+$H=\{(u^k,u^{2k})\}$.  The elements with $k=2,4$ are balanced for
+$\sigma=(1,-1)$, the element with $k=3$ lies on an axis, and $\{k=1,k=5\}$ is a
+single unbalanced pair.  Theorem~\ref{thm:criterion} gives rigidity.
+\end{example}
+
+\subsection{Reduction to off-axis vanishing}
+
+\begin{theorem}\label{thm:reduction}
+For $d\ge2$ consider the statement
+\begin{quote}
+\textup{(OV$_d$)} If $\Gamma\subset\Z^d$ satisfies $\max_jg_j(\Gamma)\le3$ and $V$
+is Floquet isospectral to $0$ with $\supp\widehat V\subset H^\circ$, then $V=0$.
+\end{quote}
+Conjecture~\ref{conj:classification} holds for all lattices in $\Z^d$ and all
+$d\le D$ if and only if \textup{(OV$_d$)} holds for $2\le d\le D$.
+\end{theorem}
+
+\begin{proof}
+Necessity is clear.  For sufficiency, the case $d=1$ holds because
+$g_1(\Gamma)=[\Z:\Gamma]$, by Theorem~\ref{thm:rect} and \cite{CFK2026}.  Let
+$d\ge2$ and $\max_jg_j(\Gamma)\le3$.  Since
+$g_k(\pi_{\hat\jmath}(\Gamma))=g_k(\Gamma)$ for $k\ne j$, the projections satisfy the
+hypothesis in dimension $d-1$ and are rigid by induction; by
+Corollary~\ref{cor:cluster}, $\supp\widehat V\subset H^\circ$, and (OV$_d$) gives
+$V=0$.  The converse direction of the conjecture is Proposition~\ref{prop:nonrigid}.
+\end{proof}
+
+\begin{remark}\label{rem:liu}
+Comparing the traces of the squares of $M_V(\zeta)$ and $M_0(\zeta)$ gives
+$\sum_{h\in H}\widehat V(h)\widehat V(h^{-1})=0$ for every isospectral $V$.  For
+real potentials $\widehat V(h^{-1})=\overline{\widehat V(h)}$, so this identity
+alone gives $V=0$.  For complex potentials Lemma~\ref{lem:pair} gives the
+termwise identities $\widehat V(h)\widehat V(h^{-1})=0$ for unbalanced
+$h\in H^\circ$, and Corollary~\ref{cor:crossing} gives $\widehat V(h)=0$ for
+balanced $h$; so $\widehat V(h)\widehat V(h^{-1})=0$ for every $h\in H^\circ$, in
+every dimension $d\ge2$.  These identities say only that the support meets each
+pair $\{h,h^{-1}\}\subset H^\circ$ in at most one element, and higher-order
+information is needed.
+\end{remark}
+
+We now describe the first higher-order identities.  Let $d=2$, let $V$ be
+isospectral with $S=\supp\widehat V\subset H^\circ$ nonempty, and assume (by
+Corollary~\ref{cor:crossing} and Lemma~\ref{lem:pair}) that $S$ contains no
+balanced element and $S\cap S^{-1}=\emptyset$.  A \emph{cycle} of length $m$
+is a word $(s_1,\dots,s_m)\in S^m$ with $s_1\cdots s_m=1$; its vertices are the
+partial products $p_i=s_1\cdots s_i$, $1\le i<m$.  Let $m_0$ be the minimal
+length of a cycle (it exists since $H$ is finite), and let $\mathfrak M$ be the
+set of multisets $\{s_1,\dots,s_{m_0}\}$ of minimal cycles.  For a chart
+$\sigma\in\{\pm1\}^2$ and $c\in(\C^*)^2$ put
+$L^\sigma_p(c)=\sum_jc_j(1-p_j^{\sigma_j})$ and, for $M\in\mathfrak M$,
+\[
+ R^\sigma_M(c)=\sum_{(s_1,\dots,s_{m_0})}\ \prod_{i=1}^{m_0-1}\frac1{L^\sigma_{s_1\cdots s_i}(c)},
+\]
+the sum running over the distinct orderings of $M$.
+
+\begin{proposition}[Minimal-cycle identities]\label{prop:mincycle}
+In this situation, for each chart $\sigma$,
+\begin{equation}\label{eq:mincycle}
+ \sum_{M\in\mathfrak M}\Bigl(\prod_{s\in M}\widehat V(s)\Bigr)R^\sigma_M(c)=0
+ \qquad\text{identically in }c .
+\end{equation}
+Moreover each $s\in S$ occurs as a vertex of a minimal cycle only as the first
+vertex, and only in cycles whose multiset contains $s$.  Consequently, if some
+$s\in S$ lies in exactly one $M\in\mathfrak M$ and the residue of $R^\sigma_M$
+along $L^\sigma_s=0$ is nonzero for some $\sigma$, we obtain a contradiction;
+under that hypothesis $S=\emptyset$.
+\end{proposition}
+
+\begin{proof}
+Let $\cG=H\setminus\{1\}$, $\Lambda_p(\zeta)=\lambda(\zeta)-\lambda(\zeta p)$, and
+$C_{\cG}=(\widehat V(pq^{-1}))_{p,q\in\cG}$.  Since $\lambda(\zeta)$ is an
+eigenvalue of $M_V(\zeta)$ (Lemma~\ref{lem:laurent}), the Schur complement at the
+index $1$ gives, wherever $\det(\Lambda-C_{\cG})\ne0$,
+\[
+ 0=\det(\lambda(\zeta)-M_V(\zeta))=-\det(\Lambda-C_{\cG})\Bigl(\widehat V(1)+\tilde v^{\,T}(\Lambda-C_{\cG})^{-1}v\Bigr),
+\]
+where $v=(\widehat V(q))_{q\in\cG}$ and $\tilde v=(\widehat V(p^{-1}))_{p\in\cG}$.  In
+the chart $\zeta_j=(tc_j)^{\sigma_j}$ one has
+$\Lambda_p=tL^\sigma_p(c)+t^{-1}L'_p(c)$ with $L'_p(c)=\sum_jc_j^{-1}(1-p_j^{-\sigma_j})$,
+so for large $t$ the Neumann series
+$\tilde v^T(\Lambda-C_{\cG})^{-1}v=\sum_{k\ge0}\tilde v^T(\Lambda^{-1}C_{\cG})^k\Lambda^{-1}v$
+converges.  The $k$-th term is a sum over closed walks of length $k+2$ from
+$1$, with steps in $S$, and is $O(t^{-k-1})$.  Since there are no cycles of
+length $<m_0$, all terms with $k<m_0-2$ vanish, and the coefficient of
+$t^{-(m_0-1)}$ is the left side of~\eqref{eq:mincycle}.  (Minimal cycles have
+pairwise distinct vertices, all different from $1$.)
+
+If $s\in S$ were the $i$-th vertex of a minimal cycle with $i\ge2$, then
+$(s,s_{i+1},\dots,s_{m_0})$ would be a shorter cycle.  So $L^\sigma_s$ appears
+in~\eqref{eq:mincycle} only through orderings starting with $s$ of multisets
+containing $s$.  By Lemma~\ref{lem:pair} no other vertex $p$ has $L^\sigma_p$
+proportional to $L^\sigma_s$.  Taking the residue along $L^\sigma_s=0$ gives
+$\widehat V(s)\prod_{r\in M\setminus\{s\}}\widehat V(r)\cdot\operatorname{Res}R^\sigma_M=0$,
+which is impossible when all factors are nonzero.
+\end{proof}
+
+\begin{remark}
+The hypothesis of the last sentence is satisfied in many cases (for instance
+whenever $\mathfrak M$ has one element and some residue is nonzero), and it is
+easy to check by machine.  It is not always satisfied: for the lattices
+$\{n:n_1+an_2\equiv0\pmod{31}\}$ with $a\not\equiv0,\pm1$, identifying $H$ with
+$\Z/31$ via $k\mapsto(u^k,u^{ak})$, the support $S=\{8,\dots,13\}$ has every
+element in at least two minimal multisets.  A general argument covering such
+supports would prove (OV$_2$).
+\end{remark}
+
+\begin{example}[The smallest critical planar lattices]\label{ex:N5}
+Let $\Gamma=\{n\in\Z^2:n_1+2n_2\equiv0\pmod5\}=(5,0)\Z\oplus(3,1)\Z$, so that
+$H=\{(u^k,u^{2k})\}$ with $u=e^{2\pi i/5}$; the axis indices are $(1,1)$ and the
+directional periods are $(5,5)$.  Write $k$ for $(u^k,u^{2k})$.  No element of
+$H\setminus\{1\}=H^\circ$ is balanced, and $H^\circ$ consists of the two pairs
+$\{1,4\}$ and $\{2,3\}$, so Theorem~\ref{thm:criterion} does not apply.
+Nevertheless $\Gamma$ is rigid.  Let $V$ be isospectral and $S=\supp\widehat V$.
+By Lemmas~\ref{lem:pair} and~\ref{lem:singlemode} we may assume that $S$
+consists of one element of each pair, so $S\cap S^{-1}=\emptyset$.  The
+reflection $V(n)\mapsto V(-n)$ preserves isospectrality, because
+$P_{V(-\cdot)}(x,\zeta)=P_V(x,\zeta^{-1})$, and replaces $S$ by $S^{-1}$; so we
+may assume $S=\{1,2\}$ or $S=\{1,3\}$.  Write $M_V(\zeta)=D+C$ with $D$ diagonal
+and $C=(\widehat V(\theta'\theta^{-1}))$.  Since $\widehat V(1)=0$ and
+$\widehat V(h)\widehat V(h^{-1})=0$ for all $h$, the traces $\tr(D^2C)$ and
+$\tr(DC^2)$ vanish, and the equality of $\tr M_V(\zeta)^3$ and
+$\tr M_0(\zeta)^3$ gives
+$\tr C^3=5\sum_{h_1h_2h_3=1}\widehat V(h_1)\widehat V(h_2)\widehat V(h_3)=0$.
+For $S=\{1,2\}$ the only solutions of $k_1+k_2+k_3\equiv0\pmod5$ in $S$ are the
+three orderings of $(1,2,2)$, so $\tr C^3=15\,\widehat V(1)\widehat V(2)^2$; for
+$S=\{1,3\}$ they are the orderings of $(1,1,3)$ and
+$\tr C^3=15\,\widehat V(1)^2\widehat V(3)$.  Both are nonzero, a contradiction.
+Exchanging coordinates gives the same conclusion for $(5,0)\Z\oplus(2,1)\Z$.
+These are the two planar lattices of smallest index to which neither
+Theorem~\ref{thm:criterion} nor Corollary~\ref{cor:directional} applies.
+\end{example}
+
+%======================================================================
+\section{Node coordinates in dimension one}\label{sec:nodes}
+
+In this section $d=1$, $q=2m+1\ge3$ is odd, $\Gamma=q\Z$, $V_n=V(n)$, and
+$\omega$ denotes $e^{2\pi i/q}$.  The Floquet determinant of $\Delta+V$ is
+$D_V(x)-z-z^{-1}$ with the discriminant
+$D_V(x)=\tr\bigl(T_q(x)\cdots T_1(x)\bigr)$, $T_n(x)=\bigl(\begin{smallmatrix}x-V_n&-1\\1&0\end{smallmatrix}\bigr)$,
+so $V$ is Floquet isospectral to $0$ if and only if $D_V=D_0$; recall
+$D_0(t+t^{-1})=t^q+t^{-q}$.  Since $D_V$ is invariant under cyclic shifts of
+$V$, Conjecture~2 of~\cite{FFORS2026} asks for a nonzero such $V$ one of whose
+cyclic shifts has the form $(v_1,v_2,\dots,\overline{v_2},\overline{v_1})$.
+For even $q$ it is proved in~\cite{FFORS2026}; for odd $q$ it is open.  We give
+an explicit construction of such potentials from the node data of the free
+spectral curve.
+
+Put $\theta_l=e^{\pi il/q}$ for $1\le l\le 2m$, so that $\theta_l^2=\omega^l$.
+The two points $\theta_l^{\pm1}$ of the normalization $\C^*\ni t$ of the free
+curve $\{D_0(x)=z+z^{-1}\}$, $x=t+t^{-1}$, $z=t^q$, are glued to its $l$-th
+double point.  For $I\subset[2m]$ write $s(I)=\sum_{l\in I}l$ and
+$\beta^I=\prod_{l\in I}\beta_l$, and put
+\[
+ a_{lk}=\Bigl(\frac{\theta_k-\theta_l}{\theta_k\theta_l-1}\Bigr)^2
+ =\Bigl(\frac{\sin(\pi(k-l)/2q)}{\sin(\pi(k+l)/2q)}\Bigr)^2\in(0,1),\qquad
+ A_I=\prod_{l<k,\ l,k\in I}a_{lk}.
+\]
+(The second expression follows from
+$\theta_k-\theta_l=2ie^{\pi i(k+l)/2q}\sin(\pi(k-l)/2q)$ and
+$\theta_k\theta_l-1=2ie^{\pi i(k+l)/2q}\sin(\pi(k+l)/2q)$, and $0<a_{lk}<1$
+because $|k-l|<\min(k+l,2q-k-l)$ for $1\le l\ne k\le 2m$.)  The sums
+$\sum_IA_I\beta^I\omega^{-ns(I)}$ below have the form of the Hirota
+$N$-soliton $\tau$-functions of the Toda lattice at zero background, with
+spectral parameters at the double points (compare~\cite{Toda1989,Teschl2000}).
+
+For $\varkappa\in\C^{2m}$ and $n\in\Z$ let
+$\mathcal M_n(\varkappa)=\bigl(\omega^{ln}\theta_l^{\,j}-\varkappa_l\theta_l^{-j}\bigr)_{1\le l\le 2m,\ 0\le j\le 2m-1}$
+and $\tau_n(\varkappa)=\det\mathcal M_n(\varkappa)$.
+
+\begin{lemma}[Hirota form]\label{lem:hirota}
+With $W_0=\det(\theta_l^{\,j})\ne0$, $\Pi_l=\prod_{k\ne l}\frac{\theta_k-\theta_l^{-1}}{\theta_k-\theta_l}\ne0$
+and $\beta_l=-\varkappa_l\Pi_l$,
+\[
+ \tau_n(\varkappa)=W_0\sum_{I\subset[2m]}A_I\,\beta^I\,\omega^{-ns(I)} .
+\]
+\end{lemma}
+
+\begin{proof}
+Expanding every row of $\mathcal M_n$ as the sum of $\omega^{ln}(\theta_l^{\,j})_j$ and
+$-\varkappa_l(\theta_l^{-j})_j$ gives
+\[
+ \tau_n=\sum_I\prod_{l\in I}(-\varkappa_l)\prod_{l\notin I}\omega^{ln}\,W(I),
+\]
+where $W(I)=\det(x_l^{\,j})$ with $x_l=\theta_l^{-1}$ for $l\in I$ and
+$x_l=\theta_l$ otherwise.  Since $s([2m])=q(q-1)/2\equiv0\pmod q$, the factor
+$\prod_{l\notin I}\omega^{ln}$ equals $\omega^{-ns(I)}$.  By the Vandermonde
+formula $W(I)/W_0=\prod_{l<k}(x_k-x_l)/(\theta_k-\theta_l)$; a pair with exactly
+one index $l$ in $I$ contributes $F(l,k)=(\theta_k-\theta_l^{-1})/(\theta_k-\theta_l)$,
+a pair inside $I$ contributes $-(\theta_l\theta_k)^{-1}$, and other pairs
+contribute $1$.  As $\Pi_l=\prod_{k\ne l}F(l,k)$, this gives
+\[
+ \frac{W(I)}{W_0}=\prod_{l\in I}\Pi_l\cdot\prod_{l<k,\ l,k\in I}
+ \frac{-1}{\theta_l\theta_k\,F(l,k)F(k,l)} ,
+\]
+and since $F(l,k)F(k,l)=-(\theta_l\theta_k-1)^2/\bigl(\theta_l\theta_k(\theta_k-\theta_l)^2\bigr)$
+the last factor equals $a_{lk}$.  The numbers $\Pi_l$ are nonzero because
+$\theta_l^{-1}$ lies in the lower half-plane and the $\theta_k$ in the upper one.
+\end{proof}
+
+\begin{theorem}[Node coordinates]\label{thm:nodes}
+Let $\varkappa\in\C^{2m}$, $\nu_0\in\Z/q$ and $C\ne0$ satisfy
+$\tau_n(\varkappa)=C\omega^{-n\nu_0}$ for all $n\in\Z$.  For each $n$ let $P_n$
+be the unique monic polynomial of degree $2m$ with
+\begin{equation}\label{eq:node}
+ \omega^{ln}P_n(\theta_l)=\varkappa_lP_n(\theta_l^{-1})\qquad(1\le l\le 2m),
+\end{equation}
+and let $p_n$ be its coefficient of $t^{2m-1}$.  Then $V_n=p_n-p_{n+1}$ is
+$q$-periodic and Floquet isospectral to $0$.  Moreover:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $V=0$ if and only if $\varkappa=0$;
+\item with $\beta$ as in Lemma~\ref{lem:hirota} and $\delta(I)=-2i\sum_{l\in I}\sin(\pi l/q)$,
+\[
+ V_n=\rho_{n+1}-\rho_n,\qquad
+ \rho_n=\frac{\sum_IA_I\beta^I\delta(I)\,\omega^{-ns(I)}}{\sum_IA_I\beta^I\,\omega^{-ns(I)}};
+\]
+\item if $\beta\in\R^{2m}$, then $V_{-1-n}=\overline{V_n}$ for all $n$; hence the
+shifted potential $U_n=V_{n-1}$, which is also Floquet isospectral to $0$,
+satisfies $(U_1,\dots,U_q)=(V_0,\dots,V_{q-1})=(v_1,v_2,\dots,\overline{v_2},\overline{v_1})$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The coefficient vector $c$ of $P_n-t^{2m}$ solves $\mathcal M_n(\varkappa)c=-b_n$ with
+$(b_n)_l=\omega^{ln}\theta_l^{\,2m}-\varkappa_l\theta_l^{-2m}$, so $P_n$ exists and is
+unique because $\tau_n\ne0$; since $\mathcal M_{n+q}=\mathcal M_n$, $P_{n+q}=P_n$ and $V$ is
+$q$-periodic.  Put $\varphi_n(t)=t^nP_n(t)$.  As $\theta_l^{2n}=\omega^{ln}$,
+condition~\eqref{eq:node} reads $\varphi_n(\theta_l)=\varkappa_l\varphi_n(\theta_l^{-1})$,
+a relation whose form does not depend on $n$.
+
+\emph{Constant terms.}  By Cramer's rule, $\tau_nP_n(0)$ is the determinant of
+$\mathcal M_n$ with its column $j=0$ replaced by $-b_n$.  Moving that column to the end
+and using that $2m$ is even,
+$\tau_nP_n(0)=\det\bigl(\omega^{ln}\theta_l^{\,j}-\varkappa_l\theta_l^{-j}\bigr)_{1\le j\le 2m}$.
+Taking $\theta_l\omega^{-l}$ out of row $l$ (recall $\theta_l^{-2}=\omega^{-l}$)
+turns the right side into $\prod_l\theta_l\,\omega^{-s([2m])}\tau_{n+1}=(-1)^m\tau_{n+1}$,
+because $\prod_l\theta_l=e^{\pi i(q-1)/2}$.  Hence
+$P_n(0)=(-1)^m\tau_{n+1}/\tau_n=(-1)^m\omega^{-\nu_0}$ does not depend on $n$.
+
+\emph{Three-term relation.}  Fix $n$ and let
+$\Omega(t)=\varphi_{n+1}(t)+\varphi_{n-1}(t)+V_n\varphi_n(t)-(t+t^{-1})\varphi_n(t)=t^nS(t)$ with
+$S(t)=t(P_{n+1}-P_n)+t^{-1}(P_{n-1}-P_n)+V_nP_n$.  The polynomial $tS(t)$ has
+degree at most $2m+1$, its coefficient of $t^{2m+1}$ is $p_{n+1}-p_n+V_n=0$, and
+its constant term is $P_{n-1}(0)-P_n(0)=0$.  So $S$ is a polynomial of degree at
+most $2m-1$.  Each $\varphi_k$ satisfies the node relations and $t+t^{-1}$ takes the
+same value at $\theta_l^{\pm1}$, so $\Omega(\theta_l)=\varkappa_l\Omega(\theta_l^{-1})$,
+that is, $\omega^{ln}S(\theta_l)=\varkappa_lS(\theta_l^{-1})$ for all $l$.  This
+says $\mathcal M_n(\varkappa)s=0$ for the coefficient vector $s$ of $S$, so $S=0$.
+
+\emph{Isospectrality.}  Thus for every $t\in\C^*$ the sequence $\varphi_n(t)$ solves
+$(\Delta+V)\varphi=(t+t^{-1})\varphi$, and $\varphi_{n+q}(t)=t^q\varphi_n(t)$.  The
+polynomials $\varphi_0=P_0$ and $\varphi_1=tP_1$ have at most $2m$ common zeros, so
+for all other $t$ the vector $(\varphi_1(t),\varphi_0(t))$ is a nonzero eigenvector,
+with eigenvalue $t^q$, of the monodromy matrix $T_q\cdots T_1$ at $x=t+t^{-1}$.
+Its determinant is $1$, so $D_V(t+t^{-1})=t^q+t^{-q}=D_0(t+t^{-1})$ for all but
+finitely many $t$, and $D_V=D_0$.
+
+(a) If $\varkappa=0$, then $P_n=\prod_l(t-\theta_l)$ for all $n$ and $V=0$.
+Conversely, let $V=0$.  For $t^{2q}\ne1$ the free solutions with Floquet
+multiplier $t^q$ are the multiples of $(t^n)_n$, so $P_n(t)$ does not depend on
+$n$, and $P_n=P_0$.  Comparing~\eqref{eq:node} for $n$ and $n+1$ gives
+$(\omega^l-1)\omega^{ln}P_0(\theta_l)=0$, so $P_0=\prod_l(t-\theta_l)$; as
+$\theta_l^{-1}$ lies in the lower half-plane, $P_0(\theta_l^{-1})\ne0$, and
+\eqref{eq:node} forces $\varkappa_l=0$.
+
+(b) By Cramer's rule $\tau_np_n$ is the determinant of $\mathcal M_n$ with its column
+$j=2m-1$ replaced by $-b_n$.  Expanding rows as in Lemma~\ref{lem:hirota}, the
+term indexed by $I$ is
+\[
+ -\prod_{l\in I}(-\varkappa_l)\,\omega^{-ns(I)}\det(x_l^0,\dots,x_l^{2m-2},x_l^{2m}),
+\]
+and $\det(x_l^0,\dots,x_l^{2m-2},x_l^{2m})=W(I)\,e_1(x)$ with
+$e_1(x)=\sum_lx_l=e_1(\theta)+\delta(I)$.  Hence
+$p_n=-e_1(\theta)-\rho_n$, and $V_n=\rho_{n+1}-\rho_n$.
+
+(c) If $\beta$ is real, then $\overline{\sum_IA_I\beta^I\omega^{-ns(I)}}=\sum_IA_I\beta^I\omega^{ns(I)}$
+and, since $\delta(I)\in i\R$, $\overline{\rho_n}=-\rho_{-n}$.  Therefore
+$\overline{V_n}=\rho_{-n}-\rho_{-n-1}=V_{-1-n}$, and $U_{q+1-j}=V_{-j}=\overline{V_{j-1}}=\overline{U_j}$.
+\end{proof}
+
+Writing $E_\nu(\beta)=\sum_{s(I)\equiv\nu}A_I\beta^I$ for $\nu\in\Z/q$,
+Lemma~\ref{lem:hirota} gives
+$\tau_n=W_0\sum_{\nu\in\Z/q}E_\nu(\beta)\omega^{-n\nu}$, so the hypothesis of
+Theorem~\ref{thm:nodes} says that the vector $(E_\nu)_\nu$ is supported at the
+single residue $\nu_0$.  Since $\Pi_l\ne0$, every $\beta\in\C^{2m}$ comes from a
+unique $\varkappa$.
+
+\begin{corollary}[Reduction of Conjecture~2]\label{cor:nodes}
+Let $q>3$ be odd.  Conjecture~2 of~\cite{FFORS2026} holds for the period $q$
+if there are $\beta\in\R^{2m}\setminus\{0\}$ and $\nu_0\in\Z/q$ such that
+\begin{equation}\label{eq:hirotasystem}
+ E_\nu(\beta)=0\quad(\nu\ne\nu_0),\qquad E_{\nu_0}(\beta)\ne0 .
+\end{equation}
+The equations form a square system of $q-1$ real multilinear equations in
+$q-1$ real unknowns with positive coefficients $A_I$.  Every real solution of
+\eqref{eq:hirotasystem} with $\beta\ne0$ has a negative coordinate.
+\end{corollary}
+
+\begin{proof}
+The first statement is Theorem~\ref{thm:nodes}.  If $\beta\ge0$ and
+$\beta_l>0$, then $E_l(\beta)\ge A_{\{l\}}\beta_l>0$, so $l\equiv\nu_0$; if
+$\nu_0\ne0$ then $E_0(\beta)\ge A_\emptyset=1>0$ is a contradiction, and if
+$\nu_0=0$ there is no such $l$.
+\end{proof}
+
+\begin{remark}[Symmetries]\label{rem:nodesym}
+If $V$ is Floquet isospectral to $0$, so are $-V$ (because
+$D_{-V}(x)=-D_V(-x)$ for odd $q$) and $\overline V$, and these maps preserve the
+conjugate-reflection form.  For $V\ne0$ of this form the four potentials
+$\pm V,\pm\overline V$ are distinct: comparing the coefficients of $x^{q-1}$ and
+$x^{q-2}$ of $\det(x-C_q-\diag V)$ and $\det(x-C_q)$ gives
+$\sum_nV_n=\sum_nV_n^2=0$, which excludes real and purely imaginary $V\ne0$.
+Hence the number of nonzero solutions of the real system of
+Proposition~\ref{prop:conj2all}, when it is finite, is divisible by $4$.  In
+node coordinates $-V$ is obtained as follows.  Suppose that all
+$\varkappa_l\ne0$ and put $\tilde\varkappa_{q-l}=1/\varkappa_l$.  Since
+$\theta_{q-l}=-\theta_l^{-1}$ and $\omega^{(q-l)n}=\omega^{-ln}$, a polynomial
+$S$ satisfies the relations~\eqref{eq:node} for $\tilde\varkappa$ if and only
+if $S(-t)$ satisfies them for $\varkappa$.  Hence $\tau_n(\tilde\varkappa)\ne0$,
+the node polynomials of $\tilde\varkappa$ are $\tilde P_n(t)=P_n(-t)$, whose
+coefficient of $t^{2m-1}$ is $-p_n$, and $\tilde P_n(0)=P_n(0)$.  The identity
+$\tau_nP_n(0)=(-1)^m\tau_{n+1}$ from the proof of Theorem~\ref{thm:nodes}, which
+holds whenever $\tau_n\ne0$, then shows that $\tilde\varkappa$ satisfies the
+hypothesis of Theorem~\ref{thm:nodes} with the same $\nu_0$, and the potential
+it produces is $-V$.
+\end{remark}
+
+\begin{remark}\label{rem:nodesnum}
+For $q=5$ the real solution
+\[
+ \beta=(-2.111953\ldots,\ 4.663756\ldots,\ 1.587761\ldots,\ 1.232278\ldots)
+\]
+of~\eqref{eq:hirotasystem}, with $\nu_0=2$ and $E_2=4.506505\ldots$, gives
+via Theorem~\ref{thm:nodes}(b) exactly the potential
+$(V_0,\dots,V_4)=(v_1,v_2,v_3,\overline{v_2},\overline{v_1})$ of
+Proposition~\ref{prop:conj2}.  Conversely, for each of the $4$, $115$, $397$
+and $251$ nonzero conjugate-reflection solutions returned by our Newton search
+for $q=5,7,9,11$ (before closing them under the symmetries of
+Remark~\ref{rem:nodesym}), the node coordinates computed from the Bloch
+solution are real after a cyclic shift and satisfy~\eqref{eq:hirotasystem};
+the residue $\nu_0$ is then determined by the potential, through
+$P_n(0)=(-1)^m\omega^{-\nu_0}$.  We do not prove the converse of
+Corollary~\ref{cor:nodes} in general.  The difficulty in proving existence for
+all odd $q$ is that~\eqref{eq:hirotasystem} is not settled by a global degree
+count: on the compactification $(\R\mathbb P^1)^{2m}$ the $E_\nu$ are
+multilinear, hence sections of one and the same line bundle, and the
+corresponding Euler number vanishes.  In the projective extension of
+Theorem~\ref{thm:nodes} the $2^{2m}$ points with all $\varkappa_l\in\{0,\infty\}$ all
+give $V=0$; the point with $\varkappa_l=\infty$ exactly for $l\in I$ is a zero of
+the system with $\nu_0=s(I)$, and unless $I$ is a union of pairs
+$\{l,q-l\}$ it is a degenerate zero whose local index we cannot compute in
+general.
+\end{remark}
+
+%======================================================================
+\section{Computations}\label{sec:computations}
+
+All computations use the normal form of Lemma~\ref{lem:normal}.  For a lattice
+with dual group $H$ (encoded by exponent vectors modulo the exponent $m$ of $H$)
+we form the $N\times N$ matrices $\zeta_1\cdots\zeta_d\,(xI-M_V(\zeta))$ and
+$\zeta_1\cdots\zeta_d\,(xI-M_0(\zeta))$ over $\Q(e^{2\pi i/m})[x,\zeta,\widehat V]$, take the
+coefficients of the difference of determinants with respect to $x$ and $\zeta$, and
+compute a standard basis of the resulting ideal in the variables
+$\widehat V(h)$ with \textsc{Singular}.  Rigidity is certified by checking that
+every $\widehat V(h)$ has a power in the ideal.
+
+\subsection{Planar lattices}
+Every planar lattice is $\Gamma=(a,0)\Z\oplus(b,c)\Z$ with $0\le b<a$ and
+$ac=N$, and $g_1=\gcd(a,b)$, $g_2=c$.  By Proposition~\ref{prop:nonrigid},
+$\max(g_1,g_2)\ge4$ implies nonrigidity.
+
+\begin{proposition}\label{prop:planar}
+Each of the $64$ lattices with $2\le ac\le10$ and $\max(\gcd(a,b),c)\le3$ is rigid.
+\end{proposition}
+
+The numbers of such lattices for $N=2,\dots,10$ are $3,4,5,4,10,6,9,11,12$; the
+computations are exact over the cyclotomic field and took at most $80$ seconds
+each.  This extends the range $ac\le8$ reported in \cite[Section~6]{FFORS2026}.
+Together with Proposition~\ref{prop:nonrigid}, Conjecture~\ref{conj:classification}
+holds for all planar lattices of index at most $10$.  For $N=11$ the exact
+computation exceeded our time limit.
+
+As evidence beyond this range we repeated the computation over a prime field
+$\mathbb F_p$, $p=1000033$, in which the required roots of unity exist,
+restricting the unknowns to $H^\circ$ (legitimate by Corollary~\ref{cor:cluster},
+since the one-dimensional projections have periods $g_1,g_2\le3$).  All $26$
+lattices with $N\in\{11,12\}$ and $\max(\gcd(a,b),c)\le3$ are rigid modulo $p$.
+A modular computation is not a certificate, since a nonzero solution in
+characteristic $0$ could reduce to the origin; we report it only as evidence
+for Conjecture~\ref{conj:classification}.
+
+\subsection{Cyclic lattices in \texorpdfstring{$\Z^3$}{Z3}}
+Let $H\subset\T^3$ be cyclic of order $N\le7$.  If no coordinate of a generator
+has order $N$, then (for $N\le7$) all directional periods are at most $3$ and
+Corollary~\ref{cor:directional} applies.  If some coordinate of $H$ is trivial, then $\Gamma=\Gamma'\oplus\Z$ up to order
+and Proposition~\ref{prop:planar} applies to $\Gamma'$.  Otherwise, after
+permuting coordinates, $H=\langle(u,u^a,u^b)\rangle$ with $u=e^{2\pi i/N}$ and
+$1\le a,b<N$.  Up to permutations and
+inversions of coordinates there are $15$ such classes with $4\le N\le7$ and
+$\max_jg_j\le3$, and all of them are rigid; their directional periods range up
+to $(7,7,7)$.  Hence every lattice in $\Z^3$ with cyclic dual group of order at
+most $7$ and all axis indices at most $3$ is rigid.
+
+\subsection{Separability for \texorpdfstring{$4\Z\oplus2\Z$}{4Z+2Z}}
+For $\Gamma=4\Z\oplus2\Z$ the full isospectrality ideal (seven Fourier
+variables) is zero-dimensional of vector-space dimension $201$, and each of the
+three off-axis variables $\widehat V(h)$, $h\in H^\circ$, is nilpotent modulo the
+ideal.  Hence every isospectral potential has the form $v(n_1)$ with $v$ a
+$4$-periodic isospectral potential.  This is the first nontrivial instance of
+Conjecture~\ref{conj:separation} below.
+
+\subsection{Conjugate-reflection symmetric potentials}
+Conjecture~2 of \cite{FFORS2026} asserts that for every $q>3$ there is a nonzero
+$q\Z$-periodic potential of the form $(v_1,v_2,\dots,\overline{v_2},\overline{v_1})$
+Floquet isospectral to $0$.  It was proved there for even $q$ by symmetry
+operations on an explicit example of \cite{FaustEtAl2024}.  In one dimension the
+Floquet determinant equals $D_v(x)-z-z^{-1}$ with $z$-independent $D_v$, so
+isospectrality is equivalent to
+$\det(xI-C_q-\diag v)=\det(xI-C_q)$, where $C_q$ is the adjacency matrix of the
+$q$-cycle, and also to the vanishing of the $q$ coefficients of $D_v-D_0$.  For
+odd $q=2m+1$ and $v=(x_1+iy_1,\dots,x_m+iy_m,x_c,x_m-iy_m,\dots,x_1-iy_1)$ with
+real unknowns, these coefficients are real, because $D_v$ is invariant under
+reversal of $v$ and $D_{\overline v}=\overline{D_v}$; this gives a square real
+system $F_q(x,y,x_c)=0$ of $q$ equations in $q$ unknowns.
+
+\begin{proposition}\label{prop:conj2}
+For $q=5$, write $v=(x_1+iy_1,\ x_2+iy_2,\ x_3,\ x_2-iy_2,\ x_1-iy_1)$ with real
+unknowns.  The five real polynomial equations expressing isospectrality have a
+nonzero real solution $x^*=(x_1,x_2,y_1,y_2,x_3)$ with
+\[
+ \begin{gathered}
+ x_1=1.364856976\ldots,\quad x_2=-0.787806159\ldots,\quad x_3=-1.154101634\ldots,\\
+ y_1=-1.162570196\ldots,\quad y_2=1.340850081\ldots
+ \end{gathered}
+\]
+Consequently Conjecture~2 of \cite{FFORS2026} holds for every $q\in5\Z$.
+\end{proposition}
+
+\begin{proof}
+Let $F\colon\R^5\to\R^5$ be the system and $J$ its Jacobian matrix.  Starting
+from the \textsc{msolve} isolating box we computed a $60$-digit approximation
+$\tilde x$ by Newton's method and set $X=\tilde x+[-10^{-20},10^{-20}]^5$.
+With $Y\approx J(\tilde x)^{-1}$, the Krawczyk image
+$\tilde x-YF(\tilde x)+(I-YJ(X))(X-\tilde x)$, evaluated in $60$-digit interval
+arithmetic, lies in the interior of $X$ in every coordinate (widths below
+$10^{-38}$), so $X$ contains a unique zero $x^*$ of $F$; it is nonzero.  Independently, \textsc{msolve} reports
+exactly four nonzero real solutions, permuted by $v\mapsto-v$ and
+$v\mapsto\overline v$; we do not use this count.  A lexicographic Gr\"obner basis
+gives the eliminant $x_3^{10}\,f(x_3^4)$ with
+$f(t)=t^7+30t^6+385t^5+2760t^4+11880t^3+22896t^2-6480t-162000$, consistent
+with $f(x_3^4)\approx0$ at $\tilde x$.  For the
+consequence, if $v$ is $5$-periodic and isospectral, its $5r$-periodic repetition
+is isospectral by Lemma~\ref{lem:sublattice}, and it has the conjugate-reflection
+form because $v_{6-i}=\overline{v_i}$ implies the same identity for the repetition.
+\end{proof}
+
+For larger $q$ the coefficient system $F_q$ is badly conditioned, and we use
+an equivalent formulation.  Since $D_v$ and $D_0$ are monic of degree $q$,
+$D_v-D_0$ has degree at most $q-1$, and $D_0(x_j)=2\cos(\pi(2j+1)/2)=0$ at the
+Chebyshev nodes $x_j=2\cos(\pi(2j+1)/2q)$, $0\le j\le q-1$.  Hence $F_q=0$ if
+and only if $G_q:=(D_v(x_j))_{0\le j<q}=0$, and the entries of $G_q$ are real.
+We evaluate $G_q$ and its Jacobian matrix from the transfer matrices at the
+nodes, using $\partial D_v(x)/\partial v_n=-(T_{n-1}\cdots T_1\,T_q\cdots T_{n+1})_{11}(x)$:
+in floating point for a damped Newton search from Gaussian random starts, and
+in midpoint-radius ball arithmetic (Arb~\cite{Arb2017}, through python-flint),
+with the nodes enclosed in balls and with $6q+400$ bits, for the refinement and
+for the Krawczyk test on the box of radius $2^{-3q-150}$ about the refined
+point.
+
+\begin{proposition}\label{prop:conj2all}
+For every prime $q$ with $5\le q\le 199$ and for $q=9$ the system $G_q=0$ has
+a nonzero real solution, certified by the Krawczyk test (Table~\ref{tab:krawczyk}).
+Consequently Conjecture~2 of \cite{FFORS2026} holds for every $q>3$ that is
+even, or divisible by $9$, or divisible by a prime $p$ with $5\le p\le 199$; in
+particular it holds for every $3<q\le 210$.  The smallest open period is $q=211$.
+\end{proposition}
+
+\begin{proof}
+For each listed $q$ the Krawczyk image lies in the interior of the box, which
+therefore contains a unique zero of $G_q$, hence of $F_q$; the zero is nonzero
+because the box is far from the origin (Table~\ref{tab:krawczyk}).  Repetition
+preserves both isospectrality (Lemma~\ref{lem:sublattice}) and the
+conjugate-reflection form, as in the proof of Proposition~\ref{prop:conj2}.
+An odd $q$ with $3<q\le 210$ either has a prime factor $p$ with $5\le p\le 199$
+or is a power of $3$ larger than $3$, hence divisible by $9$.  Even $q$ are
+covered by \cite{FFORS2026}.
+\end{proof}
+
+As an independent check, a separate script (\texttt{verify\_point.py} in the
+supplementary archive) reads only the stored $30$-digit points, refines each of
+them by Newton's method in ball arithmetic and repeats the Krawczyk test.  It
+reproduces every certificate of Table~\ref{tab:krawczyk}, and in each case the
+certified zero differs from the stored point by less than $5\cdot10^{-30}$ in
+every coordinate.  At the stored points themselves the relative defect
+$|D_v(x)-D_0(x)|/(1+|D_0(x)|)$ at the $2q$ points $x=2\cos(\pi(2k+1)/4q)$,
+which are not nodes, is below $10^{-20}$; the loss against $10^{-30}$
+reflects the size of the transfer-matrix products.
+
+\begin{table}[ht]
+\centering\scriptsize
+\begin{tabular}{@{}rrl@{\hspace{1.4em}}rrl@{\hspace{1.4em}}rrl@{}}
+\toprule
+$q$ & $\|u\|$ & width & $q$ & $\|u\|$ & width & $q$ & $\|u\|$ & width\\
+\midrule
+5 & 2.639 & $4.80\cdot10^{-98}$ & 59 & 4.913 & $5.80\cdot10^{-172}$ & 131 & 8.097 & $5.41\cdot10^{-269}$ \\
+7 & 1.531 & $2.04\cdot10^{-100}$ & 61 & 5.396 & $1.37\cdot10^{-175}$ & 137 & 7.744 & $6.82\cdot10^{-278}$ \\
+9 & 1.615 & $1.59\cdot10^{-102}$ & 67 & 5.606 & $1.41\cdot10^{-183}$ & 139 & 8.352 & $1.94\cdot10^{-281}$ \\
+11 & 0.911 & $4.03\cdot10^{-105}$ & 71 & 5.564 & $8.62\cdot10^{-189}$ & 149 & 6.897 & $1.18\cdot10^{-296}$ \\
+13 & 1.524 & $1.10\cdot10^{-108}$ & 73 & 5.567 & $1.52\cdot10^{-191}$ & 151 & 7.384 & $8.49\cdot10^{-299}$ \\
+17 & 1.810 & $1.11\cdot10^{-114}$ & 79 & 5.540 & $1.51\cdot10^{-199}$ & 157 & 8.301 & $4.99\cdot10^{-306}$ \\
+19 & 0.722 & $1.13\cdot10^{-116}$ & 83 & 5.861 & $7.80\cdot10^{-205}$ & 163 & 8.726 & $9.22\cdot10^{-315}$ \\
+23 & 2.736 & $3.34\cdot10^{-122}$ & 89 & 7.328 & $6.07\cdot10^{-213}$ & 167 & 7.526 & $1.05\cdot10^{-320}$ \\
+29 & 2.719 & $1.66\cdot10^{-131}$ & 97 & 5.401 & $8.31\cdot10^{-225}$ & 173 & 8.303 & $1.24\cdot10^{-328}$ \\
+31 & 4.093 & $9.37\cdot10^{-134}$ & 101 & 6.967 & $9.35\cdot10^{-229}$ & 179 & 6.878 & $5.83\cdot10^{-338}$ \\
+37 & 3.554 & $2.82\cdot10^{-142}$ & 103 & 6.188 & $6.79\cdot10^{-233}$ & 181 & 8.609 & $1.18\cdot10^{-339}$ \\
+41 & 4.059 & $9.70\cdot10^{-148}$ & 107 & 8.002 & $1.48\cdot10^{-236}$ & 191 & 9.028 & $3.64\cdot10^{-352}$ \\
+43 & 3.918 & $4.05\cdot10^{-151}$ & 109 & 6.006 & $2.92\cdot10^{-241}$ & 193 & 9.109 & $3.94\cdot10^{-355}$ \\
+47 & 3.781 & $6.64\cdot10^{-155}$ & 113 & 8.082 & $5.39\cdot10^{-246}$ & 197 & 7.528 & $1.59\cdot10^{-361}$ \\
+53 & 4.878 & $1.39\cdot10^{-163}$ & 127 & 6.882 & $1.23\cdot10^{-265}$ & 199 & 8.805 & $1.90\cdot10^{-365}$ \\
+\bottomrule
+\end{tabular}
+\caption{Krawczyk certificates for Proposition~\ref{prop:conj2all}.  For each
+$q$: the norm of the certified point $u=(x,y,x_c)$ and the largest width of a
+coordinate of the Krawczyk image, which lies in the interior of the box of
+radius $2^{-3q-150}$ about the refined point (ball arithmetic with $6q+400$
+bits).  The points, to $30$ digits, are in the supplementary archive.}\label{tab:krawczyk}
+\end{table}
+
+%======================================================================
+\section{What remains open}\label{sec:open}
+
+\begin{enumerate}[label=(\arabic*)]
+\item \emph{Problem~\ref{prob:FFORS} for nonrectangular lattices.}  By
+Theorem~\ref{thm:reduction} it is equivalent to the off-axis vanishing
+statements (OV$_d$).  The critical lattices are those to which neither
+Corollary~\ref{cor:directional} nor Theorem~\ref{thm:criterion} applies.  Among
+them are the cyclic planar lattices $\{n:n_1+an_2\equiv0\bmod N\}$ with
+$\gcd(a,N)=1$ and $a\not\equiv\pm1$, in which balanced elements are rare (there
+are none when $\gcd(a^2-1,N)=1$) and only higher-order identities such as
+Proposition~\ref{prop:mincycle} are available; others have an axis index $2$
+or $3$, for instance $(3,0)\Z\oplus(1,3)\Z$ and $(4,0)\Z\oplus(1,2)\Z$.
+\item \emph{Splitting off $3\Z$.}  Is $\Gamma'\oplus3\Z$ rigid whenever
+$\Gamma'$ is rigid?  This holds for rectangular $\Gamma'$ (Theorem~\ref{thm:rect})
+and for the diagonal lattices (Example~\ref{ex:new3D}), and fails for no known
+example.
+\item \emph{Separation.}  The complex analogue of Liu's real separability
+theorem~\cite{Liu2023JDE} would give a complete description of the isospectral set.
+\end{enumerate}
+
+\begin{conjecture}[Separation]\label{conj:separation}
+If $V$ is $\Gamma$-periodic and Floquet isospectral to $0$, then
+$V(n)=\sum_{j=1}^dv_j(n_j)$, where each $v_j$ is $g_j(\Gamma)$-periodic and
+Floquet isospectral to $0$ in one dimension.
+\end{conjecture}
+
+Conjecture~\ref{conj:separation} implies Conjecture~\ref{conj:classification}:
+it suffices to prove it for rectangular lattices, since every $\Gamma$ contains
+$m_1\Z\oplus\cdots\oplus m_d\Z$ (Lemma~\ref{lem:sublattice}), and a separable
+$\Gamma$-periodic potential has $\supp\widehat V\subset\bigcup_jA_j$.
+\begin{enumerate}[label=(\arabic*),resume]
+\item \emph{Conjecture~2 of \cite{FFORS2026} for the remaining odd periods}, that is,
+for odd $q>3$ that are not divisible by $9$ and have no prime factor $p$ with
+$5\le p\le 199$; the smallest is $q=211$, and $q=3\cdot 211$ is another
+example; these periods have density
+$\frac89\prod_{5\le p\le 199}(1-\frac1p)\approx 0.277$ among the odd integers.
+Every such $q$ has a prime factor larger than $199$ and repetition
+preserves the conjugate-reflection form, so by Corollary~\ref{cor:nodes} it
+suffices to find a nonzero real solution of the multilinear
+system~\eqref{eq:hirotasystem} for every prime $q\ge 211$.  The numerical
+evidence is strong: the real solutions found by Newton's method from random
+starts, closed under the symmetries of Remark~\ref{rem:nodesym}, number $4$
+(exactly, by \textsc{msolve}) and at least $120$, $1024$, $992$ and $432$ for
+$q=5,7,9,11,13$, without visible sparse structure, and for every prime $q$
+with $5\le q\le 199$ the search of Proposition~\ref{prop:conj2all} found a
+solution.
+A uniform existence argument is still missing; see Remark~\ref{rem:nodesnum}.
+\end{enumerate}
+
+\section*{Data and code availability}
+The \textsc{Singular} and \textsc{msolve} inputs, the scripts that generate
+them, the interval and ball-arithmetic verification scripts (including the
+script used for Proposition~\ref{prop:conj2all}, which records the certified
+points to $30$ digits, and the independent re-verification script), the
+node-coordinate checks of Remark~\ref{rem:nodesnum}, and all logs accompany
+this manuscript as a supplementary archive.
+
+\begin{thebibliography}{99}
+
+\bibitem{Arb2017}
+F.~Johansson,
+\emph{Arb: efficient arbitrary-precision midpoint-radius interval arithmetic},
+IEEE Trans. Comput. \textbf{66} (2017), 1281--1292; arXiv:1611.02831.
+
+\bibitem{BFL2026}
+T.~Brysiewicz, M.~Faust and W.~Liu,
+\emph{A counterexample to Fermi isospectral rigidity for two dimensional
+discrete periodic Schr\"odinger operators},
+arXiv:2603.11183 (2026).
+
+\bibitem{CFK2026}
+J.~Cobb, M.~Faust and A.~Kretschmer,
+\emph{Inverse eigenvalue problems, Floquet isospectrality and the
+Hilbert--Chow morphism},
+arXiv:2601.09604 (2026).
+
+\bibitem{FFORS2026}
+M.~Faust, L.~Friedman, G.~O'Malley, R.~Ramos and A.~Sharma,
+\emph{Algebraic properties of the ideal of spectral invariants for the
+discrete Laplacian},
+arXiv:2602.08304 (2026).
+
+\bibitem{FaustEtAl2024}
+M.~Faust, W.~Liu, R.~Matos, J.~Plute, J.~Robinson, Y.~Tao, E.~Tran and
+C.~Zhuang,
+\emph{Floquet isospectrality of the zero potential for discrete periodic
+Schr\"odinger operators},
+J. Math. Phys. \textbf{65} (2024), 073501.
+
+\bibitem{Kappeler1989}
+T.~Kappeler,
+\emph{Isospectral potentials on a discrete lattice. III},
+Trans. Amer. Math. Soc. \textbf{314} (1989), 815--824.
+
+\bibitem{KeioSparse}
+Keio,
+\emph{Floquet sparse obstruction: exact exclusion through support six in the
+period-three Hamming fibre}, unrefereed manuscript [017] in the Verifiable
+Mathematical Reasoning Corpus (2026),
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{KeioGPT}
+Keio,
+\emph{Global proof transfers}, Part~12 (``Floquet rigidity, logistic mixtures,
+and factorial reduction'') and Part~13, unrefereed manuscript [034] in the
+Verifiable Mathematical Reasoning Corpus (2026),
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{Liu2022GAFA}
+W.~Liu,
+\emph{Irreducibility of the Fermi variety for discrete periodic Schr\"odinger
+operators and embedded eigenvalues},
+Geom. Funct. Anal. \textbf{32} (2022), 1--30.
+
+\bibitem{LiuFermi}
+W.~Liu,
+\emph{Fermi isospectrality for discrete periodic Schr\"odinger operators},
+arXiv:2106.03726.
+
+\bibitem{Liu2023JDE}
+W.~Liu,
+\emph{Floquet isospectrality for periodic graph operators},
+J. Differential Equations \textbf{374} (2023), 642--653.
+
+\bibitem{Saburova2026}
+N.~Saburova,
+\emph{Spectral invariants for discrete Schr\"odinger operators on periodic
+graphs},
+J. Spectr. Theory \textbf{16} (2026), 505--539.
+
+\bibitem{Teschl2000}
+G.~Teschl,
+\emph{Jacobi Operators and Completely Integrable Nonlinear Lattices},
+Mathematical Surveys and Monographs~72, Amer. Math. Soc., Providence, RI, 2000.
+
+\bibitem{Toda1989}
+M.~Toda,
+\emph{Theory of Nonlinear Lattices}, 2nd ed., Springer Series in Solid-State
+Sciences~20, Springer, Berlin, 1989.
+
+\bibitem{vMM1979}
+P.~van Moerbeke and D.~Mumford,
+\emph{The spectrum of difference operators and algebraic curves},
+Acta Math. \textbf{143} (1979), 93--154.
+
+\bibitem{ShipmanSottile}
+S.~P.~Shipman and F.~Sottile,
+\emph{Algebraic aspects of periodic graph operators},
+arXiv:2502.03659.
+
+\end{thebibliography}
+
+\end{document}

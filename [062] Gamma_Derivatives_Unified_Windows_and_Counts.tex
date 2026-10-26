@@ -1,0 +1,1126 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{microtype,booktabs,longtable,array,xcolor,listings,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{enumitem}
+\hypersetup{pdftitle={Gamma-function derivatives: dyadic windows and certified half-counts},pdfauthor={KEIO},pdfsubject={Unified field-recovery and six-point exact-arithmetic manuscript},pdfkeywords={Gamma derivatives, transcendence, Jacobian, certified intervals}}
+\setlist{itemsep=2pt,topsep=5pt}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Gamma derivatives: windows and certified counts}
+\fancyhead[R]{\small KEIO}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Qb}{\overline{\mathbb Q}}
+\newcommand{\C}{\mathbb C}\newcommand{\R}{\mathbb R}\newcommand{\Z}{\mathbb Z}
+\newcommand{\N}{\mathbb N}\newcommand{\wt}{\operatorname{wt}}
+\newcommand{\lc}{\operatorname{lc}}\newcommand{\trdeg}{\operatorname{trdeg}}
+\newcommand{\Res}{\operatorname{Res}}\newcommand{\cl}{\operatorname{cl}}
+\newcommand{\Tq}{T_q}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,
+ keepspaces=true,breaklines=true,breakatwhitespace=false,showstringspaces=false,
+ numbers=left,numberstyle=\tiny\color{gray},numbersep=6pt,
+ frame=single,rulecolor=\color{gray!45},xleftmargin=13pt,
+ aboveskip=10pt,belowskip=10pt,tabsize=4}
+
+\title{Gamma-function derivatives:\\dyadic-window field recovery and\\certified half-count bounds}
+\author{KEIO\thanks{Unified revision of the supplied Research Audit XXI and XXII manuscripts and the subsequent Jacobian revision, all dated October 24, 2026. The source drafts credited Claude for drafting assistance; the present synthesis, additional proofs, and independent exact verification were developed with ChatGPT assistance. No independent peer review or historical priority is asserted.}}
+\date{October 25, 2026}
+\begin{filecontents*}[overwrite]{keio_gamma_unified_verify.py}
+"""Exact six-point Gamma verification, m<=11; no floating-point decisions."""
+from fractions import Fraction as F
+from math import comb, factorial
+from time import perf_counter
+import json, sys, hashlib
+from pathlib import Path
+import argparse
+from concurrent.futures import ProcessPoolExecutor
+DIGITS=100
+Q=10**DIGITS
+EULER_TERMS=400
+LOG_TERMS=300
+GAMMA_N=256
+GAMMA_K=100
+
+def ceildiv(a,b): return -((-a)//b)
+def enc(x): return (x.numerator*Q//x.denominator,ceildiv(x.numerator*Q,x.denominator))
+def add(a,b): return a[0]+b[0],a[1]+b[1]
+def sub(a,b): return a[0]-b[1],a[1]-b[0]
+def rat(a,r):
+    r=F(r); assert r>=0
+    return a[0]*r.numerator//r.denominator,ceildiv(a[1]*r.numerator,r.denominator)
+def mul(a,b):
+    assert min(a+b)>=0
+    return a[0]*b[0]//Q,ceildiv(a[1]*b[1],Q)
+def bernoullis(n):
+    a=[]; out=[]
+    for m in range(n+1):
+        a.append(F(1,m+1))
+        for j in range(m,0,-1): a[j-1]=j*(a[j-1]-a[j])
+        out.append(a[0])
+    return out
+
+def constants(N):
+    M=EULER_TERMS; D=2**M
+    weights=[]; csum=0
+    for j in range(M):
+        csum+=comb(M,j); weights.append((-1)**j*(D-csum))
+    z={}
+    for s in range(2,N+1):
+        L=sum((Q*w)//(D*(j+1)**s) for j,w in enumerate(weights))
+        z[s]=rat((L,L+M+ceildiv(Q,D)),F(2**(s-1),2**(s-1)-1))
+    Lg=sum((F(2,(2*j+1)*3**(2*j+1)) for j in range(LOG_TERMS)),F(0))
+    err=F(2, (2*LOG_TERMS+1)*3**(2*LOG_TERMS+1))*F(9,8)
+    log2=enc(Lg)[0],enc(Lg+err)[1]
+    B=bernoullis(2*GAMMA_K)
+    base=sum((F(1,j) for j in range(1,GAMMA_N+1)),F(0))-F(1,2*GAMMA_N)
+    base+=sum((B[2*k]/(2*k*GAMMA_N**(2*k)) for k in range(1,GAMMA_K)),F(0))
+    R=abs(B[2*GAMMA_K])/F(2*GAMMA_K*GAMMA_N**(2*GAMMA_K))
+    gam=enc(base-8*(Lg+err)-R)[0],enc(base-8*Lg+R)[1]
+    assert 0<gam[0]<gam[1]<Q
+    return gam,log2,z
+
+def base_data(N):
+    gam,log2,z=constants(N)
+    out={}
+    for kind in ['one','half']:
+        lam={1:gam if kind=='one' else rat(add(gam,rat(log2,2)),F(1,2))}
+        for j in range(2,N+1): lam[j]=z[j] if kind=='one' else rat(z[j],F(2**j-1,2**j))
+        b=[(Q,Q)]
+        for n in range(1,N+1):
+            t=(0,0)
+            for j in range(1,n+1): t=add(t,mul(lam[j],b[n-j]))
+            b.append(rat(t,F(1,n)))
+        d=[F(1)]; powers=[(Q,Q)]
+        for k in range(1,N//2+1):
+            d.append(-sum((F((-1)**j,factorial(2*j))*d[k-j] for j in range(1,k+1)),F(0)))
+            powers.append(mul(powers[-1],rat(z[2],F(3,2))))
+        v=[None]
+        for k in range(1,N//2+1):
+            if kind=='one': v.append(rat(z[2*k],F(2*k*(2**(2*k-1)-1),2**(2*k-1))))
+            else: v.append(sub(rat(powers[k],(2*k+1)*d[k]),b[2*k]))
+        out[kind]=(b,v)
+    return out
+
+def det_bareiss(A):
+    A=[r[:] for r in A]; n=len(A)
+    if n==1: return A[0][0]
+    sign=1; prev=1
+    for k in range(n-1):
+        if not A[k][k]:
+            p=next((i for i in range(k+1,n) if A[i][k]),None)
+            if p is None: return 0
+            A[k],A[p]=A[p],A[k]; sign=-sign
+        pivot=A[k][k]
+        for i in range(k+1,n):
+            aik=A[i][k]
+            for j in range(k+1,n):
+                num=A[i][j]*pivot-aik*A[k][j]
+                q,r=divmod(num,prev)
+                assert r==0
+                A[i][j]=q
+            A[i][k]=0
+        prev=pivot
+    return sign*A[-1][-1]
+
+def admissible(m):
+    if m==1:
+        yield (); return
+    def rec(t,last,B):
+        if t==m:
+            yield tuple(B); return
+        for j in range(last+1,2*t+1):
+            B.append(j); yield from rec(t+1,j,B); B.pop()
+    yield from rec(1,0,[])
+
+def scale(a,r):
+    r=F(r)
+    if r>=0:return rat(a,r)
+    b=rat(a,-r);return -b[1],-b[0]
+
+def shifted(kind, steps, b, v):
+    if not steps: return b,v
+    orig=b; b=list(b); H=[F(1)]
+    for a in steps:
+        old=b
+        b=[old[0]]+[sub(old[n],scale(old[n-1],a)) for n in range(1,len(old))]
+        old=H;H=[F(0)]*(len(old)+1)
+        for k,h in enumerate(old):H[k]+=h;H[k+1]-=a*a*h
+    W=([(0,0)]+v[1:]) if kind=='one' else ([(Q,Q)]+[add(v[k],orig[2*k]) for k in range(1,len(v))])
+    out=[None]
+    for k in range(1,len(v)):
+        s=(0,0)
+        for r in range(min(k,len(H)-1)+1):s=add(s,scale(W[k-r],H[r]))
+        if kind=='half':s=sub(s,b[2*k])
+        out.append(s)
+    return b,out
+
+SPECS = {
+    '1': ('one', []), '1/2': ('half', []),
+    '2': ('one', [F(1)]), '3/2': ('half', [F(1)]),
+    '3': ('one', [F(1),F(1,2)]),
+    '5/2': ('half', [F(1),F(1,3)])}
+
+def verify_point(task):
+    name, limit, inputs = task
+    kind, steps = SPECS[name]
+    b, v = shifted(kind, steps, *inputs[kind])
+    rows=[]
+    for m in range(1,limit+1):
+        intervals = [[v[k]] + [b[2*k-j] if 0<=2*k-j<len(b)
+                      else (0,0) for j in range(1,2*m-1)]
+                     for k in range(1,m+1)]
+        C=[[(l+u)//2 for l,u in row] for row in intervals]
+        eps=max(u-l for row in intervals for l,u in row)
+        H=max(max(abs(l),abs(u)) for row in intervals for l,u in row)
+        E=factorial(m)*m*eps*H**(m-1)
+        count=pos=neg=0; minimum=None; worst=None
+        digest=hashlib.sha256()
+        for B in admissible(m):
+            D=det_bareiss([[row[0]]+[row[j] for j in B] for row in C])
+            if abs(D)<=E:
+                raise ArithmeticError(('uncertified',name,m,B))
+            count+=1; pos+=D>0; neg+=D<0
+            if minimum is None or abs(D)<minimum:
+                minimum=abs(D); worst=B
+            digest.update((str(B)+':'+str(D)+'\n').encode())
+        assert count==comb(2*m,m)//(m+1)
+        ell=len(str(minimum-E))-1-DIGITS*m
+        row={'q':name,'m':m,'N':2*m,'count':count,
+             'positive':pos,'negative':neg,'lower_exp':ell,
+             'worst':worst,'hash':digest.hexdigest()}
+        if (name,m) in EXPECTED:
+            assert (count,pos,neg,ell,row['hash'])==EXPECTED[name,m]
+        rows.append(row)
+        print(json.dumps(row),flush=True)
+    return rows
+
+def main():
+    if not __debug__:
+        raise RuntimeError('Run without Python -O: exact checks are mandatory.')
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--max-m',type=int,default=11)
+    p.add_argument('--workers',type=int,default=1)
+    a=p.parse_args()
+    if not 1<=a.max_m<=11 or a.workers<1:
+        p.error('Certified range: 1 <= max-m <= 11; workers >= 1.')
+    inputs=base_data(2*a.max_m)
+    tasks=[(q,a.max_m,inputs) for q in SPECS]
+    start=perf_counter()
+    if a.workers==1:
+        blocks=[verify_point(t) for t in tasks]
+    else:
+        with ProcessPoolExecutor(max_workers=a.workers) as pool:
+            blocks=list(pool.map(verify_point,tasks))
+    rows=[r for b in blocks for r in b]
+    output={'digits':DIGITS,'euler_terms':EULER_TERMS,
+            'log_terms':LOG_TERMS,'gamma_n':GAMMA_N,
+            'gamma_k':GAMMA_K,'rows':rows,
+            'total':sum(r['count'] for r in rows)}
+    Path('keio_unified_certificates.json').write_text(json.dumps(output,indent=2))
+    print('CERTIFIED',output['total'],'determinants;',
+          round(perf_counter()-start,2),'seconds',flush=True)
+
+# Expected data: verification never relies only on these hashes.
+EXPECTED={
+    ('1',1): (1,1,0,0,
+        '2783d6da84c9e3fe7d41731ae2d38c08ef4729e9248fa71ae2e8d98e46e3225a'),
+    ('1',2): (2,0,2,-1,
+        '7e5903e74aa590652aff7cfcc78041f6367e9cae736abe0509abc95637af00f4'),
+    ('1',3): (5,4,1,-1,
+        '1a96288577dcb514aac05cdc0eead4ce6646dac4e9a5ed64134becaa125e976c'),
+    ('1',4): (14,5,9,-2,
+        'aefc73d09b4f9c2aef148afbc28eff6efc9ca3b2717387c148617fb3a14ba70c'),
+    ('1',5): (42,23,19,-3,
+        '5deb0e09a576cb8b6f3526316118b40fb76ea2a71f9356badb887d3605476d20'),
+    ('1',6): (132,65,67,-5,
+        '1beadf991a92f059f12231903e9152448e810fcb0531e74709cfea07f60966a1'),
+    ('1',7): (429,215,214,-6,
+        'b36c36ee6f113ed37a438a11a03bc2bc3984808256997262823bc597ea1b743f'),
+    ('1',8): (1430,712,718,-10,
+        '69badf05da7eba24108a80d75231baecd4f58f7a17344e413a9441c1b5688f9d'),
+    ('1',9): (4862,2443,2419,-13,
+        'c62407af53eeda7c4ff195bfea90b98a4f149095471d588de8b8834b826382ed'),
+    ('1',10): (16796,8374,8422,-17,
+        '0e99d3570c1f5a08470e7cf62f987cd5fa38dce0d18b1ae02cd3faf66859a9a4'),
+    ('1',11): (58786,29446,29340,-22,
+        '5e4df90205546c11d77ceda8eca67ce1c393c8b2e6283abbd6234ecaaf3dc76b'),
+    ('1/2',1): (1,1,0,0,
+        '6e5589aee98ad3dedb5a2bb0cf7991507b55b5f73855a34269893b0d786874a4'),
+    ('1/2',2): (2,0,2,0,
+        '16e6e7dbfb3008db65767200c038af11ed96cffdbc8bb6237facad1dde3cda7e'),
+    ('1/2',3): (5,4,1,-1,
+        'f8e80d9171b36363da8d468adc7abbf56997480985af9d66b6f6cc40ab78903a'),
+    ('1/2',4): (14,6,8,-2,
+        '1c41c7e2d70f9b73e5ee62e3e1dc7b2fc9ec2c37bbafe190801f21cfa86a6d86'),
+    ('1/2',5): (42,21,21,-4,
+        '625d3af666df42d388d3fa1b2f7e2c230cbf2b215b7b91ca993eef9d7bb6c35c'),
+    ('1/2',6): (132,65,67,-7,
+        '9237a715ea924e6bb85f9d606ce69240294a42d4b2ef8a31655c86d56988260a'),
+    ('1/2',7): (429,218,211,-10,
+        'ffd20930d87c99ebf1a4f36e6579e5ebb2481cb0c48472e04176d4a130b97af3'),
+    ('1/2',8): (1430,715,715,-14,
+        '489301206434446d48e329681dd1205f423cdfc612f2d919971f90fdec43178c'),
+    ('1/2',9): (4862,2412,2450,-19,
+        'abc19ac956faa8575b75cabff85db1db49d796f18b6660a2c2fba47f8bc1a09f'),
+    ('1/2',10): (16796,8438,8358,-26,
+        '77cd8d9016e0694a59bd439af55cab52c38049974eb13167e128cecffd6ec406'),
+    ('1/2',11): (58786,29374,29412,-34,
+        '5ca205ebd7ecbc3aa918cab6d967014ed3d0c925f95a2f887766a67601f5b028'),
+    ('2',1): (1,1,0,0,
+        '2783d6da84c9e3fe7d41731ae2d38c08ef4729e9248fa71ae2e8d98e46e3225a'),
+    ('2',2): (2,1,1,-1,
+        '9bc6c8b7d03ba51209260efbf8a4c23fa0bb22400e23c8398262f6696f3a7bb1'),
+    ('2',3): (5,2,3,-1,
+        '4c6a6e1ef445e77086045ec4cf56747c477e302bc99bbc6958f902434478fcf5'),
+    ('2',4): (14,8,6,-3,
+        '707f9609813ccdea7bd53931a88c4cac0887d3807ca2d4858381b6a89595b1df'),
+    ('2',5): (42,22,20,-4,
+        'f52c1fa8c7dffd5587b0983a78d1fa8e60b2a0e74ee80d4a1079c9a7b1db284c'),
+    ('2',6): (132,63,69,-7,
+        '6fe28c4b54c879a9dd6aca503512e5630954f4218fac10c6b9e4b9e842e63651'),
+    ('2',7): (429,214,215,-10,
+        'fe94e294ae3b3761b3845794288c12e5c0695c66872b928ceded3408472b1889'),
+    ('2',8): (1430,723,707,-13,
+        '64d585765ad9b69df364172b9ae3dbffde2dbbdaecece025d9e9101c2e5ceef9'),
+    ('2',9): (4862,2428,2434,-17,
+        '9aee97db3b7d636354602cf72ce9cfa2e4c67c710dd79f7fc35e34824672e661'),
+    ('2',10): (16796,8383,8413,-21,
+        'cf5a848dfb8acf7c04b7bc59aa19be57f60dc43b8089989abe8071f073620013'),
+    ('2',11): (58786,29410,29376,-27,
+        '61b7557c8d4e350aad394e62cc94a45131a5705f2e0e0c73df9135f4dd1bee62'),
+    ('3/2',1): (1,1,0,0,
+        '08286d12ba0468ee9b4db8105be8f041c51a856d26e6418997315ab902fa2d03'),
+    ('3/2',2): (2,1,1,-2,
+        'cf49ed242e30ba0979e450f1e02d15d15124c576048afe3c750cbff7fce32ed6'),
+    ('3/2',3): (5,2,3,-3,
+        'bb754d38d996f8f4a36168d6e48fc68382e4919f05278bd9f2e8733e73ffc894'),
+    ('3/2',4): (14,7,7,-5,
+        '9717914d4ffad98bd15aec809074a475bbd1639a8f0113807b3595d5e5c8fc17'),
+    ('3/2',5): (42,22,20,-7,
+        '35541b6ac8bba63c545532e4ce45270e3336180dde020e12a543dcac9a310870'),
+    ('3/2',6): (132,66,66,-10,
+        '4af0073659100903944e7ec215c4c9ebd38613b265e86f346443edaa8afe5668'),
+    ('3/2',7): (429,211,218,-14,
+        '661ffbe0eea222f6fbf8be1af084309412e1b57d24a3b8dede22e92d8257241f'),
+    ('3/2',8): (1430,721,709,-19,
+        '818863333479c672eedc2f6771f9c0dfeb637ebd8162160788421b0dcb2c8fa5'),
+    ('3/2',9): (4862,2438,2424,-26,
+        'defbe54d79c4a08b81ed11a6e9716156361c24d7efe74deaf8e68c5b79cec4b8'),
+    ('3/2',10): (16796,8368,8428,-34,
+        '1176843462eccc11b0e84e23d7318a633176cdf730349f06147efdb3175f0b0b'),
+    ('3/2',11): (58786,29380,29406,-41,
+        'f2bc25fae57fdc64c712268fc695423d3b46c63ffbc11f56b58de5d3b1812862'),
+    ('3',1): (1,1,0,0,
+        '2783d6da84c9e3fe7d41731ae2d38c08ef4729e9248fa71ae2e8d98e46e3225a'),
+    ('3',2): (2,1,1,-1,
+        '8aa4c854e6ed2b894db59982f8de7e8af8f9dba5b5b4d0d492fdfc21906a771f'),
+    ('3',3): (5,2,3,-1,
+        '95bbe3497c635d14050eef79d9422622bfa23105b435ffd48eaa39f2bd887d72'),
+    ('3',4): (14,7,7,-2,
+        '124122249b58eaed4e88a90c1e0fa81c2284cb7245be177c91afbb946b8ba59a'),
+    ('3',5): (42,22,20,-4,
+        'da189ca051ffe5665fdad03797490fa6d0c22ed3bfae2a14f43d130c15ade5d1'),
+    ('3',6): (132,66,66,-8,
+        'f02093b59578ef96ccc6fe4f9486d6931be49b9ff6603d06b65684c6753210f7'),
+    ('3',7): (429,212,217,-10,
+        'b42175acb409f922ebf9b2b961fb83a23261ca1b8bc44394c273c7b7e758bc6d'),
+    ('3',8): (1430,718,712,-13,
+        '4806c6e222ba43a4b7395e22539b6f8e3604e838408623bd0c490821ad9330ce'),
+    ('3',9): (4862,2436,2426,-18,
+        '7d21debb608b829fc1e8e9391ba91ec3fcf846fdae71bbbd626230e025f8684b'),
+    ('3',10): (16796,8384,8412,-23,
+        'ad4e96b7975185cfbf117e10b474b5a8ab3a93c229b10616b2b8c8b37a440b4c'),
+    ('3',11): (58786,29391,29395,-30,
+        'fb0c7f41e81ca35a40ad063ed207e15776dba0e9334ff4881e3357584dd0cb28'),
+    ('5/2',1): (1,1,0,0,
+        'a87b463c5fb1d12d27876a618e80c2277b624dff3d16dfa1da9482183ef39c5e'),
+    ('5/2',2): (2,1,1,-1,
+        '34a924cb4147385bd85929e9bf5ab1bde08d4de956168568b3b972732c257396'),
+    ('5/2',3): (5,2,3,-2,
+        '44c45430f7ce240dfe0ee01c4da68434a545b8c7abdc60f8e04f6304047942a8'),
+    ('5/2',4): (14,7,7,-4,
+        '7a859d7b5fb2b23136993805e60405319539751b21b0fe9b9c3b5051ca492a41'),
+    ('5/2',5): (42,22,20,-7,
+        'f95c717f55e3cfb3dcf09d6d2b5ec8817f68fc91817eea442528d13971163d66'),
+    ('5/2',6): (132,65,67,-11,
+        'c60c5af63bc5bc209f28f3d80f36f7079a18032f63370a4ff8f03199ed66a0ae'),
+    ('5/2',7): (429,213,216,-15,
+        'bd3dffde8102d898fec72c0a3288bc72369e15ffd342e1c299efde804042d783'),
+    ('5/2',8): (1430,720,710,-21,
+        'b77c46cfdd321d27756fb063a9e1d07ae7f194b6ea977e1dc830a19e857b8f90'),
+    ('5/2',9): (4862,2431,2431,-30,
+        '7aca9550f0e911ec620c72c101c1ee027b2a14175a465ecba82519de5d259c52'),
+    ('5/2',10): (16796,8376,8420,-36,
+        '8c1b7432555ba47a1a219a168aa5b8980af667d31700b4cd6a3a1f4429a9c845'),
+    ('5/2',11): (58786,29412,29374,-45,
+        '7c3529edf2b5d11647c7ddca20cc3503f9d9f09802f6c5afdea9f207beb43c15'),
+}
+
+if __name__=='__main__': main()
+\end{filecontents*}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+We combine two complementary approaches to the arithmetic of Gamma-function derivatives. For every $q\in\tfrac12\Z\setminus\Z_{\le0}$ and every $n\ge1$, we prove that $\pi$ is algebraic over the field generated by $\Gamma^{(n)}(q),\ldots,\Gamma^{(2n)}(q)$. Thus every dyadic order-window contains a transcendental derivative. The proof uses a corrected coefficient-valuation dichotomy and an elementary gap lemma, and includes the negative nonintegral half-integers. A separate local Jacobian method, reduced to Catalan-many tests, proves
+\[
+\#\{1\le j\le N:\Gamma^{(j)}(q)\notin\Qb\}\ge\lfloor N/2\rfloor
+\quad\left(1\le N\le23,\quad q\in\{\tfrac12,1,\tfrac32,2,\tfrac52,3\}\right).
+\]
+All 494,994 required determinants are certified by rational intervals and exact integer arithmetic; a complete standard-library verifier is embedded in the single TeX source. We prove the reflection-relative sharpness of the dyadic endpoint, evaluate the supporting binomial determinant exactly, extend odd-killing and conditional linear independence to the whole half-integral non-pole lattice, and retain the sign-compatible reflection ceiling and the generic/exceptional zero-pattern results. The all-order window theorem is a localization theorem, not a positive-density theorem. Neither the asymptotic half-count conjecture nor the arithmetic nature of an individual Gamma derivative is settled here.
+\end{abstract}
+
+\section{Main results and the distinction between windows and density}\label{sec:intro}
+Let
+\[
+\mathcal H=\tfrac12\Z\setminus\Z_{\le0}
+ =\Z_{\ge1}\cup(\tfrac12+\Z),\qquad
+\mathcal Q=\{\tfrac12,1,\tfrac32,2,\tfrac52,3\},
+\]
+and count \emph{indices}, rather than distinct numerical values, by
+\[
+T_q(N)=\#\{1\le j\le N:\Gamma^{(j)}(q)\notin\Qb\}.
+\]
+The supplied window manuscript \cite{Window} establishes a dyadic localization principle at positive half-integral points. The preceding repaired manuscript \cite{Revision} establishes sharp finite-prefix counts at $q=1,\tfrac12$. The present paper merges their valid arguments, strengthens the first to field recovery, and independently extends the second to six evaluation points. It does not reuse the defective dominant-index shortcut in the original audit \cite{Earlier}.
+
+\begin{theorem}[Field recovery from every dyadic window]\label{thm:window}
+For every $q\in\mathcal H$ and $n\ge1$,
+\begin{equation}\label{eq:windowfield}
+\pi\text{ is algebraic over }
+K_{q,n}=\Q\bigl(\Gamma^{(n)}(q),\Gamma^{(n+1)}(q),\ldots,\Gamma^{(2n)}(q)\bigr).
+\end{equation}
+Consequently these $n+1$ derivative values cannot all be algebraic numbers.
+\end{theorem}
+Here ``algebraic over $K_{q,n}$'' is relative algebraicity. It does not mean that $\pi$ is algebraic over $\Q$. The conclusion forces $\operatorname{trdeg}_{\Q}K_{q,n}\ge1$, not $n+1$ algebraically independent values.
+
+\begin{theorem}[Certified six-point finite half-count]\label{thm:main}
+For every $q\in\mathcal Q$ and $1\le N\le23$,
+\begin{equation}\label{eq:main}
+T_q(N)\ge\lfloor N/2\rfloor.
+\end{equation}
+More precisely, if $A\subseteq\{1,\ldots,N\}$ and $|A|>\lceil N/2\rceil$, then $\pi$ is algebraic over $\Q(\Gamma^{(a)}(q):a\in A)$.
+\end{theorem}
+This is an exact computer-assisted theorem. The computation checks $6\sum_{m=1}^{11}C_m=494994$ explicitly specified determinants and accepts none by a floating-point test. In particular, at each of the six points at least eleven of the first twenty-two derivative values are transcendental.
+
+The two theorems quantify different things. Theorem~\ref{thm:window} holds at \emph{every order}, but guarantees only one transcendental value in each interval $[n,2n]$. Theorem~\ref{thm:main} guarantees a much larger proportion, but only for finitely many prefixes. Neither alone, nor their combination below, proves a positive lower asymptotic density.
+
+\paragraph{Literature baseline.}
+Powers \cite{Powers1,Powers2,Powers3} proves infinitely-often transcendence and order-$\sqrt N$ lower bounds for counts. Theorem~2 of the inspected version \cite{Powers2} gives, for $q\in\mathcal H$,
+\begin{equation}\label{eq:powers}
+T_q(N)\ge\max\left\{0,\left\lceil\sqrt{2\lfloor N/2\rfloor+\frac94}-\frac52\right\rceil\right\}.
+\end{equation}
+We compare with this explicitly identified statement, rather than claim an exhaustive priority search. The reflection equations already occur in Powers' proofs. The lattice-variable results of \cite{Powers3}, where the evaluation point varies, are not the same question as order-density at a fixed point. The full texts of the specified versions were consulted; the source drafts' ``abstracts only'' qualification is not carried forward.
+
+\paragraph{Further results.}
+Section~\ref{sec:sharpwindow} shows that $[n,2n]$ cannot uniformly be replaced by $[n,2n-1]$ using only reflection data, even when every coefficient is required to be nonzero. Its proof includes the exact evaluation
+\[
+\det\!\left[\binom{n+i}{2j+1}\right]_{0\le i,j<n}=2^{\binom n2},
+\]
+which was only a numerical observation in \cite{Window}. Sections~\ref{sec:odd}--\ref{sec:zero} prove all-order conditional independence, information-relative ceilings, and a generic-versus-positive-counterexample dichotomy. These are auxiliary theorems, not solutions of additional named transcendence conjectures.
+
+\section{Uniform reflection coordinates on the non-pole lattice}\label{sec:reflection}
+Fix $q\in\mathcal H$. Write $q=\xi+\ell$, where $\xi=1$ for integer $q$ and $\xi=\tfrac12$ otherwise. Then $\ell\in\Z$, and $\ell\ge0$ in the integer case. Put
+\[
+\delta=\begin{cases}0,&\xi=1,\\1,&\xi=\tfrac12,\end{cases}
+\quad t=\sqrt\pi,\quad P=\pi^2=t^4,\quad
+\Gamma(q)=c_q t^\delta\quad(c_q\in\Q^\times),
+\]
+\[
+\beta_j=\frac{\Gamma^{(j)}(q)}{j!},\qquad
+ g_j=\frac{\beta_j}{\Gamma(q)},\qquad g_0=1.
+\]
+All later references to raw coefficients mean $\beta_j$. The distinction is essential when $\delta=1$: dividing a raw algebraic value by $\sqrt\pi$ does not preserve algebraicity.
+
+The functional and reflection equations \cite{DLMF} give
+\begin{align}\label{eq:Lq}
+L_q(u)&=\frac{\Gamma(q+u)\Gamma(\xi)}{\Gamma(q)\Gamma(\xi+u)}\notag\\
+&=\begin{cases}
+\displaystyle\prod_{r=0}^{\ell-1}\left(1+\frac{u}{\xi+r}\right),&\ell\ge0,\\[4pt]
+\displaystyle\prod_{r=\ell}^{-1}\left(1+\frac{u}{\xi+r}\right)^{-1},&\ell<0.
+\end{cases}
+\end{align}
+No denominator $\xi+r$ in these products vanishes. Define
+\[
+H_q(u)=L_q(u)L_q(-u)\in\Q(u),\qquad H_q(0)=1,
+\]
+\[
+S_1(z)=\frac{z}{\sin z},\qquad S_{1/2}(z)=\sec z,
+\qquad S_\xi(z)=\sum_{k\ge0}s_{2k}^{(\xi)}z^{2k}.
+\]
+All $s_{2k}^{(\xi)}$ are positive rationals. For $k\ge1$,
+\[
+s_{2k}^{(1)}=\frac{(-1)^{k+1}(2^{2k}-2)B_{2k}}{(2k)!},\qquad
+s_{2k}^{(1/2)}=\frac{|E_{2k}|}{(2k)!}.
+\]
+The normalized reflection product becomes
+\begin{equation}\label{eq:generalreflection}
+\left(\sum_{j\ge0}g_ju^j\right)
+\left(\sum_{j\ge0}g_j(-u)^j\right)
+=H_q(u)S_\xi(\pi u).
+\end{equation}
+Writing $H_q(u)=\sum_{r\ge0}h_{2r}^{(q)}u^{2r}$, set
+\begin{equation}\label{eq:Tk}
+T_{q,k}(P)=\sum_{r=0}^k h_{2r}^{(q)}s_{2k-2r}^{(\xi)}P^{k-r}.
+\end{equation}
+This polynomial has exact degree $k$ and leading coefficient $s_{2k}^{(\xi)}\ne0$, including for negative half-integer $q$. Coefficient comparison gives
+\begin{equation}\label{eq:Qgeneral}
+\sum_{j=0}^{2k}(-1)^jg_jg_{2k-j}=T_{q,k}(P).
+\end{equation}
+
+\begin{lemma}[Even--odd decomposition]\label{lem:structure}
+The normalized Gamma series has the form
+\[
+\frac{\Gamma(q+u)}{\Gamma(q)}=R_q(u)\exp O_q(u),\qquad
+R_q(u)=\bigl(H_q(u)S_\xi(\pi u)\bigr)^{1/2},
+\]
+where $R_q(0)=1$, $R_q$ is even, and $O_q$ is odd. Its coefficients are polynomials $G_j(P,o_1,o_3,\ldots)$ with rational coefficients, where $o_r=[u^r]O_q$. For odd $j$, $G_j=o_j+$ a polynomial in $P$ and the lower odd parameters. Every coefficient of $R_q$ at order $2k$ has exact $P$-degree $k$ and leading coefficient
+\[
+r_{2k}^{(\xi)}=[z^{2k}]S_\xi(z)^{1/2}>0.
+\]
+The top-weight part, for $\wt(P)=2$ and $\wt(o_j)=j$, agrees with that at $q=\xi$.
+\end{lemma}
+\begin{proof}
+Take formal logarithms in \eqref{eq:generalreflection}. The even part is half the logarithm of the right side, so the remaining part is odd. The square root $H_q(u)^{1/2}$ has rational coefficients and constant coefficient one. At each finite order, multiplying it by $S_\xi(\pi u)^{1/2}$ gives a polynomial in $P$, with the stated highest term. Positivity of $r_{2k}^{(\xi)}$ follows from the product expansions of $S_1^{1/2}$ and $S_{1/2}^{1/2}$ into factors $(1-a z^2)^{-1/2}$ with $a>0$. The exponential formula proves triangularity and the weight assertion.
+\end{proof}
+
+\subsection{The homogeneous point \texorpdfstring{$q=1$}{q=1}}
+For this subsection and Section~\ref{sec:elim}, $g_j=\Gamma^{(j)}(1)/j!$. We abbreviate $c_{2k}=s_{2k}^{(1)}$ and $\rho_{2k}=r_{2k}^{(1)}$. Then
+\begin{equation}\label{eq:Q}
+\sum_{j=0}^{2k}(-1)^jg_jg_{2k-j}=c_{2k}P^k,
+\qquad c_{2k}P^k=2(1-2^{1-2k})\zeta(2k).
+\end{equation}
+Here $o_1=-\gamma$ and $o_j=-\zeta(j)/j$ for odd $j\ge3$. The polynomials $G_j$ are exactly weighted homogeneous. For reference,
+\[
+\rho_2=\frac1{12},\quad\rho_4=\frac1{160},\quad
+\rho_6=\frac{61}{120960},\quad\rho_8=\frac{1261}{29030400}.
+\]
+\begin{lemma}[Signs at the two base points]\label{lem:sign}
+For $q=1,\tfrac12$ and every $j\ge0$, $(-1)^j\Gamma^{(j)}(q)>0$.
+\end{lemma}
+\begin{proof}
+The logarithms of $\Gamma(1-u)$ and $\Gamma(\tfrac12-u)/\sqrt\pi$ are respectively
+\[
+\gamma u+\sum_{j\ge2}\frac{\zeta(j)}j u^j,
+\qquad
+(\gamma+2\log2)u+\sum_{j\ge2}\frac{(2^j-1)\zeta(j)}j u^j.
+\]
+Every coefficient displayed is positive, and exponentiation preserves strict positivity. We do not extrapolate this sign assertion to $q=2,3,\tfrac32,\tfrac52$.
+\end{proof}
+\section{Elimination certificates and the nonvanishing issue}\label{sec:elim}
+For a fixed finite nonempty set $A$ introduce coordinates $a_j$, $j\in A$, and let
+\[
+I_A=(G_j(P,o)-a_j:j\in A),\qquad
+E_A=I_A\cap\Q[P,(a_j)_{j\in A}].
+\]
+Only odd variables of index at most $\max A$ are needed.
+
+\begin{theorem}[Elimination certificate]\label{thm:elim}
+Every $\Phi\in E_A$ vanishes at $(P,a)=(\pi^2,(g_j)_{j\in A})$.
+If its leading coefficient as a polynomial in $P$ is nonzero at these actual values, then the $g_j$, $j\in A$, are not all algebraic. In particular, a nonzero rational constant or a nonzero rational multiple of a monomial in the $a_j$ is a valid leading coefficient.
+\end{theorem}
+\begin{proof}
+Membership in $I_A$ gives the first assertion by substitution. If all selected values were algebraic, the specialization would be a nonzero polynomial in $P$ over $\Qb$, having $\pi^2$ as a root. This contradicts the transcendence of $\pi$. Monomial leading coefficients do not vanish by Lemma~\ref{lem:sign}.
+\end{proof}
+
+The ideal $E_A$ is weighted homogeneous with $\wt(a_j)=j$. If $\Phi$ has weight $2d$, its $P$-degree is at most $d$, and the coefficient of $P^d$ is rational. \emph{That coefficient may be zero.} Weighted homogeneity alone does not make the actual leading coefficient constant. This corrects an overstatement in the earlier introduction.
+
+\begin{proposition}[Geometric meaning of a monic certificate]\label{prop:monic}
+The following are equivalent:
+\begin{enumerate}[label=(\roman*)]
+\item $E_A$ contains a polynomial monic in $P$, up to a nonzero rational factor;
+\item $V(E_A)\cap\{a=0\}=\{(0,0)\}$;
+\item $0$ is not in the Zariski closure of $\{G_A(1,o):o\in\C^{\lceil\max A/2\rceil}\}$.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+Extract the weight-$2d$ component of a degree-$d$ monic element to obtain
+$\Phi(P,0)=\kappa P^d$, proving (i)$\Rightarrow$(ii). Conversely, (ii) and the Nullstellensatz give
+$P^r\in E_A+(a_j:j\in A)$ after scalar extension to $\C$. Ideal membership descends to $\Q$, since the polynomials are rational. Taking the weight-$2r$ component produces an element of $E_A$ whose $P^r$ coefficient is $1$, while all terms divisible by an $a_j$ have smaller $P$-degree. Finally $V(E_A)$ is the closure of the graph image $(P,o)\mapsto(P,G_A(P,o))$. The weighted action
+$(P,a_j)\mapsto(\lambda^2P,\lambda^ja_j)$ identifies its nonzero $P$-fibers with the normalized fiber. Equivalently, approaching $P=1$ permits a local square-root rescaling. Constructibility of the image identifies its Euclidean and Zariski closures. This proves (ii)$\Leftrightarrow$(iii). These are standard elimination-theoretic facts; see \cite{CLO}.
+\end{proof}
+
+\paragraph{The exceptional $N=8$ certificate.}
+Let $A=\{1,3,6,7,8\}$, and abbreviate
+\[
+b=\frac{P/6+a_1^2}{2},\qquad
+c=\frac{7P^2/360+2a_1a_3-b^2}{2}.
+\]
+The polynomial
+\begin{align}\label{eq:cert8}
+\Phi_A=-\frac12\bigg[&a_1\left(2a_8-2a_1a_7+2ba_6+c^2-\frac{127}{604800}P^4\right)\notag\\
+&-a_3\left(2a_6+2bc-a_3^2-\frac{31}{15120}P^3\right)\bigg]
+\end{align}
+lies in $E_A$, by eliminating $g_2,g_4,g_5$ from \eqref{eq:Q}. Direct expansion gives
+\[
+\lc_P(\Phi_A)=\frac{827}{9676800}a_1.
+\]
+Since $a_1=-\gamma\ne0$, this is a valid certificate. It excludes simultaneous algebraicity of five values; it does not single out $\gamma$. Four further exact polynomial identities from the earlier draft are retained in Appendix~\ref{app:certs}. The main count theorem below does not depend on exhaustive resultant calculations.
+
+
+\subsection{Inhomogeneous and half-integer certificates}
+At a general $q\in\mathcal H$, the same elimination ideal is formed from $G_a(P,o)-a_a$. If $q$ is an integer, a $P$-leading coefficient nonzero at the selected actual $g_a$ is sufficient, as above. If $q$ is a nonintegral half-integer, raw algebraicity means
+\[
+g_a=b_a t^{-1},\qquad b_a\in\Qb,
+\]
+up to the nonzero rational factor $c_q$. A constant $P$-leading coefficient, or a single nonzero monomial $\kappa a^{e_0}$ of ordinary degree $|e_0|\le3$ which does not vanish at the actual point, is also sufficient: after $P=t^4$ and $a_a=b_at^{-1}$, its highest exponent is $4d-|e_0|$, whereas every other term has exponent at most $4d-4$. Thus the specialized Laurent polynomial in $t$ is nonzero and cannot vanish at the transcendental $t$ if all selected raw values are algebraic. No homogeneity is needed for this sufficient degree-three test.
+
+For completeness, the weighted Sylvester observation in \cite{Window} is valid in the following precise form. If $F,G$ have largest weights $w_F,w_G$, respective $v$-degrees $d_F,d_G$, and $\wt(v)=w$, then
+\[
+\wt\bigl(\operatorname{Res}_v(F,G)\bigr)\le
+W=d_Gw_F+d_Fw_G-d_Fd_Gw.
+\]
+Indeed, every determinant term in the fixed Sylvester matrix has this upper weight, by summing its row shifts and column indices. Hence $\deg_P\operatorname{Res}_v(F,G)\le\lfloor W/2\rfloor$. When $W$ is even, its $P^{W/2}$ coefficient is constant and can be read from the same Sylvester determinant specialized at $a=0$. The matrix must retain its original size if specialization lowers a $v$-degree. This is a certificate-construction aid; it is not used as a replacement for the exact Jacobian tests below.
+
+\section{A corrected valuation dichotomy and the gap lemma}\label{sec:val}
+\subsection{Why the old dominant-index argument fails}
+The first audit asserted that a least index of maximal negative valuation slope must exceed half the truncation length. Endpoint cancellation invalidates that assertion. For an indeterminate $z$ with $v(z)=-1$, take
+\[
+A(u)=\left(\frac{zu}{\sin zu}\right)^{1/2}e^{-z^3u},
+\qquad h_j=[u^j]A(u)/z^j.
+\]
+Then $h_1=-z^2$, $h_2=z^4/2+1/12$, and
+\[
+2h_2-h_1^2=\frac16.
+\]
+At truncation length two the maximal slope is first attained at index one. The two endpoint terms cancel the square term; there is no contradiction. Neither the finite count proof nor the window proof here uses the false inequality $2m>N$.
+
+\begin{lemma}[Coefficient-form degeneration dichotomy]\label{lem:valuation}
+Let $h_0=1,h_1,\ldots,h_N$ belong to an algebraically closed field with a real-valued valuation $v$, trivial on $\Q$, and suppose
+\[
+\sum_{j=0}^{2k}(-1)^jh_jh_{2k-j}=u_{2k},\qquad v(u_{2k})=0\quad(2k\le N).
+\]
+If every $v(h_j)\ge0$, reduction preserves these equations and any coefficient of strictly positive valuation becomes zero. Otherwise put
+\[
+s=\max_{1\le j\le N}\frac{-v(h_j)}j>0.
+\]
+There is $\tau$ with $v(\tau)=s$ such that the residues $b_j=\overline{\tau^jh_j}$ define a nonconstant truncated series
+\[
+B(u)=\sum_{j=0}^N b_ju^j,\quad b_0=1,\qquad
+B(u)B(-u)\equiv1\pmod{u^{N+1}}.
+\]
+If $v(h_a)>0$, then $b_a=0$. The least positive index $m$ with $b_m\ne0$ is odd; when $2m\le N$,
+\begin{equation}\label{eq:initialcancel}
+b_{2m}=\frac12b_m^2\ne0,\qquad v(h_{2m})=-2ms.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The bounded case is reduction in the valuation ring. In the unbounded case, the value group is divisible, and the maximum is attained, so an element $\tau$ of value $s$ exists. All $\tau^jh_j$ are integral and at least one positive-index residue is nonzero. Multiply the equation of degree $2k$ by $\tau^{2k}$ and reduce: its right side has positive valuation, so the product of the residue series is one. Odd-degree product coefficients vanish identically. A coefficient with $v(h_a)>0$ certainly has $v(\tau^ah_a)>0$. The first nonzero coefficient of a reciprocal-symmetric series has odd index, since otherwise the corresponding product coefficient is $2b_m$. In degree $2m$ only $2b_{2m}$ and $-b_m^2$ remain, proving \eqref{eq:initialcancel}.
+\end{proof}
+
+\begin{lemma}[Gap lemma, strengthened form]\label{lem:gap}
+Let $n\ge1$, $M\ge n-1$ and $M\ge2n-2$. Suppose that over a characteristic-zero field,
+\[
+\Omega(0)=1,\qquad \Omega(u)\Omega(-u)\equiv1\pmod{u^{M+1}},
+\qquad [u^j]\Omega=0\quad(n\le j\le M).
+\]
+Then $\Omega\equiv1\pmod{u^{M+1}}$.
+\end{lemma}
+\begin{proof}
+The truncation is a polynomial $A$ of degree at most $n-1$. Its product $A(u)A(-u)$ has degree at most $2n-2\le M$ and is congruent to one modulo $u^{M+1}$, so it equals one as a polynomial. Thus $A$ is constant, and its constant term is one.
+\end{proof}
+The source uses $M=2n$, which is sufficient but not minimal for this reciprocal-series lemma. The sharpness of the \emph{Gamma window} $[n,2n]$ is a separate issue, proved in Section~\ref{sec:sharpwindow}; it must not be inferred by calling the gap-lemma endpoint sharp.
+
+\section{Field recovery from dyadic derivative windows}\label{sec:window}
+We now prove Theorem~\ref{thm:window}, including negative nonintegral half-integers. The argument in fact applies to any formal series with the reflection product \eqref{eq:generalreflection} and the specified constant coefficient $\Gamma(q)=c_qt^\delta$.
+
+\begin{proof}[Proof of Theorem~\ref{thm:window}]
+Fix $n,q$ and let $K=\Q(\beta_a:n\le a\le2n)$, the same field as $K_{q,n}$. Suppose, for contradiction, that $\pi$ is transcendental over $K$. Let $F$ be the field generated over $K$ by $\pi$, $t$, and the raw coefficients $\beta_0,\ldots,\beta_{2n}$.
+
+There exists a rank-one valuation on an algebraic closure of $F$, trivial on $K$, with $v(\pi)<0$. Explicitly, extend $\pi$ to a transcendence basis of $F/K$; on the rational function field in that basis take the pole valuation in $\pi$, with all remaining basis variables and $K^\times$ of value zero. Extend this valuation algebraically, then to the algebraic closure. Its value group embeds in $\Q$, so it can be regarded as real-valued. This construction, rather than an unsupported rank assertion about an arbitrary extension, justifies the slope maximum used below; see also \cite{Valued}.
+
+Set $h_j=g_j/\pi^j$. Dividing \eqref{eq:Qgeneral} by $P^k$ gives
+\begin{equation}\label{eq:normalizedQ}
+\sum_{j=0}^{2k}(-1)^jh_jh_{2k-j}=
+\frac{T_{q,k}(P)}{P^k}.
+\end{equation}
+The right side has valuation zero, since its leading constant is $s_{2k}^{(\xi)}\ne0$ and all its other terms have positive valuation. For a selected index $a\in[n,2n]$, a nonzero $\beta_a\in K$ has valuation zero, and hence
+\[
+v(h_a)=-(a+\delta/2)v(\pi)>0.
+\]
+If $\beta_a=0$, the valuation is $+\infty$, with the same conclusion.
+
+Apply Lemma~\ref{lem:valuation} with $N=2n$. In the bounded case, every summand on the left of the degree-$2n$ equation has at least one factor indexed in $[n,2n]$, of positive valuation, while its other factor has nonnegative valuation. The sum has positive valuation (or is zero), contradicting the unit right side.
+
+In the unbounded case, the lemma gives a \emph{nonconstant} residue series $B$ with reciprocal product one modulo $u^{2n+1}$ and zero coefficients throughout $[n,2n]$. Lemma~\ref{lem:gap} forces $B\equiv1\pmod{u^{2n+1}}$, again a contradiction. Thus $\pi$ is algebraic over $K$. If all selected derivatives were algebraic over $\Q$, transitivity would make $\pi$ algebraic over $\Q$, contrary to Lindemann's theorem \cite{Lindemann}.
+\end{proof}
+
+\begin{corollary}[Localization and its exact counting content]\label{cor:dyadiccount}
+For every $q\in\mathcal H$, the set $\mathcal T_q=\{j\ge1:\Gamma^{(j)}(q)\notin\Qb\}$ meets every $[n,2n]$. If its increasing enumeration is $n_1<n_2<\cdots$, then
+\[
+n_1\le2,\qquad n_{i+1}\le2n_i+2,\qquad
+T_q(N)\ge\lfloor\log_2(N+2)\rfloor-1\quad(N\ge1).
+\]
+\end{corollary}
+\begin{proof}
+Use the windows $[1,2]$, $[n_i+1,2n_i+2]$, and the disjoint windows $[2^j-1,2^{j+1}-2]$. The counting inequality is vacuous at $N=1$.
+\end{proof}
+The set $\{2,6,14,30,\ldots\}=\{2^{j+1}-2:j\ge1\}$ meets every dyadic window and attains this count for every $N$. Thus localization alone allows natural density zero. Its logarithmic count is weaker asymptotically than \eqref{eq:powers}; its additional content is the control of every window and the field relation \eqref{eq:windowfield}.
+\section{A local algebraicity certificate}\label{sec:jaclemma}
+For finite prefix counts we use a second, independent mechanism. It does not require a valuation argument or an exhaustive symbolic eliminant.
+
+\begin{lemma}[Nonsingular algebraic solutions]\label{lem:jac}
+Let $K\subseteq\C$ be a field of characteristic zero. Let
+$f_1,\ldots,f_r\in K[X_1,\ldots,X_r]$ and let $x\in\C^r$ satisfy $f_i(x)=0$ for all $i$. If
+\[
+\det\left(\frac{\partial f_i}{\partial X_j}(x)\right)_{1\le i,j\le r}\ne0,
+\]
+then each $x_j$ is algebraic over $K$.
+\end{lemma}
+\begin{proof}
+Let $L=K(x_1,\ldots,x_r)$. If $\trdeg_KL>0$, choose a transcendence basis and a derivation that differentiates one basis element and fixes $K$ and the other basis elements. Since $L$ is a finite separable extension of the resulting rational function field, this derivation extends to $L$. Applying it to $f_i(x)=0$ gives
+$J(x)(Dx_1,\ldots,Dx_r)^T=0$. Invertibility of $J(x)$ forces $Dx_j=0$ for every generator of $L/K$, so $D=0$, contradicting its value on the chosen basis element.
+\end{proof}
+
+\begin{remark}
+The determinant is evaluated at the actual special values, but a rigorous interval proving that it is nonzero is sufficient. No assumption about their unknown arithmetic nature is used in that interval calculation. Generic nonvanishing of the determinant, or a small floating-point residual, would not be sufficient.
+\end{remark}
+
+\section{Minimal prefixes and Catalan-many tests}\label{sec:catalan}
+For $m\ge1$ define
+\begin{equation}\label{eq:admissible}
+\mathcal B_m=
+\{(b_1,\ldots,b_{m-1}):1\le b_1<\cdots<b_{m-1},\ b_j\le2j\}.
+\end{equation}
+For $m=1$ this contains the empty tuple. In particular every $B\in\mathcal B_m$ is contained in $\{1,\ldots,2m-2\}$.
+
+\begin{lemma}[Catalan reduction]\label{lem:catalan}
+There are exactly
+\[
+|\mathcal B_m|=C_m=\frac1{m+1}\binom{2m}{m}
+\]
+such tuples. Let $A\subseteq\{1,\ldots,2m\}$ have cardinality $m+1$. Either some $r<m$ satisfies $|A\cap[1,2r]|\ge r+1$, or the complement $B=[1,2m]\setminus A$, written increasingly, belongs to $\mathcal B_m$.
+\end{lemma}
+\begin{proof}
+If no earlier prefix is excessive, then
+$|B\cap[1,2r]|=2r-|A\cap[1,2r]|\ge r$ for $r<m$, which is exactly $b_r\le2r$. For the count, map $B$ to the up-step positions
+$1,b_1+1,\ldots,b_{m-1}+1$ of a Dyck path of length $2m$. The inequalities are precisely that its $j$th up-step occurs by position $2j-1$. This is a bijection with Dyck paths, counted by $C_m$.
+\end{proof}
+
+\begin{proposition}[Inductive field-recovery scheme]\label{prop:prefix}
+Suppose that at every level $1\le m\le M$ and for every $B\in\mathcal B_m$, a nonsingular square system of polynomial equations over the field generated by the complementary selected values forces the reflection parameter to be algebraic. Then the same parameter is algebraic over the field generated by \emph{any} $m+1$ selected values among the first $2m$, for every $m\le M$.
+\end{proposition}
+\begin{proof}
+Induct on $m$. An excessive earlier prefix invokes the induction hypothesis, and algebraicity persists upon enlarging the coefficient field. Otherwise Lemma~\ref{lem:catalan} identifies an admissible complement and the hypothesized square system applies.
+\end{proof}
+
+This eliminates redundant tests. For example, at order $22$ there are $\binom{22}{12}=646646$ subsets of twelve selected values, but only $C_{11}=58786$ new determinant tests. The preceding levels account for every omitted subset; none is discarded on a heuristic basis.
+
+
+\section{Actual-value Jacobians at arbitrary positive half-integral points}\label{sec:matrices}
+In this section $q>0$. Fix $m$ and $B=(b_1,\ldots,b_{m-1})\in\mathcal B_m$, and let $A=[1,2m]\setminus B$. Keep the raw selected values $\beta_a$, $a\in A$, in the coefficient field.
+
+\subsection{Integer points}
+Here $\Gamma(q)=c_q\in\Q^\times$, so selected $g_a$ generate the same field as selected raw values. Treat \eqref{eq:Qgeneral}, $1\le k\le m$, as $m$ polynomial equations in the $m$ unknowns $P$ and $g_b$ for $b\in B$. Define
+\[
+x_j=(-1)^jg_j\ (j\ge0),\quad x_j=0\ (j<0),\qquad
+v_k=P\,T'_{q,k}(P).
+\]
+The Jacobian entries are $-T'_{q,k}(P)$ and $2(-1)^bg_{2k-b}=2x_{2k-b}$. Multiplying its first column by $-P$ and each remaining column by $1/2$ gives
+\begin{equation}\label{eq:M1}
+M_m^{(q)}(B)=\left[\begin{array}{c|ccc}
+v_k&x_{2k-b_1}&\cdots&x_{2k-b_{m-1}}
+\end{array}\right]_{1\le k\le m}.
+\end{equation}
+There is no positivity assumption on the $x_j$ at shifted points. A nonzero determinant makes $P$ algebraic over the selected-value field by Lemma~\ref{lem:jac}, and hence makes $\pi$ algebraic over that field.
+
+\subsection{Nonintegral half-integer points: raw equations}
+Write $\Gamma(q)=c_qt$, $t=\sqrt\pi$. The raw reflection equations are
+\begin{equation}\label{eq:halfraw}
+F_k=2c_qt\beta_{2k}+\sum_{j=1}^{2k-1}(-1)^j\beta_j\beta_{2k-j}
+-c_q^2t^2T_{q,k}(t^4)=0.
+\end{equation}
+The unknowns are $t$ and the raw coefficients $\beta_b$, $b\in B$. The first Jacobian column is
+\[
+2c_q\beta_{2k}-c_q^2\bigl(2tT_{q,k}(P)+4t^5T'_{q,k}(P)\bigr),
+\]
+and the other columns are $2(-1)^b\beta_{2k-b}$. For conditioning, put
+\[
+y_j=\frac{(-1)^j\beta_j}{c_qt\,2^j}=\frac{(-1)^jg_j}{2^j},\quad
+ y_j=0\ (j<0),
+\]
+\begin{equation}\label{eq:vkhalf}
+v_k=4^{-k}\bigl(T_{q,k}(P)+2PT'_{q,k}(P)\bigr)-y_{2k}.
+\end{equation}
+Divide row $k$ of the raw Jacobian by $2c_qt\,4^k$, multiply the first column by $-1/c_q$, and column $b$ by $2^b$. The resulting matrix is
+\begin{equation}\label{eq:Mhalf}
+M_m^{(q)}(B)=\left[\begin{array}{c|ccc}
+v_k&y_{2k-b_1}&\cdots&y_{2k-b_{m-1}}
+\end{array}\right]_{1\le k\le m}.
+\end{equation}
+All scaling factors are nonzero at the actual point. Thus nonsingularity makes $t$, hence $\pi$, algebraic over $\Q(\beta_a:a\in A)$. Normalization by $t$ is used only to evaluate an equivalent matrix, not to infer algebraicity of normalized values.
+
+\begin{proposition}[Finite and all-order criteria]\label{prop:criterion}
+At a fixed positive half-integral $q$, suppose every matrix \eqref{eq:M1} or \eqref{eq:Mhalf}, as appropriate, is nonsingular for $1\le m\le M$ and $B\in\mathcal B_m$. Then the field-recovery and half-count conclusions of Theorem~\ref{thm:main} hold through $N=2M+1$. If the same hypothesis holds for every $m$, then $T_q(N)\ge\lfloor N/2\rfloor$ for every $N$.
+\end{proposition}
+\begin{proof}
+Use Lemma~\ref{lem:jac} and Proposition~\ref{prop:prefix} at even orders. At odd order $2m+1$, any set of $m+2$ selected indices contains $m+1$ indices in $[1,2m]$, so the even-order field recovery applies. If all selected values were algebraic, the recovered parameter would be algebraic over $\Q$, a contradiction. The case $N=1$ is vacuous.
+\end{proof}
+\section{Exact interval verification}\label{sec:computation}
+This section specifies the entire analytic and arithmetic certificate. In particular, the calculation is not a probabilistic test or a numerical guess about algebraicity.
+
+\subsection{Rational enclosures of the input constants}
+Use the fixed grid $Q=10^{100}$, representing an interval by integers $(L,U)$ meaning $[L/Q,U/Q]$. All rounding is outwards by integer division.
+
+For $s\ge2$ the Euler transformation gives
+\begin{equation}\label{eq:eta}
+(1-2^{1-s})\zeta(s)=\sum_{n=0}^{\infty}\frac{D_n(s)}{2^{n+1}},\qquad
+D_n(s)=\sum_{j=0}^n(-1)^j\binom nj(j+1)^{-s}.
+\end{equation}
+Indeed
+\[
+D_n(s)=\frac1{\Gamma(s)}\int_0^\infty t^{s-1}e^{-t}(1-e^{-t})^n\,dt,
+\]
+so $0\le D_n(s)\le1$. Interchanging the nonnegative sum and integral proves \eqref{eq:eta}. Truncating at $n=M-1$ has error between $0$ and $2^{-M}$; we use $M=400$. After collecting terms, the finite sum is
+\begin{equation}\label{eq:weights}
+\frac1{2^M}\sum_{j=0}^{M-1}\frac{W_j}{(j+1)^s},\qquad
+W_j=(-1)^j\left(2^M-\sum_{r=0}^j\binom Mr\right).
+\end{equation}
+This finite identity follows by summing the binomial coefficients in the Euler transform. It avoids cancellation-prone floating-point finite differences.
+
+For $\log2$, use
+\begin{equation}\label{eq:log2}
+L_J=2\sum_{j=0}^{J-1}\frac{1}{(2j+1)3^{2j+1}},\qquad
+0<\log2-L_J<\frac{9}{4(2J+1)3^{2J+1}},
+\end{equation}
+with $J=300$. The estimate is the geometric upper bound for the tail of $2\operatorname{arctanh}(1/3)$.
+
+For $\gamma$ use $n_0=256$, $K=100$, $H_{n_0}=\sum_{j=1}^{n_0}1/j$, and
+\begin{equation}\label{eq:gammaenclosure}
+\gamma=H_{n_0}-\log n_0-\frac1{2n_0}
++\sum_{k=1}^{K-1}\frac{B_{2k}}{2k n_0^{2k}}+R_K,
+\qquad |R_K|\le\frac{|B_{2K}|}{2K n_0^{2K}}.
+\end{equation}
+Here $\log n_0=8\log2$. To justify the bound, start with Binet's integral for the digamma function \cite[Eq.~5.9.15]{DLMF}, use $\psi(n_0+1)=H_{n_0}-\gamma$, and expand $1/(n_0^2+t^2)$ by a finite geometric sum. The residual factor has absolute value at most the next power. The resulting integral
+$2\int_0^\infty t^{2K-1}/(e^{2\pi t}-1)\,dt$ equals $|B_{2K}|/(2K)$, yielding \eqref{eq:gammaenclosure}. Thus the remainder estimate, not an asymptotic assumption, underlies the enclosure.
+
+
+\subsection{Base recurrences and exact shift operations}
+For the base points, the coefficient arrays in Section~\ref{sec:matrices} obey
+\begin{align}\label{eq:coefrec}
+x_0&=1,& nx_n&=\gamma x_{n-1}+\sum_{j=2}^n\zeta(j)x_{n-j},\notag\\
+y_0&=1,& ny_n&=\frac{\gamma+2\log2}{2}y_{n-1}
++\sum_{j=2}^n(1-2^{-j})\zeta(j)y_{n-j}.
+\end{align}
+These base inputs are positive, so outward-rounded positive products suffice in building them. The base first columns are
+\[
+v_k^{(1)}=2k(1-2^{1-2k})\zeta(2k),\qquad
+v_k^{(1/2)}=(2k+1)s_{2k}^{(1/2)}(\pi^2/4)^k-y_{2k}.
+\]
+The rational secant coefficients are obtained by inverting the cosine series; $\pi^2/4=\tfrac32\zeta(2)$.
+
+For shifted points, let $b_n$ denote the relevant base array $x_n$ or $y_n$ and choose the finite list
+\[
+\begin{array}{c|cccccc}
+q&1&\tfrac12&2&\tfrac32&3&\tfrac52\\ \hline
+\mathcal A_q&\varnothing&\varnothing&(1)&(1)&(1,\tfrac12)&(1,\tfrac13).
+\end{array}
+\]
+Multiplying the base generating series by $\prod_{a\in\mathcal A_q}(1-au)$ gives exactly the array at $q$ used in \eqref{eq:M1} or \eqref{eq:Mhalf}. Thus each factor updates
+\[
+b_n\longmapsto b_n-a b_{n-1}.
+\]
+Signed rational scaling and interval subtraction, with outward rounding, are used here. We never impose the base sign lemma on a shifted array.
+
+Write $\prod_{a\in\mathcal A_q}(1-a^2u^2)=\sum_r H_r u^{2r}$. For integers, set $W_0=0$ and $W_k=v_k^{(1)}$; the shifted first column is $\sum_r H_r W_{k-r}$. For half-integers set $W_0=1$ and
+\[
+W_k=v_k^{(1/2)}+y_{2k}^{\rm base}
+=(2k+1)s_{2k}^{(1/2)}(\pi^2/4)^k.
+\]
+Then the shifted first column is $\sum_r H_rW_{k-r}-y_{2k}^{(q)}$. These identities are precisely \eqref{eq:Tk} differentiated as in Section~\ref{sec:matrices}. Adding and subtracting interval enclosures may widen them but cannot invalidate containment.
+
+\subsection{An exact determinant error bound}
+For any matrix under consideration, let $[L_{ij}/Q,U_{ij}/Q]$ enclose its entries. Put
+\[
+C_{ij}=\left\lfloor\frac{L_{ij}+U_{ij}}2\right\rfloor,\quad
+\varepsilon=\max_{i,j}(U_{ij}-L_{ij}),\quad
+H=\max_{i,j}\max(|L_{ij}|,|U_{ij}|).
+\]
+The quantities $C,\varepsilon,H$ are integers; $C$ is an integer center matrix for $QM$.
+\begin{lemma}[Determinant enclosure]\label{lem:detbound}
+For an $m\times m$ matrix $M$ in the interval box,
+\begin{equation}\label{eq:deterror}
+\bigl|Q^m\det M-\det C\bigr|
+\le m!\,m\,\varepsilon H^{m-1}=:\mathcal E.
+\end{equation}
+Consequently $|\det C|>\mathcal E$ certifies $\det M\ne0$.
+\end{lemma}
+\begin{proof}
+Both $QM_{ij}$ and $C_{ij}$ have absolute value at most $H$, and differ by at most $\varepsilon$. Telescope the difference of the two products for each permutation in the determinant expansion. Each of its $m$ summands is bounded by $\varepsilon H^{m-1}$. Sum over $m!$ permutations.
+\end{proof}
+
+The verifier computes $\det C$ by fraction-free Bareiss elimination, checking that every indicated division is exact. All tests in the theorem have enormous margins compared with \eqref{eq:deterror}; the smallest observed ratio of exact integers $|\det C|/\mathcal E$ exceeds $10^{37}$. This last coarse bound is not needed for the proof; the exact strict comparison is made for each matrix.
+
+
+\begin{proposition}[Executed six-point certificate]\label{prop:computed}
+For every $q\in\mathcal Q$, $1\le m\le11$, and $B\in\mathcal B_m$, the integer determinant comparison of Lemma~\ref{lem:detbound} is strict: $|\det C|>\mathcal E$. Consequently every corresponding actual-value Jacobian is nonsingular.
+\end{proposition}
+
+\begin{table}[htbp]\centering\small
+\begin{tabular}{rr|rrrrrr}\toprule
+Order $2m$&$C_m$&$\ell_1$&$\ell_{1/2}$&$\ell_2$&$\ell_{3/2}$&$\ell_3$&$\ell_{5/2}$\\\midrule
+2&1&0&0&0&0&0&0\\
+4&2&-1&0&-1&-2&-1&-1\\
+6&5&-1&-1&-1&-3&-1&-2\\
+8&14&-2&-2&-3&-5&-2&-4\\
+10&42&-3&-4&-4&-7&-4&-7\\
+12&132&-5&-7&-7&-10&-8&-11\\
+14&429&-6&-10&-10&-14&-10&-15\\
+16&1430&-10&-14&-13&-19&-13&-21\\
+18&4862&-13&-19&-17&-26&-18&-30\\
+20&16796&-17&-26&-21&-34&-23&-36\\
+22&58786&-22&-34&-27&-41&-30&-45\\
+\bottomrule\end{tabular}
+\caption{Certified conservative bounds $|\det M_m^{(q)}(B)|\ge10^{\ell_q}$ for every admissible $B$. Every row and point has zero failed tests. These are enclosure bounds, not rounded numerical minima.}\label{tab:counts}
+\end{table}
+
+\begin{proof}[Exact computational certificate]
+The complete program in Appendix~\ref{app:code} constructs the rational input boxes, enumerates exactly the family $\mathcal B_m$, and evaluates every center determinant by fraction-free Bareiss elimination, checking exact divisibility at every step. For each minor it verifies the strict integer inequality $|\det C|>\mathcal E$. The count at each point and level is checked against $C_m$, and the recorded sign counts and SHA-256 digests are included as reproducibility aids. The total is
+\[
+6\sum_{m=1}^{11}C_m=6\cdot82499=494994.
+\]
+An independent compiled GMP implementation and the complete standard-library Python implementation returned identical determinant digests. In particular, all 164,998 base-point comparisons and digests from \cite{Revision} were reproduced, and 329,996 shifted-point comparisons were added. Each implementation independently checks the exact-integer enclosure inequality for every determinant; hashes are used only to compare the aggregate outputs.
+As separate implementation diagnostics, 160-digit evaluations of the polygamma recurrence and independently constructed reflection polynomials agreed with all 204 coefficient/first-column intervals through order 22; exact symbolic determinants also checked \eqref{eq:binomialdet} for $1\le n\le9$. These diagnostics are not used as acceptance tests.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Apply Proposition~\ref{prop:criterion} with $M=11$, using Proposition~\ref{prop:computed}. This proves the field statement at all even orders through 22, and the prefix argument gives all odd orders through 23. If a selected excessive set consisted entirely of algebraic numbers, $\pi$ would be algebraic over an algebraic extension of $\Q$, which is impossible.
+\end{proof}
+
+\begin{corollary}[A genuine combination of finite counts and windows]\label{cor:combined}
+For $q\in\mathcal Q$ and $N\ge22$,
+\begin{equation}\label{eq:seeded}
+T_q(N)\ge11+\left\lfloor\log_2\frac{N+2}{24}\right\rfloor.
+\end{equation}
+\end{corollary}
+\begin{proof}
+The first 22 indices contribute at least eleven. Append the disjoint dyadic windows with successive right endpoints $24\cdot2^r-2$ for $r=1,2,\ldots$; the first is $[23,46]$, the next $[47,94]$. Each contributes one by Theorem~\ref{thm:window}. Counting those contained in $[1,N]$ proves the formula.
+\end{proof}
+Thus at each of the six points the bounds at $N=22,46,94,190$ are respectively $11,12,13,14$. Equation~\eqref{eq:seeded} may be combined with \eqref{eq:powers} by taking the maximum. It remains a zero-density lower bound asymptotically, not a proof that the actual density is zero.
+
+\section{All-order odd-killing and conditional linear independence}\label{sec:odd}
+\begin{theorem}[Uniform odd-killing with exact highest terms]\label{thm:odd}
+Let $q\in\mathcal H$, $k\ge1$, and suppose the raw derivatives $\Gamma^{(j)}(q)$ are algebraic for every odd $j<2k$.
+For integer $q$, each $g_{2i}$, $1\le i\le k$, is in $\Qb[P]$ with exact degree $i$ and leading coefficient $\rho_{2i}$. Thus
+\[
+1,\Gamma^{(2)}(q),\Gamma^{(4)}(q),\ldots,\Gamma^{(2k)}(q)
+\]
+are linearly independent over $\Qb$.
+For nonintegral half-integer $q$, each raw $\beta_{2i}$ is a Laurent polynomial in $t=\sqrt\pi$ over $\Qb$, with highest term
+\[
+c_q\sigma_{2i}t^{4i+1},\qquad \sigma_{2i}=[z^{2i}](\sec z)^{1/2}>0.
+\]
+Consequently $1,\Gamma(q),\Gamma^{(2)}(q),\ldots,\Gamma^{(2k)}(q)$ are linearly independent over $\Qb$. In both cases every displayed positive even-order derivative is transcendental.
+\end{theorem}
+\begin{proof}
+Solve \eqref{eq:Qgeneral} for $g_{2i}$:
+\[
+2g_{2i}=T_{q,i}(P)+\sum_{\substack{1\le j<2i\\j\text{ odd}}}g_jg_{2i-j}
+-\sum_{\substack{0<j<2i\\j\text{ even}}}g_jg_{2i-j}.
+\]
+For integer $q$, odd products are algebraic. Induction gives a polynomial of degree at most $i$, and comparison with $S_1^{1/2}$ shows that its leading coefficient is
+\[
+\frac12\left(s_{2i}^{(1)}-\sum_{r=1}^{i-1}\rho_{2r}\rho_{2i-2r}\right)=\rho_{2i}\ne0.
+\]
+Lower-degree terms of $T_{q,i}$ do not affect it. For half-integers the odd normalized coefficients are in $\Qb t^{-1}$, so their products have exponent $-2$. Inductively the normalized even coefficients are Laurent polynomials with highest term $\sigma_{2i}t^{4i}$; multiplication by $c_qt$ proves the raw formula. Distinct highest exponents, respectively distinct polynomial degrees, make the displayed families linearly independent at the transcendental parameter. Multiplying a nonzero Laurent polynomial by a power of $t$ reduces the assertion to the usual polynomial case.
+\end{proof}
+The hypotheses are not known for the actual odd derivatives. These are conditional independence statements with unconditional disjunctive consequences. They do not establish algebraic independence of zeta values, nor the transcendence of $\gamma$.
+
+\section{Sharpness of the dyadic endpoint and an exact determinant}\label{sec:sharpwindow}
+\begin{lemma}[Odd-projection determinant]\label{lem:binomial}
+For indeterminates $a_1,\ldots,a_n$, let $A(x)=\prod_{r=1}^n(1+a_rx)$. With absent coefficients interpreted as zero,
+\begin{equation}\label{eq:odddet}
+\det\bigl([x^{2j+1-i}]A(x)\bigr)_{0\le j,i<n}
+=\left(\prod_{r=1}^na_r\right)\prod_{r<s}(a_r+a_s).
+\end{equation}
+In particular,
+\begin{equation}\label{eq:binomialdet}
+\det\!\left[\binom{n+i}{2j+1}\right]_{0\le i,j<n}=2^{\binom n2}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The determinant on the left of \eqref{eq:odddet} represents the map sending a polynomial $f$ of degree at most $n-1$ to the odd part of $A(x)f(x)$. Every determinant term is homogeneous of total degree
+\[
+\sum_{j=0}^{n-1}(2j+1)-\sum_{i=0}^{n-1}i=\frac{n(n+1)}2.
+\]
+If $a_r=0$, then $A(-x)$ has degree at most $n-1$ and is a nonzero kernel vector. If $a_r=-a_s$, the product of the remaining factors with $x$ replaced by $-x$ is a kernel vector of degree at most $n-2$. Thus each factor $a_r$ and $a_r+a_s$ divides the determinant. Their product has the full degree, so only a constant multiplier remains.
+
+The coefficient of $a_n^n$ in the determinant is the determinant of the map $f\mapsto$ the even part of $\prod_{r<n}(1+a_rx)f(x)$, on degrees below $n$. Its constant-coefficient row is $(1,0,\ldots,0)$; deleting that row and column leaves the odd-projection determinant for $n-1$. The product on the right has the same leading coefficient. Induction from $n=1$ gives multiplier one.
+
+Set all $a_r=1$. Changing the domain basis from $1,x,\ldots,x^{n-1}$ to $1,(1+x),\ldots,(1+x)^{n-1}$ has determinant one. The odd coefficients of $(1+x)^{n+i}$ are $\binom{n+i}{2j+1}$. Taking the transpose does not change the determinant, proving \eqref{eq:binomialdet}. This is an elementary determinant identity, not a claimed new general theory of symmetric functions.
+\end{proof}
+
+\begin{theorem}[The shorter window admits algebraic formal models]\label{thm:windowsharp}
+For every $q\in\mathcal H$ and $n\ge1$, there is a formal series $G^\sharp=\sum_{j\ge0}g_j^\sharp u^j$ such that
+\[
+g_0^\sharp=1,\qquad
+G^\sharp(u)G^\sharp(-u)=H_q(u)S_\xi(\pi u),\qquad g_j^\sharp\ne0\quad(j\ge0),
+\]
+and every raw coefficient $\Gamma(q)g_j^\sharp$, $n\le j\le2n-1$, is a nonzero algebraic number. Thus the endpoint $2n$ cannot be replaced uniformly by $2n-1$ using only the reflection relation, the transcendence of $\pi$, and coefficient nonvanishing.
+\end{theorem}
+\begin{proof}
+Write $G^\sharp=R_q\exp(\sum_{\substack{1\le r\le2n-1\\r\text{ odd}}}o_ru^r)$ initially. The map from its $n$ odd parameters to $(g_n^\sharp,\ldots,g_{2n-1}^\sharp)$ has Jacobian entries $g_{j-r}^\sharp$. Along $o_1=z$, $o_r=0$ for $r>1$, the coefficient $g_i^\sharp(z)$ has degree $i$ and highest coefficient $1/i!$. Hence the Jacobian determinant has degree $\binom n2$ in $z$ and leading coefficient
+\[
+\Delta_n=\det\left[\frac1{(j-r)!}\right]_{\substack{n\le j\le2n-1\\r=1,3,\ldots,2n-1}}
+=2^{\binom n2}\frac{\prod_{r=1,3,\ldots,2n-1}r!}{\prod_{j=n}^{2n-1}j!}\ne0,
+\]
+where $1/(j-r)!=0$ for $j<r$. The map is therefore dominant. Restrict its domain further by requiring all positive-index coefficients below $2n$ to be nonzero. Each is a nonzero polynomial (again inspect the same exponential line), so this restriction is a nonempty open set and the restricted map remains dominant. Its constructible image contains a nonempty Zariski-open set. That set meets the Zariski-dense product $(\Gamma(q)^{-1}\Qb^\times)^n$, giving the required algebraic raw values and nonzero earlier coefficients; see \cite{CLO} for the image theorem.
+
+The reflection version of Theorem~\ref{thm:window}, whose proof used no further Gamma property, implies that the raw coefficient at $2n$ is transcendental, and therefore nonzero. Complete the series recursively. Choose each subsequent odd coefficient outside the two forbidden values that would make it zero or make the next even coefficient zero. The latter is an affine condition with nonzero slope $g_1^\sharp$, since the even recurrence contains $g_1^\sharp g_{2k-1}^\sharp$. Every even equation is then satisfied, and odd-degree reflection equations are identities. This gives a full nonvanishing formal series.
+\end{proof}
+The models need not satisfy Gamma's other functional equations, growth, positivity, or analytic continuation properties. This is a limitation of specified information, not an upper bound on the actual transcendence density.
+
+\section{The half-count ceiling and the role of signs}\label{sec:ceiling}
+\begin{theorem}[Reflection ceiling on the full lattice]\label{thm:ceiling}
+For every $q\in\mathcal H$, the reflection equations admit a formal raw-coefficient model with constant coefficient $\Gamma(q)$, with every coefficient nonzero, with all odd positive-index coefficients algebraic, and with all even positive-index coefficients transcendental. Consequently reflection, parameter transcendence, and nonvanishing alone cannot force more than $\lfloor N/2\rfloor$ transcendental indices among the first $N$.
+At $q=1,\tfrac12$, the model can also satisfy $(-1)^j\beta_j^\sharp>0$ for every $j\ge0$.
+\end{theorem}
+\begin{proof}
+Prescribe every raw odd coefficient as a nonzero rational, for example $-1$, and solve each even reflection equation successively, dividing by $2\Gamma(q)\ne0$. The argument of Theorem~\ref{thm:odd}, which uses only these equations, proves that every raw even coefficient has the stated nonconstant highest term in $P$ or $t$, and hence is transcendental and nonzero. This supplies a full formal model for all $q\in\mathcal H$.
+
+At the two base points take $\beta_1^\sharp=-1$. The first even coefficient is positive. Inductively, the new even coefficient equals
+\[
+\beta_{2i}^\sharp=\frac{\beta_1^\sharp\beta_{2i-1}^\sharp}{\Gamma(q)}+R_i,
+\]
+where $R_i$ depends only on earlier coefficients. Since $\Gamma(q)>0$, taking the new odd coefficient to be a sufficiently negative rational integer makes this even coefficient positive. Its transcendence follows as before. Thus the full alternating sign pattern, not merely a finite numerical check of signs, is compatible with the ceiling.
+\end{proof}
+For the true Gamma values, a density larger than one-half remains possible. The theorem only explains why additional information is needed to prove such a density by this route.
+\section{Zero patterns: a generic theorem and a positive counterexample}\label{sec:zero}
+For an even series $S(u)=1+\sum_{k\ge1}s_{2k}u^{2k}$, let $z_S(N)$ be the largest number of zero coefficients among indices $1,\ldots,N$ of a series $G$ with
+$G(0)=1$ and $G(u)G(-u)\equiv S(u)\pmod{u^{N+1}}$.
+The coefficients of $G$ may lie in an extension field of characteristic zero. Choosing $G=\sqrt S$ shows $z_S(N)\ge\lceil N/2\rceil$.
+
+\begin{theorem}[Generic sharpness for every fixed order]\label{thm:generic}
+For each fixed $N\ge2$, with $m=\lfloor N/2\rfloor$, there is a nonempty Zariski-open subset of the coefficient space $\C^m$ such that
+\[
+z_S(N)=\lceil N/2\rceil
+\]
+whenever $(s_2,s_4,\ldots,s_{2m})$ lies in that open set. The open set contains strictly positive rational coefficient vectors.
+\end{theorem}
+\begin{proof}
+Fix a putative zero pattern $Z$ of size $\lceil N/2\rceil+1$. Apart from $g_0=1$, only
+$N-|Z|=m-1$ coefficients remain free. The $m$ even coefficients of $G(u)G(-u)$ are polynomial functions of those at most $m-1$ free variables. Their image has Zariski closure of dimension at most $m-1$, a proper closed subset of $\C^m$. There are finitely many patterns $Z$; their closed exceptional sets have a proper union. Outside that union no excessive zero pattern exists, while the odd zero pattern always exists. A proper complex algebraic set defined over $\Q$ cannot contain the positive real open orthant. Its open complement therefore contains a positive rational vector, by density of $\Q^m$ in $\R^m$.
+\end{proof}
+
+Genericity is not a proof that the particular Bernoulli or Euler coefficient vectors avoid the exceptional sets at every order. Even strict positivity of \emph{all} base coefficients is insufficient, as the next construction shows.
+
+\begin{theorem}[One positive base with almost all coefficients zero]\label{thm:positivecounter}
+There is an even series $S(u)$ with constant coefficient $1$ and \emph{strictly positive integer} coefficients at every positive even degree, analytic for $|u|<1$, for which
+\[
+z_S(N)\ge N-2\sqrt{2N}\qquad(N\ge3).
+\]
+In particular the nonvanishing, and even strict positivity, of the base coefficients does not imply the half-zero bound.
+\end{theorem}
+\begin{proof}
+Let
+\[
+E=\left\{\sum_{j\ge0}\varepsilon_j4^j:
+\varepsilon_j\in\{0,1\},\ \varepsilon_j=0\text{ eventually}\right\},
+\qquad A=E\cup2E.
+\]
+Every nonnegative integer is a sum of two elements of $A$: split its binary expansion into the even-position and odd-position digits. Also
+$|A\cap[0,X]|\le4\sqrt X$ for $X\ge1$. Indeed, if $4^{r-1}\le X<4^r$, each of $E$ and $2E$ contributes at most $2^r$ elements.
+
+Define
+\[
+B(u)=\sum_{a\in A}u^{2a+1},\qquad
+G(u)=1+iB(u),\qquad S(u)=1+B(u)^2.
+\]
+The coefficient of $u^{2k}$ in $S$ counts the ordered representations $k-1=a+b$ with $a,b\in A$, and is a positive integer. Since the coefficients of $B$ are $0$ or $1$, all series converge for $|u|<1$. Moreover
+$G(u)G(-u)=1+B(u)^2=S(u)$. Among the first $N$ positive-index coefficients of $G$, at most
+$4\sqrt{(N-1)/2}\le2\sqrt{2N}$ are nonzero. This proves the claim.
+\end{proof}
+
+At $N=8$ the beginning is $G(u)=1+i(u+u^3+u^5)+O(u^9)$, so the indices $2,4,6,7,8$ vanish although the first four positive even base coefficients are $1,2,3,2$. This explicit obstruction is about the auxiliary zero-pattern problem. It is not a counterexample to Gamma transcendence or to a conjecture about the specific bases $u/\sin u$ and $\sec u$.
+
+
+\section{What remains open and what the synthesis actually changes}\label{sec:open}
+\begin{conjecture}[Actual-value minor nonsingularity]\label{conj:jac}
+For every positive half-integral $q$, every $m\ge1$, and every $B\in\mathcal B_m$, the appropriate matrix \eqref{eq:M1} or \eqref{eq:Mhalf} is nonsingular at the actual Gamma values.
+\end{conjecture}
+Proposition~\ref{prop:criterion} proves that this is a sufficient condition for the all-$N$ half-count and lower asymptotic density at least $1/2$. It has been certified here only for $q\in\mathcal Q$ and $m\le11$. It is not claimed equivalent to the count theorem: a vanishing minor would invalidate that particular certificate, not prove the arithmetic conclusion false.
+
+The dyadic-window theorem does not prove this conjecture. Its unbounded-case contradiction relies on a \emph{consecutive run} of vanishing residue coefficients. An arbitrary excessive subset need not contain that run. Conversely the finite-prefix result cannot simply be translated to every block of twenty-two indices, because the reflection equations involve lower coefficients.
+
+The generic zero-pattern theorem does not certify the specific Bernoulli or Euler coefficient vectors at every order. The positive-base construction proves that nonzero or positive base coefficients alone are not enough. Nor does field recovery imply many algebraically independent values: arbitrarily many transcendental numbers may be algebraic over a field of transcendence degree one.
+
+Thus neither $\gamma$ nor an individual odd zeta value is newly identified as transcendental here. The all-order half-count, positive asymptotic density, and any unconditional large transcendence-degree lower bound remain separate research targets. The field recovery in Theorem~\ref{thm:window} and the certified finite result in Theorem~\ref{thm:main} are the unconditional statements proved in this manuscript.
+
+\section{Provenance, corrections, and reproducibility}\label{sec:revision}
+\begin{longtable}{p{0.26\textwidth}p{0.67\textwidth}}
+\toprule Source component & Treatment in this unified revision\\\midrule\endhead
+Original audit XXI & The false dominant-index inequality and its Case-1 shortcut are not used. Valid elimination identities are retained, with the leading-coefficient qualification.\\
+Repaired Jacobian paper & Its Catalan reduction, base-point matrices, interval construction, and all 164,998 determinant digests were reproduced. Its $N\le23$ theorem is retained.\\
+Window paper XXII & Its dyadic localization is retained with a self-contained coefficient proof, strengthened to field recovery, and extended to negative nonintegral half-integers.\\
+Valuation extension & A rank-one valuation is explicitly constructed using a transcendence basis and algebraic extension, rather than assumed from an arbitrary extension theorem.\\
+Reciprocal gap lemma & The sufficient endpoint is sharpened to $M\ge2n-2$; optimality of the Gamma window is proved separately.\\
+Numerical binomial identity & The identity $\det[\binom{n+i}{2j+1}]=2^{\binom n2}$ receives an exact proof. No historical novelty for the determinant identity is asserted.\\
+Four shifted-point tables & The unsupplied resultant scripts and timing logs are not inherited as evidence. Independent actual-value Jacobians extend the claimed $N\le10$ ranges to $N\le23$.\\
+Odd-killing and ceilings & General-lattice versions are combined with conditional linear independence and the full-sign ceiling at the base points.\\
+Historical claims & The inspected Powers versions are cited explicitly. Neither a complete priority search nor external referee approval is claimed.\\\bottomrule
+\end{longtable}
+
+The source folders \texttt{xxi/} and \texttt{xxii/} referenced in the original drafts were not supplied with their PDF and TeX. None of their absent logs is needed for the present theorem. All acceptance decisions in the new verifier use only exact integers and rational enclosures. The independently compiled GMP cross-check is a validation of the implementation; the embedded standard-library program suffices to reproduce the mathematical certificate.
+
+Compile this TeX file with \texttt{pdflatex} (twice for references). Its \texttt{filecontents*} block writes \texttt{keio\_gamma\_unified\_verify.py}. Then run
+\begin{center}\ttfamily\small
+python keio\_gamma\_unified\_verify.py --max-m 11 --workers 3
+\end{center}
+without Python's \texttt{-O} option. The default uses one worker; the worker count changes neither the matrices nor their digests. The program writes \texttt{keio\_unified\_certificates.json}, checks the Catalan counts, exact divisions, enclosure inequalities, sign counts, and expected digests. Timings are diagnostic only. Expected hashes are integrity aids, not substitutes for computing and checking each determinant.
+
+The numerical range is stated exactly. There is no assertion about an unexecuted next level, and the finite calculation is not presented as an asymptotic proof. The resulting document is a unified research manuscript with explicit analytic proofs and an exact computational certificate, not an independently peer-reviewed publication.
+
+\appendix
+\section{Retained exact elimination identities}\label{app:certs}
+Here $a_n=g_n$ and $P=\pi^2$. The first identity is
+\[
+P/12+a_1^2/2-a_2=0.
+\]
+The following four identities were independently checked by exact symbolic substitution of the reflection recurrence, not merely by evaluation of numerical residuals:
+\begin{align}
+0={}&3P^2-20Pa_1^2-60a_1^4+480a_1a_3-480a_4;\label{eq:a134}\\
+0={}&49P^4-(5040a_2^2+10080a_4)P^2+86400a_3^2P\notag\\
+ &+129600a_2^4+518400a_2^2a_4-1036800a_2a_3^2+518400a_4^2;\label{eq:a234}\\
+0={}&61P^3+42a_1^2P^2+(3780a_1^4-10080a_1a_3)P\notag\\
+ &+7560a_1^6-60480a_1^3a_3+120960a_1a_5
+ +60480a_3^2-120960a_6;\label{eq:a1356}\\
+0={}&961P^6-18228a_2P^5+86436a_2^2P^4\notag\\
+ &+(937440a_2^3+937440a_3^2-1874880a_6)P^3\notag\\
+ &+(-8890560a_2^4-8890560a_2a_3^2+17781120a_2a_6)P^2\notag\\
+ &+(152409600a_2^2a_3^2-304819200a_2a_3a_5+152409600a_5^2)P\notag\\
+ &+228614400a_2^6-1371686400a_2^3a_3^2-914457600a_2^3a_6\notag\\
+ &+3657830400a_2^2a_3a_5-1828915200a_2a_5^2\notag\\
+ &+228614400a_3^4-914457600a_3^2a_6+914457600a_6^2.\label{eq:a2356}
+\end{align}
+Together with \eqref{eq:cert8}, these are genuine examples of the original certificate mechanism. They are illustrative and are not substituted for the complete Jacobian verification.
+
+
+\section{Complete executable exact verifier}\label{app:code}
+This code is also embedded in the single TeX source and extracted upon compilation. It uses only Python's standard library. The expected data were generated independently and compared against the complete Python run; the strict integer enclosure tests, rather than the data table alone, certify the theorem.
+\lstinputlisting{keio_gamma_unified_verify.py}
+
+\begin{thebibliography}{99}
+\bibitem{Window} Research Audit XXII, \emph{Dyadic windows of transcendental Gamma-function derivatives at all half-integer points: a gap lemma for reciprocal-symmetric series}, supplied manuscript, October 24, 2026, 10 pp.
+\bibitem{Revision} KEIO, \emph{Certified finite transcendence counts for Gamma-function derivatives: a Jacobian repair, the bound $N\le23$, and the limits of reflection information}, supplied revised manuscript, October 24, 2026, 18 pp.
+\bibitem{Earlier} Research Audit XXI, \emph{Transcendence density of Gamma-function derivatives via weighted $\pi$-degeneration certificates: a sharp bound for $N\le11$ and the reflection ceiling}, supplied manuscript, October 24, 2026, 14 pp. Superseded proof components are identified in Section~\ref{sec:revision}.
+\bibitem{Powers1} M. R. Powers, \emph{Transcendence Results for $\Gamma^{(n)}(1)$ and Related Sequences of Generalized Constants}, \href{https://arxiv.org/abs/2511.01849v7}{arXiv:2511.01849v7}, April 13, 2026.
+\bibitem{Powers2} M. R. Powers, \emph{``Infinitely Often'' Transcendence of Gamma-Function Derivatives}, \href{https://arxiv.org/abs/2601.18474v4}{arXiv:2601.18474v4}, April 21, 2026; especially Theorems~1--2.
+\bibitem{Powers3} M. R. Powers, \emph{Lower Bounds for Densities of Transcendental Gamma-Function Derivatives}, \href{https://arxiv.org/abs/2602.07985v3}{arXiv:2602.07985v3}, April 13, 2026.
+\bibitem{CLO} D. A. Cox, J. Little and D. O'Shea, \emph{Ideals, Varieties, and Algorithms}, 4th ed., Springer, 2015.
+\bibitem{Valued} A. J. Engler and A. Prestel, \emph{Valued Fields}, Springer Monographs in Mathematics, Springer, 2005.
+\bibitem{DLMF} NIST Digital Library of Mathematical Functions, Chapter~5, especially \href{https://dlmf.nist.gov/5.5}{Section~5.5}, \href{https://dlmf.nist.gov/5.9.E15}{Eq.~5.9.15}, and \href{https://dlmf.nist.gov/5.15}{Section~5.15}, consulted October 25, 2026.
+\bibitem{Lindemann} F. Lindemann, \emph{\"Uber die Zahl $\pi$}, Mathematische Annalen \textbf{20} (1882), 213--225.
+\end{thebibliography}
+\end{document}
