@@ -1,0 +1,1263 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Frobenius lifting, rigidity, and stabilization}
+\fancyhead[R]{\small T76--T80}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parskip}{4pt}\setlength{\parindent}{1.1em}
+\setlist{itemsep=3pt,topsep=5pt}
+\newtheorem{theorem}{Theorem}
+\renewcommand{\thetheorem}{T\arabic{theorem}}
+\setcounter{theorem}{75}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{corollary}[lemma]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\newtheorem{problem}[lemma]{Auxiliary problem}
+\theoremstyle{remark}\newtheorem{remark}[lemma]{Remark}
+\newcommand{\Z}{\mathbb Z}\newcommand{\Q}{\mathbb Q}
+\newcommand{\C}{\mathbb C}\newcommand{\F}{\mathbb F}
+\DeclareMathOperator{\rank}{rank}
+\hypersetup{pdftitle={Frobenius Lifting, Floquet Rigidity, and Equivariant Stabilization: T76-T80},pdfauthor={KEIO}}
+\title{Frobenius Lifting, Floquet Rigidity,\\and Equivariant Stabilization\\[5pt]\large Five theorems and their applications to prior open problems}
+\author{KEIO}
+\date{24 October 2026\\[3pt]\small Research manuscript T76--T80}
+\begin{document}
+\maketitle
+\begin{abstract}
+We develop explicit constructions in three settings. For the lacunary series
+$\Phi_p(z)=\sum_{n\geq0}z^{p^n}$, a Frobenius-compatible correction tower
+produces a monic polynomial basis with exact evaluation valuations $v_p(d!)$.
+We determine the full kernel of evaluation modulo every prime power and prove
+the minimum-degree conjecture of Krattenthaler and M\"uller, first posed in
+2015. A multiplicative version, followed by a finite descent of denominators,
+proves their 2013 minimum-degree conjecture for the Cantor product
+$\prod_{n\geq0}(1+z^{3^n})$ in its original coefficient ring.
+For discrete Schr\"odinger operators, coordinate-average descent and the
+second and third Fourier perturbation identities prove rigidity at period
+$(3\mathbb Z)^d$ in every dimension. Combined with prior results, this completes
+the classification for rectangular period lattices.
+Finally, for an order-two lattice action, we construct mixed linear and
+quadratic systems of parameters with an optimal quadratic budget. Their
+Artinian quotients prove Clarke's coefficient inequality and give the sharp
+universal stabilization exponent $\max(p-q,0)$.
+These results comprise three numbered-conjecture applications and one
+explicitly posed, unnumbered classification problem. The five theorem labels
+do not denote five independently posed open problems.
+\end{abstract}
+
+\section{Research questions, exact targets, and scope}
+
+The organizing strategy is to pose an auxiliary construction problem, solve
+it with explicit control of the quantity that obstructs a prior problem,
+and then return to that original problem without changing its hypotheses.
+The auxiliary quantities here are evaluation valuation, low-order Fourier
+constraints, and the number of quadratic parameters.
+
+\begin{center}\small
+\begin{tabular}{@{}p{.08\textwidth}p{.43\textwidth}p{.40\textwidth}@{}}
+\toprule
+Label & Structural result & External application \\
+\midrule
+T76 & A factorial-valued monic basis, exact valuation formula, and the full evaluation kernel. & Auxiliary construction used in T77 and adapted in T78.\\
+T77 & Degree-optimal integral annihilators for every prime power. & Krattenthaler--M\"uller Conjecture~4, first preprint 2015 \cite{KMp}.\\
+T78 & Multiplicative lifting with finite coefficient-ring descent. & Krattenthaler--M\"uller Conjecture~12, 2013 \cite{KM3}.\\
+T79 & All-dimensional period-three rigidity and the rectangular classification. & The remaining small-period problem in \cite[Section~4.4]{CFK}.\\
+T80 & Optimal mixed-degree parameter systems and sharp universal stabilization. & Clarke Conjecture~8.5, 2026 \cite{Clarke26}.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The two arithmetic targets concern formal series modulo integer powers, not
+the arithmetic nature of a numerical value. The spectral target is the
+rectangular-period problem, not the larger classification over arbitrary
+oblique lattices. The Ehrhart result applies without assuming that the
+equivariant numerator is already polynomial or effective. These distinctions
+are retained throughout the proofs.
+
+The claims below are unconditional mathematical statements with complete
+arguments, using the established results explicitly cited. In particular,
+the Cantor lower bound is the prior Theorem~10 of \cite{KM3}; the remaining
+rectangular cases use the prior period-reduction and existence theorems of
+\cite{CFK}; and the Ehrhart argument uses the Cohen--Macaulay property of
+normal affine semigroup rings. Exact finite computations supplement these
+arguments and are not used to extrapolate an all-parameter claim.
+
+This is a research draft, independently checked internally but not externally
+peer reviewed or proof-assistant certified. The current literature search
+located no earlier identical resolution of the stated targets. The
+Frobenius congruence, Fourier perturbation, pole extraction, generic sections,
+and Koszul complexes are established mathematics. We therefore do not assert
+that the underlying general principles are historically unprecedented.
+The attribution and success-condition audit at the end makes this limitation
+explicit.
+
+
+\section{A Frobenius-compatible lifting problem}
+\label{arith:section}
+
+The first two existing targets concern sharp algebraic relations modulo prime
+powers for transcendental formal series. Krattenthaler and M\"uller
+\cite[Conjecture~4]{KMp} ask for the minimum degree of a monic polynomial
+annihilating
+\[
+ \Phi_p(z)=\sum_{n\geq0}z^{p^n}
+\]
+coefficientwise modulo $p^\gamma$, with coefficients in $\mathbb Z[z]$.
+Their proposed answer is the least $d$ satisfying $\nu_p(d!)\geq\gamma$.
+Here $p$ is an arbitrary prime and $\gamma\geq1$.
+The binary version is also present in \cite[Conjecture~4]{KKM2}; it is a
+special case of this target, not an additional independent problem.
+The second target, \cite[Conjecture~12]{KM3}, concerns the Cantor product
+\[
+ \Psi(z)=\prod_{j\geq0}(1+z^{3^j}).
+\]
+Its prescribed coefficient ring is
+$\mathbb Z[z,z^{-1},(1+z)^{-1}]$, and the proposed minimum degree modulo
+$3^\gamma$ is $2d$, for the least positive $d$ with
+$d+\nu_3(d!)\geq\gamma$.
+
+We begin with an auxiliary question that provides the same constructive
+step for both targets: given an integral series with an affine functional
+equation under $z\mapsto z^p$, can a monic relation of known divisibility
+be lifted recursively while controlling its degree? The answer uses the
+classical Frobenius congruence
+\begin{equation}\label{arith:frobenius}
+ B(z)^p\equiv B(z^p)\pmod p\qquad(B\in\mathbb Z[[z]]).
+\end{equation}
+The resulting substitution-dependent recursion supplies the correction
+polynomials explicitly. The underlying congruence is classical; its use here
+is not described as a historically new foundational principle.
+
+For an integer polynomial or integral formal series $G$, write
+$\nu_p(G)$ for the minimum $p$-adic valuation of its coefficients, with
+$\nu_p(0)=+\infty$. Congruence of formal series always means coefficientwise
+congruence.
+
+\begin{lemma}[Lifting through an affine Frobenius equation]
+\label{arith:lift}
+Let $R\subseteq\mathbb Z[[z]]$ be a ring stable under the substitution
+$\sigma(c)(z)=c(z^p)$. Suppose $F\in\mathbb Z[[z]]$ satisfies
+\[
+ F(z^p)=a(z)F(z)+b(z),\qquad a,b\in R.
+\]
+For $G\in R[t]$, define
+\[
+ (\tau G)(z,t)=\sum_j \sigma(c_j)(z)(a(z)t+b(z))^j
+ \quad\text{if }G=\sum_jc_j(z)t^j.
+\]
+For a nonnegative integer $e$, if $G$ is monic of degree $D>0$ and
+$G(z,F(z))\in p^e\mathbb Z[[z]]$, then
+\begin{equation}\label{arith:liftoperator}
+ \mathcal L_e(G)=G^p-p^{(p-1)e}\tau G
+\end{equation}
+is monic of degree $pD$ and has evaluation divisible by $p^{pe+1}$.
+
+Starting with a monic $G_0$ of degree $D_0>0$ and evaluation divisible
+by $p^{e_0}$ for a nonnegative integer $e_0$, set
+\begin{equation}\label{arith:generalrecurrence}
+ G_{r+1}=G_r^p-p^{(p-1)e_r}\tau G_r,
+ \qquad e_{r+1}=pe_r+1.
+\end{equation}
+Then $G_r$ is monic of degree $D_0p^r$ and has evaluation divisible by
+$p^{e_r}$, where
+\[
+ e_r=p^re_0+\frac{p^r-1}{p-1}.
+\]
+If $d=\sum_r d_rp^r$ is a base-$p$ expansion, the product
+$\prod_rG_r^{d_r}$ is monic of degree $D_0d$ and has evaluation divisible
+by $p^{e_0d+\nu_p(d!)}$.
+\end{lemma}
+\begin{proof}
+Write $G(z,F(z))=p^eB(z)$ with $B\in\mathbb Z[[z]]$. The affine functional
+equation makes evaluation commute with the two substitutions:
+\[
+ (\tau G)(z,F(z))=G(z^p,F(z^p))=p^eB(z^p).
+\]
+Consequently
+\[
+ \mathcal L_e(G)(z,F(z))
+   =p^{pe}\bigl(B(z)^p-B(z^p)\bigr),
+\]
+which is divisible by $p^{pe+1}$ by \eqref{arith:frobenius}.
+The correction $\tau G$ has $t$-degree at most $D$, whereas $G^p$ is
+monic of degree $pD>D$. This proves the first assertion and permits
+induction in \eqref{arith:generalrecurrence}.
+The recurrence for $e_r$ has the displayed solution. Finally, Legendre's
+formula gives
+\[
+ \sum_r d_re_r=e_0d+\sum_r d_r\frac{p^r-1}{p-1}
+       =e_0d+\frac{d-s_p(d)}{p-1}=e_0d+\nu_p(d!),
+\]
+where $s_p(d)=\sum_rd_r$. Multiplying the evaluation divisibilities
+proves the last assertion.
+\end{proof}
+
+\section{An exact factorial basis and its evaluation kernel}
+
+For $\Phi_p$, the exact identity
+\begin{equation}\label{arith:phifunctional}
+ \Phi_p(z^p)=\Phi_p(z)-z
+\end{equation}
+allows us to take $R=\mathbb Z[z]$, $a=1$, $b=-z$, and the seed $A_0=t$.
+Put $e_r=(p^r-1)/(p-1)$ and define
+\begin{equation}\label{arith:Ar}
+ A_0(z,t)=t,\qquad
+ A_{r+1}(z,t)=A_r(z,t)^p-p^{(p-1)e_r}A_r(z^p,t-z).
+\end{equation}
+All substitutions in this formula are simultaneous. For $d\geq0$ with
+base-$p$ digits $d_r$, set
+\begin{equation}\label{arith:Bd}
+ B_d(z,t)=\prod_{r\geq0} A_r(z,t)^{d_r};\qquad B_0=1.
+\end{equation}
+Only finitely many factors occur. Lemma~\ref{arith:lift} implies that $B_d$
+is monic of degree $d$ and that
+\begin{equation}\label{arith:upperval}
+ \nu_p\bigl(B_d(z,\Phi_p(z))\bigr)\geq\nu_p(d!).
+\end{equation}
+
+The opposite bound will follow from an explicit coefficient-isolation
+argument. In particular, it does not require a linear-independence theorem
+for a separate family of auxiliary series.
+
+\begin{lemma}[Isolation by digit sums]\label{arith:isolate}
+Let $H(z,t)=\sum_{k=0}^{D}c_k(z)t^k\in\mathbb Z[z,t]$, where $D\geq1$,
+and choose $M\geq0$ with $\deg c_k\leq M$ for every nonzero $c_k$.
+Choose $L\geq0$ such that $p^L>M$, set $K=L+2$, and define
+\[
+ N=\sum_{i=0}^{D-1}p^{K+i}.
+\]
+Then, for every $j_0\in\{0,\ldots,M\}$,
+\begin{equation}\label{arith:isolationidentity}
+ [z^{N+j_0}]H(z,\Phi_p(z))=D!\,[z^{j_0}]c_D(z).
+\end{equation}
+In particular, if $H(z,\Phi_p(z))\equiv0\pmod{p^\gamma}$, then every
+coefficient of $D!c_D(z)$ is divisible by $p^\gamma$.
+\end{lemma}
+\begin{proof}
+Every exponent appearing in $\Phi_p(z)^k$ is a sum of $k$ powers of $p$.
+Its base-$p$ digit sum is at most $k$, since every carry decreases the
+number of summands by $p-1$.
+
+Consider the term $[z^j]c_k(z)$ in a coefficient extraction at $N+j_0$,
+and put $\Delta=j_0-j$. If $\Delta>0$, then $\Delta\leq M<p^K$ and
+\[
+ s_p(N+\Delta)=D+s_p(\Delta)>D.
+\]
+If $\Delta=-c<0$, then $1\leq c\leq M<p^L$ and borrowing at the
+lowest nonzero digit of $N$ gives
+\begin{align*}
+ s_p(N-c)
+   &=D-1+s_p(p^K-c)\\
+   &=D-1+(p-1)K-s_p(c-1)\\
+   &\geq D-1+(p-1)(K-L)>D.
+\end{align*}
+Here $s_p(c-1)\leq(p-1)L$, and $K-L=2$. Thus, whenever $j\ne j_0$,
+the required coefficient in every $\Phi_p^k$, $k\leq D$, is zero.
+
+For $j=j_0$, the exponent is $N$ and has digit sum $D$. Therefore only
+$k=D$ can contribute. A representation of $N$ by exactly $D$ powers of
+$p$ cannot involve a carry: a carry would lower the final digit sum below
+$D$. Its multiset of summands is therefore precisely the $D$ distinct
+powers in the definition of $N$. Their ordered arrangements number $D!$.
+This proves \eqref{arith:isolationidentity} and the divisibility assertion.
+\end{proof}
+
+For later statements, define
+\[
+ D_\gamma=\min\{d\geq0:\nu_p(d!)\geq\gamma\},\qquad
+ J_\gamma=\{H\in\mathbb Z[z,t]:H(z,\Phi_p(z))\equiv0\pmod{p^\gamma}\}.
+\]
+The set $J_\gamma$ is an ideal because evaluation modulo $p^\gamma$ is
+a ring homomorphism.
+
+\begin{theorem}[Factorial basis, exact valuation, and the full kernel]
+\label{arith:factorialbasis}
+The polynomials $B_d$ in \eqref{arith:Bd} form a monic triangular
+$\mathbb Z[z]$-basis of $\mathbb Z[z,t]$. For every finite expansion
+$H=\sum_dc_d(z)B_d(z,t)$,
+\begin{equation}\label{arith:exactnorm}
+ \nu_p\bigl(H(z,\Phi_p(z))\bigr)
+   =\min_d\bigl(\nu_p(c_d)+\nu_p(d!)\bigr).
+\end{equation}
+In particular, each $B_d$ has evaluation valuation exactly $\nu_p(d!)$.
+For every $\gamma\geq1$, membership in $J_\gamma$ is equivalent to
+\begin{equation}\label{arith:kernelcriterion}
+ c_d(z)\in p^{\max\{0,\gamma-\nu_p(d!)\}}\mathbb Z[z]
+ \quad\text{for every }d.
+\end{equation}
+The ideal has the finite presentation
+\begin{equation}\label{arith:kernelideal}
+ J_\gamma=
+ \left(B_{D_\gamma},\;
+ p^{\gamma-\nu_p(d!)}B_d\ :\ 0\leq d<D_\gamma\right),
+\end{equation}
+and, as a $\mathbb Z[z]$-module,
+\begin{equation}\label{arith:module}
+ \mathbb Z[z,t]/J_\gamma
+ \simeq\bigoplus_{d=0}^{D_\gamma-1}
+       \bigl(\mathbb Z/p^{\gamma-\nu_p(d!)}\mathbb Z\bigr)[z].
+\end{equation}
+Moreover, giving $t$ weight $1$ and $z$ weight $p$ yields
+$\operatorname{wt}_p(B_d)\leq d$; consequently
+$\deg_z B_d\leq\lfloor d/p\rfloor$.
+\end{theorem}
+\begin{proof}
+Since $B_d$ is monic of $t$-degree $d$, successively subtracting its
+leading term gives a unique finite expansion of every polynomial in the
+$B_d$. This proves the basis assertion.
+
+Sufficiency of \eqref{arith:kernelcriterion} follows from
+\eqref{arith:upperval}. For necessity, suppose $H\in J_\gamma$ and let
+$D$ be the largest index with $c_D\ne0$. This is also its ordinary
+$t$-degree, with leading coefficient $c_D(z)$. If $D\geq1$,
+Lemma~\ref{arith:isolate} shows
+\[
+ c_D(z)\in p^{\max\{0,\gamma-\nu_p(D!)\}}\mathbb Z[z].
+\]
+The same conclusion is immediate for $D=0$. By
+\eqref{arith:upperval}, the evaluation of $c_DB_D$ vanishes modulo
+$p^\gamma$. Subtracting it leaves a smaller-degree element of $J_\gamma$.
+Induction proves \eqref{arith:kernelcriterion} for every coefficient.
+
+For $H\ne0$, put $a=\min_d(\nu_p(c_d)+\nu_p(d!))$, a finite
+nonnegative integer. Equation~\eqref{arith:upperval} gives valuation at
+least $a$. If the valuation were at least $a+1$, criterion
+\eqref{arith:kernelcriterion} with $\gamma=a+1$ would contradict the
+definition of $a$. This proves \eqref{arith:exactnorm}; the zero case
+uses the convention $\nu_p(0)=+\infty$.
+
+Each displayed generator in \eqref{arith:kernelideal} belongs to
+$J_\gamma$. Conversely, divide any $H\in J_\gamma$ by the monic
+$B_{D_\gamma}$ in $\mathbb Z[z][t]$. The remainder is in $J_\gamma$
+and has degree below $D_\gamma$. Its unique basis expansion satisfies
+\eqref{arith:kernelcriterion}, placing it in the displayed ideal.
+Uniqueness of the remainder coefficients modulo their indicated powers
+of $p$ also proves the module decomposition \eqref{arith:module}.
+This is a module isomorphism; no diagonal description of multiplication
+in the quotient ring is asserted.
+
+Finally, $A_0=t$ has weight one. The substitution $z\mapsto z^p$,
+$t\mapsto t-z$ multiplies the weight of every monomial by at most $p$:
+the substituted $z$ has weight $p^2$ and the substituted $t$ has weight
+at most $p$. Thus \eqref{arith:Ar} gives
+$\operatorname{wt}_p(A_r)\leq p^r$ inductively. Multiplying according
+to the base-$p$ digits of $d$ yields
+$\operatorname{wt}_p(B_d)\leq\sum_rd_rp^r=d$, proving the last assertion.
+\end{proof}
+
+The coefficient-isolation identity explains why the upper bound from
+Frobenius lifting is sharp: it produces an exact coefficient $d!$ at a
+specified exponent for every monic polynomial of degree $d$ once its
+coefficient degrees have been bounded. It also prevents cancellation
+between different valuation levels in the basis expansion.
+
+\section{The original minimum-degree conjecture for \texorpdfstring{$\Phi_p$}{Phi p}}
+
+\begin{theorem}[Krattenthaler--M\"uller Conjecture~4]
+\label{arith:phiconjecture}
+For every prime $p$ and every integer $\gamma\geq1$, the smallest
+$t$-degree of a monic polynomial $H(z,t)\in\mathbb Z[z,t]$ satisfying
+\[
+ H(z,\Phi_p(z))\equiv0\pmod{p^\gamma}
+\]
+is precisely
+\[
+ D_\gamma=\min\{d\geq0:\nu_p(d!)\geq\gamma\}.
+\]
+A degree-optimal polynomial is $B_{D_\gamma}$, defined explicitly by
+\eqref{arith:Ar}--\eqref{arith:Bd}; it has
+$z$-degree at most $\lfloor D_\gamma/p\rfloor$.
+This proves the full conjecture in \cite{KMp}, with its original
+coefficient ring and quantifiers.
+\end{theorem}
+\begin{proof}
+Equation~\eqref{arith:upperval} shows that $B_{D_\gamma}$ is a monic
+annihilator modulo $p^\gamma$ of degree $D_\gamma$. Conversely, for a
+monic annihilator of degree $D\geq1$, Lemma~\ref{arith:isolate} gives
+$p^\gamma\mid D!$. Hence $D\geq D_\gamma$. Degree zero cannot occur:
+the only monic constant polynomial is one. The coefficient-polynomial degree bound follows
+from Theorem~\ref{arith:factorialbasis}.
+\end{proof}
+
+For illustration, when $p=2$, the recursion begins with
+\begin{align*}
+ A_1(z,t)&=t^2-t+z,\\
+ A_2(z,t)&=t^4-2t^3+(2z-1)t^2+(2z+2)t-3z^2-2z.
+\end{align*}
+The evaluations of these polynomials have valuations exactly one and
+three. Thus $A_2$ is a minimum-degree relation modulo $8$. At the next
+levels, $A_3$ and $A_4$ have degrees eight and sixteen and evaluation
+valuations seven and fifteen. These statements hold for the full formal
+series, not only a truncation. The recurrence supplies the polynomials
+without solving an undetermined coefficient system at each level.
+
+\section{The original Cantor-product minimum-degree conjecture}
+
+For this second application, the affine functional equation is
+\begin{equation}\label{arith:psifunctional}
+ \Psi(z^3)=\frac{\Psi(z)}{1+z}.
+\end{equation}
+The original coefficient ring
+$R=\mathbb Z[z,z^{-1},(1+z)^{-1}]$ is not stable under substitution
+$z\mapsto z^3$ as an ordinary rational-function ring. We first perform
+the construction in the stable ring
+\[
+ R_\infty=\mathbb Z\bigl[z,(1+z^{3^j})^{-1}:j\geq0\bigr]
+       \subseteq\mathbb Z[[z]],
+\]
+and then descend every coefficient at the required finite precision.
+The following lemma ensures that the final answer uses the prescribed
+ring, rather than a changed problem.
+
+\begin{lemma}[Finite-precision descent]\label{arith:descent}
+For every $\gamma\geq1$ and every $c\in R_\infty$, there exists
+$\widetilde c\in\mathbb Z[z,(1+z)^{-1}]$ such that
+$c-\widetilde c\in3^\gamma\mathbb Z[[z]]$.
+Consequently a monic polynomial in $R_\infty[t]$ can be replaced, without
+changing its degree or any evaluation modulo $3^\gamma$ at an integral
+formal series, by a monic polynomial in
+$\mathbb Z[z,(1+z)^{-1}][t]$.
+\end{lemma}
+\begin{proof}
+For $j\geq0$ put $U_j=1+z^{3^j}$ and $V_j=(1+z)^{3^j}$.
+Frobenius modulo three gives $U_j=V_j+3E_j$ for some $E_j\in\mathbb Z[z]$.
+The finite geometric identity gives
+\begin{equation}\label{arith:finiteinverse}
+ U_j^{-1}\equiv
+ \sum_{a=0}^{\gamma-1}(-3E_j)^aV_j^{-a-1}
+ \pmod{3^\gamma\mathbb Z[[z]]}.
+\end{equation}
+All denominators on the right are powers of $1+z$. More explicitly,
+the omitted remainder is $(-3E_j)^\gamma V_j^{-\gamma}U_j^{-1}$,
+whose formal coefficients are divisible by $3^\gamma$ because both
+$U_j$ and $V_j$ have constant term one.
+Every $c\in R_\infty$ is a polynomial expression in $z$ and finitely many
+$U_j^{-1}$. Substituting \eqref{arith:finiteinverse} in that expression
+proves the first assertion. For a polynomial in $t$, perform the
+replacement on its finitely many non-leading coefficients and keep the
+leading coefficient one unchanged. Evaluation at an integral series
+preserves the congruence.
+\end{proof}
+
+Set
+\begin{equation}\label{arith:Cr}
+ \begin{split}
+ C_0(z,t)&=t^2-\frac1{1+z},\qquad f_0=1,\\
+ C_{r+1}(z,t)&=C_r(z,t)^3-
+       3^{2f_r}C_r\left(z^3,\frac{t}{1+z}\right),
+       \qquad f_{r+1}=3f_r+1.
+ \end{split}
+\end{equation}
+The seed has evaluation divisible by three. Indeed,
+$\Psi(z)^3\equiv\Psi(z^3)\pmod3$ by Frobenius, and
+\eqref{arith:psifunctional} implies
+$\Psi(z)^2\equiv(1+z)^{-1}\pmod3$ because $\Psi$ has constant term one
+and is a unit of $\mathbb Z[[z]]$.
+Applying Lemma~\ref{arith:lift} inside $R_\infty$ gives
+\begin{equation}\label{arith:Cproperties}
+ \deg_t C_r=2\cdot3^r,\qquad
+ f_r=\frac{3^{r+1}-1}{2},\qquad
+ C_r(z,\Psi(z))\in3^{f_r}\mathbb Z[[z]],
+\end{equation}
+with every $C_r$ monic.
+
+\begin{theorem}[Krattenthaler--M\"uller Conjecture~12]
+\label{arith:cantorconjecture}
+Let $\gamma\geq1$ and let
+\[
+ d_\gamma=\min\{d\geq1:d+\nu_3(d!)\geq\gamma\}.
+\]
+The smallest degree of a monic polynomial
+$H(z,t)\in\mathbb Z[z,z^{-1},(1+z)^{-1}][t]$ satisfying
+\[
+ H(z,\Psi(z))\equiv0\pmod{3^\gamma}
+\]
+is exactly $2d_\gamma$. A polynomial attaining this degree is obtained
+from the base-three digit product of \eqref{arith:Cr} followed by the
+finite descent in Lemma~\ref{arith:descent}. In particular, the unchanged
+Conjecture~12 of \cite{KM3} holds for every $\gamma$.
+\end{theorem}
+\begin{proof}
+Write $d=d_\gamma=\sum_r d_r3^r$, where $0\leq d_r<3$, and put
+$E_d=\prod_r C_r^{d_r}\in R_\infty[t]$. It is monic of degree $2d$.
+Using \eqref{arith:Cproperties} and Legendre's formula,
+\[
+ \nu_3\bigl(E_d(z,\Psi(z))\bigr)
+  \geq\sum_rd_rf_r
+  =\frac{3d-s_3(d)}2
+  =d+\nu_3(d!)\geq\gamma.
+\]
+Lemma~\ref{arith:descent} replaces $E_d$ by a monic polynomial
+$\widetilde E_d$ of the same degree in
+$\mathbb Z[z,(1+z)^{-1}][t]$, with the same evaluation modulo
+$3^\gamma$. This coefficient ring is a subring of the ring prescribed
+in the original problem, so it supplies the required upper bound
+without enlarging the allowed ring.
+
+For the reverse inequality, Theorem~10 of \cite{KM3} proves that the
+minimum degree in precisely that prescribed ring is even, say $2b$,
+and must satisfy $b+\nu_3(b!)\geq\gamma$. Hence $b\geq d_\gamma$.
+Combined with the constructed degree-$2d_\gamma$ polynomial, this
+proves equality. The cited lower bound is an established theorem;
+the conjectural step in that source was attainment of the bound for
+all $\gamma$, which the construction above provides.
+\end{proof}
+
+An explicit example in the original ring is the degree-six polynomial
+\[
+ t^6-\frac{3t^4}{1+z}-\frac{6t^2}{(1+z)^2}
+       +\frac8{(1+z)^3}+\frac{27z}{(1+z)^5},
+\]
+whose evaluation at $\Psi$ vanishes modulo $81$. To obtain it from
+$C_1$, use
+\[
+ \frac1{1+z^3}\equiv\frac1{(1+z)^3}
+          +\frac{3z}{(1+z)^5}\pmod9.
+\]
+Only precision nine is needed for this coefficient because it is
+multiplied by nine in $C_1$. Since $3+\nu_3(3!)=4$, the theorem
+certifies that degree six is minimal for modulus $3^4$.
+
+The two applications share the seed-lifting mechanism, but their sharpness
+arguments and coefficient rings differ. For $\Phi_p$ the coefficient
+isolation also determines the entire evaluation kernel and its module
+structure. For $\Psi$, finite-precision descent is essential to preserve
+the original problem's ring. The binary specialization of the first
+application remains nested within the all-prime result.
+
+\section{Small-period Floquet rigidity in every dimension}
+\label{sec:ternary-rigidity}
+
+Let $\Delta$ be the discrete Laplacian on $\Z^d$ with nearest-neighbor
+coefficients equal to one. Two complex periodic potentials are called
+\emph{Floquet isospectral} when their Floquet matrices have identical
+characteristic polynomials at every quasimomentum. We address the remaining
+rectangular-period problem explicitly identified in
+\cite[Section~4.4]{CFK}: whether a nonzero complex potential of period
+$(3\Z)^d$, $d\geq3$, can be Floquet isospectral to zero. That source singles
+out $d=3$ as the smallest unresolved case. This is an explicitly posed but
+unnumbered question. It is narrower than the classification over arbitrary
+oblique lattices, which is not settled here.
+
+Our auxiliary question is whether coordinate averaging, followed by just the
+second and third perturbation identities, can force the potential to vanish.
+The proof below gives an affirmative answer. Fourier representations, rational
+spectral identities, and extraction of coefficients through their pole
+hyperplanes have prior applications to Floquet rigidity; see, in particular,
+\cite[Lemma~3.2, Theorem~3.3, and Section~4]{Liu23}. The contribution proposed
+here is their combination with coordinate-average descent and the specific
+third-order constraint for the period-three Fourier support.
+
+\begin{theorem}[Period-three rigidity and the rectangular classification]
+\label{thm:ternary-rigidity}
+For every $d\geq1$, a complex $(3\Z)^d$-periodic potential $V$ on $\Z^d$
+that is Floquet isospectral to zero satisfies $V\equiv0$.
+Consequently, for arbitrary positive integers $q_1,\ldots,q_d$, there exists
+a nonzero complex potential of period
+$q_1\Z\oplus\cdots\oplus q_d\Z$ Floquet isospectral to zero if and only if
+\begin{equation}\label{eq:rectangular-threshold}
+ \max_{1\leq j\leq d}q_j\geq4.
+\end{equation}
+\end{theorem}
+
+We prove the period-three assertion directly. The final classification then
+uses the previously established existence and period-reduction results of
+\cite{CFK}.
+
+\subsection{The Floquet gauge and coordinate-average descent}
+
+Write $G_d=(\Z/3\Z)^d$ and $\omega=e^{2\pi i/3}$. For
+$t=(t_1,\ldots,t_d)\in(\C^*)^d$, use the Floquet gauge
+$f(n)=t_1^{n_1}\cdots t_d^{n_d}\phi(n)$, where $\phi$ is three-periodic
+in each coordinate. The Floquet multipliers are $t_j^3$, and the gauged
+matrix on functions on $G_d$ is
+\begin{equation}\label{eq:ternary-gauge}
+ H_V(t)=\sum_{j=1}^d(t_jS_j+t_j^{-1}S_j^{-1})+\operatorname{diag}(V),
+ \qquad (S_j\phi)(n)=\phi(n+e_j).
+\end{equation}
+Floquet isospectrality gives
+\begin{equation}\label{eq:ternary-charidentity}
+ \det(\lambda I-H_V(t))=\det(\lambda I-H_0(t))
+ \qquad(t\in(\C^*)^d).
+\end{equation}
+Indeed, the equality initially holds on the product unit torus. Each
+characteristic-coefficient difference is a Laurent polynomial in $t$;
+the one-variable polynomial identity theorem, applied successively to its
+variables, extends the equality to $(\C^*)^d$.
+
+For a coordinate $j$, define the averaged potential on $G_{d-1}$ by
+\[
+ (\mathcal A_jV)(n_1,\ldots,\widehat{n_j},\ldots,n_d)
+   =\frac13\sum_{r=0}^2V(n_1,\ldots,r,\ldots,n_d).
+\]
+
+\begin{lemma}[Coordinate-average descent]\label{lem:average-descent}
+If $V$ satisfies \eqref{eq:ternary-charidentity}, then $\mathcal A_jV$
+is Floquet isospectral to zero on $G_{d-1}$.
+\end{lemma}
+\begin{proof}
+Set $N=3^{d-1}$, fix all parameters except $t_j$, and write
+\[
+ H_V(t)=t_jS_j+t_j^{-1}S_j^{-1}+B+\operatorname{diag}(V),
+ \qquad
+ B=\sum_{\ell\ne j}(t_\ell S_\ell+t_\ell^{-1}S_\ell^{-1}).
+\]
+Fourier transformation in the $j$th coordinate decomposes the vector space
+into three $N$-dimensional eigenspaces of $S_j$, with eigenvalues
+$1,\omega,\omega^2$. The compression of $B$ to each of them is the
+lower-dimensional free matrix $B$. The compression of
+$\operatorname{diag}(V)$ is $\operatorname{diag}(\mathcal A_jV)$, as follows
+by taking the normalized inner product in the $j$th coordinate.
+
+Fix $k\in\{0,1,2\}$ and put $\lambda=\omega^kt_j+\mu$. The two other
+diagonal blocks of $\lambda I-H_V(t)$ have leading terms
+$(\omega^k-\omega^r)t_j I_N$, $r\ne k$, whereas all off-diagonal blocks
+are bounded as $t_j\to\infty$. Block elimination, or expansion of the
+determinant by its leading power of $t_j$, gives
+\begin{align*}
+ &\lim_{t_j\to\infty}t_j^{-2N}
+     \det\bigl((\omega^kt_j+\mu)I-H_V(t)\bigr)\\
+ &\hspace{12mm}=
+ \prod_{r\ne k}(\omega^k-\omega^r)^N
+ \det\bigl(\mu I-B-\operatorname{diag}(\mathcal A_jV)\bigr).
+\end{align*}
+The same limit for $V=0$ has the averaged potential absent. The nonzero
+constant factors cancel in \eqref{eq:ternary-charidentity}. This proves
+the lower-dimensional characteristic-polynomial identity for every $\mu$
+and every choice of the other parameters.
+\end{proof}
+
+Expand the potential in characters:
+\begin{equation}\label{eq:ternary-fourier}
+ V(n)=\sum_{a\in G_d}c_a\omega^{a\cdot n},\qquad
+ c_a=3^{-d}\sum_{n\in G_d}V(n)\omega^{-a\cdot n}.
+\end{equation}
+If rigidity has been established in dimension $d-1$,
+Lemma~\ref{lem:average-descent} gives $\mathcal A_jV=0$ for every $j$.
+In Fourier coordinates this means
+\begin{equation}\label{eq:ternary-support}
+ c_a=0\quad\hbox{whenever some }a_j=0.
+\end{equation}
+The only possible remaining frequencies therefore lie in
+$\mathcal S_d=\{1,-1\}^d\subset G_d$, and in particular $c_0=0$.
+The zero-dimensional initial case is a scalar: equality of its spectrum
+with zero forces that scalar to vanish. This supplies the base for the
+dimension induction.
+
+\subsection{Exact second- and third-order identities}
+
+We now assume \eqref{eq:ternary-support} and derive the identities that
+eliminate the remaining coefficients. Set $t_j=sx_j$ and
+$\varepsilon=s^{-1}$, where the $x_j$ are independent nonzero variables.
+In the character basis, division of \eqref{eq:ternary-gauge} by $s$ gives
+\begin{equation}\label{eq:ternary-perturbation}
+ K(\varepsilon)=D+\varepsilon C+\varepsilon^2E,
+ \quad D=\operatorname{diag}(L_a),\quad E=\operatorname{diag}(M_a),
+ \quad C_{ab}=c_{a-b},
+\end{equation}
+where
+\[
+ L_a=\sum_{j=1}^dx_j\omega^{a_j},\qquad
+ M_a=\sum_{j=1}^dx_j^{-1}\omega^{-a_j}.
+\]
+Work over the rational function field $F=\C(x_1,\ldots,x_d)$. The elements
+$L_a$ are pairwise distinct: different indices have different coefficient
+vectors in their linear forms. Thus the free eigenvalue through $L_0$
+is simple, and \eqref{eq:ternary-charidentity} forces the corresponding
+formal eigenvalue of $K(\varepsilon)$ to be exactly
+\[
+ L_0+\varepsilon^2M_0.
+\]
+There is no ambiguity from a permutation of branches, since their constant
+terms are distinct. Define their gaps
+\begin{equation}\label{eq:ternary-gaps}
+ P_a=L_0-L_a=\sum_{j=1}^d(1-\omega^{a_j})x_j\qquad(a\ne0).
+\end{equation}
+
+\begin{lemma}[The two perturbation identities]\label{lem:ternary-identities}
+The Fourier coefficients satisfy the following rational identities in $F$:
+\begin{align}
+ \sum_{a\ne0}\frac{c_ac_{-a}}{P_a}&=0,
+       \label{eq:ternary-quadratic}\\
+ \sum_{a,b\ne0}
+   \frac{c_{-a}c_{a-b}c_b}{P_aP_b}&=0.
+       \label{eq:ternary-cubic}
+\end{align}
+\end{lemma}
+\begin{proof}
+Choose the formal eigenvector
+$u(\varepsilon)=e_0+\varepsilon u^{(1)}+\varepsilon^2u^{(2)}+\cdots$
+with zeroth coordinate equal to one. Such a vector exists uniquely by
+the simple-eigenvalue equation over $F[[\varepsilon]]$; in particular,
+$u_0^{(r)}=0$ for every $r>0$.
+The order-one equation from
+$K(\varepsilon)u=(L_0+\varepsilon^2M_0)u$ gives
+\[
+ u_a^{(1)}=\frac{C_{a0}}{P_a}\qquad(a\ne0).
+\]
+At order two, the nonzero coordinates give
+\[
+ u_a^{(2)}=
+   \sum_{b\ne0}\frac{C_{ab}C_{b0}}{P_aP_b}.
+\]
+Here $Ee_0$ has no nonzero coordinate. The zeroth coordinate at the same
+order is
+$\sum_{a\ne0}C_{0a}u_a^{(1)}+M_0=M_0$, which is
+\eqref{eq:ternary-quadratic}. At order three, the zeroth coordinate gives
+$\sum_{a\ne0}C_{0a}u_a^{(2)}=0$, yielding
+\eqref{eq:ternary-cubic}. Both $Eu^{(1)}$ and $M_0u^{(1)}$ have zero
+zeroth coordinate. This accounts for all possible contributions from the
+$\varepsilon^2E$ term; there is no omitted mixed term.
+\end{proof}
+
+By \eqref{eq:ternary-support}, the nonzero terms in the quadratic identity
+have $a\in\mathcal S_d$. In a nonzero term of the cubic identity the three
+steps $-a$, $a-b$, and $b$ all lie in $\mathcal S_d$. In each coordinate
+they sum to zero in $\Z/3\Z$. Three signs in $\{1,-1\}$ sum to zero
+modulo three only when all three are equal. It follows that $b=-a$, and
+the cubic identity becomes
+\begin{equation}\label{eq:ternary-cubic-pairs}
+ \sum_{\{a,-a\}\subset\mathcal S_d}
+     \frac{c_a^3+c_{-a}^3}{P_aP_{-a}}=0,
+\end{equation}
+where the sum takes one representative of each antipodal pair.
+
+\subsection{Separation by the gap hyperplanes}
+
+Put $A=1-\omega$, $B=1-\omega^2$, and $S=x_1+\cdots+x_d$. Then
+\[
+ A+B=AB=3,\qquad A\ne B,\qquad A^2\ne B^2.
+\]
+For a sign vector $a$, the coefficients of $P_a$ are $A$ and $B$.
+Call $a$ mixed if both signs occur.
+
+\begin{lemma}[Distinct mixed gap hyperplanes]\label{lem:mixed-gaps}
+If $a\in\mathcal S_d$ is mixed, $P_a$ is not proportional to $P_b$ for
+any distinct $b\in\mathcal S_d$. The only proportional pair of gap forms
+is that for the two constant sign vectors, with forms $AS$ and $BS$.
+\end{lemma}
+\begin{proof}
+Suppose $P_b=rP_a$. Since both coefficient values occur in $P_a$, the
+nonzero scalar $r$ must map the two-element set $\{A,B\}$ to itself.
+If it fixes both elements then $r=1$ and $b=a$. If it interchanges them,
+then $rA=B$ and $rB=A$, contradicting $A^2\ne B^2$. A form with two
+different coefficient values cannot be proportional to a constant-coefficient
+form. The assertion for the two constant vectors is immediate.
+\end{proof}
+
+For mixed $a$, multiply \eqref{eq:ternary-quadratic} by $P_a$ and reduce
+modulo the prime ideal $(P_a)$ in $\C[x_1,\ldots,x_d]$, after localizing
+the other denominator factors. By Lemma~\ref{lem:mixed-gaps}, only its
+single term survives. Hence $c_ac_{-a}=0$ for every mixed $a$.
+Let $c_+$ and $c_-$ denote the coefficients of the two constant sign
+vectors. The remaining quadratic identity is
+\[
+ \frac{c_+c_-}{S}\left(\frac1A+\frac1B\right)
+      =\frac{c_+c_-}{S}=0.
+\]
+We have therefore established
+\begin{equation}\label{eq:ternary-products}
+ c_ac_{-a}=0\qquad(a\in\mathcal S_d).
+\end{equation}
+
+Apply the same operation to \eqref{eq:ternary-cubic-pairs}. For mixed
+$a$, its denominator factor $P_a$ occurs in only that pair, and $P_{-a}$
+is nonzero modulo $(P_a)$. This gives $c_a^3+c_{-a}^3=0$.
+The remaining constant pair has denominator $AB S^2$, so its numerator
+also vanishes. Thus
+\begin{equation}\label{eq:ternary-cubes}
+ c_a^3+c_{-a}^3=0\qquad(a\in\mathcal S_d).
+\end{equation}
+Equations \eqref{eq:ternary-products} and \eqref{eq:ternary-cubes} imply
+$c_a=c_{-a}=0$: if one were nonzero, the product equation would force
+the other to be zero, contradicting the cube equation. In dimension one
+there are no mixed vectors, and the constant-pair calculations above give
+the entire argument without any hyperplane restriction.
+
+\begin{proof}[Proof of Theorem~\ref{thm:ternary-rigidity}]
+We induct on the dimension, beginning with the scalar case $d=0$.
+For a zero-isospectral potential in dimension $d$, the induction hypothesis
+and Lemma~\ref{lem:average-descent} give
+\eqref{eq:ternary-support}. Lemma~\ref{lem:ternary-identities} and the
+gap-hyperplane argument then show that every remaining Fourier coefficient
+is zero. Fourier inversion proves $V\equiv0$. This establishes rigidity
+for every $(3\Z)^d$.
+
+For the rectangular classification, \cite[Proposition~4.2]{CFK} states
+the following exact equivalence: when the last period is one or two, a
+nonzero zero-isospectral potential exists in that dimension if and only
+if one exists after deleting that coordinate. Repeatedly apply this
+equivalence to a period vector with all $q_j\leq3$. The remaining vector
+has all entries equal to three, where rigidity has just been proved, or
+has dimension zero. Thus no nonzero potential exists.
+Conversely, if some $q_j>3$, existence is
+\cite[Theorem~C]{CFK}. These two directions prove
+\eqref{eq:rectangular-threshold}.
+\end{proof}
+
+The proof uses identities in independent Floquet variables. It does not
+infer rigidity from a single fixed Floquet matrix or impose reality,
+separability, or smaller least period on the potential. The explicitly
+open family in \cite[Section~4.4]{CFK} is settled in full by the
+period-three assertion. The final if-and-only-if statement completes the
+rectangular classification by adjoining the cited prior results. General
+oblique lattices remain outside this conclusion.
+
+\section{T80: optimal quadratic stabilization in equivariant Ehrhart theory}
+\label{sec:ehrhart-stabilization}
+
+The target in this section is Conjecture~8.5 of Clarke
+\cite{Clarke26}. It is a coefficientwise inequality for the equivariant
+Ehrhart series of an arbitrary lattice polytope with an involution. We first
+formulate and solve a parameter-construction problem, then apply its answer
+to that conjecture without a polynomiality or integer-decomposition
+assumption on the polytope.
+
+\subsection{The original inequality and the auxiliary problem}
+
+Let $L$ be a lattice of rank $n+1$, equipped with a primitive height
+functional. Let $P$ be a full-dimensional lattice polytope in the affine
+hyperplane of height one, preserved by a nontrivial involution $\sigma$ of
+$L$. Write $G=\{1,\sigma\}$ and let $\varepsilon$ denote its sign character.
+Let $p$ and $q$ be the dimensions of the $+1$ and $-1$ eigenspaces of the
+ambient representation. Thus
+\[
+ p+q=n+1,\qquad p\geq1,\qquad q\geq1.
+\]
+The restriction $q\geq1$ excludes the trivial action; it is necessary for
+the universal optimality statement below.
+
+Let $R=\mathbb C[\operatorname{cone}(P)\cap L]$ be the Ehrhart ring, graded
+by height. Its equivariant Hilbert series is
+\[
+ E_P(t)=\sum_{j\geq0}[R_j]t^j
+       =\frac{\varphi_P(t)}{D(t)},\qquad
+ D(t)=(1-t)^p(1-\varepsilon t)^q,
+\]
+in the representation ring $R(G)=\mathbb Z[\varepsilon]/(\varepsilon^2-1)$.
+An element of this ring is \emph{effective} if it is the character of an
+actual representation, equivalently if both its trivial and sign
+multiplicities are nonnegative. The same term is used coefficientwise for
+a power series.
+
+The evaluation $\varphi_P(t)(1)$ is the ordinary polynomial $h^*_P(t)$.
+The fixed polytope has denominator dividing two. Write its Ehrhart series
+as $H(t)/(1-t^2)^p$, where $H$ has nonnegative integer coefficients. Then
+\begin{equation}\label{eq:ehrhart-fixed-numerator}
+ \varphi_P(t)(\sigma)=(1+t)^{q-p}H(t).
+\end{equation}
+These are the conventions of \cite[Section~2 and Lemma~8.1]{Clarke26}.
+Clarke's Conjecture~8.5 asserts
+\begin{equation}\label{eq:clarke-target}
+ \begin{cases}
+ (1+t)^{p-q}h^*_P(t)\ \geq\ H(t),&p\geq q,\\
+ h^*_P(t)\ \geq\ (1+t)^{q-p}H(t),&p<q,
+ \end{cases}
+\end{equation}
+where each inequality compares coefficients.
+
+Our auxiliary question is the following: how many invariant quadratic
+parameters must replace invariant linear parameters to obtain a
+homogeneous system of parameters of $R$, while keeping exactly $q$
+anti-invariant linear parameters? A second question asks for the least
+exponent $s=s(p,q)$ such that $(1+t)^s\varphi_P(t)$ is effective for
+\emph{every} polytope of ambient type $(p,q)$. The first answer depends on
+a base locus; the universal answer is $\max(p-q,0)$.
+
+Put $X=\operatorname{Proj}R$, so $\dim X=p+q-1$. Write $W_+$ and $W_-$
+for the invariant and anti-invariant subspaces of $R_1$, and use the
+base-locus convention
+\[
+ Z_+=V(W_-),\qquad Z_-=V(W_+),\qquad b=\dim Z_-.
+\]
+If $Z_-$ is empty, set $b=-\infty$ and interpret
+$\max(0,b-q+1)$ as zero.
+
+\subsection{Base loci and generic sections}
+
+\begin{lemma}\label{lem:ehrhart-base-loci}
+The space $R_1$ is basepoint-free on $X$, and
+\[
+ Z_+\cap Z_-=\varnothing,\qquad
+ \dim Z_+=p-1,\qquad \dim Z_-\leq p-1.
+\]
+The invariant subspace $(R_2)^G$ is also basepoint-free.
+\end{lemma}
+
+\begin{proof}
+The linear base-locus assertions are
+\cite[Lemmas~7.1(a) and~7.3]{Clarke26}. We recall their geometric content
+to make clear that no assumption that $R$ is generated in degree one is
+being made. Every point of the projective toric variety $X$ lies on the
+orbit associated to a nonempty face $F$ of $P$. A monomial corresponding
+to any vertex of $F$ is nonzero at that point. Hence $R_1$ has no base
+point, and the two eigenspace base loci are disjoint.
+
+On a face orbit, the equations defining either $Z_+$ or $Z_-$ force the
+face to be $\sigma$-invariant: otherwise a vertex monomial supported on
+$F$ is paired with a monomial vanishing on that orbit. For an invariant
+face, the equations on its torus characters have the form
+$\chi(\sigma u)=\chi(u)$ or $\chi(\sigma u)=-\chi(u)$ for its lattice
+points $u$. Their solution set is either empty or a coset of a torus
+whose dimension, after quotienting by projective scaling, is
+$\dim F^\sigma\leq p-1$. For the invariant equations on the full face
+$P$, the trivial character supplies a solution and the dimension is
+$p-1$. Taking the finite union over face orbits gives the asserted bounds.
+
+Finally, at any point of $X$, at least one eigenlinear form
+$f\in W_+\cup W_-$ is nonzero. Its square $f^2$ is an invariant element
+of degree two, still nonzero there. This proves the last assertion.
+\end{proof}
+
+\begin{lemma}\label{lem:ehrhart-mixed-incidence}
+Let $0\leq k\leq p$. A homogeneous system of parameters consisting of
+$p-k$ invariant linear forms, $q$ anti-invariant linear forms, and $k$
+invariant quadratic forms exists if and only if
+\begin{equation}\label{eq:ehrhart-budget}
+ k\geq\delta(P):=\max(0,b-q+1).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+First suppose \eqref{eq:ehrhart-budget} holds. Choose the linear forms
+from the affine parameter space
+\[
+ \mathcal U=W_+^{\,p-k}\times W_-^{\,q}.
+\]
+Over $X\setminus(Z_+\cup Z_-)$, the condition that all chosen forms vanish
+at a specified point imposes $p-k+q$ independent linear conditions on
+$\mathcal U$: each evaluation acts nontrivially in its own tuple
+coordinate. Over $Z_+$, it imposes $p-k$ conditions; over $Z_-$, it
+imposes $q$. Thus the corresponding incidence strata have dimensions at
+most, respectively,
+\begin{align*}
+ \dim\mathcal U+(p+q-1)-(p-k+q)&=\dim\mathcal U+k-1,\\
+ \dim\mathcal U+(p-1)-(p-k)&=\dim\mathcal U+k-1,\\
+ \dim\mathcal U+b-q&\leq\dim\mathcal U+k-1.
+\end{align*}
+The generic-fiber dimension theorem now implies that a general tuple of
+linear forms has common zero locus $Y\subset X$ of dimension at most
+$k-1$. A stratum not dominating $\mathcal U$ has empty generic fiber and
+does not affect this conclusion. In particular, if $k=0$, then $Y$ is
+empty.
+
+By Lemma~\ref{lem:ehrhart-base-loci}, invariant quadratics are
+basepoint-free. Therefore $k$ general invariant quadratic sections have
+no common zero on $Y$: successively they cut positive-dimensional
+components by one dimension and avoid any remaining finite set of
+points. The full collection has no common projective zero. By the graded
+Nullstellensatz, its homogeneous ideal has radical equal to the
+irrelevant ideal, and the quotient ring is finite-dimensional. Since
+there are $p+q=\dim R$ forms, they are a homogeneous system of parameters.
+
+Conversely, consider any system with the stated degree and character
+pattern, and suppose $Z_-$ is nonempty. On a component of $Z_-$ of
+dimension $b$, all invariant linear forms vanish identically. The
+remaining $q+k$ positive-degree sections must therefore have no common
+zero on that projective component. This requires $q+k\geq b+1$: at most
+$b$ positive-degree hypersurfaces cannot have empty intersection on a
+projective variety of dimension $b$. Equivalently, its homogeneous
+coordinate ring has dimension $b+1$, and Krull's height theorem prevents
+an ideal generated by at most $b$ positive-degree elements from having a
+finite quotient. Hence $k\geq b-q+1$. Together with $k\geq0$, this proves
+necessity, including the empty-base-locus case.
+\end{proof}
+
+\subsection{The stabilization theorem and its application}
+
+\begin{theorem}[Optimal quadratic stabilization and Clarke's inequality]
+\label{thm:optimal-ehrhart-stabilization}
+For the order-two lattice action above, set
+\[
+ \delta(P)=\max(0,\dim V(W_+)-q+1),\qquad r=\max(p-q,0).
+\]
+Then $0\leq\delta(P)\leq r$, and there is a finite-dimensional graded
+$G$-algebra with character
+\begin{equation}\label{eq:ehrhart-artinian-character}
+ (1+t)^{\delta(P)}\varphi_P(t).
+\end{equation}
+The number $\delta(P)$ is the minimum number of invariant quadratics in
+the parameter pattern of Lemma~\ref{lem:ehrhart-mixed-incidence}.
+
+For each fixed pair $p,q\geq1$, the least integer $s\geq0$ for which
+$(1+t)^s\varphi_P(t)$ is effective for every polytope of ambient type
+$(p,q)$ is exactly $r$. In particular, the original coefficient
+inequalities \eqref{eq:clarke-target}, namely Conjecture~8.5 of
+\cite{Clarke26}, hold for every such polytope.
+\end{theorem}
+
+\begin{proof}
+The bound on $\delta(P)$ follows from
+Lemma~\ref{lem:ehrhart-base-loci}. Apply
+Lemma~\ref{lem:ehrhart-mixed-incidence} with $k=\delta(P)$. The Ehrhart
+ring is a normal affine semigroup ring and is Cohen--Macaulay by
+Hochster's theorem \cite{Hochster72}. Consequently its homogeneous
+system of parameters is a regular sequence. Taking its equivariant
+Koszul complex gives the character of the Artinian quotient as
+\begin{align*}
+ E_P(t)(1-t)^{p-\delta(P)}(1-\varepsilon t)^q
+                 (1-t^2)^{\delta(P)}
+ &=\varphi_P(t)(1+t)^{\delta(P)}.
+\end{align*}
+This is an actual graded representation, proving
+\eqref{eq:ehrhart-artinian-character}. The parameter minimality is
+precisely the necessity assertion of
+Lemma~\ref{lem:ehrhart-mixed-incidence}.
+
+Since $r\geq\delta(P)$, multiplication by the trivially acted-on
+polynomial $(1+t)^{r-\delta(P)}$ preserves effectiveness. Thus
+$(1+t)^r\varphi_P(t)$ is always effective. Its evaluations at the
+identity and at $\sigma$ are
+\[
+ (1+t)^r h^*_P(t),\qquad (1+t)^{r+q-p}H(t),
+\]
+respectively. For an effective character of a group of order two, its
+identity value is at least the absolute value of its value at $\sigma$.
+The second displayed polynomial has nonnegative coefficients. Comparing
+each degree therefore proves exactly \eqref{eq:clarke-target} in both
+cases $p\geq q$ and $p<q$.
+
+It remains to prove the sharpness of the universal exponent. There is
+nothing to prove when $p\leq q$, since then $r=0$. Suppose $r=p-q>0$.
+Start with the cube $C=[0,1]^{r+1}$ and reflect its first coordinate:
+\[
+ (x_1,x_2,\ldots,x_{r+1})\longmapsto
+       (1-x_1,x_2,\ldots,x_{r+1}).
+\]
+On the homogeneous lattice $L_0=\mathbb Z^{r+2}$ with coordinates
+$(x_1,\ldots,x_{r+1},h)$, this is the integral involution
+\[
+ (x_1,x_2,\ldots,x_{r+1},h)\longmapsto
+       (h-x_1,x_2,\ldots,x_{r+1},h).
+\]
+Its ambient type is $(r+1,1)$. The fixed polytope has $x_1=1/2$, so its
+lattice-point count in dilation $j$ is $(j+1)^r$ for even $j$, and zero
+for odd $j$. Its Ehrhart series is therefore
+\[
+ E_{C^\sigma}(t)=\sum_{\ell\geq0}(2\ell+1)^r t^{2\ell}.
+\]
+The generating series of the degree-$r$ polynomial $(2\ell+1)^r$ has a
+genuine pole of order $r+1$ at $t^2=1$: its leading contribution is
+$2^r r!/(1-t^2)^{r+1}$. In particular, the pole at $t=-1$ has order
+$r+1$. Multiplication by
+$D_C(t)(\sigma)=(1-t)^{r+1}(1+t)$ leaves a pole of order exactly $r$ in
+$\varphi_C(t)(\sigma)$.
+
+To obtain arbitrary $q\geq1$ while retaining this pole, take the standard
+lattice join with $q-1$ unimodular segments, each with the involution
+swapping its endpoints. More explicitly, use
+\[
+ L=L_0\oplus(\mathbb Z^2)^{q-1},\qquad
+ \operatorname{ht}(x,h;y)=h+\sum_{a=1}^{q-1}(y_{a,0}+y_{a,1}),
+\]
+and take the convex hull of the embedded $(C,1)$ and the embedded
+segments $\operatorname{conv}(e_{a,0},e_{a,1})$ in height one. Apply the
+cube involution on $L_0$ and swap each added coordinate pair. The cone
+over this join is the product of the cube cone with $q-1$ nonnegative
+quadrants. Its lattice semigroup is consequently a direct product, and
+its Ehrhart ring is the graded tensor product of $R_C$ with $q-1$
+two-variable polynomial rings having swapped variables.
+
+Each variable pair contributes ambient representation $1+\varepsilon$
+and Hilbert series $1/((1-t)(1-\varepsilon t))$. Its determinant factor
+cancels, so the join has equivariant numerator exactly $\varphi_C(t)$.
+Its ambient type is $(r+q,q)=(p,q)$. Therefore a multiplier $(1+t)^s$
+with $s<r$ leaves a pole in its evaluation at $\sigma$.
+
+An effective series whose identity evaluation is a polynomial must itself
+be a polynomial: in every degree beyond the degree of that evaluation,
+an effective representation of dimension zero is zero. The identity
+evaluation of $(1+t)^s\varphi_P(t)$ is the polynomial
+$(1+t)^s h^*_P(t)$. Hence the remaining pole precludes effectiveness for
+$s<r$. This proves the universal lower bound and completes the theorem.
+\end{proof}
+
+The two optimality assertions must be distinguished. For a particular
+polytope, $\delta(P)$ is optimal for the specified degree and character
+pattern of parameters. It need not be the least exponent making its
+series effective: \cite[Example~5.3]{Clarke26} already exhibits an
+effective series with an obstruction to linear parameters. The exponent
+$r$ is instead optimal after quantifying over all polytopes of fixed
+ambient type. The construction above proves that universal statement.
+
+The base-locus description, generic incidence argument, and Koszul
+character formula are prior tools. The contribution proposed here is
+the exact mixed-degree parameter budget, its sharp universal
+stabilization consequence, and the resulting proof of the original
+coefficient inequality. This distinction concerns historical attribution;
+it does not add an unproved hypothesis to the mathematical argument.
+
+\section{Attribution, novelty, and the requested success conditions}
+\label{sec:historical-audit}
+
+The prior problem statements are pinned to specific primary sources:
+\cite[Conjecture~4]{KMp}, \cite[Conjecture~12]{KM3},
+\cite[Section~4.4]{CFK}, and \cite[Conjecture~8.5]{Clarke26}.
+The first two sources originate in 2015 and 2013; the latter two in 2026.
+The spectral target is explicitly open in the cited source, but is not
+numbered or given a standalone conjecture name there. It must not be
+relabelled as a previously named conjecture. The nested binary special case
+\cite[Conjecture~4]{KKM2} is not counted as another independent target.
+
+The arithmetic construction uses the classical congruence
+$B(z)^p\equiv B(z^p)\pmod p$. Its specific contribution here is the
+substitution-compatible correction term, which produces the required
+valuation at every level and a full kernel description. The Cantor proof
+returns every coefficient to the prescribed ring before claiming the
+original conjecture. No coefficient-ring enlargement is hidden in the
+final statement.
+
+The spectral argument uses earlier Fourier and rational-pole techniques
+\cite{Liu23}. Its additional period-three step is that all surviving
+three-step Fourier cycles follow a single direction. The resulting cubic
+relations remove the remaining complex coefficients without a positivity
+assumption. The contribution is this specific closure argument, not a claim
+to have invented perturbation theory or pole extraction.
+
+The Ehrhart construction extends Clarke's base-locus and generic-section
+framework \cite{Clarke26}. The exact quadratic budget and its character
+factor are the additional ingredients. The Cohen--Macaulay and equivariant
+Koszul facts are prior \cite{Hochster72,Stapledon24}. A different proof of
+Clarke's dilation Conjecture~8.7 was also examined, but its central
+determinant-ratio and coefficient-extraction mechanism is already explicit
+in \cite[Section~2.5, equation~(7), and Lemma~2.33]{Stapledon24}. It is not
+included as an additional new-method success in this manuscript.
+
+\paragraph{Correction to the preceding T71--T75 attribution.}
+The even-period Fourier-square quadratic structure used in the preceding
+T71 draft is already explicit in Korotyaev and Kutsenko
+\cite[Theorem~2.4, Lemma~2.6, and equation~(2.31)]{KK05}.
+That structure must be credited to their 2005 preprint and subsequent
+publication. The correction narrows the earlier novelty description; it
+does not itself contradict the algebraic consequences proved in that draft.
+The present T79 argument is a separate multidimensional rigidity argument,
+and no part of T76--T80 counts that older even-period structure as a new
+principle.
+
+\paragraph{What has and has not been established.}
+The displayed arguments address the stated source problems unchanged and
+without conjectural assumptions. Searches through 24 October 2026 examined
+the current source versions, relevant author publication lists, and topic
+and conjecture-number searches using two search services. No identical
+earlier resolution was located. Such a search cannot prove universal
+absence from the literature. Nor does a new construction using classical
+tools establish that its general principle is historically unprecedented.
+Consequently this manuscript does \emph{not} certify all six requested
+historical success conditions. It supplies the complete mathematical
+arguments and an auditable, bounded priority assessment. The numbering
+T76--T80 organizes five theorems, with three numbered prior conjectures and
+one prior unnumbered problem as applications.
+
+\appendix
+\section{Exact checks and reproducibility}
+
+The accompanying verification bundle contains executable Python scripts and
+their output. All checks use exact integer or rational arithmetic. They
+support the proofs but establish only the finite cases actually executed.
+
+\begin{center}\small
+\begin{tabular}{@{}p{.31\textwidth}p{.60\textwidth}@{}}
+\toprule
+Check & Executed range and result \\
+\midrule
+Additive Frobenius tower & First 256 coefficients; $p=2$ through level 4,
+$p=3$ through level 3, and $p=5$ through level 2. Every predicted
+coefficientwise divisibility holds.\\
+Cantor tower & First 256 coefficients at levels 0, 1, 2, with degrees
+$2,6,18$ and valuations at least $1,4,13$. The displayed original-ring
+degree-six relation modulo $81$ also passes.\\
+Spectral pole separation & Dimensions $1$ through $5$: the evaluated rational
+bases have exact ranks $1,2,4,8,16$, and every admissible three-step cycle
+uses a single Fourier direction.\\
+Reflection cubes & Dimensions $2$ through $7$: exact Ehrhart and fixed-point
+numerators give nonnegative integral character multiplicities after the
+predicted stabilization; the pole order at $-1$ is the claimed one.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The full proofs were also checked by independent internal derivations:
+coefficient isolation and valuation descent for T76--T78; formal eigenvector
+recursion and hyperplane residues for T79; and incidence dimensions,
+non-degree-one generation, and equivariant Koszul factors for T80.
+These checks should not be described as external peer review or formal
+machine verification.
+
+The source is standalone: compiling it twice with \texttt{pdflatex} requires
+no separate figures or bibliography files. The verification bundle includes
+its own run instructions and records the exact finite scope of each script.
+
+
+% Primary-source verified bibliography, audited 24 October 2026.
+% The key Stapledon24 is retained for compatibility; the cited current version is v3 (2025).
+% KM3 remains a preprint in the authors' current publication list; no journal is asserted.
+\begin{thebibliography}{99}
+
+\bibitem{KMp}
+C.~Krattenthaler and T.~W.~M\"uller,
+\emph{A method for determining the mod-$p^k$ behaviour of recursive sequences},
+Aequationes Mathematicae \textbf{99} (2025), 2505--2547.
+\href{https://doi.org/10.1007/s00010-025-01195-0}{doi:10.1007/s00010-025-01195-0}.
+First preprint: 2015; \href{https://arxiv.org/abs/1508.02580}{arXiv:1508.02580}, v2, 28 July 2025.
+
+\bibitem{KM3}
+C.~Krattenthaler and T.~W.~M\"uller,
+\emph{A method for determining the mod-$3^k$ behaviour of recursive sequences},
+preprint (2013), \href{https://arxiv.org/abs/1308.2856}{arXiv:1308.2856v1}, 13 August 2013.
+
+\bibitem{KKM2}
+M.~Kauers, C.~Krattenthaler and T.~W.~M\"uller,
+\emph{A method for determining the mod-$2^k$ behaviour of recursive sequences, with applications to subgroup counting},
+Electronic Journal of Combinatorics \textbf{18}(2) (2012), Paper P37.
+\href{https://doi.org/10.37236/2433}{doi:10.37236/2433};
+\href{https://arxiv.org/abs/1107.2015}{arXiv:1107.2015} (first submitted 2011).
+
+\bibitem{CFK}
+J.~Cobb, M.~Faust and A.~Kretschmer,
+\emph{Inverse eigenvalue problems, Floquet isospectrality and the Hilbert--Chow morphism},
+preprint (2026), \href{https://arxiv.org/abs/2601.09604}{arXiv:2601.09604v1}, 14 January 2026.
+
+\bibitem{Liu23}
+W.~Liu,
+\emph{Floquet isospectrality for periodic graph operators},
+Journal of Differential Equations \textbf{374} (2023), 642--653.
+\href{https://doi.org/10.1016/j.jde.2023.08.009}{doi:10.1016/j.jde.2023.08.009};
+\href{https://arxiv.org/abs/2302.13103}{arXiv:2302.13103}.
+
+\bibitem{Clarke26}
+O.~Clarke,
+\emph{The equivariant Ehrhart theory of polytopes with order-two symmetries: Part II},
+preprint (2026), \href{https://arxiv.org/abs/2610.17988}{arXiv:2610.17988v1}, 13 October 2026.
+
+\bibitem{Stapledon24}
+A.~Stapledon,
+\emph{Equivariant Ehrhart theory, commutative algebra and invariant triangulations of polytopes},
+preprint (2023; revised 2025),
+\href{https://arxiv.org/abs/2311.17273}{arXiv:2311.17273v3}, 24 September 2025.
+
+\bibitem{Hochster72}
+M.~Hochster,
+\emph{Rings of invariants of tori, Cohen--Macaulay rings generated by monomials, and polytopes},
+Annals of Mathematics (2) \textbf{96}(2) (1972), 318--337.
+\href{https://doi.org/10.2307/1970791}{doi:10.2307/1970791}.
+
+\bibitem{KK05}
+E.~Korotyaev and A.~Kutsenko,
+\emph{Inverse problem for the discrete 1D Schr\"odinger operator with small periodic potentials},
+Communications in Mathematical Physics \textbf{261} (2006), 673--692
+(published online 20 September 2005).
+\href{https://doi.org/10.1007/s00220-005-1429-z}{doi:10.1007/s00220-005-1429-z};
+\href{https://arxiv.org/abs/math/0507297}{arXiv:math/0507297}.
+
+\end{thebibliography}
+
+\end{document}

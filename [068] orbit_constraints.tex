@@ -1,0 +1,508 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs}
+\usepackage[margin=1in]{geometry}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{enumitem}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\title{Orbit Constraints in Symmetric Arrays\\and Circulant Weighing Matrices}
+\author{}
+\date{Research draft -- 24 October 2026}
+\hypersetup{pdftitle={Orbit Constraints in Symmetric Arrays and Circulant Weighing Matrices},pdfsubject={Catalan-bound tightness and nonexistence of CW(195,81)}}
+\begin{document}
+\maketitle
+\begin{abstract}
+We establish two results in combinatorial design theory. For every $k\ge3$,
+the minimum number of rows in a binary strength-two orthogonal array invariant
+under all coordinate permutations is
+$4\binom{k-2}{\lfloor(k-2)/2\rfloor}$, proving Karunanayaka's
+Catalan-bound tightness conjecture. We also classify all minimizing shell
+multiplicity vectors. Separately, we prove that a circulant weighing matrix
+$CW(195,81)$ does not exist, resolving a parameter pair listed as open in
+Arasu--Gordon--Zhang's table. Both proofs are analytic. The first combines
+indivisible shell masses with two moment constraints. The second combines
+contraction, established cyclotomic multiplier theory, a kernel character,
+and a short augmentation obstruction. Exact finite checks are supplied as
+independent corroboration, not as premises of either proof.
+\end{abstract}
+
+\section{Scope and relation to the proposed method}
+
+The purpose of this note is to test a proof strategy outside periodic
+Dirichlet-series questions: compress constraints by symmetry, retain the
+integrality and coefficient restrictions that survive compression, and use
+them to force a sharp bound or a contradiction. The results below concern
+different mathematical objects and do not assume any claim about an
+Erd\H{o}s function or an Okada lattice.
+
+The first target is Conjecture~1 of Karunanayaka~\cite{Karunanayaka2026},
+whose published statement covers every $k\ge3$ and whose reported finite
+verification covers $k\le14$. We prove the original statement with its full
+coordinate-permutation symmetry assumption. The second target is the
+existence of $CW(195,81)$, listed in Table~10 of
+Arasu--Gordon--Zhang~\cite{ArasuGordonZhang2021}.
+
+The tools used here have established precedents. Cauchy--Schwarz and orbit
+compression are standard. The cyclotomic multiplier theorem is due to
+Tan~\cite{Tan2018}; kernel-character reductions also appear in
+Tan~\cite{Tan2026}. The contributions asserted in this draft are the
+specific lower-bound proof and equality classification, and the elimination
+of the parameter pair $(195,81)$. No new general multiplier theorem or
+universal $2$-adic decision procedure is asserted.
+
+\paragraph{Review status.}
+The proofs have undergone separate internal mathematical audits and exact
+arithmetic checks. This is an AI-assisted research draft, not an externally
+refereed publication. The source check on 24 October 2026 found the targets
+stated as open in the cited records and found no later resolution of these
+specific statements. That search is not a guarantee of publication priority.
+
+\section{The Catalan bound for fully symmetric binary arrays}
+\label{sec:catalan-bound}
+
+A binary array is \emph{fully symmetric} if its multiset of rows is invariant
+under every permutation of the coordinates.  Equivalently, there are
+nonnegative integers $m_0,\ldots,m_k$ such that every binary word of weight
+$w$ occurs exactly $m_w$ times.  Repeated rows are allowed.
+Karunanayaka~\cite{Karunanayaka2026} constructs fully symmetric strength-two
+orthogonal arrays with
+\[
+ B_k=4\binom{k-2}{\lfloor(k-2)/2\rfloor}
+\]
+rows and conjectures that this is the minimum for every $k\ge3$.
+We prove this lower bound and determine all equality cases.
+
+\begin{theorem}\label{thm:catalan-minimum}
+Every nonempty fully symmetric binary orthogonal array of strength two on
+$k\ge3$ coordinates has at least $B_k$ rows.  Equality holds precisely for
+the following multiplicity vectors, with all unlisted entries zero:
+\begin{enumerate}
+\item If $k=2r+1$ is odd, either $m_{r+1}=1$, $m_0=C_r$, or its level flip
+$m_r=1$, $m_k=C_r$.
+\item If $k=2r\ge6$ is even, $m_r=1$ and $m_0=m_k=C_{r-1}$.
+\item If $k=4$, the two vectors are $(1,0,1,0,1)$ and $(0,1,0,1,0)$.
+\end{enumerate}
+Here $C_r=\binom{2r}{r}/(r+1)$ is the $r$th Catalan number.
+\end{theorem}
+
+The proof uses two moments and the fact that a populated shell contains at
+least one full coordinate-permutation orbit.
+
+\begin{lemma}[A forced-shell bound]\label{lem:forced-shell}
+Let a multiset of $N>0$ real numbers have sum zero and square-sum $kN$, with
+$k>0$.  Suppose $M$ of its entries are equal to $d$.  Then
+\[
+ N\ge M\left(1+\frac{d^2}{k}\right).
+\]
+If also $d=0$ and every entry has absolute value at most $k>1$, then
+$N\ge kM/(k-1)$.
+\end{lemma}
+
+\begin{proof}
+The remaining $N-M$ entries have sum $-Md$ and square-sum $kN-Md^2$.
+Cauchy--Schwarz gives
+\[
+ M^2d^2\le(N-M)(kN-Md^2),
+\]
+which simplifies to the first inequality.
+For the second, $kN\le k^2(N-M)$.
+\end{proof}
+
+\begin{lemma}\label{lem:binomial-shell}
+For $k\ge3$ and nonzero integers $d$ with $d\equiv k\pmod2$ and $d^2\le k$,
+\[
+ \binom{k}{(k-|d|)/2}\left(1+\frac{d^2}{k}\right)\ge B_k.
+\]
+If $k$ is odd, equality holds only for $|d|=1$.
+If $k$ is even, equality holds only when $k=4$ and $|d|=2$.
+\end{lemma}
+
+\begin{proof}
+For nonnegative admissible $d$ put
+$G_k(d)=\binom{k}{(k-d)/2}(k+d^2)$.
+The ratio of consecutive values is
+\[
+ \frac{G_k(d+2)}{G_k(d)}
+ =\frac{k-d}{k+d+2}\frac{k+(d+2)^2}{k+d^2}.
+\]
+The difference of cross products is
+\[
+ (k-d)(k+(d+2)^2)-(k+d+2)(k+d^2)
+ =2(d+1)\bigl(k+1-(d+1)^2\bigr).
+\]
+This is positive whenever $(d+2)^2\le k$, so $G_k$ strictly increases along
+the admissible range.
+For odd $k$, its least nonzero argument is $1$, and
+\[
+ \frac{G_k(1)}k
+ =\frac{k+1}{k}\binom{k}{(k-1)/2}=B_k.
+\]
+For even $k$, the least nonzero argument is $2$.  With
+$C=\binom{k}{k/2}$, we have
+\[
+ \frac{G_k(2)}k=C\frac{k+4}{k+2}
+ \ge C\frac{k}{k-1}=B_k,
+\]
+where the difference of the two rational factors is
+$(k-4)/((k+2)(k-1))$.
+This also gives the equality statements.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:catalan-minimum}]
+Replace each binary coordinate $x_i$ by $1-2x_i$, and let $D$ denote the sum
+of the $k$ signs in a row.  Strength two gives
+\[
+ \sum D=0,\qquad \sum D^2=kN.
+\]
+In the shell of weight $w$, the value of $D$ is $d_w=k-2w$ and the number of
+rows is $M_w=m_w\binom{k}{w}$.
+Since the average of $D^2$ is $k$, some populated shell has $d_w^2\le k$.
+Write $d=d_w$ and $M=M_w$ for such a shell.  Its positive integer
+multiplicity gives
+\[
+ M\ge\binom{k}{(k-|d|)/2}.
+\]
+If $d\ne0$, Lemmas~\ref{lem:forced-shell} and~\ref{lem:binomial-shell}
+imply $N\ge B_k$.
+If $d=0$, then $k$ is even and Lemma~\ref{lem:forced-shell} gives
+\[
+ N\ge\frac{k}{k-1}M
+ \ge\frac{k}{k-1}\binom{k}{k/2}=B_k.
+\]
+This covers the boundary $d^2=k$ as well.
+
+For equality at odd $k$, Lemma~\ref{lem:binomial-shell} forces $|d|=1$,
+and the selected shell has multiplicity one.
+Equality in Cauchy--Schwarz makes all remaining values of $D$ equal.
+Their mean is $-k/d$, so they are all the opposite endpoint $\mp k$.
+The endpoint multiplicity is
+\[
+ \frac1k\binom{k}{(k-1)/2}=C_{(k-1)/2},
+\]
+giving the two displayed vectors.
+
+For even $k\ge6$, the nonzero-$d$ bound is strict, so equality requires a
+central shell of multiplicity one.
+Equality in $\sum D^2\le k^2(N-M)$ makes all remaining rows endpoints.
+Zero mean gives equal endpoint multiplicities, each
+\[
+ \frac1{2(k-1)}\binom{k}{k/2}=C_{k/2-1}.
+\]
+For $k=4$ this still gives $(1,0,1,0,1)$; equality with $|d|=2$ is also
+possible, and Cauchy--Schwarz then forces the opposite shell of weight
+$3$ or $1$, giving $(0,1,0,1,0)$.
+
+Finally, every displayed vector satisfies $\sum D=0$ and $\sum D^2=kN$.
+Coordinate symmetry turns these two identities into zero first-order sign
+means and zero pairwise sign correlations, hence strength two.
+Their row counts are $B_k$, proving attainability and the complete
+classification.
+\end{proof}
+
+\begin{remark}
+The upper-bound constructions are those of
+Karunanayaka~\cite{Karunanayaka2026}.  The lower bound uses integrality only
+through the implication $m_w>0\Rightarrow m_w\ge1$.
+This is a theorem for full coordinate-permutation symmetry, not for
+arbitrary binary orthogonal arrays.
+\end{remark}
+
+\begin{remark}
+For $k=15$, the minimum is $B_{15}=6864$.
+The two minimizers have $m_8=1$, $m_0=429$, and their level flip
+$m_7=1$, $m_{15}=429$; indeed $\binom{15}{8}+429=6435+429=6864$.
+For $k=16$, the minimum is $B_{16}=13728$, and the unique minimizer has
+$m_8=1$, $m_0=m_{16}=429$, since
+$\binom{16}{8}+2\cdot429=12870+858=13728$.
+These are the first two values beyond the range $k\le14$ verified in
+\cite{Karunanayaka2026}.
+\end{remark}
+
+\section{Nonexistence of a circulant weighing matrix of order 195 and weight 81}
+\label{sec:cw195}
+
+A circulant weighing matrix $CW(v,k)$ is equivalent to an element
+$A\in\mathbb Z[C_v]$ whose coefficients belong to $\{0,1,-1\}$ and which
+satisfies $AA^{(-1)}=k$. Here the involution combines inversion of group
+elements with complex conjugation of coefficients. The augmentation
+$\epsilon(A)$ is the sum of the coefficients. We prove the following
+parameter-specific nonexistence result.
+
+\begin{theorem}\label{thm:cw195}
+There is no circulant weighing matrix $CW(195,81)$.
+\end{theorem}
+
+The pair $(195,81)$ appears among the unresolved cases in
+Arasu--Gordon--Zhang, \emph{New nonexistence results on circulant weighing
+matrices}, Table~10, arXiv:1908.08447v3 (2021). Their Table~9 records two
+equivalence classes of $ICW_3(65,81)$. Tan's September 2026 preprint,
+\emph{Character and Multiplier Obstructions for Circulant Weighing Matrices},
+arXiv:2608.18468v2, resolves eight other entries. Its methods include the
+same general kernel-character reduction employed below; neither that
+reduction nor the multiplier theorem is claimed as new here.
+
+We use the integral multiplier theorem and the following cyclotomic version,
+proved in Tan, \emph{Group Invariant Weighing Matrices},
+arXiv:1610.01914v4 (2018), Theorem~3.4 and Corollary~3.5(b).
+If $X\in\mathbb Z[\zeta_u][G]$, where $G$ is finite abelian,
+\[
+ XX^{(-1)}=n,\qquad (n,|G|)=1,
+\]
+and the cyclotomic automorphism $\sigma_t$ fixes every prime ideal above
+the prime divisors of $n$ in $\mathbb Q(\zeta_{\operatorname{lcm}(u,\exp G)})$,
+then $X^{(t)}=\eta gX$ for a root of unity $\eta\in\mathbb Z[\zeta_u]$
+and $g\in G$. If additionally $(t-1,\exp G)=1$, a group translation
+removes $g$. In $X^{(t)}$, the coefficients are acted on by $\sigma_t$
+and the group elements are raised to their $t$th powers.
+
+\begin{lemma}\label{lem:icw65-divisible}
+Every $B\in\mathbb Z[C_{65}]$ satisfying
+\[
+ BB^{(-1)}=81,\qquad \epsilon(B)=9,
+ \qquad |B_x|\le3
+\]
+has coefficients in $\{0,3,-3\}$.
+\end{lemma}
+
+\begin{proof}
+Apply Tan's generalized multiplier theorem with coefficient conductor $u=1$,
+group $C_{65}$, norm $n=81$, and multiplier integer $3$.
+Here $(81,65)=1$, and the automorphism $\zeta_{65}\mapsto\zeta_{65}^3$
+is the Frobenius at $3$, fixing every prime ideal above $3$.
+Thus $B^{(3)}=\eta X^jB$ with $\eta\in\{1,-1\}$.
+Augmentation $\epsilon(B)=9$ forces $\eta=1$, and $(3-1,65)=1$
+permits a group translation with $B^{(3)}=B$.
+This applies to the bounded integer contraction directly; it does not require
+its coefficients to be $0,\pm1$.
+Use $C_{65}=C_5\times C_{13}$. Multiplication by $3$ has order $4$ on
+$C_5\setminus\{0\}$ and order $3$ on $C_{13}\setminus\{0\}$.
+Its orbit coefficients can therefore be written as
+\[
+ a\quad(\text{size }1),\qquad b\quad(\text{size }4),\qquad
+ c_1,\ldots,c_4\quad(\text{size }3),\qquad
+ d_1,\ldots,d_4\quad(\text{size }12).
+\]
+The $c_i$ and $d_i$ use the same ordering of the four nonzero $C_{13}$
+orbits. All ten coefficients are integers of absolute value at most $3$.
+The energy equation is
+\begin{equation}\label{eq:cw65-energy}
+ a^2+4b^2+3\sum_i c_i^2+12\sum_i d_i^2=81.
+\end{equation}
+Projecting onto $C_5$ gives coefficient
+$x=a+3\sum_i c_i$ at zero and coefficient
+$y=b+3\sum_i d_i$ at each nonzero element. Consequently
+\[
+ x+4y=9,\qquad x^2+4y^2=81.
+\]
+Elimination gives $4y(5y-18)=0$, whence $y=0$ and $x=9$ by integrality.
+Thus $a=3\alpha$ and $b=3\beta$ with
+$\alpha,\beta\in\{-1,0,1\}$, and
+\begin{equation}\label{eq:cw65-sums}
+ \sum_i c_i=3-\alpha,\qquad \sum_i d_i=-\beta.
+\end{equation}
+
+The projection onto $C_{13}$ has energy
+\begin{equation}\label{eq:cw65-energy13}
+ (a+4b)^2+3\sum_i(c_i+4d_i)^2=81.
+\end{equation}
+If $\beta\ne0$, then $|3\alpha+12\beta|\le9$ forces
+$\alpha=-\beta$. The first term of \eqref{eq:cw65-energy13} is then
+$81$, so $c_i+4d_i=0$ for all $i$. Since $|c_i|\le3$, every $d_i=0$,
+contradicting \eqref{eq:cw65-sums}. Hence $\beta=0$.
+
+Set $t=\sum_i d_i^2$. Comparing
+\eqref{eq:cw65-energy} and \eqref{eq:cw65-energy13} now yields
+\begin{equation}\label{eq:cw65-reduced}
+ \sum_i d_i=0,\qquad \sum_i c_i=3-\alpha,
+ \qquad \sum_i c_i^2+4t=27-3\alpha^2,
+ \qquad 2\sum_i c_id_i+3t=0.
+\end{equation}
+For $t>0$, Cauchy--Schwarz gives
+\[
+ \frac94t^2\le t(27-3\alpha^2-4t),
+ \qquad t\le\frac{108}{25}<5.
+\]
+Also $t\equiv\sum_i d_i=0\pmod2$. It remains to consider $t=0,2,4$.
+
+If $t=4$, the $d_i$ are, in some order, $(1,1,-1,-1)$.
+Let $P$ and $N$ be the sums of the $c_i$ at the positive and negative
+positions. Then $P-N=-6$ and $P+N=3-\alpha$.
+For $\alpha=0$ these equations contradict integrality.
+For $\alpha=1$ they give $(P,N)=(-2,4)$, so
+$\sum_i c_i^2\ge2+8=10$, whereas
+\eqref{eq:cw65-reduced} requires $8$.
+For $\alpha=-1$ they give $(P,N)=(-1,5)$, so
+$\sum_i c_i^2\ge1+13=14$, again exceeding $8$.
+Thus $t\ne4$.
+
+If $t=2$, arrange $d=(1,-1,0,0)$. Then $c_1-c_2=-3$, so
+\[
+ (c_1,c_2)\in\{(-3,0),(-2,1),(-1,2),(0,3)\}.
+\]
+Their squared norms are $9,5,5,9$.
+For $\alpha=\pm1$, the remaining squared norm $c_3^2+c_4^2$ must be
+$7$ or $11$, neither a sum of two squares. For $\alpha=0$ it must be
+$10$ or $14$. The latter is impossible. In the former case the first
+pair is $(-3,0)$ or $(0,3)$, requiring $c_3+c_4=6$ or $0$.
+But the solutions to $c_3^2+c_4^2=10$ have sums in $\{-4,-2,2,4\}$.
+Thus $t\ne2$.
+
+We conclude that $t=0$, so all $d_i=0$. If $\alpha=\pm1$, then
+$\sum_i c_i^2=24$. Reduction modulo $4$ forces either zero or four odd
+$c_i$. Four odd entries give squared sum $4\pmod8$, while zero odd
+entries, with $|c_i|\le3$, give squared sum at most $16$.
+Both are impossible. Hence $\alpha=0$ and $\sum_i c_i^2=27$.
+There must be three odd entries, since one odd and three even entries
+have squared sum at most $9+12=21$. Modulo $8$, the remaining even entry
+must be zero. The three odd entries must then all have absolute value $3$.
+Their sum is $3$, so two equal $3$ and one equals $-3$.
+This proves the stated divisibility of every coefficient of $B$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:cw195}]
+Suppose $A\in\mathbb Z[C_{195}]$ represents such a matrix, with
+$\epsilon(A)=9$. Write $C_{195}=C_{65}\times C_3$ and contract the
+$C_3$ coordinate. The result is an integer contraction $B$ satisfying
+Lemma~\ref{lem:icw65-divisible}; hence $B=3C$ with $C$ having coefficients
+$0,\pm1$.
+
+Let $\omega$ be a primitive cube root of unity and put $\lambda=1-\omega$,
+so $\lambda\overline\lambda=3$. Apply the nonprincipal character
+$Y\mapsto\omega$ of $C_3$ to $A$, obtaining
+$E\in\mathbb Z[\omega][C_{65}]$ with $EE^{(-1)}=81$.
+Each three-entry fiber has principal sum $0$ or $\pm3$.
+A fiber of sum $\pm3$ is constant and has nonprincipal image zero.
+A nonzero zero-sum fiber is a permutation of $(1,-1,0)$ and has image
+$\lambda$ times an Eisenstein unit. Thus
+\begin{equation}\label{eq:cw195-eisenstein}
+ E=\lambda D,\qquad DD^{(-1)}=27,
+ \qquad D_x\in\{0,\pm1,\pm\omega,\pm\omega^2\}.
+\end{equation}
+In particular, $D$ has precisely $27$ nonzero coefficients.
+
+Apply the generalized multiplier theorem with coefficient conductor $3$,
+group $C_{65}$, norm $27$, and multiplier integer $133$.
+We have $(27,65)=1$, $(133,195)=1$, and
+\[
+ 133\equiv1\pmod3,\qquad133\equiv3\pmod{65}.
+\]
+The automorphism $\sigma_{133}$ fixes every prime above $3$ in
+$\mathbb Q(\zeta_{195})$: its restriction to $\mathbb Q(\zeta_{65})$
+is the Frobenius automorphism at $3$, and adjoining $\omega$ is totally
+ramified at these primes, so each has a unique extension.
+The theorem therefore gives $D^{(133)}=\eta X^jD$.
+Since $\sigma_{133}$ is the identity on $\mathbb Z[\omega]$, augmentation
+gives $\epsilon(D)=\eta\epsilon(D)$. By
+\eqref{eq:cw195-eisenstein}, $|\epsilon(D)|^2=27$, so $\eta=1$.
+Finally $(133-1,65)=1$, allowing a group translation after which
+$D^{(133)}=D$. Equivalently, $D$ is constant on multiplication-by-$3$
+orbits of $C_{65}$.
+
+These orbits have sizes $1,4$, four copies of $3$, and four copies of $12$.
+The support size $27$, reduced modulo $3$, forces the size-$1$ and size-$4$
+orbits both to be absent. The remaining support equation is
+\[
+ 12k+3l=27,\qquad0\le k,l\le4,
+\]
+whose only solution is $(k,l)=(2,1)$. Consequently
+\[
+ \epsilon(D)=12u+12v+3w=3(4u+4v+w)
+\]
+for Eisenstein units $u,v,w$. Its norm must be $27$, so
+$|4u+4v+w|=\sqrt3$. If $v=-u$, this absolute value is $1$.
+Otherwise $u+v$ is a nonzero Eisenstein integer, and therefore
+$|u+v|\ge1$. The reverse triangle inequality then gives
+\[
+ |4u+4v+w|\ge4|u+v|-|w|\ge3.
+\]
+Neither alternative equals $\sqrt3$. This contradiction proves the theorem.
+\end{proof}
+
+\paragraph{Reproducibility and limits of the transfer.}
+The proof is entirely analytic. Independent standard-library calculations
+enumerate $3388$ contraction candidates satisfying augmentation and energy,
+recovering eight normalized contractions in the two previously recorded
+equivalence classes. A separate exact calculation checks all $864$ normalized
+Eisenstein orbit assignments; four survive the first correlation equation
+and none survive the second. These checks are redundant certificates rather
+than hypotheses of the proof.
+
+The successful transfer is the retention of character information inside
+fibers, followed by a bounded-coefficient and augmentation obstruction.
+It is not a general solution of the circulant Hadamard problem. In fact, for
+every odd $u$, its order-$4$ quotient at candidate order $4u^2$ has the
+feasible vector $(u,u,u,-u)$. This vector has the correct parity, coefficient
+bounds, and flat quotient Fourier norm, and each entry lifts separately to
+a sum of $u^2$ signs. Thus a test using only the maximal $2$-power quotient
+and those constraints cannot exclude any such candidate order.
+
+\section{Verification and limits}
+
+\subsection{Checks supplied with this note}
+The general proofs above do not rely on finite search. The supplementary
+programs use exact arithmetic to check the arithmetic reductions independently.
+For the array result, two implementations verify 10,813 shell inequalities
+through $k=1000$, including the boundary $d^2=k$, and check the constructions
+against the original one- and two-coordinate marginal equations. A separate
+small-parameter enumeration reproduces all minimum multiplicity vectors;
+an optional CP-SAT run checks $3\le k\le16$.
+
+For the circulant result, an exhaustive orbit calculation recovers eight
+normalized contractions in two equivalence classes. An independent
+Eisenstein calculation excludes the normalized unit-orbit assignments.
+These numerical checks are unnecessary for the final proof: the contraction
+lemma and the augmentation inequality already exclude every possible matrix.
+
+\subsection{What transfers, and what does not}
+For the array problem, positivity makes a populated orbit contribute at
+least its full cardinality. The moment equations then force enough mass
+outside it. There is no need for a $2$-adic obstruction. For the circulant
+problem, a quotient alone discards information: evaluating a nonprincipal
+character of its kernel retains enough information to force a unit-valued
+group-ring equation. The resulting orbit sizes conflict with the permitted
+augmentation norm.
+
+This does not justify a general implication from local integral feasibility
+to a solution with a prescribed finite alphabet or with nonnegative
+coefficients. Graph-flow, marginal-table, tiling, and Littlewood-polynomial
+targets were considered separately; no resolution of their broad open
+conjectures is asserted here. In particular, neither result proves the
+Hadamard conjecture, the circulant Hadamard conjecture, or Tutte's flow
+conjectures. The evidence for transfer consists of the two precise theorems
+proved above, with the hypotheses stated there.
+
+\begin{thebibliography}{9}
+\bibitem{Karunanayaka2026}
+R. C. Karunanayaka,
+\emph{Catalan Bounds for Symmetric Strength-Two Orthogonal Arrays},
+Journal of Combinatorial Designs, first published 18 September 2026.
+\href{https://doi.org/10.1002/jcd.70039}{doi:10.1002/jcd.70039}.
+Conjecture 1 and Theorem 6.
+
+\bibitem{ArasuGordonZhang2021}
+K. T. Arasu, D. M. Gordon, and Y. Zhang,
+\emph{New nonexistence results on circulant weighing matrices},
+Cryptography and Communications \textbf{13} (2021), 775--789.
+\href{https://arxiv.org/abs/1908.08447v3}{arXiv:1908.08447v3}.
+Tables 9 and 10.
+
+\bibitem{Tan2018}
+M. M. Tan, \emph{Group Invariant Weighing Matrices},
+Designs, Codes and Cryptography \textbf{86} (2018), 2677--2702.
+\href{https://arxiv.org/abs/1610.01914v4}{arXiv:1610.01914v4}.
+Theorem 3.4 and Corollary 3.5(b).
+
+\bibitem{Tan2026}
+M. M. Tan,
+\emph{Character and Multiplier Obstructions for Circulant Weighing Matrices},
+preprint, 1 September 2026.
+\href{https://arxiv.org/abs/2608.18468v2}{arXiv:2608.18468v2}.
+
+\end{thebibliography}
+\end{document}
