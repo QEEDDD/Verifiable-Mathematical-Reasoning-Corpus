@@ -1,0 +1,1442 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=26mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,enumitem}
+\usepackage{xcolor,fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Lucky-Car Reciprocity via Prescribed Forests, and Four Further Investigations},pdfauthor={KEIO}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small T91--T95: a new attempt}
+\fancyhead[R]{\small KEIO}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\C}{\mathbb C}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\Cay}{Cay}
+\begin{document}
+\title{Lucky-Car Reciprocity via Prescribed Forests,\\
+and Four Further Investigations}
+\author{KEIO}
+\date{T91--T95, new attempt\quad\textbar\quad27 October 2026}
+\maketitle
+\begin{abstract}
+We construct a weight-preserving bijection between permutation gap choices
+and parking-colored forests with a prescribed set of parent edges. Its
+inverse is determined by a first hitting time of a color-prefix deficit.
+Combined with an established containment-count formula, this proves the
+full lucky-set reciprocity conjecture of Avila, Ferroni, and Morales,
+without changing either parking protocol or its parameter range.
+Four further investigations give a superpolylogarithmic lower bound for
+the zero-residue Stern-polynomial counting function, exact Somos--8
+coefficient identities in three families, minimum valencies of cubelike
+graphical regular representations on two infinite subsequences of
+dimensions, and a modulo-four derivation of Sun's adjacent Legendre-symbol
+determinant formula. Complete statements, partial statements, source
+discrepancies, and established methodological inputs are distinguished.
+The manuscript contains proofs and reproducible exact certificates; it
+does not certify five historically unprecedented principles or worldwide
+priority for its new constructions.
+\end{abstract}
+
+\section*{Scope of this attempt}
+This manuscript is a fresh investigation, not a renumbering of the earlier
+T91--T95 manuscript. Its most substantial methodological contribution is
+the explicit auxiliary bijection in T91 and its transfer to the unchanged
+Conjecture~5.1 of Avila--Ferroni--Morales. The nearest-larger-element
+framework has classical precedents, but the prescribed-parent,
+color-preserving inverse must be proved; it is not supplied merely by
+renaming a known theorem.
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.07\textwidth}>{\raggedright\arraybackslash}p{.30\textwidth}>{\raggedright\arraybackslash}p{.56\textwidth}@{}}
+\toprule
+Track & Original target & Result and exact limitation\\
+\midrule
+T91 & Avila--Ferroni--Morales, Conjecture 5.1 & Complete lucky-set identity for every positive parameter vector and every subset. Explicit auxiliary bijection and inverse. Historical priority remains a separate question.\\
+T92 & Ulas, Question 2.10 & The zero-residue count exceeds every fixed power of the logarithm. The residue-one branch remains unresolved here.\\
+T93 & Barry, Conjectures 11--13 & Complete bilinear identities for 11 and 12, and for the original continued fraction in 13. A conflicting printed generating function in 13 has a sign error. The mechanism is Hone's established theorem.\\
+T94 & \'{A}rnad\'ottir--Guo, Problem 8.3 & Exact minimum valencies on two infinite subsequences, plus four smaller dimensions. The full minimum-valency function is not determined.\\
+T95 & Sun, Conjecture 4.8 & The missing prime-congruence branch is derived for all four parameters; the other branch is already published. The needed signed inverse data are implicit in earlier explicit formulas.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The strict success conditions.}
+Each target above predates this work and is identified in a primary source.
+T91 preserves the exact original conjecture and has an unconditional
+all-parameter proof. A bounded search found no identical proof of its
+prescribed-forest bijection or exact conjecture resolution. This supports
+investigating novelty; it is not proof that no such literature exists.
+No track is certified here as satisfying the further absolute demand for
+a historically unprecedented foundational principle and worldwide first
+resolution. In particular, partial answers in T92 and T94 are not counted
+as complete closures, and the close prior-method overlap in T93 and T95
+is disclosed explicitly.
+
+Independent internal reviews found no gap in the included proofs. These
+reviews are not external peer review or proof-assistant formalization.
+Finite computations are used only in their stated roles. The polynomial
+interpolation certificate in T93 is a finite exact proof with an explicit
+degree bound; the other computational checks supplement the written
+infinite arguments.
+
+
+
+\section{T91: a Cartesian-gap bijection and lucky-car reciprocity}
+
+The target in this retry is Conjecture~5.1 of Avila--Ferroni--Morales,
+\emph{Luck and magic for Pitman--Stanley polytopes and parking functions},
+arXiv:2603.19194v2 (8 April 2026)~\cite{RetryAFM2026}. It is distinct from the parking-polytope
+magic-positivity conjecture attempted in the preceding round. We retain
+the full original parameter range and the exact lucky-set statement.
+
+Let $\mathbf y=(y_1,\ldots,y_n)\in\mathbb Z_{>0}^n$, put
+$u_k=y_1+\cdots+y_k$, $u_0=0$, and $m=u_n$. Write
+$\operatorname{PF}(\mathbf y)$ for the words $w\in[m]^n$ whose increasing
+rearrangement satisfies $w_{(k)}\le u_k$. Two parking procedures act on
+this same set of words. In the FHMS procedure the available sites are
+$u_1,\ldots,u_n$, each with capacity one. In the AFM procedure the sites
+$2,3,\ldots,m$ each have capacity one; site $1$ is unavailable. Cars arrive
+in label order and take the first available site at least their preference.
+A car is lucky precisely when its final site equals its preference; a
+failed car is not lucky. Denote the resulting lucky sets by $L_F(w)$ and
+$L_A(w)$, respectively. These are precisely the two procedures in the
+source's Conjecture~5.1, including its $\ell=1$ convention.
+
+For $J\subseteq[n]$ put $\overline J=\{n+1-j:j\in J\}$.
+
+\begin{theorem}[The exact lucky-set identity]
+For every positive integer vector $\mathbf y$ and every $S\subseteq[n]$,
+\[
+ \#\{w\in\operatorname{PF}(\mathbf y):L_F(w)=S\}
+ =\#\{w\in\operatorname{PF}(\mathbf y):
+               L_A(w)=[n]\setminus\overline S\}.
+\]
+Consequently the two one-variable lucky enumerators satisfy
+\[
+ \sum_w t^{|L_F(w)|}=\sum_w t^{n-|L_A(w)|}.
+\]
+\end{theorem}
+
+We first solve a separate weighted enumeration problem. Its parameters
+$y_1,\ldots,y_n$ can be indeterminates; thus the auxiliary statement is
+stronger than its positive-integer evaluation needed below.
+
+\subsection{The auxiliary Cartesian-gap problem}
+
+Fix a set $J\subseteq[n]$ of vertices called prescribed vertices. For a
+permutation $\tau$ of $[n]$, let $r_i$ be the position of $i$ and let $p_i$
+be the largest position strictly less than $r_i$ occupied by a label
+greater than $i$, with $p_i=0$ if there is none. Consider the following two
+finite sets.
+
+\begin{itemize}
+\item $\mathcal A_J$ consists of $\tau$, together with an integer $c_i$
+      satisfying $p_i<c_i\le r_i$ for every $i\notin J$.
+\item $\mathcal B_J$ consists of an ordinary parking vector
+      $c=(c_1,\ldots,c_n)$, meaning $c_{(i)}\le i$, together with a parent
+      $P(i)$ for each $i\in J$. This parent is either a label $k>i$ with
+      $c_k=c_i$, or a ghost root $*$, permitted only when $c_i=1$.
+      The ghost is placed above every label. Vertices outside $J$ have no
+      parent. Every parent chain therefore terminates at a vertex outside
+      $J$ or at the ghost.
+\end{itemize}
+
+Both objects have weight $\prod_{i\notin J}y_{c_i}$.
+
+\begin{lemma}[Cartesian gaps and parking-colored forests]
+There is a weight-preserving bijection $\mathcal A_J\longleftrightarrow
+\mathcal B_J$. In particular,
+\begin{align}
+ &\sum_{\tau\in\mathfrak S_n}
+       \prod_{i\notin J}\left(\sum_{h=p_i+1}^{r_i}y_h\right)\label{eq:t91gap}\\
+ &\qquad=
+ \sum_{c\in\operatorname{PF}_n}
+    \left(\prod_{i\notin J}y_{c_i}\right)
+    \prod_{i\in J}
+       \left(\#\{k>i:c_k=c_i\}+\mathbf1_{c_i=1}\right).\nonumber
+\end{align}
+\end{lemma}
+
+\begin{proof}
+For an object in $\mathcal A_J$, give each prescribed vertex $i$ the parent
+occupying position $p_i$, or $*$ if $p_i=0$. Assign the ghost color $1$,
+retain all unprescribed colors, and give each prescribed vertex its
+parent's color, working in decreasing label order. Parent labels strictly
+increase, so the procedure is well defined. For every vertex $i$ one has
+$c_i\le r_i$: this is given for an unprescribed vertex, inherited from a
+parent in an earlier position for a prescribed vertex, or follows from
+$1\le r_i$ for a ghost child. Hence $c$ is an ordinary parking vector.
+The map preserves all unprescribed colors and therefore the weight.
+
+Here is a complete inverse, including the choice of the split position.
+The construction applies to any finite ordered set of labels; its parking
+colors are numbered from $1$ to the number $N$ of labels. The empty object
+returns the empty permutation. For a nonempty object, let $v$ be the
+largest label. Let $D$ consist of $v$ and all vertices whose parent chain
+passes through $v$, and put $d=|D|$ and $a=c_v$. All vertices in $D$ have
+color $a$, and every vertex in $D\setminus\{v\}$ is prescribed. If $v$
+is prescribed, its parent must be $*$ and $a=1$.
+
+Set $C(s)=\#\{i:c_i\le s\}$ and $H(s)=C(s)-s$. The parking condition is
+$H(s)\ge0$ for $1\le s\le N$. Since $D$ has color $a$,
+$C(a)\ge C(a-1)+d\ge a-1+d$, with $C(0)=0$. Thus $H(a)\ge d-1$.
+Also $H(N)=0$, and $H(s+1)-H(s)\ge-1$. Consequently the integer
+\[
+ k=\min\{s\ge a:H(s)=d-1\}
+\]
+exists; before this first hit one has $H(s)\ge d$ for $a\le s<k$.
+Define
+\[
+ A=\{i\notin D:c_i\le k\},\qquad
+ B=(D\setminus\{v\})\cup\{i:c_i>k\}.
+\]
+Then $|A|=k-1$ and $|B|=N-k$.
+
+On $A$, retain the colors and parents. For $s<a$ its color-prefix count is
+$C(s)\ge s$; for $a\le s<k$ it is $C(s)-d\ge s$. Thus this is a parking
+vector of length $k-1$. In particular no vertex of $A$ actually has color
+$k$, since already $k-1$ of its vertices have color at most $k-1$.
+Its parent edges stay in $A$ or reach the ghost: an edge has equal colors
+at its ends, and an edge entering $D$ would put its starting vertex in $D$.
+
+On $B$, replace the colors by
+\[
+ c'_i=\begin{cases}1,&i\in D\setminus\{v\},\\c_i-k,&c_i>k,\end{cases}
+\]
+and replace each parent $v$ by the ghost. Other parents are retained.
+These are again valid increasing equal-color parent edges. No original
+ghost child outside $D$ lies in $B$, since it would have color $1\le k$.
+For $1\le q\le N-k$ the new prefix count is
+\[
+ (d-1)+C(k+q)-C(k)=C(k+q)-k\ge q.
+\]
+So this is a parking vector of length $N-k$.
+
+Recursively construct the permutations $\tau_A$ and $\tau_B$ for these
+two smaller objects, and output
+\[
+                         \tau_A\,v\,\tau_B.
+\]
+For a prescribed vertex in $A$, its nearest larger label to the left is
+unchanged. In $B$, a recursive ghost parent becomes $v$, the largest
+label at the split; other nearest-larger-left parents stay unchanged.
+For an unprescribed vertex in $B$, the allowed color interval is shifted
+by $k$, recovering its original color. The root $v$, if unprescribed,
+has $p_v=0$ and $1\le a\le k=r_v$; if prescribed, its ghost parent is
+correct. Thus the reconstructed permutation maps to the given parents
+and colors.
+
+For uniqueness, suppose an input permutation maps to the given forest,
+and let the largest label $v$ occupy position $k$. All of $D\setminus
+\{v\}$ lies to the right of $v$, because parents lie strictly to the left.
+No other parent edge can cross $v$: it would then have a larger label
+$v$ between its endpoints, contrary to the nearest-larger-left rule.
+Every component outside $D$ lies on one side of $v$; a component attached
+to the ghost lies on the left. An unprescribed vertex on the left has
+color at most $k-1$. An unprescribed vertex on the right has color greater
+than $k$, because $v$ is a larger label to its left. Colors are constant
+on parent components. It follows that the left and right sets are exactly
+$A$ and $B$ above and that $H(k)=d-1$. The left parking inequalities give
+$H(s)\ge d$ for every $a\le s<k$. Hence $k$ is exactly the first-hit
+position used by the inverse. Induction proves uniqueness of the entire
+permutation. The retained unprescribed colors also recover every gap
+choice, completing the bijection.
+\end{proof}
+
+\paragraph{A worked inverse.}
+Take $\tau=(3,1,4,2)$, prescribe $J=\{1,2\}$, and choose the unprescribed
+colors $c_3=1$, $c_4=2$. The prescribed parents are $1\to3$ and $2\to4$;
+color inheritance gives $c=(1,2,1,2)$ and weight $y_1y_2$. In the inverse,
+$v=4$, $D=\{2,4\}$, $d=2$, and $a=2$. Since $C(2)-2=2$ and $C(3)-3=1$,
+the first-hit position is $k=3$. The left set is $\{1,3\}$ and reconstructs
+as $(3,1)$; the right singleton $\{2\}$ reconstructs as $(2)$. Their
+concatenation around $4$ recovers $(3,1,4,2)$.
+
+\subsection{Transfer to the unchanged conjecture}
+
+\begin{proof}[Proof of the theorem]
+Fix $J\subseteq[n]$ and count FHMS words for which $J\subseteq L_F(w)$;
+cars outside $J$ are unrestricted. Fix their final outcome permutation
+$\tau$, where position $r$ means the sparse site $u_r$. When car $i$
+arrives, the sites assigned to larger labels in $\tau$ are precisely the sites
+that will be filled later. Its nearest still-empty sparse site to the left is
+$u_{p_i}$, or $0$ if $p_i=0$. Therefore its allowable preferences are
+exactly
+\[
+                        u_{p_i}<w_i\le u_{r_i}.
+\]
+If $i\in J$, there is one allowed lucky preference, namely $u_{r_i}$.
+Otherwise there are $\sum_{h=p_i+1}^{r_i}y_h$ choices. These choices are
+independent for a fixed outcome permutation: induction on arrival order
+verifies that they produce that outcome. The left side of
+\eqref{eq:t91gap} is consequently
+\[
+                      \#\{w:J\subseteq L_F(w)\}.
+\]
+
+We now use the already established Proposition~4.13 of
+Avila--Ferroni--Morales, with $\ell=1$. In our notation its exact statement
+is that, for any $K\subseteq[n]$,
+\[
+ \#\{w:L_A(w)\subseteq K\}
+ =\sum_{q\in\operatorname{PF}_n}
+     \prod_{j\in K}y_{q_j}
+     \prod_{j\notin K}
+        \left(\#\{h<j:q_h=q_j\}+\mathbf1_{q_j=1}\right).
+\]
+Take $K=[n]\setminus\overline J$ and reverse the indices of $q$.
+Ordinary parking vectors are invariant under coordinate permutations, so
+the resulting sum is the right side of \eqref{eq:t91gap}. We obtain, for
+every $J$,
+\[
+ \#\{w:J\subseteq L_F(w)\}
+ =\#\{w:L_A(w)\cap\overline J=\varnothing\}.
+\]
+These are all upper-set sums of the two candidate exact-set
+distributions. Boolean-lattice M\"obius inversion therefore identifies
+the distributions, giving precisely the displayed identity for each
+$S\subseteq[n]$. Summing by $|S|$ gives the one-variable identity.
+\end{proof}
+
+\paragraph{Method and priority scope.}
+The new part of this argument is the explicit weighted Cartesian-gap
+bijection and its first-hit inverse. It supplies a separate auxiliary
+enumeration problem and transfers its solution to the exact pre-existing
+Conjecture~5.1. The proof uses the source's established containment-count
+formula; it does not claim that formula or Boolean inversion as new.
+Nearest-greater-element trees, parking functions, and first-return
+decompositions are classical objects, so a claim that this is a
+historically unprecedented foundational principle would require more
+than the present proof. A bounded prior-literature search and independent
+proof review must be reported separately from correctness.
+
+In particular, Shin's \emph{A new bijection between forests and parking
+functions}, arXiv:0810.0427v2, Section~4~\cite{RetryShin2008}, constructs a closest-larger-on-
+the-right tree from ordinary parking outcomes and recovers labels by
+descendant ranks determined by jumps. The construction here instead
+specifies a subset of parent edges on the left, retains the colors at
+every unprescribed vertex with independent weights $y_h$, and uses the
+first-hit equation $C(k)-k=d-1$ to reconstruct the missing gap positions.
+These are concrete distinctions between the constructions, not proof of
+the absence of every possible earlier equivalent result.
+
+The verifier \texttt{t91\_cartesian\_verify.py} exhaustively tests both
+directions of the auxiliary bijection for every $J$ through $n=5$, and
+compares the two original parking procedures on explicit positive
+parameter vectors. These finite tests supplement the all-parameter proof.
+
+
+\section{T92 retry: superpolylogarithmic growth in the zero-residue branch}
+
+The original target is Question~2.10 of Ulas,
+\emph{Strong arithmetic property of certain Stern polynomials}
+(arXiv:1909.10844v1, 2019; published 2020)~\cite{retry:ulas}. Write
+\[
+ B_0(t)=0,\quad B_1(t)=1,\quad B_{2n}(t)=tB_n(t),\quad
+ B_{2n+1}(t)=B_n(t)+B_{n+1}(t),
+\]
+and let $e(n)=\deg B_n$. The source defines
+\[
+ \Pi_{r,2}(x)=\#\{1\le n\le x:
+ B_n(t)\equiv1+r\sum_{i=1}^{e(n)}t^i\pmod2\}.
+\]
+Its question asks whether $\Pi_{r,2}(x)/(\log_2x)^2\to\infty$ for
+$r\in\{0,1\}$. We prove substantially more for the unchanged $r=0$
+branch. The $r=1$ branch remains unresolved in this investigation.
+
+\begin{theorem}[Zero-residue growth]
+As $x\to\infty$,
+\[
+ \log\Pi_{0,2}(x)\ge
+ \frac{(\log\log x)^2}{2\log2}
+ -O(\log\log x\,\log\log\log x).
+\]
+In particular, for every fixed real $A>0$,
+$\Pi_{0,2}(x)/(\log x)^A\to\infty$.
+\end{theorem}
+
+The auxiliary problem is to construct arbitrarily many independently
+variable binary blocks whose Stern polynomial has every positive-degree
+coefficient even. A recursively symmetric word solves this problem.
+The exact matrix identity below is proved directly, not invoked as an
+unverified closure principle.
+
+\begin{lemma}[A characteristic-two symmetric product identity]
+Work over $\mathbb F_2[t]$, and put $d=t+1$ and
+\[
+ F(u)=\begin{pmatrix}du&u\\u+d&du+1\end{pmatrix},\qquad
+ N(q,\delta)=\begin{pmatrix}dq+\delta&q\\q+d(1+\delta)&dq+1\end{pmatrix}.
+\]
+Set $D=\det N(q,\delta)=t^2q^2+\delta$. Then
+\[
+ N(q,\delta)F(u)N(q,\delta)
+   =N(q+uD,t^2q^2).
+\]
+Moreover, with $e=(d,1)$ and $v=(0,1)^{\mathsf T}$, one has
+$eN(q,\delta)v=1$.
+\end{lemma}
+\begin{proof}
+The determinant and the last identity follow immediately by multiplication.
+For the product identity, its upper-right entry is $q+uD$, and its
+upper-left entry is $d(q+uD)+t^2q^2$. The lower-right entry is
+$d(q+uD)+1$, and the lower-left entry is
+$q+uD+d(1+t^2q^2)$. These are the four entries on the right.
+All equalities are polynomial identities in $\mathbb F_2[t,q,\delta,u]$.
+\end{proof}
+
+To read a binary digit from left to right, use
+\[
+ L=\begin{pmatrix}t&0\\1&1\end{pmatrix},\qquad
+ R=\begin{pmatrix}1&1\\0&t\end{pmatrix}
+\]
+for digits zero and one, respectively. Beginning at $v$, the state after
+the word for $n$ is $(B_n,B_{n+1})^{\mathsf T}$. Products are ordered in
+the order of their action. For $a\ge1$, let
+\[
+ f_a=1^a01\,0^a.
+\]
+Its matrix is $L^aRLR^a=F(t^a)$ over $\mathbb F_2[t]$.
+Indeed, $R^a=\left(\begin{smallmatrix}1&S_a\\0&t^a\end{smallmatrix}\right)$,
+$L^a=\left(\begin{smallmatrix}t^a&0\\S_a&1\end{smallmatrix}\right)$,
+where $S_a=1+t+\cdots+t^{a-1}$ and $dS_a=1+t^a$.
+
+For positive integers $a_1,\ldots,a_j,c$, define words recursively by
+\[
+ W_0=\varnothing,\qquad W_i=W_{i-1}f_{a_i}W_{i-1}
+ \quad(1\le i\le j),\qquad V_{j,\mathbf a,c}=W_j1^c01.
+\]
+The integer with binary expansion $V_{j,\mathbf a,c}$ is positive and odd.
+The matrix of $W_0$ is $I=N(0,1)$. The lemma therefore shows inductively
+that the matrix of every $W_j$ is some $N(q_j,\delta_j)$. The first row
+of the matrix $RLR^c$ of the final word $1^c01$ equals $(d,1)$:
+\[
+ (1,0)RLR^c=(d,dS_c+t^c)=(d,1).
+\]
+Consequently
+\[
+ B_{[V_{j,\mathbf a,c}]_2}(t)\equiv1\pmod2.
+\]
+This proves the required polynomial congruence for every choice of the
+positive integer parameters, without a degree restriction.
+
+For clarity, the first new three-parameter instance, $j=2$, has the binary
+run lengths
+\[
+ (a,1,1,a,b,1,1,b,a,1,1,a,c,1,1).
+\]
+The number of digits in this instance is $4a+2b+c+8$.
+For general $j$, the number of digits is
+\[
+ \ell=2\sum_{i=1}^j2^{j-i}(a_i+1)+c+2.
+\]
+These parameterizations are injective. Each block $f_a$ has four runs,
+starts in one and ends in zero; the final block has three runs and starts
+in one. Adjacent blocks never merge. The number of runs of $V$ is exactly
+$4(2^j-1)+3=2^{j+2}-1$, determining $j$. After separating the last three
+runs, the parameters $a_i$ are recovered recursively from the central
+four-run block of $W_i$ and either surrounding copy of $W_{i-1}$.
+
+\begin{proof}[Proof of the theorem]
+Put $L=\lfloor\log_2x\rfloor$. Every word of at most $L$ digits gives an
+index below $2^L\le x$. On writing $a_i=1+b_i$ and $c=1+b_0$, the length
+becomes
+\[
+ \ell=2^{j+2}-1+b_0+\sum_{i=1}^j2^{j-i+1}b_i,
+ \qquad b_0,\ldots,b_j\ge0.
+\]
+Thus the exact generating function for the number of words of length
+$\ell$ in the $j$th family is
+\[
+ \frac{z^{2^{j+2}-1}}{\prod_{i=0}^j(1-z^{2^i})}.
+\]
+For large $L$, choose
+$j=\lfloor\log_2L-2\log_2\log L\rfloor$. Then $2^{j+2}-1\le L/2$.
+For the variables having weights $2^i$, $0\le i\le j$, restrict them to
+\[
+ 0\le b\le\left\lfloor\frac{L}{2(j+1)2^i}\right\rfloor.
+\]
+Their weighted sum is at most $L/2$. Since $\lfloor y\rfloor+1\ge y$,
+there are at least
+\[
+ \frac{L^{j+1}}{[2(j+1)]^{j+1}2^{j(j+1)/2}}
+\]
+distinct indices. Taking logarithms and using
+$j=\log L/\log2-O(\log\log L)$ gives
+\[
+ \log\Pi_{0,2}(x)\ge
+ \frac{(\log L)^2}{2\log2}-O(\log L\log\log L).
+\]
+Replacing $L$ by $\lfloor\log_2x\rfloor$ proves the displayed bound.
+It also implies the final assertion, since the quadratic term in
+$\log\log x$ dominates $A\log\log x$ for every fixed $A$.
+\end{proof}
+
+\paragraph{Scope and novelty.}
+This solves the $r=0$ instance of the original Question~2.10 with a stronger
+quantitative bound; it does not solve the question for both residues.
+Ulas's Theorem~2.3 gives a two-parameter family and a quadratic logarithmic
+lower bound. The symmetric recursion here introduces arbitrarily many
+independent parameters, which is the substantive extension. A bounded
+search located no identical construction or growth result. Matrix
+recurrences and characteristic-two cancellation are established ideas;
+no historically unprecedented foundational principle is certified.
+
+
+\section{T93: three exact Somos--8 families and their singular parameters}
+\label{retry93:sec}
+
+This section gives a computer-assisted proof of the Hankel recurrences in
+Barry's Conjectures 11 and 12, and of the recurrence attached to the original
+continued fraction in Conjecture 13 \cite{retry93:barry}. It does not claim a
+new foundational principle: the all-index rank theorem used below is a
+polynomial consequence of Hone's Theorem 5.5 \cite{retry93:hone}. The
+coefficient identification and specialization argument are made explicit,
+including parameters at which the published rational coefficients have
+poles. A bounded search through 27 October 2026 did not locate an explicit
+prior proof of these three precise coefficient formulas; that does not
+certify priority.
+
+\subsection{Exact targets and a source discrepancy}
+For $j\in\{11,12,13\}$, let $g^{(j)}(x;r)$ be the formal series with
+constant term one satisfying the respective \emph{original continued
+fraction} in Barry's paper:
+\begin{align*}
+ g^{(11)}&=\frac{1}{1-x/(1-rx)-x^2-x^3g^{(11)}},\\
+ g^{(12)}&=\frac{1}{1-x-x^2/(1-rx)-x^3g^{(12)}},\\
+ g^{(13)}&=\frac{1}{1-x(1-(r-1)x)/(1-rx)-x^2-x^3g^{(13)}}.
+\end{align*}
+Write $g^{(j)}=\sum_{m\ge0}g_m^{(j)}x^m$ and
+\[
+ h_n^{(j)}(r)=\det(g_{a+b}^{(j)}(r))_{0\le a,b\le n}.
+\]
+All these entries and determinants are polynomials in $\mathbb Z[r]$.
+Put $\mathcal A_j(x)=x^3a_j(x^{-1})$, where
+\[
+\begin{array}{c|l|l}
+j&a_j(X)&b_j\\ \hline
+11&X^3-(r+1)X^2-X+r&r+1\\
+12&X^3-(r+1)X^2+(r-1)X&1\\
+13&X^3-(r+1)X^2+(r-2)X+r&2
+\end{array}
+\]
+Then each original continued fraction is exactly equivalent to
+\begin{equation}\label{retry93:quadratic}
+ \mathcal A_j(x)g^{(j)}(x)=1-rx+x^3(1-rx)g^{(j)}(x)^2.
+\end{equation}
+
+\paragraph{Conjecture 13 transcription.}
+The displayed Catalan expression in the source has denominator
+$1+(r+1)x+(r-2)x^2+rx^3$. Its original continued fraction instead gives
+$1-(r+1)x+(r-2)x^2+rx^3$, as follows by multiplying its denominator by
+$1-rx$. These are different formal series; for example their coefficients
+of $x$ are respectively $-(2r+1)$ and $1$. We do not assert the false
+identity between these two displays. The result below preserves the
+original continued fraction and the printed Somos parameters. Thus it
+settles that consistent recurrence assertion, while the entire collection
+of displays labeled Conjecture 13 contains a separate sign error.
+
+\subsection{The coefficients and the complete statement}
+For $j=11$, define
+\begin{align*}
+ D_{11}={}&r^4-2r^3+8r^2+2r-9,\\
+ A_{11}={}&r^8-8r^7+21r^6-40r^5+35r^4-24r^3+71r^2+8r,\\
+ B_{11}={}&8(r^9-6r^8+17r^7-30r^6+15r^5-14r^4-r^3-14r^2),\\
+ C_{11}={}&8(r-1)(r^{10}-2r^8+29r^7-32r^6+39r^5+18r^4+11r^3-r^2+r),\\
+ E_{11}={}&2r^{13}-13r^{12}+48r^{11}-85r^{10}+83r^9-11r^8+124r^7\\
+ &\quad-454r^6+364r^5-263r^4-84r^3-189r^2-25r-9.
+\end{align*}
+For $j=12$, define
+\begin{align*}
+ D_{12}={}&r^2-4r+3,\\
+ A_{12}={}&r^4-11r^3+26r^2-16r-5,\\
+ B_{12}={}&2r^5-19r^4+40r^3-13r^2-5r,\\
+ C_{12}={}&(r-1)(3r^6-12r^5+15r^4+25r^3-62r^2-36r-5),\\
+ E_{12}={}&r^9-8r^8+26r^7-43r^6+40r^5-17r^4-23r^3+27r^2+19r+3.
+\end{align*}
+For $j=13$, define
+\begin{align*}
+ D_{13}={}&2(r^3-3r^2-5r+7),\\
+ A_{13}={}&-r^7+8r^6-25r^5+20r^4+37r^3-75r-28,\\
+ B_{13}={}&(r+1)(r^8-11r^7+47r^6-83r^5+17r^4+71r^3+45r^2-169r+210),\\
+ C_{13}={}&(r^2-1)(3r^8-29r^7+115r^6-225r^5+181r^4+105r^3\\
+ &\quad-255r^2-235r+84),\\
+ E_{13}={}&-r^{10}+17r^9-96r^8+212r^7-54r^6-594r^5+796r^4\\
+ &\quad+36r^3-721r^2+329r+588.
+\end{align*}
+The rational tuple
+$(A_j,B_j,C_j,E_j)/D_j$ is exactly the tuple in the respective original
+conjecture; the common denominator form only multiplies numerator and
+denominator of its third component by $r-1$ when $j=11,12$.
+
+\begin{theorem}[Three polynomial Somos--8 identities]\label{retry93:target}
+For each $j=11,12,13$, all $n\ge8$, and every $r\in\mathbb C$,
+\begin{equation}\label{retry93:identity}
+ D_j h_n^{(j)}h_{n-8}^{(j)}
+ =A_jh_{n-1}^{(j)}h_{n-7}^{(j)}
+ +B_jh_{n-2}^{(j)}h_{n-6}^{(j)}
+ +C_jh_{n-3}^{(j)}h_{n-5}^{(j)}
+ +E_j(h_{n-4}^{(j)})^2.
+\end{equation}
+Thus the printed rational-coefficient Somos--8 recurrence holds wherever
+$D_j(r)\ne0$, in its division-free bilinear interpretation even when some
+Hankel determinants vanish. At zeros of $D_j$, the polynomial identity
+remains valid and gives the corresponding lower-order relation.
+\end{theorem}
+
+\subsection{A specialization lemma for exact recurrence identification}
+The auxiliary question is how to identify coefficients of a recurrence
+when one knows a universal rank bound, without assuming that every term
+or every intermediate continued-fraction denominator is nonzero.
+The following elementary answer is useful here but is not claimed as a
+historically new principle.
+
+\begin{lemma}\label{retry93:ranklemma}
+Let $y_n,\mathbf v_n\in\mathbb Q[r]\times\mathbb Q[r]^4$, $n\ge8$.
+Suppose every five-by-five minor of the matrix with rows
+$(y_n,\mathbf v_n)$ vanishes identically. Let $M$ have rows
+$\mathbf v_8,\ldots,\mathbf v_{11}$ and assume $\det M\not\equiv0$.
+If $D\in\mathbb Q[r]$ and $\mathbf c\in\mathbb Q[r]^4$ satisfy
+$\mathbf v_n\mathbf c=Dy_n$ for $8\le n\le11$, then this identity holds
+for every $n\ge8$ and every specialization of $r$.
+\end{lemma}
+\begin{proof}
+Work first over the field $\mathbb Q(r)$. The four columns of $M$ are
+independent. The rank bound forces the first column of the full matrix
+to be their unique linear combination, whose coefficients are determined
+by the four displayed rows. Multiplication by $D$ gives the asserted
+relation over $\mathbb Q(r)$. All its entries are polynomials, so it is a
+polynomial identity and remains true under every specialization.
+\end{proof}
+
+\subsection{The all-index rank bound and its precise provenance}
+We use the following consequence of Hone's Theorem 5.5 in the publisher
+version (Theorem 5.4 in arXiv:1907.05204v3). Suppose $s_0=1$,
+$s_1,s_2$ are arbitrary, and, for $m\ge3$,
+\begin{align}\label{retry93:hone}
+ s_m={}&u s_{m-2}+v s_{m-3}
+ +w\sum_{i=0}^{m-2}s_i s_{m-2-i}
+ +z\sum_{i=0}^{m-3}s_i s_{m-3-i}
+ +t\sum_{i=0}^{m-4}s_i s_{m-4-i},
+\end{align}
+where an empty sum is zero. Put
+$K_n=\det(s_{a+b})_{0\le a,b<n}$, $K_0=1$.
+Then every five-by-five minor of the infinite matrix
+\begin{equation}\label{retry93:rankmatrix}
+ \left(K_nK_{n-8},\ K_{n-1}K_{n-7},\ K_{n-2}K_{n-6},\
+ K_{n-3}K_{n-5},\ K_{n-4}^2\right)_{n\ge8}
+\end{equation}
+vanishes as a polynomial in $s_1,s_2,u,v,w,z,t$.
+Indeed, Hone proves the existence of a common nonzero vector of Somos--8
+coefficients for generic parameters in precisely this seven-parameter
+moment recurrence. The entries of any fixed minor are polynomials in
+those parameters. Its vanishing on the generic locus therefore proves
+that it vanishes identically. This polynomial conclusion survives all
+specializations, even ones outside the regular continued-fraction locus.
+This use of an established theorem is the infinite-index part of the proof.
+
+We now place the three original continued fractions within that polynomial
+identity. Temporarily fix $j$ and abbreviate $a=a_j$, $b=b_j$, $g=g^{(j)}$.
+Let $G(X)=X^{-1}g(X^{-1})$. Equation \eqref{retry93:quadratic} gives
+\[
+ G(X)=\frac{a(X)-Y(X)}{2(X-r)},\qquad
+ Y^2=a(X)^2-4X(X-r)^2,
+\]
+with the formal branch for which $G=X^{-1}+X^{-2}+O(X^{-3})$.
+Since $h_1=b$, its first normalized Jacobi tail is
+\begin{equation}\label{retry93:tail}
+ S(X)=\frac{X-1-G(X)^{-1}}{b}
+      =\frac{P(X)-Y(X)}{2bX(X-r)},\qquad
+ P(X)=2X(X-r)(X-1)-a(X).
+\end{equation}
+Over $\mathbb Q(r)$ the three values of $b$ are nonzero. The series $S$
+has leading term $X^{-1}$. A direct rationalization yields
+\begin{equation}\label{retry93:tailquadratic}
+ P(X)S(X)-bX(X-r)S(X)^2
+ =\frac{P(X)^2-Y(X)^2}{4bX(X-r)}=:R(X).
+\end{equation}
+The right-hand side is a polynomial of degree two: divisibility follows
+from $P+a=2X(X-r)(X-1)$ and the displayed equation for $Y^2$.
+The polynomial $P$ is monic cubic with coefficient $-(r+1)$ at $X^2$.
+Consequently, after putting $X=Z+(r+1)/3$, write
+\[
+ P(X)=Z^3+pZ+q,\qquad X(X-r)=Z^2+\lambda Z+\mu,
+ \qquad S(Z+(r+1)/3)=\sum_{m\ge0}s_mZ^{-m-1}.
+\]
+Comparing negative powers in \eqref{retry93:tailquadratic}, which have zero
+coefficient on its right side, gives \eqref{retry93:hone} with
+\[
+ (u,v,w,z,t)=(-p,-q,b,b\lambda,b\mu).
+\]
+No geometric smoothness or term-by-term nonvanishing assumption is needed
+for the polynomial rank identities just established.
+
+For clarity, the determinant change caused by stripping this first tail
+is exact. If $g(x)=1/(1-a_0x-bx^2s(x))$ with $g(0)=s(0)=1$, define the
+Hankel kernel
+\[
+ \mathcal K_g(x,y)=\frac{xg(x)-yg(y)}{x-y}.
+\]
+The identity
+\[
+ \frac{\mathcal K_g(x,y)}{g(x)g(y)}=1+bxy\mathcal K_s(x,y)
+\]
+is a congruence by unit triangular coefficient matrices. Taking finite
+principal determinants gives
+\[
+ \det(g_{a+c})_{0\le a,c\le n}
+ =b^n\det(s_{a+c})_{0\le a,c<n}.
+\]
+Translation of the Cauchy variable is also a unit triangular binomial
+change of the polynomial basis, so it preserves these Hankel determinants.
+Therefore the determinants of the translated tail satisfy
+\begin{equation}\label{retry93:gauge}
+ h_n^{(j)}=b_j^nK_n.
+\end{equation}
+Every entry in row $n$ of \eqref{retry93:rankmatrix} is multiplied by the
+same factor $b_j^{2n-8}$ under this change. Hence all five-by-five minors
+for the corresponding rows formed from $h_n^{(j)}$ vanish over
+$\mathbb Q(r)$, and then identically in $\mathbb Q[r]$.
+
+\subsection{Finite exact coefficient certificate}
+It remains to identify the four coefficients; this is a finite polynomial
+calculation, rather than an inference from finitely many sequence terms.
+Equation \eqref{retry93:quadratic} gives $\deg_r g_m^{(j)}\le m$ by induction.
+The determinant expansion then gives
+\[
+ \deg_r h_n^{(j)}\le n(n+1).
+\]
+For each $j$, let $F_{j,n}(r)$ denote the difference between the two sides
+of \eqref{retry93:identity}. Its degree is bounded by the maximum of
+\[
+ \deg D_j+n(n+1)+(n-8)(n-7)
+\]
+and the four numbers
+\[
+ \deg c_{j,k}+(n-k)(n-k+1)+(n-8+k)(n-7+k),\quad1\le k\le4,
+\]
+where $(c_{j,1},\ldots,c_{j,4})=(A_j,B_j,C_j,E_j)$.
+The resulting bounds at $n=8,9,10,11$ are as follows.
+\[
+\begin{array}{c|rrrr|r}
+j&8&9&10&11&\det M_j(2)\\\hline
+11&76&96&120&148&-4757714578613175915968435866673495590560\\
+12&74&94&118&146&9865855835586623025289744\\
+13&75&95&119&147&-1346418219599972300425255472
+\end{array}
+\]
+Here the four-by-four matrix $M_j$ has row $n$ equal to
+$(h_{n-1}h_{n-7},h_{n-2}h_{n-6},h_{n-3}h_{n-5},h_{n-4}^2)$ for
+$n=8,9,10,11$.
+
+The accompanying standard-library program
+\texttt{t93\_somos8\_verify.py} reconstructs the moments using
+\eqref{retry93:quadratic}, evaluates all determinants by fraction-free
+Bareiss elimination with every exact division asserted, and checks
+\[
+ F_{j,n}(0)=F_{j,n}(1)=\cdots=F_{j,n}(B_{j,n})=0,
+\]
+where $B_{j,n}$ is the tabulated degree bound. These are respectively
+$B_{j,n}+1$ distinct integer arguments, so each $F_{j,n}$ is the zero
+polynomial. The program also computes the three nonzero determinants
+$\det M_j(2)$ shown above and independently checks them by rational
+Gaussian elimination. All these exact checks pass; their machine-readable
+outputs accompany the manuscript. This finite certificate proves the four
+coefficient-identifying polynomial identities, with no numerical
+approximation or conjectural extrapolation.
+
+Apply Lemma~\ref{retry93:ranklemma} with
+$y_n=h_n^{(j)}h_{n-8}^{(j)}$ and the four other products as
+$\mathbf v_n$. The all-index rank bound has already been proved, the
+nonzero witness shows $\det M_j\not\equiv0$, and the finite certificate
+proves its four required identities. This proves
+Theorem~\ref{retry93:target} for every $n$ and every $r$.
+
+\subsection{Degeneracies and the boundary of the claimed novelty}
+The denominator factorizations are
+\[
+ D_{11}=(r^2-1)(r^2-2r+9),\quad
+ D_{12}=(r-1)(r-3),\quad
+ D_{13}=2(r-1)(r^2-2r-7).
+\]
+In particular, the singular integer parameters give the following
+Somos--6 relations, each valid in bilinear form for $m\ge7$:
+\[
+ h_mh_{m-6}=\alpha h_{m-1}h_{m-5}
+             +\beta h_{m-2}h_{m-4}+\gamma h_{m-3}^2.
+\]
+\[
+\begin{array}{c|r|rrr}
+j&r&\alpha&\beta&\gamma\\\hline
+11&-1&4&-8&8\\
+11&1&4&0&8\\
+12&1&1&0&5\\
+12&3&-3&28&21\\
+13&1&4&0&8
+\end{array}
+\]
+These follow by substituting into the polynomial identity and setting
+$m=n-1$. In particular, they remain valid when $h_1=0$ at $(j,r)=(11,-1)$;
+no division by that determinant has been made in the final identity.
+At the other algebraic zeros of the denominators, the same polynomial
+identity gives an exact relation without evaluating an undefined rational
+coefficient.
+
+The new auxiliary task in this treatment was to identify a recurrence
+uniformly through singular fibers from a rank bound and finite polynomial
+certificates. Its solution is an application of elementary linear algebra,
+Hankel congruence, interpolation, and the established genus-two theorem.
+A direct proof of the universal rank bound from a new determinant
+principle was not obtained. Consequently, although the exact recurrence
+claims above are proved, this track does not meet the requested condition
+of a historically new principle independent of those older mechanisms.
+
+
+\section{T94: exact minimum valency on an infinite subsequence}
+
+The unchanged target is Problem~8.3 of \'{A}rnad\'ottir and Guo,
+\emph{Perfect State Transfer and Cayley Presentations},
+arXiv:2608.20476v1 (20 August 2026)~\cite{retry:arna}. It asks for infinitude of cubelike
+graphical regular representations with perfect state transfer and for their
+minimum valency as a function of the dimension. Write $\mu(d)$ for this
+minimum, when such a graph exists. The infinitude clause was addressed in
+the previous round. This section obtains exact values of $\mu$ at an
+explicit infinite sequence of dimensions, but does not determine $\mu(d)$
+for arbitrary $d$. It is therefore a partial result, not a complete
+resolution of the original problem.
+
+\subsection{The auxiliary problem: erase a small rigid configuration}
+
+For $m\ge1$, let $Q_m$ be the binary $m$-cube. If
+$C\le\mathbb F_2^m$ is a binary linear code of minimum distance at least
+three, its coset graph has vertices $\mathbb F_2^m/C$ and edges
+$x+C\sim x+e_i+C$. This is a simple connected cubelike graph of valency
+$m$. A coordinate permutation preserving $C$ is called a permutation
+automorphism of the code.
+
+\begin{lemma}[A necessary redundancy bound]
+\label{t94:redundancy}
+If a cubelike GRR on $2^d$ vertices has valency $m$, and $d\ge2$, then
+\[
+ m\le 2^{m-d}.
+\]
+\end{lemma}
+\begin{proof}
+Such a GRR must be connected. Indeed, if it has $c\ge2$ isomorphic
+components of size $a$, then its automorphism group contains independent
+regular actions on the components and all component permutations, and has
+order at least $a^c c!>ac=2^d$ (including the edgeless case $a=1$, $c\ge4$).
+Write its connection set as the distinct nonzero columns of a full-rank
+$d\times m$ matrix $A$, and put $C=\ker A$. Then $C$ has dimension
+$r=m-d$ and no word of weight one or two. Choose an $r\times m$ generator
+matrix $B$ of $C$. If two columns of $B$ coincide, the transposition of
+these coordinates fixes every word of $C$. It therefore induces an
+automorphism of the coset graph fixing the zero coset. This automorphism
+is nontrivial, because the two corresponding unit vectors have distinct
+images modulo $C$. This contradicts the GRR condition. All $m$ columns
+of $B$ are consequently distinct elements of $\mathbb F_2^r$, giving
+$m\le2^r$.
+\end{proof}
+
+\begin{lemma}[Code rigidity and perfect state transfer]
+\label{t94:quotient}
+Let $C\le\mathbb F_2^m$ have minimum distance at least five. Then
+\[
+ \operatorname{Aut}(Q_m/C)
+ = (\mathbb F_2^m/C)\rtimes\operatorname{Aut}_{\rm perm}(C).
+\]
+If the permutation group on the right is trivial and
+$\boldsymbol1=(1,\ldots,1)\notin C$, the coset graph is a GRR with
+perfect state transfer at time $\pi/2$.
+\end{lemma}
+\begin{proof}
+For clarity, here is a direct proof of the standard quotient-cube
+automorphism fact (also a special case of Fawcett's Theorem~1.4~\cite{retry:fawcett}).
+At each vertex label its $m$ incident edges by their coordinate directions.
+Every two-edge path with distinct directions lies in a unique four-cycle:
+an additional four-cycle would give a nonzero codeword of weight at most
+four. An automorphism $f$ induces a permutation $\pi_x$ of the directions
+at each vertex $x$. Opposite edges in these unique squares show that
+$\pi_x=\pi_{x+e_j}$ for every $j$. Connectedness makes this a single
+permutation $\pi$. Following a path from zero yields
+$f(x+C)=f(C)+\pi(x)+C$, and well-definedness gives $\pi(C)=C$.
+Conversely, each such translation and coordinate permutation is an
+automorphism. The action of the permutation group on the quotient is
+faithful, since there are no codewords of weight two.
+
+If $P_i$ denotes translation by $e_i+C$, these commuting involution
+matrices satisfy
+\[
+ U(\pi/2)=\prod_{i=1}^m\exp(i\pi P_i/2)
+ =i^mP_{\boldsymbol1+C}.
+\]
+This is perfect state transfer to a distinct vertex precisely when
+$\boldsymbol1\notin C$.
+\end{proof}
+
+\begin{lemma}[Complementing a rigid set]
+\label{t94:complement}
+Suppose $R\subseteq\mathbb F_2^r\setminus\{0\}$ has trivial setwise
+stabilizer in $\operatorname{GL}(r,2)$, and let $a=|R|$ satisfy
+$2^{r-1}-a\ge5$ and $2^r-1-a>2^{r-1}$. Form a matrix $B$ whose columns
+are exactly
+\[
+ Y=\mathbb F_2^r\setminus(R\cup\{0\}),\qquad m=2^r-1-a,
+\]
+and let $C$ be its row space. The same conclusion holds after adjoining a
+single zero column and increasing $m$ by one. Then $Q_m/C$ is a cubelike GRR of valency
+$m$ on $2^{m-r}$ vertices, with perfect state transfer at $\pi/2$.
+\end{lemma}
+\begin{proof}
+For each nonzero row vector $u$, exactly $2^{r-1}$ vectors of
+$\mathbb F_2^r$ satisfy $u\cdot y=1$. Consequently
+\[
+ \operatorname{wt}(uB)
+ =2^{r-1}-|\{y\in R:u\cdot y=1\}|
+ \in[2^{r-1}-a,2^{r-1}].
+\]
+In particular $B$ has rank $r$, its row code has minimum distance at
+least five, and it does not contain the all-ones word, whose weight is
+$m>2^{r-1}$. A coordinate permutation preserving the row space yields a
+matrix $L\in\operatorname{GL}(r,2)$ with $LB=B\pi$. Thus $L$ preserves
+the column set $Y$ and hence its nonzero complement $R$. It follows that
+$L=I$. Since the columns of $B$ are distinct, $\pi$ is the identity. A single zero
+column is fixed by every invertible linear map, so adjoining it changes none
+of these conclusions or the nonzero codeword weights.
+Apply Lemma~\ref{t94:quotient}.
+\end{proof}
+
+\subsection{An exact infinite sequence of minima}
+
+\begin{theorem}
+\label{t94:exact}
+For every integer $r\ge10$ and $\varepsilon\in\{0,1\}$, put
+\[
+ d_{r,\varepsilon}=2^r-3r-3+\varepsilon.
+\]
+Then the minimum in the original Problem~8.3 satisfies
+\[
+ \boxed{\mu(d_{r,\varepsilon})=2^r-2r-3+\varepsilon
+ =d_{r,\varepsilon}+r.}
+\]
+\end{theorem}
+\begin{proof}
+Construct a graph $\Gamma_r$ by subdividing the six edges
+$01,02,03,12,13,23$ of $K_4$ into paths of respective lengths
+\[
+ 2,\quad3,\quad1,\quad r-6,\quad1,\quad1.
+\]
+It has $r$ vertices and $r+2$ edges, is triangle-free, and has minimum
+degree two. It is asymmetric: the four degree-three vertices and their
+six connecting paths are intrinsic. The unique paths of lengths two and
+three share endpoint $0$, so their endpoints fix $0,1,2$, and then $3$.
+Each path is fixed pointwise. Label all vertices from $0$ to $r-1$ and set
+\[
+ R=\{e_i:0\le i<r\}
+ \cup\{e_i+e_j:ij\in E(\Gamma_r)\}.
+\]
+Thus $|R|=2r+2$. A linear map preserving $R$ preserves the graph on $R$
+in which $x$ and $y$ are adjacent when $x+y\in R$. A basis vertex $e_i$
+has degree $2\deg_{\Gamma_r}(i)\ge4$ in this graph, while each edge
+vertex $e_i+e_j$ has degree two. The triangle-free hypothesis rules out
+adjacency between two edge vertices. Hence a linear map preserving $R$
+permutes the basis and induces an automorphism of $\Gamma_r$. It fixes
+every basis vertex and is therefore the identity.
+
+The inequalities in Lemma~\ref{t94:complement} hold for every $r\ge10$.
+That lemma, adjoining the zero column when $\varepsilon=1$, produces a
+graph of valency $m_r=2^r-2r-3+\varepsilon$ and dimension
+$m_r-r=d_{r,\varepsilon}$. Write $d_r=d_{r,\varepsilon}$ in the rest
+of this proof. To prove optimality, suppose a competing GRR has valency
+$m'<d_r+r$. Connectedness gives $m'\ge d_r$, while
+$m'-d_r\le r-1$. Lemma~\ref{t94:redundancy} implies
+\[
+ m'\le2^{m'-d_r}\le2^{r-1}<d_r,
+\]
+a contradiction. The inequality $d_r>2^{r-1}$ holds at $r=10$ and
+persists as $r$ increases.
+\end{proof}
+
+For $\varepsilon=0$, the first three pairs $(d_r,\mu(d_r))$ are
+$(991,1001)$, $(2012,2023)$, and $(4057,4069)$.
+Their graphs are specified by small binary generator matrices, without
+enumerating their $2^{d_r}$ vertices.
+
+\begin{proposition}[Four smaller exact values]
+\label{t94:small}
+One has
+\[
+ \mu(14)=19,\quad\mu(15)=20,\quad
+ \mu(44)=50,\quad\mu(45)=51.
+\]
+\end{proposition}
+\begin{proof}
+Use the twelve-element connection set displayed immediately before
+Problem~8.3 in the source, represented here by binary integers:
+\[
+ R_5=\{3,7,8,9,10,12,13,14,15,17,23,31\}\subset\mathbb F_2^5.
+\]
+Its linear setwise stabilizer is trivial. This also has the following
+independent finite certificate, avoiding reliance on the published graph
+automorphism calculation. In the Cayley graph with connection set $R_5$,
+give zero color one and every other vertex color zero. Recursively replace
+each color by the zero-based lexicographic rank of its current color
+together with the sorted multiset of its neighbors' colors. The successive
+numbers of color classes are $3,8,30,32$; the fourth colors, in vertex order
+$0,1,\ldots,31$, are
+\[
+\begin{split}
+ &(31,16,14,28,17,15,18,29,26,27,24,12,20,23,30,25,\\
+ &\hspace{8pt}9,21,10,2,1,3,11,19,13,5,0,7,6,4,8,22).
+\end{split}
+\]
+Every automorphism fixing zero preserves these colors and hence is the
+identity; in particular the linear stabilizer of $R_5$ is trivial.
+
+The code whose generator columns are the nineteen nonzero vectors
+outside $R_5$ has nonzero weights ranging from $7$ to $13$. This is an
+exact check of only $31$ row combinations, and the accompanying program
+records the entire distribution. Therefore it has dimension five,
+minimum distance at least five, and does not contain the all-ones word.
+The proof of Lemma~\ref{t94:complement} applies (using these exact weights
+in place of its coarse lower bound). This gives valency $19$ in dimension
+$14$. Adjoining a zero column gives valency $20$ in dimension $15$.
+
+For the next pair embed $R_5$ in the coordinate hyperplane
+$\mathbb F_2^5\times\{0\}$ of $\mathbb F_2^6$, and add $e_5$ to obtain
+$R_6$. Directly, every proper hyperplane of $\mathbb F_2^5$ contains at
+most nine points of $R_5$. The old coordinate hyperplane is consequently
+the unique hyperplane containing twelve points of $R_6$; every other
+hyperplane contains at most ten. A linear map preserving $R_6$ must
+preserve this hyperplane, fix its rigid set $R_5$, and fix the unique
+outside point $e_5$. It is the identity. Lemma~\ref{t94:complement} gives
+valencies $50,51$ in dimensions $44,45$, since the minimum codeword
+weight is at least $32-13=19$.
+
+Optimality follows from Lemma~\ref{t94:redundancy}. In dimensions
+$14,15$, any smaller competing valency would have redundancy at most
+four and valency at least $14$, while the only candidates of redundancy
+four are respectively $18,19$, both exceeding $2^4$; lower redundancies
+also violate the bound. In dimensions $44,45$, a smaller valency has
+redundancy at most five and is at least $44>2^5$.
+\end{proof}
+
+\paragraph{Why this is not the full minimum-valency function.}
+The redundancy bound alone is not always attained. For example, if
+$d=2^r-r$ with $r\ge3$, it implies $m\ge d+r=2^r$.
+Equality would make the generator columns of the kernel code equal to all
+vectors of $\mathbb F_2^r$. Every nonidentity element of
+$\operatorname{GL}(r,2)$ would then induce a nontrivial coordinate
+permutation and hence a graph automorphism fixing zero. Equality is
+impossible, so $\mu(2^r-r)\ge2^r+1$. Determining which column-set sizes
+admit the necessary rigidity, and controlling all graph automorphisms
+when the kernel has short words, remain unresolved steps.
+
+\paragraph{Prior methods and strict-success status.}
+The coset-graph viewpoint, the distance-five lifting theorem, and the
+commuting-involution PST identity are established methods. The rigid set
+$R$ is reused from the previous research round; the new step here is to
+erase it from the full binary vector space and use the remaining vectors
+as code-generator columns. The result improves a prior upper bound to an
+exact minimum on an explicit infinite subsequence. A bounded search did
+not locate this exact formula, but it does not establish worldwide
+priority or a historically new foundational principle. Since the complete
+function demanded in Problem~8.3 remains undetermined, this track does
+not satisfy all of the requested success conditions.
+
+
+
+\section{T95: sign recovery and Sun's adjacent Legendre determinant}
+\label{sec:t95sun}
+
+The target in this attempt is Conjecture~4.8 of Sun's 2024 paper
+\cite{t95sun2024}, with exactly the original matrix, parameters, and prime
+range. Its $p\equiv1\pmod4$ branch is already Theorem~1.1 of
+Yang--Zhang \cite{t95yang2026}. We prove its $p\equiv3\pmod4$ branch
+below. This is a new proof supplied in this investigation, but it uses
+published inverse-square identities and classical determinant tools.
+Consequently it is not certified as a historically new principle.
+
+Write $\chi(a)=(a/p)$, with $\chi(0)=0$, and let $h(-p)$ be the class
+number of $\mathbb Q(\sqrt{-p})$.
+
+\begin{samepage}
+\begin{theorem}[The original equation (4.20) of Sun]
+\label{thm:t95sun48}
+For every prime $p>3$ with $p\equiv3\pmod4$, put
+$n=(p-1)/2$, $L=\chi(2)$ and $s=(-1)^{(h(-p)-1)/2}$. Then
+\begin{align*}
+&\det\bigl[x+\chi(j-k+1)+\chi(j)y+\chi(k)z+\chi(jk)w
+                    \bigr]_{0\le j,k<n}\\
+&\qquad=x-L(w+y-z+1)-sz+(1+s-L)(wx-yz).
+\end{align*}
+This is an identity in $\mathbb Z[x,y,z,w]$, with no parameter exclusions.
+\end{theorem}
+\end{samepage}
+
+The auxiliary question is how to determine the signs of quantities whose
+squares are known to be one, without redoing their cyclotomic evaluations.
+For the two quantities needed here, reduction modulo four resolves the
+signs. We give all the finite matrix algebra.
+
+\subsection{The two published magnitude identities}
+Set
+\[
+ C=[\chi(i-j)]_{0\le i,j\le n},\qquad
+ W=C^{-1},\qquad u=W\mathbf1.
+\]
+The following established identities are the external input:
+\begin{equation}\label{eq:t95old}
+ \det C=1,\qquad W_{n0}^{2}=1,\qquad u_0^{2}=1.
+\end{equation}
+The determinant evaluation is Vsemirnov's theorem
+\cite{t95vsemirnov}. The square identities are contained in
+Yang--Yang--Zhang, Proposition~2.1 \cite{t95yyy2026}. Their convention is
+$C_{ij}=\chi(j-i)$, the negative of ours; changing this sign preserves
+the determinant (the order is even) and both squares. Their relation
+$\gamma_0=-\gamma_n$ transfers the stated endpoint square to $u_0$.
+We use only these unconditional identities, not their target conjecture.
+
+\subsection{Modulo-four recovery of both signs}
+
+Let $H=[\chi(i-j+1)]_{0\le i,j<n}$ and $D=\det H$.
+Deleting row zero and column $n$ from $C$ leaves $H$, so the cofactor
+formula, $n$ odd, and $\det C=1$ give
+\begin{equation}\label{eq:t95corner}
+ W_{n0}=-D.
+\end{equation}
+In particular $D\in\{1,-1\}$ by \eqref{eq:t95old}.
+
+Let $S$ have ones on its superdiagonal and zeros elsewhere, and put
+$A=\mathbf1\mathbf1^T-S$, of order $n$. Direct solution of $Av=y$ gives
+\[
+ v_0=\sum_{i=0}^{n-2}y_i+(2-n)y_{n-1},\qquad
+ v_j=y_{n-1}-y_{j-1}\quad(1\le j<n),
+\]
+and $\det A=1$. For example, subtracting the last row of $A$ from every
+earlier row gives $-1$ in columns $1,\ldots,n-1$, respectively; expansion
+along column zero proves the determinant assertion.
+All nonzero entries of $H$ are odd, and its zeros are precisely on the
+superdiagonal. Thus $H=A+2B$ for an integral matrix $B$. Expansion of a
+determinant modulo four yields
+\[
+ D\equiv1+2\operatorname{tr}(A^{-1}B)\pmod4.
+\]
+The displayed inverse shows
+\begin{align*}
+ \operatorname{tr}(A^{-1}B)
+ &=\sum_{j=0}^{n-2}B_{j0}+(2-n)B_{n-1,0}
+      +\sum_{j=1}^{n-1}B_{n-1,j}\\
+ &=\sum_{k=1}^{n-1}(\chi(k)-1)
+       +(2-n)\frac{\chi(n)-1}{2}.
+\end{align*}
+The omitted superdiagonal terms are zero. Since $n$ is odd,
+\[
+ D\equiv\chi(n)=\chi(-1/2)=-L\pmod4.
+\]
+The two possible integers $1,-1$ have different residues modulo four,
+so
+\begin{equation}\label{eq:t95signD}
+ D=-L,\qquad W_{n0}=L.
+\end{equation}
+
+Next, let $C_0$ be obtained from $C$ by replacing column zero with ones.
+Cramer's rule gives $u_0=\det C_0$. Compare $C_0$ with
+$A_0=\mathbf1\mathbf1^T-\operatorname{diag}(0,1,\ldots,1)$, of order
+$n+1$. Here $\det A_0=(-1)^n=-1$, and
+\[
+ (A_0^{-1}y)_0=(1-n)y_0+\sum_{j=1}^n y_j,\qquad
+ (A_0^{-1}y)_j=y_0-y_j\quad(1\le j\le n).
+\]
+Write $C_0=A_0+2B_0$. Column zero and the diagonal of $B_0$ vanish,
+so
+\[
+ \operatorname{tr}(A_0^{-1}B_0)
+ =\sum_{j=1}^n(B_0)_{0j}
+ =\sum_{j=1}^n\frac{-\chi(j)-1}{2}.
+\]
+Consequently, with $Q=\sum_{j=1}^n\chi(j)$,
+\begin{equation}\label{eq:t95ucongruence}
+ u_0\equiv n-1+Q\pmod4.
+\end{equation}
+Dirichlet's quadratic-excess class-number formula \cite{t95davenport} gives
+$Q=(2-L)h(-p)$. The integer $Q$ is odd, so this also implies that
+$h(-p)$ is odd. If $p\equiv3\pmod8$, then $n\equiv1\pmod4$ and
+$L=-1$; if $p\equiv7\pmod8$, then $n\equiv3\pmod4$ and $L=1$.
+In either case \eqref{eq:t95ucongruence} becomes
+$u_0\equiv-h(-p)\equiv-s\pmod4$. Together with $u_0^2=1$ this proves
+\begin{equation}\label{eq:t95signu}
+ u_0=-s.
+\end{equation}
+
+\subsection{The exact two-dimensional determinant}
+Put $\eta=(\chi(0),\ldots,\chi(n-1))^T$ and $v=H^{-1}\mathbf1$.
+Let $R$ reverse the $n+1$ coordinates. Since $RCR=-C$,
+$Ru=-u$, in particular $u_n=-u_0$. Also
+$\mathbf1^Tu=0$ because $W$ is skew-symmetric.
+Extend $v$ by a last zero, writing $\widehat v=(v^T,0)^T$. The last
+$n$ coordinates of $C\widehat v$ are one, by the definition of $H$.
+For some scalar $t$,
+\[
+ \widehat v=u+tWe_0.
+\]
+Its last coordinate and \eqref{eq:t95signD} give $t=u_0/L$.
+Skew-symmetry implies $\mathbf1^TWe_0=-u_0$, whence
+\begin{equation}\label{eq:t95inverseentries}
+ \mathbf1^TH^{-1}\mathbf1=-\frac{u_0^2}{L}=-L.
+\end{equation}
+The first row of $C$ is
+$-(\chi(0),\ldots,\chi(n))$. Taking coordinate zero of
+$C\widehat v=\mathbf1+te_0$ yields
+\[
+ \eta^TH^{-1}\mathbf1=-1-t=-1+Ls.
+\]
+Column one of $H$ equals $\eta$, so
+$H^{-1}\eta=e_1$. In particular,
+$\mathbf1^TH^{-1}\eta=\eta^TH^{-1}\eta=1$.
+Thus for $U=(\mathbf1,\eta)$ we have
+\[
+ U^TH^{-1}U=
+ \begin{pmatrix}-L&1\\-1+Ls&1\end{pmatrix}.
+\]
+The matrix in Theorem~\ref{thm:t95sun48} is
+$H+UMU^T$, where $M=\left(\begin{smallmatrix}x&z\\y&w\end{smallmatrix}\right)$.
+The rank-two determinant lemma now gives
+\begin{align*}
+ \det(H+UMU^T)
+ &=-L\det\left(I_2+M
+          \begin{pmatrix}-L&1\\-1+Ls&1\end{pmatrix}\right)\\
+ &=x-L(w+y-z+1)-sz+(1+s-L)(wx-yz).
+\end{align*}
+This proves the theorem for all parameters, since the calculation is a
+polynomial identity and the fixed matrix $H$ is invertible.
+
+\paragraph{The complementary published branch.}
+For completeness, the already established $p\equiv1\pmod4$ formula
+\cite[Theorem~1.1]{t95yang2026} is as follows. Let $h(p)$ and
+$\varepsilon_p>1$ be the class number and fundamental unit of
+$\mathbb Q(\sqrt p)$, and define
+\[
+ \varepsilon_p^{(2-L)h(p)}=a'_p+b'_p\sqrt p,
+ \qquad 2a'_p,2b'_p\in\mathbb Z.
+\]
+With $n=(p-1)/2$, the same original determinant equals
+\begin{align*}
+ &(pb'_p-a'_p)((w+1)x-yz)+L(wx-(y+1)z)\\
+ &\hspace{25mm}+L(b'_p-a'_p)\{w(1-x)+(y+1)(z+1)\}.
+\end{align*}
+This branch is quoted as a prior theorem, not presented as a result first
+obtained in this investigation. Combined with
+Theorem~\ref{thm:t95sun48}, it gives the original full Conjecture~4.8.
+The two prime-congruence branches are not counted as two different problems.
+
+\paragraph{Success-criterion assessment.}
+The original problem and its complete four-parameter statement are
+preserved. The proof is unconditional, using the published identities
+\eqref{eq:t95old}. A bounded primary-source search did not locate an
+explicit prior proof of equation~(4.20). This does not establish worldwide
+priority. The prior-art overlap is stronger than the square-only formulation
+might suggest: equations (3.2), (5.3), and (5.5) of
+\cite{t95yyy2026} already encode both signed boundary data. In their
+orientation, (5.3) simplifies to $d=L$; the product in (5.5) gives
+$\gamma_n=\prod_{j=1}^n\chi(j)=-s$. Our orientation has
+$W_{n0}=d$ and $u_0=\gamma_n$. Thus the signs above are an alternative
+modulo-four derivation of information implicit in the earlier calculation,
+not new boundary invariants. Inverse-data reduction already appears in
+the cited papers, and reduction modulo four is a classical technique.
+This argument therefore supplies a concrete proof of the target, but it does
+\emph{not} certify the requested historically unprecedented method.
+The auxiliary sign-recovery problem must not be promoted into an
+independent previously open named problem.
+
+\paragraph{Exact verification.}
+The standard-library program \texttt{t95\_sun48\_verify.py} computes
+class numbers independently by enumerating reduced primitive quadratic
+forms, evaluates the two sign determinants, and tests the full original
+matrix at nine integer parameter choices for every prime
+$3<p<104$ with $p\equiv3\pmod4$. These finite checks support the
+algebra; the all-prime theorem follows from the proof above.
+
+
+\appendix
+\section{Reproducibility and the status of the five investigations}
+
+The accompanying archive contains the standalone source, the rendered
+manuscript, five principal verification programs, their recorded exact
+outputs, and an independent additional check of T91. All programs use
+Python's standard library except the symbolic identity check in T92,
+which uses SymPy~1.14.0. Run Python without the optimization flag
+\texttt{-O}, so that the exact assertions remain active.
+
+\paragraph{T91.}
+\path{t91_cartesian_verify.py} checks both directions of the auxiliary
+bijection for every prescribed subset through $n=5$. It also tests 400
+seeded forest instances in larger dimensions, compares the two original
+parking procedures on 23 positive parameter vectors, and includes
+negative controls that fail when the left-parent or first-hit rule is
+changed. The separate \path{t91_independent_random_audit.py} uses a
+monotone-stack implementation and 720 cases with nonconsecutive labels
+through $n=80$. The all-parameter result follows from the written inverse
+construction, not the number of checked examples.
+
+\paragraph{T92.}
+\path{t92_stern_growth_verify.py} checks all four entries of the matrix
+identity symbolically in characteristic two, independently computes 367
+binary-word examples, and checks five integer Stern-polynomial
+recurrences. The asymptotic bound follows from injectivity and the exact
+word-length count in the text. These checks do not settle residue one.
+
+\paragraph{T93.}
+\path{t93_somos8_verify.py} performs 1,320 exact evaluations with proved
+degree bounds, thereby certifying twelve coefficient-identifying
+polynomial identities. It also verifies three nonzero rank witnesses and
+compares independent moment and determinant implementations. Hone's
+theorem supplies the universal rank identity; the rank-specialization
+lemma then proves the conclusion for all indices. This is a
+computer-assisted exact proof, not extrapolation from initial terms.
+
+\paragraph{T94.}
+\path{t94_cubelike_verify.py} checks the sparse rigid construction on
+55 parameter values, the complete codeword weights in small instances,
+and the finite rigidity certificates used for the four smaller exact
+minima. The general subgroup, code-distance, and redundancy arguments
+are proved in the text. No graph with $2^{991}$ vertices is enumerated.
+
+\paragraph{T95.}
+\path{t95_sun48_verify.py} independently enumerates reduced primitive
+quadratic forms for 13 class numbers and evaluates 117 instances of the
+original four-parameter determinant. The proof for every prime uses the
+specified published inverse identities and exact matrix algebra.
+
+\paragraph{Prior searches and what is still open.}
+The literature comparison through 27 October 2026 inspected the original
+target papers, their cited mechanisms, related author manuscripts, and
+indexed exact-title searches. No identical T91 prescribed-forest
+construction or explicit proof of its exact target was located. The
+comparison with Shin is recorded in T91; T93 and T95 document more direct
+overlap with earlier methods and formulas. These are bounded evidence
+statements, not guarantees of worldwide priority.
+
+Hill--Luo--Trinh--Vindas-Mel\'endez Conjecture~8.1 on magic positivity of
+all generalized parking-function polytopes was also examined. Its
+all-dimensional statement was not proved or disproved in this attempt.
+T91's target is a different pre-existing conjecture, identified openly at
+the start of its section; the lucky-set result is not advertised as a
+solution of Hill's conjecture. Likewise, the residue-one branch in T92
+and the full minimum-valency function in T94 remain unresolved here.
+
+The strict requested combination---a complete original problem solution,
+a historically unprecedented foundational principle, and verified
+worldwide priority---has not been certified. T91 supplies a concrete
+complete proof with a substantive auxiliary construction suitable for
+further independent mathematical and bibliographic review.
+
+\begin{thebibliography}{99}
+\raggedright
+
+
+\bibitem{RetryAFM2026}
+N.~Avila, L.~Ferroni, and A.~H.~Morales,
+\emph{Luck and magic for Pitman--Stanley polytopes and parking functions},
+arXiv:2603.19194v2, 8 April 2026, Proposition~4.13 and Conjecture~5.1.
+\url{https://arxiv.org/html/2603.19194v2}.
+
+\bibitem{RetryFHMS2025}
+M.~Ferreri, P.~E.~Harris, L.~Martinez, and E.~Swartz,
+\emph{Enumerating Vector Parking Functions and their Outcomes Based on
+Specified Lucky Cars}, arXiv:2508.13917v2, 10 September 2025.
+\url{https://arxiv.org/html/2508.13917v2}.
+
+\bibitem{RetryShin2008}
+H.~Shin, \emph{A new bijection between forests and parking functions},
+arXiv:0810.0427v2, 3 October 2008, Section~4.
+\url{https://arxiv.org/pdf/0810.0427}.
+
+\bibitem{RetryHill2026}
+C.~Hill, A.~Luo, V.~Trinh, and A.~R.~Vindas-Mel\'endez,
+\emph{Lattice slices, Ehrhart polynomials, and magic positivity of
+generalized parking-function polytopes}, arXiv:2607.15503v1,
+16 July 2026, Conjecture~8.1.
+\url{https://arxiv.org/html/2607.15503v1}.
+
+
+\bibitem{retry:ulas}
+M.~Ulas, \emph{Strong arithmetic property of certain Stern polynomials},
+arXiv:1909.10844v1, 24 September 2019, Question~2.10 and Theorem~2.3.
+\url{https://arxiv.org/abs/1909.10844v1}.
+
+\bibitem{retry:arna}
+A.~S. \'{A}rnad\'ottir and K.~Guo,
+\emph{Perfect State Transfer and Cayley Presentations},
+arXiv:2608.20476v1, 20 August 2026, Problem~8.3.
+\url{https://arxiv.org/html/2608.20476v1}.
+
+\bibitem{retry:fawcett}
+J.~B.~Fawcett, \emph{Locally triangular graphs and normal quotients of
+the $n$-cube}, J.~Algebraic Combinatorics \textbf{44} (2016), 119--130,
+Theorem~1.4. DOI:10.1007/s10801-015-0659-1.
+\url{https://arxiv.org/abs/1507.01503}.
+
+
+\bibitem{retry93:barry}
+P.~Barry, \emph{Conjectures on Somos 4, 6 and 8 sequences using Riordan
+arrays and the Catalan numbers}, arXiv:2211.12637v1, 22 November 2022,
+Conjectures 11--13. \url{https://arxiv.org/abs/2211.12637}.
+
+\bibitem{retry93:hone}
+A.~N.~W. Hone, \emph{Continued fractions and Hankel determinants from
+hyperelliptic curves}, Communications on Pure and Applied Mathematics
+\textbf{74} (2021), 2310--2347, Theorem 5.5 and equation (4.22) in the publisher version
+(the Somos--8 theorem is Theorem 5.4 in arXiv:1907.05204v3).
+DOI:10.1002/cpa.21923; arXiv:1907.05204.
+\url{https://kar.kent.ac.uk/79346/11/cpa.21923%20%281%29.pdf}.
+
+
+\bibitem{t95sun2024}
+Z.-W. Sun, \emph{Problems and results on determinants involving Legendre
+symbols}, arXiv:2405.03626v8 (28 July 2024), Conjecture~4.8,
+equations (4.19)--(4.20).
+\url{https://arxiv.org/pdf/2405.03626v8}.
+
+\bibitem{t95yang2026}
+Y. Yang and Y. Zhang, \emph{Two determinant evaluations in Sun's
+conjectures involving Legendre symbols}, arXiv:2605.19517,
+Theorem~1.1.
+\url{https://arxiv.org/abs/2605.19517}.
+
+\bibitem{t95yyy2026}
+Y. Yang, G. Yang, and Y. Zhang, \emph{A proof of a conjecture of Zhi-Wei
+Sun on a truncated Legendre-symbol determinant}, arXiv:2606.22548v2
+(8 September 2026), Proposition~2.1.
+\url{https://arxiv.org/pdf/2606.22548v2}.
+
+\bibitem{t95vsemirnov}
+M. Vsemirnov, \emph{On the evaluation of R. Chapman's ``evil
+determinant''}, Linear Algebra Appl. \textbf{436} (2012), 4101--4106.
+\url{https://doi.org/10.1016/j.laa.2011.08.039}.
+
+\bibitem{t95davenport}
+H. Davenport, \emph{Multiplicative Number Theory}, second edition,
+Springer, 1980, Sections~1 and~9 (Dirichlet's class-number formula).
+
+\end{thebibliography}
+\end{document}

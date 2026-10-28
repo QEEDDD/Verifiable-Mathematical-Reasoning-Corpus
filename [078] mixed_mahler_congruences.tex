@@ -1,0 +1,1090 @@
+\begin{filecontents*}[overwrite]{mixed_mahler_verify.py}
+import json
+import math
+import sympy as sp
+
+z,X,Y,C,W=sp.symbols('z X Y C W')
+P=X**3-X+z
+E=(1+z)*Y**2-1
+tauP=P.subs({z:z**3,X:X-z}, simultaneous=True)
+tauE=E.subs({z:z**3,Y:Y/(1+z)}, simultaneous=True)
+assert sp.cancel(tauP-(P-3*z*X*(X-z)))==0
+assert sp.cancel(tauE-(E-3*z/(1+z)**2*(E+1)))==0
+assert sp.expand((-z*X**2+z**2*X).subs(z,X-X**3)-(X**7-X**5))==0
+
+def v3fact(n):
+    s=0
+    while n:
+        n//=3;s+=n
+    return s
+def weight(n): return n+v3fact(n)
+def w9(n):
+    s=0
+    while n:
+        s+=n;n//=9
+    return s
+table=[]
+for g in (1,2,3,4,10,100):
+    d=next(n for n in range(1,g+1) if weight(n)>=g)
+    count=6*sum(weight(i)+weight(j)<g for i in range(d) for j in range(d))
+    e=next(n for n in range(1,g+1) if w9(n)>=g)
+    table.append([g,d,6*d*d,count,6*g,6*e])
+assert [r[3] for r in table]==[6,18,36,48,216,14646]
+
+# Independent coefficient arithmetic, always truncated modulo z**N.
+N=512; modulus=3**12
+zero=[0]*N
+one=zero.copy();one[0]=1
+zz=zero.copy();zz[1]=1
+def add(*terms): return [sum(t[i] for t in terms)%modulus for i in range(N)]
+def scale(a,k): return [x*k%modulus for x in a]
+def mul(a,b):
+    out=[0]*N
+    aa=[(i,x) for i,x in enumerate(a) if x]
+    bb=[(i,x) for i,x in enumerate(b) if x]
+    for i,x in aa:
+        for j,y in bb:
+            if i+j>=N: break
+            out[i+j]=(out[i+j]+x*y)%modulus
+    return out
+def power(a,n):
+    out=one
+    while n:
+        if n&1:out=mul(out,a)
+        n//=2
+        if n:a=mul(a,a)
+    return out
+def invplus(k):return [((-1)**n*math.comb(k+n-1,n))%modulus for n in range(N)]
+A=zero.copy();q=1
+while q<N:A[q]=1;q*=3
+B=one.copy();q=1
+while q<N:
+    for i in range(N-1,q-1,-1):B[i]=(B[i]+B[i-q])%modulus
+    q*=3
+PA=add(power(A,3),scale(A,-1),zz)
+EB=add(mul(add(one,zz),power(B,2)),scale(one,-1))
+assert all(x%3==0 for x in PA+EB)
+CC=[x//3 for x in PA];WW=[x//3 for x in EB]
+U=add(power(PA,3),scale(PA,-9),scale(mul(zz,mul(A,add(A,scale(zz,-1)))),27))
+V=add(power(EB,3),scale(EB,-9),scale(mul(mul(zz,invplus(2)),add(EB,one)),27))
+assert all(x%81==0 for x in U+V)
+Cf=add(power(CC,3),scale(CC,-1),mul(zz,power(A,2)),scale(mul(power(zz,2),A),-1))
+Wf=add(power(WW,3),scale(WW,-1),mul(zz,invplus(2)))
+assert all(x%3==0 for x in Cf+Wf)
+H=add(A,B)
+MH=add(power(add(power(H,3),scale(H,-1),zz),2),scale(mul(power(zz,2),invplus(3)),-1))
+assert all(x%3==0 for x in MH)
+Z=[x//3 for x in MH]
+rhs=add(mul(mul(mul(zz,invplus(1)),B),CC),mul(mul(zz,invplus(2)),WW),mul(mul(mul(zz,invplus(2)),A),H))
+assert all((x-y)%3==0 for x,y in zip(Z,rhs))
+
+# Resultant checks at convergent 3-adic evaluation points.
+resultant_checks=[]
+modulus2=3**11
+for z0 in (3,6,9,12):
+    aa=0;bb=1;q=1
+    while q<64:
+        t=pow(z0,q,modulus2);aa=(aa+t)%modulus2;bb=bb*(1+t)%modulus2;q*=3
+    hh=(aa+bb)%modulus2
+    inv1=pow(1+z0,-1,modulus2);inv3=pow(1+z0**3,-1,modulus2)
+    p1=(X**3-X+z0)**3-9*((X-z0)**3-(X-z0)+z0**3)
+    q1=((hh-X)**2-inv1)**3-9*((hh-X)**2*inv1**2-inv3)
+    p1=sp.Poly(p1,X,modulus=modulus2).as_expr()
+    q1=sp.Poly(q1,X,modulus=modulus2).as_expr()
+    residual=int(sp.resultant(p1,q1,X))%modulus2
+    assert residual%(3**10)==0
+    resultant_checks.append([z0,residual])
+
+print(json.dumps({'symbolic_identities':'passed','coefficients_checked':N,'series_checks':'passed','table':table,'resultant_mod_3_power_11':resultant_checks},indent=2))
+\end{filecontents*}
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Mixed Mahler congruences}
+\fancyhead[R]{\small KEIO}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{1.2em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\C}{\mathbb C}
+\newcommand{\F}{\mathbb F}
+\newcommand{\A}{\Phi_3}
+\newcommand{\B}{\Psi}
+\newcommand{\val}{\nu_3}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\Gal}{Gal}
+\DeclareMathOperator{\trdeg}{trdeg}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\Frac}{Frac}
+\hypersetup{pdftitle={Mixed Mahler Congruences: Exact Low-Precision Kernels and Optimal Relations for a Lacunary Sum plus a Cantor Product},pdfauthor={KEIO}}
+\title{Mixed Mahler Congruences\\[3pt]
+\large Exact low-precision kernels, improved norm bounds,\\
+and optimal relations for a lacunary sum plus a Cantor product}
+\author{KEIO\thanks{Research draft prepared with AI assistance. The proofs and finite checks are supplied for independent review; the manuscript is not externally peer reviewed or proof-assistant certified.}}
+\date{26 October 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Let $A(z)=\sum_{n\ge0}z^{3^n}$ and
+$B(z)=\prod_{n\ge0}(1+z^{3^n})$. We study their joint algebra modulo
+powers of $3$ over $R=\Z[z,z^{-1},(1+z)^{-1}]$.
+The individual minimum-degree problems of Krattenthaler and M\"uller
+provide a starting point, but do not determine mixed relations.
+We give exact joint evaluation kernels modulo $3,9,27,81$, with
+respectively $6,18,36,48$ necessary and sufficient module generators.
+For $H=A+B$, the minimum degree of a monic annihilator is exactly
+$6\gamma$ for $1\le\gamma\le9$, and exactly $54$ for $\gamma=10$.
+The lower bounds use two independent Artin--Schreier correction classes.
+For every polynomial $F(A,B)$, a root-counting norm construction gives
+an annihilator of degree at most $6d$, where
+$d+\sum_{j\ge1}\lfloor d/9^j\rfloor\ge\gamma$.
+This is $(16/3)\gamma+O(\log\gamma)$, improving the elementary $6\gamma$
+bound. We also give an all-precision mixed spanning theorem, classify
+the reduced mixed fields for every odd prime, and supply a direct
+characteristic-zero independence proof. The full mixed kernel and the
+optimal degree for $H$ beyond precision $3^{10}$ are left open.
+\end{abstract}
+
+\section{Introduction and precise scope}
+\label{sec:intro}
+
+Two complementary series used in prime-power congruence methods are
+\begin{equation}\label{eq:AB}
+ A(z)=\sum_{n\ge0}z^{3^n},\qquad
+ B(z)=\prod_{n\ge0}(1+z^{3^n}).
+\end{equation}
+They satisfy the exact identities
+\begin{equation}\label{eq:functional}
+ A(z^3)=A(z)-z,\qquad B(z^3)=\frac{B(z)}{1+z}.
+\end{equation}
+Throughout, congruence of Laurent series means coefficientwise
+congruence. Our fixed coefficient ring is
+\[
+ R=\Z[z,z^{-1},(1+z)^{-1}]\subset\Z((z)).
+\]
+For $H\in\Z((z))$ admitting monic relations modulo every $3^\gamma$, write
+\begin{equation}\label{eq:mu}
+ \mu_H(\gamma)=\min\{\deg_T G:G\in R[T]\text{ monic},\
+                         G(H)\equiv0\pmod{3^\gamma}\}.
+\end{equation}
+For a Laurent series or an element of $R$, $\val$ is the least $3$-adic
+valuation of its coefficients; $\val(0)=\infty$.
+The notation $R[A,B]\bmod3^\gamma$ always denotes the image under
+coefficientwise reduction, equivalently $R[X,Y]/J_\gamma$ for the
+evaluation ideal defined below. It does not denote the intrinsic
+quotient $R[A,B]/3^\gamma R[A,B]$; coefficientwise divisibility need
+not be divisibility inside that subalgebra.
+
+Krattenthaler and M\"uller posed two separate minimum-degree conjectures.
+Their Conjecture~4 in \cite{KMp} concerns $\Phi_p(z)=\sum z^{p^n}$ in
+$\Z[z,T]$: the proposed minimum is the least $D$ with $\nu_p(D!)\ge\gamma$.
+Their Conjecture~12 in \cite{KM3} concerns $B$ in the ring $R$: the proposed
+minimum is $2d_\gamma$, where
+\begin{equation}\label{eq:w}
+ w(d)=d+\val(d!),\qquad d_\gamma=\min\{d\ge1:w(d)\ge\gamma\}.
+\end{equation}
+The arithmetic part of \cite{KEIO70} supplies a Frobenius construction
+attaining both prior lower bounds. Section~\ref{sec:lifting} reproduces
+the construction and its coefficient-ring descent so that the present
+mixed results do not depend on an unexamined assertion in that draft.
+
+The substantive joint assertions in this paper are the following.
+\begin{enumerate}
+\item The evaluation ideal in $R[X,Y]$ is computed exactly through
+precision $81$ (Theorem~\ref{thm:kernel}). The associated counts are
+minimal numbers of generators, not free ranks.
+\item For $H=A+B$,
+\begin{equation}\label{eq:mainexact}
+ \mu_H(\gamma)=
+ \begin{cases}6\gamma,&1\le\gamma\le9,\\54,&\gamma=10.
+ \end{cases}
+\end{equation}
+See Theorem~\ref{thm:sumexact}. This does not follow by multiplying the
+two individual minimum degrees.
+\item Set
+\begin{equation}\label{eq:W9}
+ W_9(d)=\sum_{j\ge0}\left\lfloor\frac d{9^j}\right\rfloor,
+ \qquad e_\gamma=\min\{d\ge1:W_9(d)\ge\gamma\}.
+\end{equation}
+For every $F\in R[X,Y]$, the series $F(A,B)$ has a monic annihilator
+of degree $6e_\gamma$ modulo $3^\gamma$
+(Theorem~\ref{thm:norm}). No affine functional equation for $F(A,B)$
+is assumed.
+\end{enumerate}
+
+We separate these joint conclusions from standard consequences of
+Galois theory and Mahler's method, which are included to explain the
+structure. We do not identify or claim the resolution of an additional
+previously published conjecture by the mixed results. In particular,
+the Ap\'ery congruence conjectures at the end of \cite{KM3} were already
+settled in \cite{Apéry}. The questions in Section~\ref{sec:open} are
+questions posed here, not relabelled historical conjectures.
+
+\section{Individual Frobenius constructions and descent}
+\label{sec:lifting}
+
+\subsection{The lifting identity}
+Let $p$ be a prime and let a coefficient ring of integral Laurent series
+be stable under $\sigma:c(z)\mapsto c(z^p)$. Suppose
+$f(z^p)=a(z)f(z)+b(z)$, and define
+\[
+ \tau G(z,T)=G(z^p,a(z)T+b(z)).
+\]
+
+\begin{lemma}[Frobenius correction]\label{lem:lift}
+If $G$ is monic of degree $D>0$ and $G(z,f(z))$ is divisible by $p^e$,
+then
+\[
+ G^p-p^{(p-1)e}\tau G
+\]
+is monic of degree $pD$ and its evaluation is divisible by $p^{pe+1}$.
+Starting with degree $D_0$ and divisibility $p^{e_0}$ gives degrees
+$D_0p^r$ and divisibilities
+$p^{e_r}$, where $e_r=p^re_0+(p^r-1)/(p-1)$.
+\end{lemma}
+\begin{proof}
+Write $G(f)=p^e C(z)$. Evaluation commutes with the substitutions, so
+\[
+ (G^p-p^{(p-1)e}\tau G)(f)
+ =p^{pe}\bigl(C(z)^p-C(z^p)\bigr).
+\]
+The parenthesis is divisible by $p$ by the coefficientwise Frobenius
+congruence. The correction has degree at most $D<pD$, which preserves
+monicity. The recurrence $e_{r+1}=pe_r+1$ gives the formula.
+\end{proof}
+
+If $d=\sum d_rp^r$ is a base-$p$ expansion, multiplying the corresponding
+tower polynomials to powers $d_r$ gives degree $D_0d$ and valuation at least
+\begin{equation}\label{eq:digitval}
+ \sum_r d_re_r=e_0d+\nu_p(d!).
+\end{equation}
+The digit-product step was already described in the original papers;
+it is the recursively available tower that supplies all the inputs.
+
+For $\Phi_p$, take the seed $T$, $e_0=0$, and $a=1,b=-z$.
+This gives monic polynomials of every degree $i$, with evaluation
+valuation at least $\nu_p(i!)$. Combined with the lower bound in
+\cite[Lemma~1]{KMp}, this attains the value in its Conjecture~4.
+The construction applies to every prime, not only $3$.
+
+\subsection{The Cantor ring and its finite descent}
+For $B$, initially work in
+\[
+ R_\infty=\Z[z,z^{-1},(1+z^{3^j})^{-1}:j\ge0].
+\]
+This ring is stable under $z\mapsto z^3$. Frobenius and
+\eqref{eq:functional} imply $B^2\equiv(1+z)^{-1}\pmod3$.
+Start with $T^2-(1+z)^{-1}$, degree $2$ and valuation at least $1$.
+Lemma~\ref{lem:lift} and \eqref{eq:digitval} give a monic polynomial
+of degree $2d$ with evaluation valuation at least $w(d)$.
+
+We must return to the prescribed ring $R$, rather than silently enlarging
+it. Put $U_j=1+z^{3^j}$, $V_j=(1+z)^{3^j}$, and
+$D_j=(U_j-V_j)/3\in\Z[z]$. For every $N\ge1$,
+\begin{equation}\label{eq:descent}
+ U_j^{-1}\equiv
+ \sum_{a=0}^{N-1}(-3D_j)^a V_j^{-a-1}\pmod{3^N}.
+\end{equation}
+Indeed the exact remainder is
+$(-3D_j)^N V_j^{-N}U_j^{-1}$. Substitution in each of the finitely
+many coefficients descends a polynomial from $R_\infty$ to $R$ to any
+fixed precision. Its leading coefficient $1$ is retained unchanged.
+The lower bound of \cite[Theorem~10]{KM3} now gives the asserted minimum
+$2d_\gamma$ in its Conjecture~12.
+
+\begin{proposition}[Two triangular families]\label{prop:bases}
+There are fixed monic polynomials $a_i\in R[X]$ and $b_j\in R[Y]$,
+of degrees $i,j$, such that
+\[
+ \val(a_i(A))\ge\alpha_i:=\val(i!),\qquad
+ \val(b_j(B))\ge\beta_j:=w(\lfloor j/2\rfloor).
+\]
+They may be chosen algorithmically by the preceding towers and finite
+descent, using precision $\beta_j+1$ for each $b_j$.
+\end{proposition}
+\begin{proof}
+The first construction was just given. For $j=2d$, use the descended
+Cantor polynomial; for $j=2d+1$, multiply it by $Y$.
+Since $B$ is a unit, the valuation lower bound is unchanged.
+\end{proof}
+
+Only these lower bounds, not an unproved tensor-product independence
+assertion, are used in the next section. Also
+\begin{equation}\label{eq:alphaidentity}
+ \alpha_{3r+s}=w(r)\quad(0\le s<3),\qquad
+ \beta_{2j+\epsilon}=w(j)\quad(0\le\epsilon<2).
+\end{equation}
+
+\section{Mixed spanning at arbitrary precision}
+
+\begin{theorem}[Weighted mixed spanning]\label{thm:spanning}
+Modulo $3^\gamma$, every polynomial in $A,B$ with coefficients in $R$
+is an $R$-linear combination of
+\[
+ a_i(A)b_j(B),\qquad \alpha_i+\beta_j<\gamma.
+\]
+Consequently it is generated by at most
+\begin{equation}\label{eq:Ngamma}
+ N_\gamma=6\#\{(r,j)\in\Z_{\ge0}^2:w(r)+w(j)<\gamma\}
+\end{equation}
+elements. As $\gamma\to\infty$,
+\[
+ N_\gamma=\frac43\gamma^2+O(\gamma\log\gamma).
+\]
+\end{theorem}
+\begin{proof}
+Monicity makes the products $a_i(X)b_j(Y)$ an $R$-basis of $R[X,Y]$
+by triangular change of basis from the monomials. Terms whose weight
+is at least $\gamma$ vanish upon evaluation modulo $3^\gamma$.
+Equation~\eqref{eq:alphaidentity} gives the count.
+Legendre's formula gives $w(r)=(3r-s_3(r))/2=(3/2)r+O(\log(r+2))$.
+The permitted pairs therefore differ by only an $O(\log\gamma)$-wide
+boundary strip from the integer points in $r+j<2\gamma/3$.
+The strip contains $O(\gamma\log\gamma)$ points; the triangle contains
+$2\gamma^2/9+O(\gamma)$ points. Multiplication by $6$ proves the formula.
+\end{proof}
+
+Separate monic reductions instead give a rectangle of
+$(3d_\gamma)(2d_\gamma)=6d_\gamma^2$ terms, asymptotic to
+$(8/3)\gamma^2$. Some sample counts are:
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+$\gamma$ & $d_\gamma$ & Rectangle & $N_\gamma$ & $6\gamma$\\
+\midrule
+1&1&6&6&6\\
+2&2&24&18&12\\
+3&3&54&36&18\\
+4&3&54&48&24\\
+10&8&384&216&60\\
+100&69&28566&14646&600\\
+\bottomrule
+\end{tabular}
+\end{center}
+The last column is an elementary \emph{annihilator-degree} bound for
+one mixed element, not a count of simultaneous module generators.
+These are different optimization problems. In fact, a monic relation
+of degree $6$ exists modulo $3$ for every mixed element, and its
+$\gamma$-th power gives the last column. Section~\ref{sec:norm} improves
+that bound. We assert sharpness of $N_\gamma$ only for $\gamma\le4$.
+
+\section{The reduced mixed field}
+\label{sec:reduced}
+
+The following description also clarifies why separate reductions do not
+settle the mixed problem. We state it for every odd prime $p$.
+Let $x,y$ be the coefficientwise reductions of
+$\sum z^{p^n}$ and $\prod(1+z^{p^n})$, and put $K=\F_p(z)$.
+They satisfy
+\begin{equation}\label{eq:charp}
+ x^p-x=-z,\qquad y^{p-1}=(1+z)^{-1}.
+\end{equation}
+
+\begin{theorem}[Mixed degree classification]\label{thm:classification}
+The field $L=K(x,y)$ is Galois over $K$, of degree $p(p-1)$, with
+automorphisms $x\mapsto x+c$, $y\mapsto\zeta y$ for
+$c\in\F_p$, $\zeta\in\F_p^\times$.
+For a nonzero $f\in L$, write uniquely
+\[
+ f=\sum_{j=0}^{p-2} f_j(x)y^j,\qquad f_j\in K[X],\quad\deg f_j<p.
+\]
+Set $d=\gcd(p-1,\{j:f_j\ne0\})$, $m=(p-1)/d$, and let
+$\epsilon=0$ if every $f_j$ is constant in $X$, and $\epsilon=1$ otherwise.
+Then
+\[
+ [K(f):K]=p^\epsilon m,\qquad
+ K(f)=\begin{cases}K(y^d),&\epsilon=0,\\K(x,y^d),&\epsilon=1.
+ \end{cases}
+\]
+The genus of this field is $0$ if $\epsilon=0$, and
+$(p-1)(m-1)/2$ if $\epsilon=1$.
+\end{theorem}
+\begin{proof}
+The Artin--Schreier polynomial for $x$ is irreducible: a rational function
+$u^p-u$ cannot have a pole of order $1$ at infinity. Here the absence
+of a rational root suffices: after adjoining one root all the roots
+are obtained by adding elements of $\F_p$, so its splitting-field
+Galois group is a subgroup of the prime-order group $(\F_p,+)$.
+The polynomial
+for $y^{-1}$ is Eisenstein at $z+1$, of degree $p-1$. The two Galois
+degrees are coprime, so their compositum has the asserted group.
+
+Translation invariance of a polynomial in $x$ of degree less than $p$
+forces it to be constant, as its highest nonconstant term has nonzero
+finite difference. The Kummer subgroup fixing $f$ has exactly $d$
+elements. Every subgroup of the direct product of these coprime cyclic
+groups splits into its two components. Thus the stabilizer has order
+$p^{1-\epsilon}d$, proving the degree and the stated fixed field.
+
+If $\epsilon=0$, then $z=(y^d)^{-m}-1$, so the field is rational.
+Otherwise set $U=x$ and $V=y^{-d}$; its equation is
+$V^m=1+U-U^p$. The right side has $p$ simple roots and a pole of order
+$p$ at infinity. The tame Kummer cover is fully ramified at these
+$p+1$ points. Riemann--Hurwitz gives
+$2g-2=-2m+(p+1)(m-1)$, as asserted.
+\end{proof}
+
+\begin{corollary}[Sum and product]\label{cor:minmodp}
+The following are irreducible minimal polynomials over $K$:
+\[
+ \mu_{x+y}(T)=(T^p-T+z)^{p-1}-\frac{z^{p-1}}{(1+z)^p},
+\]
+\[
+ \mu_{xy}(T)=(T^p-qT)^{p-1}-z^{p-1}q^p,
+ \qquad q=(1+z)^{-1}.
+\]
+Both have degree $p(p-1)$.
+\end{corollary}
+\begin{proof}
+For the sum, $(x+y)^p-(x+y)+z=-zy/(1+z)$.
+For the product, $(xy)^p=qxy-zqy$.
+Taking $(p-1)$-st powers gives the displayed relations.
+The degree classification, or the distinct conjugates, proves minimality.
+\end{proof}
+
+For $p=3$, put $h=x+y$ and retain $K=\F_3(z)$, $L=K(x,y)$.
+Then $[L:K]=6$, $L=K(h)$, and
+\begin{equation}\label{eq:M}
+ M(T)=(T^3-T+z)^2-\frac{z^2}{(1+z)^3}\in R[T]
+\end{equation}
+reduces to the minimal polynomial of $h$. This degree-$6$ field has
+genus $1$; its proper intermediate fields have genus $0$.
+
+\section{Independent first corrections and exact mixed kernels}
+\label{sec:kernel}
+
+Define
+\begin{equation}\label{eq:PE}
+ P(X)=X^3-X+z,\qquad E(Y)=(1+z)Y^2-1,
+\end{equation}
+and define integral power series and their reductions by
+\[
+ C_0=\frac{P(A)}3,\quad W_0=\frac{E(B)}3,
+ \qquad c=\overline{C_0},\quad w=\overline{W_0}.
+\]
+Lowercase $w$ here is a series; the weight function $w(d)$ always has an
+integer argument.
+
+\begin{lemma}[Two independent correction classes]\label{lem:AS}
+Over $L$, the elements $c,w$ satisfy
+\begin{equation}\label{eq:AS}
+ c^3-c=-zx^2+z^2x=x^7-x^5=:f,
+ \qquad w^3-w=-\frac{z}{(1+z)^2}=:g.
+\end{equation}
+Their compositum has degree $9$ over $L$, with Galois group $\F_3^2$
+acting by independent translations of $c,w$.
+\end{lemma}
+\begin{proof}
+Direct substitution in \eqref{eq:functional} gives
+\[
+ C_0(z^3)=C_0(z)-zA(A-z),
+\]
+\[
+ W_0(z^3)=W_0(z)-\frac{z}{(1+z)^2}
+                  -\frac{3z}{(1+z)^2}W_0(z).
+\]
+Reduction modulo $3$ gives \eqref{eq:AS}. Since $z=x-x^3$, its first
+right side equals $x^7-x^5$.
+
+It remains to check independence of the two Artin--Schreier classes.
+We may extend constants to an algebraic closure for this check.
+The field $L$ has equation $y^{-2}=1+x-x^3$. At the place over
+$x=\infty$, $x$ has pole order $2$, hence $f$ has pole order $14$;
+$g$ is regular there. At any place over $1+z=0$, the quadratic Kummer
+extension has ramification index $2$, so $g$ has pole order $4$;
+$f$ is regular there. Both $14$ and $4$ are prime to $3$.
+A function of the form $u^3-u$ has pole order divisible by $3$ at every
+pole. Thus no nonzero $\F_3$-linear combination of $f,g$ is of that
+form: use infinity if the coefficient of $f$ is nonzero, and a place
+over $-1$ otherwise. The two classes are independent. Equivalently,
+their two cyclic degree-$3$ extensions are distinct and linearly
+disjoint, giving the asserted degree and group.
+\end{proof}
+
+\begin{lemma}[Exact valuation in a finite box]\label{lem:box}
+For arbitrary $d_{s,e,r,j}\in R$, set
+\[
+ D(X,Y)=\sum_{\substack{0\le s,r,j\le2\\0\le e\le1}}
+ d_{s,e,r,j}X^sY^eP(X)^rE(Y)^j.
+\]
+Then
+\begin{equation}\label{eq:boxval}
+ \val(D(A,B))=
+ \min_{s,e,r,j}\bigl(\val(d_{s,e,r,j})+r+j\bigr).
+\end{equation}
+In particular the formula is exact for every polynomial with
+$\deg_X<9$, $\deg_Y<6$, written in this triangular basis.
+\end{lemma}
+\begin{proof}
+The zero polynomial is immediate. Otherwise divide the evaluation by
+the power of $3$ given by the minimum, and
+reduce modulo $3$. The terms attaining the minimum become a linear
+combination of $x^sy^ec^rw^j$. The six elements $x^sy^e$ form a
+$K$-basis of $L$, and the nine elements $c^rw^j$ form an $L$-basis
+by Lemma~\ref{lem:AS}. Their $54$ products are $K$-independent,
+so the reduced combination is nonzero. Division of elements of $R$
+by their exact powers of $3$ stays in $R$, since its inverted
+denominators have nonzero reductions. This proves the equality.
+\end{proof}
+
+Put $\mathfrak m=(3,P,E)\subset R[X,Y]$ and
+\begin{align}
+ U(X)&=P(X)^3-9P(X)+27zX(X-z),\label{eq:UV1}\\
+ V(Y)&=E(Y)^3-9E(Y)
+       +\frac{27z}{(1+z)^2}\bigl(E(Y)+1\bigr).\label{eq:UV2}
+\end{align}
+Their evaluations are divisible by $81$, by \eqref{eq:AS} or the
+exact functional identities in its proof. The polynomial $U$ is
+monic of degree $9$ in $X$; $V$ has degree $6$ in $Y$ and leading
+coefficient $(1+z)^3$, a unit in $R$.
+
+\begin{theorem}[Exact kernels through $81$]\label{thm:kernel}
+Let
+\[
+ J_\gamma=\{G\in R[X,Y]:G(A,B)\equiv0\pmod{3^\gamma}\}.
+\]
+Then
+\begin{equation}\label{eq:kernels}
+ J_1=\mathfrak m,\qquad J_2=\mathfrak m^2,\qquad
+ J_3=\mathfrak m^3,\qquad J_4=\mathfrak m^4+(U,V).
+\end{equation}
+For $1\le\gamma\le4$, the evaluated algebra has the following
+decomposition as an $R$-module:
+\begin{equation}\label{eq:module}
+ R[A,B]\bmod3^\gamma\ \cong\
+ \bigoplus_{\substack{0\le r,j\le2\\r+j<\gamma}}
+       \bigl(R/3^{\gamma-r-j}R\bigr)^6.
+\end{equation}
+Its minimum number of $R$-module generators is respectively
+$6,18,36,48$.
+\end{theorem}
+\begin{proof}
+The displayed generators of the ideals have the required evaluation
+divisibility, which proves one inclusion. Divide an arbitrary polynomial
+by $U$ and by $(1+z)^{-3}V$ to obtain a remainder of degrees $<9,<6$.
+These divisions commute since each divisor uses only its own polynomial
+variable. Both discarded terms evaluate to multiples of $81$.
+Expand the remainder as in Lemma~\ref{lem:box}. Its evaluation vanishes
+modulo $3^\gamma$ precisely when each coefficient is divisible by
+$3^{\max(\gamma-r-j,0)}$. Every resulting term belongs to
+$\mathfrak m^\gamma$. Also $U,V\in\mathfrak m^3$, so for
+$\gamma\le3$ the discarded terms already belong to
+$\mathfrak m^\gamma$; for $\gamma=4$ they are the two additional
+generators. This proves \eqref{eq:kernels}.
+
+The same exact coefficient criterion proves the module decomposition.
+After quotienting this module by $3$ and extending scalars from
+$R/3R$ to $K$, its dimension is the number of summands. Any generating
+set must have at least that many elements, and the displayed basis
+classes attain the count. These are cyclic torsion summands, not a
+claim that the algebra is a free module over $R/3^\gamma R$.
+\end{proof}
+
+\section{A norm construction at every precision}
+\label{sec:norm}
+
+We first prove a root-counting lemma that is useful beyond the present
+pair of series. The valuation argument takes place in a complete
+discretely valued field $\mathcal K$ of characteristic $0$, with
+valuation ring $\mathcal O$, uniformizer $3$, and an isometric
+endomorphism $\sigma$ inducing Frobenius on the residue field.
+For our series one can take the fraction field of
+\[
+ \mathcal O=\varprojlim_n(\Z/3^n\Z)((z)),
+\]
+with $\sigma(z)=z^3$. Thus $A,B,R_\infty$ embed in $\mathcal O$,
+and their original coefficientwise valuation is unchanged.
+
+\begin{lemma}[Root counts along a Frobenius tower]\label{lem:packets}
+Suppose $a\in\mathcal O^\times$, $b,F\in\mathcal O$, and
+$\sigma F=aF+b$. Let $G_0\in\mathcal O[T]$ be monic, with
+$v(G_0(F))\ge1$ and $G_0'(F)\in\mathcal O^\times$. Put
+\[
+ e_r=\frac{3^{r+1}-1}{2},\qquad
+ G_{r+1}=G_r^3-3^{2e_r}\tau G_r,
+ \quad\tau G_r(T)=(\sigma G_r)(aT+b).
+\]
+For every $1\le t\le r+1$, exactly $3^{r-t+1}$ roots $\alpha$
+of $G_r$, counted with multiplicity, satisfy $v(\alpha-F)\ge t$.
+All roots are integral.
+\end{lemma}
+\begin{proof}
+Monicity and integrality give the last assertion. Define
+\[
+ v_{r,t}=\sum_{j=1}^t3^{r-j+1},\qquad
+ Z_{r,t}(Y)=3^{-v_{r,t}}G_r(F+3^tY).
+\]
+We prove that $Z_{r,t}$ is integral and its reduction has degree
+$3^{r-t+1}$, and that for $t=r+1$ this reduction is affine with
+unit linear coefficient. For $r=0,t=1$, this follows by Taylor
+expansion and the two hypotheses on $G_0$.
+
+For $t\le r$, the recurrence gives
+\[
+ Z_{r+1,t}=Z_{r,t}^3-
+       3^{2(e_r-v_{r,t})}(\sigma Z_{r,t})(aY).
+\]
+Here $e_r-v_{r,t}\ge1$ and $v_{r+1,t}=3v_{r,t}$, so its reduction
+is the cube of the previous reduction, of the required degree.
+At $t=r+1$, we have $v_{r,t}=e_r$. Write
+$\overline Z_{r,r+1}=h+uY$, with $u\ne0$. Scaling the next polynomial
+by $3^{3e_r}$ gives reduction
+\[
+ (h+uY)^3-(h^3+u^3\bar aY)
+       =u^3Y^3-u^3\bar aY.
+\]
+It has degree $3$ and unit linear coefficient. Substitute $Y\mapsto3Y$
+and divide by $3$ for the next depth. Its constant coefficient is
+integral: putting $C=3^{-e_r}G_r(F)\in\mathcal O$ gives
+$G_{r+1}(F)=3^{3e_r}(C^3-\sigma C)\in3^{3e_r+1}\mathcal O$.
+Its linear coefficient is a unit and
+the higher coefficients vanish on reduction. This proves the induction.
+
+For completeness, a primitive integral polynomial has exactly as many
+integral roots as the degree of its reduction, counted with multiplicity.
+In a finite valued splitting extension, factor it as
+\[
+ c\prod_{v(\alpha)\ge0}(Y-\alpha)
+  \prod_{v(\alpha)<0}(1-Y/\alpha),
+\]
+absorbing the factors $-\alpha$ into $c$. Every displayed factor is
+integral and primitive. Their reductions have degrees $1$ and $0$,
+respectively. The product is primitive because its reduction is
+nonzero, so $c$ is a unit. Its reduced degree therefore counts exactly
+the integral roots.
+Apply it to $Z_{r,t}$. Integral values of
+$Y=(\alpha-F)/3^t$ are exactly the roots in the asserted ball.
+\end{proof}
+
+For the pair $A,B$, take the two seed polynomials
+\[
+ G_0(X)=X^3-X+z,\qquad Q_0(Y)=Y^2-(1+z)^{-1},
+\]
+and the substitutions $X\mapsto X-z$, $Y\mapsto Y/(1+z)$.
+Both derivatives at the corresponding series are units modulo $3$.
+Use Lemma~\ref{lem:packets} to form $G_r,Q_r$; they are monic of
+degrees $3\cdot3^r$ and $2\cdot3^r$ over $R_\infty$.
+
+\begin{theorem}[Mixed norm bound]\label{thm:norm}
+For every $F\in R[X,Y]$ and $r\ge0$ there is a monic polynomial
+$N_{r,F}\in R[T]$ of degree $6\cdot9^r$ such that
+\begin{equation}\label{eq:normval}
+ \val\bigl(N_{r,F}(F(A,B))\bigr)\ge\frac{9^{r+1}-1}{8}.
+\end{equation}
+Consequently
+\begin{equation}\label{eq:allupper}
+ \mu_{F(A,B)}(\gamma)\le6e_\gamma
+ =\frac{16}{3}\gamma+O(\log\gamma),
+\end{equation}
+where $e_\gamma$ is defined in \eqref{eq:W9}.
+\end{theorem}
+\begin{proof}
+The quotient
+\[
+ \mathcal A_r=R_\infty[X,Y]/(G_r(X),Q_r(Y))
+\]
+is free of rank $6\cdot9^r$. Take the characteristic polynomial
+$\widetilde N_{r,F}(T)$ of multiplication by $F$ on this module.
+It is monic with coefficients in $R_\infty$. In a splitting field it is
+\[
+ \prod_{\alpha:G_r(\alpha)=0}\ \prod_{\beta:Q_r(\beta)=0}
+           (T-F(\alpha,\beta)),
+\]
+with multiplicities. Polynomial evaluation with integral coefficients
+is valuation-Lipschitz:
+\[
+ v\bigl(F(A,B)-F(\alpha,\beta)\bigr)
+ \ge\min\{v(A-\alpha),v(B-\beta)\}.
+\]
+For each integer depth $t=1,\ldots,r+1$, the root-counting lemma
+gives $9^{r-t+1}$ pairs with both distances at least $t$.
+All other factors have nonnegative valuation. Summing these contributions
+gives
+\[
+ v\bigl(\widetilde N_{r,F}(F(A,B))\bigr)
+ \ge\sum_{t=1}^{r+1}9^{r-t+1}=\frac{9^{r+1}-1}{8}.
+\]
+Descend the finitely many coefficients by \eqref{eq:descent} to this
+precision, preserving monicity and degree, to obtain $N_{r,F}\in R[T]$.
+
+For $d=\sum d_r9^r$, multiply $N_{r,F}^{d_r}$.
+Its degree is $6d$ and its valuation is at least
+\[
+ \sum_r d_r\frac{9^{r+1}-1}{8}
+ =\sum_{j\ge0}\left\lfloor\frac d{9^j}\right\rfloor=W_9(d).
+\]
+Choose $d=e_\gamma$. Finally $W_9(d)=(9d-s_9(d))/8$
+implies $e_\gamma=(8/9)\gamma+O(\log\gamma)$.
+\end{proof}
+
+\begin{remark}
+This is a univariate annihilator bound for each fixed mixed element.
+It improves $6\gamma$ beginning at $\gamma=10$: the first two tower
+points are degree $54$ at precision $3^{10}$ and degree $486$ at
+precision $3^{91}$. It is not a proof that $6e_\gamma$ is minimal
+at arbitrary precision, nor a complexity bound for expanding the
+resultant or determinant.
+\end{remark}
+
+\section{Optimal relations for the sum through \texorpdfstring{$3^{10}$}{3 to the tenth power}}
+\label{sec:sum}
+
+Let $H=A+B$ and let $M$ be the monic degree-$6$ polynomial
+in \eqref{eq:M}. Its evaluation is divisible by $3$; put
+$Z_0=M(H)/3$ and $v=\overline{Z_0}$. The next lemma detects the
+first genuinely mixed obstruction.
+
+\begin{lemma}[The sum correction is primitive]\label{lem:primitive}
+Let $a=(1+z)^{-1}$ and $h=x+y$. Then
+\begin{equation}\label{eq:vlinear}
+ v=zay\,c+za^2w+za^2xh.
+\end{equation}
+Moreover $[L(v):L]=9$ and $[K(h,v):K]=54$.
+\end{lemma}
+\begin{proof}
+In characteristic zero use $B^2=a(1+3W_0)$ and set
+\[
+ J=C_0+aBW_0+ABH.
+\]
+Then $H^3-H+z=-zaB+3J$, whence the exact identity
+\[
+ \frac{M(H)}3=z^2a^3W_0-2zaBJ+3J^2.
+\]
+On reducing modulo $3$, use $y^2=a$ and $-2=1$ to obtain
+\eqref{eq:vlinear}. An automorphism $(i,j)\in\F_3^2$ of
+$L(c,w)/L$ translates $v$ by $zay\,i+za^2j$.
+The ratio of these two coefficients is $y/a=(1+z)y$, whose square
+is $1+z$. It is not in $\F_3$. Therefore no nonzero pair $(i,j)$
+fixes $v$, so its orbit has size $9$. Finally $L=K(h)$ has degree $6$.
+\end{proof}
+
+\begin{proposition}[Exact valuation below degree $54$]\label{prop:sumval}
+Every $G\in R[T]$ of degree less than $54$ has a unique expansion
+\[
+ G(T)=\sum_{r=0}^{8} g_r(T)M(T)^r,\qquad\deg g_r<6.
+\]
+Writing $\val(g_r)$ for the minimum valuation of its coefficients,
+\begin{equation}\label{eq:sumval}
+ \val(G(H))=\min_{0\le r\le8}\{\val(g_r)+r\}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+The expansion is monic polynomial division. Divide the evaluation by
+the least indicated power of $3$ and reduce. The resulting combination
+is in the $54$ elements $h^sv^r$, $0\le s<6$, $0\le r<9$.
+They are independent over $K$ by Lemma~\ref{lem:primitive}, so at
+least one surviving coefficient prevents cancellation.
+\end{proof}
+
+\begin{theorem}[The exact initial degree sequence]\label{thm:sumexact}
+For $H=A+B$, formula \eqref{eq:mainexact} holds in the original ring $R$.
+\end{theorem}
+\begin{proof}
+For $1\le\gamma\le9$, the polynomial $M^\gamma$ is a monic
+annihilator of degree $6\gamma$. If a monic $G$ had degree
+$D<6\gamma\le54$, its highest nonzero $M$-coefficient would be monic
+and have index $\lfloor D/6\rfloor\le\gamma-1$.
+Proposition~\ref{prop:sumval} would give
+$\val(G(H))\le\gamma-1$, a contradiction.
+
+For $\gamma=10$, Theorem~\ref{thm:norm} with $r=1$ provides a monic
+degree-$54$ annihilator. Every monic polynomial of degree less than
+$54$ has valuation at most $8$ by the same argument, so no smaller
+degree is possible.
+\end{proof}
+
+An explicit compact prescription for the degree-$54$ polynomial is
+\begin{align*}
+ G_1(X)&=(X^3-X+z)^3
+             -9\bigl((X-z)^3-(X-z)+z^3\bigr),\\
+ Q_1(Y)&=\left(Y^2-\frac1{1+z}\right)^3
+             -9\left(\frac{Y^2}{(1+z)^2}-\frac1{1+z^3}\right),\\
+ \widetilde N(T)&=\Res_X\bigl(G_1(X),Q_1(T-X)\bigr).
+\end{align*}
+This is monic of degree $54$. Descent of $(1+z^3)^{-1}$ by
+\eqref{eq:descent} with $N=10$, before or after taking the resultant,
+places its coefficients in $R$ without changing its evaluation modulo
+$3^{10}$. The construction does not require printing a large expanded
+polynomial.
+
+\begin{center}
+\begin{tabular}{rrrrrrrrrrr}
+\toprule
+$\gamma$&1&2&3&4&5&6&7&8&9&10\\
+\midrule
+$\mu_H(\gamma)$&6&12&18&24&30&36&42&48&54&54\\
+\bottomrule
+\end{tabular}
+\end{center}
+The different first improvement thresholds are informative: individual
+relations improve on their naive powers at $\gamma=4$, while the
+mixed sum does not improve on $M^\gamma$ until $\gamma=10$.
+
+\section{Characteristic-zero independence and specialization}
+\label{sec:independence}
+
+The arithmetic dependence modulo prime powers should not be confused
+with dependence in characteristic zero. The next argument is a direct
+specialization of established asymptotic ideas in Mahler theory. The
+underlying independence also falls under classical mixed
+additive--multiplicative criteria; see \cite{Kubota,Vaananen}.
+
+\begin{theorem}[A direct radial proof]\label{thm:independence}
+For an integer $b\ge2$ that is not a power of $2$, the functions
+\[
+ A_b(z)=\sum_{n\ge0}z^{b^n},\qquad
+ B_b(z)=\prod_{n\ge0}(1+z^{b^n})
+\]
+are algebraically independent over $\C(z)$.
+\end{theorem}
+\begin{proof}
+Set $z=e^{-t}$, $t\downarrow0$, and
+$N=\lfloor\log_b(1/t)\rfloor$. Summing
+$1-e^{-b^nt}=O(b^nt)$ for $n<N$ and the exponentially decaying tail
+for $n\ge N$ gives
+\[
+ A_b(e^{-t})=\frac{\log(1/t)}{\log b}+O(1).
+\]
+Similarly $\log(1+e^{-b^nt})=\log2+O(b^nt)$ for $n<N$, and the
+remaining logarithms have a uniformly bounded sum. Thus, with
+$\theta=\log_b2$, there are positive constants $c,C$ such that
+\[
+ ct^{-\theta}\le B_b(e^{-t})\le Ct^{-\theta}.
+\]
+
+Suppose a nonzero polynomial relation exists, and clear denominators:
+\[
+ \sum_{j=0}^J q_j(z,A_b(z))B_b(z)^j=0,
+       \qquad q_j\in\C[z,X].
+\]
+For each nonzero $q_j=\sum_i q_{ij}(z)X^i$, let
+$m_j=\min_i\ord_{z=1}q_{ij}$ and choose the largest $i=d_j$
+attaining that minimum. Taylor expansion at $1$ and the first
+asymptotic estimate give
+\[
+ q_j(e^{-t},A_b(e^{-t}))
+    =c_jt^{m_j}(\log(1/t))^{d_j}(1+o(1)),\quad c_j\ne0.
+\]
+Because $\theta$ is irrational, the exponents $m_j-j\theta$ are
+pairwise distinct. The term with the smallest exponent dominates all
+the others in absolute value, even allowing the bounded multiplicative
+oscillation of $B_b$. Dividing the relation by that nonzero term gives
+$1+o(1)=0$, a contradiction. Finally $\log_b2$ is rational for an
+integer $b\ge2$ exactly when $b$ is a power of $2$.
+\end{proof}
+
+\begin{corollary}[Values at regular algebraic points]\label{cor:values}
+For $b$ as above and every algebraic $\alpha$ with $0<|\alpha|<1$,
+$A_b(\alpha)$ and $B_b(\alpha)$ are algebraically independent over
+$\overline\Q$. In particular, for $b=3$ their sum, product, and every
+nonconstant polynomial in the two values with algebraic coefficients
+are transcendental.
+\end{corollary}
+\begin{proof}
+Apply Nishioka's specialization theorem, in the form of
+\cite[Theorem~1]{AF}, to
+\[
+ \begin{pmatrix}1\\A_b(z)\\B_b(z)\end{pmatrix}
+ =\begin{pmatrix}1&0&0\\z&1&0\\0&0&1+z\end{pmatrix}
+ \begin{pmatrix}1\\A_b(z^b)\\B_b(z^b)\end{pmatrix}.
+\]
+The matrix and its inverse are regular at every iterate
+$\alpha^{b^n}$, since these points are nonzero and have modulus less
+than $1$. Its determinant is $1+z$. The functional transcendence
+degree is $2$ by Theorem~\ref{thm:independence}, so the same is true
+for the values. A nonconstant algebraic-coefficient polynomial value
+could not be algebraic without providing a nonzero polynomial relation.
+\end{proof}
+
+This corollary is an application of a prior theorem, not an additional
+claimed solution of an open transcendence conjecture. It concerns
+formal-series values inside the unit disk, and has no implication for
+the Mills-type constants considered elsewhere in the corpus.
+
+\section{What remains open and what has been established}
+\label{sec:open}
+
+The proof of the low-precision kernel uses two independent first
+corrections. Higher corrections need further independence arguments;
+neither the two individual conjectures nor characteristic-zero
+independence supplies them automatically.
+
+\begin{question}[Higher mixed evaluation kernels]
+Determine $J_\gamma$ for $\gamma\ge5$. Is there a compatible choice
+of the triangular families in Proposition~\ref{prop:bases} for which
+every finite expansion satisfies
+\[
+ \val\left(\sum_{i,j} c_{ij}a_i(A)b_j(B)\right)
+ =\min_{i,j}\bigl(\val(c_{ij})+\alpha_i+\beta_j\bigr)?
+\]
+\end{question}
+The equality, if proved with the coefficient-ring details retained,
+would make the all-precision spanning count $N_\gamma$ sharp. The
+inequality in the direction $\ge$ is already proved here. We do not
+assume the reverse inequality outside the finite box of
+Lemma~\ref{lem:box}.
+
+\begin{question}[The optimal degree sequence of the sum]
+Does $\mu_{A+B}(\gamma)=6e_\gamma$ hold for every $\gamma\ge1$?
+\end{question}
+Theorem~\ref{thm:norm} proves the upper bound at every precision and
+Theorem~\ref{thm:sumexact} proves equality for $\gamma\le10$.
+For $\gamma>10$ this paper provides no matching general lower bound.
+An equality assertion in this range would require new work, not an
+extrapolation from the displayed table.
+
+\begin{question}[Other primitive mixed elements]
+For which $F\in R[X,Y]$ is the norm bound optimal? How does the
+degree of the first normalized correction over $K(\bar F)$ determine
+the initial segment of $\mu_{F(A,B)}$?
+\end{question}
+The sum calculation gives one complete example: the reduced field
+has degree $6$ and the first correction has degree $9$ over it.
+The universal norm construction explains why base $9$, rather than
+base $3$, appears in the resulting mixed upper bound.
+
+For attribution, the one-series lower bounds belong to
+Krattenthaler--M\"uller, the Frobenius construction and descent were
+developed in \cite{KEIO70}, and the Galois, Newton-polygon, and Mahler
+specialization tools are classical. The contributions developed here
+are the explicit mixed application of those tools, including the
+exact kernels, the degree-$54$ obstruction and construction, and the
+all-precision mixed norm bound. A scoped literature check did not
+locate identical joint statements; this is not an assertion of an
+exhaustive priority search or external acceptance.
+
+\appendix
+\section{Exact checks and reproducibility}
+\label{app:checks}
+
+The proofs are infinite-series and field-theoretic arguments. Finite
+checks are supplementary and cannot establish a minimum-degree lower
+bound for arbitrary coefficient functions.
+
+Compiling this single TeX source also writes
+\texttt{mixed\_mahler\_verify.py}, an optional verification script requiring
+Python~3 and SymPy. Run it with
+\texttt{python3 mixed\_mahler\_verify.py}.
+The script checks the symbolic identities below, the first $512$
+coefficients of the two correction equations and the sum-correction
+identity, the $81$-divisibility of $U(A),V(B)$ at that truncation,
+and the integer counting tables. It also checks the degree-$54$
+resultant modulo $3^{10}$ at the convergent $3$-adic evaluation points
+$z=3,6,9,12$. These checks passed for the present draft; the checks
+at particular values do not prove the formal-series assertion.
+
+The following identities are convenient independent checks of signs
+and denominators. All substitutions are simultaneous:
+\begin{align*}
+ P(z^3,X-z)&=P(z,X)-3zX(X-z),\\
+ E\left(z^3,\frac{Y}{1+z}\right)
+  &=E(z,Y)-\frac{3z}{(1+z)^2}\bigl(E(z,Y)+1\bigr),\\
+ z=x-x^3&\ \Longrightarrow\ -zx^2+z^2x=x^7-x^5.
+\end{align*}
+They can be verified by polynomial expansion over $\Q(z)$.
+The first two also verify the displayed formulas for $U,V$ and the
+Artin--Schreier equations. The exact identity preceding
+\eqref{eq:vlinear} verifies the primitive-correction computation.
+
+For the numerical tables, the following complete Python code uses only
+integer arithmetic and reproduces the counting formulas. It does not
+test or replace the independence proofs.
+\begin{quote}\begin{minipage}{\linewidth}\small\ttfamily
+\begin{tabbing}
+xxxx\=xxxx\=xxxx\=\kill
+def v3fact(n):\\
+\>s = 0\\
+\>while n:\\
+\>\>n //= 3\\
+\>\>s += n\\
+\>return s\\
+def weight(n):\\
+\>return n + v3fact(n)\\
+def w9(n):\\
+\>s = 0\\
+\>while n:\\
+\>\>s += n\\
+\>\>n //= 9\\
+\>return s\\
+for g in (1, 2, 3, 4, 10, 100):\\
+\>d = next(n for n in range(1, g+1) if weight(n) >= g)\\
+\>N = 6 * sum(weight(i)+weight(j) < g\\
+\>\>for i in range(d) for j in range(d))\\
+\>e = next(n for n in range(1, g+1) if w9(n) >= g)\\
+\>print(g, d, 6*d*d, N, 6*g, 6*e)
+\end{tabbing}
+\end{minipage}\end{quote}
+The last two columns compare the elementary and norm degree upper
+bounds. At $\gamma=100$ they are $600$ and $540$; this is an upper-bound
+comparison, not a computed exact minimum.
+
+\begin{thebibliography}{99}
+\bibitem{KMp}
+C. Krattenthaler and T. W. M\"uller,
+\emph{A method for determining the mod-$p^k$ behaviour of recursive sequences},
+Aequationes Math. \textbf{99} (2025), 2505--2547.
+\href{https://doi.org/10.1007/s00010-025-01195-0}{doi:10.1007/s00010-025-01195-0}.
+Preprint first posted 2015; revised version:
+\href{https://arxiv.org/abs/1508.02580v2}{arXiv:1508.02580v2}.
+
+\bibitem{KM3}
+C. Krattenthaler and T. W. M\"uller,
+\emph{A method for determining the mod-$3^k$ behaviour of recursive sequences},
+preprint (2013),
+\href{https://arxiv.org/abs/1308.2856}{arXiv:1308.2856}.
+Theorem~10 and Conjecture~12 refer to this version.
+
+\bibitem{KEIO70}
+KEIO,
+\emph{Frobenius Lifting, Floquet Rigidity, and Equivariant Stabilization},
+research manuscript [070], Verifiable Mathematical Reasoning Corpus,
+24 October 2026, arithmetic sections T76--T78.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}{Public corpus}.
+Source inspected at commit \texttt{dd9c67cb72c5991cce5816de540db8c2132ca343}.
+Unreviewed research draft.
+
+\bibitem{Apéry}
+C. Krattenthaler and T. W. M\"uller,
+\emph{Generalised Ap\'ery numbers modulo $9$},
+J. Number Theory \textbf{147} (2015), 708--720.
+\href{https://arxiv.org/abs/1401.1444}{arXiv:1401.1444}.
+
+\bibitem{Kubota}
+K. K. Kubota,
+\emph{On the algebraic independence of holomorphic solutions of certain
+functional equations and their values},
+Math. Ann. \textbf{227} (1977), 9--50.
+
+\bibitem{Vaananen}
+K. V\"a\"an\"anen,
+\emph{Algebraic independence of certain Mahler numbers},
+preprint (2015),
+\href{https://arxiv.org/abs/1507.02510}{arXiv:1507.02510}.
+See Theorem K for the mixed additive--multiplicative criterion.
+
+\bibitem{AF}
+B. Adamczewski and C. Faverjon,
+\emph{A new proof of Nishioka's theorem in Mahler's method},
+C. R. Math. \textbf{361} (2023), 1011--1028.
+\href{https://doi.org/10.5802/crmath.458}{doi:10.5802/crmath.458}.
+\end{thebibliography}
+\end{document}
