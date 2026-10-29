@@ -1,0 +1,1141 @@
+\documentclass[11pt]{amsart}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+  frame=single,framerule=0.3pt,rulecolor=\color{black!40},showstringspaces=false,
+  keepspaces=true,upquote=true}
+
+\newtheorem{theorem}{Theorem}
+\renewcommand{\thetheorem}{\Alph{theorem}}
+\newtheorem{maincor}[theorem]{Corollary}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{corollary}[lemma]{Corollary}
+\newtheorem{thm}[lemma]{Theorem}
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\newtheorem{problem}[lemma]{Problem}
+\newtheorem{principle}[lemma]{Principle}
+\newtheorem{question}[lemma]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[lemma]{Remark}
+\newtheorem{example}[lemma]{Example}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\fl}[1]{\lfloor #1\rfloor}
+\newcommand{\fr}[1]{\{#1\}}
+
+\title[Carry forcing and the Erd\H{o}s--Graham prediction]{Carry Forcing for Zero--One
+Relations:\\ the Erd\H{o}s--Graham Completeness Prediction\\ for the Bases
+$\gamma^k=\gamma^a+\gamma^b$ below $\sqrt2$}
+
+\author{Keio}
+\thanks{Research draft, October 29, 2026. The results and the exposition were developed
+interactively with an AI assistant (Claude, Anthropic); the author is responsible for the
+content. All numerical values quoted in the paper are reproduced by the script in
+Appendix~\ref{app:script}. This draft has not been peer reviewed.}
+
+\date{October 29, 2026}
+
+\begin{document}
+
+\begin{abstract}
+For $t>0$ and $\gamma>1$ let $s_n=\fl{t\gamma^n}$ $(n\ge 0)$. A sequence of non-negative
+integers is \emph{complete} if every sufficiently large integer is a sum of distinct terms.
+Graham asked for which pairs $(t,\gamma)$ the sequence $(s_n)$ is complete, and Erd\H{o}s and
+Graham wrote that it is thought to be complete for every $t>0$ whenever
+$1<\gamma<\varphi=\frac{1+\sqrt5}{2}$ (Erd\H{o}s Problem \#349). Geneson recently refuted this
+for a Salem base; on the positive side, completeness for all $t>0$ at the base
+$\gamma=\sqrt\varphi$ follows from a recent Lean-verified argument of Kitamura.
+
+We formulate a \emph{carry-forcing problem}: if $\gamma^k=\sum_{i\in I}\gamma^i$ with
+$I\subseteq\{0,\dots,k-1\}$, then $s_{n+k}=\sum_{i\in I}s_{n+i}+\delta_n$ with a ``carry''
+$\delta_n\in\{0,\dots,|I|-1\}$; is $\delta_n\neq0$ infinitely often for every $t>0$? Combining
+the irrationality of $\gamma$, Descartes' rule of signs and a sign-change lemma for
+exponential polynomials, we prove that the answer is always yes (for the golden ratio this is
+Kitamura's observation, and for Pisot trinomial bases it can also be derived from a theorem
+of Dubickas). For trinomial relations $\gamma^k=\gamma^a+\gamma^b$ the carries are units, so
+every floor orbit contains infinitely many disjoint \emph{unit switches}
+$\{s_{n+a},s_{n+b}\}\leftrightarrow\{s_{n+k}\}$. Our main new tool is a switch-extraction lemma,
+valid exactly below $\sqrt2$, which removes these switches from a single orbit without
+destroying Graham's interval propagation. We obtain:
+\begin{enumerate}[label=(\roman*),leftmargin=2em]
+\item if $\gamma\in(1,\sqrt2)$ and $\gamma^k=\gamma^a+\gamma^b$ with $k>a>b\ge0$ --- an infinite
+set of bases, accumulating at $1$ and containing the two smallest Pisot numbers --- then
+$(\fl{t\gamma^n})_{n\ge0}$ is strongly complete for \emph{every} $t>0$. When the reduced
+trinomial $x^m-x^j-1$ $(m=k-b,\ j=a-b)$ has $\gcd(m,j)\ge2$, this also follows from (ii) by
+splitting the orbit (Kitamura's device); the extraction lemma handles the primitive case
+$\gcd(m,j)=1$, which includes the plastic number and the root of $x^4-x^3-1$;
+\item for every $\gamma\in(1,2)$ with $\gamma^k=\gamma^a+\gamma^b$, including $\varphi$ and
+$1.4655\ldots$, and all $\alpha,\beta>0$, the union of $(\fl{\alpha\gamma^n})$ and
+$(\fl{\beta\gamma^n})$ is complete. For $\gamma=\varphi$ this was observed before, and (ii)
+answers the existential form of Erd\H{o}s Problem \#354(ii) recorded in the Formal Conjectures
+database, which Kitamura had already answered.
+\end{enumerate}
+The threshold $\sqrt2$ is sharp for the extraction step. We also explain why base $2$ admits
+no exact relations of this kind.
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+%======================================================================
+\section{Introduction}\label{sec:intro}
+%======================================================================
+
+\subsection{Complete sequences of integer parts of powers}
+A sequence $(q_i)_{i\in\mathcal I}$ of non-negative integers (indexed, so that equal
+values carried by different indices may both be used) is \emph{complete} if every
+sufficiently large integer is of the form $\sum_{i\in J}q_i$ with $J\subseteq\mathcal I$
+finite; it is \emph{strongly complete} if it stays complete after deleting any finite set
+of terms. For $t>0$ and $\gamma>1$ we write
+\[
+  S_t(\gamma)=(s_n)_{n\ge 0},\qquad s_n=\fl{t\gamma^n},\qquad f_n=\fr{t\gamma^n}\in[0,1).
+\]
+Graham asked for which pairs $(t,\gamma)$ the sequence $S_t(\gamma)$ is complete; according to
+\cite{vD26} he determined the answer for $0<t<1$, $1<\gamma<2$, and even there the set of good
+pairs is very complicated \cite{EP349}. Erd\H{o}s and Graham \cite[p.~57]{EG80} wrote that
+$S_t(\gamma)$ is thought to be complete for all $t>0$ when $1<\gamma<\varphi=\frac{1+\sqrt5}2$;
+in the formulation of Erd\H{o}s Problem \#349 \cite{EP349}, ``it seems likely that the
+sequence is complete for all $t>0$ and all $1<\alpha<\frac{1+\sqrt5}{2}$''. Van Doorn
+\cite{vD26} settled the range $\gamma\ge\varphi$ (for instance, for
+$\varphi\le\gamma\le5^{1/3}$ the sequence is complete if and only if
+$t<\min(3/\gamma^2,5/\gamma^3)$), and for $1<\gamma<\varphi$ he proved completeness in several
+bounded ranges of $t$ (partly computer-assisted, e.g.\ $1.3<\gamma\le1.4$, $t\le3$) and in the
+region $1<\gamma\le1+1/(\lceil t\rceil+2\lceil\sqrt t\rceil)$; large $t$ remained open there.
+Geneson \cite[Theorem~9]{Gen26} then showed that the prediction fails in general: there are a
+Salem number $\gamma\in(\frac65,\frac{13}{10})$ and arbitrarily large $t$ for which every term of
+$S_t(\gamma)$ is even.
+
+Erd\H{o}s Problem \#354 \cite{EP354}, first mentioned by Graham in 1971 (see \cite{EP354}),
+asks: \emph{if $\alpha,\beta>0$ and $\alpha/\beta$ is irrational, is the multiset
+$\{\fl{2^n\alpha}\}_{n\ge0}\cup\{\fl{2^n\beta}\}_{n\ge0}$ complete? What if $2$ is replaced
+by some $\gamma\in(1,2)$?} The Formal Conjectures database \cite{FC} records part (ii) as the
+existential statement
+\begin{equation}\label{eq:354ii}
+  \exists\,\gamma\in(1,2)\ \ \forall\,\alpha,\beta>0\ \text{with}\ \alpha/\beta\notin\Q:\quad
+  \{\fl{\gamma^n\alpha}\}_{n\ge0}\cup\{\fl{\gamma^n\beta}\}_{n\ge0}\ \text{is complete}
+\end{equation}
+(see Section~\ref{sec:proofC} for the exact formal statement). Geneson
+\cite[Corollary~12]{Gen26} constructed, for his Salem base, two such sequences with irrational
+ratio whose union is incomplete, so \eqref{eq:354ii} cannot hold for \emph{every}
+$\gamma\in(1,2)$.
+
+\subsection{Prior work that this paper builds on}\label{sec:prior}
+Kitamura \cite{Kit26} gave a Lean-verified affirmative answer to \eqref{eq:354ii}, with
+$\gamma=\sqrt\varphi$, in a public repository dated September 5, 2026 (proposed to \cite{FC} in
+pull request \#5286, not merged as of October 28, 2026). His argument is the golden-ratio case of
+the mechanism used here: for $c_n=\fl{u\varphi^n}$ one has $c_{n+2}=c_n+c_{n+1}+\delta_n$ with
+$\delta_n\in\{0,1\}$; $\delta_n=1$ occurs arbitrarily far out, because otherwise the fractional
+parts would be a bounded non-negative solution of the Fibonacci recurrence and hence zero; the
+resulting disjoint ``carry-one triples'' produce long runs of consecutive subset sums, which are
+propagated by the odd-indexed terms $\fl{(u\sqrt\varphi)\varphi^n}$. In particular his argument
+shows that $S_t(\sqrt\varphi)$ is complete for every $t>0$. His repository also mentions an earlier
+proof note for the root of $\gamma^{10}=\gamma+1$ \cite{Kit26}, which we have not been able to
+locate; we do not know its argument. An automated review of the formal statement (record of
+September 23, 2026 in \cite{Rev26}, and formal-conjectures issue \#6542) gave the same argument
+with $\gamma=\varphi$ and arbitrary $\alpha,\beta>0$ --- this is Theorem~\ref{thm:C} below for
+$\gamma=\varphi$ --- and argued that the existential statement \eqref{eq:354ii} does not capture
+Graham's question, which asks about a general base $\gamma$. For Pisot bases, the conclusion of
+Theorem~\ref{thm:carrygeneral}(iii) below can be deduced from a theorem of Dubickas \cite{Dub06}
+(Remark~\ref{rem:dub}). Another review record in \cite{Rev26} attributes to Hegyv\'ari
+\cite[Theorem~4]{He89} a completeness theorem for unions of three base-$2$ sequences; if it
+applies as quoted there, completeness of $\fl{t\,2^{n/k}}$ for all $t>0$ and $k\ge3$ would follow.
+We have not been able to verify this. Finally, Yu and Chen \cite{YC26} have announced a
+Lean-verified affirmative answer to part (i) of Problem \#354 (base $2$), proposed to \cite{FC}
+in pull request \#6433. We have not checked these works and make no claim about them beyond what
+is stated here.
+
+\subsection{The carry-forcing problem}
+Every exact additive relation among powers of $\gamma$ survives in the floor orbit up to a
+bounded error. If
+\begin{equation}\label{eq:rel}
+  \gamma^k=\sum_{i\in I}\gamma^i,\qquad I\subseteq\{0,1,\dots,k-1\},\ |I|\ge2,
+\end{equation}
+then $t\gamma^{n+k}=\sum_{i\in I}t\gamma^{n+i}$, and taking integer parts,
+\begin{equation}\label{eq:carry}
+  s_{n+k}=\sum_{i\in I}s_{n+i}+\delta_n,\qquad
+  \delta_n=\Bigl\lfloor\sum_{i\in I}f_{n+i}\Bigr\rfloor\in\{0,1,\dots,|I|-1\}.
+\end{equation}
+We call $\delta_n=\delta_n(t)$ the \emph{carry} at $n$.
+
+\begin{problem}[Carry forcing]\label{prob:carry}
+Let $\gamma>1$ satisfy a relation \eqref{eq:rel}. Is it true that for \emph{every} $t>0$
+the carry $\delta_n(t)$ is non-zero for infinitely many $n$? When are the carries units?
+\end{problem}
+
+When $\delta_n=1$ the two disjoint index sets $\{n+i:i\in I\}$ and $\{n+k\}$ carry sums that
+differ by exactly $1$, a \emph{unit switch}. Many disjoint unit switches produce long runs of
+consecutive subset sums, which can be propagated to all large integers by Graham's interval
+argument, provided that the terms reserved for the switches are not needed by the propagation.
+For two sequences (or for $\gamma=\sqrt\varphi$, whose orbit splits into two golden-ratio orbits)
+the second sequence propagates; for a \emph{single} orbit the switches must be extracted from the
+propagating sequence itself, and this is where the threshold $\sqrt2$ appears.
+
+\subsection{Main results}
+We call $\gamma>1$ a \emph{trinomial base} if $\gamma^k=\gamma^a+\gamma^b$ for some integers
+$k>a>b\ge0$, i.e.\ if $\gamma$ is the positive root of $x^k-x^a-x^b$; ``trinomial'' always refers
+to polynomials of this shape (other trinomials, such as $x^4-2x-1$, are not covered).
+
+\begin{theorem}[Carry forcing]\label{thm:A}
+Let $k>a>b\ge0$ be integers and let $\gamma>1$ be a root of $x^k-x^a-x^b$. Then
+$1<\gamma<2$, $\gamma$ is irrational, and for every $t>0$
+\[
+  \delta_n:=\fl{t\gamma^{n+k}}-\fl{t\gamma^{n+a}}-\fl{t\gamma^{n+b}}\in\{0,1\}
+  \quad\text{for all }n\ge0,
+\]
+and $\delta_n=1$ for infinitely many $n$.
+More generally, for every relation \eqref{eq:rel} and every $t>0$ the carries
+\eqref{eq:carry} are non-zero for infinitely many $n$ (Theorem~\ref{thm:carrygeneral}).
+\end{theorem}
+
+\begin{theorem}[The Erd\H{o}s--Graham prediction for trinomial bases below $\sqrt2$]\label{thm:B}
+Let $\gamma\in(1,\sqrt2)$ be a root of a trinomial $x^k-x^a-x^b$ with $k>a>b\ge0$. Then for
+every $t>0$ the sequence $(\fl{t\gamma^n})_{n\ge0}$ is complete; in fact it is strongly
+complete, and the set of its values is complete.
+\end{theorem}
+
+By Lemma~\ref{lem:trinroots}, the bases covered by Theorem~\ref{thm:B} are exactly the
+positive roots of $x^m-x^j-1$ $(m>j\ge1)$ other than $\varphi$ (root of $x^2-x-1$) and
+$1.46557\ldots$ (root of $x^3-x^2-1$). They form an infinite set accumulating only at $1$,
+whose two largest elements are $1.38027\ldots$ (root of $x^4-x^3-1$) and the plastic number
+$1.32471\ldots$ (root of $x^3-x-1$), the two smallest Pisot numbers \cite{Sie44}; see
+Table~\ref{tab:roots}. The base $\sqrt\varphi=1.27201\ldots$ (root of $x^4-x^2-1$) of
+\cite{Kit26} and the root $1.07576\ldots$ of $x^{10}-x-1$ are among them.
+
+\begin{theorem}[Unions for all trinomial bases]\label{thm:C}
+Let $\gamma\in(1,2)$ be a root of a trinomial $x^k-x^a-x^b$ with $k>a>b\ge0$ (for instance
+$\gamma=\varphi$). Then for all $\alpha,\beta>0$ the union of
+$(\fl{\alpha\gamma^n})_{n\ge0}$ and $(\fl{\beta\gamma^n})_{n\ge0}$ is complete, indeed
+strongly complete.
+\end{theorem}
+
+Theorem~\ref{thm:C} is a direct extension of the argument of \cite{Kit26,Rev26} from the golden
+ratio to all trinomial bases. It gives the following consequences.
+
+\begin{maincor}[Problem \#354(ii), existential form]\label{cor:D}
+Statement \eqref{eq:354ii}, in the exact form recorded in \cite{FC}, holds with $\gamma$ equal to
+any root in $(1,2)$ of a trinomial $x^k-x^a-x^b$ (Kitamura \cite{Kit26}: $\gamma=\sqrt\varphi$).
+The conclusion holds for all $\alpha,\beta>0$, without the hypothesis $\alpha/\beta\notin\Q$, and
+for the trinomial roots $\gamma<\sqrt2$ the union is complete even when regarded as a set of
+values rather than as a multiset.
+\end{maincor}
+
+\begin{maincor}[Multiplicity two at the golden ratio]\label{cor:E}
+For every $t>0$, every sufficiently large integer $N$ can be written as
+$N=\sum_{n\ge0}c_n\fl{t\varphi^n}$ with $c_n\in\{0,1,2\}$. By \cite{vD26}, for
+$t\ge 3/\varphi^2=1.1459\ldots$ the coefficients cannot in general be restricted to
+$\{0,1\}$.
+\end{maincor}
+
+\subsection{What is new}
+To our knowledge the following are new: the general carry-forcing theorem for $0/1$-relations
+(Theorem~\ref{thm:carrygeneral}), whose proof replaces the explicit Binet formula of the
+golden-ratio case by Descartes' rule of signs and a sign-change lemma for exponential
+polynomials (for Pisot roots its conclusion can also be derived from \cite{Dub06}, see
+Remark~\ref{rem:dub}); the switch-extraction lemma (Lemma~\ref{lem:extract}) together with the sharpness
+of its threshold $\sqrt2$ (Proposition~\ref{prop:sharp}); and, as a consequence,
+Theorem~\ref{thm:B}, which confirms the Erd\H{o}s--Graham prediction for the infinite family of
+all trinomial bases below $\sqrt2$. For the trinomials $x^m-x^j-1$ with $\gcd(m,j)\ge2$ (for
+instance $x^4-x^2-1$, whose root is $\sqrt\varphi$) Theorem~\ref{thm:B} also follows from
+Theorem~\ref{thm:C} by splitting the orbit into $\gcd(m,j)$ orbits of a trinomial base
+(Remark~\ref{rem:split}); this is Kitamura's device. The switch-extraction lemma is used for the
+primitive trinomials, $\gcd(m,j)=1$, an infinite subfamily which contains the two smallest Pisot
+numbers. Theorem~\ref{thm:C} and Corollaries~\ref{cor:D} and~\ref{cor:E} are routine extensions
+of the argument of \cite{Kit26,Rev26} (for $\gamma=\varphi$, Theorem~\ref{thm:C} is stated in
+\cite{Rev26}) and are included for completeness.
+
+\subsection{The principle behind the proofs}
+\begin{principle}[Carry-forced switches]\label{prin}
+An exact $0/1$-relation among powers of an irrational algebraic integer $\gamma$ survives
+in every floor orbit $\fl{t\gamma^n}$ up to a carry. If the carries vanished from some
+point on, the fractional parts $\fr{t\gamma^n}$ would form a bounded non-negative solution of
+the linear recurrence attached to the relation. Because the relation polynomial has $\gamma$
+as its only positive root (Descartes), boundedness removes the $\gamma$-component, and a
+non-zero real exponential polynomial without positive real characteristic roots takes
+negative values; so the fractional parts would vanish, forcing $\gamma\in\Q$. Hence carries
+occur infinitely often. For trinomials they are unit switches, and below $\sqrt2$ they can
+be removed from the orbit without destroying the growth condition that drives Graham's
+interval propagation.
+\end{principle}
+
+\subsection{What is not claimed}
+\begin{itemize}[leftmargin=1.5em]
+\item We do not claim to be the first to answer \eqref{eq:354ii}; see Section~\ref{sec:prior},
+where it is also noted that \eqref{eq:354ii} has been criticised as a misformalisation of
+Graham's question. Nothing is claimed about part (i) of Problem \#354 (base $2$). Distinct sets of powers of $2$
+have distinct sums, so the mechanism of this paper is unavailable there
+(Section~\ref{sec:disc}).
+\item The characterisation asked for in Problem \#349 remains open. Theorem~\ref{thm:B}
+settles the vertical lines $\{\gamma\}\times(0,\infty)$ of the $(\gamma,t)$-plane for the
+trinomial roots $\gamma<\sqrt2$. For the trinomial roots $\varphi$ and $1.46557\ldots$ the
+single-sequence question is not settled by our method (for $\varphi$ completeness fails for
+$t\ge3/\varphi^2$ by \cite{vD26}).
+\item The threshold $\sqrt2$ is sharp for the extraction step only; it is not known to be sharp
+for completeness.
+\end{itemize}
+
+\subsection*{Organisation}
+Section~\ref{sec:prelim} contains the propagation lemma, a growth bound and a sign-change
+lemma for exponential polynomials. Section~\ref{sec:carry} proves carry forcing
+(Theorem~\ref{thm:A} and its generalisation) and describes the trinomial bases.
+Section~\ref{sec:extract} proves the switch-extraction lemma and its sharpness.
+Theorems~\ref{thm:B} and~\ref{thm:C} and the corollaries are proved in
+Sections~\ref{sec:proofB} and~\ref{sec:proofC}. Section~\ref{sec:disc} discusses base $2$,
+Salem bases and open problems, and Section~\ref{sec:num} summarises the numerical
+verification.
+
+
+%======================================================================
+\section{Preliminaries}\label{sec:prelim}
+%======================================================================
+
+\begin{lemma}[Interval propagation]\label{lem:prop}
+Let $(q_m)_{m\ge0}$ be non-negative integers with $\sum_m q_m=\infty$, and let $L\ge1$ be an
+integer with
+\begin{equation}\label{eq:propcond}
+  q_m\le L+\sum_{i<m}q_i\qquad(m\ge0).
+\end{equation}
+Let $\mathcal P$ be a finite family of non-negative integers, disjoint (as an indexed
+family) from $(q_m)$, whose subset sums contain the $L$ consecutive integers
+$u,u+1,\dots,u+L-1$. Then every integer $N\ge u$ is a sum of distinct members of
+$\mathcal P\sqcup(q_m)_{m\ge0}$.
+\end{lemma}
+
+\begin{proof}
+Put $I_m=[u,\,u+L-1+\sum_{i<m}q_i]\cap\Z$. Every element of $I_0$ is a subset sum of
+$\mathcal P$. Suppose every element of $I_m$ is a sum of distinct members of
+$\mathcal P\sqcup\{q_0,\dots,q_{m-1}\}$. Then so is every element of $I_m+q_m$ (add the
+new term $q_m$), and $I_m\cup(I_m+q_m)=I_{m+1}$ because $q_m\le|I_m|=L+\sum_{i<m}q_i$ by
+\eqref{eq:propcond}. Since $\sum q_m=\infty$, $\bigcup_mI_m=[u,\infty)\cap\Z$.
+\end{proof}
+
+This is the mechanism behind Brown's criterion \cite{Bro61} and behind Graham's theorem that
+the union of a ``$\Sigma$-sequence'' (one with $q_m-\sum_{i<m}q_i$ bounded above) and a
+``precomplete'' sequence (one whose subset sums contain arbitrarily long runs of
+consecutive integers) is complete \cite{Gra64}.
+
+\begin{lemma}[Growth below $2$]\label{lem:growth}
+Let $1<\gamma<2$, $t>0$, $s_n=\fl{t\gamma^n}$, and put
+\[
+  \rho=\rho(\gamma)=\frac{2-\gamma}{\gamma-1}>0,\qquad D(m)=s_m-\sum_{i<m}s_i .
+\]
+Then $D(m)\le -t\rho\gamma^m+\frac{t}{\gamma-1}+m$ for all $m\ge0$. In particular
+$c_0(t,\gamma):=\max_{m\ge0}D(m)$ exists, i.e.\ $S_t(\gamma)$ is a $\Sigma$-sequence.
+\end{lemma}
+
+\begin{proof}
+$s_m\le t\gamma^m$ and $s_i\ge t\gamma^i-1$, so
+$D(m)\le t\gamma^m-t\frac{\gamma^m-1}{\gamma-1}+m=-t\rho\gamma^m+\frac t{\gamma-1}+m$.
+The right-hand side tends to $-\infty$, and $D(m)\in\Z$.
+\end{proof}
+
+We use the following standard facts on exponential polynomials; we include a proof for
+completeness (compare \cite{BG07} for finer statements on the sign patterns of linear
+recurrence sequences).
+
+\begin{lemma}[Exponential polynomials]\label{lem:exppoly}
+Let $u_n=\sum_{j=1}^rP_j(n)\lambda_j^n$ $(n\ge n_0)$ be real numbers, where $r\ge1$,
+$\lambda_1,\dots,\lambda_r\in\C\setminus\{0\}$ are distinct and $P_1,\dots,P_r\in\C[x]$ are
+non-zero polynomials.
+\begin{enumerate}[label=(\alph*)]
+\item If $(u_n)$ is bounded, then $|\lambda_j|\le1$ for all $j$, and $\deg P_j=0$ whenever
+$|\lambda_j|=1$.
+\item If no $\lambda_j$ is a positive real number, then $u_n<0$ for infinitely many $n$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Let $\Lambda=\max_j|\lambda_j|$, $d=\max\{\deg P_j:|\lambda_j|=\Lambda\}$ and
+$\mathcal J=\{j:|\lambda_j|=\Lambda,\ \deg P_j=d\}$. Write $\lambda_j=\Lambda e^{i\theta_j}$ for
+$j\in\mathcal J$ (the $\theta_j$ are distinct modulo $2\pi$) and let $c_j\ne0$ be the
+leading coefficient of $P_j$. Then, for $n\ge\max(n_0,1)$,
+\[
+  u_n=n^d\Lambda^n\,(v_n+\varepsilon_n),\qquad v_n=\sum_{j\in\mathcal J}c_je^{in\theta_j},\qquad
+  \varepsilon_n\to0 .
+\]
+The sequences $n\mapsto n^e\lambda^n$ are linearly independent on every tail, so the
+representation of $(u_n)$ is unique; as $u_n$ is real, the data $\{(\lambda_j,P_j)\}$ are
+invariant under complex conjugation. Hence $\mathcal J$ is closed under conjugation, with
+conjugate coefficients, and $v_n$ is real. By orthogonality of distinct characters
+$n\mapsto e^{in\theta}$,
+\[
+  \lim_{N\to\infty}\frac1N\sum_{n<N}|v_n|^2=\sum_{j\in\mathcal J}|c_j|^2=:\sigma>0. \tag{$*$}
+\]
+In particular $|v_n|^2\ge\sigma/2$ for infinitely many $n$.
+
+(a) If $\Lambda>1$, or $\Lambda=1$ and $d\ge1$, then $n^d\Lambda^n\to\infty$, and along the
+infinitely many $n$ with $|v_n|\ge(\sigma/2)^{1/2}$ we get $|u_n|\to\infty$, contradicting
+boundedness. Hence $\Lambda\le1$, and $d=0$ if $\Lambda=1$; this is (a).
+
+(b) Now every $\theta_j\notin2\pi\Z$, hence $\frac1N\sum_{n<N}v_n\to0$. Suppose $u_n\ge0$ for
+all $n\ge n_1$. Given $\varepsilon>0$ we then have $v_n\ge-\varepsilon$ for all large $n$, so
+the upper mean of $v_n^-=\max(-v_n,0)$ is at most $\varepsilon$; since the mean of $v_n$ is
+$0$, the upper mean of $v_n^+$ is also at most $\varepsilon$, and the upper mean of $|v_n|$
+is at most $2\varepsilon$. As $|v_n|\le\sum|c_j|$, the upper mean of $|v_n|^2$ is at most
+$2\varepsilon\sum|c_j|$. Letting $\varepsilon\to0$ contradicts $(*)$.
+\end{proof}
+
+%======================================================================
+\section{Carry forcing}\label{sec:carry}
+%======================================================================
+
+\begin{thm}[Carry forcing for $0/1$-relations]\label{thm:carrygeneral}
+Let $k\ge1$, $I\subseteq\{0,\dots,k-1\}$ with $|I|\ge2$, and let $\gamma>1$ be a root of
+$F(x)=x^k-\sum_{i\in I}x^i$. Then:
+\begin{enumerate}[label=(\roman*)]
+\item $\gamma$ is the unique positive root of $F$, $1<\gamma<2$, and $\gamma$ is an
+irrational algebraic integer;
+\item for every $t>0$ and $n\ge0$ the carry
+$\delta_n=s_{n+k}-\sum_{i\in I}s_{n+i}$ equals $\fl{\sum_{i\in I}f_{n+i}}\in\{0,\dots,|I|-1\}$;
+\item for every $t>0$, $\delta_n\ge1$ for infinitely many $n$.
+\end{enumerate}
+\end{thm}
+
+\begin{proof}
+(i) Let $b=\min I$ and $F_0(x)=x^{-b}F(x)=x^{k-b}-\sum_{i\in I}x^{i-b}$; then $F_0(0)=-1$
+and $F_0$ is monic with integer coefficients. The coefficient sequence of $F_0$ has exactly
+one sign change, so by Descartes' rule of signs $F_0$ (hence $F$) has exactly one positive
+root, counted with multiplicity. As $F_0(1)=1-|I|<0$ and
+$F_0(2)=2^{k-b}-\sum_{i\in I}2^{i-b}\ge2^{k-b}-(2^{k-b}-1)=1$, this root is $\gamma\in(1,2)$.
+Being a root of a monic integer polynomial, $\gamma$ is an algebraic integer; a rational
+algebraic integer is an integer, and $1<\gamma<2$, so $\gamma\notin\Q$.
+
+(ii) Multiplying \eqref{eq:rel} by $t\gamma^n$ gives
+$s_{n+k}+f_{n+k}=\sum_{i\in I}(s_{n+i}+f_{n+i})$, so
+$\delta_n=\sum_{i\in I}f_{n+i}-f_{n+k}$ is an integer in $(-1,|I|)$; since
+$0\le f_{n+k}<1$ it equals $\fl{\sum_{i\in I}f_{n+i}}$.
+
+(iii) Suppose $\delta_n=0$ for all $n\ge N$. Then $f_{n+k}=\sum_{i\in I}f_{n+i}$ for
+$n\ge N$. Putting $g_m=f_m$ for $m\ge M:=N+b$ and substituting $n=m-b$,
+\[
+  g_{m+(k-b)}=\sum_{i\in I}g_{m+(i-b)}\qquad(m\ge M),
+\]
+a linear recurrence (involving only indices $\ge M$) with characteristic polynomial $F_0$,
+whose roots are non-zero. Hence $g_m=\sum_{\lambda}P_\lambda(m)\lambda^m$ $(m\ge M)$, the sum
+running over the distinct roots $\lambda$ of $F_0$, with polynomials $P_\lambda$ of degree less
+than the multiplicity of $\lambda$. Discard the vanishing terms. Since $0\le g_m<1$,
+Lemma~\ref{lem:exppoly}(a) shows that no remaining $\lambda$ has $|\lambda|>1$; in particular
+the term at $\lambda=\gamma$ vanishes. The remaining roots are not positive reals, because
+$\gamma$ is the only positive root of $F_0$. If some term remains,
+Lemma~\ref{lem:exppoly}(b) yields $g_m<0$ for infinitely many $m$, which is absurd. Hence
+$g_m=0$, i.e.\ $t\gamma^m\in\Z$, for all $m\ge M$. Then
+$\gamma=t\gamma^{M+1}/t\gamma^M\in\Q$, contradicting (i).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:A}]
+Apply Theorem~\ref{thm:carrygeneral} with $I=\{a,b\}$: the carries lie in $\{0,1\}$ and are
+non-zero infinitely often.
+\end{proof}
+
+\begin{remark}[The golden ratio]\label{rem:phi}
+For $\gamma=\varphi$ the argument is completely elementary: a carry-free tail gives
+$f_{n+2}=f_{n+1}+f_n$, hence $f_n=A\varphi^n+B\psi^n$ with $\psi=-1/\varphi$; boundedness gives
+$A=0$, and $B\psi^n\ge0$ for all large $n$ forces $B=0$, so $t\varphi^n\in\Z$ for all large $n$,
+which is impossible. This is the argument of Kitamura \cite{Kit26}, and it is the only case of
+Theorem~\ref{thm:A} needed for Theorem~\ref{thm:C} with $\gamma=\varphi$.
+\end{remark}
+
+\begin{example}
+For $\gamma=\varphi$ and $t=1$ one has $\varphi^n=L_n-\psi^n$ with Lucas numbers $L_n$ and
+$\psi=-1/\varphi$, so $\fl{\varphi^n}=L_n$ for odd $n$ and $\fl{\varphi^n}=L_n-1$ for even $n$.
+Hence $\delta_n=1$ for every odd $n$ and $\delta_n=0$ for every even $n$. Numerically, for
+the $28$ trinomial bases and seven values of $t$ tested in Section~\ref{sec:num} (check C2), the
+proportion of $n<400$ with $\delta_n=1$ lies between $0.46$ and $0.54$, as one would expect if
+$f_{n+a}$ and $f_{n+b}$ behaved like independent uniform variables.
+\end{example}
+
+\begin{remark}[Pisot trinomial bases]\label{rem:dub}
+Let $\gamma$ be a Pisot number with $\gamma^k=\gamma^a+\gamma^b$, and put $F=x^k-x^a-x^b$. A
+carry-free tail would force $\fr{t\gamma^n}\to0$: the bounded solution of the recurrence consists
+of components with $|\lambda|\le1$; those with $|\lambda|=1$ vanish by the argument of
+Lemma~\ref{lem:exppoly}(b) applied with $\Lambda=1$ (note $F(1)\ne0$), and the others tend to
+$0$. On the other hand, by a theorem of Dubickas \cite[Theorem~4]{Dub06}, for an algebraic number
+$\alpha>1$ there is $\xi>0$ such that $\fr{\xi\alpha^n}$ converges only if $\alpha$ is a strong Pisot
+number (one whose largest conjugate other than $\alpha$ itself is positive), or $\alpha=2$, or
+$\alpha$ is a Pisot number whose minimal polynomial $P$ satisfies $P(1)\le-2$. None of these
+applies to $\gamma$: it has no positive conjugate other than itself, and $P(1)$ divides
+$F(1)=-1$. Hence, for Pisot trinomial bases, Theorem~\ref{thm:A} also follows from
+\cite{Dub06}. Our argument covers non-Pisot bases as well, e.g.\ $\sqrt\varphi$ and the roots of
+$x^6-x^5-1$ and $x^5-x^3-1$ (Table~\ref{tab:roots}), and relations with $|I|\ge3$.
+\end{remark}
+
+\begin{remark}[Why the single positive root matters; Salem bases]\label{rem:salem}
+The proof of (iii) uses only two facts: $\gamma\notin\Q$, and the relation polynomial has no
+positive root other than $\gamma$. A Salem number $\gamma$ satisfies no relation
+\eqref{eq:rel} at all: its minimal polynomial divides every integer polynomial vanishing at
+$\gamma$ and also vanishes at $1/\gamma\in(0,1)$, whereas $F$ has the single positive root
+$\gamma$. For a Salem base there are sequences $f_m=c\gamma^{-m}$, $c>0$, which are bounded
+non-negative solutions of the recurrence given by the minimal polynomial, and Geneson's
+counterexample \cite[Theorem~9]{Gen26} (all terms of $S_t(\gamma)$ even for suitable large
+$t$) shows that completeness can indeed fail there. In particular, trinomial roots are never
+Salem numbers.
+\end{remark}
+
+\begin{lemma}[The trinomial bases]\label{lem:trinroots}
+The positive root of $x^k-x^a-x^b$ $(k>a>b\ge0)$ coincides with that of $x^m-x^j-1$, where
+$m=k-b>j=a-b\ge1$. Let $\gamma_{m,j}$ denote the latter.
+\begin{enumerate}[label=(\alph*)]
+\item $\gamma_{2,1}=\varphi$ and $\gamma_{3,2}=1.46557\ldots$ exceed $\sqrt2$; for every other
+pair $(m,j)$ we have $\gamma_{m,j}\le\gamma_{4,3}=1.38027\ldots<\sqrt2$, and
+$\gamma_{m,j}\le\gamma_{3,1}=1.32471\ldots$ unless $(m,j)=(4,3)$.
+\item $\gamma_{j+1,j}$ decreases strictly to $1$ as $j\to\infty$; and for every
+$\varepsilon>0$ only finitely many pairs $(m,j)$ have $\gamma_{m,j}\ge1+\varepsilon$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+The first assertion holds because $x^k-x^a-x^b=x^b(x^m-x^j-1)$. Write $\gamma=\gamma_{m,j}$,
+so $\gamma^j(\gamma^{m-j}-1)=1$.
+(a) If $m-j\ge2$ then $1\ge\gamma(\gamma^2-1)$, i.e.\ $\gamma^3-\gamma-1\le0$, so
+$\gamma\le\gamma_{3,1}$. If $m-j=1$ then $\gamma^j(\gamma-1)=1$; for $j=1,2,3$ this gives
+$\varphi$, $1.46557\ldots$, $1.38027\ldots$, and for $j\ge4$ we get $\gamma^4(\gamma-1)\le1$,
+so $\gamma\le\gamma_{5,4}=\gamma_{3,1}$ (indeed $x^5-x^4-1=(x^2-x+1)(x^3-x-1)$). Finally,
+$x^2-x-1$, $x^3-x^2-1$ and $x^4-x^3-1$ take the values $1-\sqrt2<0$, $2\sqrt2-3<0$ and
+$3-2\sqrt2>0$ at $\sqrt2$, so $\gamma_{2,1},\gamma_{3,2}>\sqrt2>\gamma_{4,3}$.
+(b) If $\gamma_{j+2,j+1}\ge\gamma_{j+1,j}=:\gamma'$, then
+$\gamma_{j+2,j+1}^{\,j+1}(\gamma_{j+2,j+1}-1)\ge\gamma'^{\,j+1}(\gamma'-1)>\gamma'^{\,j}(\gamma'-1)=1$,
+a contradiction. If $\gamma_{m,j}\ge1+\varepsilon$, then
+$1=\gamma^j(\gamma^{m-j}-1)\ge(1+\varepsilon)^j\bigl((1+\varepsilon)^{m-j}-1\bigr)$, which
+fails when $j$ or $m-j$ is large; so only finitely many $(m,j)$ qualify.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{llll}
+\toprule
+$\gamma$ & trinomial(s) & Pisot & covered by \\
+\midrule
+$1.6180339887$ & $x^2-x-1$ & yes & Thm.~\ref{thm:C} (unions) \\
+$1.4655712319$ & $x^3-x^2-1$ & yes & Thm.~\ref{thm:C} (unions) \\
+$1.3802775691$ & $x^4-x^3-1$ & yes & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.3247179572$ & $x^3-x-1$, $x^5-x^4-1$ & yes & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.2851990332$ & $x^6-x^5-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.2720196495$ & $x^4-x^2-1$ \ ($\gamma=\sqrt\varphi$) & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.2554228711$ & $x^7-x^6-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.2365057034$ & $x^5-x^3-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.2207440846$ & $x^4-x-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.1938591113$ & $x^5-x^2-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.1673039783$ & $x^5-x-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+$1.1347241384$ & $x^6-x-1$ & no & Thms.~\ref{thm:B}, \ref{thm:C} \\
+\bottomrule
+\end{tabular}
+\caption{Some trinomial bases $\gamma_{m,j}$ (positive roots of $x^m-x^j-1$). By
+Lemma~\ref{lem:trinroots}, all trinomial roots other than the first two are at most
+$1.3803<\sqrt2$, and they accumulate only at $1$. Roots below the plastic number are never
+Pisot numbers \cite{Sie44}.}
+\label{tab:roots}
+\end{table}
+
+%======================================================================
+\section{Unit switches and their extraction}\label{sec:extract}
+%======================================================================
+
+Fix a trinomial relation $\gamma^k=\gamma^a+\gamma^b$ with $k>a>b\ge0$ and $t>0$. For $n\ge0$
+let $T_n=\{n+b,\,n+a,\,n+k\}$. If $\delta_n=1$ we call $T_n$ a \emph{unit switch}: the
+disjoint index sets $\{n+b,n+a\}$ and $\{n+k\}$ carry sums $s_{n+a}+s_{n+b}$ and
+$s_{n+a}+s_{n+b}+1$. For a set $E\subset\N$ we write
+\[
+  D_E(m)=s_m-\sum_{i<m,\ i\notin E}s_i\qquad(m\notin E),
+\]
+so that $D_\emptyset=D$; note that $D_E(m)$ increases when $E$ grows.
+
+\begin{lemma}[Switch extraction]\label{lem:extract}
+Assume moreover $\gamma<\sqrt2$. Let $\rho=\frac{2-\gamma}{\gamma-1}$ and
+\[
+  \kappa_1=\frac{\rho\gamma-1}{2\gamma},\qquad
+  \kappa_2=\frac12\Bigl(\rho-\frac{\gamma+1}{\gamma^2}\Bigr)=\frac{1+\gamma^2-\gamma^3}{2\gamma^2(\gamma-1)},\qquad
+  \kappa_3=\frac{\rho\gamma-2}{2\gamma}=\frac{2-\gamma^2}{2\gamma(\gamma-1)} .
+\]
+Then $\kappa_1,\kappa_2,\kappa_3>0$. Put $\kappa=\min(\kappa_1,\kappa_2,\kappa_3)$, choose an
+integer $G\ge k+1$ such that $\eta:=2\gamma^{k-G}/(1-\gamma^{-G})$ satisfies
+\begin{equation}\label{eq:eta}
+  \eta\le\min\Bigl\{\tfrac12\gamma^{b}(\rho\gamma-1),\ \tfrac12\gamma^{a+1}\Bigl(\rho-\tfrac{\gamma+1}{\gamma^2}\Bigr),\ \tfrac12\gamma^{k}(\rho\gamma-2)\Bigr\},
+\end{equation}
+and choose $N_0$ such that $t\kappa\gamma^m>\frac t{\gamma-1}+m$ for all $m\ge N_0$. Let $R\ge1$,
+$N_0\le n_1<n_2<\dots<n_R$ with $n_{j+1}-n_j\ge G$, and let $E=T_{n_1}\cup\dots\cup T_{n_R}$.
+Then for every $m\notin E$
+\[
+  D_E(m)\ \le\ \max\bigl(c_0(t,\gamma),0\bigr).
+\]
+Here $G$ depends only on $(k,a,b)$, and $N_0$ only on $(k,a,b,t)$; neither depends on $R$ or on
+the $n_j$.
+\end{lemma}
+
+\begin{proof}
+\emph{Positivity of the constants.} $\rho\gamma-1=\frac{1+\gamma-\gamma^2}{\gamma-1}>0$ since
+$\gamma<\varphi$; $1+\gamma^2-\gamma^3>0$ since $\gamma<1.4655\ldots$ (the real root of
+$x^3-x^2-1$); $\rho\gamma-2=\frac{2-\gamma^2}{\gamma-1}>0$ since $\gamma<\sqrt2$. The identity
+$\rho-\frac{\gamma+1}{\gamma^2}=\frac{\gamma^2(2-\gamma)-(\gamma^2-1)}{\gamma^2(\gamma-1)}$ gives
+the stated form of $\kappa_2$. A suitable $G$ exists because $\eta\to0$ as $G\to\infty$.
+
+\emph{Set-up.} Since $G\ge k+1>k-b$, the triples are pairwise disjoint and ordered: every
+element of $T_{n_l}$ is smaller than every element of $T_{n_{l+1}}$. By
+Lemma~\ref{lem:growth} and $s_i\le t\gamma^i$,
+\begin{equation}\label{eq:DE}
+  D_E(m)=D(m)+\sum_{i\in E,\,i<m}s_i\le -t\rho\gamma^m+\frac t{\gamma-1}+m+t\sum_{i\in E,\,i<m}\gamma^i .
+\end{equation}
+If $m<n_1+b$ then no element of $E$ is smaller than $m$ and $D_E(m)=D(m)\le c_0$. Let now
+$m>n_1+b$, $m\notin E$, and let $j$ be the largest index with $n_j+b<m$; then $m<n_{j+1}+b$ if
+$j<R$. The triples $T_{n_l}$, $l<j$, lie entirely below $m$ and, by
+$\gamma^a+\gamma^b=\gamma^k$, contribute
+\[
+  \sum_{l<j}\bigl(\gamma^{n_l+b}+\gamma^{n_l+a}+\gamma^{n_l+k}\bigr)=\sum_{l<j}2\gamma^{n_l+k}
+  \le2\gamma^{n_j+k}\sum_{r\ge1}\gamma^{-rG}=\eta\gamma^{n_j};
+\]
+the triples $T_{n_l}$, $l>j$, lie entirely above $m$. Let
+$W=\sum_{i\in T_{n_j},\,i<m}\gamma^i$. We claim
+\begin{equation}\label{eq:claim}
+  \rho\gamma^m-W-\eta\gamma^{n_j}\ \ge\ \kappa\gamma^m .
+\end{equation}
+\emph{Case 1: $n_j+b<m<n_j+a$.} Then $W=\gamma^{n_j+b}\le\gamma^{m-1}$ and
+$\eta\gamma^{n_j}\le\eta\gamma^{-b}\gamma^{m-1}$, so the left side of \eqref{eq:claim} is at least
+$\gamma^{m-1}(\rho\gamma-1-\eta\gamma^{-b})\ge\gamma^{m-1}\cdot\frac12(\rho\gamma-1)=\kappa_1\gamma^m$
+by \eqref{eq:eta}.
+
+\emph{Case 2: $n_j+a<m<n_j+k$.} Then $W=\gamma^{n_j+b}+\gamma^{n_j+a}=\gamma^{n_j+k}$ and
+$\gamma^{n_j}\le\gamma^{m-a-1}$. Moreover $\gamma^{k-a}=1+\gamma^{b-a}\le1+\gamma^{-1}$, so
+$\gamma^{k-a-1}\le(\gamma+1)/\gamma^2$. Hence the left side of \eqref{eq:claim} is at least
+$\gamma^m\bigl(\rho-\frac{\gamma+1}{\gamma^2}-\eta\gamma^{-a-1}\bigr)\ge\kappa_2\gamma^m$.
+
+\emph{Case 3: $m>n_j+k$.} Then $W=2\gamma^{n_j+k}\le2\gamma^{m-1}$ and
+$\eta\gamma^{n_j}\le\eta\gamma^{-k}\gamma^{m-1}$, so the left side is at least
+$\gamma^{m-1}(\rho\gamma-2-\eta\gamma^{-k})\ge\kappa_3\gamma^m$.
+
+Since $m\notin E$ these cases are exhaustive (some may be empty). By \eqref{eq:DE} and
+\eqref{eq:claim}, $D_E(m)\le-t\kappa\gamma^m+\frac t{\gamma-1}+m<0$, because
+$m>n_1+b\ge N_0$.
+\end{proof}
+
+\begin{proposition}[Sharpness of $\sqrt2$ for extraction]\label{prop:sharp}
+Let $\gamma\in(\sqrt2,2)$ satisfy $\gamma^k=\gamma^a+\gamma^b$ and let $t>0$. For every $n\ge0$
+and every $E\supseteq T_n$ with $n+k+1\notin E$,
+\[
+  D_E(n+k+1)\ \ge\ t\,\frac{\gamma^2-2}{\gamma-1}\,\gamma^{n+k}-4 .
+\]
+Consequently, for every $\gamma\in(\sqrt2,2)$ the conclusion of Lemma~\ref{lem:extract} fails
+for every choice of $G$ and $N_0$: no bound $D_E(m)\le C(t,\gamma)$ can hold uniformly over
+the admissible sets $E$, even over single triples $E=T_n$ with $\delta_n=1$. Among trinomial
+roots this concerns exactly $\varphi$ and $1.46557\ldots$ (Lemma~\ref{lem:trinroots}).
+\end{proposition}
+
+\begin{proof}
+By monotonicity in $E$ it suffices to take $E=T_n$. With $m=n+k+1$: $s_m\ge t\gamma^m-1$,
+$\sum_{i<m}s_i\le t(\gamma^m-1)/(\gamma-1)$, and
+$\sum_{i\in E}s_i\ge t(\gamma^{n+b}+\gamma^{n+a}+\gamma^{n+k})-3=2t\gamma^{n+k}-3$. Thus
+\[
+  D_E(m)\ge t\gamma^m-1-\frac{t(\gamma^m-1)}{\gamma-1}+2t\gamma^{n+k}-3
+  =t\gamma^{n+k}(2-\rho\gamma)+\frac t{\gamma-1}-4,
+\]
+and $2-\rho\gamma=\frac{\gamma^2-2}{\gamma-1}>0$. The right-hand side tends to infinity with
+$n$, and by Theorem~\ref{thm:A} there are switches $T_n$ with $n$ arbitrarily large.
+\end{proof}
+
+%======================================================================
+\section{Proof of Theorem~B}\label{sec:proofB}
+%======================================================================
+
+\begin{proof}[Proof of Theorem~\ref{thm:B}]
+Let $\gamma\in(1,\sqrt2)$ satisfy $\gamma^k=\gamma^a+\gamma^b$ and let $t>0$. Put
+$c'=\max(c_0(t,\gamma),0)$ (Lemma~\ref{lem:growth}) and $R=c'+1$. Let $G,N_0$ be as in
+Lemma~\ref{lem:extract}. By Theorem~\ref{thm:A} there are infinitely many $n$ with
+$\delta_n=1$; choose $n_1<\dots<n_R$ among them with $n_1\ge N_0$ and $n_{j+1}-n_j\ge G$, and
+let $E=\bigcup_jT_{n_j}$.
+
+\emph{A run of length $R+1$.} For each $j$ select either $\{n_j+b,n_j+a\}$ or $\{n_j+k\}$.
+These selections are disjoint, and the total sum equals $u+r$, where
+$u=\sum_j(s_{n_j+a}+s_{n_j+b})$ and $r$ is the number of $j$ for which $\{n_j+k\}$ was
+selected. Hence the subset sums of $\mathcal P=(s_i)_{i\in E}$ contain the $L:=R+1$
+consecutive integers $u,\dots,u+R$.
+
+\emph{Propagation.} Let $(q_m)$ enumerate $(s_i)_{i\notin E}$ in increasing order of $i$.
+Then \eqref{eq:propcond} for $(q_m)$ reads $D_E(i)\le L$ for $i\notin E$, which holds by
+Lemma~\ref{lem:extract} since $D_E(i)\le c'<L$. Also $\sum_mq_m=\infty$. By
+Lemma~\ref{lem:prop}, every integer $N\ge u$ is a sum of distinct terms of
+$(\fl{t\gamma^n})_{n\ge0}$.
+
+\emph{Strong completeness.} Let $\Omega\subset\N$ be finite and delete the terms with indices in
+$\Omega$. The growth bound becomes
+$D_\Omega(m)\le-t\rho\gamma^m+\frac t{\gamma-1}+m+\sum_{i\in\Omega}s_i$, so
+$c_0^\Omega:=\max_{m\notin\Omega}D_\Omega(m)<\infty$. Repeating the proof of
+Lemma~\ref{lem:extract} with $E\cup\Omega$ in place of $E$, $c_0^\Omega$ in place of $c_0$, and
+$N_0$ enlarged so that $N_0>\max\Omega$ and
+$t\kappa\gamma^m>\frac t{\gamma-1}+m+\sum_{i\in\Omega}s_i$ for $m\ge N_0$, we obtain
+$D_{E\cup\Omega}(m)\le\max(c_0^\Omega,0)$ for $m\notin E\cup\Omega$. Choosing
+$R=\max(c_0^\Omega,0)+1$ switches
+beyond $N_0$, the argument above applies verbatim.
+
+\emph{The set of values.} Since $s_{n+1}-s_n\ge t\gamma^n(\gamma-1)-1>0$ for large $n$, only
+finitely many indices $i$ satisfy $s_i=s_{i'}$ for some $i'<i$. Deleting these finitely many
+indices leaves a complete family whose values are distinct and exhaust the set
+$\{s_n:n\ge0\}$; hence this set is complete.
+\end{proof}
+
+\begin{remark}[Splitting]\label{rem:split}
+Let $\gamma$ be the root of $x^m-x^j-1$ and $d=\gcd(m,j)\ge2$. Then $\beta=\gamma^d$ is the root of
+the trinomial $y^{m/d}-y^{j/d}-1$, and $S_t(\gamma)$ contains the two families
+$(\fl{t\beta^n})_{n\ge0}$ and $(\fl{(t\gamma)\beta^n})_{n\ge0}$ (indices $\equiv0$ and $\equiv1$
+modulo $d$) on disjoint index sets. By Theorem~\ref{thm:C} their union is (strongly) complete,
+hence so is $S_t(\gamma)$; for $\gamma=\sqrt\varphi$ this is the argument of \cite{Kit26}. When
+$\gcd(m,j)=1$, as for $x^3-x-1$, $x^4-x^3-1$ and all $x^m-x^{m-1}-1$, no such splitting into
+orbits of a trinomial base is available from the trinomial itself, and the proof above uses
+Lemma~\ref{lem:extract} instead.
+\end{remark}
+
+\begin{remark}
+The last step matters for formal versions of Problem \#349 that speak about the set of values
+$\{\fl{t\gamma^n}:n\ge0\}$ (as the Formal Conjectures file for \#349 does \cite{FC}) rather than
+about the indexed sequence. The threshold $u$ produced by the proof is enormous: it involves
+$R=c_0+1$ switches, where $c_0=\fl t$ as soon as $t(2-\gamma)>2$ (by Bernoulli's inequality,
+$D(m)\le t-t\rho(\gamma^m-1)+m<t-1$ for $m\ge1$),
+switches, while numerically the sequences become complete much earlier (Section~\ref{sec:num}).
+The proof is effective once the positions of unit carries are known; Theorem~\ref{thm:A}
+itself gives no bound on the gaps between carries.
+\end{remark}
+
+%======================================================================
+\section{Proof of Theorem~C and of the corollaries}\label{sec:proofC}
+%======================================================================
+
+\begin{proof}[Proof of Theorem~\ref{thm:C}]
+Let $\gamma\in(1,2)$ be a trinomial base, $\alpha,\beta>0$, $A=(x_n)=(\fl{\alpha\gamma^n})_{n\ge0}$,
+$B=(y_n)=(\fl{\beta\gamma^n})_{n\ge0}$. By Lemma~\ref{lem:growth},
+$c_A:=\max(\max_m(x_m-\sum_{i<m}x_i),0)<\infty$. By Theorem~\ref{thm:A} applied to $t=\beta$,
+the sequence $B$ has infinitely many unit switches; choose $R=c_A+1$ of them,
+$T_{n_1},\dots,T_{n_R}$, with $n_{j+1}-n_j\ge k+1$ so that they are disjoint. As in the proof
+of Theorem~\ref{thm:B}, the subset sums of these $3R$ terms of $B$ contain $L=R+1$
+consecutive integers $u,\dots,u+R$. The sequence $(q_m)=A$ satisfies \eqref{eq:propcond}
+with this $L$, because $x_m-\sum_{i<m}x_i\le c_A<L$. Since the terms of $A$ and $B$ carry
+different indices, Lemma~\ref{lem:prop} shows that every integer $N\ge u$ is a sum of
+distinct terms of $A\sqcup B$. Strong completeness: deleting finitely many terms of $A$
+changes $c_A$ into a larger but finite constant, and the switches can be chosen beyond the
+deleted terms of $B$.
+\end{proof}
+
+No term is removed from the propagating sequence $A$; this is why Theorem~\ref{thm:C} needs no
+restriction $\gamma<\sqrt2$.
+
+\subsection*{The formal statement of Problem \#354(ii)}
+In \cite{FC} (file \nolinkurl{FormalConjectures/ErdosProblems/354.lean}; part (ii) has used
+a general base $\gamma$ since a correction of September 1, 2026), one defines
+$\mathtt{FloorMultiples}(a,\gamma)(n)=\fl{\gamma^na}\in\Z$ and
+\[
+  \mathtt{interleave}(\alpha,\beta,\gamma)(n)=
+  \begin{cases}\fl{\gamma^{n/2}\alpha}, & n\ \text{even},\\
+  \fl{\gamma^{(n-1)/2}\beta}, & n\ \text{odd},\end{cases}
+\]
+and the theorem \texttt{erdos\_354.parts.ii} (tagged \texttt{research open}) states
+\[
+  \exists\,\gamma\in(1,2)\ \forall\,\alpha>0\ \forall\,\beta>0:\ \ \alpha/\beta\notin\Q\
+  \Longrightarrow\ \mathtt{IsAddCompleteNatSeq'}\bigl(\mathtt{interleave}(\alpha,\beta,\gamma)\bigr),
+\]
+where $\mathtt{IsAddCompleteNatSeq'}(A)$ means that every sufficiently large integer equals
+$\sum_{i\in J}A(i)$ for some finite set $J\subset\N$ of indices.
+
+\begin{proof}[Proof of Corollary~\ref{cor:D}]
+The interleaved sequence is exactly the indexed union of $A=(\fl{\alpha\gamma^n})$ and
+$B=(\fl{\beta\gamma^n})$, and $\mathtt{IsAddCompleteNatSeq'}$ is completeness of this indexed
+family. Let $\gamma\in(1,2)$ be a trinomial root, e.g.\ $\gamma=\varphi$. By Theorem~\ref{thm:C}
+the union is complete for all $\alpha,\beta>0$, in particular whenever $\alpha/\beta\notin\Q$.
+(For $\gamma=\sqrt\varphi$ this is the theorem of \cite{Kit26}.) For $\gamma<\sqrt2$, already the set of values of $A$ is
+complete by Theorem~\ref{thm:B}, so the union is complete also as a set of values.
+\end{proof}
+
+\begin{remark}[Multiset versus set]\label{rem:multiset}
+Problem \#354 speaks of a \emph{multiset}, and \cite{FC} formalises completeness with sums over
+sets of indices, so a value occurring in both sequences may be used twice. For $\gamma=\varphi$
+this matters: with $\beta=25.5$ and $\alpha=\beta\varphi$ (so $\alpha/\beta=\varphi\notin\Q$) the
+two sequences coincide up to a shift, the multiset union is complete by Theorem~\ref{thm:C},
+but the set of values is that of $S_{25.5}(\varphi)$, which is not complete by \cite{vD26}
+since $25.5\ge3/\varphi^2$. For the trinomial roots $\gamma<\sqrt2$ the distinction disappears.
+\end{remark}
+
+\begin{proof}[Proof of Corollary~\ref{cor:E}]
+Apply Theorem~\ref{thm:C} with $\gamma=\varphi$ and $\alpha=\beta=t$. For the negative statement,
+van Doorn \cite{vD26} shows that for $\varphi\le\gamma\le5^{1/3}$ the sequence $S_t(\gamma)$ is
+complete if and only if $t<\min(3/\gamma^2,5/\gamma^3)$, and
+$\min(3/\varphi^2,5/\varphi^3)=3/\varphi^2$.
+\end{proof}
+
+%======================================================================
+\section{Discussion}\label{sec:disc}
+%======================================================================
+
+\subsection{Base \texorpdfstring{$2$}{2} (Problem \#354(i))}
+Binary expansions are unique, so $\sum_{i\in I}2^i\ne\sum_{j\in J}2^j$ for distinct finite
+sets $I\ne J$; in particular there is no relation \eqref{eq:rel} for $\gamma=2$, and the real
+numbers $2^i\alpha$ $(i\ge0)$ satisfy no relation $\sum_{i\in I}2^i\alpha=\sum_{j\in J}2^j\alpha$
+with $I\ne J$, so a single base-$2$ sequence has no carries of the kind used here. Between two
+base-$2$ sequences, an exact relation
+$\sum_{i}\varepsilon_i2^i\alpha=\sum_{j}\varepsilon'_j2^j\beta$ with
+$\varepsilon_i,\varepsilon'_j\in\{0,\pm1\}$ forces $\alpha/\beta\in\Q$ unless both sides vanish.
+Hence, when $\alpha/\beta\notin\Q$, any ``switch'' must come from an approximate relation, whose
+carry is not controlled. This is the structural reason why part (i) resists the present
+method, and why the irrationality of $\alpha/\beta$ plays such a different role in base $2$
+(where $\beta=2^k\alpha$ can give incompleteness) and in base $\varphi$ (where
+Theorem~\ref{thm:C} needs no hypothesis on $\alpha/\beta$).
+
+\subsection{Salem bases and a dichotomy}
+Remark~\ref{rem:salem} and Geneson's theorem \cite{Gen26} suggest a dichotomy among algebraic
+bases: when a $0/1$-relation with a single positive root is available, carries are forced in
+every orbit; for Salem numbers no such relation exists, the obstruction used here disappears, and
+completeness can fail. It would be interesting to turn this into a characterisation.
+
+\subsection{Open problems}
+\begin{question}
+Is $S_t(\gamma)$ complete for every $t>0$ when $\gamma=1.46557\ldots$ is the root of
+$x^3-x^2-1$? (For $\gamma=\varphi$ the answer is negative for $t\ge3/\varphi^2$ \cite{vD26}.)
+\end{question}
+
+\begin{question}\label{q:units}
+Let $\gamma$ satisfy a relation \eqref{eq:rel} with $|I|\ge3$ (for instance the tribonacci
+constant, $\gamma^3=\gamma^2+\gamma+1$). Is $\delta_n(t)=1$ for infinitely many $n$, for every
+$t>0$? An affirmative answer for such a $\gamma$ extends Theorem~\ref{thm:C} to $\gamma$ verbatim.
+\end{question}
+
+\begin{remark}
+The roots of the polynomials $x^k-\sum_{i\in I}x^i$ are dense in $(1,2)$. This is classical
+(simple Parry numbers are dense, see Parry \cite{Par60}); we include the short argument. Let
+$\gamma_0\in(1,2)$ and let $1=\sum_{j\ge1}d_j\gamma_0^{-j}$ be its greedy expansion with digits
+$d_j\in\{0,1\}$ (so $d_1=1$). The function $g_K(x)=1-\sum_{j\le K}d_jx^{-j}$ is increasing on
+$[1,2]$ with $g_K'(x)\ge x^{-2}\ge\frac14$, and $0\le g_K(\gamma_0)\le\gamma_0^{-K}/(\gamma_0-1)$;
+hence the root $\gamma_K$ of $x^Kg_K(x)=x^K-\sum_{j\le K}d_jx^{K-j}$ satisfies
+$0\le\gamma_0-\gamma_K\le4\gamma_0^{-K}/(\gamma_0-1)\to0$ (and $|I|\ge2$ for large $K$, since
+$g_K(\gamma_0)\to0$ while $1-\gamma_0^{-1}>0$). Thus a positive answer to
+Question~\ref{q:units} for all relations with $|I|\ge3$ would give a dense set of bases for
+Theorem~\ref{thm:C}.
+\end{remark}
+
+\begin{question}
+Give an effective bound for the completeness threshold in Theorems~\ref{thm:B}
+and~\ref{thm:C}, e.g.\ via a quantitative form of Lemma~\ref{lem:exppoly}(b) bounding the
+gaps between carries.
+\end{question}
+
+\begin{question}
+Characterise the set of $\gamma\in(1,2)$ for which the union in \eqref{eq:354ii} is complete
+for all $\alpha,\beta>0$ (respectively, for all $\alpha,\beta$ with $\alpha/\beta\notin\Q$).
+\end{question}
+
+%======================================================================
+\section{Numerical verification}\label{sec:num}
+%======================================================================
+
+The script in Appendix~\ref{app:script} computes floors $\fl{t\gamma^n}$ with \texttt{mpmath}
+at two working precisions ($900$ and $1050$ significant digits, recomputing $\gamma$ and $t$)
+and requires the integer outputs to agree. The finite computations illustrate the proofs;
+the proofs do not depend on them. The script checks:
+\begin{enumerate}[label=C\arabic*.,leftmargin=2.5em]
+\item each of the $28$ trinomials $x^m-x^j-1$ with $1\le j<m\le8$ has a unique positive root,
+which lies in $(1,2)$;
+\item for these $28$ bases and seven values of $t$ (including $t=1,\sqrt2,\pi,1000.0001$) the
+carries lie in $\{0,1\}$ and at least $50$ of the first $400$ are units;
+\item the constants $\rho\gamma-1$, $\rho-(\gamma+1)/\gamma^2$, $\rho\gamma-2$ of
+Lemma~\ref{lem:extract} are positive for the tested bases below $\sqrt2$, and $\rho\gamma-2<0$ for
+$\varphi$ and $1.4655\ldots$;
+\item finite sanity checks in the shape of the proof of Theorem~\ref{thm:B}: a choice of
+$R=c'+1$ unit switches with gaps $\ge k+8$ (an ad hoc choice of $G$ and $N_0$), and a direct
+check of $D_E(m)\le R+1$ for all $m\notin E$ up to $80$ beyond the last switch, for six bases
+and $t\in\{1,2.5,17.3,123.456\}$; for instance, for the plastic number and $t=123.456$ one finds
+$c_0=123$, $R=124$, and the last switch at index $1498$ (these are illustrations, not
+certificates);
+\item brute-force subset-sum computations up to $4\cdot10^5$ for four bases below $\sqrt2$
+and $t\in\{1,2.5,7.77\}$: no non-representable integer lies in $[10^5,4\cdot10^5]$;
+\item for $\gamma=\varphi$, the data of the proof of Theorem~\ref{thm:C} (the constant $c_A$ and
+$R=c_A+1$ disjoint unit switches in $B$) for
+$(\alpha,\beta)$ equal to $(3.7,3.7)$, $(1,\sqrt2)$, $(\pi,10)$ and $(50,50)$, and brute-force
+tails for $\alpha=\beta=3.7$ and $\alpha=\beta=10$;
+\item for $\varphi$ and $1.4655\ldots$ (and $t=2.5$), the deficit $D_{T_n}(n+k+1)$ is positive
+and increases along $n=100$, $200$, $300$, $400$ (Proposition~\ref{prop:sharp}).
+\end{enumerate}
+All checks pass (total running time about $75$ seconds). The computations are consistent with
+van Doorn's certified ranges \cite{vD26} and illustrate that the actual completeness thresholds
+are far smaller than the ones produced by the proofs.
+
+\appendix
+\section{Verification script}\label{app:script}
+The following Python script (also reproduced verbatim in this single \TeX\ file) performs the
+checks C1--C7 of Section~\ref{sec:num}.
+
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+"""
+Verification script for the paper
+  "Carry Forcing for Zero-One Relations: the Erdos-Graham Completeness Prediction
+   for All Trinomial Bases below sqrt 2".
+Checks (exact integer arithmetic on floors computed at two working precisions):
+  C0  prints the numerical values quoted in the paper (Table 1, x^10-x-1, 3/phi^2);
+  C1  each trinomial x^m - x^j - 1 has a unique positive root gamma, and 1 < gamma < 2;
+  C2  carries delta_n lie in {0,1}, and unit carries are frequent (Theorem A);
+  C3  the three constants of the extraction lemma are positive iff gamma < sqrt 2;
+  C4  finite sanity checks in the shape of the proof of Theorem B (not certificates);
+  C5  brute-force completeness tails for small t (single sequences, gamma < sqrt 2);
+  C6  the data of the proof of Theorem C for the golden ratio, including an
+      instance of Erdos #354(ii) with alpha/beta irrational;
+  C7  sharpness: for gamma > sqrt 2 removing a switch triple creates a growing deficit.
+The finite computations illustrate the proofs; the proofs do not depend on them.
+Requires: python3, mpmath.
+"""
+from mpmath import mp, mpf, findroot, floor, sqrt, pi, polyroots
+
+mp.dps = 900
+EXTRA = 150          # second, higher working precision used to confirm every floor
+
+
+def troot(m, j):
+    """unique positive root of x^m - x^j - 1 at the current precision"""
+    x0 = mpf('1.6') if (m, j) == (2, 1) else mpf('1.3')
+    return findroot(lambda x: x**m - x**j - 1, x0)
+
+
+def floors(tmk, gmk, N):
+    """floor(t*g^n) for n < N; t = tmk(), g = gmk() are recomputed at two precisions
+    and the two lists of floors must coincide."""
+    res = []
+    for extra in (0, EXTRA):
+        with mp.workdps(mp.dps + extra):
+            t, g = tmk(), gmk()
+            res.append([int(floor(t * g**n)) for n in range(N)])
+    assert res[0] == res[1], "floor not determined at working precision"
+    return res[0]
+
+
+def const(v):
+    return lambda: mpf(v)
+
+
+BASES = [(m, j) for m in range(2, 9) for j in range(1, m)]   # all 28 trinomials, m <= 8
+TS = [const(1), const('2.5'), (lambda: sqrt(2)), (lambda: +pi), const('17.3'),
+      const('123.456'), const('1000.0001')]
+
+
+def table_C0():
+    """values quoted in the paper: trinomial roots (Table 1, x^10-x-1) and 3/phi^2"""
+    for (m, j) in sorted(BASES + [(10, 1)], key=lambda p: -float(troot(*p))):
+        print("    root of x^%d - x^%d - 1 = %s" % (m, j, mp.nstr(troot(m, j), 12)))
+    phi = troot(2, 1)
+    print("    3/phi^2 = %s,  5/phi^3 = %s" % (mp.nstr(3 / phi**2, 8), mp.nstr(5 / phi**3, 8)))
+    print("C0 ok: table of trinomial roots printed")
+
+
+def check_C1():
+    for (m, j) in BASES:
+        g = troot(m, j)
+        assert abs(g**m - g**j - 1) < mpf(10) ** (-500)
+        assert 1 < g < 2
+        coeffs = [0] * (m + 1); coeffs[0] = 1; coeffs[m - j] -= 1; coeffs[m] -= 1
+        rts = polyroots(coeffs, maxsteps=300, extraprec=300)
+        pos = [r for r in rts if abs(r.imag) < mpf(10) ** (-30) and r.real > 0]
+        assert len(pos) == 1 and abs(pos[0].real - g) < mpf(10) ** (-30)
+    print("C1 ok: unique positive root in (1,2) for every tested trinomial")
+
+
+def check_C2():
+    fr = []
+    for (m, j) in BASES:
+        k, a, b = m, j, 0
+        for tmk in TS:
+            s = floors(tmk, lambda: troot(m, j), 400 + k)
+            d = [s[n + k] - s[n + a] - s[n + b] for n in range(400)]
+            assert set(d) <= {0, 1}
+            assert sum(d) >= 50, (m, j, sum(d))
+            fr.append(sum(d) / 400)
+    print("    proportion of n < 400 with delta_n = 1: min %.3f, median %.3f, max %.3f"
+          % (min(fr), sorted(fr)[len(fr) // 2], max(fr)))
+    print("C2 ok: delta_n in {0,1}; unit carries frequent for all tested (base, t)")
+
+
+def lemma_constants(g):
+    rho = (2 - g) / (g - 1)
+    return rho * g - 1, rho - (g + 1) / g**2, rho * g - 2
+
+
+def check_C3():
+    for (m, j) in BASES:
+        g = troot(m, j)
+        c1, c2, c3 = lemma_constants(g)
+        if g < sqrt(2):
+            assert c1 > 0 and c2 > 0 and c3 > 0
+        else:
+            assert c3 < 0
+    print("C3 ok: extraction constants positive exactly for the tested bases below sqrt 2")
+
+
+def sigma_constant(s):
+    pref, c0 = 0, None
+    for x in s:
+        D = x - pref
+        c0 = D if c0 is None else max(c0, D)
+        pref += x
+    return c0
+
+
+def proof_shape_check_single(m, j, tmk, Nmax=2600):
+    k, a, b = m, j, 0
+    s = floors(tmk, lambda: troot(m, j), Nmax)
+    c0 = sigma_constant(s)
+    R = max(c0, 0) + 1                      # number of unit switches; interval length R+1
+    G, N0 = k + 8, 2 * k + 5
+    sw, last = [], -10**9
+    for n in range(N0, Nmax - k - 1):
+        if s[n + k] - s[n + a] - s[n + b] == 1 and n - last >= G:
+            sw.append(n); last = n
+            if len(sw) == R:
+                break
+    assert len(sw) == R, "not enough switches within the horizon"
+    E = set()
+    for n in sw:
+        E |= {n + b, n + a, n + k}
+    pref = 0
+    for mm in range(sw[-1] + k + 80):
+        if mm in E:
+            continue
+        D = s[mm] - pref                    # D_E(mm)
+        assert D <= R + 1, ("check fails", m, j, mm, D, R)
+        pref += s[mm]
+    return c0, R, sw[-1]
+
+
+def check_C4():
+    for (m, j) in [(3, 1), (4, 3), (4, 2), (4, 1), (5, 3), (6, 5)]:
+        for v in ['1', '2.5', '17.3', '123.456']:
+            c0, R, last = proof_shape_check_single(m, j, const(v))
+            if (m, j, v) == (3, 1, '123.456'):
+                print("    plastic number, t = 123.456: c0 = %d, R = %d, last switch = %d" % (c0, R, last))
+    print("C4 ok: sanity checks in the shape of the proof of Theorem B passed")
+
+
+def tail_misses(seq, upto):
+    S, mask = 1, (1 << (upto + 1)) - 1
+    for x in seq:
+        if 0 < x <= upto:
+            S |= (S << x) & mask
+    return [i for i in range(upto + 1) if not (S >> i) & 1]
+
+
+def check_C5():
+    upto = 400000
+    for (m, j) in [(3, 1), (4, 3), (4, 2), (4, 1)]:
+        for v in ['1', '2.5', '7.77']:
+            s = floors(const(v), lambda: troot(m, j), 120)
+            miss = tail_misses(s, upto)
+            assert (miss[-1] if miss else -1) < upto // 4, (m, j, v)
+    print("C5 ok: no non-representable integers in [upto/4, upto] for the tested small t")
+
+
+def check_C6():
+    gmk = lambda: troot(2, 1)
+    pairs = [(const('3.7'), const('3.7')), (const(1), lambda: sqrt(2)),
+             ((lambda: +pi), const('10')), (const('50'), const('50'))]
+    for (amk, bmk) in pairs:
+        A = floors(amk, gmk, 1500); B = floors(bmk, gmk, 1500)
+        R = max(sigma_constant(A), 0) + 1
+        sw, last = [], -10
+        for n in range(len(B) - 3):
+            if B[n + 2] - B[n + 1] - B[n] == 1 and n - last >= 3:
+                sw.append(n); last = n
+                if len(sw) == R:
+                    break
+        assert len(sw) == R
+    for v in ['3.7', '10']:
+        A = floors(const(v), gmk, 60)
+        miss = tail_misses(A + A, 300000)
+        assert (miss[-1] if miss else -1) < 75000
+    print("C6 ok: golden-ratio unions: data of the proof of Theorem C found; brute-force tails consistent")
+
+
+def check_C7():
+    for (m, j) in [(2, 1), (3, 2)]:
+        k, a, b = m, j, 0
+        s = floors(const('2.5'), lambda: troot(m, j), 600)
+        defs = []
+        for n0 in [100, 200, 300, 400]:
+            E = {n0 + b, n0 + a, n0 + k}
+            mm = n0 + k + 1
+            defs.append(s[mm] - sum(s[i] for i in range(mm) if i not in E))
+        assert 0 < defs[0] < defs[1] < defs[2] < defs[3]
+    print("C7 ok: for the bases above sqrt 2, a removed switch triple leaves a growing deficit")
+
+
+if __name__ == "__main__":
+    table_C0(); check_C1(); check_C2(); check_C3(); check_C4(); check_C5(); check_C6(); check_C7()
+    print("ALL CHECKS PASSED")
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{BG07} J.~P.~Bell and S.~Gerhold, On the positivity set of a linear recurrence
+sequence, \emph{Israel J. Math.} \textbf{157} (2007), 333--345.
+
+\bibitem{Bro61} J.~L.~Brown, Jr., Note on complete sequences of integers, \emph{Amer. Math.
+Monthly} \textbf{68} (1961), 557--560.
+
+\bibitem{Dub06} A.~Dubickas, On the limit points of the fractional parts of powers of Pisot
+numbers, \emph{Arch. Math. (Brno)} \textbf{42} (2006), 151--158.
+
+\bibitem{EG80} P.~Erd\H{o}s and R.~L.~Graham, \emph{Old and New Problems and Results in
+Combinatorial Number Theory}, Monographies de L'Enseignement Math\'ematique \textbf{28},
+Universit\'e de Gen\`eve, 1980.
+
+\bibitem{EP349} T.~F.~Bloom, Erd\H{o}s Problem \#349,
+\url{https://www.erdosproblems.com/349}, accessed October 2026.
+
+\bibitem{EP354} T.~F.~Bloom, Erd\H{o}s Problem \#354,
+\url{https://www.erdosproblems.com/354}, accessed October 2026 (with references to
+Graham, Hegyv\'ari, Jiang--Ma, Fang--He and van Doorn).
+
+\bibitem{FC} Google DeepMind, \emph{Formal Conjectures},
+\url{https://github.com/google-deepmind/formal-conjectures}, commit \texttt{5a2fb85}
+(October 28, 2026); files \nolinkurl{FormalConjectures/ErdosProblems/349.lean} and
+\nolinkurl{FormalConjectures/ErdosProblems/354.lean} (theorem \texttt{erdos\_354.parts.ii}).
+
+\bibitem{Gen26} J.~Geneson, Deletion thresholds and exponential examples for complete
+sequences, arXiv:2609.25107 (2026).
+
+\bibitem{Gra64} R.~L.~Graham, Complete sequences of polynomial values, \emph{Duke Math. J.}
+\textbf{31} (1964), 275--285.
+
+\bibitem{He89} N.~Hegyv\'ari, Some remarks on a problem of Erd\H{o}s and Graham, \emph{Acta Math.
+Hungar.} \textbf{53} (1989), 149--154 (not seen by us; quoted in \cite{Rev26}).
+
+\bibitem{Kit26} K.~Kitamura, \emph{A Lean proof of Erd\H{o}s Problem 354(ii)}, GitHub repository
+\url{https://github.com/KitaKen1/erdos-354-part-ii}, commit \texttt{5536b18} (September 5, 2026);
+proposed to \cite{FC} as pull request \#5286.
+
+\bibitem{Par60} W.~Parry, On the $\beta$-expansions of real numbers, \emph{Acta Math. Acad. Sci.
+Hungar.} \textbf{11} (1960), 401--416.
+
+\bibitem{Rev26} Automated review records of Formal Conjectures statements, GitHub repository
+\url{https://github.com/tadamcz/fc-review-results}, record
+\nolinkurl{data/aea251bb26/files/ErdosProblems/354.json} (September 23, 2026); see also
+formal-conjectures issue \#6542 (September 24, 2026).
+
+\bibitem{Sie44} C.~L.~Siegel, Algebraic integers whose conjugates lie in the unit circle,
+\emph{Duke Math. J.} \textbf{11} (1944), 597--602.
+
+\bibitem{vD26} W.~van Doorn, Completeness of exponentially increasing sequences,
+arXiv:2602.23394 (2026).
+
+\bibitem{YC26} Y.~Yu and K.~Chen, \emph{Erd\H{o}s Problem 354(i): Strong completeness of two
+dyadic floor sequences}, manuscript and Lean formalization,
+\url{https://github.com/Andrewyzzz/erdos354} (September 2026); proposed to \cite{FC} as pull
+request \#6433.
+
+\end{thebibliography}
+
+\end{document}

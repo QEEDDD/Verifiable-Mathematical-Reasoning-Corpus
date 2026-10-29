@@ -1,0 +1,522 @@
+\documentclass[11pt]{amsart}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+  frame=single,framerule=0.3pt,rulecolor=\color{black!40},showstringspaces=false,
+  keepspaces=true,upquote=true}
+
+\newtheorem{theorem}{Theorem}
+\renewcommand{\thetheorem}{\Alph{theorem}}
+\newtheorem{maincor}[theorem]{Corollary}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{corollary}[lemma]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\newtheorem{problem}[lemma]{Problem}
+\newtheorem{principle}[lemma]{Principle}
+\newtheorem{question}[lemma]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[lemma]{Remark}
+\newtheorem{example}[lemma]{Example}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Fin}{\mathcal{F}}
+\newcommand{\topel}{\operatorname{top}}
+\newcommand{\cl}{\prec}
+
+\title[The set-theoretic Yellowstone sequence is a permutation]{The set-theoretic Yellowstone
+sequence is a permutation:\\ a top-element descent argument}
+
+\author{Keio}
+\thanks{Research draft, October 29, 2026. The results and the exposition were developed
+interactively with an AI assistant (Claude, Anthropic); the author is responsible for the
+content. The finite data quoted in the paper are reproduced by the script in
+Appendix~\ref{app:script}. This draft has not been peer reviewed.}
+
+\date{October 29, 2026}
+
+\begin{document}
+
+\begin{abstract}
+The \emph{set-theoretic Yellowstone sequence} (OEIS A252867, F.~T.~Adams-Watters, 2014) is
+defined by $a(0)=0$, $a(1)=1$, $a(2)=2$ and, for $n\ge3$, by letting $a(n)$ be the smallest
+non-negative integer not already in the sequence whose binary expansion shares at least one
+$1$-bit with $a(n-2)$ and no $1$-bit with $a(n-1)$. It is the binary (set) analogue of the
+Yellowstone permutation of Applegate, Havermann, Selcoe, Shevelev, Sloane and Zumkeller, and
+since 2015 it has been conjectured to be a permutation of the non-negative integers; the
+question was posed again as Open Problem 2026.5 in N.~J.~A.~Sloane's June 2026 DIMACS REU
+lecture \emph{Interesting unsolved integer sequences}. We prove the conjecture. Equivalently, the squarefree version A252868 is
+a permutation of the squarefree positive integers, which settles the conjecture recorded for
+that sequence as well.
+
+The proof works for a general class of \emph{colex-greedy intersection sequences}: for every
+admissible seed, the greedy rule ``least unused finite set (in colexicographic order) that meets
+the set two steps back and avoids the previous set'' eventually uses every non-empty finite set.
+The key step is a \emph{top-element descent}: if some element $b_0$ were absent from all late
+terms, then $b_0$ together with the largest element of the term two steps back would form an
+admissible candidate that is certainly new, so the largest element of a term could never exceed
+that of the term two steps earlier; this bounds all late terms, which is impossible for an
+injective sequence. (Using an absent element as a certificate of novelty goes back to Nichols's
+work on the binary Enots Wolley sequence; what is new is the monotone form, which lets the
+argument conclude at once.) Two short exclusion arguments then give every singleton and every finite set.
+The proof is elementary and self-contained.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{Background}
+Lexicographically earliest sequences defined by local divisibility rules have a reputation for
+being easy to compute and hard to analyse. The prototypes are the EKG sequence (A064413),
+shown to be a permutation of the positive integers by Lagarias, Rains and
+Sloane~\cite{LRS}, and the Yellowstone permutation A098550, in which $a(n)$ is the smallest
+unused number that has a common factor with $a(n-2)$ and is coprime to $a(n-1)$; Applegate,
+Havermann, Selcoe, Shevelev, Sloane and Zumkeller proved that it is a permutation~\cite{Yell}.
+The Enots Wolley sequence A336957 (the rule with the roles of $a(n-1)$ and $a(n-2)$ exchanged)
+was shown to contain every integer with at least two distinct prime factors only in
+2026~\cite{Nichols26}; its binary analogue A338833 was treated earlier by Nichols~\cite{Nichols22}.
+
+Replacing ``has a common prime factor'' by ``has a common $1$-bit'' turns these rules into rules
+about finite subsets of $\N=\{0,1,2,\dots\}$: a non-negative integer $x=\sum_{i\in X}2^i$ is
+identified with its \emph{support} $X\subseteq\N$, two integers share a $1$-bit exactly when
+their supports intersect, and the usual order of integers becomes the \emph{colexicographic
+order} on finite sets. In December 2014 F.~T.~Adams-Watters introduced the binary analogue of the
+Yellowstone permutation:
+\begin{equation}\label{eq:def}
+\begin{gathered}
+a(0)=0,\qquad a(1)=1,\qquad a(2)=2,\\
+a(n)=\min\bigl\{m\notin\{a(0),\dots,a(n-1)\}:\ m\wedge a(n-2)\neq0,\ m\wedge a(n-1)=0\bigr\}
+\quad(n\ge3),
+\end{gathered}
+\end{equation}
+where $\wedge$ is the bitwise AND (OEIS A252867~\cite{A252867}). It begins
+\[
+0, 1, 2, 5, 10, 4, 3, 12, 17, 6, 9, 18, 8, 7, 24, 33, 14, 32, 11, 36, 19, 40, 16, 13,
+48, 15, 80, 34, 20, 35,\dots
+\]
+The OEIS entry records the conjecture that it is a permutation of the non-negative integers
+(comment as modified by N.~J.~A.~Sloane, January~10, 2015), and Sloane later observed that
+the graphs of A109812, A252867, A305369 and A305372 ``all have roughly the same, mysterious,
+fractal-like structure'' (OEIS A109812, June~3, 2018)~\cite{A252868}.
+The question reappears as Open Problem~2026.5 (``Show that A252867 is a permutation of the
+positive integers''; since $a(0)=0$, this means that $(a(n))_{n\ge1}$ is a permutation of the
+positive integers) in Sloane's June 2026 REU lecture~\cite{REU26}. The
+squarefree version A252868, obtained by replacing bit $i$ by the $(i+1)$-st prime, satisfies
+$\mathrm{A252868}(n)=\mathrm{A019565}(\mathrm{A252867}(n-1))$, and its entry records the
+corresponding conjecture that it is a permutation of the squarefree numbers (``I believe this
+is at present only a conjecture'', Sloane, January~10, 2015)~\cite{A252868}.
+
+The integers missing from an initial segment of A252867 are those with many low $1$-bits:
+for instance the smallest value missing from the first $4\cdot10^4$ terms is
+$12283=10111111111011_2$ (Appendix~\ref{app:script}).
+This is the visible reason why a direct, Yellowstone-style counting argument does not obviously
+apply.
+
+\subsection{Results}
+\begin{theorem}\label{thm:main}
+The sequence A252867 is a permutation of the non-negative integers.
+\end{theorem}
+
+\begin{maincor}\label{cor:sqf}
+The sequence A252868 is a permutation of the squarefree positive integers.
+\end{maincor}
+
+Theorem~\ref{thm:main} is the special case of the following statement about general seeds.
+For a finite set $X\subseteq\N$ write $\|X\|=\sum_{i\in X}2^i$; the \emph{colexicographic
+order} is $X\cl Y\iff\|X\|<\|Y\|$, equivalently $\max(X\triangle Y)\in Y$.
+
+\begin{definition}[Colex-greedy intersection sequences]\label{def:cgi}
+Let $X_1,X_2$ be disjoint non-empty finite subsets of $\N$ (the \emph{seed}). Put $S(1)=X_1$,
+$S(2)=X_2$, and for $n\ge3$ let $S(n)$ be the colexicographically least finite set
+$Y\notin\{S(1),\dots,S(n-1)\}$ with
+\begin{equation}\label{eq:rule}
+Y\cap S(n-2)\neq\varnothing\qquad\text{and}\qquad Y\cap S(n-1)=\varnothing .
+\end{equation}
+We call $(S(n))_{n\ge1}$ the \emph{colex-greedy intersection sequence} (CGI sequence) with seed
+$(X_1,X_2)$.
+\end{definition}
+
+\begin{theorem}\label{thm:general}
+For every seed, the CGI sequence is well defined and injective, and every non-empty finite subset
+of $\N$ occurs in it. In integer language: for any two positive integers $x_1,x_2$ with
+$x_1\wedge x_2=0$, the sequence $a(1)=x_1$, $a(2)=x_2$,
+$a(n)=\min\{m\notin\{a(1),\dots,a(n-1)\}: m\wedge a(n-2)\neq0,\ m\wedge a(n-1)=0\}$ is a
+permutation of the positive integers.
+\end{theorem}
+
+Theorem~\ref{thm:main} follows because the empty set ($=0$) can never satisfy~\eqref{eq:rule},
+so A252867 is $0$ followed by the CGI sequence with seed $(\{0\},\{1\})$.
+
+\subsection{The method}
+The proof consists of one descent principle and two exclusion steps.
+
+\begin{principle}[Top-element descent]\label{pr:descent}
+Suppose an element $b_0$ is absent from all late terms, and let $t(n)$ denote the largest
+element of $S(n)$. For every late $n$ the two-element set $\{b_0,t(n-2)\}$ is an admissible
+candidate at step $n$ (it meets $S(n-2)$ and avoids $S(n-1)$), and it has never been used (late
+terms do not contain $b_0$, early terms are smaller). It lies below $2^{t(n-2)+1}$, so the
+minimality of $S(n)$ gives $t(n)\le t(n-2)$. Thus the top elements are non-increasing along each
+residue class of $n$ modulo $2$; this bounds all late terms and contradicts injectivity.
+\end{principle}
+
+The absent element $b_0$ plays the role of a ``certificate of novelty'': it guarantees that the
+candidate $\{b_0,t(n-2)\}$ has never been used, without any knowledge of which large numbers the
+sequence has already consumed. This device is not new in itself: Nichols showed that every bit
+recurs in the binary Enots Wolley sequence by comparing the first term that contains a much
+larger new bit with a smaller candidate containing the absent bit, which certifies that the
+candidate is new~\cite[Lemma~1]{Nichols22}. For the Yellowstone-type rule the certificate can be
+attached to the top element of the term two steps back, which is automatically admissible, so
+the comparison is available at \emph{every} late step and turns into the monotonicity
+$t(n)\le t(n-2)$. Once every element is known to recur infinitely often, every
+singleton is forced to appear (Lemma~\ref{lem:singletons}), and a missing set $X$ would force
+\emph{all} late terms to meet $X$, which is incompatible with the appearance of the infinitely
+many singletons outside $X$ (Theorem~\ref{thm:general}). Section~\ref{sec:remarks} explains which
+properties of the colexicographic order are used, records what the method does not give, and
+lists related open problems.
+
+\section{Basic properties}\label{sec:basic}
+
+Throughout, $(S(n))_{n\ge1}$ is a CGI sequence with seed $(X_1,X_2)$. For a non-empty finite
+set $Y$ let $\topel(Y)=\max Y$; then
+\begin{equation}\label{eq:topbound}
+2^{\topel(Y)}\le\|Y\|<2^{\topel(Y)+1}.
+\end{equation}
+
+\begin{lemma}\label{lem:basic}
+For every $n\ge3$ the set of admissible candidates in Definition~\ref{def:cgi} is non-empty, so
+$S(n)$ is well defined. Moreover:
+\begin{enumerate}[label=\textup{(\roman*)},leftmargin=2em]
+\item every $S(n)$ is non-empty;
+\item $S(n)\cap S(n-1)=\varnothing$ for all $n\ge2$;
+\item the map $n\mapsto S(n)$ is injective;
+\item for every $K$ there is $N$ with $\|S(n)\|>K$ for all $n\ge N$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+We argue by induction on $n\ge3$, assuming that $S(1),\dots,S(n-1)$ are defined, non-empty, and
+that consecutive ones are disjoint (true for the seed). Pick $d\in S(n-2)$ and an integer $c$
+larger than every element of $S(1)\cup\dots\cup S(n-1)$. Then $Y=\{d,c\}$ meets $S(n-2)$; it
+avoids $S(n-1)$ because $d\notin S(n-1)$ (consecutive terms are disjoint) and $c$ exceeds all
+elements of $S(n-1)$; and $Y$ is unused because $c\in Y$ lies in no earlier term. So the
+candidate set is non-empty, and it has a least element because every finite set has only
+finitely many colexicographic predecessors (the colexicographic order is a well-order of type
+$\omega$); so $S(n)$ exists. It is non-empty because it meets $S(n-2)$, and it is disjoint from
+$S(n-1)$ by~\eqref{eq:rule}. This proves the first claim and (i), (ii). Injectivity (iii) holds by
+construction for $n\ge3$, and $S(1)\neq S(2)$ because the seeds are disjoint and non-empty;
+(iv) follows from (iii) because only finitely many finite sets $Y$ satisfy $\|Y\|\le K$.
+\end{proof}
+
+We say that $Y$ is a \emph{candidate at step $n$} if $Y\cap S(n-2)\neq\varnothing$ and
+$Y\cap S(n-1)=\varnothing$. The defining property of the sequence will be used in the following
+form.
+
+\begin{lemma}[Minimality]\label{lem:min}
+If $Y$ is a candidate at step $n\ge3$ and $Y\notin\{S(1),\dots,S(n-1)\}$, then
+$\|S(n)\|\le\|Y\|$. Consequently, if a finite set $Y$ never occurs in the sequence, then $Y$ is a
+candidate at only finitely many steps.
+\end{lemma}
+
+\begin{proof}
+The first assertion is the definition of $S(n)$. If $Y$ never occurs and is a candidate at
+infinitely many steps $n$, then $\|S(n)\|\le\|Y\|$ and $S(n)\neq Y$, i.e.\ $\|S(n)\|<\|Y\|$, for
+infinitely many $n$, contradicting Lemma~\ref{lem:basic}(iii),(iv).
+\end{proof}
+
+\section{Top-element descent}\label{sec:descent}
+
+\begin{lemma}\label{lem:recur}
+Every $b\in\N$ belongs to $S(n)$ for infinitely many $n$.
+\end{lemma}
+
+\begin{proof}
+Suppose that $b_0$ belongs to only finitely many terms, and choose $N\ge3$ with $b_0\notin S(n)$
+for all $n\ge N$. Put
+\[
+K:=\max\Bigl(2^{b_0+1},\ \max_{1\le j<N}\|S(j)\|\Bigr).
+\]
+By Lemma~\ref{lem:basic}(iv) there is $N'\ge N$ such that $\|S(n)\|>2K$ for all $n\ge N'$. For
+$n\ge N'$ the top element $t(n):=\topel(S(n))$ satisfies $2^{t(n)+1}>\|S(n)\|>2K$
+by~\eqref{eq:topbound}, i.e.\ $2^{t(n)}>K\ge 2^{b_0+1}$; in particular $t(n)>b_0$.
+
+\emph{Claim: $t(n)\le t(n-2)$ for every $n\ge N'+2$.} Consider $Y_n:=\{b_0,t(n-2)\}$. Since
+$t(n-2)>b_0$, we have $\|Y_n\|=2^{b_0}+2^{t(n-2)}<2^{t(n-2)+1}$.
+\begin{enumerate}[label=\textup{(\alph*)},leftmargin=2em]
+\item $Y_n$ is a candidate at step $n$: it meets $S(n-2)$ in $t(n-2)$; it avoids $S(n-1)$ because
+$b_0\notin S(n-1)$ (as $n-1\ge N$) and $t(n-2)\notin S(n-1)$ (as $t(n-2)\in S(n-2)$ and
+consecutive terms are disjoint, Lemma~\ref{lem:basic}(ii)).
+\item $Y_n$ is unused: if $Y_n=S(j)$ with $j<n$, then $j\ge N$ is impossible because $b_0\in Y_n$,
+and $j<N$ is impossible because $\|S(j)\|\le K<2^{t(n-2)}\le\|Y_n\|$.
+\end{enumerate}
+By Lemma~\ref{lem:min}, $\|S(n)\|\le\|Y_n\|<2^{t(n-2)+1}$, and by~\eqref{eq:topbound}
+$t(n)\le t(n-2)$. This proves the claim.
+
+By the claim, $t(n)\le E:=\max(t(N'),t(N'+1))$ for all $n\ge N'$ (induction along each residue
+class modulo $2$), i.e.\ $\|S(n)\|<2^{E+1}$ for all $n\ge N'$. This contradicts
+Lemma~\ref{lem:basic}(iv).
+\end{proof}
+
+\begin{remark}
+The only properties of the order used in the proof are: the order type is $\omega$
+(Lemma~\ref{lem:basic}(iv)), and the size of a set is controlled by its top element as
+in~\eqref{eq:topbound}, so that a two-element set $\{b_0,e\}$ with $b_0<e$ precedes every set
+with top element $>e$, while sets with large top element lie beyond any given finite initial
+segment. The certificate of novelty is the element $b_0$ itself.
+\end{remark}
+
+\section{Singletons and arbitrary finite sets}\label{sec:proof}
+
+\begin{lemma}\label{lem:singletons}
+Every singleton $\{b\}$, $b\in\N$, occurs in the sequence.
+\end{lemma}
+
+\begin{proof}
+If $b\in S(n-2)$ for some $n\ge3$, then $b\notin S(n-1)$ by Lemma~\ref{lem:basic}(ii), so
+$\{b\}$ is a candidate at step $n$. By Lemma~\ref{lem:recur} this happens for infinitely many
+$n$, so $\{b\}$ occurs by Lemma~\ref{lem:min}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:general}]
+Well-definedness and injectivity are Lemma~\ref{lem:basic}. Let $X$ be a non-empty finite set and
+suppose that $X$ never occurs. By Lemma~\ref{lem:min} there is $N_1\ge3$ such that $X$ is not a
+candidate at any step $n\ge N_1$, that is,
+\begin{equation}\label{eq:noncand}
+X\cap S(n-2)\neq\varnothing\ \Longrightarrow\ X\cap S(n-1)\neq\varnothing\qquad(n\ge N_1).
+\end{equation}
+By Lemma~\ref{lem:recur} (applied to any element of $X$) there is $n_0\ge N_1$ with
+$X\cap S(n_0)\neq\varnothing$. Applying~\eqref{eq:noncand} with $n=n_0+2,n_0+3,\dots$ gives
+inductively $X\cap S(n)\neq\varnothing$ for every $n\ge n_0$. On the other hand, for every
+$d\notin X$ the singleton $\{d\}$ occurs (Lemma~\ref{lem:singletons}), say $\{d\}=S(j_d)$, and
+$\{d\}\cap X=\varnothing$ forces $j_d<n_0$. Since $X$ is finite there are infinitely many such
+$d$, giving infinitely many distinct indices $j_d<n_0$, a contradiction. Hence $X$ occurs. In
+integer language, every positive integer occurs, and injectivity gives the permutation statement.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main} and Corollary~\ref{cor:sqf}]
+For $n\ge1$ let $S(n)$ be the support of $\mathrm{A252867}(n)$. Then $S(1)=\{0\}$,
+$S(2)=\{1\}$ are disjoint and non-empty, and~\eqref{eq:def} for $n\ge3$ is exactly the rule of
+Definition~\ref{def:cgi}: the value $0$ is used at $n=0$ and could never be chosen again anyway,
+since it meets no set. Theorem~\ref{thm:general} shows that every positive integer occurs exactly
+once among $\mathrm{A252867}(n)$, $n\ge1$; together with $\mathrm{A252867}(0)=0$ this proves
+Theorem~\ref{thm:main}. The map $\mathrm{A019565}$, $\sum_{i\in X}2^i\mapsto\prod_{i\in X}p_{i+1}$
+($p_j$ the $j$-th prime), is a bijection from $\N$ onto the squarefree positive integers, so
+$\mathrm{A252868}(n)=\mathrm{A019565}(\mathrm{A252867}(n-1))$ is a permutation of the squarefree
+positive integers.
+\end{proof}
+
+\section{Remarks, scope and open problems}\label{sec:remarks}
+
+\subsection{Other ground sets and orders}
+Nothing in the argument uses arithmetic. Let $\Omega$ be a countably infinite set listed as
+$\omega_0,\omega_1,\dots$ and order its finite subsets colexicographically with respect to this
+listing. Then the proofs above apply verbatim and every non-empty finite subset of $\Omega$
+occurs in every CGI sequence over $\Omega$. Applied to the primes listed in increasing order,
+this gives the squarefree analogue of Theorem~\ref{thm:general} for every admissible seed, with
+the squarefree numbers ordered as in A019565 (colexicographically by their sets of prime
+factors). The proof does \emph{not} apply to orders in which the size of a set is not dominated
+by its top element, for example to squarefree numbers ordered by size (the sequence A252865):
+there the candidate $\{b_0,e\}$ corresponds to $p_{b_0+1}p_{e+1}$, which may exceed primes
+larger than $p_{e+1}$, so the claim in the proof of Lemma~\ref{lem:recur} breaks down.
+
+\subsection{What the method does not give}
+\begin{enumerate}[leftmargin=2em]
+\item \emph{Rates.} The proof is ineffective: it gives no bound on the position of a given
+integer. The data in Appendix~\ref{app:script} show that $2^b$ first occurs at an index within $7\%$
+of $2^b/3$ for $13\le b\le 15$, while integers with many low $1$-bits occur much later.
+\item \emph{Longer delays.} For $k\ge3$, start from $k$ pairwise disjoint non-empty finite sets
+$S(1),\dots,S(k)$ and let $S(n)$ be the least unused set meeting $S(n-k)$ and avoiding
+$S(n-k+1),\dots,S(n-1)$. Then any $k$ consecutive terms are pairwise disjoint, and the
+analogues of Lemmas~\ref{lem:recur} and~\ref{lem:singletons} hold with the same proofs (the
+descent now reads $t(n)\le t(n-k)$). The final step, however, only shows that the indices of
+terms meeting a missing set $X$ have gaps smaller than $k$. Whether all finite sets occur for
+$k\ge3$ remains open.
+\item \emph{Derived sequences.} A253581 is defined by $\mathrm{A252867}(n)\wedge
+\mathrm{A252867}(n+2)$, and its entry conjectures that every positive integer occurs. This is
+not implied by Theorem~\ref{thm:main}; the first occurrences are late for integers with many
+$1$-bits. For example $447=110111111_2$ does not occur among the values with $n<39998$
+(Appendix~\ref{app:script}); it first occurs at $n=65234$ (cf.\ A253603).
+\end{enumerate}
+
+\subsection{Related problems}
+The ``cup of coffee'' sequence A280864, in which every run of consecutive multiples of a prime
+has length exactly two, is conjectured to be a permutation; its OEIS entry records theorems of
+Sloane (2017) stating that every prime and every even number appears and that the conjecture is
+equivalent to the appearance of every square~\cite{A280864}. The top-element descent does not
+apply directly there, because the role of the
+forbidden element is played by a prime and the multiplicative order is not top-element
+dominated. It would be interesting to find an analogue of Principle~\ref{pr:descent} for
+divisibility-defined sequences.
+
+\section*{Acknowledgements}
+The author thanks the OEIS contributors whose data and comments made the problem accessible.
+
+\begin{thebibliography}{99}
+
+\bibitem{Yell}
+D.~L.~Applegate, H.~Havermann, B.~Selcoe, V.~Shevelev, N.~J.~A.~Sloane and R.~Zumkeller,
+\emph{The Yellowstone permutation}, J.\ Integer Seq.\ \textbf{18} (2015), Article 15.6.7;
+arXiv:1501.01669.
+
+\bibitem{LRS}
+J.~C.~Lagarias, E.~M.~Rains and N.~J.~A.~Sloane, \emph{The EKG sequence}, Experiment.\ Math.\
+\textbf{11} (2002), 437--446.
+
+\bibitem{Nichols22}
+N.~Nichols, \emph{The binary Enots Wolley sequence}, arXiv:2207.01448 (2022).
+
+\bibitem{Nichols26}
+N.~M.~Nichols, \emph{Surjectivity of the Enots Wolley sequence}, arXiv:2609.18054 (2026).
+
+\bibitem{A252867}
+OEIS Foundation, \emph{The On-Line Encyclopedia of Integer Sequences}, sequence A252867
+(F.~T.~Adams-Watters, Dec.\ 2014), \url{https://oeis.org/A252867}.
+
+\bibitem{A252868}
+OEIS Foundation, sequence A252868 (squarefree version of A252867),
+\url{https://oeis.org/A252868}; see also A019565, A109812, A252865, A253581, A280864,
+A305369, A305372.
+
+\bibitem{A280864}
+OEIS Foundation, sequence A280864 (the ``cup of coffee'' sequence), with Sloane's Theorems~1
+and~5 in the comments, \url{https://oeis.org/A280864}.
+
+\bibitem{REU26}
+N.~J.~A.~Sloane, \emph{Interesting unsolved integer sequences}, slides for the REU seminar talk
+``Some interesting unsolved problems concerning number sequences'', DIMACS, Rutgers University,
+June 11, 2026, Open Problem 2026.5, \url{https://neilsloane.com/doc/REU2026.pdf}.
+
+\end{thebibliography}
+
+\appendix
+\section{Verification script}\label{app:script}
+The theorems above are proved for all $n$; the following standard-library Python script only
+re-computes the finite data quoted in the paper (agreement with the OEIS data of A252867 and
+A252868, disjointness of consecutive terms, first occurrences of powers of two and of all
+$m<2^{12}$, and an illustration of Theorem~\ref{thm:general} for several seeds). Its output is
+reproduced after the listing.
+
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+"""Sanity checks for the paper on A252867 (standard library only).
+
+The theorem in the paper is proved for all n; this script only re-computes the
+finite data quoted in the paper:
+  (1) the first 68 terms of A252867 agree with the OEIS data;
+  (2) consecutive terms are disjoint and a(n) meets a(n-2) (n >= 3);
+  (3) first occurrence indices of 2^b (b <= 15) and of every m < 2^12;
+  (4) A252868(n) = A019565(A252867(n-1)) reproduces the OEIS data of A252868;
+  (5) the same rule started from other admissible seeds also covers all m < 2^10
+      within the computed range (illustrating Theorem C);
+  (6) the smallest value missing from the first N terms of A252867 and the smallest
+      positive integer missing from the corresponding values of A253581
+      (A252867(n) AND A252867(n+2)).
+"""
+import sys
+
+OEIS_A252867 = [0, 1, 2, 5, 10, 4, 3, 12, 17, 6, 9, 18, 8, 7, 24, 33, 14, 32, 11, 36, 19,
+    40, 16, 13, 48, 15, 80, 34, 20, 35, 28, 65, 22, 41, 66, 21, 42, 68, 25, 38, 72, 23, 64,
+    26, 69, 50, 73, 52, 67, 44, 81, 46, 129, 30, 97, 130, 29, 98, 132, 27, 100, 131, 56, 70,
+    49, 74, 37, 82]
+OEIS_A252868 = [1, 2, 3, 10, 21, 5, 6, 35, 22, 15, 14, 33, 7, 30, 77, 26, 105, 13, 42, 65,
+    66, 91, 11, 70, 143, 210, 187, 39, 55, 78]
+
+def generate(seeds, N, cap):
+    """Greedy rule: a(n) = least unused m with m & a(n-2) != 0 and m & a(n-1) == 0."""
+    a = list(seeds)
+    used = bytearray(cap)
+    for v in a:
+        used[v] = 1
+    low = 1
+    for n in range(len(a), N):
+        p2, p1 = a[n - 2], a[n - 1]
+        while used[low]:
+            low += 1
+        m = low
+        while True:
+            if m >= cap:
+                raise RuntimeError("cap too small")
+            if not used[m] and (m & p2) and not (m & p1):
+                break
+            m += 1
+        a.append(m)
+        used[m] = 1
+    return a
+
+def a019565(x):
+    primes = []
+    c = 2
+    while len(primes) < 40:
+        if all(c % p for p in primes if p * p <= c):
+            primes.append(c)
+        c += 1
+    r, i = 1, 0
+    while x:
+        if x & 1:
+            r *= primes[i]
+        x >>= 1
+        i += 1
+    return r
+
+def main():
+    N = 40000
+    a = generate([0, 1, 2], N, 1 << 20)
+    ok = a[:len(OEIS_A252867)] == OEIS_A252867
+    print("(1) first 68 terms agree with OEIS A252867:", ok)
+    disj = all(a[n] & a[n - 1] == 0 for n in range(1, N))
+    meet = all(a[n] & a[n - 2] != 0 for n in range(3, N))
+    print("(2) consecutive terms disjoint:", disj, "; a(n) meets a(n-2) for n>=3:", meet)
+    first = {}
+    for i, v in enumerate(a):
+        first.setdefault(v, i)
+    pw = [first.get(1 << b) for b in range(16)]
+    print("(3) index of first occurrence of 2^b, b=0..15:", pw)
+    miss = [m for m in range(1 << 12) if m not in first]
+    print("    all m < 2^12 occur among the first", N, "terms:", not miss,
+          "; latest first occurrence:", max(first[m] for m in range(1 << 12)) if not miss else None)
+    b868 = [a019565(a[n]) for n in range(len(OEIS_A252868))]
+    print("(4) A019565(A252867) reproduces OEIS A252868:", b868 == OEIS_A252868)
+    for seeds in ([1, 2], [3, 4], [6, 1], [5, 10], [1, 6]):
+        s = generate(seeds, 30000, 1 << 20)
+        fs = set(s)
+        allin = all(m in fs for m in range(1, 1 << 10))
+        print("(5) seeds", seeds, ": all 1 <= m < 2^10 occur in 30000 terms:", allin)
+    smallest_missing = min(m for m in range(1 << 20) if m not in first)
+    print("(6) smallest value missing from the first", N, "terms of A252867:",
+          smallest_missing, "=", bin(smallest_missing))
+    andvals = set(a[n] & a[n + 2] for n in range(1, N - 2))
+    print("    smallest positive integer missing from A252867(n) AND A252867(n+2), n < N-2:",
+          min(m for m in range(1, 1 << 20) if m not in andvals))
+    return 0 if (ok and disj and meet and not miss and b868 == OEIS_A252868) else 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+\end{lstlisting}
+
+\noindent Output:
+\begin{lstlisting}
+(1) first 68 terms agree with OEIS A252867: True
+(2) consecutive terms disjoint: True ; a(n) meets a(n-2) for n>=3: True
+(3) index of first occurrence of 2^b, b=0..15: [1, 2, 5, 12, 22, 17, 42, 74, 114, 298, 439, 823, 1915, 2901, 5680, 11014]
+    all m < 2^12 occur among the first 40000 terms: True ; latest first occurrence: 19858
+(4) A019565(A252867) reproduces OEIS A252868: True
+(5) seeds [1, 2] : all 1 <= m < 2^10 occur in 30000 terms: True
+(5) seeds [3, 4] : all 1 <= m < 2^10 occur in 30000 terms: True
+(5) seeds [6, 1] : all 1 <= m < 2^10 occur in 30000 terms: True
+(5) seeds [5, 10] : all 1 <= m < 2^10 occur in 30000 terms: True
+(5) seeds [1, 6] : all 1 <= m < 2^10 occur in 30000 terms: True
+(6) smallest value missing from the first 40000 terms of A252867: 12283 = 0b10111111111011
+    smallest positive integer missing from A252867(n) AND A252867(n+2), n < N-2: 447
+\end{lstlisting}
+
+\end{document}

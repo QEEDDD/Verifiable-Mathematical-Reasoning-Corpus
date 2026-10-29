@@ -1,0 +1,563 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\hypersetup{pdftitle={Gap Orientation and Binomial Coefficients Modulo Products of Three Nearby Primes},pdfauthor={Keio}}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{problem}[theorem]{Problem}
+
+\newcommand{\dom}[1]{\preceq_{#1}}
+\newcommand{\bin}[2]{\binom{#1}{#2}}
+\newcommand{\dig}[1]{\langle #1\rangle}
+
+\setlength{\emergencystretch}{3em}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,
+  frame=single,showstringspaces=false,upquote=true,tabsize=4,language=C}
+
+\title{\bfseries Gap Orientation and Binomial Coefficients\\ Modulo Products of Three Nearby Primes\\[6pt]
+\large An affirmative answer to Erd\H{o}s Problem \#700(b) of Erd\H{o}s and Szekeres}
+\author{Keio}
+\date{29 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a composite integer $n$ let $f(n)=\min_{1<k\le n/2}\gcd\bigl(n,\binom nk\bigr)$. In 1978 Erd\H{o}s and Szekeres asked whether $f(n)>n^{1/2}$ for infinitely many composite $n$. They could not prove it, and the question (Erd\H{o}s Problem \#700(b)) is listed as open. We answer it affirmatively. The main tool is an exact evaluation of $f(pqr)$ for primes $p<q<r$ that are close together. If $2(r-p)^2<p$, then
+\[
+f(pqr)=pq \ \text{ if } r-q>q-p, \qquad f(pqr)=p \ \text{ if } r-q\le q-p .
+\]
+So in this range $f(pqr)$ exceeds $(pqr)^{1/2}$ exactly when the gaps between the prime factors increase. To prove this we write each product of two of the primes in the base of the third. The digits are simple explicit expressions in the two gaps, and whether the middle digit of $pr$ in base $q$ carries a borrow depends only on the sign of $(r-q)-(q-p)$. Lucas' theorem then turns the divisibility conditions into linear inequalities. A counting lemma for triples with increasing gaps, combined with Chebyshev's bound and Jensen's inequality, then gives $\gg N^{1/2}/(\log N)^2$ composite $n\le N$ with $f(n)>n^{1/2}$. All of them satisfy $f(n)=n/P(n)>(n/2)^{2/3}$. We check the evaluation by direct computation of $f$ for all $102{,}122$ admissible triples with $p\le 30{,}000$, and we spot-check it with an independent computation based on Legendre's formula. We also show that the constant $2$ cannot be lowered to $1.75$.
+\end{abstract}
+
+\section{Introduction}
+
+For a composite integer $n$ put
+\[
+f(n)=\min_{1<k\le n/2}\gcd\Bigl(n,\bin nk\Bigr).
+\]
+This function was studied by Erd\H{o}s and Szekeres~\cite{ES78}. Two simple facts frame their questions. First, $\bin nk$ is divisible by $n/\gcd(n,k)$ (Lemma~\ref{lem:lower}), so
+\begin{equation}\label{eq:lower}
+f(n)\ \ge\ p(n),
+\end{equation}
+where $p(n)$ denotes the least prime factor of $n$. Second, if $n$ is not a prime power and $s^e\,\|\,n$ with $s$ prime, then $\gcd(n,\bin{n}{s^e})=n/s^e$. Hence $f(n)\le n/Q(n)\le n/P(n)$, where $Q(n)$ is the largest prime power dividing $n$ and $P(n)$ the largest prime factor of $n$. Erd\H{o}s and Szekeres proved $f(n)\le(1+o(1))\,n/\log n$. They noted that $f(n)=n/P(n)$ when $n$ is a product of two primes, and also for $n=30$. The problem collection~\cite{EP700} records three questions (Erd\H{o}s Problem \#700):
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item characterise the composite $n$ with $f(n)=n/P(n)$;\footnote{In~\cite{ES78} this question is stated with the greatest prime power dividing $n$, that is, with $n/Q(n)$; the problem page~\cite{EP700} uses the largest prime factor. For the squarefree $n$ studied here $Q(n)=P(n)$, so our results apply to both readings.}
+\item are there infinitely many composite $n$ such that $f(n)>n^{1/2}$?
+\item is it true that $f(n)\ll_A n/(\log n)^A$ for every $A>0$?
+\end{enumerate}
+Erd\H{o}s and Szekeres could not prove~(b). For every prime $s$ we have $f(s^2)=s$: the lower bound is \eqref{eq:lower}, and $k=s$ gives $\gcd(s^2,\bin{s^2}{s})=s$ because adding $s$ and $s^2-s$ in base $s$ produces exactly one carry. So the inequality in~(b) must be strict for the question to have content. Problem \#700 is listed as open on the problem page~\cite{EP700} and in the community database~\cite{TaoDB}, which records one status for the whole problem (``open'', last updated 31 August 2025, in the data of 28 October 2026). The questions are formalised in Lean in~\cite{FC}; see also Guy~\cite[B31, B33]{Guy}, and OEIS A091963~\cite{OEIS}, which~\cite{TaoDB} lists as possibly related.
+
+We answer (b) affirmatively. The construction is explicit: products of three primes that lie close together, with increasing gaps.
+
+\begin{theorem}[gap orientation]\label{thm:main}
+Let $p<q<r$ be primes with
+\begin{equation}\label{eq:H}
+2(r-p)^2<p ,
+\end{equation}
+and let $n=pqr$. Then
+\[
+f(n)=\begin{cases} pq & \text{if } r-q>q-p,\\[2pt] p & \text{if } r-q\le q-p.\end{cases}
+\]
+In particular $f(n)>n^{1/2}$ if and only if $r-q>q-p$, and in that case $f(n)=n/P(n)>(n/2)^{2/3}$.
+\end{theorem}
+
+So within the range \eqref{eq:H} the value $f(pqr)$ is either the smallest value $p(n)$ allowed by \eqref{eq:lower} or the largest value $n/P(n)$ allowed by the upper bound. The orientation of the two gaps decides which one occurs.
+
+\begin{theorem}[answer to Erd\H{o}s Problem \#700(b)]\label{thm:b}
+There are infinitely many composite $n$ with $f(n)>n^{1/2}$. More precisely, there are an absolute constant $c>0$ and an $N_0$ such that
+\[
+\#\{\,n\le N:\ n\text{ composite},\ f(n)>n^{1/2}\,\}\ \ge\ c\,\frac{N^{1/2}}{(\log N)^{2}}\qquad(N\ge N_0).
+\]
+Every integer produced by the proof has exactly three prime factors and satisfies $f(n)=n/P(n)>(n/2)^{2/3}$.
+\end{theorem}
+
+\begin{corollary}[towards (a)]\label{cor:a}
+There are infinitely many composite $n$ with exactly three prime factors and $f(n)=n/P(n)$. For $n=pqr$ with $p<q<r$ satisfying \eqref{eq:H}, the equality $f(n)=n/P(n)$ holds if and only if $r-q>q-p$.
+\end{corollary}
+
+Erd\H{o}s and Szekeres gave $n=30$ as an example of $f(n)=n/P(n)$ beyond the products of two primes. Corollary~\ref{cor:a} supplies an infinite family with an exact criterion. A full characterisation, as asked in (a), remains open (Section~\ref{sec:remarks}).
+
+\paragraph{The problem, the method, and the application.}
+The proof follows three steps.
+
+\emph{A problem.} Call a squarefree $n=pqr$ with $p<q<r$ and $pq>r$ \emph{two-witness rigid} if every $\bin nk$ with $1<k\le n/2$ is divisible by at least two of $p,q,r$. Lemma~\ref{lem:two} shows that $f(n)>n^{1/2}$ is equivalent to rigidity. By Lucas' theorem, rigidity fails exactly when some multiple $k=st\,j$ of two of the primes is digit-dominated by $n$ in both bases $s$ and $t$. Which triples are rigid?
+
+\emph{A method: gap coordinates and the borrow switch.} Write $q=p+a$ and $r=q+c$. When $a$ and $c$ are small, each product of two of the primes, written in the base of the third, has digits given by simple expressions in $a$, $c$ and the base (Lemma~\ref{lem:digits}):
+\[
+qr=\dig{1,\ 2a+c,\ a(a+c)}_p,\qquad pq=\dig{r-a-2c,\ c(a+c)}_r,
+\]
+\[
+pr=\begin{cases}\dig{1,\ c-a-1,\ q-ac}_q & (c>a),\\ \dig{q-(a-c)-1,\ q-ac}_q & (c\le a).\end{cases}
+\]
+The sign of $c-a$ decides whether a borrow passes through the middle digit of $pr$ in base $q$. With these digits each simultaneous domination becomes a pair of linear inequalities in the multiplier $j$. They are contradictory when $c>a$. When $c\le a$ they have an explicit solution.
+
+\emph{The application.} A counting lemma for triples with increasing gaps in a short interval (Lemma~\ref{lem:count}) needs nothing about primes beyond their number. Combined with Chebyshev's bound and Jensen's inequality, it gives many admissible triples of primes, and Theorem~\ref{thm:b} follows.
+
+All three ingredients rest on equivalent forms of one classical fact: Lucas' digit criterion, Kummer's carry count and the congruence $(1+X)^{n}\equiv(1+X^{s})^{n/s}\pmod s$. The new ingredient is the pair of explicit gap-coordinate expansions and the observation that a single sign governs $f$.
+
+\paragraph{Computations.} Section~\ref{sec:comp} reports exhaustive checks of Theorem~\ref{thm:main}, a check by Legendre's formula that does not use Lucas' theorem, tests showing that \eqref{eq:H} is nearly sharp, and data on $f$ for small $n$. The programs are reproduced in the appendix.
+
+\section{Preliminaries}
+
+For a prime $s$ and integers $x,y\ge0$ we write $x\dom s y$ if every base-$s$ digit of $x$ is at most the corresponding digit of $y$. We write $\dig{d_m,\dots,d_1,d_0}_s=\sum_i d_is^i$ when $0\le d_i<s$ for all $i$.
+
+\begin{lemma}[Lucas~\cite{Lucas}; Kummer~\cite{Kummer}]\label{lem:lucas}
+Let $s$ be prime and $0\le x\le y$. Then $s\nmid\bin yx$ if and only if $x\dom s y$. Equivalently, there is no carry when $x$ and $y-x$ are added in base $s$.
+\end{lemma}
+
+\begin{lemma}\label{lem:sqfree}
+Let $n$ be squarefree and $0<k<n$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $\gcd\bigl(n,\bin nk\bigr)$ is the product of the primes $s\mid n$ with $s\mid\bin nk$.
+\item If $s\mid n$ and $s\nmid\bin nk$, then $s\mid k$ and $k/s\dom s n/s$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) is clear because $n$ is squarefree. (ii) The last base-$s$ digit of $n$ is $0$. By Lemma~\ref{lem:lucas} the last digit of $k$ is $0$, so $s\mid k$. Deleting the last digits of $k$ and $n$ leaves $k/s$ and $n/s$.
+\end{proof}
+
+\begin{lemma}\label{lem:lower}
+For composite $n$ and $1<k\le n/2$, the integer $n/\gcd(n,k)>1$ divides $\gcd\bigl(n,\bin nk\bigr)$. Consequently $f(n)\ge p(n)$.
+\end{lemma}
+\begin{proof}
+From $k\bin nk=n\bin{n-1}{k-1}$ we get $n\mid k\bin nk$, hence $n/\gcd(n,k)$ divides $\bin nk$. It also divides $n$. It exceeds $1$ since $\gcd(n,k)\le k<n$, and every divisor of $n$ exceeding $1$ is at least $p(n)$.
+\end{proof}
+
+\begin{lemma}[two-witness reformulation]\label{lem:two}
+Let $n=pqr$ with odd primes $p<q<r$ and $pq>r$.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $f(n)>n^{1/2}$ if and only if, for every integer $k$ with $1<k\le n/2$, at least two of $p,q,r$ divide $\bin nk$. In that case $f(n)\ge pq$.
+\item Let $\{s,t,u\}=\{p,q,r\}$. If $1<k\le n/2$ and neither $s$ nor $t$ divides $\bin nk$, then $k=st\,j$ for an integer $j$ with $1\le j\le (u-1)/2$, and
+\[
+tj\ \dom s\ tu\qquad\text{and}\qquad sj\ \dom t\ su .
+\]
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) By Lemma~\ref{lem:sqfree}(i), $\gcd(n,\bin nk)$ is the product of those of $p,q,r$ that divide $\bin nk$. A product of at least two of them is at least $pq>n^{1/2}$, because $pq>r$. A product of at most one of them is at most $r<n^{1/2}$, because $r<pq$.
+(ii) By Lemma~\ref{lem:sqfree}(ii), $s\mid k$ and $t\mid k$, so $k=st\,j$ with $j\ge1$. From $k\le n/2=stu/2$ we get $j\le u/2$, so $j\le(u-1)/2$ because $u$ is odd. Finally $k/s=tj\dom s n/s=tu$ and $k/t=sj\dom t n/t=su$ by Lemma~\ref{lem:sqfree}(ii).
+\end{proof}
+
+\section{Gap coordinates}\label{sec:gap}
+
+In Sections~\ref{sec:gap} and~\ref{sec:proof}, $p<q<r$ are primes satisfying \eqref{eq:H}, and
+\[
+a=q-p,\qquad c=r-q,\qquad b=a+c=r-p .
+\]
+Condition \eqref{eq:H} forces $p>2$, so all three primes are odd. Hence $a$ and $c$ are even, $a,c\ge2$, $b\ge4$, and $p>32$. Since $a,c<b$, condition \eqref{eq:H} gives
+\begin{equation}\label{eq:small}
+ab,\ ac,\ bc,\ c^2,\ a(a+b),\ b(a+b),\ c(b+c)\ <\ 2b^2\ <\ p,\qquad a+2b<3b<p,\quad b+2a<p .
+\end{equation}
+Every quantity in \eqref{eq:small} is therefore also smaller than $q$ and $r$. We also use $b<\sqrt{p/2}<p$ and $r=p+b<2p$.
+
+\begin{lemma}[gap-coordinate digits]\label{lem:digits}
+Under \eqref{eq:H}:
+\begin{enumerate}[label=\textup{(E\arabic*)}]
+\item $qr=\dig{1,\ a+b,\ ab}_p$;
+\item $pq=\dig{r-b-c,\ bc}_r$;
+\item $pr=\dig{1,\ c-a-1,\ q-ac}_q$ if $c>a$, and $pr=\dig{q+c-a-1,\ q-ac}_q$ if $c\le a$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(E1) $qr=(p+a)(p+b)=p^2+(a+b)p+ab$, with $0\le a+b<p$ and $0<ab<p$ by \eqref{eq:small}.
+(E2) $pq=(r-b)(r-c)=r^2-(b+c)r+bc=(r-b-c)\,r+bc$, with $0\le r-b-c<r$ (as $b+c<2b<r$) and $0<bc<r$.
+(E3) $pr=(q-a)(q+c)=q^2+(c-a)q-ac$, and $0<ac<q$. If $c>a$, this equals $q^2+(c-a-1)q+(q-ac)$ with $0\le c-a-1<q$. If $c\le a$, it equals $(q+c-a-1)q+(q-ac)$ with $0\le q+c-a-1\le q-1$, since $1\le a-c+1\le a<q$.
+\end{proof}
+
+The case distinction in (E3) is the \emph{borrow switch}. When $c\le a$ the coefficient $c-a$ is not positive. A borrow from the leading digit then makes the middle digit almost as large as $q$, and the corresponding domination condition becomes vacuous.
+
+\section{Proof of Theorem~\ref{thm:main}}\label{sec:proof}
+
+We treat the three pairs of primes separately.
+
+\begin{lemma}[the pair $\{p,q\}$]\label{lem:pq}
+Assume $c>a$. No integer $j$ with $1\le j\le (r-1)/2$ satisfies both $qj\dom p qr$ and $pj\dom q pr$.
+\end{lemma}
+\begin{proof}
+Suppose that $j$ does. Write $aj=\gamma p+\varepsilon$ with $0\le\varepsilon<p$. Then $qj=pj+aj=(j+\gamma)p+\varepsilon$. Since $j\le(r-1)/2<(p+b)/2<p$ (recall $r<2p$), we have $\gamma\le aj/p<a$, hence $j+\gamma<(p+b)/2+a\le p$ by \eqref{eq:small}. So the base-$p$ digits of $qj$ are $(j+\gamma,\varepsilon)$, and (E1) forces $j+\gamma\le a+b$ and $\varepsilon\le ab$. Hence $j\le a+b$, so $aj\le a(a+b)<p$, which gives $\gamma=0$ and $\varepsilon=aj$. Now $aj\le ab$ gives $j\le b$.
+
+Since $0<aj\le ab<q$, we have $pj=(q-a)j=(j-1)q+(q-aj)$, that is, $pj=\dig{j-1,\ q-aj}_q$. By (E3) with $c>a$, the relation $pj\dom q pr$ requires $j-1\le c-a-1$ and $q-aj\le q-ac$, that is, $j\le c-a$ and $j\ge c$. These are incompatible because $a>0$.
+\end{proof}
+
+\begin{lemma}[the pair $\{p,r\}$]\label{lem:pr}
+No integer $j$ with $1\le j\le (q-1)/2$ satisfies both $rj\dom p rq$ and $pj\dom r pq$. Here no assumption on the orientation of the gaps is needed.
+\end{lemma}
+\begin{proof}
+Suppose that $j$ does. Write $bj=\gamma p+\varepsilon$ with $0\le\varepsilon<p$, so $rj=(j+\gamma)p+\varepsilon$. From $j\le(q-1)/2<(p+a)/2<p$ we get $\gamma\le bj/p<b$, hence $j+\gamma<(p+a)/2+b\le p$ by \eqref{eq:small}. By (E1) (note $rq=qr$) we get $j+\gamma\le a+b$. Hence $bj\le b(a+b)<p$, so $\gamma=0$ and $\varepsilon=bj\le ab$, that is, $j\le a$.
+
+Then $0<bj\le ab<r$, so $pj=(r-b)j=\dig{j-1,\ r-bj}_r$. By (E2), $pj\dom r pq$ requires $r-bj\le bc$. Therefore $r\le b(j+c)\le b(a+c)=b^2$, which contradicts $b^2<p<r$.
+\end{proof}
+
+\begin{lemma}[the pair $\{q,r\}$]\label{lem:qr}
+Assume $c>a$. No integer $j$ with $1\le j\le (p-1)/2$ satisfies both $rj\dom q rp$ and $qj\dom r qp$.
+\end{lemma}
+\begin{proof}
+Suppose that $j$ does. Write $cj=\gamma q+\varepsilon$ with $0\le\varepsilon<q$, so $rj=(q+c)j=(j+\gamma)q+\varepsilon$. Since $j<p/2<q/2$, we have $\gamma\le cj/q<c/2$, and $j+\gamma<(q+c)/2<q$. So $rj$ has base-$q$ digits $(j+\gamma,\varepsilon)$. By (E3) with $c>a$, its middle digit must satisfy $j+\gamma\le c-a-1$. Hence $j\le c-a-1<c$.
+
+Then $0<cj<c^2<r$, so $qj=(r-c)j=\dig{j-1,\ r-cj}_r$. By (E2), $qj\dom r qp$ requires $r-cj\le bc$. Therefore $r\le c(j+b)\le c(c-a-1+b)<c(b+c)<p$, a contradiction.
+\end{proof}
+
+\begin{lemma}[an explicit witness when $c\le a$]\label{lem:witness}
+Assume $c\le a$, and put $j^*=\lceil (r-bc)/c\rceil$. Then $1\le j^*\le(p-1)/2$, $rj^*\dom q rp$ and $qj^*\dom r qp$.
+\end{lemma}
+\begin{proof}
+Since $bc<r$ we have $j^*\ge1$. By definition,
+\begin{equation}\label{eq:jstar}
+r-bc\ \le\ cj^*\ \le\ r-bc+c-1 .
+\end{equation}
+\emph{Range.} As $c\ge2$, $j^*\le (r-bc+c-1)/c=(r-1)/c-b+1\le (r-1)/2-b+1=(p-b+1)/2\le(p-1)/2$.
+
+\emph{Base $q$.} We have $q-ac=r-c-ac$. The right side of \eqref{eq:jstar} is at most $r-c-ac$, since this is equivalent to $2c-1\le (b-a)c=c^2$, that is, to $(c-1)^2\ge0$. Hence $0<cj^*\le q-ac<q$, and $rj^*=(q+c)j^*=\dig{j^*,\ cj^*}_q$. By (E3) with $c\le a$, $rp=\dig{q+c-a-1,\ q-ac}_q=\dig{p+c-1,\ q-ac}_q$. As $j^*<p+c-1$ and $cj^*\le q-ac$, we get $rj^*\dom q rp$.
+
+\emph{Base $r$.} By \eqref{eq:jstar} and $bc\ge c$, we have $0<r-bc\le cj^*<r$. Hence $qj^*=(r-c)j^*=\dig{j^*-1,\ r-cj^*}_r$ with $0<r-cj^*\le bc$. By (E2), $qp=\dig{r-b-c,\ bc}_r=\dig{p-c,\ bc}_r$. Since $j^*-1\le(p-3)/2<p-c$ and $r-cj^*\le bc$, we get $qj^*\dom r qp$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Since $r=p+b<2p\le pq$, Lemma~\ref{lem:two} applies, and $p<n^{1/2}<pq$.
+
+\emph{Case $c>a$.} Let $1<k\le n/2$. Suppose two of $p,q,r$ do not divide $\bin nk$. Lemma~\ref{lem:two}(ii) then gives an integer $j$ of one of three kinds: for the pair $\{s,t\}=\{p,q\}$ ($u=r$), a $j\le(r-1)/2$ with $qj\dom p qr$ and $pj\dom q pr$; for $\{p,r\}$ ($u=q$), a $j\le(q-1)/2$ with $rj\dom p rq$ and $pj\dom r pq$; for $\{q,r\}$ ($u=p$), a $j\le(p-1)/2$ with $rj\dom q rp$ and $qj\dom r qp$. Lemmas~\ref{lem:pq}, \ref{lem:pr} and~\ref{lem:qr} exclude these three cases. Hence at least two of the primes divide every such $\bin nk$, and $f(n)\ge pq$ by Lemma~\ref{lem:two}(i).
+
+For the upper bound take $k=r$. Since $p\nmid r$, the last base-$p$ digit of $r$ is non-zero while that of $n$ is $0$, so $p\mid\bin nr$ by Lemma~\ref{lem:lucas}; likewise $q\mid\bin nr$. In base $r$ we have $n=\dig{r-b-c,\ bc,\ 0}_r$ by (E2), and $r=\dig{1,0}_r$ with $1\le bc$, so $r\nmid\bin nr$. Thus $\gcd(n,\bin nr)=pq$ and $f(n)=pq$.
+
+\emph{Case $c\le a$.} Let $k^*=qr\,j^*$ with $j^*$ from Lemma~\ref{lem:witness}. Then $1<k^*\le qr(p-1)/2<n/2$. The last base-$q$ digits of $k^*$ and $n$ are $0$, and $k^*/q=rj^*\dom q rp=n/q$, so $k^*\dom q n$ and $q\nmid\bin n{k^*}$. In the same way $r\nmid\bin n{k^*}$. Since $1\le j^*<p$, $p\nmid k^*$, so $p\mid\bin n{k^*}$. Hence $\gcd(n,\bin n{k^*})=p$, and together with \eqref{eq:lower}, $f(n)=p$.
+
+Finally, if $f(n)=pq=n/r$, then $f(n)^3>n^2/4$ is equivalent to $4pq>r^2$, which holds because $r<2p$. So $f(n)>(n/2)^{2/3}$.
+\end{proof}
+
+\begin{remark}
+Each of Lemmas~\ref{lem:pq} and \ref{lem:qr} uses \eqref{eq:H} through a single inequality: $a(a+b)<p$ and $c(b+c)<r$ respectively. Lemma~\ref{lem:pr} uses $b(a+b)<p$ and $b^2<r$. Section~\ref{sec:comp} shows that the constant $2$ in \eqref{eq:H} cannot be replaced by $1.75$. The failures found there come from the pair $\{q,r\}$, where $c(b+c)<r$ fails.
+\end{remark}
+
+\section{Many triples with increasing gaps}\label{sec:many}
+
+\begin{lemma}[counting increasing triples]\label{lem:count}
+Let $L\ge2$, and let $x_1<x_2<\dots<x_k$ be integers with $x_k-x_1<L$. Then the number of triples $i<j<l$ with $x_l-x_j>x_j-x_i$ is at least $\tfrac12\bigl((k-3-\log_2L)^+\bigr)^2$.
+\end{lemma}
+\begin{proof}
+Fix $l\in\{3,\dots,k\}$ and put $D_t=x_l-x_t$ for $1\le t<l$. Call $j\in\{2,\dots,l-1\}$ \emph{bad} if $x_l-x_j\le x_j-x_{j-1}$, that is, if $D_j\le D_{j-1}-D_j$. For every $j$ we have $D_{j-1}>D_j$, and for bad $j$ we have $D_{j-1}\ge2D_j$. Since $D_{l-1}\ge1$ and $D_1<L$,
+\[
+2^{\#\text{bad}}\ \le\ \prod_{j=2}^{l-1}\frac{D_{j-1}}{D_j}=\frac{D_1}{D_{l-1}}<L ,
+\]
+so fewer than $\lambda=\log_2L$ indices are bad. Each good $j$ gives the triple $(j-1,j,l)$, and different pairs $(j,l)$ give different triples. The number of triples is therefore at least
+\[
+\sum_{l=3}^{k}(l-2-\lambda)^+\ \ge\ \sum_{m=\lceil\lambda\rceil}^{k-2}\bigl(m-\lceil\lambda\rceil\bigr)=\tfrac12 T(T+1),\qquad T=k-2-\lceil\lambda\rceil ,
+\]
+and $\tfrac12T(T+1)\ge\tfrac12\bigl((k-3-\lambda)^+\bigr)^2$ because $\lceil\lambda\rceil<\lambda+1$. (If $T<0$ the bound is $0$.)
+\end{proof}
+
+The extreme case of Lemma~\ref{lem:count} is a set whose gaps at least double from right to left, such as $x_t=-2^{k-t}$ $(1\le t\le k)$. Such a set has no increasing triple at all, while its span is only $2^{k-1}-1$, so some dependence on $\log_2 L$ is unavoidable.
+
+\begin{proof}[Proof of Theorem~\ref{thm:b}]
+Let $X$ be large, $L=\lfloor\sqrt{X/2}\rfloor$ and $M=\lceil X/L\rceil$. The intervals $I_t=[X+tL,\,X+(t+1)L)$, $0\le t<M$, cover $[X,2X)$. Let $k_t$ be the number of primes in $I_t$. By Chebyshev-type bounds we have
+\[
+\sum_t k_t\ \ge\ \pi(2X)-\pi(X)\ \ge\ \frac{X}{2\log X}
+\]
+for $X\ge150$; explicitly, this follows from the bounds $x/\log x<\pi(x)<1.25506\,x/\log x$ of Rosser and Schoenfeld~\cite{RS62} (the lower one for $x\ge17$).
+
+Three primes $p<q<r$ in the same $I_t$ satisfy $r-p\le L-1<\sqrt{X/2}\le\sqrt{p/2}$, so \eqref{eq:H} holds. By Lemma~\ref{lem:count}, $I_t$ contains at least $\varphi(k_t)$ triples of primes with $r-q>q-p$, where $\varphi(x)=\tfrac12\bigl((x-3-\log_2L)^+\bigr)^2$. By Theorem~\ref{thm:main} each such triple gives $n=pqr$ with $f(n)=pq>n^{1/2}$ and $n<(2X+L)^3<9X^3$. Different triples give different $n$ by unique factorisation.
+
+The function $\varphi$ is convex, so Jensen's inequality gives $\sum_t\varphi(k_t)\ge M\varphi\bigl(\frac1M\sum_tk_t\bigr)$. Now $X/L\le M\le 2X/L$, so $\frac1M\sum_tk_t\ge L/(4\log X)$. For large $X$ we also have $L/(4\log X)-3-\log_2L\ge L/(5\log X)$. Hence
+\[
+\sum_t\varphi(k_t)\ \ge\ \frac XL\cdot\frac12\Bigl(\frac{L}{5\log X}\Bigr)^2=\frac{XL}{50(\log X)^2}\ \ge\ \frac{X^{3/2}}{80(\log X)^2}.
+\]
+Given $N$, take $X=(N/9)^{1/3}$. All these $n$ are at most $N$, and since $\log X\le\frac13\log N$ there are at least $(N/9)^{1/2}\cdot9/(80(\log N)^2)=\frac{3}{80}N^{1/2}/(\log N)^2$ of them. This proves the theorem with $c=3/80$. Every step above that was stated for large $X$ holds for $X\ge6.3\cdot10^{7}$ (the binding one is $L/(4\log X)-3-\log_2L\ge L/(5\log X)$), so one may take $N_0=3\cdot10^{24}$; we have not tried to optimise $N_0$. The last statement follows from Theorem~\ref{thm:main}.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:a}]
+For squarefree $n=pqr$ we have $P(n)=r$ and $n/P(n)=pq$. Theorem~\ref{thm:main} gives the criterion, and the proof of Theorem~\ref{thm:b} gives infinitely many $n$ satisfying it.
+\end{proof}
+
+\begin{remark}
+Lemma~\ref{lem:count} uses nothing about primes except their number, and in a block with $k$ primes it guarantees only about $k^2/2$ increasing triples. A larger count needs information on the distribution of primes inside the blocks. For example, cut each block $I_t$ into ten sub-blocks of length $L/10$. Then any $p$, $q$, $r$ taken from the sub-blocks numbered $0$, $1$ and $5$ satisfy $r-q>q-p$. If almost all sub-blocks contained $\gg L/\log X$ primes, this would give $\gg N^{2/3}/(\log N)^3$ integers $n\le N$. Theorem~\ref{thm:b} uses only Chebyshev-type information.
+\end{remark}
+
+\section{Computations}\label{sec:comp}
+
+The programs are listed in the appendix. All of them examine the binomial coefficients themselves. None of them uses Lemmas~\ref{lem:digits}--\ref{lem:witness}.
+
+\paragraph{Exhaustive check of Theorem~\ref{thm:main}.}
+The program \texttt{verify\_triples.c} runs through all prime triples $p<q<r$ with $3\le p\le 30{,}000$ and $2(r-p)^2<p$. For each $n=pqr$ and each of the three pairs $\{s,t\}$, it scans \emph{all} multiples $k$ of $st$ up to $n/2$ and tests whether $k$ is digit-dominated by $n$ in both bases. By Lemma~\ref{lem:sqfree}, Lemma~\ref{lem:lower} (the gcd is never $1$) and the fact that $k=r$ always gives $\gcd(n,\bin nr)=pq$, while $q<r<pq$, this determines $f(n)$ exactly: $f=p$ if the pair $\{q,r\}$ admits such a $k$, otherwise $f=q$ if $\{p,r\}$ does, otherwise $f=r$ if $\{p,q\}$ does, and otherwise $f=pq$.
+\begin{center}
+\begin{tabular}{lrrr}\toprule
+range & triples & increasing gaps & Theorem~\ref{thm:main} confirmed\\\midrule
+$3\le p\le 30{,}000$, $2(r-p)^2<p$ & 102{,}122 & 50{,}413 & 102{,}122\\\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Independent check with Legendre's formula.}
+The program \texttt{legendre\_check.c} computes $v_s\bigl(\bin nk\bigr)=\sum_{i\ge1}\bigl(\lfloor n/s^i\rfloor-\lfloor k/s^i\rfloor-\lfloor(n-k)/s^i\rfloor\bigr)$ for every $k\le n/2$ and every $s\in\{p,q,r\}$. It uses neither Lucas' theorem nor the reduction to multiples of $st$.
+\begin{center}
+\begin{tabular}{rrrrrl}\toprule
+$p$ & $q$ & $r$ & $n$ & $f(n)$ & comment\\\midrule
+1009 & 1013 & 1019 & 1{,}041{,}537{,}223 & 1{,}022{,}117 & \eqref{eq:H}, $r-q>q-p$: $f=pq$\\
+1013 & 1019 & 1021 & 1{,}053{,}924{,}187 & 1{,}013 & \eqref{eq:H}, $r-q\le q-p$: $f=p$\\
+401 & 409 & 419 & 68{,}719{,}771 & 409 & outside \eqref{eq:H}, $r-q>q-p$: $f=q$\\
+3389 & 3391 & 3433 & 39{,}452{,}375{,}867 & 3{,}389 & $1.75\,b^2<p<2b^2$, $r-q>q-p$: $f=p$\\
+\bottomrule
+\end{tabular}
+\end{center}
+The first two rows are covered by Theorem~\ref{thm:main}: $f(n)=pq$ for $(1009,1013,1019)$, where $6>4$, and $f(n)=p$ for $(1013,1019,1021)$, where $2\le6$. The minimiser in the first row is $k=r$, as in the proof. The last two rows lie outside \eqref{eq:H} and are discussed next.
+
+\paragraph{Sharpness of \eqref{eq:H}.}
+Replace the constant $2$ in \eqref{eq:H} by $\kappa$ and rerun \texttt{verify\_triples.c} for $p\le 8000$:
+\begin{center}
+\begin{tabular}{lrrr}\toprule
+condition & triples & increasing gaps & formula of Theorem~\ref{thm:main} holds\\\midrule
+$2\,(r-p)^2<p$, $p\le 8000$ & 10{,}089 & 4{,}947 & 10{,}089\\
+$1.9\,(r-p)^2<p$, $p\le 8000$ & 10{,}635 & 5{,}211 & 10{,}635\\
+$1.75\,(r-p)^2<p$, $p\le 8000$ & 11{,}563 & 5{,}668 & 11{,}556\\
+$(r-p)^2<p$, $p\le 8000$ & 21{,}324 & 10{,}508 & 18{,}195\\
+\bottomrule
+\end{tabular}
+\end{center}
+For $\kappa=1.75$ the formula fails for exactly seven triples. The smallest is $(3389,3391,3433)$: here $r-q=42>2=q-p$, but $f(n)=3389=p$, as the Legendre check confirms. Its pair $\{q,r\}$ admits a doubly dominated $k$, because $c(b+c)=42\cdot86=3612>r=3433$. In fact the minimiser found by the Legendre check is $k=442\,369\,514=qr\cdot 38$, and $38=\lceil (r-bc)/c\rceil$ is the value given by the formula for $j^*$ in Lemma~\ref{lem:witness}, although that lemma assumes $c\le a$ and does not apply here. Thus the constant $2$ cannot be replaced by $1.75$. Outside \eqref{eq:H} the orientation alone does not decide: $(401,409,419)$ has $r-q=10>8=q-p$, but $f(n)=409$.
+
+\paragraph{The smallest examples.}
+The smallest triples in the range \eqref{eq:H} with increasing gaps are listed below. For each, Theorem~\ref{thm:main} gives $f(n)=pq$, and \texttt{verify\_triples.c} confirms it.
+\begin{center}
+\begin{tabular}{rrrrr}\toprule
+$p$ & $q$ & $r$ & $n=pqr$ & $f(n)=pq$\\\midrule
+101 & 103 & 107 & 1\,113\,121 & 10\,403\\
+107 & 109 & 113 & 1\,317\,919 & 11\,663\\
+149 & 151 & 157 & 3\,532\,343 & 22\,499\\
+191 & 193 & 197 & 7\,262\,011 & 36\,863\\
+191 & 193 & 199 & 7\,335\,737 & 36\,863\\
+223 & 227 & 233 & 11\,794\,693 & 50\,621\\\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The function $f$ for small $n$.}
+The program \texttt{list\_large\_f.c} lists the composite $n$ with $f(n)>n^{1/2}$. By Lemma~\ref{lem:lower} it only needs to examine $k$ sharing a divisor $d\ge n^{1/2}$ with $n$, and it computes each $\gcd(n,\bin nk)$ by Kummer's theorem. There are 793 such $n\le 20{,}000$; the first $24$ of them are 30, 70, 84, 105, 132, 140, 154, 165, 168, 182, 260, 273, 280, 306, 357, 364, 380, 385, 399, 418, 420, 455, 495, 520.
+For $n\le3000$ this list (137 values) agrees exactly with the output of \texttt{exhaust\_f.c}, which examines every $k$. None of these $n$ comes from Theorem~\ref{thm:main}: the smallest $n$ it produces is $101\cdot103\cdot107=1\,113\,121$. So all the small examples have other shapes; Theorem~\ref{thm:main} describes one infinite family, not all of them. Among composite $n\le12{,}000$ the largest value of $\log f(n)/\log n$ is $0.6815$, attained at $n=7293=3\cdot11\cdot13\cdot17$ with $f(n)=429=n/P(n)$.
+
+\paragraph{Four nearby primes.}
+One might hope that four nearby primes $p_1<p_2<p_3<p_4$ give $f(n)=n/P(n)\approx n^{3/4}$. The program \texttt{cluster4.c} examined all 54 quadruples of primes with $20{,}000\le p_1\le 20{,}400$ and $p_4-p_1\le 27$, so that $(p_4-p_1)^3<p_1$. In \emph{every} case some $k\le n/2$ is digit-dominated in two of the four bases, so $f(n)<n/P(n)$. This includes the six quadruples whose gaps strictly increase. For example, for $(20021,20023,20029,20047)$ the multiplier $j=1113$ of $p_3p_4$ works. With four primes the multiplier $j$ has two base-$p$ digits rather than one, and we do not know how to extend the argument of Section~\ref{sec:proof}.
+
+\section{Concluding remarks}\label{sec:remarks}
+
+Theorem~\ref{thm:b} answers Erd\H{o}s Problem \#700(b) affirmatively. Parts (a) and (c) remain open. Theorem~\ref{thm:main} answers (a) completely for the products $pqr$ in the range \eqref{eq:H}: $f(n)=n/P(n)$ exactly when the gaps increase, and $f(n)=p(n)$ otherwise. Two questions suggested by this work are:
+\begin{enumerate}
+\item What is $\limsup_{n}\log f(n)/\log n$? Theorem~\ref{thm:b} shows that it is at least $2/3$. The value $0.6815$ at $n=7293$ shows that larger exponents occur for individual $n$; we do not know whether they occur infinitely often. A positive answer to (c) would not contradict a value of $1$.
+\item Is there an analogue of Theorem~\ref{thm:main} for products of $m\ge4$ primes in some other configuration? In the experiments of Section~\ref{sec:comp}, clusters of four nearby primes did not work.
+\end{enumerate}
+
+\begin{thebibliography}{99}
+\bibitem{ES78} P.~Erd\H{o}s and G.~Szekeres, Some number theoretic problems on binomial coefficients, \emph{Austral. Math. Soc. Gaz.} \textbf{5} (1978), 97--99.
+\bibitem{EP700} T.~F.~Bloom, Erd\H{o}s Problem \#700, \url{https://www.erdosproblems.com/700}.
+\bibitem{TaoDB} The Erd\H{o}s problems database, \url{https://github.com/teorth/erdosproblems} (file \texttt{data/problems.yaml}, entry 700, status ``open'', checked 28 October 2026).
+\bibitem{FC} Google DeepMind, Formal Conjectures, \texttt{FormalConjectures/ErdosProblems/700.lean}, \url{https://github.com/google-deepmind/formal-conjectures}.
+\bibitem{Guy} R.~K.~Guy, \emph{Unsolved Problems in Number Theory}, 3rd ed., Springer, New York, 2004, problems B31 and B33.
+\bibitem{OEIS} OEIS Foundation, The On-Line Encyclopedia of Integer Sequences, sequence A091963.
+\bibitem{Lucas} \'E.~Lucas, Th\'eorie des fonctions num\'eriques simplement p\'eriodiques, \emph{Amer. J. Math.} \textbf{1} (1878), 184--240 and 289--321.
+\bibitem{Kummer} E.~E.~Kummer, \"Uber die Erg\"anzungss\"atze zu den allgemeinen Reciprocit\"atsgesetzen, \emph{J. Reine Angew. Math.} \textbf{44} (1852), 93--146.
+\bibitem{RS62} J.~B.~Rosser and L.~Schoenfeld, Approximate formulas for some functions of prime numbers, \emph{Illinois J. Math.} \textbf{6} (1962), 64--94.
+\end{thebibliography}
+
+\appendix
+\section{Programs}
+
+All programs are in C99 (with \texttt{unsigned \_\_int128} where noted) and were compiled with \texttt{gcc -O2}; \texttt{legendre\_check.c} also uses \texttt{-fopenmp}. Commands and outputs:
+\begin{lstlisting}[language={}]
+$ gcc -O2 -o verify_triples verify_triples.c
+$ ./verify_triples 3 30000 2 | tail -1
+p in [3,30000], kappa=2.000: triples=102122 (increasing gaps: 50413), formula holds for 102122
+$ for K in 2 1.9 1.75 1; do ./verify_triples 3 8000 $K | tail -1; done
+p in [3,8000], kappa=2.000: triples=10089 (increasing gaps: 4947), formula holds for 10089
+p in [3,8000], kappa=1.900: triples=10635 (increasing gaps: 5211), formula holds for 10635
+p in [3,8000], kappa=1.750: triples=11563 (increasing gaps: 5668), formula holds for 11556
+p in [3,8000], kappa=1.000: triples=21324 (increasing gaps: 10508), formula holds for 18195
+$ ./verify_triples 3 8000 1.75 | grep MISMATCH
+MISMATCH p=3389 q=3391 r=3433 f=3389 formula=11492099
+MISMATCH p=4091 q=4093 r=4139 f=4091 formula=16744463
+MISMATCH p=5279 q=5281 r=5333 f=5279 formula=27878399
+MISMATCH p=5501 q=5503 r=5557 f=5501 formula=30272003
+MISMATCH p=6761 q=6763 r=6823 f=6761 formula=45724643
+MISMATCH p=6779 q=6781 r=6841 f=6779 formula=45968399
+MISMATCH p=7757 q=7759 r=7823 f=7757 formula=60186563
+$ gcc -O2 -fopenmp -o legendre_check legendre_check.c
+$ for t in "1009 1013 1019" "1013 1019 1021" "401 409 419" "3389 3391 3433"; do ./legendre_check $t; done
+p=1009 q=1013 r=1019 n=1041537223: f(n)=1022117 (first minimiser k=1019); pq=1022117; f(n)^2>n: yes
+p=1013 q=1019 r=1021 n=1053924187: f(n)=1013 (first minimiser k=523320697); pq=1032247; f(n)^2>n: no
+p=401 q=409 r=419 n=68719771: f(n)=409 (first minimiser k=3864437); pq=164009; f(n)^2>n: no
+p=3389 q=3391 r=3433 n=39452375867: f(n)=3389 (first minimiser k=442369514); pq=11492099; f(n)^2>n: no
+$ gcc -O2 -o list_large_f list_large_f.c && ./list_large_f 20000 > list20000.txt
+composite n <= 20000 with f(n) > sqrt(n): 793
+$ gcc -O2 -o exhaust_f exhaust_f.c
+$ ./exhaust_f 3000 | awk '$2*$2>$1{print $1}' > a1.txt; awk '$1<=3000' list20000.txt > a2.txt; cmp a1.txt a2.txt && wc -l < a1.txt
+137
+$ ./exhaust_f 12000 | awk '{printf "%d %d %.4f\n",$1,$2,log($2)/log($1)}' | sort -k3 -nr | head -1
+7293 429 0.6815
+$ gcc -O2 -o cluster4 cluster4.c && ./cluster4 20000 20400 27 | tail -1
+clusters=54 without double domination=0
+\end{lstlisting}
+
+\subsection{\texttt{verify\_triples.c}}
+\begin{lstlisting}
+/* verify_triples.c -- exhaustive check of Theorem 1.1.
+   For all prime triples p<q<r with LO <= p <= HI and KAPPA*(r-p)^2 < p, compute f(pqr) exactly and
+   compare it with the formula  f = pq if r-q > q-p,  f = p otherwise.
+   Exact computation: n=pqr is squarefree, so gcd(n,C(n,k)) is the product of the primes s in {p,q,r}
+   with s | C(n,k) (Lemma 2.2).  A value smaller than pq occurs iff some k <= n/2 has two primes s,t
+   with s,t not dividing C(n,k); by Lucas' theorem this means k = s*t*j is digit-dominated by n in
+   bases s and t.  We scan ALL multiples k of s*t up to n/2 (a fast last-digit prefilter only skips
+   k that fail domination in its last digit), for each of the three pairs.
+   Then f = p if {q,r} admits such k, else q if {p,r} does, else r if {p,q} does, else pq.
+   Usage: verify_triples LO HI KAPPA      (KAPPA=2 is the hypothesis of Theorem 1.1) */
+#include <stdio.h>
+#include <stdlib.h>
+typedef unsigned long long u64;
+static int dom(u64 k, u64 n, u64 s){ while(k>0){ if(k%s > n%s) return 0; k/=s; n/=s; } return 1; }
+static int pair_dominated(u64 n, u64 s, u64 t){            /* exists k<=n/2, s*t|k, k dom_s n and k dom_t n */
+  u64 st=s*t, ls=(n/s)%s, lt=(n/t)%t;                      /* last digits of n/s (base s), n/t (base t) */
+  for(u64 k=st; k<=n/2; k+=st){ u64 j=k/st;
+    if(((t%s)*(j%s))%s > ls) continue;                     /* last base-s digit of k/s = t*j */
+    if(((s%t)*(j%t))%t > lt) continue;                     /* last base-t digit of k/t = s*j */
+    if(dom(k,n,s) && dom(k,n,t)) return 1; }
+  return 0; }
+int main(int argc, char **argv){
+  u64 lo=strtoull(argv[1],0,10), hi=strtoull(argv[2],0,10); double kappa=atof(argv[3]);
+  u64 M=hi+5000; char *comp=calloc(M+1,1);
+  for(u64 i=2;i*i<=M;i++) if(!comp[i]) for(u64 j=i*i;j<=M;j+=i) comp[j]=1;
+  long tot=0, ok=0, incr=0;
+  for(u64 p=(lo<3?3:lo); p<=hi; p++){ if(comp[p]) continue;
+    for(u64 q=p+2; kappa*(double)(q-p)*(double)(q-p) < (double)p; q++){ if(comp[q]) continue;
+      for(u64 r=q+2; kappa*(double)(r-p)*(double)(r-p) < (double)p; r++){ if(comp[r]) continue;
+        u64 n=p*q*r, f;
+        if(pair_dominated(n,q,r)) f=p; else if(pair_dominated(n,p,r)) f=q;
+        else if(pair_dominated(n,p,q)) f=r; else f=p*q;
+        u64 formula = (r-q > q-p) ? p*q : p;
+        tot++; incr += (r-q > q-p); if(f==formula) ok++;
+        else printf("MISMATCH p=%llu q=%llu r=%llu f=%llu formula=%llu\n",p,q,r,f,formula);
+      } } }
+  printf("p in [%llu,%llu], kappa=%.3f: triples=%ld (increasing gaps: %ld), formula holds for %ld\n",
+         lo,hi,kappa,tot,incr,ok);
+  return 0; }
+\end{lstlisting}
+
+\subsection{\texttt{legendre\_check.c}}
+\begin{lstlisting}
+/* legendre_check.c -- independent check of single values f(pqr), with no use of Lucas' theorem.
+   f(n) = min over 1<k<=n/2 of gcd(n,C(n,k)); for squarefree n = pqr the gcd is the product of the
+   primes s with v_s(C(n,k)) >= 1, and v_s(C(n,k)) is computed by Legendre's formula
+   sum_i ( floor(n/s^i) - floor(k/s^i) - floor((n-k)/s^i) ).  Every k is examined.
+   Usage: legendre_check p q r        (compile with -fopenmp) */
+#include <stdio.h>
+#include <stdlib.h>
+typedef unsigned long long u64;
+static int vleg(u64 n, u64 k, u64 s){ int v=0; u64 m=s;
+  for(;;){ v += (int)(n/m - k/m - (n-k)/m); if(m > n/s) break; m*=s; } return v; }
+int main(int argc, char **argv){
+  u64 p=strtoull(argv[1],0,10), q=strtoull(argv[2],0,10), r=strtoull(argv[3],0,10), n=p*q*r;
+  u64 best=n, bestk=0;
+  #pragma omp parallel
+  { u64 lb=n, lk=0;
+    #pragma omp for schedule(static)
+    for(u64 k=2;k<=n/2;k++){ u64 g=1;
+      if(vleg(n,k,p)) g*=p; if(vleg(n,k,q)) g*=q; if(vleg(n,k,r)) g*=r;
+      if(g<lb){ lb=g; lk=k; } }
+    #pragma omp critical
+    { if(lb<best || (lb==best && lk<bestk)){ best=lb; bestk=lk; } } }
+  printf("p=%llu q=%llu r=%llu n=%llu: f(n)=%llu (first minimiser k=%llu); pq=%llu; f(n)^2>n: %s\n",
+         p,q,r,n,best,bestk,p*q,(best*best>n)?"yes":"no");
+  return 0; }
+\end{lstlisting}
+
+\subsection{\texttt{list\_large\_f.c}}
+\begin{lstlisting}
+/* list_large_f.c -- all composite n <= N with f(n) > sqrt(n).
+   By Lemma 2.3, gcd(n,C(n,k)) >= n/gcd(n,k); so only k with gcd(n,k) >= sqrt(n), i.e. k a multiple of a
+   divisor d >= sqrt(n) of n, can give gcd(n,C(n,k)) <= sqrt(n).  For those k the gcd is computed exactly
+   with Kummer's theorem: v_s(C(n,k)) = number of carries when adding k and n-k in base s.
+   Usage: list_large_f N */
+#include <stdio.h>
+#include <stdlib.h>
+typedef unsigned long long u64; typedef unsigned __int128 u128;
+static int carries(u64 x, u64 y, u64 s, int cap){ int c=0, cy=0;
+  while(x>0 || y>0 || cy){ u64 t=x%s+y%s+cy; cy=(t>=s); c+=cy; if(c>=cap) return cap; x/=s; y/=s; } return c; }
+int main(int argc, char **argv){
+  u64 N=strtoull(argv[1],0,10); long count=0;
+  for(u64 n=4;n<=N;n++){
+    u64 ps[20]; int es[20], w=0; u64 t=n;
+    for(u64 s=2;s*s<=t;s++) if(t%s==0){ int e=0; while(t%s==0){ t/=s; e++; } ps[w]=s; es[w]=e; w++; }
+    if(t>1){ ps[w]=t; es[w]=1; w++; }
+    if(w==1 && es[0]==1) continue;                         /* prime */
+    u64 divs[4096]; int nd=1; divs[0]=1;
+    for(int i=0;i<w;i++){ int cur=nd; u64 m=1; for(int e=1;e<=es[i];e++){ m*=ps[i]; for(int a=0;a<cur;a++) divs[nd++]=divs[a]*m; } }
+    int good=1;
+    for(int a=0;a<nd && good;a++){ u64 d=divs[a]; if((u128)d*d < n || d > n/2) continue;
+      for(u64 k=d;k<=n/2 && good;k+=d){ u128 g=1;
+        for(int i=0;i<w;i++){ int c=carries(k,n-k,ps[i],es[i]); for(int e=0;e<c;e++) g*=ps[i]; }
+        if(g*g <= n) good=0; } }
+    if(good){ count++; printf("%llu\n",n); } }
+  fprintf(stderr,"composite n <= %llu with f(n) > sqrt(n): %ld\n",N,count);
+  return 0; }
+\end{lstlisting}
+
+\subsection{\texttt{exhaust\_f.c}}
+\begin{lstlisting}
+/* exhaust_f.c -- f(n) for every composite n <= N by examining every k (Kummer's theorem).
+   Output per line: n f(n) first-minimiser-k n/P(n) n/Q(n) omega(n).   Usage: exhaust_f N */
+#include <stdio.h>
+#include <stdlib.h>
+static int carries(long x, long y, long s, int cap){ int c=0, cy=0;
+  while(x>0 || y>0 || cy){ long t=x%s+y%s+cy; cy=(t>=s); c+=cy; if(c>=cap) return cap; x/=s; y/=s; } return c; }
+int main(int argc, char **argv){
+  long N=atol(argv[1]);
+  for(long n=4;n<=N;n++){
+    long ps[16]; int es[16], w=0; long t=n;
+    for(long s=2;s*s<=t;s++) if(t%s==0){ int e=0; while(t%s==0){ t/=s; e++; } ps[w]=s; es[w]=e; w++; }
+    if(t>1){ ps[w]=t; es[w]=1; w++; }
+    if(w==1 && es[0]==1) continue;
+    long best=n, bk=0;
+    for(long k=2;k<=n/2;k++){ long g=1;
+      for(int i=0;i<w && g<best;i++){ int c=carries(k,n-k,ps[i],es[i]); for(int e=0;e<c;e++) g*=ps[i]; }
+      if(g<best){ best=g; bk=k; } }
+    long Q=1; for(int i=0;i<w;i++){ long m=1; for(int e=0;e<es[i];e++) m*=ps[i]; if(m>Q) Q=m; }
+    printf("%ld %ld %ld %ld %ld %d\n", n, best, bk, n/ps[w-1], n/Q, w); }
+  return 0; }
+\end{lstlisting}
+
+\subsection{\texttt{cluster4.c}}
+\begin{lstlisting}
+/* cluster4.c -- four nearby primes p1<p2<p3<p4 with p4-p1 <= H and p1 in [LO,HI], n = p1p2p3p4.
+   Reports whether some k <= n/2 is digit-dominated by n in two of the four bases (Lucas), i.e. whether
+   two of the primes fail to divide C(n,k).  If so, f(n) < n/P(n).   Usage: cluster4 LO HI H */
+#include <stdio.h>
+#include <stdlib.h>
+typedef unsigned __int128 u128; typedef unsigned long long u64;
+static int dom(u128 k, u128 n, u64 s){ while(k>0){ if(k%s > n%s) return 0; k/=s; n/=s; } return 1; }
+static int isprime(u64 x){ if(x<2) return 0; for(u64 d=2; d*d<=x; d++) if(x%d==0) return 0; return 1; }
+int main(int argc, char **argv){
+  u64 lo=strtoull(argv[1],0,10), hi=strtoull(argv[2],0,10), H=strtoull(argv[3],0,10);
+  u64 pr[200000]; int np=0; for(u64 x=lo;x<=hi+H;x++) if(isprime(x)) pr[np++]=x;
+  long tot=0, good=0;
+  for(int a=0;a<np && pr[a]<=hi;a++) for(int b=a+1;b<np && pr[b]-pr[a]<=H;b++)
+  for(int c=b+1;c<np && pr[c]-pr[a]<=H;c++) for(int d=c+1;d<np && pr[d]-pr[a]<=H;d++){
+    u64 P[4]={pr[a],pr[b],pr[c],pr[d]}; u128 n=(u128)P[0]*P[1]*P[2]*P[3]; int ok=1, bi=-1, bj=-1; u64 jw=0;
+    for(int i=0;i<4 && ok;i++) for(int i2=i+1;i2<4 && ok;i2++){ u64 s=P[i], t=P[i2]; u128 st=(u128)s*t, J=n/(2*st);
+      u64 ls=(u64)((n/s)%s), lt=(u64)((n/t)%t);
+      for(u128 j=1;j<=J;j++){ if((u64)(((u128)(t%s)*(j%s))%s) > ls) continue; if((u64)(((u128)(s%t)*(j%t))%t) > lt) continue;
+        if(dom(st*j,n,s) && dom(st*j,n,t)){ ok=0; bi=i; bj=i2; jw=(u64)j; break; } } }
+    tot++; good+=ok;
+    printf("%llu %llu %llu %llu gaps %llu %llu %llu : %s", P[0],P[1],P[2],P[3],P[1]-P[0],P[2]-P[1],P[3]-P[2], ok?"no double domination":"double domination");
+    if(!ok) printf(" (pair %d,%d, k = p%d*p%d*%llu)", bi+1, bj+1, bi+1, bj+1, jw); printf("\n"); fflush(stdout); }
+  printf("clusters=%ld without double domination=%ld\n", tot, good);
+  return 0; }
+\end{lstlisting}
+
+\end{document}

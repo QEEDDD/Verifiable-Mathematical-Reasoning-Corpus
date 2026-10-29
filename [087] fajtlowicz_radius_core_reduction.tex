@@ -1,0 +1,1058 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\hypersetup{pdftitle={Spanning trees of small diameter and the Randic index: a reduction of Fajtlowicz's radius conjecture},
+  pdfsubject={Randic index, radius, Graffiti conjecture}}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,breakatwhitespace=false,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,frame=single,framesep=3pt,xleftmargin=4pt,xrightmargin=4pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\ecc}{\operatorname{ecc}}
+\newcommand{\Rp}{R'}
+
+\title[Spanning trees of small diameter and the Randi\'c index]{Spanning trees of small diameter and the Randi\'c index:\\
+a reduction of Fajtlowicz's radius conjecture to $2$-connected cores,\\ and the case of maximum degree at most five}
+
+\date{October 2026. Draft research report.}
+
+\begin{document}
+
+\begin{abstract}
+Fajtlowicz conjectured in 1988 that the Randi\'c index $R(G)=\sum_{uv\in E(G)}(d_ud_v)^{-1/2}$ of every connected
+graph $G$ satisfies $R(G)\ge\rad(G)-1$. We study the stronger inequality $\Rp(G)\ge\rho(G)$, where
+$\Rp(G)=\sum_{uv\in E(G)}1/\max(d_u,d_v)$ is the modified Randi\'c index of Dvo\v{r}\'ak, Lidick\'y and
+\v{S}krekovski, and $\rho(G)$ is the \emph{absolute radius} of $G$, i.e.\ half the minimum diameter of a spanning tree.
+Since $R\ge\Rp$ and $\rho\ge\max\{\rad-\tfrac12,\ \diam/2\}$, this inequality would imply Fajtlowicz's conjecture
+and the theorem $\Rp\ge\diam/2$ of Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski at the same time; it is tight for all
+paths with at least three vertices. We develop an exact calculus for $\Rp$ and $\rho$ under deletion of edges and pendant vertices and under
+splitting at cut vertices, and show that a minimal counterexample is a $2$-connected core carrying pendant
+vertices under strong local constraints. As consequences we prove:
+(i) $\Rp(G)\ge\rho(G)$ for every connected graph of maximum degree at most four, by a short argument (this
+strengthens the theorem $\Rp\ge\rad-\frac12$ of Cygan, Pilipczuk and \v{S}krekovski for chemical graphs);
+(ii) the same for maximum degree at most five, with a finite computer check; in particular Fajtlowicz's
+conjecture holds for all graphs of maximum degree at most five;
+(iii) the same for every graph whose blocks have at most eleven vertices or cyclomatic number at most eight.
+In general, $\Rp\ge\rho$ is reduced to a \emph{core inequality} $\rho(K)\le\Rp(K)-1+s/3$ for $2$-connected graphs $K$
+with $s\le2$ vertices of degree two and all other degrees at least three. We verify the core inequality for all such
+$K$ with at most eleven vertices and all such $K$ of cyclomatic number at most eight, prove it for hub-dominated
+families, and show that a natural rooted strengthening
+is false. \textbf{The core inequality, and with it Fajtlowicz's conjecture for unbounded maximum degree, remains open.}
+\end{abstract}
+
+\maketitle
+
+\noindent\emph{Status of this report.} This is a research report, not a solution of Fajtlowicz's conjecture.
+Everything labelled Theorem, Proposition, Lemma or Corollary is proved in the text; computer-assisted steps are
+marked as such and the programs are listed in Appendix~\ref{app:code}. Statements labelled Conjecture are open.
+
+\tableofcontents
+
+%==========================================================================================
+\section{Introduction}\label{sec:intro}
+
+The Randi\'c index of a graph $G$ is $R(G)=\sum_{uv\in E(G)}(d_ud_v)^{-1/2}$, where $d_v$ denotes the degree of
+$v$~\cite{Randic}. In 1988 the computer program Graffiti produced the following conjecture.
+
+\begin{conjecture}[Fajtlowicz~\cite{Fajtlowicz}]\label{conj:F}
+Every connected graph $G$ satisfies $R(G)\ge\rad(G)-1$.
+\end{conjecture}
+
+Caporossi and Hansen~\cite{CaporossiHansen} proved $R(T)\ge\rad(T)+\sqrt2-\frac32$ for trees $T$ and proposed the
+stronger bound $R(G)\ge\rad(G)$ for all connected graphs except paths with an even number of vertices.
+Conjecture~\ref{conj:F} is known for unicyclic, bicyclic and tricyclic graphs~\cite{LiuGutman,YouLiu}, for graphs of
+cyclomatic number at most four (via the harmonic index, Deng, Tang and Zhang~\cite{DTZ}), for chemical graphs, i.e.\
+graphs of maximum degree at most four (Cygan, Pilipczuk and \v{S}krekovski~\cite{CPS}), and for cacti
+(Doig~\cite{Doig1}). Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski~\cite{DLS} introduced the smaller index
+\[
+\Rp(G)=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)}\qquad(\le R(G)),
+\]
+and proved $\Rp(G)\ge\diam(G)/2$, which gives $R(G)\ge\rad(G)/2$; Yang and Lu~\cite{YangLu} proved
+$R(G)\ge\diam(G)/2+\sqrt2-1$ for every connected graph, with equality only for paths with at least three vertices. Cygan, Pilipczuk and \v{S}krekovski~\cite{CPS}
+proved $\Rp(G)\ge\rad(G)-\frac12$ for chemical graphs, and $R(G)\ge\rad(G)$ for chemical graphs other than paths
+with an even number $n\ge4$ of vertices, using a structure they called \emph{bags}; they remarked that their proof uses
+the degree bound in only one step, that the corresponding lemma for general bags would imply
+Conjecture~\ref{conj:F}, and that the general case had eluded them.
+The general conjecture is open; see also~\cite{Doig2}.
+
+\subsection{The problem studied here}
+The integer radius is not the right parameter for an exact statement: for the path $P_{2k}$ with $k\ge2$ one has
+$\Rp(P_{2k})=k-\frac12<k=\rad(P_{2k})$. We use instead the \emph{absolute radius} $\rho(G)$, the radius of $G$ regarded
+as a metric space in which every edge is a segment of length one (Section~\ref{sec:prelim}). It satisfies
+$\rad(G)-\frac12\le\rho(G)\le\rad(G)$ and $\rho(G)\ge\diam(G)/2$, and $2\rho(G)$ is the minimum diameter of a spanning
+tree of $G$ (Hassin and Tamir~\cite{HassinTamir}). For every path with $n\ge3$ vertices, $\Rp(P_n)=\rho(P_n)=\frac{n-1}2$.
+
+\begin{problem}[spanning-tree form]\label{prob:main}
+Does every connected graph $G$ have a spanning tree of diameter at most $2\Rp(G)$? Equivalently, is
+$\Rp(G)\ge\rho(G)$ for every connected graph $G$?
+\end{problem}
+
+An affirmative answer would give $R(G)\ge\Rp(G)\ge\rho(G)\ge\rad(G)-\frac12$, i.e.\ Conjecture~\ref{conj:F} with
+$\frac12$ to spare, and it would contain the Dvo\v{r}\'ak--Lidick\'y--\v{S}krekovski theorem because
+$\rho\ge\diam/2$. Since $\Rp\le H$, the harmonic index $H(G)=\sum_{uv}2/(d_u+d_v)$, it would also give
+$H(G)\ge\rho(G)$. All connected graphs with at most $11$ vertices satisfy $\Rp\ge\rho$ (Section~\ref{sec:comp}).
+
+\subsection{Results}
+Our method is a minimal-counterexample analysis built on three exact tools: an identity for $\Rp$ when a graph is
+split at a cut vertex and the two sides are padded with pendant vertices (Lemma~\ref{lem:padM}), the matching
+inequality $\rho(G)\le\rho(G_A)+\rho(G_B)-1$ for the absolute radius (Lemma~\ref{lem:split}), and a calculus for
+pendant vertices (Lemmas~\ref{lem:leafM} and~\ref{lem:rholeaf}). Together they show that a minimal
+counterexample is a $2$-connected \emph{core} $K$ with at most one pendant vertex at each vertex, subject to strong
+local constraints (Proposition~\ref{prop:structure}). A \emph{core} is a $2$-connected graph in which exactly $s\le2$
+vertices have degree two and all other vertices have degree at least three.
+
+\begin{theorem}[reduction; Theorem~\ref{thm:reduction}]\label{thm:intro-red}
+If every core $K$ satisfies the \emph{core inequality}
+\begin{equation}\label{eq:core-intro}
+\rho(K)\le\Rp(K)-1+\frac s3,
+\end{equation}
+then $\Rp(G)\ge\rho(G)$ for every connected graph $G$, and Conjecture~\ref{conj:F} holds. The same holds relative to
+any class of graphs closed under the three operations used in the proof (Definition~\ref{def:admissible}).
+\end{theorem}
+
+\begin{theorem}[Theorems~\ref{thm:D4} and~\ref{thm:D5}]\label{thm:intro-deg}
+Every connected graph $G$ with maximum degree at most $5$ satisfies $\Rp(G)\ge\rho(G)$. Consequently
+$R(G)\ge\Rp(G)\ge\rho(G)\ge\max\{\rad(G)-\frac12,\diam(G)/2\}$, and Conjecture~\ref{conj:F} holds for all graphs of
+maximum degree at most $5$. For maximum degree at most $4$ the proof uses no computation.
+\end{theorem}
+
+\begin{theorem}[Theorem~\ref{thm:smallblocks}]\label{thm:intro-blocks}
+$\Rp(G)\ge\rho(G)$ holds for every connected graph each of whose blocks has at most $11$ vertices or cyclomatic number
+at most $8$; in particular for every connected graph of cyclomatic number at most $8$.
+\end{theorem}
+
+For maximum degree four, Theorem~\ref{thm:intro-deg} improves the bound $\Rp\ge\rad-\frac12$ of~\cite{CPS} to
+$\Rp\ge\rho$; our proof is short because, with the absolute radius, the local constraints on a minimal
+counterexample leave a single candidate graph (Theorem~\ref{thm:D4}). For maximum degree five the constraints bound
+the size of the core by ten, and the remaining finite set of configurations is checked by computer. For cyclomatic
+number, Theorem~\ref{thm:intro-blocks} extends the bound $\mu\le4$ of~\cite{DTZ} (for Conjecture~\ref{conj:F}) to
+$\mu\le8$.
+
+\subsection{What remains open}
+For unbounded maximum degree the local constraints no longer bound the core: there are infinite families of
+configurations that satisfy all of them (Example~\ref{ex:nearjoin}). The general case is therefore reduced to the
+core inequality~\eqref{eq:core-intro}, which we state as Conjecture~\ref{conj:core}. In Section~\ref{sec:core} we
+record what we know about it: it holds for all cores with at most eleven vertices and for all cores of cyclomatic
+number at most eight; it follows from a weighted max-leaf (connected domination) inequality, which we prove for
+hub-dominated cores; and its natural strengthening ``every vertex of maximum degree is a good centre'' is false.
+We emphasise that \emph{we do not prove Conjecture~\ref{conj:F} in general}.
+
+\subsection{Organisation}
+Section~\ref{sec:prelim} collects facts about the absolute radius; Sections~\ref{sec:calculus}
+and~\ref{sec:rhocalc} contain the calculus; Section~\ref{sec:mincex} the structure of minimal counterexamples and
+the reduction theorem; Section~\ref{sec:degree} the bounded-degree theorems; Section~\ref{sec:blocks} graphs with
+small blocks; Section~\ref{sec:core} the core inequality; Section~\ref{sec:comp} the computations.
+
+%==========================================================================================
+\section{Preliminaries}\label{sec:prelim}
+
+All graphs are finite and simple. For a graph $G$ we write $d_v=d_G(v)$, $\Delta(G)$ for the maximum degree, and
+$\mu(G)=|E(G)|-|V(G)|+1$ for the cyclomatic number of a connected graph. We write $M(G)=\Rp(G)$ for brevity and
+call $w_G(uv)=1/\max(d_u,d_v)$ the \emph{weight} of the edge $uv$. A \emph{leaf} is a vertex of degree one.
+Since $\sqrt{d_ud_v}\le\max(d_u,d_v)$ and $2/(d_u+d_v)\ge 1/\max(d_u,d_v)$ we have $M(G)\le R(G)$ and $M(G)\le H(G)$.
+
+\paragraph{Absolute radius.}
+The \emph{metric graph} $\Gamma(G)$ is obtained by identifying every edge with a segment of length one; its points are
+the vertices and the interior points of edges, and $d(x,y)$ is the length of a shortest path in $\Gamma(G)$. For a
+point $x$ let $\ecc(x)=\max_{v\in V(G)}d(x,v)$. The \emph{absolute radius} is $\rho(G)=\min_{x\in\Gamma(G)}\ecc(x)$.
+
+\begin{lemma}\label{lem:rho-basic}
+Let $G$ be connected with at least two vertices and radius $r=\rad(G)$.
+\begin{enumerate}[label=(\arabic*)]
+\item The minimum of $\ecc$ on an edge $uv$ is attained at $u$, at $v$, or at the midpoint of $uv$, and
+      $\ecc(\text{midpoint})=\tfrac12+\max_{w}\min\{d(u,w),d(v,w)\}$.
+\item $\rho(G)\in\{r-\tfrac12,\,r\}$, and $\rho(G)=r-\frac12$ if and only if there is an edge $uv$ such that
+      every vertex is at distance at most $r-1$ from $u$ or from $v$, i.e.\
+      $\max_w\min\{d(u,w),d(v,w)\}\le r-1$.
+\item $\rho(G)=\frac12\min\{\diam(T): T \text{ a spanning tree of } G\}$.
+\item $\rho(G)\ge \diam(G)/2$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(1) Let $x$ be the point of $uv$ at distance $t\in[0,1]$ from $u$. For a vertex $w$ put
+$a=d(u,w)$, $b=d(v,w)$, so $|a-b|\le 1$ and $d(x,w)=\min(t+a,1-t+b)$. If $a=b$ this equals
+$a+\min(t,1-t)$; if $a=b-1$ it equals $t+a$; if $a=b+1$ it equals $1-t+b$. Hence $\ecc$ restricted to
+$uv$ is the maximum of finitely many functions of the forms $c+\min(t,1-t)$, $c+t$, $c+1-t$ with integer
+$c$. Such a maximum is minimised at $t=0$, at $t=1$, at $t=\tfrac12$, or at a crossing point of an
+increasing and a decreasing piece, i.e.\ at $t=(1+c'-c)/2\in\{0,\frac12,1\}$. At the midpoint
+$d(x,w)=\frac12+\min(a,b)$.
+(2) By (1), $\rho=\min\bigl(r,\min_{uv}(\frac12+\max_w\min(d(u,w),d(v,w)))\bigr)$, and
+$\ecc(\text{midpoint of }uv)\ge \ecc(u)-\frac12\ge r-\frac12$.
+(3) If $T$ is a spanning tree then $d_G\le d_T$ on $\Gamma(T)\subseteq\Gamma(G)$, so
+$\rho(G)\le\rho(T)=\diam(T)/2$, the last equality because the midpoint of a diametral path of a tree is
+at distance at most $\diam(T)/2$ from every vertex, while the two ends of the path are $\diam(T)$ apart.
+Conversely, if $\rho(G)$ is attained at a vertex $x$, a breadth-first search tree from $x$ has diameter
+at most $2\rho$; if it is attained at the midpoint of $uv$, take the edge $uv$ together with breadth-first
+forests from $u$ and $v$ in which every vertex is attached to the nearer of $u,v$; every vertex is at
+tree-distance at most $\rho-\frac12$ from $\{u,v\}$, so the diameter is at most $2\rho$.
+(4) For vertices $a,b$ and any point $x$, $d(a,b)\le d(a,x)+d(x,b)\le 2\ecc(x)$.
+\end{proof}
+
+Part~(3) is the classical correspondence between the absolute $1$-centre and minimum-diameter spanning trees
+(Hassin and Tamir~\cite{HassinTamir}); we included the short proof for completeness. A connected dominating set $D$
+gives a spanning tree of diameter at most $|D|+1$ (a spanning tree of $G[D]$ with all other vertices attached to
+$D$), hence:
+
+\begin{lemma}\label{lem:rho-gc}
+If $G$ is connected and $\gamma_c(G)$ is its connected domination number, then $\rho(G)\le(\gamma_c(G)+1)/2$.
+\end{lemma}
+
+%==========================================================================================
+\section{The degree calculus of \texorpdfstring{$M=\Rp$}{M=R'}}\label{sec:calculus}
+
+\begin{lemma}[leaf deletion]\label{lem:leafM}
+Let $\ell$ be a leaf with neighbour $p$, $d=d_p\ge2$, and let
+$\lambda=|\{w\in N(p)\setminus\{\ell\}: d_w\le d-1\}|$. Then
+\[ M(G)-M(G-\ell)=\frac1d-\frac{\lambda}{d(d-1)}\in\Bigl[0,\frac1d\Bigr]. \]
+In particular leaf deletion never increases $M$, and if $d=2$ and the other neighbour of $p$ is not a
+leaf, then $M(G)-M(G-\ell)=\frac12$.
+\end{lemma}
+\begin{proof}
+Only edges at $p$ change. The edge $p\ell$ had weight $1/d$. An edge $pw$, $w\ne\ell$, has weight
+$1/\max(d,d_w)$ before and $1/\max(d-1,d_w)$ after; these differ, by $\frac1{d-1}-\frac1d$, exactly when
+$d_w\le d-1$. Finally $\lambda\le d-1$.
+\end{proof}
+
+\begin{lemma}[edge deletion]\label{lem:edgeM}
+Let $uv\in E(G)$ with $d_u,d_v\ge 2$, and let
+$\lambda_u=|\{w\in N(u)\setminus\{v\}:d_w\le d_u-1\}|$, and $\lambda_v$ symmetrically. Then
+\[ M(G-uv)-M(G)=\frac{\lambda_u}{d_u(d_u-1)}+\frac{\lambda_v}{d_v(d_v-1)}-\frac{1}{\max(d_u,d_v)} . \]
+\end{lemma}
+\begin{proof} As in Lemma~\ref{lem:leafM}: the edge $uv$ disappears, and an edge $uw$ ($w\ne v$) changes weight,
+by $\frac1{d_u-1}-\frac1{d_u}$, exactly when $d_w\le d_u-1$; similarly at $v$. \end{proof}
+
+We call an edge $e$ \emph{supportive} if $M(G-e)>M(G)$. Note that $\lambda_u$ counts a pendant neighbour of $u$.
+
+\begin{lemma}[padding identity]\label{lem:padM}
+Let $v$ be a cut vertex of $G$ and $V(G)\setminus\{v\}=A\sqcup B$ with $A,B\neq\emptyset$ and no edge
+between $A$ and $B$. Put $H_A=G[A\cup\{v\}]$, $H_B=G[B\cup\{v\}]$, $d_A(v)=|N(v)\cap A|$, $d_B(v)=|N(v)\cap B|$,
+and let $G_A$ (resp.\ $G_B$) be $H_A$ with $d_B(v)$ new pendant vertices attached at $v$ (resp.\ $H_B$ with
+$d_A(v)$ new pendant vertices at $v$). Then every vertex of $H_A$ has the same degree in $G_A$ as in $G$, and
+\[ M(G)=M(G_A)+M(G_B)-1 . \]
+\end{lemma}
+\begin{proof}
+In $G_A$ the vertex $v$ has degree $d_A(v)+d_B(v)=d_v$, and the other vertices of $H_A$ keep their degrees, so
+the edges of $H_A$ keep their weights; the $d_B(v)$ pendant edges have weight $1/d_v$ each. Thus
+$M(G_A)=\sum_{e\in E(H_A)}w_G(e)+d_B(v)/d_v$, similarly for $G_B$, and the sum is
+$M(G)+(d_A(v)+d_B(v))/d_v=M(G)+1$.
+\end{proof}
+
+%==========================================================================================
+\section{The calculus of the absolute radius}\label{sec:rhocalc}
+
+\begin{lemma}[leaves]\label{lem:rholeaf}
+Let $G$ be connected with $n\ge3$ vertices.
+\begin{enumerate}[label=(\arabic*)]
+\item If $\ell$ is a leaf, then $\rho(G)-\frac12\le\rho(G-\ell)\le\rho(G)$.
+\item If $L'$ is a set of leaves whose neighbours are not in $L'$, then $\rho(G-L')\ge\rho(G)-1$.
+\item If $\ell_1,\ell_2$ are leaves with the same neighbour and $G$ is not a star, then
+      $\rho(G-\ell_1)=\rho(G)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+Distances between points of $\Gamma(G-L')$ are the same in $G$ and in $G-L'$, since a pendant edge is never
+an inner part of a geodesic.
+(1) Upper bound: let $x$ be an absolute centre of $G$. If $x$ lies on the edge $p\ell$ at distance
+$t$ from $p$, then every vertex $w\ne\ell$ satisfies $d(p,w)=d(x,w)-t$, so $\ecc_{G-\ell}(p)\le\ecc_G(x)$;
+otherwise $\ecc_{G-\ell}(x)\le\ecc_G(x)$. Lower bound: let $y$ be an absolute centre of $G-\ell$ with
+$\ecc_{G-\ell}(y)=\rho'$; by Lemma~\ref{lem:rho-basic}(1) we may assume that $y$ is a vertex or an edge
+midpoint, so $d(y,p)\in\frac12\mathbb Z$. If $d(y,p)\le\rho'-\frac12$ then $\ecc_G(y)\le\rho'+\frac12$.
+Otherwise $d(y,p)=\rho'$; let $y'$ be the point at distance $\frac12$ from $y$ on a geodesic from $y$ to
+$p$ (it exists because $\rho'\ge\frac12$, as $G-\ell$ has at least two vertices). Then $d(y',w)\le\rho'+\frac12$ for all $w\ne\ell$ and $d(y',\ell)=\rho'-\frac12+1$.
+(2) If $y$ is an absolute centre of $G-L'$, every removed leaf is adjacent to a vertex of $G-L'$, so
+$\ecc_G(y)\le\ecc_{G-L'}(y)+1$.
+(3) By (1) it suffices to show $\rho(G)\le\rho(G-\ell_1)$. Let $y$ be an absolute centre of
+$G-\ell_1$. If $y\ne p$ lies on the edge $p\ell_2$, then $p$ is also an absolute centre of $G-\ell_1$: as
+$G$ is not a star, some vertex $w\notin\{p,\ell_2\}$ exists, every such $w$ has $d(p,w)<d(y,w)$, and
+$d(p,\ell_2)=1<d(y,w)$. So we may assume that $y=p$ or that $y$ does not lie on $p\ell_2$. Then
+$d(y,\ell_1)=d(y,p)+1=d(y,\ell_2)$, hence $\ecc_G(y)=\ecc_{G-\ell_1}(y)$.
+\end{proof}
+
+\begin{lemma}[edge deletion]\label{lem:rhoedge}
+If $e$ is not a bridge of $G$ then $\rho(G-e)\ge\rho(G)$.
+\end{lemma}
+\begin{proof}
+$\Gamma(G-e)\subseteq\Gamma(G)$ and distances in $G-e$ are at least those in $G$.
+\end{proof}
+
+\begin{lemma}[splitting at a cut vertex]\label{lem:split}
+In the setting of Lemma~\ref{lem:padM}, $\rho(G)\le\rho(G_A)+\rho(G_B)-1$.
+\end{lemma}
+\begin{proof}
+Write $\rho_A=\rho(G_A)$, $\rho_B=\rho(G_B)$. Both $G_A$ and $G_B$ have at least three vertices, so
+$\rho_A,\rho_B\ge1$. An absolute centre of $G_A$ may be taken in $\Gamma(H_A)$: a point on a pendant
+edge at $v$ can be replaced by $v$, because $H_A$ contains a vertex at distance at least one from $v$.
+Let $y_A\in\Gamma(H_A)$ be such a centre and $s_A=d(y_A,v)$. Since $G_A$ has a pendant vertex at $v$,
+$s_A\le\rho_A-1$; moreover $\max_{w\in V(H_A)}d(y_A,w)\le\rho_A$, hence
+$\alpha_A:=\max_{w\in V(H_A)}d(v,w)\le\rho_A+s_A$. Define $y_B,s_B,\alpha_B$ likewise. Distances
+between points of $\Gamma(H_A)$ are the same in $G$ and in $H_A$, because $v$ is a cut vertex.
+
+Let $P$ be the path in $\Gamma(G)$ consisting of a geodesic from $y_A$ to $v$ in $H_A$ followed by a
+geodesic from $v$ to $y_B$ in $H_B$, and parametrise it by $p\in[-s_A,s_B]$, the signed distance from
+$v$ (negative on the $H_A$ side). For a point $z$ of $P$ with parameter $p\le 0$ and a vertex $w$:
+if $w\in V(H_A)$ then $d(z,w)\le d(z,y_A)+d(y_A,w)\le (s_A+p)+\rho_A$; if $w\in V(H_B)$ then
+$d(z,w)=-p+d(v,w)\le -p+\rho_B+s_B$. The case $p\ge0$ is symmetric, so for every $p$
+\[
+ \ecc_G(z(p))\le \varphi(p):=\max\{\rho_A+s_A+p,\ \rho_B+s_B-p\}.
+\]
+If $p^*=(\rho_B+s_B-\rho_A-s_A)/2\in[-s_A,s_B]$, then
+$\varphi(p^*)=\frac12(\rho_A+\rho_B+s_A+s_B)\le\rho_A+\rho_B-1$. If $p^*<-s_A$, then
+$\rho_B+s_B+s_A<\rho_A$ and $\varphi(-s_A)=\rho_A\le\rho_A+\rho_B-1$; the case $p^*>s_B$ is
+symmetric.
+\end{proof}
+
+%==========================================================================================
+\section{Minimal counterexamples and the reduction to cores}\label{sec:mincex}
+
+\begin{definition}\label{def:admissible}
+A class $\mathcal P$ of connected graphs is \emph{admissible} if it is closed under
+(i) deleting an edge that is not a bridge, (ii) passing from $G$ to both padded graphs $G_A,G_B$ of
+Lemma~\ref{lem:padM}, and (iii) deleting a leaf (in graphs with at least three vertices).
+\end{definition}
+
+\begin{example}\label{ex:admissible}
+The class of all connected graphs is admissible, and so is the class $\mathcal P_D$ of connected graphs of maximum
+degree at most $D$ (padding preserves all degrees, and (i), (iii) do not increase degrees). More generally, let
+$\mathcal Q$ be a family of graphs that contains $K_2$ and is closed under taking connected subgraphs. Then the class
+of connected graphs all of whose blocks lie in $\mathcal Q$ is admissible: every block of $G-e$ is a connected subgraph
+of a block of $G$; every block of $G_A$ or $G_B$ is a block of $G$ or a pendant edge, i.e.\ a copy of $K_2$; and every
+block of $G-\ell$ is a block of $G$. For example, for integers $N$ and $c$ the connected graphs with at most $N$
+vertices or cyclomatic number at most $c$ form such a family, because neither the number of vertices nor the
+cyclomatic number increases when one passes to a connected subgraph.
+\end{example}
+
+A \emph{core} is a $2$-connected graph $K$ that has exactly $s\le2$ vertices of degree two, all other vertices having
+degree at least three. Given a graph $G$ and a $2$-connected subgraph $K$ such that $G=K+L$, where $L$ is a set of
+leaves attached to vertices of $K$, at most one per vertex, we call $G$ a \emph{decorated core}; the vertices of $K$
+carrying a leaf are \emph{hosts}, and a host of degree three in $G$ (so of degree two in $K$) is a \emph{sub}.
+
+\begin{proposition}[structure of a minimal counterexample]\label{prop:structure}
+Let $\mathcal P$ be admissible and let $G\in\mathcal P$ be a graph with $M(G)<\rho(G)$ that minimises
+$(\mu(G),|E(G)|)$ lexicographically among such graphs in $\mathcal P$. Then $G=K+L$ is a decorated core
+with $|K|\ge3$, $K\in\mathcal P$, and:
+\begin{enumerate}[label=(\alph*)]
+\item every edge of $K$ is supportive in $G$;
+\item every vertex of $K$ has a neighbour (in $G$) of strictly smaller degree; in particular $L\neq\emptyset$;
+\item every $u\in V(K)$ has $d_G(u)\ge3$; if $d_G(u)=3$ then $u$ is a sub; subs are pairwise non-adjacent, and every
+      $K$-neighbour of a sub has degree at least $4$;
+\item for every nonempty $L'\subseteq L$, \ $M(G)-M(G-L')<\rho(G)-\rho(G-L')\le1$; in particular the number $s$ of
+      subs satisfies $s\le2$;
+\item every leaf $\ell\in L$ is $\rho$-critical: $\rho(G-\ell)=\rho(G)-\frac12$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Every graph of $\mathcal P$ that is smaller than $G$ in the order satisfies $M\ge\rho$. Clearly $n=|V(G)|\ge3$, since
+$K_1$ has $M=\rho=0$ and $K_2$ has $M=1>\frac12=\rho$.
+
+\emph{Step 1: every non-bridge edge is supportive.} Otherwise $M(G-e)\le M(G)$, $G-e\in\mathcal P$ is connected and
+smaller ($\mu$ drops), and $M(G)\ge M(G-e)\ge\rho(G-e)\ge\rho(G)$ by Lemma~\ref{lem:rhoedge}.
+
+\emph{Step 2: at every cut vertex $v$, all components of $G-v$ but one are single vertices.}
+Otherwise choose $A$ and $B$ in Lemma~\ref{lem:padM} so that each contains a component with an edge.
+Then $\mu(G_A)=\mu(H_A)\le\mu(G)$, and if equality holds then $\mu(H_B)=0$ and
+$|E(G_A)|=|E(G)|-e(B)<|E(G)|$, where $e(B)\ge1$ is the number of edges inside $B$. So $G_A$, and
+likewise $G_B$, is smaller than $G$ and lies in $\mathcal P$, and Lemmas~\ref{lem:padM} and~\ref{lem:split} give
+$M(G)=M(G_A)+M(G_B)-1\ge\rho(G_A)+\rho(G_B)-1\ge\rho(G)$.
+
+\emph{Step 3: every leaf hangs on a vertex of degree at least three, and no vertex carries two leaves.}
+If a leaf $\ell$ hangs on $p$ with $d_p=2$ (and $G\ne P_3$, which is not a counterexample), then by
+Lemmas~\ref{lem:leafM} and~\ref{lem:rholeaf}(1), $M(G)=M(G-\ell)+\frac12\ge\rho(G-\ell)+\frac12\ge\rho(G)$.
+Stars satisfy $M=1=\rho$; if $G$ is not a star and has two leaves at one vertex, Lemmas~\ref{lem:leafM}
+and~\ref{lem:rholeaf}(3) give $M(G)\ge M(G-\ell_1)\ge\rho(G-\ell_1)=\rho(G)$.
+
+\emph{Step 4: $G$ is a decorated core.} If $G$ is a tree, Step~2 says that every vertex has at most one non-leaf
+neighbour, so $G$ is a star or a double star; stars are excluded, and by Step~3 a double star would
+have both centres of degree two, i.e.\ $G=P_4$, which Step~3 also excludes. So $G$ has a cycle and hence a
+$2$-connected block $K$ with $|K|\ge3$. For a cut vertex $v\in K$ the component of $G-v$ containing
+$K-v$ has at least two vertices, so by Step~2 all other components of $G-v$ are single vertices. Hence
+$G=K+L$, where $L$ is a set of leaves attached to $K$, at most one per vertex (Step~3). All edges of $K$ are
+non-bridges, hence supportive by Step~1; this is (a). By (iii), $K=G-L\in\mathcal P$.
+
+\emph{Step 5: (b) and (c).} If $u\in V(K)$ has no neighbour of strictly smaller degree, then $u$ carries no leaf and
+for a $K$-neighbour $w$ of $u$ Lemma~\ref{lem:edgeM} gives
+$M(G-uw)-M(G)=\frac{\lambda_w}{d_w(d_w-1)}-\frac1{d_w}\le0$ (here $\lambda_u=0$ and $d_w\ge d_u$), so $uw$
+is not supportive, contrary to (a). A vertex of minimum degree in $K$ without a leaf would have no neighbour of
+smaller degree, so $L\ne\emptyset$. A vertex $u\in V(K)$ of degree two in $G$ would have $K$-degree two and no leaf,
+and by (b) a neighbour of degree one, which is impossible; so $d_G(u)\ge3$. A vertex $u\in V(K)$ with $d_u=3$ must
+carry a leaf (otherwise it has $K$-degree three and by (b) a neighbour of degree at most two, contradicting
+$d_G\ge3$ on $K$), so it is a sub. Two subs $u,v$ are never adjacent: we would have $\lambda_u=\lambda_v=1$ and
+$M(G-uv)-M(G)=\frac16+\frac16-\frac13=0$. So every $K$-neighbour of a sub has degree at least four.
+
+\emph{Step 6: (d) and (e).} For every non-empty $L'\subseteq L$ the graph $G-L'$ lies in $\mathcal P$, is connected and
+smaller, so $M(G-L')\ge\rho(G-L')$ and, by Lemma~\ref{lem:rholeaf}(2), $\rho(G-L')\ge\rho(G)-1$; since
+$M(G)<\rho(G)$ we get $M(G)-M(G-L')<\rho(G)-\rho(G-L')\le1$. Let $L_P$ be the set of leaves of the subs.
+Removing the leaf of a sub $p$ changes only the weight of the leaf edge ($\frac13$) and the weights of the two other
+edges at $p$, which stay $1/d_x$ because their other ends $x$ have degree at least four and keep it; subs are
+pairwise non-adjacent, so $M(G)-M(G-L_P)=s/3$, and hence $s\le2$. Finally, if a leaf $\ell$ were not
+$\rho$-critical, then $\rho(G-\ell)=\rho(G)$ by Lemma~\ref{lem:rholeaf}(1), and
+$M(G)\ge M(G-\ell)\ge\rho(G-\ell)=\rho(G)$ by Lemma~\ref{lem:leafM}, a contradiction.
+\end{proof}
+
+\begin{theorem}[reduction to cores]\label{thm:reduction}
+Let $\mathcal P$ be admissible. If every core $K\in\mathcal P$ with $s$ vertices of degree two satisfies the core
+inequality
+\begin{equation}\label{eq:core}
+  \rho(K)\le M(K)-1+\frac s3 ,
+\end{equation}
+then $M(G)\ge\rho(G)$ for every $G\in\mathcal P$.
+\end{theorem}
+
+\begin{proof}
+Suppose not and let $G=K+L$ be as in Proposition~\ref{prop:structure}. The graph $K$ is $2$-connected, has no leaves,
+and its degree-two vertices are exactly the $s\le2$ subs, all other vertices having $K$-degree at least three; thus
+$K$ is a core in $\mathcal P$. By Lemma~\ref{lem:leafM}, deleting the leaves of non-subs does not increase $M$, so
+$M(K)\le M(G-L_P)=M(G)-s/3$. By Lemma~\ref{lem:rholeaf}(2), $\rho(G)\le\rho(K)+1$. By~\eqref{eq:core},
+\[ \rho(G)\le\rho(K)+1\le M(K)+\frac s3\le M(G), \]
+a contradiction.
+\end{proof}
+
+Applied to the class of all connected graphs, Theorem~\ref{thm:reduction} gives Theorem~\ref{thm:intro-red}. The
+core inequality is tight for $K_4$ ($s=0$, $\rho=1$, $M=2$) and for no other core with at most $11$ vertices
+(Section~\ref{sec:comp}).
+
+%==========================================================================================
+\section{Bounded maximum degree}\label{sec:degree}
+
+Throughout this section $G=K+L$ is a graph as in Proposition~\ref{prop:structure} for the admissible class
+$\mathcal P_D=\{G:\Delta(G)\le D\}$. For $u\in V(K)$ let $h_u\in\{0,1\}$ indicate whether $u$ carries a leaf, let
+$a_u$ be the number of subs adjacent to $u$, and let $f_u$ be the number of $K$-neighbours of $u$ of degree $4$.
+For an edge $uv$ of $K$ we write, as in Lemma~\ref{lem:edgeM},
+$\lambda_u(v)=|\{w\in N_G(u)\setminus\{v\}:d_w<d_u\}|$; the leaf at $u$, if any, is counted. By
+Proposition~\ref{prop:structure}(a) and Lemma~\ref{lem:edgeM}, every edge $uv$ of $K$ satisfies
+\begin{equation}\label{eq:supp}
+\frac{\lambda_u(v)}{d_u(d_u-1)}+\frac{\lambda_v(u)}{d_v(d_v-1)}>\frac1{\max(d_u,d_v)} .
+\end{equation}
+By Proposition~\ref{prop:structure}(c), vertices of $K$ of degree three are subs: they carry a leaf, have
+$K$-degree two, are pairwise non-adjacent, and for an edge $qx$ from a sub $q$ we have $\lambda_q(x)=1$.
+
+\begin{theorem}\label{thm:D4}
+Every connected graph $G$ with $\Delta(G)\le4$ satisfies $\Rp(G)\ge\rho(G)$.
+\end{theorem}
+
+\begin{proof}
+Suppose not and let $G=K+L$ be as in Proposition~\ref{prop:structure} for $\mathcal P_4$. Every vertex of $K$ has
+degree $3$ (a sub) or $4$, and there are $s\le2$ subs. For a vertex $x$ of degree $4$,
+$\lambda_x(w)=h_x+a_x-[w\text{ is a sub}]$. Condition~\eqref{eq:supp} becomes:
+\begin{enumerate}[label=(\roman*)]
+\item for an edge $qx$ with $q$ a sub: $\frac16+\frac{h_x+a_x-1}{12}>\frac14$, i.e.\ $h_x+a_x\ge3$, i.e.\ $h_x=1$ and
+      $a_x=2$ (as $a_x\le s\le2$);
+\item for an edge $xy$ between vertices of degree $4$: $h_x+a_x+h_y+a_y\ge4$.
+\end{enumerate}
+A vertex $x$ of degree $4$ without a leaf has, by Proposition~\ref{prop:structure}(b), a neighbour of smaller degree,
+which must be a sub; this contradicts (i). Hence $h_x=1$ for every vertex of degree four.
+
+If $s\le1$ then, by (i), no sub has a $K$-neighbour, so $s=0$; then every vertex of $K$ has $h=1$ and $a=0$, and by
+(ii) no edge of $K$ is supportive, contradicting Proposition~\ref{prop:structure}(a). So $s=2$, with subs $q_1,q_2$.
+By (i) each $K$-neighbour of a sub is adjacent to both subs; as each sub has exactly two $K$-neighbours,
+$N_K(q_1)=N_K(q_2)=\{x_1,x_2\}$. Any other vertex $y$ of $K$ has $h_y=1$ and $a_y=0$, so by (ii) all its
+$K$-neighbours $z$ satisfy $h_z+a_z\ge3$, i.e.\ $z\in\{x_1,x_2\}$; this contradicts $d_K(y)=3$. Hence
+$V(K)=\{q_1,q_2,x_1,x_2\}$, $x_1x_2\in E(K)$ because $d_K(x_i)=3$, and $K=K_4-q_1q_2$. Then $G$ is $K_4-q_1q_2$ with a
+leaf at each vertex, and a direct computation gives $M(G)=\frac14+4\cdot\frac14+2\cdot\frac14+2\cdot\frac13=\frac{29}{12}$
+and $\rho(G)=\rad(G)=2$: indeed $\ecc(x_1)=2$, every vertex is at distance at least two from some leaf, and for
+every edge $uv$ some leaf is at distance at least two from both $u$ and $v$, so Lemma~\ref{lem:rho-basic}(2) applies.
+Thus $M(G)>\rho(G)$, a contradiction. (Alternatively, $G$ violates Proposition~\ref{prop:structure}(e): deleting a
+leaf leaves three leaves at three different vertices, so the same argument gives $\rho(G-\ell)=2=\rho(G)$.)
+\end{proof}
+
+\begin{corollary}\label{cor:D4}
+For every connected graph $G$ of maximum degree at most four,
+$R(G)\ge\Rp(G)\ge\rho(G)\ge\max\{\rad(G)-\frac12,\ \diam(G)/2\}$.
+\end{corollary}
+
+This strengthens the inequality $\Rp(G)\ge\rad(G)-\frac12$ of~\cite[Theorem~1.2]{CPS} for chemical graphs whenever
+$\rho(G)=\rad(G)$. (It does not recover the stronger bound $R\ge\rad$ of~\cite[Theorem~1.3]{CPS}, which uses $R$
+rather than $\Rp$.)
+
+\begin{theorem}\label{thm:D5}
+Every connected graph $G$ with $\Delta(G)\le5$ satisfies $\Rp(G)\ge\rho(G)$. In particular
+Conjecture~\ref{conj:F} holds for all connected graphs of maximum degree at most five.
+\end{theorem}
+
+The proof has a theoretical part, which shows that a minimal counterexample has a core with at most ten vertices,
+and a finite computation.
+
+\begin{proposition}[computation]\label{prop:comp5}
+Let $K$ be a $2$-connected graph with $4\le|K|\le10$ and $\Delta(K)\le5$, and let $G=K+L$ be a decorated core with
+$\Delta(G)\le5$ that satisfies (a), (b) and (c) of Proposition~\ref{prop:structure} and has at most two subs. Then
+$M(G)>\rho(G)$. More precisely, there are exactly $128$ such configurations ($1,0,0,4,7,34,82$ for
+$|K|=4,\dots,10$), and the minimum of $M(G)-\rho(G)$ is $\frac5{12}$, attained only by $K_4-e$ with a leaf at every
+vertex. Moreover, none of the $128$ configurations satisfies (e), and all of them except $K_4-e$ with a leaf at every
+vertex violate (d) both for $L'=L$ and for the set $L'$ of leaves whose neighbour has degree at most~$4$ in $G$.
+\end{proposition}
+
+\begin{proof}
+Exhaustive search with the program \texttt{cfgcheck.c} ($D=5$; Appendix~\ref{app:code}). For
+each $2$-connected $K$ produced by \texttt{geng -C -d2 -D5} the decoration is forced except at vertices of
+$K$-degree $4$: vertices of $K$-degree $2$ or $3$ must carry a leaf (by (c)), and vertices of $K$-degree $5$ cannot.
+All remaining choices are enumerated and conditions (a)--(c) are tested exactly; $M$ and $\rho$ are computed in
+exact arithmetic, and conditions (d) (for the two sets $L'$ above) and (e) are tested for every configuration. Thus
+every configuration is excluded in two independent ways: by $M(G)>\rho(G)$, and by the failure of (e), which involves
+only $\rho$; all but one are also excluded by (d), which involves only $M$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:D5}]
+Suppose not and let $G=K+L$ be as in Proposition~\ref{prop:structure} for $\mathcal P_5$. The vertices of $K$ have
+degree $3$ (subs), $4$ or $5$; call them of type S, F and P, and write $S$, $F$, $P$ for the sets of vertices
+of these types. Using~\eqref{eq:supp} with
+$\lambda_x(w)=h_x+a_x-[w\in S]$ for $x\in F$ and $\lambda_y(w)=h_y+a_y+f_y-[w\in S\cup F]$ for $y\in P$, the
+supportive conditions read:
+\begin{enumerate}[label=(\roman*)]
+\item S--F edge $qx$: $h_x+a_x\ge3$, hence $h_x=1$ and $a_x=2$;
+\item S--P edge $qy$: $h_y+a_y+f_y\ge2$;
+\item F--F edge $xx'$: $h_x+a_x+h_{x'}+a_{x'}\ge4$;
+\item F--P edge $xy$: $5(h_x+a_x)+3(h_y+a_y+f_y-1)>12$;
+\item P--P edge $yy'$: $h_y+a_y+f_y+h_{y'}+a_{y'}+f_{y'}\ge5$.
+\end{enumerate}
+(For (iv): $\lambda_x/12+\lambda_y/20>1/5$; for (v): $(\lambda_y+\lambda_{y'})/20>1/5$; the others as in
+Theorem~\ref{thm:D4}.)
+
+\emph{Step 1.} As in Theorem~\ref{thm:D4}, an F-vertex without a leaf would need a sub as a neighbour, contradicting
+(i). So every F-vertex carries a leaf, and by (i) it is adjacent to no sub or to both subs. Let $F_2$ and $F_0$ be the
+F-vertices adjacent to two and to no subs. Then $F_2=\emptyset$ unless $s=2$, $|F_2|\le2$, every $F_2$-vertex has
+exactly one $K$-neighbour besides the subs, and by (iii) $F_0$ is independent.
+
+\emph{Step 2 (drop).} Let $L'$ consist of the leaves at the subs and at the F-vertices. Removing $L'$ changes the
+weight $1/\max(d_u,d_v)$ of an edge $uv$ of $K$ only if its end of larger degree loses a leaf. This happens exactly
+for S--F and F--F edges, whose weight goes from $\frac14$ to $\frac13$; S--P and F--P edges keep the weight $\frac15$.
+Hence
+\[
+M(G)-M(G-L')=\frac s3+\frac{|F|}4-\frac{2|F_2|+e(F)}{12}\ \ge\ \frac s3+\frac{|F_0|}4,
+\]
+because $e(F)\le|F_2|$ (every F--F edge contains an $F_2$-vertex, which has only one spare $K$-neighbour). If
+$L'\ne\emptyset$, Proposition~\ref{prop:structure}(d) gives $\frac s3+\frac{|F_0|}4<1$; if $L'=\emptyset$, then
+$F_0=\emptyset$. So $|F_0|\le3,2,1$ for $s=0,1,2$.
+
+\emph{Step 3 (every P-vertex has a neighbour of type S or F).} Let
+$J=\sum_{y\in P}(a_y+f_y)$ be the number of edges between $P$ and $S\cup F$. The subs offer $2s$ edge-ends, of which
+$2|F_2|$ go to $F_2$; each $F_2$-vertex offers one more and each $F_0$-vertex three, so
+\[ J\le 2s-|F_2|+3|F_0|\le 9 .\]
+Suppose $y\in P$ has $a_y=f_y=0$. By Proposition~\ref{prop:structure}(b) $y$ carries a leaf, so it has four
+$K$-neighbours, all of type P, and by (v) each of them, $y'$, has $a_{y'}+f_{y'}\ge3$. Then $J\ge12$, a contradiction.
+Hence every P-vertex has $a_y+f_y\ge1$, and $|P|\le J$.
+
+\emph{Step 4 ($s=0$ and $s=1$ are impossible).} If $s=0$ then $F=F_0$. For an F--P edge $xy$, (iv) with $h_x+a_x=1$
+gives $h_y+f_y\ge4$, so $f_y=3=|F|$. If $F=\emptyset$, Step~3 is violated by any P-vertex. Otherwise each F-vertex
+has its three $K$-neighbours in $P$ (as $F$ is independent and there are no subs), each of them adjacent to all of $F$;
+so there are exactly three of them, $Y=\{y_1,y_2,y_3\}$, and by Step~3 $P=Y$. Each $y_i$ carries a leaf, so it has
+$K$-degree four: three neighbours in $F$ and one in $Y$. A $1$-regular graph on three vertices does not exist.
+
+If $s=1$, let $q$ be the sub. Its two $K$-neighbours are P-vertices (an F-neighbour would need $a=2$). For an F--P
+edge $xy$, (iv) gives $h_y+a_y+f_y\ge4$ with $a_y\le1$ and $f_y\le|F_0|\le2$, so $y\in N_K(q)$ and $y$ is adjacent to
+both F-vertices. Hence an F-vertex would have all three $K$-neighbours in the two-element set $N_K(q)$; so $F=\emptyset$.
+Then $h_y+a_y+f_y\le2$ for all $y\in P$ and (v) never holds: $K$ has no P--P edges, and its only edges are the two edges
+at $q$, contradicting $2$-connectivity.
+
+\emph{Step 5 ($s=2$).} Now $|K|=2+|F_2|+|F_0|+|P|\le2+|F_2|+|F_0|+(4-|F_2|+3|F_0|)=6+4|F_0|\le10$. So $G$ is one of the
+configurations of Proposition~\ref{prop:comp5}, all of which satisfy $M(G)>\rho(G)$ (and none of which
+satisfies (e)); a contradiction.
+\end{proof}
+
+\begin{remark}\label{rem:D6}
+We expect that for every fixed $D$ conditions (a)--(e) of Proposition~\ref{prop:structure} bound $|K|$ in terms of
+$D$, so that the method of Theorem~\ref{thm:D5} reduces the case $\Delta\le D$ to a finite computation; we have not
+proved such a bound for any $D\ge6$. For $D=6$ there are $4\,645$ configurations satisfying (a)--(c) with at most
+two subs and $|K|\le10$ ($1,0,2,27,85,639,3891$ for $|K|=4,\dots,10$); only five of them satisfy $M(G)-M(K)<1$, none
+of the $4\,645$ has all its leaves $\rho$-critical, and all of them satisfy $M(G)-\rho(G)\ge\frac5{12}$. Some
+dependence on $D$ is unavoidable for the local conditions: for unbounded degree, conditions (a)--(c) together with
+(d) for $L'=L$ allow arbitrarily large cores (Example~\ref{ex:nearjoin}).
+\end{remark}
+
+%==========================================================================================
+\section{Graphs with small blocks}\label{sec:blocks}
+
+\begin{proposition}[computation]\label{prop:smallcores}
+Every core with at most $11$ vertices satisfies the core inequality~\eqref{eq:core}. Every core of cyclomatic number at
+most $8$ satisfies~\eqref{eq:core}.
+\end{proposition}
+
+\begin{proof}
+A core $K$ with $n$ vertices has $2|E(K)|\ge3n-s\ge3n-2$, hence $\mu(K)\ge n/2$; so cores with $\mu\le8$ have at most
+$16$ vertices and, for $n\ge12$, $\lceil(3n-2)/2\rceil\le|E(K)|\le n+7$. All $2$-connected graphs with at most $11$
+vertices, and all $2$-connected graphs with $12\le n\le16$ vertices and $\lceil(3n-2)/2\rceil\le m\le n+7$ edges, were
+generated with \texttt{geng -C -d2} and those with $s\le2$ were tested in exact arithmetic (program
+\texttt{corechk.c}). For $(n,m)=(15,22)$ and $(16,23)$ the degree sum $2m$ exceeds the minimum $3n-s$ by at most one,
+so a core has maximum degree at most $4$, respectively $3$, and the generator was restricted accordingly
+(\texttt{-D4}, \texttt{-D3}). Counts and minimum slacks are given in Table~\ref{tab:core}. There is no violation.
+\end{proof}
+
+\begin{theorem}\label{thm:smallblocks}
+Let $G$ be a connected graph each of whose blocks has at most $11$ vertices or cyclomatic number at most $8$. Then
+$\Rp(G)\ge\rho(G)$. In particular $\Rp(G)\ge\rho(G)$, and Conjecture~\ref{conj:F} holds, whenever $\mu(G)\le8$.
+\end{theorem}
+
+\begin{proof}
+The class of such graphs is admissible by Example~\ref{ex:admissible}, applied to the family $\mathcal Q$ of
+connected graphs with at most $11$ vertices or cyclomatic number at most $8$. A core belonging to it is a block of itself,
+so it has at most $11$ vertices or cyclomatic number at most $8$, and satisfies~\eqref{eq:core} by
+Proposition~\ref{prop:smallcores}. Apply Theorem~\ref{thm:reduction}. The second statement follows because the
+cyclomatic numbers of the blocks add up to $\mu(G)$.
+\end{proof}
+
+%==========================================================================================
+\section{The core inequality}\label{sec:core}
+
+\begin{conjecture}[core inequality]\label{conj:core}
+Every core $K$ with $s$ vertices of degree two satisfies $\rho(K)\le\Rp(K)-1+\frac s3$.
+\end{conjecture}
+
+By Theorem~\ref{thm:reduction}, Conjecture~\ref{conj:core} implies $\Rp\ge\rho$ for all connected graphs, and hence
+Conjecture~\ref{conj:F}. We record what we know.
+
+\subsection{Evidence}
+Conjecture~\ref{conj:core} holds for all cores with at most $11$ vertices and all cores of cyclomatic number at most
+$8$ (Proposition~\ref{prop:smallcores}); the minimum slack is $0$ for $K_4$ and then $\frac16,\frac16,\frac14,\frac3{10},
+\frac13,\frac5{14},\frac38$ for $n=5,\dots,11$. Independent random and simulated-annealing searches over cores with up to
+$40$ vertices, including hub-heavy families such as $K_{3,m}$ with extra edges, wheels, books, threshold graphs,
+blow-ups and necklaces, found no violation; along the families we examined the slack stays bounded away from $0$
+(for example it equals $\frac12$ for all $K_{3,m}$, $m\ge3$) or grows linearly.
+
+\subsection{A sufficient domination inequality}
+Write $I(G)=\sum_{uv\in E(G)}\bigl|\frac1{d_u}-\frac1{d_v}\bigr|$. Since every vertex $v$ satisfies
+$\sum_{w\sim v}\frac1{\max(d_v,d_w)}=1-\sum_{w\sim v,\,d_w>d_v}\bigl(\frac1{d_v}-\frac1{d_w}\bigr)$, summing over $v$ gives
+$|V(G)|-2M(G)=I(G)$. By Lemma~\ref{lem:rho-gc}, Conjecture~\ref{conj:core} follows from
+\begin{equation}\label{eq:LG}
+\gamma_c(K)\le 2M(K)-3+\tfrac{2s}{3}\qquad\text{equivalently}\qquad L_{\max}(K)\ge I(K)+3-\tfrac{2s}3,
+\end{equation}
+where $L_{\max}$ is the maximum number of leaves of a spanning tree. Inequality~\eqref{eq:LG} is a weighted max-leaf
+statement: every edge joining vertices of very different degrees must be paid for by leaves. It holds for all cores
+with at most $10$ vertices (with equality only for $K_4$; the minimum slack for $n=10$ is $\frac57$), and the stronger
+statement $\gamma_c(G)\le2M(G)-\max\{2,3-\frac s3\}$ holds for all $9\,808\,209$ connected graphs of minimum degree at
+least two with $10$ vertices and all smaller ones (program \texttt{cscheck.c}); it is tight for $K_4$, for $K_4$ with
+one edge subdivided, for $K_4-e$, for $K_{2,m}$ and for all cycles. When all degrees are $3$ or $4$, \eqref{eq:LG} follows for $n\ge8$ from the
+theorem of Kleitman and West~\cite{KleitmanWest} that $L_{\max}\ge n/4+2$ when $\delta\ge3$: here $s=0$ and
+$I=e_{34}/12\le\min\{n_3/4,n_4/3\}$, which is at most $\frac n7\le\frac n4-1$ for $n\ge10$, and at most $1$ and
+$\frac54$ for $n=8$ and $n=9$, where $L_{\max}\ge4$ and $L_{\max}\ge5$ respectively. This is the max-leaf
+counterpart of Theorem~\ref{thm:D4}. The following special
+case covers the near-extremal families $K_{3,m}$.
+
+\begin{proposition}\label{prop:hub}
+Let $K$ be a connected graph of minimum degree at least $3$, let $A$ be an independent set of vertices of degree $3$,
+$B=V(K)\setminus A$, let $\kappa$ be the number of components of $K[B]$, and put
+$W_B=\sum_{uv\in E(K[B])}2/\min(d_u,d_v)$. If $W_B\le|B|-\kappa$, then $\gamma_c(K)\le2M(K)-3$ and hence
+$\rho(K)\le M(K)-1$, i.e.\ $K$ satisfies the inequalities~\eqref{eq:LG} and~\eqref{eq:core} with $s=0$ (here $K$
+need not be $2$-connected).
+\end{proposition}
+
+\begin{proof}
+There are no edges inside $A$, and every edge between $A$ and $B$ has weight $1/d_b$ for its end $b\in B$ (as
+$d_a=3\le d_b$). Since $2|B|=\sum_{b\in B}\sum_{e\ni b}2/d_b$, and $\frac1{d_u}+\frac1{d_v}-\frac1{\max(d_u,d_v)}
+=\frac1{\min(d_u,d_v)}$, we get
+$2M(K)=2|B|-\sum_{uv\in E(K[B])}(2/d_u+2/d_v-2/\max(d_u,d_v))=2|B|-W_B$. Note that $|B|\ge3$: if $A\ne\emptyset$,
+a vertex of $A$ has three neighbours, all in $B$, and if $A=\emptyset$ then $|B|=|K|\ge4$.
+
+Start with a spanning forest $F$ of $K[B]$, and while $F$ has more than one component, choose a vertex $a\in A$ not
+yet added that is adjacent to two components of $F$, and add $a$ together with one edge to each component it meets.
+Such a vertex exists. Indeed, at every stage the vertices outside $F$ lie in $A$ and have all their neighbours in
+$B\subseteq V(F)$, and no edge of $K$ joins two components of $F$ (at the start because $F$ spans $K[B]$, later because
+each added vertex is joined to every component it meets). So if every vertex outside $F$ met only one component, then
+for a component $C$ of $F$ the set $V(C)$, together with the vertices outside $F$ adjacent to $C$, would be closed
+under adjacency (as $A$ is independent) and different from $V(K)$, contradicting the connectivity of $K$. Each step
+reduces the number of components, so at most $\kappa-1$ vertices of $A$ are added; let $S$ be the set of them and
+$T_0$ the final tree. Every vertex of $S$ has degree at least two in $T_0$, so the leaves of $T_0$ lie in $B$, and as
+$|V(T_0)|\ge|B|\ge3$ there are two of them, $b_0$ and $b_1$. Attach every remaining vertex of $A$ to one of its three
+neighbours (all in $B$) other than $b_0,b_1$. In the resulting spanning tree of $K$ all internal vertices lie in
+$(B\setminus\{b_0,b_1\})\cup S$; the internal vertices of a spanning tree with at least three vertices form a
+connected dominating set, so $\gamma_c(K)\le|B|-2+\kappa-1\le2|B|-W_B-3=2M(K)-3$. Finally
+$\rho(K)\le(\gamma_c(K)+1)/2\le M(K)-1$ by Lemma~\ref{lem:rho-gc}.
+\end{proof}
+
+\subsection{Why bounded-degree arguments do not extend}
+
+\begin{example}\label{ex:nearjoin}
+For $b\ge2$ let $N_b$ be $K_{b+1,b}$ together with a vertex $h$ adjacent to all $2b+1$ vertices, and let $G_b$ be
+$N_b$ with a leaf at every vertex. Let $X$ and $Y$ be the parts of $K_{b+1,b}$ of sizes $b+1$ and $b$; in $G_b$ the
+vertices of $X$, of $Y$ and $h$ have degrees $b+2$, $b+3$ and $2b+2$. By Lemma~\ref{lem:edgeM}, deleting an
+$X$--$Y$, an $X$--$h$ or a $Y$--$h$ edge increases $M$ by $\frac2{(b+1)(b+2)(b+3)}$, $\frac1{(b+1)(b+2)}$ and
+$\frac1{b+3}$ respectively, so $G_b$ satisfies (a); (b) and (c) are clear. Moreover
+$M(G_b)=1+\frac{b+1}{b+2}+\frac{b(b+2)}{b+3}$ and $M(N_b)=1+\frac{b(b+1)}{b+2}$, so
+$M(G_b)-M(N_b)=\frac{b^2+5b+3}{b^2+5b+6}<1$. Thus conditions (a)--(c), together with (d) for $L'=L$, do not by
+themselves bound $|K|$. On the other hand $\rho(N_b)=1$ and $\rho(G_b)=\rho(G_b-\ell)=2$ for every leaf $\ell$, so no
+leaf of $G_b$ is $\rho$-critical: $G_b$ violates (e) (equivalently, (d) for $L'=\{\ell\}$), and indeed
+$M(G_b)-\rho(G_b)\to\infty$. Any proof of Conjecture~\ref{conj:core} along the lines of Section~\ref{sec:degree} must
+therefore use (e), or (d) for sets $L'\ne L$; these conditions are metric rather than local.
+\end{example}
+
+Every minimal counterexample satisfies (a)--(e) of Proposition~\ref{prop:structure}. By exhaustive search, there
+are $44\,710$ decorated cores with $|K|\le10$ that satisfy (a)--(c) and have at most two subs ($41\,627$ of them with
+$|K|=10$); all satisfy $M(G)-\rho(G)\ge\frac5{12}$. Only $23$ of them satisfy $M(G)-M(K)<1$, which (d) requires
+for $L'=L$, and only one of them
+has all its leaves $\rho$-critical (its core has $10$ vertices and $25$ edges, the degrees in $G$ are
+$5,5,5,5,5,7,7,7,7,7$, and every vertex carries a leaf); for that one $M(G)-M(K)=\frac{47}{42}>1$, so it violates (d).
+Proving that (a)--(e) are incompatible in general would prove Conjecture~\ref{conj:F}.
+
+\subsection{A false strengthening}
+One might hope that a vertex of maximum degree is always a good centre. This is true for all cores with at most
+$10$ vertices: for every vertex $h$ of maximum degree,
+$\min\{\ecc(h),\ \min_{w\sim h}\ecc(\text{midpoint of }hw)\}\le M-1+\frac s3$. It is false in general.
+
+\begin{example}\label{ex:chain}
+For $U\ge2$ let $C_U$ have vertices $a_i,b_i$ ($0\le i\le U$) and $y_i,y_i',z_i,z_i'$ ($0\le i<U$), with
+$a_i,b_i$ adjacent to $y_i,y_i'$, with $z_i,z_i'$ adjacent to $a_{i+1},b_{i+1}$, with edges $y_iz_i$ and $y_i'z_i'$, and
+with the edges $a_0b_0$ and $a_Ub_U$. Then $C_U$ is $2$-connected with $6U+2$ vertices, all degrees are $3$ or $4$,
+$s=0$, the vertices of maximum degree are $a_i,b_i$ ($1\le i\le U-1$), and $M(C_U)=\frac{8U+4}3$ (the $8(U-1)$ edges
+at vertices of degree $4$ have weight $\frac14$, the other $2U+10$ edges weight $\frac13$). Every path from
+$\{a_i,b_i\}$ to $\{a_{i+1},b_{i+1}\}$ has length at least $3$, and $d(a_i,a_{i+1})=d(a_i,b_{i+1})=3$.
+
+Let $U\ge3$ and $h=b_{U-1}$. Then $\ecc(h)=d(h,a_0)=d(h,b_0)=3U-3$, and all vertices with index at least $U-1$ are
+within distance $3$ of $h$. The neighbours of $h$ are $z_{U-2},z'_{U-2}$ and $y_{U-1},y'_{U-1}$. By
+Lemma~\ref{lem:rho-basic}(1) the midpoint of $hz_{U-2}$ has eccentricity $\frac12+d(z_{U-2},a_0)=\frac12+(3U-4)$, since
+$3U-4\ge3$; the midpoint of $hy_{U-1}$ has eccentricity $\frac12+d(h,a_0)=3U-\frac52$, and the edges $hz'_{U-2}$,
+$hy'_{U-1}$ are symmetric to these. Hence
+\[
+\min\{\ecc(h),\ \min_{w\sim h}\ecc(\text{midpoint of }hw)\}=3U-\tfrac72 ,
+\]
+and the rooted inequality has slack $\frac{8U+1}3-\bigl(3U-\frac72\bigr)=\frac{23-2U}6$, which is negative for every
+$U\ge12$ (for $U=12$: $n=74$, $M-1=\frac{97}3<\frac{65}2$). On the other hand $d(a_0,a_U)=3U$, and the eccentricity
+$\frac{3U}2$ is attained at $a_{U/2}$ if $U$ is even and at the midpoint of $y_kz_k$, $k=\frac{U-1}2$, if $U$ is odd;
+so $\rho(C_U)=\frac{3U}2$, and the core inequality holds with slack $\frac{7U+2}6$. We confirmed all these values by
+computer for $2\le U\le20$ (the rooted value for $3\le U\le20$).
+\end{example}
+
+Thus centres must be chosen globally, as in the splitting Lemma~\ref{lem:split}; a proof of
+Conjecture~\ref{conj:core} by a breadth-first search from a vertex of maximum degree cannot work.
+
+%==========================================================================================
+\section{Computations}\label{sec:comp}
+
+All programs use exact arithmetic: edge weights are scaled by a common multiple of $1,\dots,\Delta$, and $2\rho$ is
+computed exactly from Lemma~\ref{lem:rho-basic}(1)--(2) by breadth-first search. Graphs were generated with
+\texttt{geng} from \texttt{nauty}~\cite{nauty}. The programs are listed in Appendix~\ref{app:code}; an independent
+Python implementation (using \texttt{networkx} and \texttt{fractions}) agrees on all graphs with at most $8$ vertices.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrr}
+\toprule
+$n$ & cores tested & min.\ slack of~\eqref{eq:core}\\
+\midrule
+4 & 2 & 0 \\ 5 & 6 & 1/6 \\ 6 & 44 & 1/6 \\ 7 & 385 & 1/4 \\ 8 & 6\,268 & 3/10 \\ 9 & 179\,303 & 1/3 \\
+10 & 9\,349\,191 & 5/14 \\ 11 & 884\,325\,784 & 3/8 \\
+\midrule
+$n$, $m$ & cores with $\mu\le8$ & \\
+\midrule
+11, 16$^*$ & 2\,114 & 7/6\\ 11, 17$^*$ & 42\,268 & 5/6 \\ 11, 18$^*$ & 329\,471 & 1\\
+12, 17 & 744 & 4/3\\ 12, 18 & 46\,952 & 1\\ 12, 19 & 745\,461 & 7/6\\
+13, 19 & 27\,127 & 7/6\\ 13, 20 & 1\,028\,368 & 4/3\\
+14, 20 & 6\,904 & 4/3\\ 14, 21 & 852\,101 & 3/2\\
+15, 22 & 387\,630 & 5/3\\ 16, 23 & 77\,080 & 11/6\\
+\bottomrule
+\end{tabular}
+\caption{Exhaustive verification of the core inequality (Proposition~\ref{prop:smallcores}). The rows marked $^*$
+are contained in the row $n=11$; they were run separately and serve as a cross-check.}\label{tab:core}
+\end{table}
+
+\paragraph{Other checks.} (1) $\Rp(G)\ge\rho(G)$ for all $1\,006\,700\,565$ connected graphs with $11$ vertices and all
+smaller connected graphs. (2) The splitting inequality of Lemma~\ref{lem:split} for every cut vertex and every
+bipartition of the components, for all connected graphs with at most $9$ vertices. (3) The configurations of
+Proposition~\ref{prop:comp5} and Remark~\ref{rem:D6}, by \texttt{cfgcheck.c}. All statements of
+Proposition~\ref{prop:comp5} (the $128$ configurations, the values of $M(G)-\rho(G)$, and the tests of (d) and (e))
+were reproduced by a second, independently written Python program with exact fractions. As a further cross-check, the $374$
+configurations with $\Delta\le5$ and $|K|=11$ also satisfy $M(G)>\rho(G)$ and violate both (d) for $L'=L$ and (e).
+(4) Exhaustive enumeration of all decorated cores satisfying (a)--(c) of Proposition~\ref{prop:structure} with at most
+two subs and $|K|\le10$ (\texttt{cfgcheck.c} with $D=0$; counts $1,0,2,46,241,2793,41627$ for $|K|=4,\dots,10$):
+every one satisfies $M(G)>\rho(G)$; $23$ of them satisfy $M(G)-M(K)<1$, one satisfies (e), and none satisfies
+both. (Independently, by the proof of Theorem~\ref{thm:reduction} the core of a minimal counterexample
+violates~\eqref{eq:core}, so by Proposition~\ref{prop:smallcores} it has at least $12$ vertices.)
+
+%==========================================================================================
+\section{Concluding remarks}\label{sec:concl}
+
+The absolute radius turns Fajtlowicz's problem into the exact statement $\Rp\ge\rho$, which is tight for all paths with at least three vertices and
+is preserved by the natural surgeries: splitting at cut vertices is exact for $\Rp$ (Lemma~\ref{lem:padM}) and
+sub-additive for $\rho$ (Lemma~\ref{lem:split}). This reduces everything to $2$-connected cores with pendant vertices,
+and with bounded degree the local constraints are strong enough to finish (Theorems~\ref{thm:D4} and~\ref{thm:D5}).
+For unbounded degree, high-degree hubs make the local constraints satisfiable (Example~\ref{ex:nearjoin}) and the
+problem becomes the core inequality, or equivalently the incompatibility of conditions (d) and (e) of
+Proposition~\ref{prop:structure}. We expect that a proof will need a global argument that combines the weighted
+max-leaf inequality~\eqref{eq:LG} for hub-dominated cores (Proposition~\ref{prop:hub}) with the metric condition~(e).
+
+\begin{thebibliography}{99}
+\bibitem{CaporossiHansen} G.~Caporossi and P.~Hansen, Variable neighborhood search for extremal graphs. 1. The AutoGraphiX system,
+  \emph{Discrete Math.} \textbf{212} (2000) 29--44.
+\bibitem{CPS} M.~Cygan, M.~Pilipczuk and R.~\v{S}krekovski, On the inequality between radius and Randi\'c index for graphs,
+  \emph{MATCH Commun. Math. Comput. Chem.} \textbf{67} (2012) 451--466.
+\bibitem{DTZ} H.~Deng, Z.~Tang and J.~Zhang, On a conjecture of Randi\'c index and graph radius,
+  \emph{Filomat} \textbf{29} (2015), no.~6, doi:10.2298/FIL1506369D; arXiv:1210.2543.
+\bibitem{Doig1} M.~I.~Doig, Randi\'c index, radius, and diameter for cactus graphs, arXiv:2107.00071.
+\bibitem{Doig2} M.~I.~Doig, Block eccentricity, a radius bound, and an application to the Randi\'c index, arXiv:2309.11613.
+\bibitem{DLS} Z.~Dvo\v{r}\'ak, B.~Lidick\'y and R.~\v{S}krekovski, Randi\'c index and the diameter of a graph,
+  \emph{European J. Combin.} \textbf{32} (2011) 434--442.
+\bibitem{Fajtlowicz} S.~Fajtlowicz, On conjectures of Graffiti, \emph{Discrete Math.} \textbf{72} (1988) 113--118.
+\bibitem{HassinTamir} R.~Hassin and A.~Tamir, On the minimum diameter spanning tree problem,
+  \emph{Inform. Process. Lett.} \textbf{53} (1995) 109--111.
+\bibitem{KleitmanWest} D.~J.~Kleitman and D.~B.~West, Spanning trees with many leaves,
+  \emph{SIAM J. Discrete Math.} \textbf{4} (1991) 99--106.
+\bibitem{LiuGutman} B.~Liu and I.~Gutman, On a conjecture in Randi\'c indices,
+  \emph{MATCH Commun. Math. Comput. Chem.} \textbf{62} (2009) 143--154.
+\bibitem{nauty} B.~D.~McKay and A.~Piperno, Practical graph isomorphism, II, \emph{J. Symbolic Comput.} \textbf{60} (2014) 94--112.
+\bibitem{Randic} M.~Randi\'c, On characterization of molecular branching, \emph{J. Amer. Chem. Soc.} \textbf{97} (1975) 6609--6615.
+\bibitem{YangLu} Y.~Yang and L.~Lu, The Randi\'c index and the diameter of graphs, \emph{Discrete Math.} \textbf{311} (2011) 1333--1343.
+\bibitem{YouLiu} Z.~You and B.~Liu, On a conjecture of the Randi\'c index, \emph{Discrete Appl. Math.} \textbf{157} (2009) 1766--1772.
+\end{thebibliography}
+
+\appendix
+\section{Programs}\label{app:code}
+
+The programs read graphs in \texttt{graph6} format from standard input (as produced by \texttt{geng}) and use exact
+integer arithmetic. The invocations used for the results of the paper are as follows.
+\begin{itemize}
+\item Core inequality (Proposition~\ref{prop:smallcores}, Table~\ref{tab:core}):\\
+      \texttt{geng -C -d2 -q $n$ | ./corechk} for $4\le n\le11$;\\
+      \texttt{geng -C -d2 -q $n$ $m$:$m$ | ./corechk} for $(n,m)=(11,16)$, $(11,17)$, $(11,18)$, $(12,17)$,
+      $(12,18)$, $(12,19)$, $(13,19)$, $(13,20)$, $(14,20)$, $(14,21)$;\\
+      \texttt{geng -C -d2 -D4 -q 15 22:22 | ./corechk}\quad and\quad \texttt{geng -C -d2 -D3 -q 16 23:23 | ./corechk}.
+\item Configurations (Proposition~\ref{prop:comp5}, Remark~\ref{rem:D6}, Section~\ref{sec:comp}):\\
+      \texttt{geng -C -d2 -D$D$ -q $n$ | ./cfgcheck $D$} for $D\in\{5,6\}$ and $4\le n\le10$, and for $D=5$, $n=11$;\\
+      \texttt{geng -C -d2 -q $n$ | ./cfgcheck 0} for $4\le n\le10$.
+\item $\Rp\ge\rho$ for all connected graphs (Section~\ref{sec:comp}, check (1)): \texttt{geng -c -q $n$ | ./rabs} for
+      $n\le11$, the case $n=11$ split into two parts with the \texttt{res/mod} option of \texttt{geng}.
+\item Domination inequalities of Section~\ref{sec:core}: \texttt{geng -c -d2 -q $n$ | ./cscheck} for $n\le10$.
+\item Independent check of $\Rp\ge\rho$ and of~\eqref{eq:core}: \texttt{geng -c $n$ | python3 independent\_check.py}
+      for $n\le8$.
+\end{itemize}
+Check (2) of Section~\ref{sec:comp} (the splitting inequality of Lemma~\ref{lem:split}) used a direct implementation of
+the statement of that lemma, which is not listed here; Lemma~\ref{lem:split} is proved in Section~\ref{sec:rhocalc},
+and this check was only a sanity test.
+
+\subsection*{\texttt{corechk.c}: the core inequality.}
+\begin{lstlisting}
+// Core inequality check: for each graph (graph6, stdin; assumed 2-connected, e.g. from geng -C) with min degree>=2 and
+// s<=2 vertices of degree 2: verify rho(K) <= M(K) - 1 + s/3 exactly. W = lcm(1..maxdeg)*6 scaling.
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef unsigned int u32;
+static int n; static u32 A[32]; static int dist[32][32];
+static void parse(const char*s){ n=s[0]-63; memset(A,0,sizeof A); const char*p=s+1; int bit=0,val=0;
+  for(int j=1;j<n;j++) for(int i=0;i<j;i++){ if(bit==0){val=*p++-63; bit=6;} bit--; if(val>>bit&1){A[i]|=1u<<j; A[j]|=1u<<i;} } }
+static long long gcdll(long long a,long long b){ while(b){long long t=a%b;a=b;b=t;} return a; }
+int main(){ char line[256]; long long cnt=0, viol=0; double minsl=1e9; char gmin[64]="";
+  while(fgets(line,sizeof line,stdin)){ line[strcspn(line,"\n")]=0; if(!line[0]) continue; parse(line);
+    int dg[32], s=0, bad=0, D=0; for(int i=0;i<n;i++){ dg[i]=__builtin_popcount(A[i]); if(dg[i]<2) bad=1; if(dg[i]==2) s++; if(dg[i]>D) D=dg[i]; }
+    if(bad||s>2) continue; cnt++;
+    long long W=6; for(int i=2;i<=D;i++) W=W/gcdll(W,i)*i;
+    long long M=0; for(int u=0;u<n;u++) for(u32 a=A[u];a;a&=a-1){int v=__builtin_ctz(a); if(v>u) M+=W/(dg[u]>dg[v]?dg[u]:dg[v]);}
+    for(int s0=0;s0<n;s0++){ for(int t=0;t<n;t++) dist[s0][t]=99; dist[s0][s0]=0; u32 seen=1u<<s0, fr=seen; int d=0; while(fr){ d++; u32 nf=0; for(u32 q=fr;q;q&=q-1) nf|=A[__builtin_ctz(q)]; nf&=~seen; for(u32 q=nf;q;q&=q-1) dist[s0][__builtin_ctz(q)]=d; seen|=nf; fr=nf; } }
+    int r2=999; for(int u=0;u<n;u++){ int e=0; for(int t=0;t<n;t++) if(dist[u][t]>e) e=dist[u][t]; if(2*e<r2) r2=2*e; }
+    for(int u=0;u<n;u++) for(u32 a=A[u];a;a&=a-1){ int v=__builtin_ctz(a); if(v<u) continue; int mx=0; for(int w=0;w<n;w++){ int q=dist[u][w]<dist[v][w]?dist[u][w]:dist[v][w]; if(q>mx) mx=q; } if(2*mx+1<r2) r2=2*mx+1; }
+    // check  r2/2 <= M/W - 1 + s/3  <=>  3*W*r2 <= 6*M - 6*W + 2*W*s
+    long long lhs=3*W*(long long)r2, rhs=6*M-6*W+2*W*(long long)s;
+    double sl=(double)(rhs-lhs)/(6.0*W);
+    if(sl<minsl){minsl=sl; strcpy(gmin,line);}
+    if(lhs>rhs){ viol++; printf("VIOLATION %s\n",line); } }
+  fprintf(stderr,"cores=%lld violations=%lld min slack=%.4f at %s\n",cnt,viol,minsl,gmin);
+}
+\end{lstlisting}
+
+\subsection*{\texttt{cfgcheck.c}: decorated cores satisfying (a)--(c) of Proposition~\ref{prop:structure}, and the tests of (d) and (e).}
+\begin{lstlisting}
+// Enumerate decorated cores G=K+L satisfying (a)-(c) of the structure proposition and at most two subs:
+//  K 2-connected (input from geng -C -d2), one leaf per decorated vertex; vertices of K-degree 2 or 3 are decorated
+//  (forced by (c)); every K-vertex has a G-neighbour of smaller degree; subs (G-degree 3) pairwise non-adjacent, <=2;
+//  every K-edge supportive. Optional Delta bound D (0 = none): then vertices of K-degree D carry no leaf.
+// For every configuration it computes M(G)-rho(G) exactly and tests three necessary conditions of the proposition:
+//  (dL)  M(G)-M(G-L) < 1                      [(d) with L'=L]
+//  (d4)  L4 empty or M(G)-M(G-L4) < 1         [(d) with L'=L4 = leaves at hosts of G-degree <= 4]
+//  (e)   every leaf is rho-critical: rho(G-l) < rho(G)
+// Usage: geng -C -d2 [-D<D>] -q n | ./cfgcheck D [v]   (v: also print the configurations that pass (d4))
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef unsigned int u32;
+static int nk; static u32 A[32];
+static long long W;
+static void parseK(const char*s){ nk=s[0]-63; memset(A,0,sizeof A); const char*p=s+1; int bit=0,val=0;
+  for(int j=1;j<nk;j++) for(int i=0;i<j;i++){ if(bit==0){val=*p++-63; bit=6;} bit--; if(val>>bit&1){A[i]|=1u<<j; A[j]|=1u<<i;} } }
+static long long Mint(u32*G,int m){ long long s=0; for(int u=0;u<m;u++) for(u32 a=G[u];a;a&=a-1){int v=__builtin_ctz(a); if(v>u){int du=__builtin_popcount(G[u]),dv=__builtin_popcount(G[v]); s+=W/(du>dv?du:dv);}} return s; }
+static int dist[32][32];
+static int rho2(u32*G,int m){ for(int s=0;s<m;s++){ for(int t=0;t<m;t++) dist[s][t]=99; dist[s][s]=0; u32 seen=1u<<s, fr=seen; int d=0; while(fr){ d++; u32 nf=0; for(u32 q=fr;q;q&=q-1) nf|=G[__builtin_ctz(q)]; nf&=~seen; for(u32 q=nf;q;q&=q-1) dist[s][__builtin_ctz(q)]=d; seen|=nf; fr=nf; } }
+  int best=999; for(int s=0;s<m;s++){ int e=0; for(int t=0;t<m;t++) if(dist[s][t]>e) e=dist[s][t]; if(2*e<best) best=2*e; }
+  for(int u=0;u<m;u++) for(u32 a=G[u];a;a&=a-1){ int v=__builtin_ctz(a); if(v<u) continue; int mx=0; for(int w=0;w<m;w++){ int q=dist[u][w]<dist[v][w]?dist[u][w]:dist[v][w]; if(q>mx) mx=q; } if(2*mx+1<best) best=2*mx+1; }
+  return best; }
+// induced subgraph of G (m vertices) on the vertex set keep (bitmask), relabelled 0..k-1; returns k
+static int induced(u32*G,int m,u32 keep,u32*H){ int idx[32],k=0; for(int v=0;v<m;v++) if(keep>>v&1) idx[v]=k++;
+  memset(H,0,32*sizeof(u32)); for(int v=0;v<m;v++) if(keep>>v&1) for(u32 a=G[v]&keep;a;a&=a-1) H[idx[v]]|=1u<<idx[__builtin_ctz(a)];
+  return k; }
+int main(int argc,char**argv){ int D=argc>1?atoi(argv[1]):0, verbose=argc>2; W=27720; // lcm(1..12)
+  char line[256]; long long cores=0, confs=0, ndL=0, nd4=0, ne=0, ndLe=0, nall=0;
+  double minsl=1e9, mindropc=1e9; char gmin[64]="", gdc[64]=""; u32 smin=0, sdc=0;
+  while(fgets(line,sizeof line,stdin)){ line[strcspn(line,"\n")]=0; if(!line[0]) continue; parseK(line); cores++;
+    int deg[32]; for(int i=0;i<nk;i++) deg[i]=__builtin_popcount(A[i]);
+    u32 forced=0, freev=0; int ns0=0, bad=0;
+    for(int i=0;i<nk;i++){ if(deg[i]<2){bad=1;break;} if(deg[i]<=3) forced|=1u<<i; else if(!(D && deg[i]>=D)) freev|=1u<<i; if(deg[i]==2) ns0++; }
+    if(bad||ns0>2) continue;
+    if(D) { int ok=1; for(int i=0;i<nk;i++) if(deg[i]>D) ok=0; if(!ok) continue; }
+    u32 sub=0; do { u32 S=forced|sub; int dg[32]; for(int i=0;i<nk;i++) dg[i]=deg[i]+((S>>i)&1);
+      int ok=1; u32 subs=0; for(int i=0;i<nk;i++) if(dg[i]==3) subs|=1u<<i;
+      if(__builtin_popcount(subs)>2) ok=0;
+      for(u32 q=subs;q&&ok;q&=q-1){ int i=__builtin_ctz(q); if(A[i]&subs){ok=0;break;} }
+      if(ok) for(int i=0;i<nk && ok;i++) if(!((S>>i)&1)){ int has=0; for(u32 a=A[i];a;a&=a-1) if(dg[__builtin_ctz(a)]<dg[i]){has=1;break;} if(!has) ok=0; }
+      if(ok){ for(int u=0;u<nk && ok;u++) for(u32 a=A[u];a;a&=a-1){ int v=__builtin_ctz(a); if(v<u) continue;
+          int lu=((S>>u)&1), lv=((S>>v)&1);
+          for(u32 b=A[u]&~(1u<<v);b;b&=b-1){ int w=__builtin_ctz(b); if(dg[w]<=dg[u]-1) lu++; }
+          for(u32 b=A[v]&~(1u<<u);b;b&=b-1){ int w=__builtin_ctz(b); if(dg[w]<=dg[v]-1) lv++; }
+          int du=dg[u], dv=dg[v], mx=du>dv?du:dv;
+          long long L=(long long)lu*dv*(dv-1)*mx + (long long)lv*du*(du-1)*mx; long long R=(long long)du*(du-1)*dv*(dv-1);
+          if(!(L>R)){ok=0;break;} } }
+      if(ok){ confs++;
+        u32 G[32]; memset(G,0,sizeof G); memcpy(G,A,sizeof A); int n=nk; int host[32];
+        for(int i=0;i<nk;i++) if(S>>i&1){ G[i]|=1u<<n; G[n]=1u<<i; host[n]=i; n++; }
+        long long Mi=Mint(G,n), MK=Mint(A,nk); int r2=rho2(G,n); double sl=(double)Mi/W - r2/2.0;
+        if(sl<minsl){minsl=sl; strcpy(gmin,line); smin=S;}
+        if(sl<0) printf("COUNTEREXAMPLE %s S=%x\n",line,S);
+        int okL=(Mi-MK)<W; if(okL) ndL++;
+        u32 all=(n==32)?0xffffffffu:((1u<<n)-1), keep=all; for(int l=nk;l<n;l++) if(dg[host[l]]<=4) keep&=~(1u<<l);
+        int ok4=1; if(keep!=all){ u32 H[32]; int k=induced(G,n,keep,H); ok4=(Mi-Mint(H,k))<W; } if(ok4) nd4++;
+        int allc=1; for(int l=nk;l<n && allc;l++){ u32 H[32]; int k=induced(G,n,all&~(1u<<l),H); if(!(rho2(H,k)<r2)) allc=0; }
+        if(allc){ ne++; double dr=(double)(Mi-MK)/W; if(dr<mindropc){mindropc=dr; strcpy(gdc,line); sdc=S;} }
+        if(allc&&okL) { ndLe++; printf("PASS(dL,e) %s S=%x\n",line,S); }
+        if(allc&&okL&&ok4) { nall++; printf("PASS(dL,d4,e) %s S=%x\n",line,S); }
+        if(verbose&&ok4) printf("PASS(d4) %s S=%x s=%d M-rho=%.4f all-critical=%d\n",line,S,__builtin_popcount(subs),sl,allc);
+      }
+      sub=(sub-freev)&freev; } while(sub);
+  }
+  fprintf(stderr,"D=%d cores=%lld configs=%lld min(M-rho)=%.4f [%s S=%x] pass(dL):%lld pass(d4):%lld pass(e):%lld "
+                 "(min drop(L) among pass(e): %.4f [%s S=%x]) pass(dL,e):%lld pass(all):%lld\n",
+          D,cores,confs,minsl,gmin,smin,ndL,nd4,ne,mindropc,gdc,sdc,ndLe,nall);
+}
+\end{lstlisting}
+
+\subsection*{\texttt{rabs.c}: the inequality \texorpdfstring{$\Rp\ge\rho$}{R' >= rho} for all connected graphs.}
+\begin{lstlisting}
+// Strong-M test: M(G) >= r_abs(G), where r_abs = r-1/2 if some edge uv has max_w min(d(u,w),d(v,w)) <= r-1, else r.
+// Equivalently: G has a spanning tree of diameter <= 2M(G).
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef unsigned int u32;
+static int n; static u32 adj[32]; static long long W;
+static long long lcm(long long a,long long b){long long x=a,y=b; while(y){long long t=x%y;x=y;y=t;} return a/x*b;}
+static void parse(const char*s){ n=s[0]-63; memset(adj,0,sizeof adj); const char*p=s+1; int bit=0,val=0;
+  for(int j=1;j<n;j++) for(int i=0;i<j;i++){ if(bit==0){val=*p++-63; bit=6;} bit--; if(val>>bit&1){adj[i]|=1u<<j; adj[j]|=1u<<i;} } }
+static int dist[32][32];
+static void apsp(){ u32 all=(1u<<n)-1; for(int s=0;s<n;s++){ for(int t=0;t<n;t++) dist[s][t]=99; u32 seen=1u<<s, fr=1u<<s; int e=0; dist[s][s]=0;
+  while(fr){u32 nf=0; for(u32 f=fr;f;f&=f-1) nf|=adj[__builtin_ctz(f)]; nf&=all&~seen; if(!nf)break; e++; for(u32 g=nf;g;g&=g-1) dist[s][__builtin_ctz(g)]=e; seen|=nf; fr=nf;} } }
+int main(int argc,char**argv){
+  char line[256]; long long cnt=0, viol=0, tightE=0, tightV=0, below=0; double minsl=1e9; char mins[256]="";
+  while(fgets(line,sizeof line,stdin)){
+    line[strcspn(line,"\n")]=0; parse(line); cnt++; if(n<2) continue;
+    W=1; for(int i=2;i<n;i++) W=lcm(W,i);
+    apsp(); int r=99; for(int s=0;s<n;s++){int e=0; for(int t=0;t<n;t++) if(dist[s][t]>e) e=dist[s][t]; if(e<r) r=e;}
+    long long Mi=0; for(int u=0;u<n;u++) for(u32 a=adj[u];a;a&=a-1){int v=__builtin_ctz(a); if(v>u){int du=__builtin_popcount(adj[u]),dv=__builtin_popcount(adj[v]); Mi+=W/(du>dv?du:dv);}}
+    int edgec=0;
+    for(int u=0;u<n&&!edgec;u++) for(u32 a=adj[u];a;a&=a-1){int v=__builtin_ctz(a); if(v<u) continue; int mx=0; for(int w=0;w<n;w++){int d=dist[u][w]<dist[v][w]?dist[u][w]:dist[v][w]; if(d>mx) mx=d;} if(mx<=r-1){edgec=1;break;} }
+    // 2*r_abs = 2r-1 if edgec else 2r ; test 2M >= 2 r_abs
+    long long lhs=2*Mi, rhs=W*(edgec?(2*r-1):(2*r));
+    double sl=(double)(lhs-rhs)/W/2.0;
+    if(sl<minsl){minsl=sl; strcpy(mins,line);}
+    if(lhs<rhs){viol++; if(viol<=50) printf("VIOL %s n=%d r=%d edgec=%d M=%.6f\n",line,n,r,edgec,(double)Mi/W);}
+    else if(lhs==rhs){ if(edgec) tightE++; else tightV++; }
+    if(2*Mi < 2*W*r) below++;
+  }
+  fprintf(stderr,"graphs=%lld violations=%lld tight(edge-centered)=%lld tight(vertex-centered)=%lld M<r:%lld minslack=%.6f at %s\n",cnt,viol,tightE,tightV,below,minsl,mins);
+}
+\end{lstlisting}
+
+\subsection*{\texttt{cscheck.c}: the domination inequalities of Section~\ref{sec:core}.}
+\begin{lstlisting}
+// Exact check of (Cs): gamma_c(G) <= 2M(G) - max(2, 3 - s/3) for connected graphs with min degree >= 2 (graph6 stdin),
+// and of (LG'): gamma_c <= 2M - 3 + 2s/3 for cores (2-connected, s<=2). Integer arithmetic with W = 3*lcm(1..n).
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef unsigned int u32;
+static int n; static u32 adj[32];
+static void parse(const char*s){ n=s[0]-63; memset(adj,0,sizeof adj); const char*p=s+1; int bit=0,val=0;
+  for(int j=1;j<n;j++) for(int i=0;i<j;i++){ if(bit==0){val=*p++-63; bit=6;} bit--; if(val>>bit&1){adj[i]|=1u<<j; adj[j]|=1u<<i;} } }
+static int conn_set(u32 S){ if(!S) return 0; u32 seen=S&-S, fr=seen; while(fr){ u32 nf=0; for(u32 q=fr;q;q&=q-1) nf|=adj[__builtin_ctz(q)]; nf&=S&~seen; seen|=nf; fr=nf;} return seen==S; }
+static int gammac(void){ u32 all=(1u<<n)-1; for(int k=1;k<=n;k++){ u32 S=(1u<<k)-1; while(S<=all){ u32 dom=S; for(u32 q=S;q;q&=q-1) dom|=adj[__builtin_ctz(q)]; if(dom==all && conn_set(S)) return k;
+      u32 c=S&-S, r=S+c; S=(((r^S)>>2)/c)|r; if(S==0) break; } } return n; }
+int main(){ char line[256]; long long cnt=0, cores=0, vcs=0, vlg=0; double mcs=1e9, mlg=1e9; char gcs[64]="", glg[64]="";
+  long long W=3; for(int i=2;i<=12;i++){ long long a=W,b=i; while(b){long long t=a%b;a=b;b=t;} W=W/a*i; }
+  while(fgets(line,sizeof line,stdin)){ line[strcspn(line,"\n")]=0; if(!line[0]) continue; parse(line);
+    int dg[32], s=0, bad=0; for(int i=0;i<n;i++){ dg[i]=__builtin_popcount(adj[i]); if(dg[i]<2) bad=1; if(dg[i]==2) s++; } if(bad||n<3) continue; cnt++;
+    long long M2=0; for(int u=0;u<n;u++) for(u32 a=adj[u];a;a&=a-1){int v=__builtin_ctz(a); if(v>u) M2+=2*W/(dg[u]>dg[v]?dg[u]:dg[v]);}
+    int g=gammac();
+    long long t = (3*W - s*W/3 > 2*W) ? 3*W - s*W/3 : 2*W;   // W*max(2,3-s/3)
+    double sl=(double)(M2 - t - (long long)g*W)/W; if(sl<mcs){mcs=sl; strcpy(gcs,line);} if(sl<-1e-12){ vcs++; printf("Cs-VIOLATION %s\n",line);} 
+    if(s<=2){ u32 all=(1u<<n)-1; int tc=1; for(int x=0;x<n;x++) if(!conn_set(all&~(1u<<x))){tc=0;break;}
+      if(tc){ cores++; double sl2=(double)(M2 - 3*W + 2*s*W/3 - (long long)g*W)/W; if(sl2<mlg){mlg=sl2; strcpy(glg,line);} if(sl2<-1e-12){vlg++; printf("LG-VIOLATION %s\n",line);} } } }
+  fprintf(stderr,"leafless=%lld (Cs) violations=%lld min slack=%.4f [%s] | cores=%lld (LG') violations=%lld min slack=%.4f [%s]\n",cnt,vcs,mcs,gcs,cores,vlg,mlg,glg);
+}
+\end{lstlisting}
+
+\subsection*{\texttt{independent\_check.py}: independent check in Python.}
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Independent check (pure Python + networkx, exact fractions) of
+   (1) R'(G) >= rho(G) for all connected graphs on n vertices (graph6 on stdin),
+   (2) the core inequality rho(K) <= R'(K) - 1 + s/3 for 2-connected K with s <= 2 degree-2 vertices.
+The absolute radius is computed directly from its definition on the metric graph:
+   rho = min( min_v ecc(v), min_{uv in E} (1/2 + max_w min(d(u,w), d(v,w))) ).
+Usage:  nauty-geng -c 7 | python3 independent_check.py
+"""
+import sys
+from fractions import Fraction as F
+import networkx as nx
+
+def rprime(G):
+    d = dict(G.degree())
+    return sum(F(1, max(d[u], d[v])) for u, v in G.edges())
+
+def abs_radius(G):
+    dist = dict(nx.all_pairs_shortest_path_length(G))
+    best = min(F(max(dist[v].values())) for v in G)
+    for u, v in G.edges():
+        val = F(1, 2) + max(min(dist[u][w], dist[v][w]) for w in G)
+        best = min(best, val)
+    return best
+
+def main():
+    count = viol = core_count = core_viol = 0
+    worst = None
+    for line in sys.stdin:
+        s = line.strip()
+        if not s:
+            continue
+        G = nx.from_graph6_bytes(s.encode())
+        if G.number_of_nodes() < 2:
+            continue
+        count += 1
+        M, rho = rprime(G), abs_radius(G)
+        if M < rho:
+            viol += 1
+            print("VIOLATION of R' >= rho:", s, M, rho)
+        if worst is None or M - rho < worst[0]:
+            worst = (M - rho, s)
+        deg = dict(G.degree())
+        s2 = sum(1 for v in G if deg[v] == 2)
+        if G.number_of_nodes() >= 3 and min(deg.values()) >= 2 and s2 <= 2 and nx.is_biconnected(G):
+            core_count += 1
+            if rho > M - 1 + F(s2, 3):
+                core_viol += 1
+                print("VIOLATION of core inequality:", s, M, rho, s2)
+    print(f"graphs={count} violations={viol} min(R'-rho)={worst[0] if worst else None} at {worst[1] if worst else None}")
+    print(f"cores tested={core_count} core violations={core_viol}")
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\end{document}

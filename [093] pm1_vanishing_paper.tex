@@ -1,0 +1,634 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{microtype}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{url}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem*{thmA}{Theorem A}
+\newtheorem*{thmB}{Theorem B}
+\newtheorem*{thmC}{Theorem C}
+\newtheorem*{thmD}{Theorem D}
+\newtheorem*{thmE}{Theorem E}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{problem}[theorem]{Problem}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\ip}[2]{\langle #1,#2\rangle}
+\newcommand{\Ga}{\widehat G}
+\newcommand{\Ph}{\widehat\Phi}
+\newcommand{\Hh}{\widehat H}
+\newcommand{\Uu}[1]{U_{(#1)}}
+
+\title{When can $\sum f(n)/n$ vanish for a periodic $f$ with values $\pm1$?\\[2pt]
+\large Contracting $2$-adic digit trees, a sharp obstruction for periods $2^ap$,\\ and the Murty--Pathak problem for periods $N\equiv0\pmod 4$}
+\author{Research audit XXIV\thanks{Manuscript prepared with the assistance of an AI system (Claude, Anthropic). All computations are reproducible from the scripts and logs in the folder \texttt{xxiv/} of the accompanying repository (Section~\ref{sec:computations}). Author attribution is to be completed by the submitting author.}}
+\date{October 28, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Let $\cD$ be the set of periods $N$ for which some $N$-periodic $f\colon\Z\to\{\pm1\}$ has $\sum_{n\le N}f(n)=0$ and $\sum_{n\ge1}f(n)/n=0$. Murty and Pathak proved that $N\notin\cD$ for $N\equiv2\pmod4$, recorded Tengely's example $36\in\cD$, and left the periods $N\equiv0\pmod4$ open; a recent manuscript asked whether a \emph{non-square} $N\equiv0\pmod 4$ can lie in $\cD$. We introduce a $2$-adic method for Okada's criterion. The conditions attached to characters of $2$-power conductor are equivalent to one functional equation on binary trees of signs (``digit trees''), $G(u)+pZ(u)-Z(pu)=K$ on $(\Z/2^a\Z)^\times$, and the Euler factor $p-T_p$ acts on differences of sibling subtrees as a contraction. We prove: (A) $2^a\notin\cD$ for every $a$; (B) if $p$ is an odd prime and $2^{a-1}\le p-\chi_4(p)$, then $2^ap\notin\cD$; in particular $4p,8p\notin\cD$ for all odd primes and, for fixed $a$, only finitely many $2^ap$ lie in $\cD$. Conversely, (E) an explicit digit-tree criterion produces members of $\cD$, and (C) the threshold $a_0(p)=\min\{a:2^ap\in\cD\}$ equals $4$ for $p=3$ and $2^k+2$ for every Fermat prime $p=2^{2^k}+1$ with $k\ge1$, so that (B) is sharp. Finally (D) three $p$-independent Laurent-polynomial certificates show that $12p\in\cD$ for every prime $p\ge5$ with $p\not\equiv\pm1\pmod{24}$, and each such $12p$ is a minimal element of $\cD$. Consequently the answer to the non-square question is negative, $48$ is the least non-square element of $\cD$ and $36$ the least element, both lower bounds now without computer search, and $\cD$ has infinitely many minimal elements. In the range of (A) and (B) every convergent sum $\sum f(n)/n$ is transcendental.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{The problem}
+For a periodic arithmetical function $f$ with period $N$ the series $L(1,f)=\sum_{n\ge1}f(n)/n$ converges if and only if $\sum_{n=1}^Nf(n)=0$. Chowla \cite{Cho70} asked when $L(1,f)$ can vanish; Baker, Birch and Wirsing \cite{BBW73} answered this for prime periods, and Okada \cite{Oka82} turned the vanishing of $L(1,f)$ for rational-valued $f$ into an explicit system of $\varphi(N)+\omega(N)$ linear equations. By Baker's theorem on linear forms in logarithms, $L(1,f)$ is then either $0$ or transcendental \cite{Bak75,BBW73,MS07}.
+
+Two sign problems have grown out of this. Erd\H{o}s conjectured (see Livingston \cite{Liv65}) that $L(1,f)\neq0$ when $f(n)=\pm1$ for $q\nmid n$ and $f(n)=0$ for $q\mid n$; this was proved for $2\varphi(q)+1>q$ by Okada, for $q\equiv3\pmod4$ by Murty and Saradha \cite{MS10}, for a set of $q\equiv1\pmod 4$ of lower density at least $0.82$ by Chatterjee and Murty \cite{CM15}, ``with probability one'' by Pathak \cite{Pat19}, and for further families by Bharadwaj \cite{Bha22}. Two recent manuscripts show that the conjecture is false, the least counterexample being $q=105^2$ \cite{Kei26a}, and that it holds for every non-square modulus \cite{Kei26c}.
+
+The second problem, which is the subject of this paper, concerns functions with $f(n)=\pm1$ for \emph{all} $n$.
+
+\begin{definition}\label{def:D}
+$\cD$ is the set of integers $N\ge1$ for which there is an $N$-periodic $f\colon\Z\to\{-1,1\}$ with $\sum_{n=1}^Nf(n)=0$ and $\sum_{n\ge1}f(n)/n=0$.
+\end{definition}
+
+Clearly $kN\in\cD$ whenever $N\in\cD$, and $N\in\cD$ forces $N$ to be even. Murty and Pathak \cite{MP22} proved that $N\notin\cD$ for $N\equiv2\pmod4$, reported Tengely's example showing $36\in\cD$ (the least possible period), and left the case $N\equiv0\pmod4$ open \cite{MP22}; see also \cite[Sect.~6]{Kei26c}. Since $36=6^2$ and since the companion problem for Erd\H{o}s functions turned out to be governed by squares \cite{Kei26a,Kei26c}, the following was asked in \cite[Sect.~6]{Kei26c}.
+
+\begin{problem}[{\cite[Sect.~6]{Kei26c}}]\label{prob:nonsquare}
+Let $N\equiv0\pmod4$ be a non-square and let $f$ be $N$-periodic with $f(n)=\pm1$ for all $n$ and $\sum_{n=1}^Nf(n)=0$. Is $\sum_{n\ge1}f(n)/n\neq0$?
+\end{problem}
+
+The answer is \emph{no}, and the reasons are more interesting than a single example: whether $N\in\cD$ is decided by a competition between the $2$-adic depth of $N$ and the size of its odd prime factors. We make this precise through the following new problem.
+
+\begin{problem}[threshold problem]\label{prob:threshold}
+For an odd prime $p$ let $a_0(p)=\min\{a\ge1:\ 2^ap\in\cD\}\in\{1,2,\dots\}\cup\{\infty\}$. Determine $a_0(p)$.
+\end{problem}
+
+Since $\cD$ is closed under multiples, $2^ap\in\cD$ if and only if $a\ge a_0(p)$.
+
+\subsection{Results}
+Write $\chi_4$ for the non-trivial character modulo $4$.
+
+\begin{thmA}
+$2^a\notin\cD$ for every $a\ge0$.
+\end{thmA}
+
+Theorem~A is the simplest instance of the method; we have not found it stated in the literature.
+
+\begin{thmB}
+Let $p$ be an odd prime and $a\ge1$ with $2^{a-1}\le p-\chi_4(p)$. Then $2^ap\notin\cD$. Equivalently, $a_0(p)\ge\lfloor\log_2(p-\chi_4(p))\rfloor+2$.
+\end{thmB}
+
+Thus $4p\notin\cD$ and $8p\notin\cD$ for every odd prime $p$, $16p\notin\cD$ for $p\ge7$, $32p\notin\cD$ for $p\ge17$, and for every fixed $a$ only finitely many primes $p$ have $2^ap\in\cD$. The case $a=1$ is the case $N=2p$ of the theorem of Murty and Pathak.
+
+For the converse direction we give a sufficient criterion (Theorem~E in Section~\ref{sec:constructions}) in terms of an odd, $2$-adically $1$-Lipschitz function $H'$ on $(\Z/2^J\Z)^\times$; it produces explicit functions $f$ and shows that Theorem~B is sharp for $p=3$ and for every Fermat prime.
+
+\begin{thmC}
+$a_0(3)=4$, and $a_0(p)=2^k+2$ for every Fermat prime $p=2^{2^k}+1$, $k\ge1$. In particular $a_0(5)=4$, $a_0(17)=6$, $a_0(257)=10$ and $a_0(65537)=18$, and for these primes $2^ap\in\cD$ if and only if $2^{a-1}>p-\chi_4(p)$.
+\end{thmC}
+
+Complete computer searches combined with Theorem~E give in addition $a_0(7)=a_0(11)=a_0(13)=7$, and Theorem~E gives $a_0(p)<\infty$ for every prime $p<127$ (Table~\ref{tab:thresholds} and Section~\ref{sec:open}).
+
+The third family of periods is $12p$.
+
+\begin{thmD}
+For every prime $p\ge5$ with $p\not\equiv\pm1\pmod{24}$ we have $12p\in\cD$, and $12p$ is a minimal element of $\cD$ with respect to divisibility.
+\end{thmD}
+
+The proof of Theorem~D consists of three certificates, one for each pair of Legendre symbols $\bigl(\tfrac2p\bigr),\bigl(\tfrac3p\bigr)$ other than $(1,1)$; each certificate is an identity between Laurent polynomials in two variables and is independent of $p$ (Table~\ref{tab:cert12}). For the $10$ primes $p<250$ with $p\equiv\pm1\pmod{24}$ we found $f$ with $12p\in\cD$ by computer (Section~\ref{sec:computations}).
+
+\begin{corollary}\label{cor:intro}
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item The answer to Problem~\ref{prob:nonsquare} is negative. The least non-square element of $\cD$ is $48$, and every $2^ap$ with $p\in\{3,5\}$, $a\ge4$, every $2^ap$ with $p\ge5$ a Fermat prime and $2^{a-1}>p-1$, and every $12p$ as in Theorem~D is a non-square element of $\cD$.
+\item The least element of $\cD$ is $36$.
+\item $\cD$ has infinitely many minimal elements; in particular $\cD$ is not the set of multiples of finitely many integers.
+\item If $N=2^a$, or $N=2^ap$ with $2^{a-1}\le p-\chi_4(p)$, then $\sum_{n\ge1}f(n)/n$ is transcendental for every $N$-periodic $f\colon\Z\to\{\pm1\}$ with $\sum_{n\le N}f(n)=0$.
+\end{enumerate}
+\end{corollary}
+
+The lower bounds in (i) and (ii) follow from Theorems~A and~B and the theorem of Murty and Pathak; they replace a computer search. The examples for $36$ and $48$ are listed in Appendix~\ref{app:examples}.
+
+\subsection{The method}
+Okada's criterion splits into conditions indexed by primitive characters. For $N=2^ap$ we group the residues according to their $2$-adic level and read the values of $f$ on the residues above a unit $u\in(\Z/2^a\Z)^\times$ as the binary digits of an odd integer (Lemma~\ref{lem:digits}). The conditions for all characters of conductor $2^j$ and $2^jp$ ($2\le j\le a$) then collapse, by a telescoping identity (Lemma~\ref{lem:telescope}), into a single \emph{master equation}
+\[
+\Ga(u)+p\,\Ph_y(u)-\Ph_y(pu)=K+(p-1)\beta(y)\qquad(u\in(\Z/2^a\Z)^\times,\ y\in(\Z/p\Z)^\times)
+\]
+between the value functions of the digit trees of $f$ (Proposition~\ref{prop:master}). Differences of sibling subtrees satisfy $\delta(pu)=p\,\delta(u)+\gamma(u)$, and since multiplication by $p$ permutes the units, a maximum argument (Lemma~\ref{lem:orbit}) gives $|\delta|\le|\gamma|/(p-1)$: the Euler factor contracts. When the depth is small compared with $p$, i.e.\ $2^{a-1}\le p-\chi_4(p)$, the contraction kills all $2$-adic structure, and the problem descends to the residues modulo $p$, where a second, multiplicative contraction (by the factor $2-T_2$ coming from the prime $2$) and a parity count finish the proof. The same digit trees, run in reverse, produce the examples.
+
+\subsection{Organisation}
+Section~\ref{sec:okada} recalls Okada's criterion. Section~\ref{sec:trees} contains the lemmas on digit trees. Theorem~A is proved in Section~\ref{sec:powers}, Theorem~B in Section~\ref{sec:2ap}, Theorems~E and~C in Section~\ref{sec:constructions}, Theorem~D in Section~\ref{sec:12p}, and the corollaries in Section~\ref{sec:consequences}. Section~\ref{sec:computations} describes the computations (none of which is used in the proofs of Theorems~A--E), and Section~\ref{sec:open} lists open problems.
+
+\section{Okada's criterion}\label{sec:okada}
+
+Let $N\ge2$. For $d\mid N$ put $U_d=(\Z/d\Z)^\times$, with $U_1=\Z/1\Z$ a single point. The residues $n$ modulo $N$ with $\gcd(n,N)=N/d$ are the $n=(N/d)x$, $x\in U_d$; we call them the \emph{layer} of level $d$ (the layer $d=1$ is the residue $0$). For an $N$-periodic $f$ put
+\[
+f_d(x)=f\bigl((N/d)x\bigr)\ (x\in U_d),\qquad S_d=\sum_{x\in U_d}f_d(x),\qquad \ip{f_d}{\chi}=\sum_{x\in U_d}f_d(x)\overline{\chi(x)}
+\]
+for Dirichlet characters $\chi$ whose conductor divides $d$ (regarded as characters modulo $d$), and for a prime $r\mid N$
+\[
+\varepsilon_r(d)=v_r(N/d)-\frac{[\,r\mid d\,]}{r-1}.
+\]
+Here $[\,P\,]$ is $1$ if $P$ holds and $0$ otherwise.
+
+\begin{theorem}[Okada \cite{Oka82}; layered form {\cite[Thm.~4]{Bha22}}, {\cite[Thm.~2.2]{Kei26a}}, {\cite[Thm.~2.1 and Sect.~6]{Kei26c}}]\label{thm:okada}
+Let $f\colon\Z\to\Q$ be $N$-periodic with
+\[
+\textup{(C)}\qquad \sum_{n=1}^Nf(n)=\sum_{d\mid N}S_d=0 .
+\]
+Then $\sum_{n\ge1}f(n)/n=0$ if and only if
+\begin{enumerate}
+\item[\textup{(A)}] for every non-principal primitive character $\chi$ whose conductor $m$ divides $N$,
+\[
+\sum_{d:\ m\mid d\mid N}\frac{d}{\varphi(d)}\prod_{\substack{r\mid d\\ r\nmid m}}\Bigl(1-\frac{\chi(r)}{r}\Bigr)\ip{f_d}{\chi}=0
+\]
+\textup{(}$r$ runs over primes\textup{)}, and
+\item[\textup{(B)}] for every prime $r\mid N$, $\sum_{d\mid N}S_d\,\varepsilon_r(d)=0$.
+\end{enumerate}
+\end{theorem}
+
+The sufficiency of (A) and (B) is elementary: grouping $\sum f(n)n^{-s}$ by $\gcd(n,N)$, expanding each $f_d$ in characters modulo $d$ and letting $s\to1^+$ gives
+\begin{equation}\label{eq:decomp}
+\sum_{n\ge1}\frac{f(n)}n=\frac1N\sum_{\chi}c_\chi(f)\,L(1,\chi)-\frac1N\sum_{r\mid N}\Bigl(\sum_{d\mid N}S_d\,\varepsilon_r(d)\Bigr)\log r,
+\end{equation}
+where $\chi$ runs over the non-principal primitive characters of conductor dividing $N$ and $c_\chi(f)$ is the left-hand side of (A). Indeed, the principal characters contribute $\zeta(s)\sum_d(N/d)^{-s}\frac{S_d}{\varphi(d)}\prod_{r\mid d}(1-r^{-s})$, whose pole at $s=1$ has residue $\frac1N\sum_dS_d=0$ by (C), and the logarithmic terms come from differentiating $(N/d)^{-s}\prod_{r\mid d}(1-r^{-s})$ at $s=1$. The layer $d=1$ (the residue $0$, with $S_1=f(0)$ and $\varepsilon_r(1)=v_r(N)$) contributes only to (B) and (C); this is the form needed for functions with $f(0)\neq0$ \cite[Sect.~6]{Kei26c}. The necessity of (A) and (B) is Okada's theorem \cite{Oka82}; its proof combines Baker's theorem on linear forms in logarithms with a Galois-conjugation argument (see also \cite{BBW73,Bha22,Kei26a}). We use necessity in Sections~\ref{sec:powers} and~\ref{sec:2ap} and only sufficiency in Sections~\ref{sec:constructions} and~\ref{sec:12p}.
+
+\begin{lemma}\label{lem:basic}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item If $N\in\cD$ then $kN\in\cD$ for every $k\ge1$.
+\item If $N\in\cD$ then $N\equiv0\pmod 4$.
+\item If $f$ is $N$-periodic, $\pm1$-valued, $\sum_{n\le N}f(n)=0$ and $L(1,f)\ne0$, then $L(1,f)$ is transcendental.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) An $N$-periodic function is $kN$-periodic. (b) $\sum_{n\le N}f(n)$ is a sum of $N$ odd numbers, so $N$ is even, and $N\not\equiv2\pmod4$ by \cite{MP22}. (c) By \eqref{eq:decomp}, $L(1,f)$ is a linear form with algebraic coefficients in logarithms of algebraic numbers and in $\pi$ (the values $L(1,\chi)$ of odd characters are algebraic multiples of $\pi=-i\log(-1)$), and Baker's theorem shows that such a form is $0$ or transcendental \cite{Bak75,BBW73,MS07}.
+\end{proof}
+
+\section{Digit trees}\label{sec:trees}
+
+Fix $a\ge1$. For $0\le i\le a$ write $\Uu i=U_{2^i}=(\Z/2^i\Z)^\times$, so that $\Uu0$ and $\Uu1$ are single points, and put $u_i=|\Uu i|$, i.e.\ $u_0=u_1=1$ and $u_i=2^{i-1}$ for $i\ge1$. For $u\in\Uu a$ and $i\le a$ we write $u\bmod 2^i$ for the image of $u$ in $\Uu i$. Put
+\[
+e_i=a-i-[\,i\ge1\,]\qquad(0\le i\le a),
+\]
+so that $e_i=\varepsilon_2(2^i)$ for $N=2^a$ and also $e_i=\varepsilon_2(2^i)=\varepsilon_2(2^ip)$ for $N=2^ap$.
+
+\begin{definition}\label{def:tree}
+A \emph{digit tree} of depth $a$ is a family $\mathbf d=(d_i)_{0\le i\le a}$ of functions $d_i\colon\Uu i\to\{\pm1\}$. Its \emph{value function} is
+\[
+X_{\mathbf d}(u)=\sum_{i=0}^a2^i\,d_i(u\bmod 2^i)\qquad(u\in\Uu a).
+\]
+Its \emph{level sums} are $S_i(\mathbf d)=\sum_{x\in\Uu i}d_i(x)$.
+\end{definition}
+
+\begin{lemma}[signed binary expansions]\label{lem:digits}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item Every odd integer $x$ with $|x|<2^{a+1}$ has a unique expansion $x=\sum_{i=0}^a2^id_i(x)$ with $d_i(x)\in\{\pm1\}$, and every such sum is odd of absolute value $<2^{a+1}$.
+\item For $0\le k\le a$ one has $d_i(x)=d_i(x')$ for all $i\le k$ if and only if $x\equiv x'\pmod{2^{k+2}}$.
+\item A function $X\colon\Uu a\to\Z$ is the value function of a digit tree of depth $a$ if and only if all $X(u)$ are odd, $|X(u)|<2^{a+1}$, and $X(u)\equiv X(u')\pmod{2^{k+2}}$ whenever $1\le k\le a$ and $u\equiv u'\pmod{2^k}$. The tree is then unique, and $d_0=-\chi_4(X(u))$ for every $u$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) The map $x\mapsto y=(x+2^{a+1}-1)/2$ is a bijection from the odd integers in $(-2^{a+1},2^{a+1})$ onto $[0,2^{a+1}-1]$, and if $y=\sum_ib_i2^i$ is the binary expansion then $x=\sum_i2^i(2b_i-1)$. (b) The digits $0,\dots,k$ agree iff $y\equiv y'\pmod{2^{k+1}}$ iff $x\equiv x'\pmod{2^{k+2}}$. (c) If $u\equiv u'\pmod{2^k}$ then $u\bmod 2^i=u'\bmod 2^i$ for $i\le k$, so the digits $0,\dots,k$ of $X(u)$ and $X(u')$ agree and (b) gives the congruence; for $k=1$ this covers the levels $0$ and $1$, which consist of one point each. Conversely, under the stated conditions put $d_i(x)=d_i(X(u))$ for any $u\in\Uu a$ above $x\in\Uu i$; by (b) (with $k=\max(i,1)$) this does not depend on $u$. Finally $x\equiv d_0+2d_1\equiv d_0+2\pmod 4$, so $d_0=-\chi_4(x)$.
+\end{proof}
+
+\begin{lemma}[telescoping]\label{lem:telescope}
+Let $A_i\colon\Uu i\to\C$ $(0\le i\le a)$. The following are equivalent:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item for every $j$ with $2\le j\le a$ and every primitive character $\xi$ modulo $2^j$,
+\(\displaystyle\sum_{i=j}^a\sum_{x\in\Uu i}A_i(x)\overline{\xi(x)}=0;\)
+\item the function $u\mapsto\sum_{i=0}^a2^iA_i(u\bmod 2^i)$ is constant on $\Uu a$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For $1\le j\le a$ and $x\in\Uu j$ let $\Psi_j(x)=\sum_{i=j}^a\sum_{x'\in\Uu i,\ x'\equiv x\ (2^j)}A_i(x')$, so that the sum in (i) is $\sum_{x\in\Uu j}\Psi_j(x)\overline{\xi(x)}$. For $j\ge2$ the non-primitive characters modulo $2^j$ are exactly those that are trivial on the kernel $\{1,1+2^{j-1}\}$ of $\Uu j\to\Uu{j-1}$. A function on a finite abelian group is invariant under a subgroup iff its Fourier coefficients vanish at all characters that are non-trivial on the subgroup; hence condition (i) for a given $j$ says that $\Psi_j(x+2^{j-1})=\Psi_j(x)$ for all $x\in\Uu j$ (note $x(1+2^{j-1})\equiv x+2^{j-1}\pmod{2^j}$ for odd $x$).
+
+(i)$\Rightarrow$(ii). For $j<a$ and $x\in\Uu j$ we have $\Psi_j(x)=A_j(x)+\Psi_{j+1}(\tilde x)+\Psi_{j+1}(\tilde x+2^j)$ for a lift $\tilde x\in\Uu{j+1}$, and by the invariance of $\Psi_{j+1}$ this is $A_j(x)+2\Psi_{j+1}(\tilde x)$ for either lift. Descending induction from $j=a$ gives $\sum_{i=j}^a2^iA_i(u\bmod 2^i)=2^j\Psi_j(u\bmod2^j)$ for $2\le j\le a$. With $j=2$ the function in (ii) equals $A_0+2A_1+4\Psi_2(u\bmod 4)$, which is constant because $\Psi_2(1)=\Psi_2(3)$.
+
+(ii)$\Rightarrow$(i). Let $K$ be the constant. For $2\le j\le a$ and $x\in\Uu j$, each $x'\in\Uu i$ ($i\ge j$) has $2^{a-i}$ preimages in $\Uu a$, so
+\[
+2^a\Psi_j(x)=\sum_{\substack{u\in\Uu a\\u\equiv x\ (2^j)}}\ \sum_{i=j}^a2^iA_i(u\bmod2^i)=2^{a-j}\Bigl(K-\sum_{i<j}2^iA_i(x\bmod 2^i)\Bigr),
+\]
+which depends only on $x\bmod 2^{j-1}$. Hence $\Psi_j$ is invariant under $x\mapsto x+2^{j-1}$.
+\end{proof}
+
+\begin{lemma}[orbit lemma]\label{lem:orbit}
+Let $\pi$ be a permutation of a finite set $S$, let $q>1$, and let $\delta,\gamma\colon S\to\C$ satisfy $\delta(\pi(s))=q\,\delta(s)+\gamma(s)$ for all $s\in S$. Then $\max_S|\delta|\le\max_S|\gamma|/(q-1)$.
+\end{lemma}
+
+\begin{proof}
+Choose $s$ with $|\delta(s)|$ maximal. Then $|\delta(s)|\ge|\delta(\pi(s))|\ge q|\delta(s)|-|\gamma(s)|$.
+\end{proof}
+
+\begin{lemma}[weights]\label{lem:weights}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item Let $c\in\{-1,0,1\}^{a+1}$, $c\neq0$, with $\sum_{i=0}^au_ic_i=0$. Then the support of $c$ is $\{0,1,\dots,k\}$ for some $k\ge1$, and $c_i=-c_k$ for all $i<k$.
+\item For $1\le k\le a$: $\sum_{i<k}e_iu_i-e_ku_k=2^k$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) Let $k$ be the largest index with $c_k\neq0$; $k\ge1$ since $u_0\ne0$. Since $u_k=\sum_{i<k}u_i$, the equation $\sum_{i<k}u_ic_i=-u_kc_k$ forces equality in $|\sum_{i<k}u_ic_i|\le\sum_{i<k}u_i$, i.e.\ $c_i=-c_k$ for all $i<k$. (b) Using $\sum_{i=1}^{k-1}i2^{i-1}=(k-2)2^{k-1}+1$ one finds $\sum_{i<k}e_iu_i=a+\sum_{i=1}^{k-1}(a-1-i)2^{i-1}=(a-k+1)2^{k-1}$, and $e_ku_k=(a-k-1)2^{k-1}$.
+\end{proof}
+
+\section{Powers of two}\label{sec:powers}
+
+\begin{proof}[Proof of Theorem~A]
+For $N=1$ the sum $\sum_{n\le N}f(n)=f(1)$ does not vanish, so let $N=2^a$ with $a\ge1$ and let $f$ be $N$-periodic, $\pm1$-valued, with $\sum_{n\le N}f(n)=0$ and $L(1,f)=0$. The layers are $d=2^i$, $0\le i\le a$, and we write $d_i=f_{2^i}\colon\Uu i\to\{\pm1\}$; this is a digit tree $\mathbf d$ of depth $a$, with $S_{2^i}=S_i(\mathbf d)$.
+
+A primitive character of conductor $m\mid N$, $m>1$, has $m=2^j$ with $2\le j\le a$, and in (A) all $d$ are of the form $2^i$, $i\ge j$, with $d/\varphi(d)=2$ and no Euler factor. So (A) says that $\sum_{i\ge j}\ip{d_i}{\xi}=0$ for every primitive $\xi$ modulo $2^j$, and by Lemma~\ref{lem:telescope} the value function $X_{\mathbf d}$ is constant. By Lemma~\ref{lem:digits}(a) all digits are then constant: $d_i\equiv c_i\in\{\pm1\}$, and $S_{2^i}=u_ic_i$. Condition (C) reads $\sum_iu_ic_i=0$, so by Lemma~\ref{lem:weights}(a) $c_i=s$ for $i<a$ and $c_a=-s$ for some $s=\pm1$. Condition (B) at $r=2$ reads $\sum_ie_iu_ic_i=0$; but by Lemma~\ref{lem:weights}(b) with $k=a$ the left-hand side is $s\,2^a\neq0$. This contradicts Theorem~\ref{thm:okada}.
+\end{proof}
+
+\section{Periods \texorpdfstring{$2^ap$}{2\^{}a p}: the master equation and the contraction}\label{sec:2ap}
+
+Throughout this section $p$ is an odd prime, $a\ge1$, $N=2^ap$, and $f$ is $N$-periodic. The layers are $d=2^i$ (the residues divisible by $p$) and $d=2^ip$ (the residues prime to $p$), $0\le i\le a$. For $x\in\Uu i$ and $y\in U_p$ put
+\[
+g_i(x)=f(2^{a-i}p\,x),\qquad \phi_i(x,y)=f(2^{a-i}z),\quad z\in U_{2^ip},\ z\equiv x\ (2^i),\ z\equiv y\ (p),
+\]
+so that $g_i=f_{2^i}$ and $\phi_i(x,y)=f_{2^ip}(z)$. On $\Uu a$ define the value functions
+\[
+\Ga(u)=\sum_{i=0}^a2^ig_i(u\bmod2^i),\qquad \Ph_y(u)=\sum_{i=0}^a2^i\phi_i(u\bmod 2^i,y),\qquad Z(u)=\frac1{p-1}\sum_{y\in U_p}\Ph_y(u).
+\]
+If $f$ is $\pm1$-valued, $(g_i)$ and, for each $y$, $(\phi_i(\cdot,y))$ are digit trees of depth $a$. We write $T_r$ for the operator $(T_rF)(x)=F(rx)$ on functions on a group in which $r$ is a unit.
+
+\begin{proposition}[master equation]\label{prop:master}
+The conditions \textup{(A)} of Theorem~\ref{thm:okada} for all primitive characters of conductor $2^j$ or $2^jp$ with $2\le j\le a$ hold if and only if there are $K\in\C$ and $\beta\colon U_p\to\C$ with $\sum_y\beta(y)=0$ such that for all $u\in\Uu a$ and $y\in U_p$
+\begin{align}
+\Ph_y(u)&=Z(u)+\beta(y),\label{eq:transl}\\
+\Ga(u)+p\,\Ph_y(u)-\Ph_y(pu)&=K+(p-1)\beta(y).\label{eq:master}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+\emph{Conductor $2^j$.} Let $\xi$ be primitive modulo $2^j$. The $d$ in (A) are $2^i$ and $2^ip$ with $i\ge j$; $d/\varphi(d)$ equals $2$ resp.\ $2p/(p-1)$, and the only Euler factor is $1-\xi(p)/p$ for $d=2^ip$. With $h_i(x)=\sum_y\phi_i(x,y)$ we have $\ip{f_{2^ip}}{\xi}=\sum_{x\in\Uu i}h_i(x)\overline{\xi(x)}$ and $(p-\xi(p))\sum_xh(x)\overline{\xi(x)}=\sum_x(ph(x)-h(px))\overline{\xi(x)}$. After division by $2$, (A) for $\xi$ becomes
+$\sum_{i\ge j}\sum_{x\in\Uu i}A_i(x)\overline{\xi(x)}=0$ with $A_i=g_i+(p\,h_i-T_ph_i)/(p-1)$. By Lemma~\ref{lem:telescope} these conditions ($2\le j\le a$) hold iff $\Ga+(p\Hh-T_p\Hh)/(p-1)$ is constant, where $\Hh=\sum_y\Ph_y=(p-1)Z$; that is, iff
+\begin{equation}\label{eq:masterZ}
+\Ga(u)+pZ(u)-Z(pu)=K\qquad(u\in\Uu a)
+\end{equation}
+for a constant $K$.
+
+\emph{Conductor $2^jp$.} The primitive characters are $\psi\xi$ with $\psi\ne1$ modulo $p$ and $\xi$ primitive modulo $2^j$. The $d$ in (A) are $2^ip$, $i\ge j$, with $d/\varphi(d)=2p/(p-1)$ and no Euler factor, and $\ip{f_{2^ip}}{\psi\xi}=\sum_{x\in\Uu i}A^\psi_i(x)\overline{\xi(x)}$ with $A^\psi_i(x)=\sum_y\phi_i(x,y)\overline{\psi(y)}$. By Lemma~\ref{lem:telescope} these conditions hold iff $B_\psi(u)=\sum_y\Ph_y(u)\overline{\psi(y)}$ is independent of $u$ for every $\psi\neq1$. By Fourier inversion on $U_p$ this is equivalent to \eqref{eq:transl} with $\beta(y)=\frac1{p-1}\sum_{\psi\ne1}B_\psi\psi(y)$.
+
+Finally, given \eqref{eq:transl}, the left-hand side of \eqref{eq:master} equals $\Ga(u)+pZ(u)-Z(pu)+(p-1)\beta(y)$, so \eqref{eq:master} is equivalent to \eqref{eq:masterZ}.
+\end{proof}
+
+\begin{proposition}[contraction]\label{prop:contraction}
+Let $f$ be $\pm1$-valued and satisfy \eqref{eq:master} for some constants $K_y$ in place of $K+(p-1)\beta(y)$, and assume $2^{a-1}\le p-\chi_4(p)$. Then $\Ga$ and every $\Ph_y$ are constant on $\Uu a$; equivalently, all digits $g_i(x)$ and $\phi_i(x,y)$ are independent of $x\in\Uu i$.
+\end{proposition}
+
+\begin{proof}
+For $a=1$ there is nothing to prove, so let $a\ge2$. For $1\le j\le a$ consider the statement
+\begin{center}
+$Q(j)$: \quad $\Ga(u)$ and all $\Ph_y(u)$ depend only on $u\bmod 2^j$.
+\end{center}
+$Q(a)$ is trivial and $Q(1)$ is the claim, so it suffices to show $Q(j)\Rightarrow Q(j-1)$ for $2\le j\le a$. Assume $Q(j)$ for some $2\le j\le a$, fix $y$, and define on $\Uu j$
+\[
+\delta(u)=\Ph_y(u)-\Ph_y(u+2^{j-1}),\qquad \gamma(u)=\Ga(u)-\Ga(u+2^{j-1}).
+\]
+Since $p(u+2^{j-1})\equiv pu+2^{j-1}\pmod{2^j}$, subtracting \eqref{eq:master} at $u$ and at $u+2^{j-1}$ gives
+\begin{equation}\label{eq:diff}
+\delta(pu)=p\,\delta(u)+\gamma(u)\qquad(u\in\Uu j).
+\end{equation}
+The units $u$ and $u+2^{j-1}$ agree modulo $2^{j-1}$, so their digits on the levels $i<j$ agree, and each level $i\ge j$ contributes $0$ or $\pm2^{i+1}$. Hence $\delta(u)\in2^{j+1}\Z$ and $|\gamma(u)|\le\sum_{i=j}^a2^{i+1}=2^{a+2}-2^{j+1}$.
+
+If $j\ge3$, or $j=2$ and $p\equiv1\pmod4$, Lemma~\ref{lem:orbit} (with $\pi=T_p$ on $\Uu j$, $q=p$) gives $|\delta|\le(2^{a+2}-2^{j+1})/(p-1)$, which is $<2^{j+1}$ as soon as $2^{a+1-j}<p$. For $j\ge3$ this follows from $2^{a-2}\le(p+1)/2<p$, and for $j=2$, $p\equiv1\pmod 4$, it is the hypothesis $2^{a-1}\le p-1$. If $j=2$ and $p\equiv3\pmod 4$, then $\Uu2=\{1,3\}$, $p\cdot1\equiv3$ and $\delta(3)=-\delta(1)$, so \eqref{eq:diff} at $u=1$ reads $-(p+1)\delta(1)=\gamma(1)$ and $|\delta(1)|\le(2^{a+2}-8)/(p+1)<8$ by the hypothesis $2^{a-1}\le p+1$. In all cases $\delta\in2^{j+1}\Z$ forces $\delta=0$, and then $\gamma=0$ by \eqref{eq:diff}. Hence $\Ph_y$ and $\Ga$ are invariant under $u\mapsto u+2^{j-1}$, which is $Q(j-1)$. The last assertion follows from Lemma~\ref{lem:digits}(a).
+\end{proof}
+
+\begin{proposition}[bottom step]\label{prop:bottom}
+Let $f$ be $N$-periodic and $\pm1$-valued, and assume that all digits $g_i(x)$, $\phi_i(x,y)$ are independent of $x$; write $g_i$ and $\phi_i(y)$. Then the conditions \textup{(C)}, \textup{(B)} at $2$ and $p$, and \textup{(A)} for the characters of conductor $p$ cannot all hold.
+\end{proposition}
+
+\begin{proof}
+Suppose they hold. The level sums are $S_{2^i}=u_ig_i$ and $S_{2^ip}=u_i\sum_y\phi_i(y)$. Since $\varepsilon_p(2^i)=1$ and $\varepsilon_p(2^ip)=-1/(p-1)$, (C) and (B) at $p$ give
+\begin{equation}\label{eq:twosums}
+\sum_iu_ig_i=0,\qquad \sum_y\Bigl(\phi_0(y)+Q(y)\Bigr)=0,\qquad Q(y):=\sum_{i=1}^au_i\phi_i(y).
+\end{equation}
+By Lemma~\ref{lem:weights}(a) the first equation gives $g_i=s$ for $i<a$ and $g_a=-s$, with $s=\pm1$.
+
+For a non-trivial $\psi$ modulo $p$, the $d$ in (A) are $p$ and $2^ip$ ($i\ge1$), with weights $p/(p-1)$ and $2p/(p-1)$ and the Euler factor $1-\psi(2)/2$ for $i\ge1$; moreover $\ip{f_p}{\psi}=\sum_y\phi_0(y)\overline{\psi(y)}$ and $\ip{f_{2^ip}}{\psi}=u_i\sum_y\phi_i(y)\overline{\psi(y)}$. Since $(2-\psi(2))\sum_yQ(y)\overline{\psi(y)}=\sum_y(2Q(y)-Q(2y))\overline{\psi(y)}$, (A) for all $\psi\neq1$ says that
+\[
+\phi_0(y)+2Q(y)-Q(2y)=c\qquad(y\in U_p)
+\]
+for a constant $c$. Put $X=Q-c$; then $X(2y)=2X(y)+\phi_0(y)$, and Lemma~\ref{lem:orbit} (with $\pi=T_2$ on $U_p$, $q=2$) gives $|X|\le1$. Each $Q(y)=\phi_1(y)+\sum_{i\ge2}2^{i-1}\phi_i(y)$ is odd, so $X(2y)-X(y)=Q(2y)-Q(y)$ is even; as it equals $X(y)+\phi_0(y)$, every $X(y)$ is an odd integer, hence $X(y)=\pm1$. Then $X(2y)=2X(y)+\phi_0(y)\in\{\pm1\}$ forces $\phi_0(y)=-X(y)$. Now the second equation in \eqref{eq:twosums} reads $\sum_y(-X(y)+X(y)+c)=(p-1)c=0$, so $c=0$ and $Q(y)=X(y)=:\sigma_y\in\{\pm1\}$. Since $Q(y)=\sum_{k=0}^{a-1}2^k\phi_{k+1}(y)$, Lemma~\ref{lem:digits}(a) with $a-1$ in place of $a$ (for $a=1$ simply $Q=\phi_1$) gives $\phi_a(y)=\sigma_y$ and $\phi_i(y)=-\sigma_y$ for $1\le i<a$; also $\phi_0(y)=-\sigma_y$.
+
+Finally (B) at $2$: since $\varepsilon_2(2^i)=\varepsilon_2(2^ip)=e_i$, it reads $\sum_ie_iu_i\bigl(g_i+\sum_y\phi_i(y)\bigr)=0$. By Lemma~\ref{lem:weights}(b) with $k=a$, $\sum_ie_iu_ig_i=s\,2^a$ and $\sum_ie_iu_i\phi_i(y)=-\sigma_y2^a$. Hence $\sum_{y\in U_p}\sigma_y=s$. The left side is a sum of the even number $p-1$ of signs, hence even, while $s$ is odd: a contradiction.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~B]
+If $2^ap\in\cD$, take $f$ as in Definition~\ref{def:D}. By Theorem~\ref{thm:okada}, $f$ satisfies (A), (B) and (C); by Proposition~\ref{prop:master} it satisfies \eqref{eq:transl} and \eqref{eq:master}; by Proposition~\ref{prop:contraction} its digits are independent of $x$; and Proposition~\ref{prop:bottom} gives a contradiction. The reformulation follows because $a<\lfloor\log_2(p-\chi_4(p))\rfloor+2$ iff $2^{a-1}\le p-\chi_4(p)$.
+\end{proof}
+
+\begin{remark}\label{rem:B}
+(1) The proof uses (A) only for conductors $p$, $2^j$ and $2^jp$, and (B) only at $2$ and $p$.
+(2) The two contractions have different sources: the first comes from the Euler factor $1-\xi(p)/p$ of the odd prime in the conductor-$2^j$ conditions and acts on $2$-adic differences; the second from the Euler factor $1-\psi(2)/2$ of the prime $2$ in the conductor-$p$ conditions and acts on the residues modulo $p$. The final parity count is the $2$-adic shadow of the logarithmic condition at $2$.
+(3) For $p\equiv3\pmod4$ the step $j=2$ gains a factor $(p+1)/(p-1)$ because $T_p$ swaps the two classes modulo $4$; this is the source of $\chi_4(p)$ in the statement, and Theorem~C shows that the bound is attained for $p=3$.
+(4) For $a=1$ the contraction is vacuous and the proof is the case $N=2p$ of the theorem of Murty and Pathak \cite{MP22}.
+\end{remark}
+
+\section{Digit-tree constructions and exact thresholds}\label{sec:constructions}
+
+We now run the digit trees backwards. For odd $x$ with $|x|<2^{a+1}$ let $\lambda_a(x)=\sum_{i=0}^aw_i\,d_i(x)$, where
+\[
+w_0=a\,2^{1-a},\qquad w_i=(a-i-1)\,2^{i-a}\quad(1\le i\le a),
+\]
+so that $w_i=e_iu_i2^{1-a}$.
+
+\begin{lemma}\label{lem:levelsums}
+For a digit tree $\mathbf d$ of depth $a$ with value function $X$:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\sum_{i=0}^aS_i(\mathbf d)=\tfrac12\bigl(\overline X-\chi_4(X)\bigr)$, where $\overline X=2^{1-a}\sum_{u\in\Uu a}X(u)$ is the mean of $X$ and $\chi_4(X)$ is the common value of $\chi_4(X(u))$;
+\item $\sum_{i=0}^ae_iS_i(\mathbf d)=\sum_{u\in\Uu a}\lambda_a(X(u))$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+A point of $\Uu i$ has $2^{a-1}/u_i$ preimages in $\Uu a$, so $S_i=u_i2^{1-a}\sum_ud_i(u\bmod 2^i)$. This gives (b) at once, and (a) because $\sum_iu_id_i=\tfrac12(X+d_0)$ and $d_0=-\chi_4(X)$ (Lemma~\ref{lem:digits}(c)).
+\end{proof}
+
+\begin{lemma}[pairing lemma]\label{lem:pairing}
+Let $\varepsilon\in\{\pm1\}$ and $t\in\Z$, $t\neq0$, with $4|t|+1<2^{a+1}$. Then
+\[
+\lambda_a(\varepsilon+4t)+\lambda_a(\varepsilon-4t)=-\varepsilon\,2^{\,v_2(t)+3-a},\qquad\text{and}\qquad \lambda_a(\varepsilon)=-2\varepsilon .
+\]
+\end{lemma}
+
+\begin{proof}
+For odd $x$ with $|x|<2^{a+1}$ let $x_k=\sum_{i<k}2^id_i(x)$; then $x_k$ is odd, $|x_k|<2^k$, and $x\equiv x_k+2^k\pmod{2^{k+1}}$, so $x_k$ is the unique odd number in $(-2^k,2^k)$ with this property. Since $\sum_{k=1}^ax_k=\sum_{i<a}(a-i)2^id_i$, a direct computation gives
+\begin{equation}\label{eq:Lambda}
+2^a\lambda_a(x)=\sum_{k=1}^ax_k-x+(a+1)d_0(x).
+\end{equation}
+Let $x=\varepsilon+4t$, $y=\varepsilon-4t$ and $v=v_2(t)\le a-2$. Then $d_0(x)=d_0(y)=-\varepsilon$ and $x_1=y_1=-\varepsilon$. For $k\ge2$, $x_k+y_k\equiv x+y\equiv2\varepsilon\pmod{2^{k+1}}$ and $|x_k+y_k|<2^{k+1}$, so $x_k+y_k\in\{2\varepsilon,\ 2\varepsilon-\varepsilon2^{k+1}\}$, and the second value occurs iff $x_k=y_k=\varepsilon(1-2^k)$, i.e.\ iff $x\equiv\varepsilon\pmod{2^{k+1}}$, i.e.\ iff $k\le v+1$. Summing,
+$\sum_k(x_k+y_k)=-2\varepsilon+2\varepsilon(a-1)-\varepsilon(2^{v+3}-8)$, and \eqref{eq:Lambda} gives $2^a(\lambda_a(x)+\lambda_a(y))=-\varepsilon2^{v+3}$. For $t=0$ the same computation with $x=y=\varepsilon$ (every $k\ge2$ of the second kind) gives $2^{a+1}\lambda_a(\varepsilon)=-\varepsilon2^{a+2}$.
+\end{proof}
+
+\begin{thmE}[digit-tree criterion]
+Let $p$ be an odd prime, $a\ge2$, $\varepsilon\in\{\pm1\}$, and let $H'\colon\Uu a\to\Z$ satisfy
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $H'(-u)=-H'(u)$, and $H'(u)\equiv H'(u')\pmod{2^k}$ whenever $u\equiv u'\pmod{2^k}$, $1\le k\le a$;
+\item $H'(u)\neq0$ and $G'(u):=H'(pu)-pH'(u)\neq0$ for all $u$;
+\item $4\max|H'|+1<2^{a+1}$ and $4\max|G'|+1<2^{a+1}$;
+\item \textup{($\star$)}\quad $\displaystyle\sum_{u\in\Uu a}2^{v_2(G'(u))}=(p-1)\sum_{u\in\Uu a}2^{v_2(H'(u))}$.
+\end{enumerate}
+Let $H=\varepsilon+4H'$, $G=-\varepsilon+4G'$, and let $(\eta_i)$, $(g_i)$ be the digit trees with value functions $H$, $G$ \textup{(}Lemma~\ref{lem:digits}(c)\textup{)}. For $n\in\Z$ let $i=a-\min(v_2(n),a)$ and let $x\in\Uu i$ be the residue modulo $2^i$ of the odd part of $n$ if $p\nmid n$, and of the odd part of $n/p$ if $p\mid n$. Define the $2^ap$-periodic function
+\[
+f(n)=\eta_i(x)\ \text{ if }p\nmid n,\qquad f(n)=g_i(x)\ \text{ if }p\mid n .
+\] Then $\sum_{n\le 2^ap}f(n)=0$ and $\sum_{n\ge1}f(n)/n=0$; in particular $2^ap\in\cD$.
+\end{thmE}
+
+\begin{proof}
+By (i) and (iii), $H$ and $G$ satisfy the conditions of Lemma~\ref{lem:digits}(c): they are odd, bounded by $2^{a+1}-1$, and $H(u)-H(u')=4(H'(u)-H'(u'))\equiv0\pmod{2^{k+2}}$ when $u\equiv u'\pmod{2^k}$; the same holds for $G'$ because multiplication by $p$ preserves congruences modulo $2^k$. In the notation of Section~\ref{sec:2ap}, $\phi_i(x,y)=\eta_i(x)$ for all $y$, so $\Ph_y=H$, $Z=H$, $\beta=0$, and
+\[
+\Ga+pZ-Z\circ T_p=-\varepsilon+4G'+p(\varepsilon+4H')-(\varepsilon+4H'\circ T_p)=(p-2)\varepsilon
+\]
+is constant; by Proposition~\ref{prop:master}, (A) holds for all conductors $2^j$ and $2^jp$. For conductor $p$, $\ip{f_{2^ip}}{\psi}=\sum_x\eta_i(x)\cdot\sum_y\overline{\psi(y)}=0$ and the layers $2^i$ do not see $\psi$; so (A) holds for all characters. Since $H'$ is odd, $\overline{H'}=0=\overline{G'}$, hence $\overline H=\varepsilon=\chi_4(H)$ and $\overline G=-\varepsilon=\chi_4(G)$, and Lemma~\ref{lem:levelsums}(a) shows that the level sums of both trees add up to $0$. As $S_{2^i}=S_i(g)$ and $S_{2^ip}=(p-1)S_i(\eta)$, this gives (C) and (B) at $p$ (whose coefficients are $1$ and $-1/(p-1)$). Finally (B) at $2$ reads $\sum_ie_i\bigl(S_i(g)+(p-1)S_i(\eta)\bigr)=0$, i.e.\ by Lemma~\ref{lem:levelsums}(b)
+\[
+\sum_{u}\lambda_a(G(u))+(p-1)\sum_u\lambda_a(H(u))=0 .
+\]
+Pair $u$ with $-u$: $H(\pm u)=\varepsilon\pm4H'(u)$ and $G(\pm u)=-\varepsilon\pm4G'(u)$. By Lemma~\ref{lem:pairing} the left-hand side equals $\varepsilon2^{2-a}\bigl(\sum_u2^{v_2(G'(u))}-(p-1)\sum_u2^{v_2(H'(u))}\bigr)$, which vanishes by ($\star$). By Theorem~\ref{thm:okada} (sufficiency), $L(1,f)=0$.
+\end{proof}
+
+\begin{remark}
+If $H'$ depends only on $u\bmod2^J$, both sides of ($\star$) are $2^{a-J}$ times the corresponding sums over $\Uu J$, so ($\star$) can be checked on $\Uu J$, and $a$ is then only constrained by (iii). Theorem~E is the exact converse of the reduction of Section~\ref{sec:2ap} for functions that depend on $n\bmod p$ only through the condition $p\mid n$: for such $f$, Proposition~\ref{prop:master}, Lemma~\ref{lem:levelsums} and Lemma~\ref{lem:pairing} show that, when $H'$ is odd, $H'$ and $G'$ do not vanish, and $\varepsilon_G=-\varepsilon_H$, condition ($\star$) is equivalent to (B) at $2$.
+\end{remark}
+
+\begin{proof}[Proof of Theorem~C]
+\emph{Fermat primes.} Let $p=2^v+1$ with $v=2^k\ge2$, so $p\equiv1\pmod 4$. Take $H'=-\chi_4$ (on $\Uu a$ via $u\bmod 4$). It is odd and $1$-Lipschitz, and $G'(u)=-\chi_4(pu)+p\chi_4(u)=(p-1)\chi_4(u)=2^v\chi_4(u)$, so ($\star$) reads $2^{a-1}2^v=(p-1)2^{a-1}$, which holds. Condition (iii) asks $4\cdot2^v+1<2^{a+1}$, i.e.\ $a\ge v+2$. By Theorem~E, $2^{v+2}p\in\cD$, while Theorem~B gives $2^{v+1}p\notin\cD$ since $2^{v}\le p-1$. Hence $a_0(p)=v+2=2^k+2$.
+
+\emph{$p=3$.} Take $a=4$, $\varepsilon=1$ and $H'$ on $\Uu3$ given by $H'(1)=H'(3)=-2$, $H'(5)=H'(7)=2$. It is odd and $1$-Lipschitz; $G'(u)=H'(3u)-3H'(u)$ takes the values $4,4,-4,-4$ at $u=1,3,5,7$. On $\Uu3$ the left side of ($\star$) is $4\cdot2^2=16$ and the right side is $(3-1)\cdot4\cdot2^1=16$, and (iii) holds for $a=4$ since $4\cdot4+1<32$. Thus $48\in\cD$, and $24\notin\cD$ by Theorem~B ($2^2\le3+1$). Hence $a_0(3)=4$.
+\end{proof}
+
+\begin{example}[the sawtooth for $p=13$]\label{ex:13}
+Let $H'(u)=r_3(u)-4$ where $r_3(u)\in\{1,3,5,7\}$ is $u\bmod 8$, i.e.\ $H'=(-3,-1,1,3)$ on $(1,3,5,7)$; with the opposite sign this is the certificate in Table~\ref{tab:thresholds}. For $p=13\equiv5\pmod 8$, $G'=(40,16,-16,-40)$, so ($\star$) reads $8+16+16+8=12\cdot4$, and (iii) holds for $a=7$. Hence $2^7\cdot13=1664\in\cD$. More generally $H'(u)=r_J(u)-2^{J-1}$ satisfies ($\star$) iff $\sum_{r}2^{v_2(m-\lfloor pr/2^J\rfloor)}=m$ with $m=(p-1)/2$, the sum running over the odd $r<2^J$.
+\end{example}
+
+Table~\ref{tab:thresholds} lists, for the primes $p<60$, the lower bound of Theorem~B and the smallest depth produced by Theorem~E with a function $H'$ found by a small search (Section~\ref{sec:computations}); each certificate was verified with exact integer arithmetic (digit trees, level sums and condition (B) at $2$), and the resulting $f$ for $p\in\{3,5,7,13,17\}$ were also checked against the full system of Theorem~\ref{thm:okada} or numerically (Section~\ref{sec:computations}).
+
+\section{Periods \texorpdfstring{$12p$}{12p}}\label{sec:12p}
+
+Let $p\ge5$ be prime and $N=12p$. For $d\mid12$ let $c_d(T)=\prod_{r^e\parallel d}r^{e-1}(r-T_r)$, an operator on functions on $U_p$; thus $c_1=1$, $c_2=2-T_2$, $c_4=2(2-T_2)$, $c_3=3-T_3$, $c_6=(2-T_2)(3-T_3)$, $c_{12}=2(2-T_2)(3-T_3)$.
+
+\begin{lemma}[reduction]\label{lem:red12}
+Let $s_d\in\{\pm1\}$ and $\Psi_d\colon U_p\to\{\pm1\}$ for $d\mid 12$, and define the $N$-periodic $f$ by
+\[
+f(n)=\begin{cases}s_{d}&\text{if }p\mid n,\\ \Psi_{d}\bigl(n/\gcd(n,12)\bmod p\bigr)&\text{if }p\nmid n,\end{cases}\qquad d=12/\gcd(n,12).
+\]
+Put $\sigma_d=\sum_y\Psi_d(y)$. Then $\sum_{n\le N}f(n)=0$ and $L(1,f)=0$ if and only if
+\begin{enumerate}
+\item[\textup{(R1)}] $\sum_{d\mid12}c_d(T)\Psi_d=0$ on $U_p$;
+\item[\textup{(R2)}] $\sum_{d}\varphi(d)s_d=0$ and $\sum_d\varphi(d)\sigma_d=0$;
+\item[\textup{(R3)}] $\sum_d\varphi(d)\,\epsilon_r(d)(s_d+\sigma_d)=0$ for $r=2,3$, where $\epsilon_r(d)=v_r(12/d)-[\,r\mid d\,]/(r-1)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+The layers of $N$ are $D=d$ and $D=dp$ with $d\mid12$; on the layer $d$ (the residues divisible by $p$) $f=s_d$, and on the layer $dp$, $f_{dp}(x)=\Psi_d(x\bmod p)$ for $x\in U_{dp}\cong U_d\times U_p$. If a primitive character $\chi$ has conductor with non-trivial $12$-part, its $12$-part is non-principal modulo $d$ on every layer it meets, and all $\ip{f_D}{\chi}$ vanish because $f_D$ does not depend on the $U_d$-coordinate. For $\chi=\psi$ of conductor $p$, the term of the layer $dp$ in (A) is
+\[
+\frac{p}{p-1}\cdot\frac{d}{\varphi(d)}\prod_{r\mid d}\Bigl(1-\frac{\psi(r)}r\Bigr)\cdot\varphi(d)\ip{\Psi_d}{\psi}=\frac p{p-1}\ip{c_d(T)\Psi_d}{\psi},
+\]
+so (A) is equivalent to $\sum_dc_d(T)\Psi_d$ being constant; summing over $U_p$, the constant is $\frac1{p-1}\sum_d\varphi(d)\sigma_d$. Next $S_d=\varphi(d)s_d$, $S_{dp}=\varphi(d)\sigma_d$, $\varepsilon_p(d)=1$, $\varepsilon_p(dp)=-1/(p-1)$ and $\varepsilon_r(d)=\varepsilon_r(dp)=\epsilon_r(d)$ for $r\in\{2,3\}$; so (C) and (B) at $p$ are equivalent to (R2), (B) at $2,3$ to (R3), and under (R2) the constant above is $0$.
+\end{proof}
+
+Let $\lambda=\bigl(\frac{\cdot}{p}\bigr)$ and $\chi(2)=\bigl(\frac2p\bigr)$, $\chi(3)=\bigl(\frac3p\bigr)$, so that $T_r\lambda=\chi(r)\lambda$. A \emph{certificate} consists of signs $\epsilon_d,s_d$ $(d\mid12)$, a sign $\eta$, and finite sets $B_d\subset\Z_{\ge0}^2$, and we put, for a fixed $y_0\in U_p$ with $\lambda(y_0)=\eta$,
+\begin{equation}\label{eq:Psi}
+\Psi_d(y)=\epsilon_d\,\lambda(y)\bigl(1-2\cdot[\,y\in P_d\,]\bigr),\qquad P_d=\{2^i3^jy_0:(i,j)\in B_d\}\subset U_p .
+\end{equation}
+
+\begin{proposition}\label{prop:cert}
+Suppose that the points $2^i3^jy_0$, $(i,j)\in B_d$, are pairwise distinct modulo $p$ for each $d$, and that
+\begin{enumerate}
+\item[\textup{(L0)}] $\sum_d\epsilon_d\,c_d(\chi)=0$, where $c_d(\chi)$ is $c_d(T)$ with $T_r$ replaced by $\chi(r)$;
+\item[\textup{(L1)}] $\sum_d\epsilon_d\,c_d\bigl(\chi(2)X^{-1},\chi(3)Y^{-1}\bigr)\,P_d(X,Y)=0$ in the Laurent polynomial ring $\Z[X^{\pm1},Y^{\pm1}]$, where $P_d(X,Y)=\sum_{(i,j)\in B_d}X^iY^j$ and $c_d(\cdot,\cdot)$ denotes $c_d(T)$ with $T_2,T_3$ replaced by the two arguments;
+\item[\textup{(L2)}] \textup{(R2)} and \textup{(R3)} hold with $\sigma_d=-2\epsilon_d\eta\,P_d(\chi(2),\chi(3))$.
+\end{enumerate}
+Then the function $f$ of Lemma~\ref{lem:red12} built from \eqref{eq:Psi} satisfies $\sum_{n\le 12p}f(n)=0$ and $L(1,f)=0$.
+\end{proposition}
+
+\begin{proof}
+By distinctness, $1_{P_d}(y)=\#\{(i,j)\in B_d:2^i3^jy_0=y\}$, and for $m=2^\alpha3^\beta$ we have $T_m(\lambda 1_{P_d})=\chi(m)\lambda\,1_{m^{-1}P_d}$, where $m^{-1}P_d$ corresponds to the monomials of $X^{-\alpha}Y^{-\beta}P_d$. Hence the image of (L1) under $X^iY^j\mapsto[2^i3^jy_0]\in\Z[U_p]$ says $\sum_d\epsilon_dc_d(T)(\lambda1_{P_d})=0$, and together with (L0),
+$\sum_dc_d(T)\Psi_d=\lambda\sum_d\epsilon_dc_d(\chi)-2\sum_d\epsilon_dc_d(T)(\lambda1_{P_d})=0$, which is (R1). Since $\sum_y\lambda(y)=0$, $\sigma_d=-2\epsilon_d\sum_{y\in P_d}\lambda(y)=-2\epsilon_d\eta P_d(\chi(2),\chi(3))$, so (L2) gives (R2) and (R3). Lemma~\ref{lem:red12} concludes.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$(\chi(2),\chi(3))$ & $(-1,-1)$ & $(-1,+1)$ & $(+1,-1)$\\
+$p\bmod 24$ & $5,19$ & $11,13$ & $7,17$\\
+\midrule
+$(\epsilon_1,\epsilon_2,\epsilon_3,\epsilon_4,\epsilon_6,\epsilon_{12})$ & $(+,-,-,-,-,+)$ & $(-,+,-,-,-,+)$ & $(-,-,+,+,+,-)$\\
+$(s_1,s_2,s_3,s_4,s_6,s_{12})$ & $(+,+,+,-,+,-)$ & $(-,-,-,-,+,+)$ & $(+,+,+,-,+,-)$\\
+$\eta$ & $-1$ & $+1$ & $-1$\\
+$P_1$ & $Y^2+XY^2+X^2Y+X^2Y^2$ & $Y+X+XY+X^2+X^2Y$ & $Y+X+XY$\\
+$P_2$ & $XY^2+X^2Y$ & $XY+X^2+X^2Y$ & $X$\\
+$P_3$ & $X^2Y^2$ & $XY+X^2Y$ & $XY$\\
+$P_4$ & $X^2Y^2$ & $X^2Y$ & $X+XY$\\
+$P_6$ & $X^2Y^2$ & $X^2Y$ & $XY$\\
+$P_{12}$ & $X^2Y^2$ & $X^2Y$ & $XY$\\
+$(\sigma_1,\sigma_2,\sigma_3,\sigma_4,\sigma_6,\sigma_{12})$ & $(0,4,-2,-2,-2,2)$ & $(2,-2,0,2,2,-2)$ & $(2,-2,-2,0,-2,2)$\\
+distinctness fails only for & $p\in\{2,3\}$ & $p\in\{2,3,5\}$ & $p\in\{2,3\}$\\
+\bottomrule
+\end{tabular}
+\caption{The three certificates for $N=12p$ (Proposition~\ref{prop:cert}). Signs $\pm$ stand for $\pm1$.}\label{tab:cert12}
+\end{table}
+
+\begin{proof}[Proof of Theorem~D]
+Let $p\ge5$, $p\not\equiv\pm1\pmod{24}$. Then $(\chi(2),\chi(3))\neq(1,1)$, and $p$ lies in one of the three columns of Table~\ref{tab:cert12} (the class $(-1,1)$ contains no prime below $11$). We check (L0)--(L2) column by column. Write $A=2-\chi(2)X^{-1}$ and $B=3-\chi(3)Y^{-1}$, so that in (L1) the operators $c_1,c_2,c_4,c_3,c_6,c_{12}$ become $1,A,2A,B,AB,2AB$. Vectors indexed by $d$ are listed in the order $d=1,2,3,4,6,12$; we use $(\varphi(d))_d=(1,1,2,2,2,4)$, $(\varphi(d)\epsilon_2(d))_d=(2,0,4,-2,0,-4)$ and $(2\varphi(d)\epsilon_3(d))_d=(2,2,-2,4,-2,-4)$.
+
+\emph{Column $(1,-1)$}: $A=2-X^{-1}$, $B=3+Y^{-1}$. (L0): $c_d(\chi)=(1,1,4,2,4,8)$ and $-1-1+4+2+4-8=0$. (L1) reads $-(Y+X+XY)-AX+BXY+2A(X+XY)-ABXY=0$; expanding, $-AX=-2X+1$, $BXY=3XY+X$, $2A(X+XY)=4X+4XY-2-2Y$ and $-ABXY=-6XY-2X+3Y+1$, and the coefficients of $XY,X,Y,1$ add up to $-1+3+4-6$, $-1-2+1+4-2$, $-1-2+3$, $1-2+1$, all $0$. With $\eta=-1$, $\sigma=(2,-2,-2,0,-2,2)$ and $s+\sigma=(3,-1,-1,-1,-1,1)$; (R2): $1+1+2-2+2-4=0$ and $2-2-4+0-4+8=0$; (R3): $6+0-4+2+0-4=0$ and $6-2+2-4+2-4=0$. The points of $P_1=\{3,2,6\}y_0$ and $P_4=\{2,6\}y_0$ are distinct for $p\ge5$.
+
+\emph{Column $(-1,-1)$}: $A=2+X^{-1}$, $B=3+Y^{-1}$. (L0): $c_d(\chi)=(1,3,4,6,12,24)$ and $1-3-4-6-12+24=0$. Since $P_3=P_4=P_6=P_{12}=X^2Y^2$, (L1) reads $P_1-AP_2+(AB-2A-B)X^2Y^2=0$; here $(AB-2A-B)X^2Y^2=XY+XY^2+X^2Y-X^2Y^2$ and $AP_2=2XY^2+2X^2Y+Y^2+XY$, so the left side is $(Y^2+XY^2+X^2Y+X^2Y^2)-(2XY^2+2X^2Y+Y^2+XY)+(XY+XY^2+X^2Y-X^2Y^2)=0$. With $\eta=-1$, $\sigma=(0,4,-2,-2,-2,2)$ and $s+\sigma=(1,5,-1,-3,-1,1)$; (R2): $1+1+2-2+2-4=0$ and $0+4-4-4-4+8=0$; (R3): $2+0-4+6+0-4=0$ and $2+10+2-12+2-4=0$. The points of $P_1=\{9,18,12,36\}y_0$ and $P_2=\{18,12\}y_0$ are distinct for $p\ge5$.
+
+\emph{Column $(-1,1)$}: $A=2+X^{-1}$, $B=3-Y^{-1}$. (L0): $c_d(\chi)=(1,3,2,6,6,12)$ and $-1+3-2-6-6+12=0$. Since $P_4=P_6=P_{12}=X^2Y$, (L1) reads $-P_1+AP_2-BP_3+A(B-2)X^2Y=0$; here $AP_2=3XY+2X^2+2X^2Y+X+Y$, $BP_3=3XY+3X^2Y-X-X^2$ and $A(B-2)X^2Y=2X^2Y+XY-2X^2-X$, and the coefficients of $XY,X^2,X^2Y,X,Y$ on the left are $-1+3-3+1$, $-1+2+1-2$, $-1+2-3+2$, $-1+1+1-1$, $-1+1$, all $0$. With $\eta=1$, $\sigma=(2,-2,0,2,2,-2)$ and $s+\sigma=(1,-3,-1,1,3,-1)$; (R2): $-1-1-2-2+2+4=0$ and $2-2+0+4+4-8=0$; (R3): $2+0-4-2+0+4=0$ and $2-6+2+4-6+4=0$. The points of $P_1=\{3,2,6,4,12\}y_0$, $P_2=\{6,4,12\}y_0$ and $P_3=\{6,12\}y_0$ are distinct for $p\ge7$, and this class contains no prime below $11$.
+
+All these identities were also verified symbolically (Section~\ref{sec:computations}). Proposition~\ref{prop:cert} gives $12p\in\cD$.
+
+Minimality: a proper divisor $M$ of $12p$ with $M\in\cD$ would satisfy $4\mid M$ (Lemma~\ref{lem:basic}), so $M\in\{4,12,4p\}$, and these are excluded by Theorem~A and by Theorem~B with $a=2$ (note $2\le p-\chi_4(p)$ for all odd $p$).
+\end{proof}
+
+\begin{remark}
+For $(\chi(2),\chi(3))=(1,1)$ the Legendre symbol is invariant under $T_2$ and $T_3$; no certificate of the shape \eqref{eq:Psi} with small boxes exists, and certificates with a constant base on some layer are impossible (Section~\ref{sec:computations}). Nevertheless $12p\in\cD$ for all $10$ primes $p<250$ in this class (Section~\ref{sec:computations}); see Conjecture~\ref{conj:12p}.
+\end{remark}
+
+\section{Consequences}\label{sec:consequences}
+
+\begin{proof}[Proof of Corollary~\ref{cor:intro}]
+(ii) By Lemma~\ref{lem:basic}(b) the elements of $\cD$ are multiples of $4$. Among $4,8,\dots,32$, the powers of $2$ are excluded by Theorem~A, and $12=4\cdot3$, $20=4\cdot5$, $28=4\cdot7$ ($a=2$) and $24=8\cdot3$ ($a=3$, $2^2\le 3+1$) by Theorem~B. The function of Appendix~\ref{app:examples} shows $36\in\cD$ (Tengely's period).
+
+(i) Among the multiples of $4$ below $48$ the non-squares other than those in (ii) are $40=8\cdot5$ ($2^2\le5-1$) and $44=4\cdot11$, excluded by Theorem~B. $48\in\cD$ by Theorem~C. The numbers $2^a\cdot3$ ($a\ge4$) and $2^ap$ with $p\ge5$ a Fermat prime and $2^{a-1}>p-1$ have $v_p=1$, and $v_p(12p)=1$ for $p\ge5$, so they are not squares; they lie in $\cD$ by Theorems~C and~D and Lemma~\ref{lem:basic}(a).
+
+(iii) By Theorem~D every $12p$ with $p\ge5$, $p\not\equiv\pm1\pmod{24}$, is a minimal element of $\cD$, and there are infinitely many such primes (Dirichlet). If $\cD$ were the set of multiples of finitely many integers, it would have only finitely many minimal elements.
+
+(iv) This is Lemma~\ref{lem:basic}(c) combined with Theorems~A and~B.
+\end{proof}
+
+\begin{corollary}\label{cor:fixeda}
+If $2^ap\in\cD$ then $p-\chi_4(p)<2^{a-1}$; in particular $p<2^{a-1}$, so for each $a$ only finitely many primes occur. For every odd prime $p$, $a_0(p)\ge\log_2p+1$; for $p=3$ and for Fermat primes $p$, $a_0(p)=\lfloor\log_2(p-\chi_4(p))\rfloor+2$.
+\end{corollary}
+
+\begin{proof}
+The first statement is Theorem~B. It gives $p-1\le p-\chi_4(p)<2^{a-1}$, so $a\ge2$ and $p\le2^{a-1}$, and $p\ne2^{a-1}$ because $p$ is odd and $2^{a-1}$ is even. For the second, $\lfloor\log_2(p-\chi_4(p))\rfloor+2\ge\lfloor\log_2(p-1)\rfloor+2\ge\log_2p+1$, because $2^{\lfloor\log_2(p-1)\rfloor}>(p-1)/2$ and hence $2^{\lfloor\log_2(p-1)\rfloor}\ge p/2$. The rest is Theorem~C.
+\end{proof}
+
+\section{Computations}\label{sec:computations}
+
+None of the computations below is used in the proofs of Theorems~A--E. They were made with exact integer and rational arithmetic in Python (SymPy, python-flint), the CP-SAT solver of OR-Tools for searches, and mpmath for numerical values; scripts and logs are in \texttt{xxiv/}. Okada's full system was implemented once from Theorem~\ref{thm:okada}, with one row per Galois orbit of characters and coordinates in a power basis of the cyclotomic field; its rank was checked to be $\varphi(N)+\omega(N)$ for $18$ values of $N$ between $12$ and $224$.
+
+\subsection{Verification of the constructions}
+\begin{itemize}[leftmargin=*]
+\item \emph{Theorem~E/C.} The functions $f$ produced by Theorem~E (implemented independently from its statement) for $N=48,80,896$ satisfy every equation of the full Okada system exactly; for $N=48,80,896,1088=2^6\cdot17,1664=2^7\cdot13$ the value $|L(1,f)|$ computed from $L(1,f)=-\frac1N\sum_{n=1}^Nf(n)\psi(n/N)$ with $40$ digits is below $10^{-40}$.
+\item \emph{Theorem~D.} For each of the three classes the identities (L0), (L1), (R2), (R3) were verified symbolically (SymPy), together with the list of primes for which distinctness fails. The resulting $f$ satisfy the full Okada system exactly for the $12$ primes $5\le p\le53$ with $p\not\equiv\pm1\pmod{24}$ ($19$ to $211$ equations each), and $|L(1,f)|<2\cdot10^{-31}$ for all $60$ such primes $p<400$.
+\item \emph{Class $(1,1)$.} For each of the $10$ primes $p<250$ with $p\equiv\pm1\pmod{24}$, namely $23$, $47$, $71$, $73$, $97$, $167$, $191$, $193$, $239$, $241$, a CP-SAT search in the reduced system of Lemma~\ref{lem:red12} produced a solution; those with $p\le97$ satisfy the full Okada system exactly, and all have $|L(1,f)|<3\cdot10^{-31}$. For $p=263$ the search was inconclusive after $900$\,s. In this class no certificate of the shape \eqref{eq:Psi} exists with one orbit and $B_d\subset[0,3]^2$, or with up to three orbits and $B_d\subset[0,2]^2$ (CP-SAT proved infeasibility). Moreover, a $p$-independent variant in which $\lambda$ is replaced by the constant $1$ on at least one layer cannot exist: valid for infinitely many $p$, it would force the coefficient of $p-1$ in (R2), (R3) to vanish, i.e.\ a signed sum $\sum_{d\in\Gamma}\pm(\varphi(d),\varphi(d)\epsilon_2(d),2\varphi(d)\epsilon_3(d))=0$ over the set $\Gamma\neq\emptyset$ of constant layers, together with $\sum_{d\notin\Gamma}\pm\varphi(d)=0$; the only solution of the first condition is $\Gamma=\{1,2,3,4,6\}$, which violates the second.
+\item \emph{Lemmas.} Lemma~\ref{lem:pairing} was checked for all $2\le a\le11$, $\varepsilon=\pm1$ and all admissible $t$ ($8144$ cases); Lemma~\ref{lem:weights}(b) for $1\le k\le a\le15$; and Lemma~\ref{lem:weights}(a) exhaustively for $a\le8$.
+\item \emph{Proposition~\ref{prop:master} and~\ref{prop:contraction}.} For the solutions with $N=48$ and $N=80$ found by an unrestricted search, \eqref{eq:transl} and \eqref{eq:master} hold with $K=-(f(0)+\sum_yf(2^ay))$, and the invariance $Q(j)\Rightarrow Q(j-1)$ holds exactly at the levels predicted by the proof ($j=4$ for $N=48$; $j=4,3$ for $N=80$) and fails at the next level, as it must since $48,80\in\cD$.
+\end{itemize}
+
+\subsection{The set \texorpdfstring{$\cD$}{D} below 333}
+For every $N\equiv0\pmod4$, $N\le332$, that is not a multiple of a smaller element found, CP-SAT decided the existence of a $\pm1$-valued $f$ satisfying the full Okada system (a complete search; infeasibility was proved by the solver). The minimal elements of $\cD$ below $333$ are
+\[
+36,\ 48,\ 60,\ 80,\ 84,\ 132,\ 156,\ 200,\ 204,\ 220,\ 228,\ 260,\ 276,\ 280,
+\]
+and all other multiples of $4$ below $333$ that are not multiples of these are outside $\cD$. Among the latter, all except $100,140,196,224,308$ are excluded by Theorems~A and~B; the five exceptions rely on the computation. The members $60,84,132,156,204,228,276$ are the periods $12p$ for $5\le p\le23$. Further complete searches: $340,364,460,476\notin\cD$ and $380,572\in\cD$ (periods $4pq$; the pattern is irregular), $352=2^5\cdot11$, $704=2^6\cdot11$, $416=2^5\cdot13$, $832=2^6\cdot13$ and $448=2^6\cdot7$ are not in $\cD$; $532=4\cdot7\cdot19$ was undecided after $2400$\,s. As a check of Theorem~B at depth $a=5$, complete searches confirm $544=2^5\cdot17\notin\cD$ and $608=2^5\cdot19\notin\cD$. The function for $1408=2^7\cdot11$ in Table~\ref{tab:thresholds} satisfies all $642$ equations of the full Okada system exactly.
+
+\subsection{Thresholds}
+Table~\ref{tab:thresholds} collects what is known about $a_0(p)$ for $p<60$.
+
+\begin{table}[ht]
+\centering\footnotesize
+\begin{tabular}{@{}rrcccc@{}}
+\toprule
+$p$ & $p-\chi_4(p)$ & Thm.~B & Thm.~E & known $a_0(p)$ & certificate $H'$ (values at $u=1,3,\dots,2^J-1$)\\
+\midrule
+3 & 4 & 4 & 4 & $\mathbf 4$ & $J=3$: $(-2,-2,2,2)$\\
+5 & 4 & 4 & 4 & $\mathbf 4$ & $J=2$: $(-1,1)$\\
+7 & 8 & 5 & 7 & $\mathbf 7^{\,a}$ & $J=4$: $(6,-2,2,2,-2,-2,2,-6)$\\
+11 & 12 & 5 & 8 & $\mathbf 7^{\,b}$ & $J=5$ (see log)\\
+13 & 12 & 5 & 7 & $\mathbf 7^{\,c}$ & $J=3$: $(3,1,-1,-3)$\\
+17 & 16 & 6 & 6 & $\mathbf 6$ & $J=2$: $(-1,1)$\\
+19 & 20 & 6 & 9 & $6$--$9$ & $J=5$ (see log)\\
+23 & 24 & 6 & 9 & $6$--$9$ & $J=4$: $(-6,-6,-10,-2,2,10,6,6)$\\
+29 & 28 & 6 & 10 & $6$--$10$ & $J=4$: $(1,3,-11,-1,1,11,-3,-1)$\\
+31 & 32 & 7 & 11 & $7$--$11$ & $J=6$ (see log)\\
+37 & 36 & 7 & 10 & $7$--$10$ & $J=3$: $(-5,-7,7,5)$\\
+41 & 40 & 7 & 9 & $7$--$9$ & $J=4$: $(3,-3,-5,-3,3,5,3,-3)$\\
+43 & 44 & 7 & 10 & $7$--$10$ & $J=5$ (see log)\\
+47 & 48 & 7 & 12 & $7$--$12$ & $J=5$ (see log)\\
+53 & 52 & 7 & 10 & $7$--$10$ & $J=5$ (see log)\\
+59 & 60 & 7 & 11 & $7$--$11$ & $J=6$ (see log)\\
+\bottomrule
+\end{tabular}
+\caption{Bounds for $a_0(p)$, $p<60$. Column ``Thm.~B'' is $\lfloor\log_2(p-\chi_4(p))\rfloor+2$; column ``Thm.~E'' is the depth given by the certificate. $^a$\,$224,448\notin\cD$ by complete search. $^b$\,$352,704\notin\cD$ by complete search, and $1408=2^7\cdot11\in\cD$ by a digit-tree solution of the reduced $2$-adic model (a function of $n\bmod 2^7$ and of $[11\mid n]$), checked against all $642$ equations of the full Okada system. $^c$\,$416,832\notin\cD$ by complete search. All certificates are listed in \texttt{logs/star\_3\_60.log}.}\label{tab:thresholds}
+\end{table}
+
+\section{Open problems}\label{sec:open}
+
+\begin{conjecture}[dichotomy]\label{conj:dichotomy}
+$a_0(p)<\infty$ for every odd prime $p$; that is, every odd prime $p$ divides some element $2^ap$ of $\cD$.
+\end{conjecture}
+
+Theorem~E reduces Conjecture~\ref{conj:dichotomy} to the existence of one odd $1$-Lipschitz function $H'$ satisfying ($\star$); such functions were found for every prime $p<127$: for $p<60$ see Table~\ref{tab:thresholds}; every prime $p\equiv1\pmod 4$ below $130$ already has one among the combinations $c_1\varphi_{J_1}+c_2\varphi_{J_2}$ of two sawtooth or character components ($\varphi_J(u)=r_J(u)-2^{J-1}$, $\chi_4$, $\chi_{-8}$; \texttt{logs/combo\_3\_130.log}), and the primes $67,71,79,83,103,107$ were treated by CP-SAT (depths $12,12,13,12,12,13$; \texttt{logs/star\_list.log}). For the Mersenne prime $p=127$, where $p-\chi_4(p)=2^7$ and Theorem~B gives $a_0(127)\ge9$, our searches found no certificate. By Theorem~B, $a_0(p)-\log_2p$ is bounded below; we do not know whether it is bounded above.
+
+\begin{conjecture}\label{conj:12p}
+$12p\in\cD$ for every prime $p\ge5$.
+\end{conjecture}
+
+By Theorem~D only the primes $p\equiv\pm1\pmod{24}$ remain, and these were verified for $p<250$.
+
+\begin{problem}
+Determine $\cD$. In particular: is $4pq\in\cD$ decided by a congruence condition on the odd primes $p<q$? (We found $220,260,380,572\in\cD$ and $140,308,340,364,460,476\notin\cD$.) Does $\cD$ have minimal elements of arbitrarily large $2$-adic valuation? By Theorem~A and the definition of $a_0(p)$, $2^{a_0(p)}p$ is a minimal element of $\cD$ whenever $a_0(p)<\infty$, and $a_0(p)\ge\log_2p+1$ by Corollary~\ref{cor:fixeda}; so a positive answer follows from Conjecture~\ref{conj:dichotomy} for infinitely many $p$ (for instance $896=2^7\cdot7$ and $1408=2^7\cdot11$ are minimal).
+\end{problem}
+
+\appendix
+\section{Explicit functions}\label{app:examples}
+We list $f(1),f(2),\dots,f(N)$ (so the last entry is $f(0)$), with $+$ for $1$ and $-$ for $-1$. Both functions satisfy the full Okada system exactly, and $|L(1,f)|<10^{-41}$.
+
+\smallskip
+\noindent$N=36$: \texttt{+----+++-+--+-+--+++-+--+----+++++-+}
+
+\smallskip
+\noindent$N=48$ (Theorem~E with $p=3$, $a=4$, $\varepsilon=1$, $H'=(-2,-2,2,2)$ on $\Uu3$):\\
+\texttt{-++++-+-+--++------+-+++--+++-+-++-+++-----+--++}
+
+\smallskip
+In the second example the value functions are $H=(-7,-7,9,9)$ and $G=(15,15,-17,-17)$ at $u\equiv1,3,5,7\pmod 8$, with signed binary digits (levels $0,\dots,4$) $-7=-1-2+4+8-16$, $9=-1-2+4-8+16$, $15=1+2+4-8+16$ and $-17=1+2+4-8-16$. Thus $f(n)=-1,-1,+1$ on the levels $0,1,2$ of the residues prime to $3$, $f(n)=+1$ on the levels $0,1,2$ of the multiples of $3$, and on the levels $3,4$ the digits depend on the unit part modulo $8$ as displayed; see \texttt{digit\_f.py}.
+
+\section{Reproducibility}\label{sec:repro}
+The folder \texttt{xxiv/} contains: \texttt{okada.py} (Okada's system), \texttt{pm1\_search.py} (CP-SAT search), \texttt{digit\_f.py} and \texttt{verify\_E.py} (Theorem~E and its checks), \texttt{exact\_tree.py} and \texttt{star\_search.py} (certificates for Table~\ref{tab:thresholds}), \texttt{cert12.py} and \texttt{cert12\_symbolic.py} (Theorem~D), \texttt{class11.py} (class $(1,1)$), \texttt{structure\_check.py} (Propositions~\ref{prop:master} and~\ref{prop:contraction} on data), \texttt{check\_lemmas.py}, and the logs of all runs quoted above.
+
+\begin{thebibliography}{99}
+\bibitem{Bak75} A. Baker, \emph{Transcendental Number Theory}, Cambridge University Press, 1975.
+\bibitem{BBW73} A. Baker, B. J. Birch, E. A. Wirsing, On a problem of Chowla, \emph{J. Number Theory} \textbf{5} (1973), 224--236.
+\bibitem{Bha22} A. Bharadwaj, On primitivity and vanishing of Dirichlet series, \emph{Michigan Math. J.}, advance publication; arXiv:2204.03674 (2022).
+\bibitem{CM14} T. Chatterjee, M. R. Murty, Non-vanishing of Dirichlet series with periodic coefficients, \emph{J. Number Theory} \textbf{145} (2014), 1--21.
+\bibitem{CM15} T. Chatterjee, M. R. Murty, On a conjecture of Erd\H{o}s and certain Dirichlet series, \emph{Pacific J. Math.} \textbf{275} (2015), 103--113.
+\bibitem{CMP18} T. Chatterjee, M. R. Murty, S. Pathak, A vanishing criterion for Dirichlet series with periodic coefficients, \emph{Contemp. Math.} \textbf{701} (2018); arXiv:1809.01841.
+\bibitem{Cho70} S. Chowla, The nonexistence of nontrivial linear relations between the roots of a certain irreducible equation, \emph{J. Number Theory} \textbf{2} (1970), 120--123.
+\bibitem{Kei26a} Keio, Erd\H{o}s's conjecture on $\sum f(n)/n$ is false: a $2$-adic shadow of Okada's criterion and the least counterexample $q=105^2$, manuscript, 24 October 2026 (Verifiable Mathematical Reasoning Corpus, item [055]).
+\bibitem{Kei26b} Keio, Square moduli, sparse masks, and sign obstructions for vanishing Erd\H{o}s sums, research draft, 24 October 2026 (Corpus item [056]).
+\bibitem{Kei26c} Keio, Erd\H{o}s's conjecture on $\sum f(n)/n$ holds for every non-square modulus, manuscript, 24 October 2026 (Corpus item [057]).
+\bibitem{Liv65} A. E. Livingston, The series $\sum_1^\infty f(n)/n$ for periodic $f$, \emph{Canad. Math. Bull.} \textbf{8} (1965), 413--432.
+\bibitem{MP22} M. R. Murty, S. Pathak, The Okada space and vanishing of $L(1,f)$, \emph{Funct. Approx. Comment. Math.} \textbf{66} (2022), 35--57.
+\bibitem{MS07} M. R. Murty, N. Saradha, Transcendental values of the digamma function, \emph{J. Number Theory} \textbf{125} (2007), 298--318.
+\bibitem{MS10} M. R. Murty, N. Saradha, Euler--Lehmer constants and a conjecture of Erd\H{o}s, \emph{J. Number Theory} \textbf{130} (2010), 2671--2682.
+\bibitem{Oka82} T. Okada, On a certain infinite series for a periodic arithmetical function, \emph{Acta Arith.} \textbf{40} (1982), 143--153.
+\bibitem{Pat19} S. Pathak, Distribution and non-vanishing of special values of $L$-series attached to Erd\H{o}s functions, \emph{Int. J. Number Theory} \textbf{15} (2019); arXiv:1909.03972.
+\bibitem{ORT} L. Perron, V. Furnon, OR-Tools (CP-SAT), Google, \url{https://developers.google.com/optimization}.
+\end{thebibliography}
+
+\end{document}

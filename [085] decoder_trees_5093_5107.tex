@@ -1,0 +1,1180 @@
+\begin{filecontents*}[overwrite]{verify_decoder_trees.py}
+#!/usr/bin/env python3
+"""Computational companion to "Decoder Trees and Kisielewicz's Identity:
+Equations 5093 and 5107 Are Austin Laws".
+
+For k >= 3 and theta in {'left', 'owner'} this implements the decoder-tree magma
+T_k^theta(X) of the paper (Definitions 4.1 and 5.5) and checks the law
+    theta = 'left' :  E_k : x = y*(y*( ... (y*(x*(z*y))) ... ))   (k leading y's)
+    theta = 'owner':  G_k : x = y*(y*( ... (y*(z*(x*y))) ... ))   (k leading y's)
+on large finite samples (E_3 is ETP Equation 5093 and G_3 is ETP Equation 5107).
+It also checks every structural lemma of the paper on random and targeted
+instances, and cross-checks the clause-based implementation against an
+independent brute-force implementation of the semantic description (Lemma 5.6).
+Usage:  python3 verify_decoder_trees.py [--quick]   (standard library only; each
+family/k is checked in a separate process to bound memory use)
+"""
+import sys, random
+from functools import lru_cache
+sys.setrecursionlimit(1 << 20)
+
+# ---------- hash-consed binary trees: node id -> None (leaf) or (left, right) ----------
+NODES, IDX, SIZE = [], {}, []
+def leaf(i):
+    key = ('leaf', i)
+    if key not in IDX:
+        IDX[key] = len(NODES); NODES.append(None); SIZE.append(1)
+    return IDX[key]
+def pair(l, r):
+    key = (l, r)
+    if key not in IDX:
+        IDX[key] = len(NODES); NODES.append(key); SIZE.append(SIZE[l] + SIZE[r] + 1)
+    return IDX[key]
+def ispair(t): return NODES[t] is not None
+def L(t): return NODES[t][0]
+def R(t): return NODES[t][1]
+def tower(c, j, u):                      # c^[j] u = <c,<c,...<c,u>...>>
+    for _ in range(j): u = pair(c, u)
+    return u
+def untower(c, p, j):                    # the t with p = c^[j] t, or None
+    for _ in range(j):
+        if not ispair(p) or L(p) != c: return None
+        p = R(p)
+    return p
+def proper_subtrees(t):
+    out, st = set(), [t]
+    while st:
+        s = st.pop()
+        if ispair(s):
+            for c in (L(s), R(s)):
+                if c not in out: out.add(c); st.append(c)
+    return out
+
+class DecoderTree:
+    """The decoder-tree magma T_k^theta (Definitions 4.1 and 5.5 of the paper)."""
+    def __init__(self, k, theta):
+        assert k >= 3 and theta in ('left', 'owner')
+        self.k, self.theta = k, theta
+        self.D = lru_cache(maxsize=None)(self._D)
+        self.F = lru_cache(maxsize=None)(self._F)
+        self.kappa = lru_cache(maxsize=None)(self._kappa)
+        self.mul = lru_cache(maxsize=None)(self._mul)
+        self.nonunique = []
+    def _F(self, c, p):                  # F(c,p): p = c^[k-1] t with D(c,t) nonempty
+        t = untower(c, p, self.k - 1)
+        return t is not None and len(self.D(c, t)) > 0
+    def _kappa(self, a):                 # special key set: D(a_L, t) if a = a_L^[k-1] t
+        if not ispair(a): return frozenset()
+        t = untower(L(a), a, self.k - 1)
+        return self.D(L(a), t) if t is not None else frozenset()
+    def generic_key(self, a, w):         # w = <c,a> with not F(c,a)
+        return ispair(w) and R(w) == a and not self.F(L(w), a)
+    def is_key(self, a, w):              # w in K(a)
+        return self.generic_key(a, w) or w in self.kappa(a)
+    def owner(self, a, w):               # o_a(w): c for w = <c,a> generic, a_L for the special key
+        return L(w) if self.generic_key(a, w) else L(a)
+    def out(self, a, x, w):              # theta_a(x, w)
+        return x if self.theta == 'left' else self.owner(a, w)
+    def _D(self, a, u):
+        k, res = self.k, set()
+        if ispair(u) and self.is_key(a, R(u)) and not self.F(L(u), R(u)):        # clause alpha
+            res.add(self.out(a, L(u), R(u)))
+        if ispair(a):                                                            # clause beta
+            s = untower(L(a), a, k - 2)
+            if s is not None and not self.F(L(a), a) and u in self.D(L(a), s):
+                res.add(L(a))
+        for v in self.kappa(a):                                                  # clause gamma
+            if ispair(v):
+                x = L(v); s = untower(x, v, k - 1)
+                if s is not None and SIZE[x] + SIZE[s] < SIZE[a] + SIZE[u] and u in self.D(x, s):
+                    res.add(self.out(a, x, v))
+        if len(res) > 1: self.nonunique.append((a, u, res))
+        return frozenset(res)
+    def _mul(self, a, p):
+        t = untower(a, p, self.k - 1)
+        if t is not None:
+            d = self.D(a, t)
+            if d: return min(d)
+        return pair(a, p)
+    def Lpow(self, a, u, n):
+        for _ in range(n): u = self.mul(a, u)
+        return u
+    def core(self, x, y, z):             # the term inside L_y^k
+        return self.mul(x, self.mul(z, y)) if self.theta == 'left' else self.mul(z, self.mul(x, y))
+    def law(self, x, y, z):
+        return self.Lpow(y, self.core(x, y, z), self.k) == x
+
+def trees_upto(gens, max_internal):
+    by = {0: list(gens)}
+    for n in range(1, max_internal + 1):
+        by[n] = [pair(l, r) for i in range(n) for l in by[i] for r in by[n - 1 - i]]
+    return [t for n in range(max_internal + 1) for t in by[n]]
+
+def structured_pool(M, base, steps, rng):
+    pool, k = list(base), M.k
+    for _ in range(steps):
+        a, b, c = rng.choice(pool), rng.choice(pool), rng.choice(pool)
+        r = rng.random()
+        if r < 0.3: pool.append(M.mul(a, b))
+        elif r < 0.6: pool.append(M.Lpow(a, M.core(b, a, c), rng.randrange(k + 1)))
+        else:
+            y = M.mul(a, b); pool.append(y)
+            pool.append(M.Lpow(y, M.core(a, y, a), rng.randrange(k)))
+    return pool
+
+# ---------- independent brute-force implementation of the semantics (nested tuples) ----------
+def bf_model(k, theta):
+    def isleaf(t): return t[0] == 'g'
+    def psub(t):
+        out, st = set(), [t]
+        while st:
+            s = st.pop()
+            if not isleaf(s):
+                for c in s:
+                    if c not in out: out.add(c); st.append(c)
+        return out
+    def untower_t(c, p, j):
+        for _ in range(j):
+            if isleaf(p) or p[0] != c: return None
+            p = p[1]
+        return p
+    @lru_cache(maxsize=None)
+    def mul(a, p):                       # a*p = x iff p = a^[k-1]u and dec(a,u) = {x}
+        u = untower_t(a, p, k - 1)
+        if u is not None:
+            d = dec(a, u)
+            if d:
+                assert len(d) == 1
+                return next(iter(d))
+        return (a, p)
+    @lru_cache(maxsize=None)
+    def dec(a, u):                       # E: {x : x*(c*a) = u};  G: {x : z*(x*a) = u}, by search
+        cand = psub(a) | psub(u) | {a, u}
+        if theta == 'left':
+            return frozenset(x for x in cand for c in cand if mul(x, mul(c, a)) == u)
+        return frozenset(x for x in cand for z in cand if mul(z, mul(x, a)) == u)
+    return mul
+
+def to_tuple(t, memo={}):
+    if t not in memo:
+        memo[t] = ('g', [kk for kk, v in IDX.items() if v == t][0][1]) if not ispair(t) else (to_tuple(L(t)), to_tuple(R(t)))
+    return memo[t]
+
+def check_family(theta, k, quick, rng):
+    M, gens = DecoderTree(k, theta), [leaf(0), leaf(1)]
+    small = trees_upto(gens, 2 if quick else 3)
+    name = ('E' if theta == 'left' else 'G') + str(k)
+    ok = True
+    bad = sum(1 for x in small for y in small for z in small if not M.law(x, y, z))
+    print(f"[{name}] exhaustive: {len(small)**3} triples, violations {bad}", flush=True); ok &= bad == 0
+    pool = structured_pool(M, small, 300 if quick else 1500, rng)
+    N = 3000 if quick else 20000
+    bad = sum(1 for _ in range(N) if not M.law(rng.choice(pool), rng.choice(pool), rng.choice(pool)))
+    print(f"[{name}] structured random: {N} triples, violations {bad}", flush=True); ok &= bad == 0
+    # targeted instances making the core contract through clause beta or clause gamma
+    bad = n = 0
+    for _ in range(300 if quick else 2000):
+        x, q, c1, c, c2, xx, zz = (rng.choice(pool) for _ in range(7))
+        s = M.core(q, x, c1)                     # q is in D(x, s)
+        y1 = tower(x, k - 2, s)                  # beta: x * <x,y1> contracts
+        v = tower(x, k - 1, s)
+        t = M.core(v, c, c2)                     # v is in D(c, t)
+        y2 = tower(c, k - 1, t)                  # kappa(y2) = {v}: gamma
+        assert M.kappa(y2) == frozenset([v])
+        inst = ((x, y1, x), (xx, y1, zz), (x, y2, c), (xx, y2, c), (xx, y2, zz)) if theta == 'left' else \
+               ((x, y1, x), (xx, y1, zz), (c, y2, x), (c, y2, zz), (xx, y2, zz))
+        for (a, b, cc) in inst:
+            n += 1; bad += not M.law(a, b, cc)
+    print(f"[{name}] targeted beta/gamma instances: {n}, violations {bad}", flush=True); ok &= bad == 0
+    # lemma checks
+    viol = dict(Sub=0, U=0, V1=0, V2=0, Sem=0, Dec=0, Normal=0)
+    memo = {}
+    def normal(t):
+        if t not in memo:
+            memo[t] = (not ispair(t)) or (normal(L(t)) and normal(R(t)) and not M.F(L(t), R(t)))
+        return memo[t]
+    for _ in range(3000 if quick else 20000):
+        a, x, c, p = (rng.choice(pool) for _ in range(4))
+        w = M.mul(c, a)                          # a key of a, with owner c
+        u = M.mul(x, w) if theta == 'left' else M.mul(x, M.mul(c, a))
+        expected = x if theta == 'left' else c
+        d = M.D(a, u)
+        viol['Sem'] += (not M.is_key(a, w)) or M.owner(a, w) != c or (expected not in d)
+        viol['U'] += len(d) > 1
+        viol['Sub'] += not d <= (proper_subtrees(a) | proper_subtrees(u))
+        t, early = u, False
+        for _j in range(k - 1):
+            t2 = M.mul(a, t); early |= (t2 != pair(a, t)); t = t2
+        viol['Dec'] += early or M.mul(a, t) != expected
+        viol['V1'] += len(M.D(a, a)) > 0
+        viol['V2'] += len(M.D(a, w)) > 0
+        if normal(a) and normal(p): viol['Normal'] += not normal(M.mul(a, p))
+    print(f"[{name}] lemma checks (violations): {viol}; non-unique D: {len(M.nonunique)}", flush=True)
+    ok &= sum(viol.values()) == 0 and not M.nonunique
+    return ok
+
+def cross_check(theta, quick, rng):
+    k = 3; M, bf = DecoderTree(k, theta), bf_model(k, theta)
+    small = trees_upto([leaf(0), leaf(1)], 2)
+    T = lambda t: to_tuple(t)
+    def bf_law(x, y, z):
+        core = bf(T(x), bf(T(z), T(y))) if theta == 'left' else bf(T(z), bf(T(x), T(y)))
+        for _ in range(k): core = bf(T(y), core)
+        return core == T(x)
+    bad = sum(1 for x in small for y in small for z in small if not bf_law(x, y, z))
+    pool = [p for p in structured_pool(M, small, 200, rng) if SIZE[p] < 120]
+    dis = fires = 0
+    for _ in range(600 if quick else 3000):
+        a = rng.choice(pool); r = rng.random()
+        if r < 0.4: p = rng.choice(pool)
+        elif r < 0.7: p = tower(a, k - 1, rng.choice(pool))
+        else: p = tower(a, k - 1, M.core(rng.choice(pool), a, rng.choice(pool)))   # a firing product
+        res = M.mul(a, p); fires += res != pair(a, p)
+        dis += T(res) != bf(T(a), T(p))
+    name = 'E3' if theta == 'left' else 'G3'
+    print(f"[cross-check {name}] brute-force semantic model: law violations {bad} on {len(small)**3} triples; "
+          f"product disagreements {dis} ({fires} firing products compared)", flush=True)
+    return bad == 0 and dis == 0
+
+def example_check():
+    """Reproduces Example 5.8 of the paper (k = 3, type lambda)."""
+    M, g, h, P = DecoderTree(3, 'left'), leaf(0), leaf(1), pair
+    u = M.mul(g, M.mul(g, g))                                     # clause alpha
+    assert u == P(g, P(g, g)) and M.D(g, u) == {g} and M.Lpow(g, u, 3) == g
+    s = M.mul(h, M.mul(g, g)); y = P(g, s)                        # clause beta
+    assert s == P(h, P(g, g)) and M.D(g, s) == {h}
+    assert M.mul(g, y) == P(g, y) and M.mul(g, P(g, y)) == h and M.D(y, h) == {g}
+    assert M.mul(y, h) == P(y, h) and M.mul(y, P(y, h)) == P(y, P(y, h)) and M.Lpow(y, h, 3) == g
+    v = tower(g, 2, s); t = M.mul(v, M.mul(g, h)); y2 = tower(h, 2, t)   # clause gamma
+    assert t == P(v, P(g, h)) and M.D(h, t) == {v} and M.kappa(y2) == {v}
+    assert M.mul(h, y2) == v and M.mul(g, v) == h and M.D(y2, h) == {g} and M.Lpow(y2, h, 3) == g
+    print("[example] Example 5.8 reproduced", flush=True)
+    return True
+
+def run_one(job, quick):
+    theta, k = job[0], int(job[1])
+    rng = random.Random(20261028 + 10 * k + (theta == 'owner'))
+    if k == 0: return cross_check(theta, quick, rng)
+    ok = example_check() if (theta, k) == ('left', 3) else True
+    return check_family(theta, k, quick, rng) and ok
+
+def main(quick):
+    # each job runs in a fresh process, so that memory use stays bounded
+    import subprocess
+    ok = True
+    for theta in ('left', 'owner'):
+        for k in (3, 4, 5, 0):                     # k = 0 means: cross-check for k = 3
+            cmd = [sys.executable, __file__, '--one', theta, str(k)] + (['--quick'] if quick else [])
+            ok &= subprocess.run(cmd).returncode == 0
+    print("ALL CHECKS PASSED" if ok else "SOME CHECK FAILED")
+    return 0 if ok else 1
+
+if __name__ == '__main__':
+    quick = '--quick' in sys.argv
+    if '--one' in sys.argv:
+        i = sys.argv.index('--one')
+        sys.exit(0 if run_one(sys.argv[i + 1:i + 3], quick) else 1)
+    sys.exit(main(quick))
+\end{filecontents*}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[hidelinks,hypertexnames=false]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\op}{\mathbin{\diamond}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\pr}[2]{\langle #1,#2\rangle}
+\newcommand{\tw}[3]{#1^{[#2]}#3}
+\newcommand{\Dec}{D}
+\newcommand{\Key}{K}
+\newcommand{\Fire}{F}
+\newcommand{\sub}{\sqsubset}
+\newcommand{\Sub}{\operatorname{Sub}^{-}}
+\newcommand{\E}[1]{\mathsf{E}_{#1}}
+\newcommand{\G}[1]{\mathsf{G}_{#1}}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+  keepspaces=true,frame=single,showstringspaces=false}
+
+\title{Decoder Trees and Kisielewicz's Identity:\\
+Equations 5093 and 5107 Are Austin Laws}
+\author{KEIO\thanks{Research draft prepared with AI assistance. All proofs are
+written out in full for independent checking, and a self-contained verification
+program is reproduced in Appendix~\ref{app:code}. All proofs were also re-checked
+case by case, with independently written code, by a separate AI review agent,
+which found no mathematical errors. The manuscript has not been externally peer
+reviewed or certified by a proof assistant.}}
+\date{28 October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+An \emph{Austin law} is an equational law that has non-trivial infinite models
+but no non-trivial finite models. Kisielewicz (1997) showed that the order-five
+law
+\[
+  x \approx y \op \bigl(y \op \bigl(y \op (x \op (z \op y))\bigr)\bigr)
+\]
+(Equation~5093 in the numbering of the Equational Theories Project) has no
+non-trivial finite model, and the existence of a non-trivial infinite model has
+remained open. The question is listed among the open questions of the
+Equational Theories Project, and the automated trace-tree search of 2026 did not
+settle it. We answer the question: Equation~5093 is an Austin law. More
+generally, for every $k\ge3$ the two laws
+\[
+  \E{k}\colon\ x \approx L_y^{k}\bigl(x\op(z\op y)\bigr),\qquad
+  \G{k}\colon\ x \approx L_y^{k}\bigl(z\op(x\op y)\bigr),\qquad L_y(t):=y\op t,
+\]
+are Austin laws, while for $k=1,2$ (Equations 69, 507, 83, 521) they are
+equivalent to $x\approx y$, so the threshold $k=3$ is sharp. Since
+$\G{3}$ is Equation~5107, another order-five law whose infinite models were
+unknown, we obtain four new Austin laws of order five: 5093 and 5107 and their
+duals 41179 and 40951. The models are \emph{decoder-tree magmas}. A product of
+binary trees contracts exactly when its right factor is a tower of $k-1$ copies
+of the left factor over a core that is \emph{semantically decodable}.
+Decodability and the companion notion of a \emph{key} are defined by a
+well-founded mutual recursion with stratified negation. We prove that the
+normal decoder trees form the free algebras of these laws, which also solves
+their word problems. The proofs are short and self-contained. An appendix
+contains a verification program. It checks the laws on more than
+$6\cdot10^6$ instances, including $6\cdot10^4$ instances aimed at the two
+contracting decoding clauses, and checks every structural lemma on
+$1.2\cdot10^5$ further instances.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{Austin laws and Kisielewicz's question}
+A \emph{magma} is a set with a binary operation $\op$, and an \emph{equational
+law} is a universally quantified identity $w_1\approx w_2$ between magma words.
+Every law is satisfied by the one-element magma; a law is \emph{trivial} if this
+is its only model up to isomorphism, equivalently if it implies $x\approx y$.
+Austin~\cite{Austin1965} constructed the first law that has non-trivial models
+but no non-trivial \emph{finite} ones; such laws are now called \emph{Austin
+laws}. Austin also showed that every law in at most two variables that has a
+non-trivial model has a non-trivial finite one~\cite{Austin1966}. Kisielewicz gave much shorter Austin
+laws, first of order six~\cite{Kisielewicz1990} and then of order
+five~\cite{Kisielewicz1997}, and reported a computer search showing that no law
+of order at most four is an Austin law~\cite{Kisielewicz1997}.
+
+In the same paper Kisielewicz pointed to the order-five law
+\begin{equation}\label{eq:5093}
+  x \approx y \op (y \op (y \op (x \op (z \op y)))) \tag{E5093}
+\end{equation}
+and showed that it has no non-trivial finite model. Whether it has a
+non-trivial infinite model, that is, whether it is an Austin law, was left open.
+The Equational Theories Project (ETP)~\cite{ETP2025,ETPblueprint} numbers this
+law 5093. It lists the question among the open problems in the conclusions of
+its final report~\cite{ETP2025}, and its blueprint records that whether 5093 is
+an Austin law is an open question~\cite{ETPblueprint}. Law~5093 is one of 96
+order-five laws whose finite models are trivial but whose infinite models were
+unknown at the end of the ETP~\cite[chapter ``Order 5 Austin
+laws'']{ETPblueprint}; another is Equation~5107,
+\begin{equation}\label{eq:5107}
+  x \approx y \op (y \op (y \op (z \op (x \op y)))). \tag{E5107}
+\end{equation}
+In September 2026, Zhao, Wu, Yang and Miao~\cite{ZWYM2026} used automatically
+synthesised trace-tree magmas to certify 32 of these 96 laws as Austin, 28 of
+them for the first time. The other four had already appeared among the six
+positives of the ALPS benchmark~\cite{ALPS2026}, so 34 of the 96 were
+classified before the present work. Neither 5093 nor 5107, nor their duals,
+was among them: the public result files of~\cite{ZWYM2026} record ``no
+candidate'' for 5093 and 5107, and their same-resource ATP baselines exhausted
+their resources on both.
+
+\subsection{Results}
+For $k\ge1$ consider the two laws, of order $k+2$,
+\begin{align}
+  \E{k}\colon&\quad x \approx L_y^{\,k}\bigl(x \op (z\op y)\bigr), \label{eq:Ek}\\
+  \G{k}\colon&\quad x \approx L_y^{\,k}\bigl(z \op (x\op y)\bigr), \label{eq:Gk}
+\end{align}
+where $L_y(t):=y\op t$. Thus $\E{3}$ is~\eqref{eq:5093} and $\G{3}$
+is~\eqref{eq:5107}. In ETP numbering, $\E{1},\E{2},\G{1},\G{2}$ are Equations
+69, 507, 83 and 521. We pose the following problem and solve it completely.
+
+\begin{question}[Classification problem]\label{q:class}
+For which $k\ge1$ is $\E{k}$ an Austin law, and for which $k$ is $\G{k}$?
+\end{question}
+
+\begin{theorem}[Main theorem]\label{thm:main}
+Let $k\ge 3$ and let $X$ be a non-empty set. On the set $\T(X)$ of finite binary
+trees with leaves in $X$ there are explicit operations $\op_\lambda$ and
+$\op_\omega$, the \emph{decoder-tree operations} of Definition~\ref{def:op},
+such that $(\T(X),\op_\lambda)\models\E{k}$ and
+$(\T(X),\op_\omega)\models\G{k}$. In each case the submagma $\N(X)$ of normal
+trees (Definition~\ref{def:normal}) is the free algebra on $X$ of the
+corresponding law.
+\end{theorem}
+
+\begin{corollary}\label{cor:austin}
+For every $k\ge 3$ the laws $\E{k}$ and $\G{k}$ are Austin laws. In particular
+Equations~5093 and~5107 are Austin laws, and so are their duals,
+Equation~41179, $x\approx((((y\op z)\op x)\op y)\op y)\op y$, and
+Equation~40951, $x\approx((((y\op x)\op z)\op y)\op y)\op y$. This answers
+Kisielewicz's question~\cite{Kisielewicz1997,ETP2025}.
+\end{corollary}
+
+\begin{corollary}\label{cor:wp}
+For every $k\ge3$ the word problems of $\E{k}$ and $\G{k}$ are decidable: an
+identity $s\approx t$ follows from the law if and only if $s$ and $t$ evaluate
+to the same normal tree in $\N(V)$, where $V$ is the set of variables.
+\end{corollary}
+
+\begin{proposition}[The threshold is sharp]\label{prop:collapse}
+The laws $\E{1},\E{2},\G{1},\G{2}$ are trivial: each implies $x\approx y$.
+\end{proposition}
+
+So both families have the same dichotomy, which answers
+Question~\ref{q:class}. For $k\le 2$ the law is trivial, in line with
+Kisielewicz's computer search, since these laws have order at most four. For
+every $k\ge3$ the law is Austin, and its free algebras are described
+explicitly.
+
+\subsection{The method: decoder trees}
+The construction rests on one observation, which applies to every model $M$
+of $\E{k}$ or $\G{k}$. Call $w=c\op a$ an \emph{$a$-key} with
+\emph{owner}~$c$. Then $\E{k}$ says that $k$ left multiplications by $a$ recover
+$x$ from $x\op w$, the element $x$ ``locked'' with an $a$-key. $\G{k}$ says the
+same about recovering the owner $x$ from $z\op w$, where $w=x\op a$. In the
+absolutely free magma we therefore keep every product formal, except that a
+product contracts exactly at the $k$-th unlocking step:
+\[
+  a \op \underbrace{\pr{a}{\pr{a}{\cdots\pr{a}{u}}}}_{k-1} \;=\; x
+  \quad\text{whenever } u \text{ is decodable by } a \text{ with value } x .
+\]
+Being an $a$-key and being decodable are themselves defined through the
+operation, so the definition is self-referential. The key steps of the paper
+are:
+\begin{enumerate}[label=(\roman*)]
+\item to unfold decodability into three explicit clauses
+  $\Dec_\alpha,\Dec_\beta,\Dec_\gamma$ (Definition~\ref{def:D}), which form a
+  well-founded recursion on size; the two laws differ only in the value that a
+  clause returns: the locked element for $\E{k}$, the owner of the key for
+  $\G{k}$;
+\item to prove three structural facts: decoded values are proper
+  subtrees (\emph{subterm property}), at most one clause applies
+  (\emph{uniqueness}), and neither $a$ itself nor an $a$-key is ever decodable
+  (\emph{vacuity});
+\item to deduce from vacuity that none of the first $k-1$ unlocking steps
+  contracts prematurely. The laws then follow in a few lines.
+\end{enumerate}
+The hypothesis $k\ge3$ is a standing assumption; for instance, it makes clause
+$(\beta)$ size-decreasing. It is essential at two points: it forces the left
+factor of an unlocking product to be determined by the key
+(Lemma~\ref{lem:semantics}), and it separates towers from keys
+(Lemmas~\ref{lem:vacuity} and~\ref{lem:decoding}). For $k=2$ both fail. By
+Proposition~\ref{prop:collapse}, any such construction must break down for
+$k\le2$.
+
+\subsection{Relation to earlier constructions}
+Self-referential normal forms have been used before. The ETP's description of
+the free magma for Equation~677~\cite[chapter ``Equation 677'']{ETPblueprint}
+contracts $x\op y$ to $y_L$ when $y=\pr{y_L}{(x\op y_L)\op x}$, a single
+syntactic pattern with a recursive side condition. The trace-tree magmas
+of~\cite{ZWYM2026} default to pairing and take finitely many exceptional
+outputs, defined by positive Horn clauses with a least-fixed-point semantics.
+Our operations differ in two ways. First, the firing condition is a
+\emph{semantic} predicate, decodability, defined by mutual recursion with the
+key predicate rather than by a fixed finite set of patterns. Second, that
+recursion uses negation: a formal pair $\pr{c}{a}$ counts as a key only if
+$c\op a$ does \emph{not} contract. The negation is stratified by size, so the
+recursion remains well-founded. A naive Knuth--Bendix
+completion~\cite{KnuthBendix} of~\eqref{eq:5093} did not terminate in our
+experiments (Remark~\ref{rem:kb}). The decoder-tree operation can be viewed as a
+finite recursive description of the completed rewriting system.
+
+\subsection*{Organisation}
+Section~\ref{sec:prelim} collects elementary facts, including the absence of
+finite models. Section~\ref{sec:collapse} proves Proposition~\ref{prop:collapse}.
+Section~\ref{sec:def} defines decoder trees, Section~\ref{sec:lemmas} proves the
+structural lemmas, and Section~\ref{sec:main} proves Theorem~\ref{thm:main} and
+its corollaries. Section~\ref{sec:discussion} discusses the method and further
+questions, and Appendix~\ref{app:code} contains the verification program.
+
+\section{Preliminaries}\label{sec:prelim}
+
+For a magma $(M,\op)$ and $a\in M$ write $L_a(t)=a\op t$ and $R_a(t)=t\op a$.
+
+\begin{proposition}\label{prop:basic}
+Let $k\ge1$ and let $(M,\op)$ satisfy $\E{k}$ or $\G{k}$. Then:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item every $L_y$ is surjective;
+\item every $R_w$ is injective, i.e.\ $M$ is right-cancellative;
+\item if $M$ is finite, then $|M|=1$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(a) In both laws, $x=L_y(\,\cdot\,)$ for every $x$.
+
+(b) For $\G{k}$, the law says $L_y^kL_zR_y=\mathrm{id}$ for all $y,z$, so each
+$R_y$ is injective. For $\E{k}$, let $w\in M$. By (a), $w=s\op t$ for some
+$s,t$, and $\E{k}$ with $y=t$ and $z=s$ gives $L_t^{k}(x\op w)=x$ for all $x$.
+So $L_t^kR_w=\mathrm{id}$ and $R_w$ is injective.
+
+(c) For $\E{k}$ this is Kisielewicz's argument~\cite{Kisielewicz1997},
+formalised in the ETP~\cite{ETPblueprint}. In a finite model each $L_y$ is a
+bijection by (a), so $x\op(z\op y)=L_y^{-k}(x)$, which does not depend on $z$.
+Since $L_x$ is injective, $z\op y=:c(y)$ does not depend on $z$. Then
+$x\op(z\op y)=x\op c(y)=c(c(y))$ does not depend on $x$, and $\E{k}$ gives
+$x=L_y^k(c(c(y)))$ for every $x$.
+
+For $\G{k}$, again $z\op(x\op y)=L_y^{-k}(x)$ does not depend on $z$. By (b)
+and finiteness, $R_y$ is a bijection, so every $t\in M$ has the form $x\op y$.
+Hence $z\op t=:f(t)$ does not depend on $z$. Then $x\op y=f(y)$ and
+$z\op(x\op y)=f(f(y))$, and $\G{k}$ gives $x=f^{k+2}(y)$ for every $x$.
+\end{proof}
+
+So for every $k$, a non-trivial model of $\E{k}$ or $\G{k}$ must be infinite,
+and each of these laws is an Austin law if and only if it has some non-trivial
+model.
+
+\section{The collapse for \texorpdfstring{$k\le2$}{k<=2}}\label{sec:collapse}
+
+\begin{proof}[Proof of Proposition~\ref{prop:collapse}]
+Throughout, $a,b,c$ denote arbitrary elements of a model.
+
+\emph{$\E{1}$: $y\op(x\op(z\op y))\approx x$.}
+By $\E{1}$ with $(x,y,z)=(c,b,a)$ we have $b\op(c\op(a\op b))=c$. By $\E{1}$
+with $(x,y,z)=(b,\,a\op b,\,c)$,
+$b=(a\op b)\op\bigl(b\op(c\op(a\op b))\bigr)=(a\op b)\op c$. So
+$(a\op b)\op c=b$ for all $a,b,c$. Hence, by $\E{1}$ with $y=a\op b$,
+$x=(a\op b)\op\bigl(x\op(z\op(a\op b))\bigr)=b$ for all $x,b$.
+
+\smallskip\noindent
+\emph{$\E{2}$: $y\op(y\op(x\op(z\op y)))\approx x$.}
+Put $Y:=a\op(b\op c)$. By $\E{2}$ with $(x,y,z)=(a,c,b)$ we have
+$c\op(c\op Y)=a$. By $\E{2}$ with $(x,y,z)=(c,Y,c)$,
+$c=Y\op(Y\op(c\op(c\op Y)))=Y\op(Y\op a)$. Then $\E{2}$ with
+$(x,y,z)=(Y,a,Y)$ gives $Y=a\op(a\op(Y\op(Y\op a)))=a\op(a\op c)$. So
+$a\op(b\op c)=a\op(a\op c)$ does not depend on $b$. Hence, for all
+$x,x',y,z$,
+\[
+  x=y\op\bigl(y\op(x\op(z\op y))\bigr)=y\op\bigl(y\op(x'\op(z\op y))\bigr)=x'.
+\]
+
+\smallskip\noindent
+\emph{$\G{1}$: $y\op(z\op(x\op y))\approx x$.}
+By $\G{1}$ with $(x,y,z)=(a,b,c)$ we have $b\op(c\op(a\op b))=a$. By $\G{1}$
+with $(x,y,z)=(c,\,a\op b,\,b)$,
+$c=(a\op b)\op\bigl(b\op(c\op(a\op b))\bigr)=(a\op b)\op a$. So $c$ does not
+depend on $c$.
+
+\smallskip\noindent
+\emph{$\G{2}$: $y\op(y\op(z\op(x\op y)))\approx x$.}
+Put $Y:=a\op(b\op c)$. By $\G{2}$ with $(x,y,z)=(b,c,a)$ we have
+$c\op(c\op Y)=b$. By $\G{2}$ with $(x,y,z)=(c,Y,c)$,
+$c=Y\op(Y\op(c\op(c\op Y)))=Y\op(Y\op b)$. Then $\G{2}$ with
+$(x,y,z)=(Y,b,Y)$ gives $Y=b\op(b\op(Y\op(Y\op b)))=b\op(b\op c)$. So
+$a\op(b\op c)=b\op(b\op c)$ for all $a,b,c$. By Proposition~\ref{prop:basic}(a),
+every $t$ can be written $t=b\op c$ for any given $b$; hence $a\op t=b\op t$ for
+all $a,b,t$, i.e.\ the product does not depend on its left factor. In
+particular $x\op y=x'\op y$, and $\G{2}$ gives
+$x=y\op(y\op(z\op(x\op y)))=y\op(y\op(z\op(x'\op y)))=x'$.
+\end{proof}
+
+\begin{remark}
+These derivations are the first critical pairs of the rewrite rules
+$L_y^k(x\op(z\op y))\to x$ and $L_y^k(z\op(x\op y))\to x$. For $k=3$ the
+analogous critical pairs do not collapse. They generate new rules instead,
+and in our experiments the completion did not terminate (Remark~\ref{rem:kb}).
+\end{remark}
+
+\section{Decoder trees}\label{sec:def}
+
+From now on $k\ge3$ is fixed, $X$ is a non-empty set, and
+$\theta\in\{\lambda,\omega\}$ is a fixed \emph{type}. Type $\lambda$
+(``locked element'') will produce models of $\E{k}$, and type $\omega$
+(``owner'') models of $\G{k}$.
+
+\subsection{Trees}
+Let $\T=\T(X)$ be the set of finite rooted binary trees with leaves labelled by
+$X$, i.e.\ the absolutely free magma on $X$. Its elements are the leaves
+$g\in X$ and the formal pairs $\pr{s}{t}$ with $s,t\in\T$. For a pair
+$p=\pr{s}{t}$ write $p_L=s$ and $p_R=t$. The \emph{size} $|t|$ is the number
+of nodes: $|g|=1$ and $|\pr{s}{t}|=|s|+|t|+1$. Write $s\sub t$ if $s$ is a
+\emph{proper} subtree of $t$, and let $\Sub(t)$ be the set of proper subtrees
+of $t$. If $s\sub t$ then $|s|<|t|$, and $t\notin\Sub(s)$.
+
+For $c,u\in\T$ and $j\ge0$ define the \emph{$c$-tower of height $j$ over $u$}:
+\[
+  \tw{c}{0}{u}:=u,\qquad \tw{c}{j+1}{u}:=\pr{c}{\tw{c}{j}{u}} .
+\]
+Given $c$, $p$ and $j$ there is at most one $t$ with $p=\tw{c}{j}{t}$. If
+$j\ge1$ then $|\tw{c}{j}{u}|=j(|c|+1)+|u|$, and both $c$ and $u$ are proper
+subtrees of $\tw{c}{j}{u}$.
+
+\subsection{Decodability, firing, keys and owners}
+
+\begin{definition}[Decoder-tree data of type $\theta$]\label{def:D}
+By recursion on $n=|a|+|u|$ we define a set $\Dec(a,u)\subseteq\T$ for all
+$a,u\in\T$. Suppose $\Dec(a',u')$ is already defined whenever $|a'|+|u'|<n$.
+We use the following abbreviations; each refers to $\Dec$ only at arguments of
+total size $<n$, as indicated in brackets.
+\begin{itemize}
+\item \emph{Firing.} For $c,p\in\T$ let $\Fire(c,p)$ hold if
+  $p=\tw{c}{k-1}{t}$ for some $t$ with $\Dec(c,t)\neq\emptyset$.
+  \hfill[$|c|+|t|<|p|$]
+\item \emph{Special key.} For a pair $a$ with $a=\tw{a_L}{k-1}{t}$ put
+  $\kappa(a):=\Dec(a_L,t)$; otherwise $\kappa(a):=\emptyset$.
+  \hfill[$|a_L|+|t|<|a|$]
+\item \emph{Keys and owners.}
+  $\Key(a):=\{\pr{c}{a}: c\in\T,\ \neg\Fire(c,a)\}\cup\kappa(a)$. The elements
+  $\pr{c}{a}$ of the first set are \emph{generic keys}; they are larger than
+  $a$. The elements of $\kappa(a)$ are \emph{special keys}; they are smaller
+  than $a$ (Lemma~\ref{lem:sub}). The \emph{owner} of a key $w\in\Key(a)$ is
+  $o_a(w):=c$ if $w=\pr{c}{a}$ with $\neg\Fire(c,a)$, and $o_a(w):=a_L$
+  otherwise, i.e.\ if $w$ is special.
+\item \emph{Output.} For $x\in\T$ and $w\in\Key(a)$ put
+  $\theta_a(x,w):=x$ if $\theta=\lambda$, and $\theta_a(x,w):=o_a(w)$ if
+  $\theta=\omega$.
+\end{itemize}
+Now set $\Dec(a,u):=\Dec_\alpha(a,u)\cup\Dec_\beta(a,u)\cup\Dec_\gamma(a,u)$,
+where:
+\begin{itemize}[leftmargin=2.2em]
+\item[$(\alpha)$] $\Dec_\alpha(a,u)=\{\theta_a(u_L,u_R)\}$ if $u$ is a pair with
+  $u_R\in\Key(a)$ and $\neg\Fire(u_L,u_R)$; otherwise $\Dec_\alpha(a,u)=\emptyset$.
+\item[$(\beta)$] $\Dec_\beta(a,u)=\{a_L\}$ if $a$ is a pair with
+  $a=\tw{a_L}{k-2}{s}$ for some $s$, $\neg\Fire(a_L,a)$, and
+  $u\in\Dec(a_L,s)$; otherwise $\Dec_\beta(a,u)=\emptyset$.
+  \hfill[$|a_L|+|s|<|a|$]
+\item[$(\gamma)$] $\Dec_\gamma(a,u)$ is the set of all $\theta_a(x,v)$ for which
+  there are $v\in\kappa(a)$ and $s$ with $v=\tw{x}{k-1}{s}$, $|x|+|s|<n$, and
+  $u\in\Dec(x,s)$.
+\end{itemize}
+\end{definition}
+
+In $(\alpha)$, deciding whether $u_R\in\Key(a)$, and computing the owner,
+needs $\Fire(c,a)$ and $\kappa(a)$; these refer to $\Dec$ at total size $<|a|$.
+Deciding $\Fire(u_L,u_R)$ refers to total size $<|u|$. So the recursion is
+well-founded, and $\Dec$, $\Fire$, $\kappa$, $\Key$ and $o_a$ are well defined
+on all of $\T$. By Lemma~\ref{lem:sub} the two cases in the definition of the
+owner are disjoint, since generic keys are larger than $a$ and special keys are
+smaller. All these notions depend on $\theta$; since
+$\theta$ is fixed we suppress it from the notation. The guard $|x|+|s|<n$ in
+$(\gamma)$ is always satisfied (Remark~\ref{rem:guard}); it is included only to
+make the recursion manifestly well-founded.
+
+The intended meaning, made precise in Lemma~\ref{lem:semantics}, is: $\Key(a)$
+is the set of right multiples $c\op a$, and $o_a(c\op a)=c$; $\Dec(a,u)$
+collects the values $\theta_a(x,w)$ over all ways of writing $u=x\op w$ with
+$w\in\Key(a)$; and $\Fire(c,p)$ says that $c\op p$ contracts. The three clauses
+list the three ways in which $u=x\op w$ can happen. Either $x\op w$ is the
+formal pair $\pr{x}{w}$ $(\alpha)$, or $x\op w$ contracts with a generic key,
+which forces $x=a_L$ and $w=\pr{a_L}{a}$ $(\beta)$, or $x\op w$ contracts with
+the special key $w\in\kappa(a)$ $(\gamma)$. In case $(\beta)$ the output is
+$\theta_a(a_L,\pr{a_L}{a})=a_L$ for both types.
+
+\section{Structural lemmas}\label{sec:lemmas}
+
+\begin{lemma}[Subterm property]\label{lem:sub}
+For all $a,u\in\T$:
+$\Dec(a,u)\subseteq\Sub(a)\cup\Sub(u)$ and $\kappa(a)\subseteq\Sub(a)$.
+\end{lemma}
+
+\begin{proof}
+Induction on $|a|+|u|$. If $a=\tw{a_L}{k-1}{t}$ then, by induction,
+$\kappa(a)=\Dec(a_L,t)\subseteq\Sub(a_L)\cup\Sub(t)\subseteq\Sub(a)$. Owners
+are proper subtrees of their keys or equal to $a_L$, so every value of
+$\theta_a$ that occurs is one of $u_L$, $(u_R)_L$, $a_L$ or $v_L$ with
+$v\in\kappa(a)$. These lie in $\Sub(u)$, $\Sub(u)$, $\Sub(a)$ and $\Sub(a)$
+respectively.
+\end{proof}
+
+\begin{remark}\label{rem:guard}
+In $(\gamma)$, $x,s\sub v\sub a$, so $|x|+|s|<|v|<|a|\le n$. The guard is
+therefore automatic.
+\end{remark}
+
+\begin{lemma}[Keys]\label{lem:keys}
+Let $a\in\T$.
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item If $\Fire(c,a)$ then $a$ is a pair and $c=a_L$.
+\item $\kappa(a)\neq\emptyset$ if and only if $\Fire(a_L,a)$.
+\item Every generic key of $a$ properly contains $a$, and every special key is
+  a proper subtree of $a$. In particular $a\notin\Key(a)$, and every key
+  $w$ of $a$ with $w\sub a$ lies in $\kappa(a)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) $\Fire(c,a)$ means $a=\tw{c}{k-1}{t}$ with $k-1\ge1$, so
+$a=\pr{c}{\cdots}$. (b) Both sides say that $a=\tw{a_L}{k-1}{t}$ with
+$\Dec(a_L,t)\ne\emptyset$. (c) follows from the definition of $\Key(a)$ and
+Lemma~\ref{lem:sub}.
+\end{proof}
+
+\begin{lemma}[Uniqueness]\label{lem:unique}
+For all $a,u\in\T$, $|\Dec(a,u)|\le1$. Consequently $|\kappa(a)|\le1$.
+\end{lemma}
+
+\begin{proof}
+Induction on $|a|+|u|$. Each of $\Dec_\alpha$ and $\Dec_\beta$ has at most one
+element. By induction $|\kappa(a)|\le1$, and in $(\gamma)$ the tree $x=v_L$
+is determined by $v$; so $|\Dec_\gamma|\le1$. It remains to show that at most
+one of the three clauses applies. The argument uses only the conditions of
+the clauses, not their outputs, so it is the same for both types.
+
+\emph{$(\beta)$ and $(\gamma)$.} If $(\beta)$ applies then $\neg\Fire(a_L,a)$,
+so $\kappa(a)=\emptyset$ by Lemma~\ref{lem:keys}(b), and $(\gamma)$ does not
+apply.
+
+\emph{$(\alpha)$ and $(\beta)$.} Suppose both apply. By $(\beta)$,
+$u\in\Dec(a_L,s)$ with $a_L,s\sub a$, so $u\sub a$ by Lemma~\ref{lem:sub}. By
+$(\alpha)$, $u_R\in\Key(a)$, and $u_R\sub u\sub a$. By
+Lemma~\ref{lem:keys}(c), $u_R\in\kappa(a)$, so $\kappa(a)\ne\emptyset$ and
+$\Fire(a_L,a)$ holds. This contradicts $\neg\Fire(a_L,a)$ in $(\beta)$.
+
+\emph{$(\alpha)$ and $(\gamma)$.} Suppose both apply, and let
+$\kappa(a)=\{v\}$, $v=\tw{x}{k-1}{s}$, $u\in\Dec(x,s)$. Since $x,s\sub v$,
+Lemma~\ref{lem:sub} gives $u\sub v$, so $u_R\sub v\sub a$. By $(\alpha)$ and
+Lemma~\ref{lem:keys}(c), $u_R\in\kappa(a)=\{v\}$, i.e.\ $u_R=v$. This
+contradicts $u_R\sub v$.
+\end{proof}
+
+\begin{definition}[The decoder-tree operation]\label{def:op}
+For $a,p\in\T$ define
+\[
+ a\op p:=\begin{cases}
+   \text{the unique element of }\Dec(a,t) & \text{if } \Fire(a,p),\ p=\tw{a}{k-1}{t},\\
+   \pr{a}{p} & \text{otherwise.}
+ \end{cases}
+\]
+This is well defined by Lemma~\ref{lem:unique}, and by Lemma~\ref{lem:sub}
+\begin{equation}\label{eq:opsub}
+  a\op p\in\{\pr{a}{p}\}\cup\Sub(p)\qquad\text{for all }a,p .
+\end{equation}
+In particular $a\op p=\pr{a}{p}$ if and only if $\neg\Fire(a,p)$. We write
+$\op_\lambda$ and $\op_\omega$ for the operations of type $\lambda$ and
+$\omega$, and $\T_k^\theta(X):=(\T(X),\op_\theta)$.
+\end{definition}
+
+\begin{lemma}[Semantics]\label{lem:semantics}
+For all $a,u\in\T$:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\Key(a)=\{c\op a: c\in\T\}$, and $o_a(c\op a)=c$ for every $c$;
+\item $\Dec(a,u)=\{\theta_a(x,w):\ w\in\Key(a),\ x\in\T,\ x\op w=u\}$.
+\end{enumerate}
+Consequently,
+\[
+  \Dec(a,u)=\{x:\ \exists c\ \ x\op(c\op a)=u\}\ \text{ for } \theta=\lambda,
+  \qquad
+  \Dec(a,u)=\{c:\ \exists z\ \ z\op(c\op a)=u\}\ \text{ for } \theta=\omega .
+\]
+\end{lemma}
+
+\begin{proof}
+(a) Let $c\in\T$. If $\neg\Fire(c,a)$ then $c\op a=\pr{c}{a}$ is a generic key
+with owner $c$. If $\Fire(c,a)$ then $c=a_L$ by Lemma~\ref{lem:keys}(a), and
+$c\op a$ is the element of $\Dec(a_L,t)=\kappa(a)$, a special key with owner
+$a_L=c$. Conversely, a generic key $\pr{c}{a}$ requires $\neg\Fire(c,a)$, and
+then $\pr{c}{a}=c\op a$. If $v\in\kappa(a)$ then $\Fire(a_L,a)$ holds and
+$v=a_L\op a$.
+
+(b) ``$\supseteq$''. Let $w\in\Key(a)$ and $x\op w=u$. If $\neg\Fire(x,w)$, then
+$u=\pr{x}{w}$ and $(\alpha)$ yields $\theta_a(x,w)$. Otherwise
+$w=\tw{x}{k-1}{s}$ and $\Dec(x,s)=\{u\}$. There are two cases.
+\emph{(i)} $w=\pr{c}{a}$ is generic. Comparing $\pr{c}{a}=\pr{x}{\tw{x}{k-2}{s}}$
+gives $c=x$ and $a=\tw{x}{k-2}{s}$. Since $k-2\ge1$, $a$ is a pair with
+$a_L=x$, and $\neg\Fire(a_L,a)$ because $w$ is generic. So $(\beta)$ yields
+$a_L$, which equals $\theta_a(x,w)$ for both types, since $x=a_L=c=o_a(w)$.
+\emph{(ii)} $w\in\kappa(a)$. Then $(\gamma)$ yields $\theta_a(x,w)$; the guard
+holds by Remark~\ref{rem:guard}.
+
+``$\subseteq$''. If $(\alpha)$ applies, then $w:=u_R\in\Key(a)$ and
+$u_L\op w=\pr{u_L}{w}=u$, so the output $\theta_a(u_L,w)$ is in the right-hand
+side. If $(\beta)$ applies, then $w:=\pr{a_L}{a}$ is a generic key, since
+$\neg\Fire(a_L,a)$. Also $w=\tw{a_L}{k-1}{s}$ with $u\in\Dec(a_L,s)$, so
+$a_L\op w=u$ by uniqueness, and the output is $a_L=\theta_a(a_L,w)$. If
+$(\gamma)$ applies, then $w:=v\in\kappa(a)$ satisfies $x\op v=u$, and the
+output is $\theta_a(x,v)$.
+
+The final formulas follow from (a) and (b), since by (a) the keys of $a$ are
+exactly the elements $c\op a$, with owner $c$.
+\end{proof}
+
+\begin{remark}[Where $k\ge3$ is essential, I]
+In case (i) of ``$\supseteq$'' the hypothesis $k\ge3$ forces the unlocking
+factor $x$ to equal $a_L$, so it is determined by the key. For $k=2$ the same
+analysis gives $a=s$ with $x$ arbitrary. Clause $(\beta)$ would then have to
+range over unboundedly many $x$, and Lemma~\ref{lem:sub} would fail.
+\end{remark}
+
+\begin{example}[The three clauses at work; $k=3$, $\theta=\lambda$]\label{ex:clauses}
+Let $X=\{g,h\}$.
+\emph{Clause $(\alpha)$.} $g\op g=\pr{g}{g}$ is a generic key of $g$, so
+$u=\pr{g}{\pr{g}{g}}=g\op(g\op g)$ has $\Dec(g,u)=\{g\}$. The products $g\op u$
+and $g\op\pr{g}{u}$ are formal, and $g\op\pr{g}{\pr{g}{u}}=g$; this is the
+instance $x=y=z=g$ of $\E{3}$.
+\emph{Clause $(\beta)$.} Let $s=h\op(g\op g)=\pr{h}{\pr{g}{g}}$, so
+$\Dec(g,s)=\{h\}$, and let $y=\pr{g}{s}$. Then $g\op y=\pr{g}{y}=\tw{g}{2}{s}$
+is formal, and $g\op\pr{g}{y}$ contracts to $h$. So with $x=z=g$ the core
+$x\op(z\op y)$ of $\E{3}$ equals $h$, and clause $(\beta)$ gives
+$\Dec(y,h)=\{g\}$. Indeed $y\op h$ and $y\op(y\op h)$ are formal, and
+$L_y^3(h)=g$.
+\emph{Clause $(\gamma)$.} Let $v=\tw{g}{2}{s}$, $t=v\op(g\op h)=\pr{v}{\pr{g}{h}}$
+and $y'=\tw{h}{2}{t}$. Then $\Dec(h,t)=\{v\}$, so $\kappa(y')=\{v\}$, i.e.\
+$h\op y'=v$ is the special key of $y'$. With $x=g$ and $z=h$ the core is
+$g\op v=h$, clause $(\gamma)$ gives $\Dec(y',h)=\{g\}$, and $L_{y'}^3(h)=g$.
+These computations are reproduced by the program in Appendix~\ref{app:code}.
+\end{example}
+
+\begin{lemma}[Vacuity]\label{lem:vacuity}
+For every $a\in\T$:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\Dec(a,a)=\emptyset$;
+\item $\Dec(a,w)=\emptyset$ for every $w\in\Key(a)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+We show that no clause applies; only the conditions of the clauses are used.
+
+(a) \emph{Clause $(\alpha)$.} Here $a$ is a pair and $a_R\in\Key(a)$. Since
+$a_R\sub a$, Lemma~\ref{lem:keys}(c) gives $a_R\in\kappa(a)$. So
+$a=\tw{a_L}{k-1}{t}$ and $a_R\in\Dec(a_L,t)\subseteq\Sub(a_L)\cup\Sub(t)$. But
+$a_R=\tw{a_L}{k-2}{t}$ with $k-2\ge1$, so $a_R$ properly contains $t$ and is
+larger than $a_L$; it is in neither set.
+\emph{Clause $(\beta)$.} We would need $a\in\Dec(a_L,s)$ with $a_L,s\sub a$,
+which contradicts Lemma~\ref{lem:sub}.
+\emph{Clause $(\gamma)$.} We would need $a\in\Dec(x,s)$ with $x,s\sub v\sub a$,
+which again contradicts Lemma~\ref{lem:sub}.
+
+(b) First let $w=\pr{c}{a}$ be generic. Clause $(\alpha)$ would need
+$w_R=a\in\Key(a)$, which is excluded by Lemma~\ref{lem:keys}(c). Clauses
+$(\beta)$ and $(\gamma)$ would need $w\in\Dec(x',s)$ for some $x',s\sub a$,
+hence $w\sub a$ by Lemma~\ref{lem:sub}. That is impossible, since $a\sub w$.
+
+Now let $w=v\in\kappa(a)$. Clause $(\alpha)$ would need $v=\pr{x}{w'}$ with
+$w'\in\Key(a)$. Then $w'\sub v\sub a$, so $w'\in\kappa(a)=\{v\}$ by
+Lemma~\ref{lem:keys}(c), contradicting $w'\sub v$. Clause $(\beta)$ needs
+$\neg\Fire(a_L,a)$, but $\kappa(a)\neq\emptyset$ means $\Fire(a_L,a)$. Clause
+$(\gamma)$ would need $v=\tw{x}{k-1}{s}$ and $v\in\Dec(x,s)$; then $v\sub x$ or
+$v\sub s$ by Lemma~\ref{lem:sub}, although $x,s\sub v$.
+\end{proof}
+
+\begin{lemma}[Decoding without premature contraction]\label{lem:decoding}
+Let $x\in\Dec(a,u)$. Then $L_a^{\,j}(u)=\tw{a}{j}{u}$ for $0\le j\le k-1$, and
+$L_a^{\,k}(u)=x$.
+\end{lemma}
+
+\begin{proof}
+Induction on $j$; the case $j=0$ is trivial. Let $0\le j\le k-2$ and assume
+$L_a^{\,j}(u)=\tw{a}{j}{u}$. Then $L_a^{\,j+1}(u)=a\op\tw{a}{j}{u}$. Suppose,
+for a contradiction, that $\Fire(a,\tw{a}{j}{u})$. Then
+$\tw{a}{j}{u}=\tw{a}{k-1}{t}$ with $\Dec(a,t)\ne\emptyset$, i.e.\
+$u=\tw{a}{m}{t}$ with $m:=k-1-j\ge1$. In particular $u=\pr{a}{\tw{a}{m-1}{t}}$
+properly contains $a$.
+
+Since $\Dec(a,u)\ne\emptyset$, some clause applies. Clauses $(\beta)$ and
+$(\gamma)$ require $u\in\Dec(x',s)$ for some $x',s\sub a$, so $u\sub a$ by
+Lemma~\ref{lem:sub}. This is impossible. Hence $(\alpha)$ applies, and
+$u_R=\tw{a}{m-1}{t}\in\Key(a)$.
+\begin{itemize}
+\item If $m=1$, then $u_R=t\in\Key(a)$ and $\Dec(a,t)\neq\emptyset$,
+  contradicting Lemma~\ref{lem:vacuity}(b).
+\item If $m\ge2$, then $u_R=\pr{a}{\tw{a}{m-2}{t}}$ properly contains $a$, so
+  by Lemma~\ref{lem:keys}(c) it is a generic key $\pr{c}{a}$. Comparing gives
+  $c=a$ and $\tw{a}{m-2}{t}=a$. If $m\ge3$ this says $\pr{a}{\cdots}=a$, which
+  is impossible. If $m=2$ it says $t=a$, and then $\Dec(a,a)\neq\emptyset$
+  contradicts Lemma~\ref{lem:vacuity}(a).
+\end{itemize}
+Hence $\neg\Fire(a,\tw{a}{j}{u})$ and $L_a^{\,j+1}(u)=\tw{a}{j+1}{u}$.
+Finally, $L_a^{\,k}(u)=a\op\tw{a}{k-1}{u}$. Since $\Dec(a,u)=\{x\}$ is
+non-empty, $\Fire(a,\tw{a}{k-1}{u})$ holds, and the product is $x$.
+\end{proof}
+
+\begin{remark}[Where $k\ge3$ is essential, II]
+Lemma~\ref{lem:vacuity}(a) uses $k\ge3$ to separate the tower $a_R$ from the
+special key. Lemma~\ref{lem:decoding} uses vacuity to exclude every premature
+contraction among the first $k-1$ unlocking steps.
+\end{remark}
+
+\section{Proof of the main theorem and corollaries}\label{sec:main}
+
+\begin{theorem}\label{thm:model}
+For every $k\ge3$ and every non-empty set $X$, $\T_k^\lambda(X)\models\E{k}$
+and $\T_k^\omega(X)\models\G{k}$.
+\end{theorem}
+
+\begin{proof}
+Let $x,y,z\in\T$.
+\emph{Type $\lambda$.} By Lemma~\ref{lem:semantics}(a), $w:=z\op y\in\Key(y)$.
+Put $u:=x\op w$. By Lemma~\ref{lem:semantics}(b), $x=\theta_y(x,w)\in\Dec(y,u)$.
+By Lemma~\ref{lem:decoding}, $L_y^{\,k}(u)=x$, which is $\E{k}$.
+\emph{Type $\omega$.} By Lemma~\ref{lem:semantics}(a), $w:=x\op y\in\Key(y)$ with
+$o_y(w)=x$. Put $u:=z\op w$. By Lemma~\ref{lem:semantics}(b),
+$x=o_y(w)=\theta_y(z,w)\in\Dec(y,u)$. By Lemma~\ref{lem:decoding},
+$L_y^{\,k}(u)=x$, which is $\G{k}$.
+\end{proof}
+
+\begin{definition}[Normal trees]\label{def:normal}
+A tree $t\in\T$ is \emph{normal} (for the fixed type $\theta$) if no subtree
+$\pr{s}{s'}$ of $t$, including $t$ itself, satisfies $\Fire(s,s')$. Let
+$\N=\N(X)$ be the set of normal trees.
+\end{definition}
+
+\begin{lemma}\label{lem:normal}
+$X\subseteq\N$; $\N$ is closed under subtrees and under $\op$; every
+$\pr{s}{s'}\in\N$ equals $s\op s'$. Hence $\N$ is the submagma of
+$(\T,\op)$ generated by $X$.
+\end{lemma}
+
+\begin{proof}
+Closure under subtrees is clear. Let $a,p\in\N$. If $\neg\Fire(a,p)$, then
+$a\op p=\pr{a}{p}$, and every subtree of $\pr{a}{p}$ is a subtree of $a$, a
+subtree of $p$, or $\pr{a}{p}$ itself, none of which fires. If $\Fire(a,p)$,
+then $a\op p\in\Sub(p)\subseteq\N$ by~\eqref{eq:opsub}. If
+$\pr{s}{s'}\in\N$ then $\neg\Fire(s,s')$, so $s\op s'=\pr{s}{s'}$. By
+induction on size, every normal tree is a $\op$-word in elements of $X$.
+\end{proof}
+
+\begin{theorem}[Freeness]\label{thm:free}
+Let $k\ge3$, let $\mathsf{L}=\E{k}$ if $\theta=\lambda$ and $\mathsf{L}=\G{k}$
+if $\theta=\omega$. For every model $(M,\bullet)$ of $\mathsf{L}$ and every map
+$f\colon X\to M$ there is a unique homomorphism
+$\varphi\colon(\N(X),\op)\to(M,\bullet)$ extending $f$. Thus $\N(X)$ is the free
+model of $\mathsf{L}$ on $X$.
+\end{theorem}
+
+\begin{proof}
+Uniqueness follows from Lemma~\ref{lem:normal}. For existence, let
+$\varphi\colon\T\to M$ be the structural evaluation:
+$\varphi(g)=f(g)$ and $\varphi(\pr{s}{t})=\varphi(s)\bullet\varphi(t)$. We show
+$\varphi(a\op p)=\varphi(a)\bullet\varphi(p)$ for all $a,p\in\N$, by induction
+on $|a|+|p|$. If $\neg\Fire(a,p)$, then $a\op p=\pr{a}{p}$ and there is
+nothing to prove. Otherwise $p=\tw{a}{k-1}{u}$, $\Dec(a,u)=\{x\}$ and
+$a\op p=x$. By the structural definition,
+$\varphi(a)\bullet\varphi(p)=L_{\varphi(a)}^{\,k}(\varphi(u))$, where now
+$L_m(t)=m\bullet t$. The clause that produces $x$ provides trees $x',w$ with
+$w\in\Key(a)$, $x'\op w=u$ and $x=\theta_a(x',w)$: in $(\alpha)$,
+$(x',w)=(u_L,u_R)$; in $(\beta)$, $(x',w)=(a_L,\pr{a_L}{a})$; in $(\gamma)$,
+$w=v\in\kappa(a)$ and $x'=v_L$. Put $c:=o_a(w)$. We claim that
+\begin{equation}\label{eq:need}
+  \varphi(u)=\varphi(x')\bullet\varphi(w)\quad\text{and}\quad
+  \varphi(w)=\varphi(c)\bullet\varphi(a).
+\end{equation}
+Given~\eqref{eq:need}, the law $\mathsf{L}$ in $M$ yields
+$L^{k}_{\varphi(a)}\bigl(\varphi(x')\bullet(\varphi(c)\bullet\varphi(a))\bigr)
+=\varphi(x')$ if $\theta=\lambda$, and $=\varphi(c)$ if $\theta=\omega$. In
+both cases this is $\varphi(\theta_a(x',w))=\varphi(x)$.
+
+To prove~\eqref{eq:need}, note that all trees below are normal, being subtrees
+of $a$ or $p$, or formal pairs of normal trees that do not fire. Note also that
+$|p|=(k-1)(|a|+1)+|u|\ge 2|a|+2+|u|$.
+\begin{itemize}
+\item[$(\alpha)$] $u=\pr{x'}{w}$, so the first part holds structurally. If
+  $w=\pr{c}{a}$ is generic, the second part holds structurally too. If
+  $w\in\kappa(a)$, then $w=a_L\op a$ with $c=a_L$ and
+  $|a_L|+|a|<|a|+|p|$, so the second part holds by induction.
+\item[$(\beta)$] $x'=a_L$, $a=\tw{x'}{k-2}{s}$, and $w=\pr{x'}{a}$, which is
+  normal since $\neg\Fire(x',a)$. Then $x'\op w=u$ with
+  $|x'|+|w|=2|a_L|+|a|+1<3|a|+2\le|a|+|p|$, so the first part holds by
+  induction. The second part holds structurally, with $c=x'$.
+\item[$(\gamma)$] $w=v=\tw{x'}{k-1}{s}\in\kappa(a)$, so $x'\op w=u$ and
+  $w=a_L\op a$, with $c=a_L$. Here $|x'|+|w|<2|a|<|a|+|p|$ and
+  $|a_L|+|a|<|a|+|p|$, so both parts hold by induction.
+\end{itemize}
+In every case $\varphi(a\op p)=\varphi(x)=\varphi(a)\bullet\varphi(p)$.
+Finally, $\N(X)$ is a model of $\mathsf{L}$ by Theorem~\ref{thm:model} and
+Lemma~\ref{lem:normal}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Combine Theorems~\ref{thm:model} and~\ref{thm:free}.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:austin}]
+$\T(X)$ is infinite and non-trivial; for instance $g\neq\pr{g}{g}$ for $g\in X$.
+By Theorem~\ref{thm:model} it carries a model of $\E{k}$ and a model of $\G{k}$,
+and by Proposition~\ref{prop:basic}(c) neither law has a non-trivial finite
+model. For $k=3$ these are Equations~5093 and~5107. Reversing every product
+turns 5093 into 41179 and 5107 into 40951. Hence the opposite magmas
+$a\op^{\rm op}b:=b\op a$ of $\T_3^\lambda(X)$ and $\T_3^\omega(X)$ satisfy 41179
+and 40951, and the finite models of these dual laws are opposites of finite
+models of 5093 and 5107, hence trivial.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:wp}]
+By Theorem~\ref{thm:free}, $s\approx t$ is a consequence of the law if and only
+if $s$ and $t$ have the same value in $\N(V)$ under the identity assignment on
+the variables. These values are computable: Definition~\ref{def:D} is a
+recursion over finitely many smaller pairs, so $\Dec$, $\Fire$ and $\op$ are
+computable.
+\end{proof}
+
+\begin{remark}[Two concrete consequences]
+Since the generators $x$ and $y$ are different normal trees, neither law
+implies $x\approx y$. Similarly, $x\op x=\pr{x}{x}\ne x$ in $\N(\{x\})$, so
+neither law implies idempotency, and the free algebra on one generator is
+infinite. Many other non-implications can be read off the normal forms in the
+same way.
+\end{remark}
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{How the construction was found}
+The construction came out of a forcing (``greedy'') simulation for~\eqref{eq:5093}.
+We built partial models by repeatedly choosing triples $(x,y,z)$, defining any
+missing product along the chain $z\op y,\ x\op(z\op y),\ \dots$ as a fresh
+element, and adding the forced product $L_y^{3}(\cdots)=x$. Over more than
+$10^5$ steps, including adversarial choices that complete chains through forced
+products, no conflict ever arose. In every chain we inspected (more than 3000
+forced products), the two middle unlocking steps $y\op u_1$ and $y\op u_2$ were
+fresh pairs. This is exactly the no-premature-contraction phenomenon of
+Lemma~\ref{lem:decoding}, and it led directly to Definition~\ref{def:op}. The
+owner variant for~\eqref{eq:5107} was obtained by changing only the output
+map $\theta$.
+
+\begin{remark}[Knuth--Bendix completion]\label{rem:kb}
+Running Knuth--Bendix completion~\cite{KnuthBendix} with a size-based order on
+the single rule $y\op(y\op(y\op(x\op(z\op y))))\to x$ produces, among others,
+the rules
+\[
+ W\op(W\op(W\op x_1))\to x_0 \quad\text{with }W=x_0\op(x_1\op(x_2\op x_0))
+\]
+and
+\[
+ V\op(V\op(V\op x_0))\to W\quad\text{with }V=W\op x_1 .
+\]
+These are instances of the identity
+$L_{a\op t}^{3}\bigl(L_a^{3}(t)\bigr)=a$, which is itself the instance
+$(x,y,z)=(a,\,a\op t,\,a)$ of~\eqref{eq:5093}. Our implementation generated
+more than fifty rules without terminating. Theorem~\ref{thm:free} takes the
+place of this growing rule set. Every term is equivalent to exactly one normal
+tree, viewed as a term, and that tree is computed by the recursion of
+Definition~\ref{def:D}.
+\end{remark}
+
+\subsection{The decoder-tree principle}
+The proofs use only a few features of the laws. Both have the shape
+$x\approx L_y^{k}(\Phi(x,y,z))$, where $\Phi$ ``locks'' $x$ using a right
+multiple of $y$: in $\E{k}$, $x$ is multiplied by a key of $y$; in $\G{k}$,
+$x$ is the owner of a key of $y$. The proof has three parts:
+\begin{enumerate}[label=(\arabic*)]
+\item the firing pattern is the generic shape of the last unlocking step;
+\item the firing condition is the semantic predicate ``the core lies in the
+  image of $\Phi(\cdot,a,\cdot)$'', unfolded into finitely many
+  size-decreasing clauses, with negation used only at strictly smaller
+  arguments;
+\item the subterm, uniqueness and vacuity lemmas exclude premature firing.
+\end{enumerate}
+We expect the same scheme to apply to further laws of this shape, and many of
+the order-five laws that remain unclassified~\cite{ETPblueprint,ZWYM2026} have
+this flavour. We make no claim about specific laws other than the families
+$\E{k}$ and $\G{k}$.
+
+\begin{question}
+Which of the remaining unclassified order-five laws of~\cite{ETPblueprint}
+have free algebras with decoder-tree normal forms? Is there a decidable
+syntactic criterion on $\Phi$ for the scheme above to succeed?
+\end{question}
+
+\section*{Acknowledgements}
+We thank the contributors to the Equational Theories Project, whose blueprint,
+data and formalisations made the open problems precise and easy to check, and
+the authors of~\cite{ZWYM2026} for publishing their complete result files.
+
+\begin{thebibliography}{9}
+\bibitem{Austin1965}
+A.~K.~Austin, \emph{A note on models of identities},
+Proc.\ Amer.\ Math.\ Soc.\ \textbf{16} (1965), 522--523.
+
+\bibitem{Austin1966}
+A.~K.~Austin, \emph{Finite models for laws in two variables},
+Proc.\ Amer.\ Math.\ Soc.\ \textbf{17} (1966), 1410--1412.
+
+\bibitem{ALPS2026}
+E.~Xie, W.~Ye and A.~Zhang, \emph{ALPS: Measuring valid creativity in large
+language models with mathematical construction}, arXiv:2608.15979 (2026).
+
+\bibitem{ETP2025}
+M.~Bolan et al.\ (Equational Theories Project),
+\emph{The Equational Theories Project: Advancing collaborative mathematical
+research at scale}, arXiv:2512.07087 (2025).
+
+\bibitem{ETPblueprint}
+Equational Theories Project, \emph{Blueprint}, in particular the chapters
+``Finite implications and infinite models'', ``Order 5 Austin laws'' and
+``Equation 677'', \url{https://teorth.github.io/equational_theories/blueprint/}
+(accessed October 2026).
+
+\bibitem{Kisielewicz1990}
+A.~Kisielewicz, \emph{Varieties of algebras with no nontrivial finite members},
+in: Lattices, Semigroups, and Universal Algebra (Lisbon, 1988), Plenum, New
+York, 1990, 129--136.
+
+\bibitem{Kisielewicz1997}
+A.~Kisielewicz, \emph{Austin identities}, Algebra Universalis \textbf{38}
+(1997), no.~3, 324--328.
+
+\bibitem{KnuthBendix}
+D.~E.~Knuth and P.~B.~Bendix, \emph{Simple word problems in universal
+algebras}, in: Computational Problems in Abstract Algebra (J.~Leech, ed.),
+Pergamon, Oxford, 1970, 263--297.
+
+\bibitem{ZWYM2026}
+J.~Zhao, B.~Wu, T.~Yang and X.~Miao, \emph{Trace-tree magmas:
+proof-producing infinite countermodels and 28 new order-five Austin
+classifications}, arXiv:2609.05690 (2026); result files at
+\url{https://github.com/YanbiaoLab/trace-tree-magmas}.
+\end{thebibliography}
+
+\appendix
+\section{Verification program}\label{app:code}
+
+The program below is self-contained (Python~3, standard library only). It
+implements Definitions~\ref{def:D} and~\ref{def:op} with hash-consed trees for
+both types and for each $k\in\{3,4,5\}$, and checks, for each of these six
+magmas:
+\begin{enumerate}[label=(\roman*)]
+\item the law ($\E{k}$ for type $\lambda$, $\G{k}$ for type $\omega$) for all
+  $102^3=1{,}061{,}208$ triples of trees with at most three internal nodes over
+  two generators;
+\item $2\cdot10^4$ random triples drawn from a pool closed under the
+  operations that occur in the law;
+\item $10^4$ targeted instances in which the core of the law contracts through
+  clause $(\beta)$ or clause $(\gamma)$, as in Example~\ref{ex:clauses};
+\item on $2\cdot10^4$ random instances: Lemma~\ref{lem:semantics} (including
+  owners), the subterm property, uniqueness, vacuity, the absence of premature
+  contraction, and closure of normal trees under $\op$.
+\end{enumerate}
+The exhaustive families in (i) mainly exercise the generic path. For $k=3$
+only $8$ of the $1{,}061{,}208$ triples (for each type) have a contracting
+core, and for $k\ge4$ none do. The evidence for clauses $(\beta)$ and
+$(\gamma)$ therefore comes from (iii) and (iv). For $k=3$ and each type, the
+program also compares the clause-based operation with an
+independent implementation of the semantic description of
+Lemma~\ref{lem:semantics}, in which $\Dec(a,u)$ is computed by exhaustive
+search over candidate pairs. The two agree on all sampled products, including
+firing products, and the independent implementations satisfy $\E{3}$ and
+$\G{3}$ on all $22^3$ triples of trees with at most two internal nodes. The
+full run takes about $10$ minutes and reports \texttt{ALL CHECKS PASSED}. The
+source of this manuscript is a single file: compiling it writes the program to
+\texttt{verify\_decoder\_trees.py} (via \texttt{filecontents}), and the listing
+below is read back from that file. During development, further runs checked
+$5.7\times10^6$ triples ($y$ with at most four internal nodes) for $\E{3}$, and
+the laws for $k\le6$; all passed. These computations play no role in the
+proofs.
+
+\lstinputlisting[language=Python]{verify_decoder_trees.py}
+
+\end{document}

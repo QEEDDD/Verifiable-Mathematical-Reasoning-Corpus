@@ -1,0 +1,1700 @@
+\documentclass[11pt]{amsart}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+  frame=single,framerule=0.3pt,rulecolor=\color{black!40},showstringspaces=false,
+  keepspaces=true}
+
+\newtheorem{theorem}{Theorem}
+\renewcommand{\thetheorem}{\Alph{theorem}}
+\newtheorem{maincor}[theorem]{Corollary}
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{proposition}[lemma]{Proposition}
+\newtheorem{corollary}[lemma]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[lemma]{Definition}
+\newtheorem{problem}[lemma]{Problem}
+\newtheorem{principle}[lemma]{Principle}
+\newtheorem{question}[lemma]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[lemma]{Remark}
+\newtheorem{example}[lemma]{Example}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\DeclareMathOperator{\lcm}{lcm}
+
+\title[An exponent window for Erd\H{o}s Problem \#265]{An Exponent Window for
+Erd\H{o}s Problem \#265:\\ Cross-Tail Integrality and Controlled\\ Two-Target Greedy Expansions}
+
+\author{Keio}
+\thanks{Research draft, October 28, 2026. The proofs and the exposition were developed
+interactively with an AI assistant (Claude, Anthropic); the author is responsible for
+the content. Every algebraic identity, integrality statement and the construction of
+Theorem~\ref{thm:C} are accompanied by an exact-arithmetic verification script
+(Appendix~\ref{app:scripts}). \emph{Priority:} the special case of
+Theorem~\ref{thm:A} that answers the limsup question of Erd\H{o}s Problem \#265 was
+established first by K.~Kitamura in a Lean~4 formalization \cite{Kit26}; see
+Section~\ref{sec:lit}. This draft has not been peer reviewed.}
+
+\date{October 28, 2026}
+
+\begin{document}
+
+\begin{abstract}
+Let $a_1<a_2<\cdots$ be integers. Erd\H{o}s and Graham asked how fast $(a_n)$ can grow
+if both $\sum 1/a_n$ and $\sum 1/(a_n-1)$ are rational (Erd\H{o}s Problem \#265).
+Kova\v{c} and Tao proved that doubly exponential growth is possible (their method gives
+$a_n^{1/\beta^n}\to\infty$ for every $\beta<\sqrt{6/5}=1.0954\ldots$), and K.~Kitamura
+recently gave a Lean-verified proof of Erd\H{o}s's prediction $a_n^{1/2^n}\to1$. We study the growth of
+sequences with two or more rational translated reciprocal sums.
+
+(1) We give an independent, human-readable proof that $a_n^{1/2^n}\to1$ whenever two
+distinct \emph{rational} translates (or two non-proportional rational affine images)
+of $(a_n)$ have rational reciprocal sums. The key input is the integrality of the
+\emph{cross tail} $E_n=R_nR_n'-(R_n-R_n')/\Delta=\sum_{j\ne k\ge n}1/(\alpha_j\beta_k)$;
+for Erd\H{o}s's pair it coincides, up to the unit factor $1-R'_n$, with the ``second
+residual'' of Kitamura's formalization. We combine it with a frozen-jump lemma and a
+checkpoint argument.
+
+(2) A multilinear version, based on M\"obius inversion on the partition lattice, shows
+that $d$ rational integer translates force $\log a_n=O((d+1)^{n/d})$ whenever the tails
+are dominated by their first terms (e.g.\ if $\liminf a_{n+1}/a_n>1$). For Problem \#265
+this gives $\log a_n=O(3^{n/2})$ for such sequences; this case can also be derived in a
+few lines from lemmas in Kitamura's formalization, while $d\ge3$ needs the multilinear
+integrality.
+
+(3) Conversely, a \emph{controlled two-target greedy} construction produces, for every
+$1<\beta<\beta_*:=(\sqrt{13}-1)/2=1.3027\ldots$, sequences with both sums rational,
+$a_{n+1}/a_n\to\infty$ and $\log a_n\sim c\,\beta^n$. This improves the exponent
+$\sqrt{6/5}$ of Kova\v{c} and Tao.
+
+Hence the optimal growth exponent for Problem \#265 among sequences with
+$\liminf a_{n+1}/a_n>1$ lies in $[\beta_*,\sqrt3\,]=[1.3027\ldots,1.7320\ldots]$; a
+counting heuristic suggests that $\beta_*$ is the true value.
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+%======================================================================
+\section{Introduction}\label{sec:intro}
+%======================================================================
+
+\subsection{Erd\H{o}s Problem \#265}
+An \emph{Ahmes series} is a convergent series $\sum 1/a_n$ of reciprocals of a strictly
+increasing sequence of positive integers. A classical folklore criterion states that
+$\sum 1/a_n$ is irrational as soon as $a_n^{1/2^n}\to\infty$, and Sylvester's sequence
+\begin{equation}\label{eq:sylvester}
+s_0=2,\qquad s_{n+1}=s_n^2-s_n+1,\qquad \sum_{n\ge0}\frac1{s_n}=1,
+\end{equation}
+shows that this is sharp: here $s_n^{1/2^n}\to E^2=1.5979\ldots$ with
+Vardi's constant $E=1.2640847\ldots$ \cite{Sylvester1880,Vardi91}.
+
+Erd\H{o}s and Graham \cite[p.~64]{ErGr80} (see also \cite[pp.~104--105]{Er88} and
+\cite[p.~334]{Er85}) asked how fast $(a_n)$ can grow if the two series
+\[
+\sum_n\frac1{a_n}\qquad\text{and}\qquad \sum_n\frac1{a_n-1}
+\]
+are \emph{both} rational. David Cantor observed that $a_n=\binom n2$ $(n\ge3)$ works,
+with sums $1$ and $11/9$. Erd\H{o}s wrote that he was sure that $a_n^{1/n}\to\infty$ is
+possible but that $a_n^{1/2^n}$ must tend to~$1$ \cite[pp.~104--105]{Er88}. This is
+Problem~\#265 of Bloom's database \cite{Bloom265}.
+
+Kova\v{c} \cite{Kov24} constructed exponentially growing examples, and Kova\v{c} and
+Tao \cite{KT25} proved that for every $d$ there are sequences with
+$\sum 1/(a_n+j)\in\Q$ for $0\le j<d$ and $a_n^{1/\beta^n}\to\infty$ for some $\beta>1$;
+their proof works for every $\beta<((2d+2)/(2d+1))^{1/d}$ \cite[(7.9)]{KT25}, which for
+two series is $\beta<\sqrt{6/5}$. This confirms
+the first half of Erd\H{o}s's prediction in a strong form. The second half---equivalently,
+that $\limsup a_n^{1/2^n}>1$ is impossible---was proved recently by K.~Kitamura in a
+Lean~4 formalization \cite{Kit26}, which was independently checked in the course of a
+review for the \emph{formal-conjectures} project \cite{FC6839}; at the time of writing
+the database still lists the problem as open, the remaining question being the precise
+exponent \cite{Bloom265}. Kova\v{c} and Tao also remark that ``it remains unclear what
+the optimal exponent of the doubly exponential growth is'' \cite{KT25}.
+
+This paper is about that remaining question, and about its analogue for several
+translates. For sequences whose tails are dominated by their first terms we show that
+the optimal exponent lies between $\beta_*=1.3027\ldots$ and $\sqrt3$
+(Corollary~\ref{cor:D}). The lower bound is new and improves the Kova\v{c}--Tao exponent
+$\sqrt{6/5}=1.0954\ldots$. The upper bound is essentially implicit in the lemmas of
+\cite{Kit26}, and we extend it to $d$ translates. We also give an independent proof of the endpoint
+$a_n^{1/2^n}\to1$ which works for two arbitrary rational translates.
+
+\subsection{A problem: growth under rational translates}
+
+\begin{problem}[Growth under rational translates]\label{prob:shifts}
+Let $a_1<a_2<\cdots$ be integers and let $t_1,\dots,t_d$ be distinct rational numbers
+with $a_n+t_i\ne0$ for all $n,i$. Suppose that
+\[
+\sum_n\frac{1}{a_n+t_i}\in\Q\qquad(i=1,\dots,d).
+\]
+How fast can $(a_n)$ grow? In particular, determine
+\[
+\beta_d^{\mathrm{reg}}:=\sup\Bigl\{\beta>1:\ \exists\,(a_n)\ \text{as above with}\
+\liminf_{n\to\infty}\frac{a_{n+1}}{a_n}>1\ \text{and}\ a_n^{1/\beta^n}\to\infty\Bigr\}
+\]
+for the consecutive shifts $t_i=i-1$.
+\end{problem}
+
+For $d=1$ the answer is classical: $c^{2^n}$-growth with $c>1$ is possible (Sylvester)
+and $a_n^{1/2^n}\to\infty$ is impossible, so $\beta_1^{\mathrm{reg}}=2$. Erd\H{o}s's
+problem is the case $d=2$ (after the substitution $a_n\mapsto a_n-1$).
+
+\subsection{Main results}
+
+\begin{theorem}[Two rational translates]\label{thm:A}
+Let $a_1<a_2<\cdots$ be integers and let $t\ne t'$ be rational numbers with
+$a_n+t\ne 0\ne a_n+t'$ for all $n$. If $\sum_n 1/(a_n+t)$ and $\sum_n 1/(a_n+t')$ are
+both rational, then
+\[
+\lim_{n\to\infty}\frac{\log a_n}{2^n}=0,\qquad\text{equivalently}\qquad
+\lim_{n\to\infty}a_n^{1/2^n}=1 .
+\]
+\end{theorem}
+
+For $\{t,t'\}=\{0,-1\}$ this is Kitamura's theorem \cite{Kit26}; see
+Section~\ref{sec:lit} for a comparison of the two proofs.
+
+\begin{theorem}[Regular growth under $d$ rational translates]\label{thm:B}
+Let $d\ge1$, let $h_1<\cdots<h_d$ be integers, and let $a_1<a_2<\cdots$ be positive
+integers with $a_n+h_1\ge1$ and $\sum_n 1/(a_n+h_i)\in\Q$ for $i=1,\dots,d$. Assume that the
+tails are dominated by their first terms,
+\begin{equation}\label{eq:tails}
+\sup_{n\ge1}\ a_n\sum_{k\ge n}\frac1{a_k}<\infty ,
+\end{equation}
+which holds in particular under the regularity condition
+\begin{equation}\label{eq:regular}
+\liminf_{n\to\infty}\frac{a_{n+1}}{a_n}>1 .
+\end{equation}
+Then there is a constant $C$ such that
+\[
+\sum_{j=0}^{d-1}\log a_{n+j}\le d\sum_{k<n}\log a_k+C\quad(n\ge1),
+\qquad\text{hence}\qquad \log a_n=O\bigl((d+1)^{n/d}\bigr).
+\]
+\end{theorem}
+
+For $d=1$ this is the folklore bound, attained by Sylvester's sequence; for $d=2$ it
+gives $\log a_n=O(3^{n/2})$. For Erd\H{o}s's pair the case $d=2$ is not stated in
+\cite{Kit26}, but it follows in a few lines from three lemmas proved there (positivity of
+the second residual, the bound $\le8T_nT_{n+1}$, and its scaled integrality), so we do not
+claim it as new; the case $d\ge3$ requires the multilinear integrality of
+Section~\ref{sec:B}. By the scaling of Section~\ref{subsec:rational}, which preserves
+\eqref{eq:regular}, the same holds for rational shifts.
+
+\begin{theorem}[A construction]\label{thm:C}
+Let $1<\beta<\beta_*:=\frac{\sqrt{13}-1}{2}=1.30277\ldots$, the positive root of
+$\beta^2+\beta=3$. There is a strictly increasing sequence of integers $a_n\ge2$ such
+that $\sum_n1/a_n$ and $\sum_n1/(a_n-1)$ are both rational, $a_{n+1}/a_n\to\infty$, and
+\[
+\lim_{n\to\infty}\frac{\log a_n}{\beta^n}=c\qquad\text{for some }c\in(0,\infty).
+\]
+\end{theorem}
+
+\begin{maincor}[An exponent window for Problem \#265]\label{cor:D}
+Let $2\le a_1<a_2<\cdots$ be integers such that $\sum1/a_n$ and $\sum1/(a_n-1)$ are both
+rational. Then $a_n^{1/2^n}\to 1$ \textup{(}\cite{Kit26}; Theorem~\ref{thm:A}\textup{)}.
+If moreover $\liminf a_{n+1}/a_n>1$, then $\log a_n=O(3^{n/2})$ \textup{(}Theorem~\ref{thm:B};
+cf.\ \cite{Kit26}\textup{)}. Conversely, for every
+$\beta<\beta_*$ there are such sequences with $a_{n+1}/a_n\to\infty$ and
+$a_n^{1/\beta^n}\to\infty$. In the notation of Problem~\ref{prob:shifts},
+\[
+1.3027\ldots=\frac{\sqrt{13}-1}{2}\ \le\ \beta^{\mathrm{reg}}_2\ \le\ \sqrt3=1.7320\ldots .
+\]
+\end{maincor}
+
+\begin{maincor}[At most one rational translate]\label{cor:E}
+Let $a_1<a_2<\cdots$ be integers with $\limsup a_n^{1/2^n}>1$. Then there is at most
+one rational number $t$ with $a_n+t\ne0$ for all $n$ and $\sum_n 1/(a_n+t)\in\Q$.
+\end{maincor}
+
+For sequences satisfying an exact quadratic recursion such as Sylvester's, this also
+follows from Duverney's criterion \cite{Duverney01}; see Example~\ref{ex:sylvester}.
+
+\subsection{The methods}
+Classical irrationality arguments for Ahmes series are \emph{first order}: if
+$\sum 1/a_n=u/q$, then $q\,\lcm(a_1,\dots,a_{n-1})\cdot\sum_{k\ge n}1/a_k$ is a positive
+integer, and when the tail is comparable to $1/a_n$ this gives
+$a_n\lesssim a_1\cdots a_{n-1}$, i.e.\ growth at most $c^{2^n}$. Two rational
+translates give three integral quantities at each level $n$: the two scaled tails and
+the scaled tail of the \emph{defect series} $\sum 1/(\alpha_k\beta_k)$. A fourth,
+\emph{bilinear}, combination is also integral:
+
+\begin{principle}[Cross-tail integrality]\label{princ}
+Let $R_n=\sum_{k\ge n}1/\alpha_k$ and $R'_n=\sum_{k\ge n}1/\beta_k$ with
+$\beta_k=\alpha_k+\Delta$. The off-diagonal part of the product of the two tails,
+\[
+E_n=R_nR_n'-\frac{R_n-R_n'}{\Delta}=\sum_{\substack{j,k\ge n\\ j\ne k}}\frac{1}{\alpha_j\beta_k},
+\]
+is a positive rational number whose denominator divides
+$\Delta Q^2\prod_{k<n}\alpha_k\beta_k$ (Lemma~\ref{lem:cross}). Its size is at most
+$2R_nR_{n+1}$, i.e.\ it is governed by two \emph{consecutive} tails.
+\end{principle}
+
+For $\Delta=1$, $\Delta E_n=(1-\Delta R'_n)\bigl(R'_n/(1-\Delta R'_n)-R_n\bigr)$, and the
+second factor is exactly the ``second residual'' $T_n/(1-T_n)-V_n$ used in Kitamura's
+formal proof \cite{Kit26} (Remark~\ref{rem:residual}); so for Erd\H{o}s's pair the
+cross-tail integrality is equivalent to Kitamura's second-residual integrality. What is
+new here is the use of $E_n$ for arbitrary $\Delta$ and for affine images, its
+multilinear extension, and the quantitative consequences below.
+
+When the tails are dominated by their first terms, Principle~\ref{princ} yields
+$a_na_{n+1}\lesssim(a_1\cdots a_{n-1})^2$, a second-order recursion with growth rate
+$\sqrt3<2$; this is the mechanism behind Theorem~\ref{thm:B} for $d=2$ (the same
+inequality can be extracted from the lemmas of \cite{Kit26}). In general the
+tails need not be dominated by their first terms. Such irregularities are controlled by a
+\emph{frozen-jump lemma} (Lemma~\ref{lem:frozen}), obtained from the integrality of the
+defect series, and a checkpoint argument for the normalized quantity $\pi_n/2^n$ (where
+$\pi_n$ is the logarithm of the partial product) completes the proof of
+Theorem~\ref{thm:A}. The multilinear version of Principle~\ref{princ}
+(Lemma~\ref{lem:multi}) uses M\"obius inversion on the lattice of set partitions and
+partial fractions.
+
+The construction of Theorem~\ref{thm:C} is a \emph{controlled two-target greedy
+algorithm}. We prescribe the two rational sums in advance and choose the terms one by
+one. Integrality is then automatic, and the only issue is to keep the two remaining
+tails compatible. We measure compatibility by $\Gamma_n=\tau_n^2-\delta_n$, where
+$\tau_n=\sum_{k\ge n}1/a_k$ and $\delta_n=\sum_{k\ge n}1/(a_k(a_k-1))$. A single integer
+choice per step can steer $\Gamma_{n+1}$ to any prescribed size down to the scale
+$a_n^{-3}$. For this greedy one therefore needs $a_{n+1}a_{n+2}\lesssim a_n^3$, i.e.\
+$\beta^2+\beta\le3$, and the algorithm achieves every $1<\beta<\beta_*$
+(Lemma~\ref{lem:step}).
+
+\subsection{Organization and verification}
+Section~\ref{sec:lemmas} proves the integrality lemmas and their logarithmic
+consequences, Section~\ref{sec:A} proves Theorem~\ref{thm:A}, Section~\ref{sec:B}
+proves Theorem~\ref{thm:B}, and Section~\ref{sec:C} proves Theorem~\ref{thm:C}.
+Section~\ref{sec:cor} derives the corollaries and discusses related Erd\H{o}s problems,
+Section~\ref{sec:limits} discusses the limits of the method and open problems, and
+Section~\ref{sec:lit} compares with the literature. Appendix~\ref{app:scripts} contains
+a script that checks every algebraic identity and integrality statement of
+Sections~\ref{sec:lemmas} and~\ref{sec:B} in exact rational arithmetic, and runs the
+construction of Section~\ref{sec:C} for several steps while checking every conclusion of
+Lemma~\ref{lem:step}.
+
+%======================================================================
+\section{Tails, partial products and integrality}\label{sec:lemmas}
+%======================================================================
+
+\subsection{Setting}\label{subsec:setting}
+Throughout Sections~\ref{sec:lemmas} and~\ref{sec:A} we fix integers $h<h'$ and a
+strictly increasing sequence of integers $(a_n)_{n\ge1}$ with $a_n+h\ge1$ for all $n$,
+such that
+\[
+S:=\sum_{n\ge1}\frac{1}{a_n+h}\in\Q,\qquad S':=\sum_{n\ge1}\frac1{a_n+h'}\in\Q .
+\]
+We write
+\[
+\alpha_k:=a_k+h,\qquad \beta_k:=a_k+h'=\alpha_k+\Delta,\qquad \Delta:=h'-h\ge1 .
+\]
+
+\emph{Normalization.} Removing finitely many initial terms does not affect the
+hypotheses (the new sums are still rational) and does not affect the conclusion of
+Theorem~\ref{thm:A}, since $\log a_{n+N}=o(2^{n})$ is equivalent to $\log a_n=o(2^n)$.
+We may therefore assume that
+\begin{equation}\label{eq:normal}
+S=\sum_{k\ge1}\frac1{\alpha_k}<1,\qquad\text{so that}\quad \alpha_k\ge2\ \text{ for all }k.
+\end{equation}
+After this normalization we fix an integer $Q\ge1$ with $QS,QS'\in\Z$.
+
+For $n\ge1$ we define the partial products and tails
+\[
+\Pi_n:=\prod_{k<n}\alpha_k,\qquad \Pi'_n:=\prod_{k<n}\beta_k,\qquad
+R_n:=\sum_{k\ge n}\frac1{\alpha_k},\qquad R'_n:=\sum_{k\ge n}\frac1{\beta_k},
+\]
+the \emph{defect tails} and the \emph{cross tails}
+\[
+D_n:=\sum_{k\ge n}\frac{1}{\alpha_k\beta_k},\qquad
+E_n:=\sum_{\substack{j,k\ge n\\ j\neq k}}\frac1{\alpha_j\beta_k}.
+\]
+All series converge absolutely, and $0<R'_n<R_n\le R_1<1$.
+
+\begin{lemma}[Algebraic identities]\label{lem:identities}
+For every $n\ge1$,
+\[
+D_n=\frac{R_n-R'_n}{\Delta},\qquad E_n=R_nR'_n-D_n .
+\]
+\end{lemma}
+
+\begin{proof}
+Since $\beta_k-\alpha_k=\Delta$, we have $\frac{1}{\alpha_k\beta_k}=
+\frac1\Delta\bigl(\frac1{\alpha_k}-\frac1{\beta_k}\bigr)$; summing over $k\ge n$ gives the
+first identity. Expanding the absolutely convergent product
+$R_nR'_n=\sum_{j,k\ge n}1/(\alpha_j\beta_k)$ and separating the diagonal $j=k$ gives
+$R_nR'_n=D_n+E_n$.
+\end{proof}
+
+\subsection{Three integrality lemmas}
+
+\begin{lemma}[Single tails]\label{lem:single}
+For every $n\ge1$ the numbers $X_n:=Q\Pi_nR_n$ and $X'_n:=Q\Pi'_nR'_n$ are positive
+integers.
+\end{lemma}
+
+\begin{proof}
+$X_n=\Pi_n\cdot QS-\sum_{k<n}Q\,\Pi_n/\alpha_k$, and each $\Pi_n/\alpha_k$ $(k<n)$ is an
+integer; $X_n>0$ because $R_n>0$. The same argument applies to $X'_n$.
+\end{proof}
+
+\begin{lemma}[Defect integrality]\label{lem:defect}
+For every $n\ge1$,
+\[
+N_n:=\Delta Q\,\Pi_n\Pi'_n\,D_n=\Pi'_nX_n-\Pi_nX'_n
+\]
+is a positive integer.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:identities},
+$\Delta Q\Pi_n\Pi'_nD_n=Q\Pi_n\Pi'_n(R_n-R'_n)=\Pi'_nX_n-\Pi_nX'_n\in\Z$
+(Lemma~\ref{lem:single}), and $D_n>0$.
+\end{proof}
+
+\begin{lemma}[Cross-tail integrality]\label{lem:cross}
+For every $n\ge1$,
+\[
+M_n:=\Delta Q^2\,\Pi_n\Pi'_n\,E_n=\Delta X_nX'_n-QN_n
+\]
+is a positive integer.
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:identities},
+$\Delta Q^2\Pi_n\Pi'_nE_n=\Delta(Q\Pi_nR_n)(Q\Pi'_nR'_n)-Q\cdot\Delta Q\Pi_n\Pi'_nD_n
+=\Delta X_nX'_n-QN_n$, which is an integer by Lemmas~\ref{lem:single}
+and~\ref{lem:defect}. It is positive because the off-diagonal sum $E_n$ contains the
+positive term $1/(\alpha_n\beta_{n+1})$ (the sequence is infinite).
+\end{proof}
+
+\begin{remark}
+Lemma~\ref{lem:cross} is the cross-tail integrality principle
+(Principle~\ref{princ}). Note that $M_n\ge1$ is \emph{not} a consequence of the sizes of
+$X_n,X'_n,N_n$: these three integers can be large while $M_n$ is forced to be at least
+$1$ by a cancellation between $\Delta X_nX'_n$ and $QN_n$. This cancellation is what
+couples two consecutive scales.
+\end{remark}
+
+\begin{remark}[Residual form; relation to \cite{Kit26}]\label{rem:residual}
+Whenever $\Delta R'_n<1$ one has the identity
+\[
+\Delta E_n=(1-\Delta R'_n)\,\rho_n,\qquad \rho_n:=\frac{R'_n}{1-\Delta R'_n}-R_n ,
+\]
+since $(1-\Delta R'_n)\rho_n=R'_n-R_n+\Delta R_nR'_n$. If the tail consisted of a single
+term $1/\beta_n$, then $\rho_n=1/(\beta_n-\Delta)-1/\alpha_n=0$; thus $\rho_n$ measures
+how far the tail is from a single term. For $\Delta=1$ and the pair
+$(\alpha_k,\beta_k)=(a_k-1,a_k)$ of Problem~\#265 we have $R'_n=T_n:=\sum_{k\ge n}1/a_k$
+and $R_n=V_n:=\sum_{k\ge n}1/(a_k-1)$, and $\rho_n=T_n/(1-T_n)-V_n$ is the ``second
+residual'' of \cite{Kit26}, whose scaled integrality is proved there. Thus
+Lemma~\ref{lem:cross} generalizes the key integrality of \cite{Kit26} to arbitrary
+$\Delta$.
+\end{remark}
+
+\subsection{Size bounds and logarithmic form}
+
+\begin{lemma}[Size bounds]\label{lem:size}
+For all $n\ge1$ and all $1\le m\le p$:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $E_n<2R_nR_{n+1}$;
+\item $D_m<\dfrac{p-m}{\alpha_m^2}+\dfrac{R_p}{\alpha_p}$;
+\item $\Pi'_n<e^{\Delta}\,\Pi_n$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) Since $1/\beta_k<1/\alpha_k$,
+\[
+E_n<\sum_{\substack{j,k\ge n\\ j\neq k}}\frac1{\alpha_j\alpha_k}
+=2\sum_{n\le j<k}\frac1{\alpha_j\alpha_k}=2\sum_{j\ge n}\frac{R_{j+1}}{\alpha_j}
+\le 2R_{n+1}\sum_{j\ge n}\frac{1}{\alpha_j}=2R_nR_{n+1}.
+\]
+(ii) We have $D_m<\sum_{k\ge m}\alpha_k^{-2}$. For $m\le k<p$ we use
+$\alpha_k\ge\alpha_m$, and for $k\ge p$ we use $\alpha_k^{-2}\le\alpha_p^{-1}\alpha_k^{-1}$.
+(iii) $\Pi'_n/\Pi_n=\prod_{k<n}(1+\Delta/\alpha_k)\le\exp(\Delta\sum_k1/\alpha_k)<e^{\Delta}$
+by \eqref{eq:normal}.
+\end{proof}
+
+We pass to logarithms. Put
+\[
+\ell_k:=\log\alpha_k>0,\qquad \pi_n:=\sum_{k<n}\ell_k=\log\Pi_n,\qquad t_n:=-\log R_n>0,
+\]
+and fix the constants
+\[
+\kappa_1:=\log\bigl(2\Delta Q^2e^{\Delta}\bigr),\qquad \kappa_2:=\log\bigl(2\Delta Qe^{\Delta}\bigr)>0 .
+\]
+Note that $\ell_k$ is strictly increasing, $t_n$ is non-decreasing and $t_n\to\infty$.
+
+\begin{corollary}[Logarithmic inequalities]\label{cor:log}
+For all $n\ge 1$ and all $1\le m\le p$ the following hold.
+\begin{enumerate}[label=\textup{(\Alph*)}]
+\item[\textup{(K)}] \emph{(cross-tail inequality)} $\ t_n+t_{n+1}<2\pi_n+\kappa_1$.
+\item[\textup{(F)}] \emph{(frozen-jump dichotomy)} Either
+$2\ell_m<2\pi_m+\log(p-m)+\kappa_2$, or $\ell_p+t_p<2\pi_m+\kappa_2$.
+\textup{(}For $p=m$ the first alternative is void, $\log 0=-\infty$.\textup{)}
+\item[\textup{(J)}] \emph{(jump bound)} $\ \ell_m<2\pi_m+\kappa_2$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+(K) By Lemmas~\ref{lem:cross} and~\ref{lem:size}(i),(iii),
+$1\le M_n<\Delta Q^2\,e^{\Delta}\,\Pi_n^2\cdot2R_nR_{n+1}$; take logarithms.
+
+(F) By Lemma~\ref{lem:defect} and Lemma~\ref{lem:size}(iii),
+$D_m\ge 1/(\Delta Q\Pi_m\Pi'_m)>e^{-2\pi_m}/(\Delta Qe^{\Delta})=2e^{-2\pi_m-\kappa_2}$.
+Combining with Lemma~\ref{lem:size}(ii),
+\[
+2e^{-2\pi_m-\kappa_2}<(p-m)e^{-2\ell_m}+e^{-\ell_p-t_p},
+\]
+so one of the two summands exceeds $e^{-2\pi_m-\kappa_2}$, which is the stated
+dichotomy. For $p=m$ the first summand vanishes.
+
+(J) Take $p=m$ in (F) and use $t_m>0$.
+\end{proof}
+
+\begin{remark}
+Inequality (J) is the defect-series analogue of the folklore bound: it allows a
+single term to be as large as the square of the product of all previous terms. The
+dichotomy (F) says that such a large term at index $m$ \emph{freezes} the following
+terms: as long as $p-m$ is small compared with $e^{2(\ell_m-\pi_m)}$, all later terms
+up to index $p$ stay below $e^{2\pi_m+\kappa_2}$.
+\end{remark}
+
+%======================================================================
+\section{Proof of Theorem~\ref{thm:A}}\label{sec:A}
+%======================================================================
+
+We keep the setting of Section~\ref{subsec:setting}. The reduction of rational shifts
+to integer shifts is given at the end of the section.
+
+\subsection{Big indices and frozen windows}
+Put
+\[
+\kappa:=\kappa_2+\log 3,\qquad v_n:=\frac{\pi_n}{2^n}\quad(n\ge1).
+\]
+
+\begin{definition}
+An index $m$ is \emph{big} if $\ell_m>\pi_m+\kappa$.
+\end{definition}
+
+\begin{lemma}[Frozen-jump lemma]\label{lem:frozen}
+Let $m$ be big. Then
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\ell_p<2\pi_m+\kappa_2$ for $p=m,m+1,m+2,m+3$;
+\item none of the indices $m+1,m+2,m+3$ is big.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) For $p=m$ this is (J). Let $p\in\{m+1,m+2,m+3\}$. Since $m$ is big and
+$\kappa_2>0$,
+\[
+2\ell_m>2\pi_m+2\kappa=2\pi_m+2\kappa_2+2\log3>2\pi_m+\log(p-m)+\kappa_2 ,
+\]
+so the first alternative of (F) fails. Hence $\ell_p<\ell_p+t_p<2\pi_m+\kappa_2$.
+
+(b) Let $p\in\{m+1,m+2,m+3\}$. Since $\pi$ is increasing and $m$ is big,
+$\pi_p\ge\pi_{m+1}=\pi_m+\ell_m>2\pi_m+\kappa$. If $p$ were big, then
+$\ell_p>\pi_p+\kappa>2\pi_m+2\kappa>2\pi_m+\kappa_2$, contradicting (a).
+\end{proof}
+
+\begin{lemma}[Evolution of $v_n$]\label{lem:v}
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item If $m$ is not big, then $v_{m+1}\le v_m+\kappa\,2^{-m-1}$.
+\item If $m$ is big, then for $j=1,2,3,4$,
+\[
+v_{m+j}<\frac{1+2j}{2^j}\,v_m+j\kappa_2\,2^{-m-j};
+\]
+in particular $v_{m+4}<\tfrac{9}{16}v_m+\kappa_2\,2^{-m-2}$ and
+$v_{m+j}<\tfrac32v_m+\kappa_2\,2^{-m}$ for $j=1,2,3$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) $\pi_{m+1}=\pi_m+\ell_m\le2\pi_m+\kappa$. (ii) By Lemma~\ref{lem:frozen}(a),
+$\pi_{m+j}=\pi_m+\sum_{i=0}^{j-1}\ell_{m+i}<(1+2j)\pi_m+j\kappa_2$ for $1\le j\le4$.
+Divide by $2^{m+j}$; the coefficients $(1+2j)/2^j$ are $3/2,\,5/4,\,7/8,\,9/16$, and
+$v_m\ge0$.
+\end{proof}
+
+\subsection{Case I: infinitely many big indices}
+Let $B$ be the set of big indices and
+$I:=\bigcup_{m\in B}\{m+1,m+2,m+3\}$. By Lemma~\ref{lem:frozen}(b), $I\cap B=\emptyset$.
+Enumerate the complement, the set of \emph{checkpoints},
+$\N_{\ge1}\setminus I=\{c_1<c_2<\cdots\}$.
+
+\begin{lemma}\label{lem:checkpoints}
+If $c_j\in B$ then $c_{j+1}=c_j+4$; if $c_j\notin B$ then $c_{j+1}=c_j+1$.
+\end{lemma}
+
+\begin{proof}
+If $c_j\in B$, then $c_j+1,c_j+2,c_j+3\in I$. Moreover $c_j+4\notin I$, since otherwise
+one of $c_j+1,c_j+2,c_j+3$ would be big, contradicting Lemma~\ref{lem:frozen}(b).
+If $c_j\notin B$ and $c_j+1\in I$, then $c_j+1=m+i$ with $m\in B$, $i\in\{1,2,3\}$;
+since $c_j\notin B$ we have $m\ne c_j$, so $m\in\{c_j-2,c_j-1\}$ and then $c_j\in I$,
+a contradiction.
+\end{proof}
+
+Put $w_j:=v_{c_j}$ and $\varepsilon_j:=\kappa\,2^{-c_j}$, so that
+$\sum_j\varepsilon_j<\infty$. By Lemmas~\ref{lem:v} and~\ref{lem:checkpoints},
+\begin{equation}\label{eq:w}
+w_{j+1}<\tfrac9{16}w_j+\varepsilon_j\ \ (c_j\in B),\qquad
+w_{j+1}<w_j+\varepsilon_j\ \ (c_j\notin B).
+\end{equation}
+In particular $w_j\le w_1+\sum_i\varepsilon_i$, so $W:=\limsup w_j$ is finite. Let
+$\eta>0$ and choose $J$ with $w_i<W+\eta$ for $i\ge J$ and $\sum_{i\ge J}\varepsilon_i<\eta$.
+Since $c_j\in B$ for infinitely many $j$, every sufficiently large $j'$ has a largest
+index $j\in[J,j')$ with $c_j\in B$; iterating \eqref{eq:w} from $j$ to $j'$ gives
+\[
+w_{j'}<\tfrac9{16}w_j+\sum_{i\ge J}\varepsilon_i<\tfrac9{16}(W+\eta)+\eta .
+\]
+Hence $W\le\tfrac9{16}(W+\eta)+\eta$ for every $\eta>0$, so $W=0$ and $w_j\to0$.
+Finally, every $n\in I$ has the form $n=m+i$ with $m=c_j\in B$ and $i\in\{1,2,3\}$, and
+Lemma~\ref{lem:v}(ii) gives $v_n<\tfrac32w_j+\kappa_2 2^{-c_j}\to0$. Thus
+$v_n\to0$.
+
+\subsection{Case II: finitely many big indices}
+Let $N_0$ exceed every big index. For $n\ge N_0$, Lemma~\ref{lem:v}(i) shows that
+$u_n:=v_n+\kappa2^{-n}$ is non-increasing, so $v_n\to V$ for some $V\ge0$. Suppose
+$V>0$. Then
+\[
+\ell_n=\pi_{n+1}-\pi_n=2^n\bigl(2v_{n+1}-v_n\bigr)=2^n\bigl(V+o(1)\bigr),
+\qquad \ell_{n+1}-\ell_n=2^n\bigl(V+o(1)\bigr).
+\]
+Choose $N_1\ge N_0$ with $\ell_{k+1}-\ell_k\ge2^{k-1}V$ for all $k\ge N_1$. For $n\ge N_1$
+and $k>n$ we get $\ell_k-\ell_n\ge(k-n)2^{n-1}V$, hence
+\[
+R_n=e^{-\ell_n}\sum_{k\ge n}e^{-(\ell_k-\ell_n)}\le e^{-\ell_n}\Bigl(1+\sum_{i\ge1}e^{-i2^{n-1}V}\Bigr),
+\qquad t_n\ge\ell_n-o(1).
+\]
+Inserting this into (K) yields
+$\ell_n+\ell_{n+1}<2\pi_n+\kappa_1+o(1)$, that is,
+\[
+2^n(V+o(1))+2^{n+1}(V+o(1))<2\cdot2^n(V+o(1))+\kappa_1+o(1).
+\]
+Dividing by $2^n$ and letting $n\to\infty$ gives $3V\le2V$, contradicting $V>0$.
+Hence $V=0$, i.e.\ $v_n\to0$.
+
+\subsection{Conclusion}
+In both cases $\pi_n=o(2^n)$. By (J), $\ell_n<2\pi_n+\kappa_2=o(2^n)$. Finally
+$a_n=\alpha_n-h\le(1+|h|)\alpha_n$, so $\log a_n\le\ell_n+\log(1+|h|)=o(2^n)$.
+Since $a_n\ge1$ for all large $n$ (the sequence is strictly increasing), this is
+equivalent to $a_n^{1/2^n}\to1$. This proves Theorem~\ref{thm:A} for integer shifts
+$h<h'$; the case $h>h'$ follows by symmetry.
+
+\subsection{Rational shifts}\label{subsec:rational}
+Let $t<t'$ be rational with $\sum1/(a_n+t)$, $\sum1/(a_n+t')\in\Q$. Write
+$t=u/w$, $t'=u'/w$ with $w\ge1$ and put $b_n:=wa_n+u$. Then $(b_n)$ is a strictly
+increasing integer sequence, $\sum1/b_n=w^{-1}\sum1/(a_n+t)\in\Q$ and
+$\sum1/(b_n+(u'-u))=w^{-1}\sum1/(a_n+t')\in\Q$. After discarding finitely many terms,
+$b_n\ge1$, and the integer case gives $\log b_n=o(2^n)$. Since $a_n=(b_n-u)/w$,
+$\log a_n=o(2^n)$ as well. \qed
+
+\begin{remark}[Affine images]\label{rem:affine}
+The argument only uses that the two denominators are affine functions of $a_n$. Let
+$f(x)=Ux+V$ and $g(x)=U'x+V'$ with integers $U,U'\ge1$ and $\Delta^*:=U'V-UV'\neq0$
+(i.e.\ $f,g$ are not proportional), and suppose that $\sum1/f(a_n)$ and
+$\sum1/g(a_n)$ are rational. With $\alpha_k=f(a_k)$, $\beta_k=g(a_k)$ one has
+$U'\alpha_k-U\beta_k=\Delta^*$, hence
+$1/(\alpha_k\beta_k)=(U'/\beta_k-U/\alpha_k)/\Delta^*$, and Lemmas~\ref{lem:identities}--%
+\ref{lem:cross} hold verbatim with $D_n=(U'R'_n-UR_n)/\Delta^*$ and $|\Delta^*|$ in place
+of $\Delta$ (for $U=U'=1$ this is the translate case, with $\Delta^*=-\Delta$). In
+Lemma~\ref{lem:size} the factors $2$ and $e^{\Delta}$ are replaced by constants
+depending on $U,U',V,V'$, except that now $\log\Pi'_n=\log\Pi_n+n\log(U'/U)+O(1)$.
+Consequently (K), (F), (J) hold with $\kappa_1,\kappa_2$ replaced by $\kappa_i+O(n)$
+(resp.\ $O(m)$); defining $m$ to be big if $\ell_m>\pi_m+\kappa+Cm$ for a suitable $C$,
+the proof of Sections~3.1--3.4 goes through unchanged, because all error terms remain
+summable after division by $2^n$ and are $o(2^n)$ in Case~II. Hence
+\emph{$a_n^{1/2^n}\to1$ whenever two non-proportional rational affine images of $(a_n)$
+have rational reciprocal sums.}
+\end{remark}
+
+\begin{remark}[What the proof uses]\label{rem:uses}
+Case~II uses the cross-tail inequality (K) together with the definition of big
+indices; Case~I uses only the frozen-jump dichotomy (F) and its special case (J), which
+is also used in the conclusion. The single-tail integrality (Lemma~\ref{lem:single})
+enters only through Lemmas~\ref{lem:defect} and~\ref{lem:cross}. Neither of the two
+rational series alone would suffice: for one series Sylvester's sequence satisfies
+$\lim a_n^{1/2^n}>1$. Strict monotonicity can be weakened to monotonicity of $(\alpha_k)$.
+\end{remark}
+
+%======================================================================
+\section{Multilinear cross-tail integrality and Theorem~\ref{thm:B}}\label{sec:B}
+%======================================================================
+
+Let $d\ge1$, $h_1<\dots<h_d$ be integers and let $(a_n)$ be as in Theorem~\ref{thm:B}.
+Write $\alpha^{(i)}_k:=a_k+h_i$, $S_i:=\sum_k1/\alpha^{(i)}_k\in\Q$, fix $Q\ge1$ with
+$QS_i\in\Z$ for all $i$, and put
+\[
+\Pi^{(i)}_n:=\prod_{k<n}\alpha^{(i)}_k,\qquad R^{(i)}_n:=\sum_{k\ge n}\frac1{\alpha^{(i)}_k},
+\qquad
+O_n:=\sum_{\substack{k_1,\dots,k_d\ge n\\ \text{pairwise distinct}}}\ \prod_{i=1}^d\frac1{\alpha^{(i)}_{k_i}} .
+\]
+For $d=1$, $O_n=R^{(1)}_n$; for $d=2$, $O_n=E_n$ (with $\alpha=\alpha^{(1)}$,
+$\beta=\alpha^{(2)}$).
+
+For a finite set $B\subseteq\{1,\dots,d\}$ and $i\in B$ put
+$c_{B,i}:=\prod_{j\in B\setminus\{i\}}(h_j-h_i)^{-1}$, so that the partial fraction
+decomposition
+\begin{equation}\label{eq:pf}
+\prod_{i\in B}\frac1{x+h_i}=\sum_{i\in B}\frac{c_{B,i}}{x+h_i}
+\end{equation}
+holds. Let $\mathcal P_d$ be the set of partitions of $\{1,\dots,d\}$ and, for
+$\sigma\in\mathcal P_d$, $\mu(\sigma):=\prod_{B\in\sigma}(-1)^{|B|-1}(|B|-1)!$, the
+M\"obius function $\mu(\hat0,\sigma)$ of the partition lattice.
+
+\begin{lemma}[M\"obius expansion]\label{lem:moebius}
+For every $n\ge1$,
+\[
+O_n=\sum_{\sigma\in\mathcal P_d}\mu(\sigma)\prod_{B\in\sigma}\ \sum_{i\in B}c_{B,i}\,R^{(i)}_n .
+\]
+\end{lemma}
+
+\begin{proof}
+For a tuple $\mathbf k=(k_1,\dots,k_d)$ let $\ker\mathbf k\in\mathcal P_d$ be the partition
+of $\{1,\dots,d\}$ into the classes of equal coordinates. For $\sigma\in\mathcal P_d$,
+\[
+F(\sigma):=\prod_{B\in\sigma}\ \sum_{k\ge n}\prod_{i\in B}\frac1{\alpha_k^{(i)}}
+=\sum_{\mathbf k:\ \ker\mathbf k\ \ge\ \sigma}\ \prod_{i=1}^d\frac1{\alpha^{(i)}_{k_i}},
+\]
+where $\ge$ is the refinement order (all series converge absolutely). By M\"obius
+inversion on $\mathcal P_d$, the sum over tuples with $\ker\mathbf k=\hat0$ (pairwise
+distinct coordinates) equals $\sum_\sigma\mu(\hat0,\sigma)F(\sigma)$. Finally
+$\sum_{k\ge n}\prod_{i\in B}1/\alpha^{(i)}_k=\sum_{i\in B}c_{B,i}R^{(i)}_n$ by
+\eqref{eq:pf}.
+\end{proof}
+
+\begin{lemma}[Multilinear cross-tail integrality]\label{lem:multi}
+Let $\mathcal D:=\prod_{1\le i<j\le d}(h_j-h_i)$. For every $n\ge1$,
+\[
+T_n:=\mathcal D\,Q^d\prod_{i=1}^d\Pi^{(i)}_n\cdot O_n
+\]
+is a positive integer.
+\end{lemma}
+
+\begin{proof}
+Expanding the products in Lemma~\ref{lem:moebius}, $O_n$ is a sum of terms
+$\mu(\sigma)\prod_{B\in\sigma}c_{B,i_B}R^{(i_B)}_n$ with $i_B\in B$; the
+representatives $i_B$ are distinct because the blocks are disjoint. Multiplying such a
+term by $Q^d\prod_i\Pi^{(i)}_n$ gives
+\[
+\mu(\sigma)\prod_{B\in\sigma}c_{B,i_B}\cdot\prod_{B\in\sigma}\bigl(Q\Pi^{(i_B)}_nR^{(i_B)}_n\bigr)
+\cdot\prod_{i\notin\{i_B\}}Q\Pi^{(i)}_n .
+\]
+The middle factors are integers by the argument of Lemma~\ref{lem:single}. The
+denominator of $\prod_Bc_{B,i_B}$ is
+$\prod_B\prod_{j\in B\setminus\{i_B\}}|h_j-h_{i_B}|$, a product over pairwise
+distinct unordered pairs $\{i_B,j\}$, which divides $|\mathcal D|$. Hence
+$T_n\in\Z$, and $T_n>0$ since $O_n>0$.
+\end{proof}
+
+\begin{lemma}[Size bound]\label{lem:multisize}
+Put $G_m:=\sum_{k\ge m}1/\alpha^{(1)}_k$. Then $O_n\le d!\prod_{j=0}^{d-1}G_{n+j}$.
+\end{lemma}
+
+\begin{proof}
+Since $1/\alpha^{(i)}_k\le1/\alpha^{(1)}_k$, symmetrization gives
+$O_n\le d!\sum_{n\le k_1<\dots<k_d}\prod_i 1/\alpha^{(1)}_{k_i}$, and relaxing
+$k_1<\dots<k_d$ to the independent conditions $k_j\ge n+j-1$ only enlarges the sum.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:B}]
+We first note that \eqref{eq:regular} implies \eqref{eq:tails}. Indeed, if
+$a_{k+1}\ge\lambda a_k$ for all $k\ge k_0$, where $\lambda>1$, then
+\[
+a_n\sum_{k\ge n}\frac1{a_k}\le\frac{\lambda}{\lambda-1}\quad(n\ge k_0),\qquad
+a_n\sum_{k\ge n}\frac1{a_k}\le a_{k_0}\sum_{k\ge1}\frac1{a_k}\quad(n<k_0).
+\]
+
+Write $\alpha_k:=\alpha^{(1)}_k$, $L_k:=\log\alpha_k$ and $P_n:=\sum_{k<n}L_k$. Since
+$\alpha_k=a_k+h_1\ge1$, we have $\alpha_k\le(1+|h_1|)a_k$, and $\alpha_k\ge a_k/2$
+whenever $a_k\ge2|h_1|$. Hence \eqref{eq:tails} yields a constant $C_0\ge1$ with
+$G_m=\sum_{k\ge m}1/\alpha_k\le C_0/\alpha_m$ for all $m\ge1$ (for the finitely many
+$k$ with $a_k<2|h_1|$ one uses $\alpha_k\ge1$ and enlarges $C_0$).
+Moreover $\Pi^{(i)}_n\le\Pi^{(1)}_n\prod_k(1+(h_d-h_1)/\alpha_k)\le C_1\Pi^{(1)}_n$ with
+$C_1:=\exp((h_d-h_1)S_1)$. Lemmas~\ref{lem:multi} and~\ref{lem:multisize} give
+\[
+1\le T_n\le |\mathcal D|\,Q^dC_1^d\,(\Pi^{(1)}_n)^d\cdot d!\,C_0^d\prod_{j=0}^{d-1}\alpha_{n+j}^{-1},
+\]
+that is, $\sum_{j<d}L_{n+j}\le dP_n+C$ with
+$C:=\log(|\mathcal D|Q^dC_1^dd!C_0^d)\ge0$. Equivalently $P_{n+d}\le(d+1)P_n+C$, so
+$\tilde P_n:=P_n+C/d$ satisfies $\tilde P_{n+d}\le(d+1)\tilde P_n$ and therefore
+$\tilde P_n\le C'(d+1)^{n/d}$. Finally $L_n\le P_{n+1}$ and
+$\log a_n\le L_n+\log(1+|h_1|)$. Since the $a_k$ are positive integers and
+$\sum_k|\log a_k-L_k|<\infty$ (because $|\log(1+h_1/a_k)|=O(1/a_k)$ for large $k$ and
+$\sum1/a_k<\infty$), the displayed inequality also holds with $\log a_k$ in place of
+$L_k$ after enlarging $C$.
+\end{proof}
+
+\begin{remark}\label{rem:Bsharp}
+For $d=1$ the recursion $P_{n+1}\le2P_n+C$ is the folklore bound and is attained by
+Sylvester-type sequences, so Theorem~\ref{thm:B} is sharp for $d=1$. For $d=2$,
+Theorem~\ref{thm:C} gives regular sequences with every exponent $\beta<\beta_*$, so the
+optimal regular exponent lies in $[\beta_*,\sqrt3]$. For general $d$, \cite{KT25} gives
+$\beta<((2d+2)/(2d+1))^{1/d}$ (their construction places one term in each of a sequence
+of rapidly growing windows, so it satisfies \eqref{eq:regular}), and
+Theorem~\ref{thm:B} gives $\beta\le(d+1)^{1/d}$.
+\end{remark}
+
+%======================================================================
+\section{The construction: proof of Theorem~\ref{thm:C}}\label{sec:C}
+%======================================================================
+
+\subsection{Two targets}
+We construct the sequence term by term, prescribing the two sums in advance. For real
+numbers $\tau,\delta$ put
+\[
+\Gamma:=\tau^2-\delta,\qquad s:=\frac{\Gamma}{2\tau}\quad(\tau>0),
+\]
+and for an integer $a\ge2$ with $x:=1/a$ put
+\[
+\tau^{a}:=\tau-\frac1a,\qquad \delta^{a}:=\delta-\frac1{a(a-1)},\qquad
+\Gamma^{a}:=(\tau^{a})^2-\delta^{a},\qquad s^{a}:=\frac{\Gamma^{a}}{2\tau^{a}} .
+\]
+Since $1/(a(a-1))=x^2/(1-x)$, a direct computation gives the \emph{one-step identity}
+\begin{equation}\label{eq:onestep}
+\Gamma^{a}=\Gamma-2x\,\tau^{a}+\frac{x^3}{1-x}.
+\end{equation}
+(Indeed, $\Gamma^a-\Gamma=-2\tau x+x^2+x^2/(1-x)$ and $-2\tau x=-2x\tau^a-2x^2$.)
+Heuristically, if $\tau$ and $\delta$ are the tails $\sum_{k\ge n}1/a_k$ and
+$\sum_{k\ge n}1/(a_k(a_k-1))$ of a rapidly growing sequence, then
+$\Gamma=2\sum_{n\le j<k}\frac1{a_ja_k}-\sum_{k\ge n}\frac{1}{a_k^2(a_k-1)}\approx
+\frac{2}{a_na_{n+1}}$, so that $s\approx 1/a_{n+1}$ is the size of the \emph{next}
+tail, while $\tau\approx1/a_n$.
+
+\begin{lemma}[One step]\label{lem:step}
+Let $K\ge64$. Let $\tau,\delta$ be real numbers with $0<\tau\le K^{-2}$ and suppose that
+$\Gamma=\tau^2-\delta$ and $s=\Gamma/(2\tau)$ satisfy
+\begin{equation}\label{eq:inv}
+K\tau^2\le s\le \tau/K .
+\end{equation}
+Let $y$ be a real number with
+\begin{equation}\label{eq:ychoice}
+\frac{8\tau^3}{s}\le y\le\frac{s}{4K}.
+\end{equation}
+Then there is an integer $a>1/\tau$ such that:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\tau^a>0$, $\delta^a>0$ and $\Gamma^a>0$;
+\item $(1-4/K)\,s\le\tau^a\le(1+6/K)\,s$;
+\item $y\le s^a\le 2y$;
+\item $\tau^a\le K^{-2}$ and $K(\tau^a)^2\le s^a\le\tau^a/K$;
+\item $1/\tau<a\le(1+4/K)/\tau$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For an integer $a>1/\tau$ the number $t:=\tau^a=\tau-1/a$ lies in $(0,\tau)$ and
+$x=\tau-t$. By \eqref{eq:onestep}, $\Gamma^a=\Gamma-g(t)$, where
+\[
+g(t):=2(\tau-t)t-\frac{(\tau-t)^3}{1-\tau+t}\qquad(0\le t<\tau).
+\]
+
+\emph{Step 1: slope of $g$.} We have $g'(t)=2\tau-4t+h(t)$ with
+\[
+h(t)=\frac{3(\tau-t)^2(1-\tau+t)+(\tau-t)^3}{(1-\tau+t)^2}\in\Bigl[0,\frac{4\tau^2}{(1-\tau)^2}\Bigr]
+\subseteq[0,5\tau^2].
+\]
+Hence, for $0\le t\le 2\tau/K$, using $\tau\le K^{-2}\le K^{-1}$,
+\begin{equation}\label{eq:slope}
+2\tau(1-4/K)\le g'(t)\le 2\tau+5\tau^2\le 2\tau(1+3/K).
+\end{equation}
+Also $g(0)=-\tau^3/(1-\tau)\in[-2\tau^3,0)$.
+
+\emph{Step 2: the root $t_0$.} By \eqref{eq:slope},
+$g(2\tau/K)\ge g(0)+\frac{4\tau^2}{K}(1-\frac4K)\ge\frac{2\tau^2}{K}\bigl(2-\frac8K-K\tau\bigr)
+>\frac{2\tau^2}{K}\ge2\tau s=\Gamma$, since $K\tau\le 1/K$ and $K\ge64$. As $g$ is
+increasing on $[0,2\tau/K]$ and $g(0)<0<\Gamma$, there is a unique $t_0\in(0,2\tau/K)$
+with $g(t_0)=\Gamma$. By the mean value theorem and \eqref{eq:slope},
+$2\tau(1-4/K)t_0\le\Gamma-g(0)\le 2\tau(1+3/K)t_0$, and
+$2\tau s=\Gamma\le\Gamma-g(0)\le 2\tau(s+\tau^2)$. Using $\tau^2\le s/K$ from
+\eqref{eq:inv} we get
+\begin{equation}\label{eq:t0}
+(1-3/K)\,s\le\frac{s}{1+3/K}\le t_0\le\frac{s+\tau^2}{1-4/K}\le\frac{1+1/K}{1-4/K}\,s\le(1+6/K)\,s .
+\end{equation}
+
+\emph{Step 3: the target interval.} For $c>0$ the function $t\mapsto\Gamma-g(t)-2ct$ is
+strictly decreasing on $[0,t_0]$, positive at $t=0$ and negative at $t=t_0$; let
+$t_c\in(0,t_0)$ be its zero. For $t\in(0,t_0]$ we then have
+$(\Gamma-g(t))/(2t)\ge c$ if and only if $t\le t_c$. Consequently, if $t=\tau^a\in(0,t_0]$,
+\begin{equation}\label{eq:window}
+y\le s^a\le2y\quad\Longleftrightarrow\quad t\in[t_{2y},t_y].
+\end{equation}
+We estimate this interval. Since $\Gamma-g(t_{2y})=4yt_{2y}$ and $\Gamma-g(t_0)=0$,
+\eqref{eq:slope} gives $t_0-t_{2y}\le 4yt_{2y}/(2\tau(1-4/K))\le 2yt_0/(\tau(1-4/K))$.
+By \eqref{eq:ychoice} and \eqref{eq:inv}, $y\le s/(4K)\le\tau/(4K^2)$, hence
+$t_0-t_{2y}\le t_0/K^2$ and, by \eqref{eq:t0},
+\begin{equation}\label{eq:t2y}
+t_{2y}\ge(1-K^{-2})(1-3/K)\,s\ge(1-4/K)\,s .
+\end{equation}
+Next, the function $F(t):=\Gamma-g(t)-2yt$ satisfies $F(t_{2y})=4yt_{2y}-2yt_{2y}=2yt_{2y}$,
+$F(t_y)=0$ and $|F'|\le 2\tau(1+3/K)+2y\le2\tau(1+4/K)$ on $[0,t_0]$. Therefore, using
+\eqref{eq:t2y}, $K\ge64$ and the lower bound in \eqref{eq:ychoice},
+\[
+t_y-t_{2y}\ge\frac{2yt_{2y}}{2\tau(1+4/K)}\ge\frac{1-4/K}{1+4/K}\cdot\frac{ys}{\tau}
+\ge\frac{ys}{2\tau}\ge4\tau^2 .
+\]
+
+\emph{Step 4: choice of $a$.} The numbers $\tau-1/a$ with integers $a>1/\tau$ increase
+to $\tau$; consecutive ones differ by $1/(a(a+1))<1/a^2<\tau^2$, and the smallest one
+is $\le\tau-\tau/(1+\tau)<\tau^2$. The interval $[t_{2y},t_y]$ has length $\ge4\tau^2$ and
+lies in $[\tau^2,\tau)$, because $t_{2y}\ge(1-4/K)K\tau^2\ge\tau^2$ by \eqref{eq:t2y},
+\eqref{eq:inv}, and $t_y<t_0<2\tau/K<\tau$. Hence it contains $\tau-1/a$ for some
+integer $a>1/\tau$; we fix such an $a$.
+
+\emph{Step 5: verification.} (c) holds by \eqref{eq:window}. (b) follows from
+$t_{2y}\le\tau^a\le t_y<t_0$, \eqref{eq:t2y} and \eqref{eq:t0}. For (a): $\tau^a>0$,
+$\Gamma^a=2\tau^as^a>0$, and $\delta^a=(\tau^a)^2-\Gamma^a=\tau^a(\tau^a-2s^a)>0$ because
+$2s^a\le4y\le s/K<(1-4/K)s\le\tau^a$. For (d): $\tau^a\le(1+6/K)s\le(1+6/K)\tau/K\le\tau\le
+K^{-2}$; $s^a\le2y\le s/(2K)\le\tau^a/(2K(1-4/K))\le\tau^a/K$; and
+$K(\tau^a)^2\le K(1+6/K)^2s^2\le 2Ks^2\le 8\tau^3/s\le y\le s^a$, where
+$2Ks^2\le8\tau^3/s$ holds because $s\le\tau/K$ gives $Ks^3\le\tau^3/K^2\le4\tau^3$.
+For (e): $a=1/(\tau-\tau^a)$ and
+$\tau-\tau^a\ge\tau-(1+6/K)\tau/K\ge(1-2/K)\tau$, so $a\le\tau^{-1}/(1-2/K)\le(1+4/K)/\tau$;
+and $a>1/\tau$ since $\tau^a>0$.
+\end{proof}
+
+\subsection{Proof of Theorem~\ref{thm:C}}
+Fix $\beta\in(1,\beta_*)$, so that $\beta^2+\beta<3$, and put $K:=64$. Let $N$ be a
+large integer (conditions below), $\tau_1:=1/N$, choose a rational number $s_1$ with
+$\tfrac12N^{-\beta}\le s_1\le N^{-\beta}$, and put $\delta_1:=\tau_1^2-2\tau_1s_1\in\Q$.
+Recursively, given $\tau_n,\delta_n$, let $\Gamma_n:=\tau_n^2-\delta_n$,
+$s_n:=\Gamma_n/(2\tau_n)$, $y_n:=s_n^{\beta}$, let $a_n$ be the integer provided by
+Lemma~\ref{lem:step} for $(\tau,\delta,y)=(\tau_n,\delta_n,y_n)$, and put
+\[
+\tau_{n+1}:=\tau_n-\frac1{a_n},\qquad \delta_{n+1}:=\delta_n-\frac1{a_n(a_n-1)} .
+\]
+Write $\lambda_n:=-\log\tau_n$ and $\nu_n:=-\log s_n$. We show by induction that for all
+$n\ge1$ the lemma is applicable and
+\[
+(\mathrm H_n)\qquad \tau_n\le K^{-2},\qquad K\tau_n^2\le s_n\le\tau_n/K,\qquad
+|\nu_n-\beta\lambda_n|\le1,\qquad \lambda_n\ge\lambda_1 .
+\]
+\emph{Conditions on $N$.} With $\lambda_1=\log N$ we require
+\begin{equation}\label{eq:Nlarge}
+\lambda_1\ge\max\Bigl\{2\log K,\ \frac{\log K}{\beta-1},\ \frac{\log(2K)}{2-\beta},\
+\frac{1+\log(4K)/(\beta-1)}{\beta},\ \frac{\beta+1+\log8}{3-\beta-\beta^2},\
+\frac{1.1}{\beta-1}\Bigr\}.
+\end{equation}
+
+\emph{Base case.} $\tau_1=1/N\le K^{-2}$; $\nu_1\in[\beta\lambda_1,\beta\lambda_1+\log2]$,
+so $|\nu_1-\beta\lambda_1|\le1$; and $K\tau_1^2\le s_1\le\tau_1/K$ is equivalent to
+$\lambda_1+\log K\le\nu_1\le2\lambda_1-\log K$, which follows from \eqref{eq:Nlarge}.
+
+\emph{Applicability.} Assume $(\mathrm H_n)$. Condition \eqref{eq:ychoice} for
+$y_n=s_n^\beta$ reads $(\beta-1)\nu_n\ge\log(4K)$ and $(\beta+1)\nu_n\le3\lambda_n-\log8$.
+The first follows from $\nu_n\ge\beta\lambda_n-1\ge\beta\lambda_1-1$ and
+\eqref{eq:Nlarge}. For the second,
+$(\beta+1)\nu_n\le(\beta+1)(\beta\lambda_n+1)=(\beta^2+\beta)\lambda_n+\beta+1\le3\lambda_n-\log8$,
+because $(3-\beta-\beta^2)\lambda_n\ge(3-\beta-\beta^2)\lambda_1\ge\beta+1+\log8$.
+
+\emph{Induction step.} Lemma~\ref{lem:step}(d) gives the first two parts of
+$(\mathrm H_{n+1})$. By (b) and (c), with $\log(1+6/64)<0.09$ and $-\log(1-4/64)<0.07$,
+\[
+\nu_n-0.09\le\lambda_{n+1}\le\nu_n+0.07,\qquad \beta\nu_n-\log2\le\nu_{n+1}\le\beta\nu_n .
+\]
+Hence $\nu_{n+1}-\beta\lambda_{n+1}\in[-\log2-0.07\beta,\,0.09\beta]\subseteq[-1,1]$, and
+$\lambda_{n+1}\ge\nu_n-0.09\ge\beta\lambda_n-1.09\ge\lambda_n$ by \eqref{eq:Nlarge}.
+This proves $(\mathrm H_{n+1})$.
+
+\emph{Monotonicity.} By (e), $1/\tau_n<a_n\le(1+4/K)/\tau_n$, and by (b) and
+$(\mathrm H_n)$, $\tau_{n+1}\le(1+6/K)s_n\le(1+6/K)\tau_n/K$. Hence
+$a_{n+1}>1/\tau_{n+1}\ge K/((1+6/K)\tau_n)>(1+4/K)/\tau_n\ge a_n$, and $a_1>N\ge2$.
+Moreover $a_{n+1}/a_n\ge e^{\lambda_{n+1}-\lambda_n}/(1+4/K)$ and
+$\lambda_{n+1}-\lambda_n\ge(\beta-1)\lambda_n-1.09$. With $c:=1.09/(\beta-1)$ the
+inequality $\lambda_{n+1}\ge\beta\lambda_n-1.09$ gives
+$\lambda_n-c\ge\beta^{n-1}(\lambda_1-c)$, and $\lambda_1>c$ by \eqref{eq:Nlarge}; hence
+$\lambda_n\to\infty$ and $a_{n+1}/a_n\to\infty$.
+
+\emph{Rationality.} We have $\tau_{n+1}\le\tau_n/2$, so $\tau_n\to0$, and
+$0<\delta_n=\tau_n^2-\Gamma_n<\tau_n^2$ (for $n\ge2$ by Lemma~\ref{lem:step}(a), and for
+$n=1$ because $\delta_1=\tau_1(\tau_1-2s_1)$ with $2s_1<\tau_1$), so $\delta_n\to0$.
+Since $\tau_n=\tau_1-\sum_{k<n}1/a_k$ and $\delta_n=\delta_1-\sum_{k<n}1/(a_k(a_k-1))$,
+\[
+\sum_{k\ge1}\frac1{a_k}=\tau_1\in\Q,\qquad
+\sum_{k\ge1}\frac1{a_k-1}=\sum_{k\ge1}\Bigl(\frac1{a_k}+\frac1{a_k(a_k-1)}\Bigr)=\tau_1+\delta_1\in\Q .
+\]
+
+\emph{Growth.} Since $\nu_{n+1}-\beta\nu_n\in[-\log2,0]$, the limit
+\[
+C:=\lim_{n\to\infty}\frac{\nu_n}{\beta^n}=\frac{\nu_1}{\beta}+\sum_{k\ge1}\frac{\nu_{k+1}-\beta\nu_k}{\beta^{k+1}}
+\ \ge\ \frac{\nu_1}{\beta}-\frac{\log2}{\beta(\beta-1)}
+\]
+exists and is positive by \eqref{eq:Nlarge}. As
+$|\log a_{n+1}-\lambda_{n+1}|\le\log(1+4/K)<0.07$ and $|\lambda_{n+1}-\nu_n|\le0.09$, we
+get $\log a_{n+1}/\beta^{n+1}\to C/\beta$. This proves Theorem~\ref{thm:C} with
+$c=C/\beta$. \qed
+
+\begin{remark}[Where $\beta_*$ comes from]\label{rem:heuristic}
+The only constraint in the construction is \eqref{eq:ychoice}: as $a$ runs through the
+integers, $\Gamma^a$ moves in steps of size $\asymp\tau^3\asymp a_n^{-3}$
+(by \eqref{eq:slope}), while $\Gamma_{n+1}=2\tau_{n+1}s_{n+1}\asymp
+1/(a_{n+1}a_{n+2})$. So one needs $a_{n+1}a_{n+2}\lesssim a_n^3$, i.e.\
+$\beta+\beta^2\le3$ for $\log a_n\asymp\beta^n$, while the window \eqref{eq:ychoice}
+offers $\asymp a_n^3/(a_{n+1}a_{n+2})$ admissible choices at step $n$. Treating the
+fractional positions of the targets as independent and uniformly distributed, the
+expected number of sequences that follow a growth profile $\log a_k=L_k$ up to step $n$ is
+therefore
+$\exp\bigl(\sum_{k\le n}(3L_k-L_{k+1}-L_{k+2})+O(n)\bigr)$, which tends to $0$ doubly
+exponentially if $L_k\sim c\beta^k$ with $\beta>\beta_*$ (and along a subsequence if
+only $L_k\asymp\beta^k$). This heuristic only models sequences in which each term
+nearly exhausts its tail. Sequences satisfying \eqref{eq:regular} may also contain blocks
+of terms of comparable size, so the heuristic merely suggests that
+$\beta_2^{\mathrm{reg}}=\beta_*$. By contrast, the integrality bound of
+Theorem~\ref{thm:B} corresponds to the extreme situation in which the cross-tail
+integers $M_n$ of Lemma~\ref{lem:cross} remain bounded, which is what growth with
+exponent $\sqrt3$ would require.
+\end{remark}
+
+\begin{remark}[Other distances]\label{rem:otherDelta}
+For two integer translates at distance $\Delta\ge1$ one works with $x=1/\beta_k$,
+$\tau=\sum1/\beta_k$ and $\delta=\sum1/(\alpha_k\beta_k)=\sum x^2/(1-\Delta x)$, and
+\eqref{eq:onestep} becomes $\Gamma^a=\Gamma-2x\tau^a+\Delta x^3/(1-\Delta x)$. The proof
+of Lemma~\ref{lem:step} goes through with $K$ depending on $\Delta$, and gives the same
+exponent $\beta_*$; we omit the details.
+\end{remark}
+
+%======================================================================
+\section{Consequences}\label{sec:cor}
+%======================================================================
+
+\begin{proof}[Proof of Corollary~\ref{cor:D}]
+The first assertion is Theorem~\ref{thm:A} with $t=-1$, $t'=0$ (and is Kitamura's
+theorem \cite{Kit26}); the second is Theorem~\ref{thm:B} with $d=2$ and
+$(h_1,h_2)=(-1,0)$. For the third, given $\beta<\beta_*$ pick
+$\beta'\in(\max(\beta,1),\beta_*)$ and apply Theorem~\ref{thm:C} with $\beta'$: then
+$\log a_n/\beta^n=(\log a_n/\beta'^n)(\beta'/\beta)^n\to\infty$. For the bounds on
+$\beta^{\mathrm{reg}}_2$, which is defined with the shifts $\{0,1\}$, substitute
+$b_n:=a_n-1$: then $\sum1/b_n$ and $\sum1/(b_n+1)$ are rational, $b_n\ge1$,
+$b_{n+1}/b_n\to\infty$ and $\log b_n\sim\log a_n$, so the sequences of
+Theorem~\ref{thm:C} give $\beta^{\mathrm{reg}}_2\ge\beta_*$. Conversely, after discarding
+finitely many non-positive terms, Theorem~\ref{thm:B} with $(h_1,h_2)=(0,1)$ gives
+$\log b_n=O(3^{n/2})$ for every regular sequence, so $b_n^{1/\beta^n}\to\infty$ is
+impossible for $\beta\ge\sqrt3$, and $\beta_2^{\mathrm{reg}}\le\sqrt3$.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:E}]
+If two distinct rational translates had rational reciprocal sums, Theorem~\ref{thm:A}
+would give $a_n^{1/2^n}\to1$, contradicting $\limsup a_n^{1/2^n}>1$.
+\end{proof}
+
+\begin{example}[Sylvester's sequence]\label{ex:sylvester}
+Sylvester's sequence satisfies $\sum1/s_n=1$ and $s_n^{1/2^n}\to E^2>1$, so by
+Corollary~\ref{cor:E}, $\sum_n1/(s_n+t)\notin\Q$ for every rational $t\ne0$ with
+$s_n+t\neq0$ for all $n$. This is \emph{not} new: writing $t=u/w$ and $u_n:=ws_n+u$, one
+has $u_{n+1}=u_n^2/w+O(u_n)$ and
+\[
+u_{n+1}-\Bigl(\frac{u_n^2}{w}-u_n+w\Bigr)=-u\Bigl(2s_n+\frac uw-2\Bigr)\neq0
+\quad(n\text{ large}),
+\]
+so the irrationality follows from Duverney's criterion \cite[Cor.~3.4]{Duverney01}; for
+integer $t$ it can also be deduced from the Erd\H{o}s--Straus criterion \cite{ErSt64},
+and for negative integers $t$ from Badea's criterion \cite{Badea87}. Corollary~\ref{cor:E} requires no recursion.
+\end{example}
+
+\begin{corollary}[Infinitely many rational translates]\label{cor:many}
+Let $a_1<a_2<\cdots$ be positive integers satisfying \eqref{eq:tails}, and suppose that
+$\sum_n1/(a_n+h)\in\Q$ for infinitely many integers $h\ge0$. Then $\log a_n=O(\beta^n)$
+for every $\beta>1$.
+\end{corollary}
+
+\begin{proof}
+Apply Theorem~\ref{thm:B} to $d$ of these shifts and note $(d+1)^{1/d}\to1$.
+\end{proof}
+
+\begin{remark}[Related Erd\H{o}s problems]\label{rem:related}
+(1) \emph{Problem \#266} asked whether, for every convergent $\sum1/a_n$, some integer
+$t\ge1$ makes $\sum1/(a_n+t)$ irrational; Kova\v{c} and Tao \cite{KT25} disproved this
+with a strictly increasing sequence for which all such sums are rational. By
+Theorem~\ref{thm:A}, every strictly increasing ``universally rational'' sequence satisfies
+$a_n^{1/2^n}\to1$, and by Corollary~\ref{cor:many} it satisfies $\log a_n=O(\beta^n)$
+for every $\beta>1$ if its tails are dominated by their first terms. For strictly
+increasing sequences with $\limsup a_n^{1/2^n}>1$, Corollary~\ref{cor:E} gives the
+conclusion of \#266 in the strong form ``all translates but at most one are
+irrational''. (For non-monotone sequences these statements fail: rearranging terms does
+not change the sums but can make $\limsup a_n^{1/2^n}$ infinite.)
+
+(2) \emph{Problem \#263(i)} asks whether $2^{2^n}$ is an irrationality sequence, i.e.\
+whether $\sum1/b_n\notin\Q$ whenever $b_n/2^{2^n}\to1$. Such $(b_n)$ are eventually
+strictly increasing with $b_n^{1/2^n}\to2$, so by Corollary~\ref{cor:E} at most one
+rational translate of $(b_n)$ has a rational reciprocal sum.
+
+(3) \emph{Problem \#243} concerns sequences with $a_n/a_{n-1}^2\to1$ and rational
+$\sum1/a_n$. For such sequences $\log a_n/2^n$ converges to a positive limit, so by
+Corollary~\ref{cor:E} no other rational translate of $(a_n)$ has a rational reciprocal
+sum.
+\end{remark}
+
+%======================================================================
+\section{Limits of the method and open problems}\label{sec:limits}
+%======================================================================
+
+\subsection{Why the general bound stops at $2^n$}
+Theorem~\ref{thm:A} is qualitative, while Theorem~\ref{thm:B} gives an exponential
+saving under \eqref{eq:tails}. The proof of Theorem~\ref{thm:A} shows more precisely
+that along the checkpoints the normalized quantity $v_n=\pi_n/2^n$ can increase only
+by a summable amount, and that it drops by the factor $9/16$ across every frozen
+window. What the argument cannot exclude are long \emph{doubling phases}: runs of
+non-big indices with $\ell_k=\pi_k+O(1)$, along which $v_n$ stays essentially constant.
+By Case~II such a run cannot last forever, and along it the tails cannot be dominated
+by their first terms (otherwise (K) would be violated): the remaining mass $R_k$ must
+be reserved for a later, very long run of terms of comparable size, which then lowers
+$v_n$ drastically. We stress that this is a \emph{heuristic} description of what the
+inequalities (K), (F), (J) permit; we do not claim that doubling phases occur for
+actual sequences with two rational translates.
+
+There is a precise Diophantine reason why ruling them out is subtle. Put
+$y_k:=\alpha_k\beta_k$ and $N_k:=\Delta Q\Pi_k\Pi'_kD_k$ (Lemma~\ref{lem:defect}).
+Since $D_{k+1}=D_k-1/y_k$, one has the exact recursions
+\[
+N_{k+1}=y_kN_k-\Delta Q\,\Pi_k\Pi'_k,\qquad
+y_{k+1}N_{k+1}=y_k^2N_k-y_kN_{k+1}+N_{k+2}\qquad(k\ge1).
+\]
+The second recursion is exactly the one that governs Erd\H{o}s Problem~\#243 for the
+rational series $\sum_k1/y_k=D_1$ (with $N_k$ in the role of the integers
+$q\prod_{j<k}y_j\sum_{j\ge k}1/y_j$). Along a doubling phase of length at least three
+the defect tail $D_k$ is dominated by its first term, so the positive integers $N_k$
+stay bounded. Long doubling phases would therefore require a \#243-type behaviour of
+the defect series with bounded $N_k$, subject to the additional constraint that every
+$y_k$ has the form $\alpha(\alpha+\Delta)$. We do not know how to exclude this.
+
+\begin{remark}[A Pell-type identity]\label{rem:pell}
+Put $z_k:=2\alpha_k+\Delta$, so that $4y_k=z_k^2-\Delta^2$. Eliminating $y_k,y_{k+1}$
+from the second recursion above gives the exact identity
+\[
+u_k^2-4N_kN_{k+1}\,z_{k+1}^2=c_k,
+\]
+where
+\[
+u_k:=N_kz_k^2-N_k\Delta^2-2N_{k+1},\qquad c_k:=4N_{k+1}^2-4N_kN_{k+1}\Delta^2-16N_kN_{k+2},
+\]
+for every $k\ge1$ (a direct computation, checked in Appendix~\ref{app:scripts}). Thus
+along any run on which the $N_k$ stay bounded, the pairs $(u_k,z_{k+1})$ solve
+generalized Pell equations $X^2-4N_kN_{k+1}Y^2=c_k$ with bounded coefficients. If
+$N_kN_{k+1}=s^2$ is a perfect square and $u_k+2sz_{k+1}>|c_k|$ (which holds once $z_k$
+is large compared with the $N$'s), then the integer $u_k-2sz_{k+1}$ has absolute value
+$<1$, hence vanishes, and $c_k=0$, i.e.\ $N_{k+1}(N_{k+1}-\Delta^2N_k)=4N_kN_{k+2}$. In
+particular the $N_k$ cannot be constant along a run with large $z_k$, since a constant
+value $N$ would give $c_k=-4N^2(3+\Delta^2)\neq0$. Whether this Pell structure can be
+iterated along long runs is, in our view, the crux of Question~\ref{q:irregular} below.
+\end{remark}
+
+\subsection{Open problems}
+
+\begin{question}\label{q:reg}
+Is $\beta_2^{\mathrm{reg}}=\beta_*=(\sqrt{13}-1)/2$? By Theorem~\ref{thm:C} this would
+follow if every sequence with $\sum1/a_n,\sum1/(a_n-1)\in\Q$ and
+$\liminf a_{n+1}/a_n>1$ satisfied $\log a_n=O(\beta^n)$ for every $\beta>\beta_*$. We
+know $\beta_*\le\beta_2^{\mathrm{reg}}\le\sqrt3$.
+\end{question}
+
+\begin{question}\label{q:irregular}
+Is there $\beta<2$ such that $\log a_n=O(\beta^n)$ for \emph{every} sequence with two
+rational translates (without \eqref{eq:tails})? Can irregular sequences beat the regular
+exponent?
+\end{question}
+
+\begin{question}\label{q:d}
+For $d\ge3$ consecutive rational translates, close the gap between
+$((2d+2)/(2d+1))^{1/d}$ \cite{KT25} and $(d+1)^{1/d}$ (Theorem~\ref{thm:B}). Does a
+controlled $d$-target greedy algorithm improve the lower bound?
+\end{question}
+
+The heuristic of Remark~\ref{rem:heuristic} extends formally to $d$ targets: with $d$
+prescribed sums the choice of $a_n$ can only steer the highest-order discrepancy, which
+moves in steps of size $\asymp a_n^{-(d+1)}$ and has size $\asymp(a_{n+1}\cdots a_{n+d})^{-1}$.
+This suggests the threshold $\beta_d^*$ defined by $\beta+\beta^2+\cdots+\beta^d=d+1$.
+For $d=1$ this gives $\beta_1^*=2$, the Sylvester threshold; for $d=2$ it gives
+$\beta_2^*=\beta_*$; and $\beta_3^*=1.1509\ldots$, $\beta_4^*=1.0912\ldots$, compared with
+$((2d+2)/(2d+1))^{1/d}=1.0455\ldots,\ 1.0266\ldots$ from \cite{KT25} and
+$(d+1)^{1/d}=1.5874\ldots,\ 1.4953\ldots$ from Theorem~\ref{thm:B}. In a numerical
+experiment with three targets ($\sum1/a_k$, $\sum1/(a_k-1)$, $\sum1/(a_k-2)$), where the
+choice of $a_n$ steers the triple off-diagonal sum $O_{n+1}$ of Section~\ref{sec:B}, the
+largest attainable value of $\log a_{n+3}$ was close to
+$4\log a_n-\log a_{n+1}-\log a_{n+2}$, as predicted. The process ran stably for $14$
+steps with growth ratio $\log a_{n+1}/\log a_n\approx1.15$. We have not proved a
+$d$-target analogue of Lemma~\ref{lem:step} for $d\ge3$, and we do not claim that
+$\beta_d^*$ is the correct value of $\beta_d^{\mathrm{reg}}$.
+
+%======================================================================
+\section{Comparison with the literature}\label{sec:lit}
+%======================================================================
+
+\begin{itemize}[leftmargin=1.4em]
+\item The problem appears in \cite[p.~64]{ErGr80}, \cite[p.~334]{Er85},
+\cite[pp.~104--105]{Er88} and as \#265 in \cite{Bloom265}. As of October~28, 2026 the
+database lists it as open; the page states that it remains open whether
+$\limsup a_n^{1/2^n}>1$ can be achieved, and that the remaining question is the precise
+exponent.
+\item Kova\v{c}'s preprint \cite{Kov24} (arXiv:2406.17593v1) proved that exponential
+growth is possible; the later versions of that arXiv entry are the joint paper
+\cite{KT25}, which proves doubly exponential growth for $d$ consecutive translates with
+any $\beta<((2d+2)/(2d+1))^{1/d}$, i.e.\ $\beta<\sqrt{6/5}$ for two series, and states
+that the question beyond the $2^n$ threshold is not answered. Their methods (block
+constructions, interval-filling and interior arguments) address the lower bound; we are
+not aware of upper-bound arguments of the type of Lemma~\ref{lem:cross} there.
+\item \emph{Kitamura \cite{Kit26}.} A Lean~4 formalization (repository
+\texttt{KitaKen1/erdos-265-lean}, commit \texttt{16db9f29}, September 2026) proves that
+$\log a_n/2^n\to0$ for every strictly increasing sequence with $a_1\ge2$ and
+$\sum1/a_n,\sum1/(a_n-1)\in\Q$, hence that $\limsup a_n^{1/2^n}>1$ is impossible. It was
+linked from a public comment on the database page dated September~7, 2026, and was
+checked independently (with the \emph{Comparator} tool) by a reviewer of the
+formal-conjectures pull request \cite{FC6839} in October~2026. Its proof uses the
+defect integrality (as in Lemma~\ref{lem:defect}), an envelope $H_n=P_n/\sqrt{D_n}$
+satisfying a square recursion $H_{n+1}\le K H_n^2$, and the integrality and the bound
+$\le8T_nT_{n+1}$ of the second residual $T_n/(1-T_n)-V_n$, which by
+Remark~\ref{rem:residual} equals our cross tail divided by $1-T_n$. (These three lemmas
+already imply the case $d=2$ of Theorem~\ref{thm:B} for regular sequences, although
+\cite{Kit26} uses them only to exclude a positive normalized limit.) We found no
+human-readable account of it. Thus the endpoint for Problem \#265, and the
+cross-tail integrality for $\Delta=1$, are due to Kitamura; our contributions are the
+extension to arbitrary rational translates and affine images (Theorem~\ref{thm:A},
+Remark~\ref{rem:affine}), the frozen-jump/checkpoint route, the multilinear
+integrality and Theorem~\ref{thm:B} for $d\ge3$, and the construction of
+Theorem~\ref{thm:C}.
+\item An AI-generated working report \cite{EPAD265} on \#265 (accessed July 2026) claims
+a construction with regular growth exponent $\sqrt{3/2}=1.2247\ldots$ by a fixed-window
+block method and argues that such block methods cannot exceed $\sqrt{5/3}=1.2909\ldots$;
+we have not verified these claims. Theorem~\ref{thm:C} uses a different, sequential
+method and gives every exponent below $\beta_*=1.3027\ldots$.
+\item The folklore irrationality criterion ($a_n^{1/2^n}\to\infty$), Badea's criterion
+\cite{Badea87}, the Erd\H{o}s--Straus criterion \cite{ErSt64}, Duverney's criteria
+\cite{Duverney01} and Koizumi's results \cite{Koizumi25} concern a \emph{single} Ahmes
+series. The Sylvester example of Example~\ref{ex:sylvester} already follows from
+\cite{Duverney01}.
+\item To our knowledge, Theorem~\ref{thm:C}, the multilinear integrality of
+Lemma~\ref{lem:multi} and Theorem~\ref{thm:B} for $d\ge3$ are new; a web search up to
+October~28, 2026 (including the database, the formal-conjectures project, arXiv, and the
+report \cite{EPAD265}) found no construction with exponent above $\sqrt{3/2}$ and no
+mention of $\beta_*$. Theorem~\ref{thm:B} for $d=2$ is not stated in \cite{Kit26} but
+follows quickly from lemmas proved there, and Theorem~\ref{thm:A} beyond the pair
+$(a_n,a_n-1)$ appears to be a routine extension of Kitamura's argument, although we have
+not seen it stated. We could not access the live discussion thread of the database
+page.
+\end{itemize}
+
+\appendix
+%======================================================================
+\section{Exact verification script}\label{app:scripts}
+%======================================================================
+
+The following Python script (standard library only, exact arithmetic via
+\texttt{fractions.Fraction}) checks: the identities of Lemma~\ref{lem:identities}; the
+integrality and positivity statements of Lemmas~\ref{lem:defect} and~\ref{lem:cross};
+the size bounds of Lemma~\ref{lem:size}(i),(ii); the M\"obius expansion
+(Lemma~\ref{lem:moebius}), the integrality of $T_n$ (Lemma~\ref{lem:multi}) and the
+bound of Lemma~\ref{lem:multisize} for $d=2,3,4$; for Cantor's example
+$a_n=\binom n2$ ($n\ge3$), where the tails are known in closed form, the integrality and
+positivity of $N_n$ and $M_n$ and the bound of Lemma~\ref{lem:size}(i); the numerical
+facts used in the text (the coefficients $(1+2j)/2^j$, Sylvester's telescoping identity,
+$E^2=1.59791\ldots$, the Badea comparison and the Duverney comparison of
+Example~\ref{ex:sylvester}); the Pell-type identity of Remark~\ref{rem:pell}, both as a
+rational identity and on the defect integers $N_k$ of random finite sequences; the
+affine version of Remark~\ref{rem:affine}; the residual identity of
+Remark~\ref{rem:residual}; and the construction of Section~\ref{sec:C}: it runs the
+recursion of the proof of Theorem~\ref{thm:C} (with $\beta=5/4$, $K=64$, $N=10^{11}$)
+for eleven steps, with $y_n$ replaced by an $80$-digit rational approximation of
+$s_n^\beta$ (Lemma~\ref{lem:step} holds for every real $y$ satisfying \eqref{eq:ychoice}).
+At every step it checks, in exact arithmetic, the hypotheses \eqref{eq:inv},
+\eqref{eq:ychoice} and all conclusions (a)--(e) of Lemma~\ref{lem:step}, and that the
+partial sums reproduce the prescribed rational targets exactly. The inequality
+$|\nu_n-\beta\lambda_n|\le1$ is checked in floating point. For a \emph{finite}
+increasing sequence the reciprocal sums are automatically rational, so the integrality
+statements can be tested exactly on random finite data. The script terminates with
+\texttt{ALL CHECKS PASSED}.
+
+\begin{lstlisting}[language=Python]
+"""
+Exact verification of the algebraic identities, integrality lemmas and
+the construction used in the paper "An exponent window for Erdos Problem
+#265: cross-tail integrality and controlled two-target greedy expansions".
+Section/lemma numbers below refer to that paper.
+
+All arithmetic is exact (fractions.Fraction).  For a FINITE strictly
+increasing sequence the reciprocal sums are automatically rational, so
+every integrality statement of Section 2 and Section 4 can be tested
+exactly on random finite data.  (For finite data the tails eventually
+vanish; positivity statements are only claimed while at least two terms
+remain in the tail.)
+
+Checks performed
+  (C1) diagonal identity  sum_k 1/((a_k+h)(a_k+h')) = (R_h - R_h')/(h'-h)
+  (C2) cross-tail identity E = R_h R_h' - (R_h-R_h')/(h'-h)
+       equals the off-diagonal double sum
+  (C3) integrality of q q' (h'-h) Pi_h Pi_h' E   and of
+       q q' (h'-h) Pi_h Pi_h' * defect
+  (C4) the bound E_n <= 2 R_h(n) R_h(n+1)            (h < h')
+  (C5) the bound defect_m <= (p-m)/alpha_m^2 + R_h(p)/alpha_p  (m<=p)
+  (C6) the multilinear Moebius identity for the fully off-diagonal sum
+       of d >= 2 shifted tails, and the integrality of
+       D * prod_i q_i Pi^(i)_n * O_n   (D = prod_{i<j}|h_j-h_i|)
+  (C7) the bound O_n <= d! * G_n G_{n+1} ... G_{n+d-1}
+  (C8) for Cantor's example a_n = C(n,2), n >= 3: integrality and
+       positivity of N_n, M_n (Lemmas 2.3, 2.4) and the bound of Lemma 2.7(i)
+  (C9) numerical facts used in the text: (1+2j)/2^j, Sylvester's
+       telescoping identity, s_n^(1/2^n) -> E^2 = 1.59791..., the
+       Badea comparison for negative integer shifts and the Duverney
+       comparison of Example 6.1
+  (C10) the Pell-type identity of Remark 7.1, as a rational identity
+       and on the defect integers N_k of random finite sequences
+  (C11) the identities and integrality for two non-proportional affine
+       images U a_n + V, U' a_n + V' (Remark 3.5)
+  (C12) the residual identity  Delta*E_n = (1-Delta R'_n)(R'_n/(1-Delta R'_n) - R_n),
+       which identifies the cross tail with Kitamura's "second residual"
+       for Delta = 1 (Remark 2.6)
+  (C13) the construction of Theorem C: the one-step Lemma 5.1 (a)-(e) is
+       checked in exact arithmetic along the first steps of the sequence
+       built in the proof of Theorem C (beta = 5/4, K = 64), together with
+       the bookkeeping inequalities used in that proof
+"""
+from fractions import Fraction as F
+from itertools import permutations, product
+from math import factorial, prod
+import random
+
+random.seed(20261028)
+
+def tails(seq, h):
+    """R[n] = sum_{k>=n} 1/(seq[k]+h), n = 0..len (R[len]=0)."""
+    R = [F(0)] * (len(seq) + 1)
+    for n in range(len(seq) - 1, -1, -1):
+        R[n] = R[n + 1] + F(1, seq[n] + h)
+    return R
+
+def prefix_products(seq, h):
+    P = [1] * (len(seq) + 1)
+    for n in range(len(seq)):
+        P[n + 1] = P[n] * (seq[n] + h)
+    return P
+
+def random_increasing(length, lo=3, growth=3.0):
+    s, x = [], lo
+    for _ in range(length):
+        x = max(x + 1, int(x * random.uniform(1.05, growth)) + random.randint(0, 3))
+        s.append(x)
+    return s
+
+# ---------------------------------------------------------------- d = 2
+def check_two_shifts(trials=300):
+    for _ in range(trials):
+        L = random.randint(3, 9)
+        seq = random_increasing(L)
+        h = random.randint(-2, 3)
+        hp = h + random.randint(1, 4)
+        if min(seq) + h <= 0:
+            continue
+        Dlt = hp - h
+        R, Rp = tails(seq, h), tails(seq, hp)
+        P, Pp = prefix_products(seq, h), prefix_products(seq, hp)
+        q, qp = R[0].denominator, Rp[0].denominator
+        for n in range(L):
+            # (C1)
+            diag = sum(F(1, (seq[k] + h) * (seq[k] + hp)) for k in range(n, L))
+            assert diag == (R[n] - Rp[n]) / Dlt
+            # (C2)
+            E = R[n] * Rp[n] - (R[n] - Rp[n]) / Dlt
+            off = sum(F(1, (seq[j] + h) * (seq[k] + hp))
+                      for j in range(n, L) for k in range(n, L) if j != k)
+            assert E == off
+            # (C3)
+            for val in (E, diag):
+                z = q * qp * Dlt * P[n] * Pp[n] * val
+                assert z.denominator == 1, (seq, h, hp, n, z)
+            if L - n >= 2:
+                assert E > 0
+            # (C4)
+            if n + 1 <= L:
+                assert E <= 2 * R[n] * R[n + 1]
+            # (C5)
+            for p in range(n, L + 1):
+                bound = F(p - n, (seq[n] + h) ** 2)
+                if p < L:
+                    bound += R[p] / (seq[p] + h)
+                assert diag <= bound
+    print("d=2 identities (C1)-(C5) verified on", trials, "random finite sequences")
+
+# ---------------------------------------------------------------- general d
+def set_partitions(items):
+    if not items:
+        yield []
+        return
+    first, rest = items[0], items[1:]
+    for part in set_partitions(rest):
+        yield [[first]] + part
+        for i in range(len(part)):
+            yield part[:i] + [[first] + part[i]] + part[i + 1:]
+
+def moebius(partition):
+    return prod((-1) ** (len(B) - 1) * factorial(len(B) - 1) for B in partition)
+
+def check_multilinear(trials=60):
+    for _ in range(trials):
+        d = random.randint(2, 4)
+        L = random.randint(d, 7)
+        seq = random_increasing(L)
+        hs = sorted(random.sample(range(-2, 6), d))
+        if min(seq) + hs[0] <= 0:
+            continue
+        Rs = [tails(seq, h) for h in hs]
+        Ps = [prefix_products(seq, h) for h in hs]
+        qs = [R[0].denominator for R in Rs]
+        Dfac = prod(abs(hs[j] - hs[i]) for i in range(d) for j in range(i + 1, d))
+        for n in range(L):
+            idx = list(range(n, L))
+            # fully off-diagonal sum, brute force
+            O = F(0)
+            for ks in product(idx, repeat=d):
+                if len(set(ks)) == d:
+                    O += prod(F(1, seq[k] + hs[i]) for i, k in enumerate(ks))
+            # Moebius / partial-fraction expression
+            expr = F(0)
+            for part in set_partitions(list(range(d))):
+                term = F(moebius(part))
+                for B in part:
+                    SB = F(0)
+                    for i in B:
+                        c = F(1)
+                        for j in B:
+                            if j != i:
+                                c /= (hs[j] - hs[i])
+                        SB += c * Rs[i][n]
+                    term *= SB
+                expr += term
+            assert expr == O, (seq, hs, n)
+            z = Dfac * prod(qs[i] * Ps[i][n] for i in range(d)) * O
+            assert z.denominator == 1
+            if L - n >= d:
+                assert O > 0
+            # (C7) with G = tail for the smallest shift
+            G = Rs[0]
+            bnd = factorial(d) * prod(G[min(n + j, L)] for j in range(d))
+            assert O <= bnd
+    print("multilinear identity, integrality and bound (C6)-(C7) verified on", trials, "random cases")
+
+# ---------------------------------------------------------------- Cantor example
+def check_cantor():
+    from math import comb
+    q, qp = 1, 9          # sum 1/C(n,2) = 1, sum 1/(C(n,2)-1) = 11/9  (n >= 3)
+    R = lambda n: F(2, n - 1)
+    Rp = lambda n: F(2, 3) * (F(1, n - 2) + F(1, n - 1) + F(1, n))
+    assert R(3) == 1 and Rp(3) == F(11, 9)
+    Pi, Pip = 1, 1
+    for n in range(3, 60):
+        a = comb(n, 2)
+        E = R(n) * Rp(n) + R(n) - Rp(n)
+        dl = Rp(n) - R(n)
+        assert (q * qp * Pi * Pip * E).denominator == 1 and E > 0
+        assert (q * qp * Pi * Pip * dl).denominator == 1 and dl > 0
+        assert E <= 2 * Rp(n) * Rp(n + 1)
+        Pi *= a
+        Pip *= a - 1
+    print("Cantor example a_n = C(n,2): integrality and positivity of N_n, M_n and the bound of Lemma 2.7(i) verified for n = 3..59")
+
+# ---------------------------------------------------------------- numerics used in the text
+def check_numerics():
+    # coefficients (1+2j)/2^j used in Lemma 3.3
+    assert [F(1 + 2 * j, 2 ** j) for j in range(1, 5)] == [F(3, 2), F(5, 4), F(7, 8), F(9, 16)]
+    # Sylvester: s_0=2, s_{n+1}=s_n^2-s_n+1, sum 1/s_n = 1 (telescoping), s_n^{1/2^n} -> E^2
+    from decimal import Decimal, getcontext
+    getcontext().prec = 60
+    s, tot = 2, F(0)
+    for n in range(12):
+        tot += F(1, s)
+        # telescoping identity: 1 - sum_{k<=n} 1/s_k = 1/(s_{n+1}-1)
+        nxt = s * s - s + 1
+        assert 1 - tot == F(1, nxt - 1)
+        if n >= 6:
+            val = Decimal(s).ln() / Decimal(2 ** n)
+            approx = val.exp()
+        s = nxt
+    E2 = approx
+    assert abs(E2 - Decimal("1.5979102")) < Decimal("1e-6"), E2
+    # Badea comparison for negative integer shifts t=-m: (s_{n+1}-m) - ((s_n-m)^2-(s_n-m)+1) = m(2 s_n - m - 2) > 0
+    s = 2
+    for n in range(8):
+        nxt = s * s - s + 1
+        for m in range(1, 5):
+            if s - m >= 1:
+                lhs = (nxt - m) - ((s - m) ** 2 - (s - m) + 1)
+                assert lhs == m * (2 * s - m - 2)
+        s = nxt
+    # Duverney comparison (Example 6.1): u_n = w s_n + u satisfies
+    # u_{n+1} - (u_n^2/w - u_n + w) = -u (2 s_n + u/w - 2), nonzero for u != 0 and large n
+    s = 2
+    for n in range(8):
+        nxt = s * s - s + 1
+        for w in range(1, 5):
+            for u in range(-3, 4):
+                un, un1 = w * s + u, w * nxt + u
+                lhs = un1 - (F(un * un, w) - un + w)
+                assert lhs == -u * (2 * s + F(u, w) - 2)
+        s = nxt
+    print("numerical constants verified: E^2 ~", str(E2)[:12])
+
+# ---------------------------------------------------------------- Pell-type identity (Remark 7.1)
+def check_pell(trials=2000):
+    """N_{k+1}=y_k N_k - P_k recursion => y_{k+1}N_{k+1} = y_k^2 N_k - y_k N_{k+1} + N_{k+2};
+    with z_k = 2 alpha_k + Delta, 4 y_k = z_k^2 - Delta^2, verify
+    u_k^2 - 4 N_k N_{k+1} z_{k+1}^2 = c_k  (as an identity in rationals)."""
+    for _ in range(trials):
+        Dl = random.randint(1, 6)
+        N0, N1, N2 = (random.randint(1, 50) for _ in range(3))
+        alpha = random.randint(1, 10 ** 6)
+        z0 = 2 * alpha + Dl
+        y0 = F(z0 * z0 - Dl * Dl, 4)
+        y1 = (y0 * y0 * N0 - y0 * N1 + N2) / F(N1)
+        z1sq = 4 * y1 + Dl * Dl
+        u = N0 * z0 * z0 - N0 * Dl * Dl - 2 * N1
+        c = 4 * N1 * N1 - 4 * N0 * N1 * Dl * Dl - 16 * N0 * N2
+        assert u * u - 4 * N0 * N1 * z1sq == c
+    # and on genuine data: the defect integers of random finite sequences with h'-h = Delta
+    for _ in range(200):
+        L = random.randint(4, 8)
+        seq = random_increasing(L)
+        h = random.randint(-1, 2)
+        Dl = random.randint(1, 3)
+        if min(seq) + h <= 0:
+            continue
+        al = [x + h for x in seq]
+        be = [x + Dl for x in al]
+        y = [a * b for a, b in zip(al, be)]
+        Dtail = [F(0)] * (L + 1)
+        for n in range(L - 1, -1, -1):
+            Dtail[n] = Dtail[n + 1] + F(1, y[n])
+        S, Sp = sum(F(1, a) for a in al), sum(F(1, b) for b in be)
+        Q = S.denominator * Sp.denominator
+        PP = [1] * (L + 1)
+        for n in range(L):
+            PP[n + 1] = PP[n] * y[n]
+        Nn = [Dl * Q * PP[n] * Dtail[n] for n in range(L + 1)]
+        for n in range(L):
+            assert Nn[n].denominator == 1
+        for k in range(L - 2):
+            z0, z1 = 2 * al[k] + Dl, 2 * al[k + 1] + Dl
+            u = Nn[k] * z0 * z0 - Nn[k] * Dl * Dl - 2 * Nn[k + 1]
+            c = 4 * Nn[k + 1] ** 2 - 4 * Nn[k] * Nn[k + 1] * Dl * Dl - 16 * Nn[k] * Nn[k + 2]
+            assert u * u - 4 * Nn[k] * Nn[k + 1] * z1 * z1 == c
+    print("Pell-type identity of Remark 7.1 verified (symbolic-random and on genuine defect data)")
+
+# ---------------------------------------------------------------- affine images (Remark 3.5)
+def check_affine(trials=300):
+    done = 0
+    while done < trials:
+        L = random.randint(3, 8)
+        seq = random_increasing(L)
+        U, Up = random.randint(1, 4), random.randint(1, 4)
+        V, Vp = random.randint(-2, 5), random.randint(-2, 5)
+        Dst = Up * V - U * Vp
+        if Dst == 0:
+            continue
+        al = [U * x + V for x in seq]
+        be = [Up * x + Vp for x in seq]
+        if min(al) <= 0 or min(be) <= 0:
+            continue
+        done += 1
+        R, Rp = [F(0)] * (L + 1), [F(0)] * (L + 1)
+        for n in range(L - 1, -1, -1):
+            R[n] = R[n + 1] + F(1, al[n])
+            Rp[n] = Rp[n + 1] + F(1, be[n])
+        Q = R[0].denominator * Rp[0].denominator
+        P, Pp = 1, 1
+        for n in range(L):
+            diag = sum(F(1, al[k] * be[k]) for k in range(n, L))
+            assert diag == (Up * Rp[n] - U * R[n]) / Dst
+            E = R[n] * Rp[n] - diag
+            off = sum(F(1, al[j] * be[k]) for j in range(n, L) for k in range(n, L) if j != k)
+            assert E == off
+            assert (abs(Dst) * Q * Q * P * Pp * E).denominator == 1
+            assert (abs(Dst) * Q * P * Pp * diag).denominator == 1
+            P *= al[n]
+            Pp *= be[n]
+    print("affine-image identities and integrality (Remark 3.5) verified on", trials, "cases")
+
+# ---------------------------------------------------------------- residual form (Remark 2.6)
+def check_residual(trials=300):
+    done = 0
+    while done < trials:
+        L = random.randint(3, 8)
+        seq = random_increasing(L, lo=5)
+        h = random.randint(-2, 2)
+        Dl = random.randint(1, 4)
+        al = [x + h for x in seq]
+        if min(al) <= 0:
+            continue
+        be = [x + Dl for x in al]
+        R, Rp = [F(0)] * (L + 1), [F(0)] * (L + 1)
+        for n in range(L - 1, -1, -1):
+            R[n] = R[n + 1] + F(1, al[n])
+            Rp[n] = Rp[n + 1] + F(1, be[n])
+        for n in range(L):
+            if 1 - Dl * Rp[n] == 0:
+                continue
+            E = R[n] * Rp[n] - (R[n] - Rp[n]) / Dl
+            rho = Rp[n] / (1 - Dl * Rp[n]) - R[n]
+            assert Dl * E == (1 - Dl * Rp[n]) * rho
+        done += 1
+    print("residual identity (C12) verified on", trials, "random cases")
+
+# ---------------------------------------------------------------- construction (Theorem C, Lemma 5.1)
+def check_construction(steps=11):
+    from decimal import Decimal, getcontext
+    import math
+    getcontext().prec = 80
+    K = 64
+    beta = F(5, 4)
+    N = 10 ** 11
+
+    def dec(q):
+        return Decimal(q.numerator) / Decimal(q.denominator)
+
+    def lg(q):            # natural log of a positive Fraction
+        return math.log(q.numerator) - math.log(q.denominator)
+
+    def after(T, D, a):
+        Tn = T - F(1, a)
+        Dn = D - F(1, a * (a - 1))
+        Gn = Tn * Tn - Dn
+        return Tn, Dn, Gn
+
+    T = F(1, N)
+    s1 = F(Decimal(N) ** (-Decimal(beta.numerator) / Decimal(beta.denominator)))   # s_1 ~ N^{-beta}
+    D = T * T - 2 * T * s1
+    T1, D1 = T, D
+    seq = []
+    lam_prev = None
+    for n in range(1, steps + 1):
+        G = T * T - D
+        s = G / (2 * T)
+        # invariant (8) and T <= K^-2
+        assert 0 < T <= F(1, K * K) and K * T * T <= s <= T / K
+        lam, sig = -lg(T), -lg(s)
+        assert abs(sig - float(beta) * lam) <= 1.0                           # |nu_n - beta*lambda_n| <= 1 (floating point)
+        # target y: rational approximation of s^beta (either side); Lemma 5.1 allows any real y with (9)
+        y = F(dec(s) ** (Decimal(beta.numerator) / Decimal(beta.denominator)))   # y = 80-digit rational approximation of s^beta
+        assert 8 * T ** 3 / s <= y <= s / (4 * K)                            # condition (9), exact
+        # Lemma 5.1: find a > 1/T with s' in [y, 2y]; s'(a) is decreasing on (1/T, 2/T]
+        lo = T.denominator // T.numerator + 1
+        hi = (2 * T.denominator) // T.numerator
+        def sp(a):
+            Tn, Dn, Gn = after(T, D, a)
+            return Gn / (2 * Tn)
+        assert sp(lo) >= y and sp(hi) < y
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if sp(mid) >= y:
+                lo = mid
+            else:
+                hi = mid
+        a = lo
+        Tn, Dn, Gn = after(T, D, a)
+        spn = Gn / (2 * Tn)
+        # conclusions (a)-(e) of Lemma 5.1
+        assert Tn > 0 and Dn > 0 and Gn > 0                                  # (a)
+        assert (1 - F(4, K)) * s <= Tn <= (1 + F(6, K)) * s                  # (b)
+        assert y <= spn <= 2 * y                                              # (c)
+        assert Tn <= F(1, K * K) and K * Tn * Tn <= spn <= Tn / K            # (d)
+        assert F(1) / T < a <= (1 + F(4, K)) / T                              # (e)
+        if seq:
+            assert a > seq[-1]
+        seq.append(a)
+        T, D = Tn, Dn
+    # bookkeeping: the partial sums reproduce the rational targets exactly
+    assert T1 - sum(F(1, a) for a in seq) == T
+    assert D1 - sum(F(1, a * (a - 1)) for a in seq) == D
+    ratios = [math.log(seq[i + 1]) / math.log(seq[i]) for i in range(len(seq) - 1)]
+    norm = [math.log(seq[i]) / float(beta) ** (i + 1) for i in range(len(seq))]
+    assert all(abs(r - float(beta)) < 0.05 for r in ratios[2:])
+    print("construction of Theorem C (beta=" + str(beta) + ", K=64): Lemma 5.1 (a)-(e) verified for", steps,
+          "steps; log a_n / beta^n =", ", ".join(f"{v:.3f}" for v in norm[-4:]))
+
+if __name__ == "__main__":
+    check_two_shifts()
+    check_multilinear()
+    check_cantor()
+    check_numerics()
+    check_pell()
+    check_affine()
+    check_residual()
+    check_construction()
+    print("ALL CHECKS PASSED")
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{Badea87}
+C.~Badea, \emph{The irrationality of certain infinite series},
+Glasgow Math.\ J.\ \textbf{29} (1987), no.~2, 221--228.
+
+\bibitem{Bloom265}
+T.~F.~Bloom, \emph{Erd\H{o}s Problem \#265},
+\url{https://www.erdosproblems.com/265} (accessed October 28, 2026).
+
+\bibitem{Duverney01}
+D.~Duverney, \emph{Irrationality of fast converging series of rational numbers},
+J.\ Math.\ Sci.\ Univ.\ Tokyo \textbf{8} (2001), 275--316.
+
+\bibitem{EPAD265}
+Erd\H{o}s Problem a Day, \emph{Erd\H{o}s \#265 -- working report} (AI-generated, 2026),
+\url{https://erdosproblemaday.com/report/265}.
+
+\bibitem{Er85}
+P.~Erd\H{o}s, \emph{E.~Straus (1921--1983)}, Rocky Mountain J.\ Math.\ \textbf{15}
+(1985), no.~2, 331--341.
+
+\bibitem{Er88}
+P.~Erd\H{o}s, \emph{On the irrationality of certain series: problems and results},
+in: New Advances in Transcendence Theory (Durham, 1986), A.~Baker (ed.),
+Cambridge Univ.\ Press, 1988, pp.~102--109.
+
+\bibitem{ErGr80}
+P.~Erd\H{o}s and R.~L.~Graham, \emph{Old and New Problems and Results in Combinatorial
+Number Theory}, Monographies de L'Enseignement Math\'ematique \textbf{28},
+Geneva, 1980.
+
+\bibitem{ErSt64}
+P.~Erd\H{o}s and E.~G.~Straus, \emph{On the irrationality of certain Ahmes series},
+J.\ Indian Math.\ Soc.\ (N.S.) \textbf{27} (1964), 129--133.
+
+\bibitem{FC6839}
+google-deepmind/formal-conjectures, \emph{Pull request \#6839: add Erd\H{o}s 265 with
+external proof reference} (October 2026),
+\url{https://github.com/google-deepmind/formal-conjectures/pull/6839}.
+
+\bibitem{Kit26}
+K.~Kitamura, \emph{erdos-265-lean: a Lean~4 proof that the two rational reciprocal sums
+in Erd\H{o}s Problem~265 force $a_n^{1/2^n}\to1$}, GitHub repository, commit
+\texttt{16db9f29} (September 2026),
+\url{https://github.com/KitaKen1/erdos-265-lean}.
+
+\bibitem{Koizumi25}
+J.~Koizumi, \emph{Irrationality of the reciprocal sum of doubly exponential sequences},
+arXiv:2504.05933 (2025).
+
+\bibitem{Kov24}
+V.~Kova\v{c}, \emph{On simultaneous rationality of two Ahmes series},
+arXiv:2406.17593v1 (2024).
+
+\bibitem{KT25}
+V.~Kova\v{c} and T.~Tao, \emph{On several irrationality problems for Ahmes series},
+Acta Math.\ Hungar.\ (2025), doi:10.1007/s10474-025-01528-0; arXiv:2406.17593v2--v4.
+
+\bibitem{Sylvester1880}
+J.~J.~Sylvester, \emph{On a point in the theory of vulgar fractions},
+Amer.\ J.\ Math.\ \textbf{3} (1880), 332--335.
+
+\bibitem{Vardi91}
+I.~Vardi, \emph{Computational Recreations in Mathematica}, Addison--Wesley, 1991.
+
+\end{thebibliography}
+
+\end{document}

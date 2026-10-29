@@ -1,0 +1,653 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=26mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,tabularx,array}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!40!black,citecolor=blue!40!black,urlcolor=blue!40!black,breaklinks=true]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Integer-tail dynamics and slow modulations}
+\fancyhead[R]{\small Research note / 28 October 2026}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}\newcommand{\Q}{\mathbb Q}\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\DeclareMathOperator{\cent}{cent}\DeclareMathOperator{\Log}{Log}
+\title{Integer-Tail Dynamics and a P\'olya--Carlson\newline Exclusion for Slow Modulations}
+\author{Research note prepared for Keio\\\small AI-assisted derivation; independent review pending}
+\date{28 October 2026}
+\hypersetup{pdftitle={Integer-Tail Dynamics and a Polya-Carlson Exclusion for Slow Modulations},pdfauthor={Research note prepared for Keio}}
+\begin{document}
+\maketitle
+\begin{abstract}
+We combine normalized integer reciprocal tails with analytic continuation of
+coefficient-interpolated generating functions. The resulting criterion excludes
+rational reciprocal sums for a class not treated by the preceding rational-profile
+note: for every $\alpha>1$, $c\ne0$, $\kappa>0$, and $\eta>0$, positive integers with
+\[
+ b_n/\alpha^{2^n}=1+c/(\log(n+2))^\kappa+O(e^{-\eta n})
+\]
+have irrational reciprocal sum. Fractional-power profiles and nonzero periodic
+logarithmic profiles are also covered. The key analytic inputs are the classical
+Le Roy--Lindel\"of continuation theorem and the P\'olya--Carlson dichotomy.
+We separately derive the exact centered-residue dynamics behind Erd\H{o}s
+Problems 243 and 263, an elementary half-integer obstruction at an integer base,
+and a finite-transient obstruction to purely local absorption arguments.
+These results do not settle the unrestricted $o(1)$ perturbation in Problem 263.
+Historical originality, external peer review, and proof-assistant verification
+are not claimed.
+\end{abstract}
+
+\section{Target, results, and scope}
+The first question in Erd\H{o}s Problem 263 asks whether
+\begin{equation}\label{eq:263}
+ b_n\in\Z_{>0},\qquad b_n/2^{2^n}\longrightarrow1
+ \quad\Longrightarrow\quad \sum_n\frac1{b_n}\notin\Q.
+\end{equation}
+The current community database and the consulted formal-conjecture declaration
+record this question as open \cite{database,formal263}. Its separate question about necessary growth for Type~2
+irrationality sequences is not addressed here. Finitely many terms may always
+be changed or deleted: their reciprocal sum is rational.
+
+\begin{theorem}[Slow analytic modulations]\label{thm:main}
+Let $\alpha>1$, $\nu\ge2$, $\eta>0$, and $c\in\R\setminus\{0\}$.
+Let $(b_n)$ be positive integers, and suppose, for all sufficiently large $n$,
+that either
+\begin{align}
+ \frac{b_n}{\alpha^{2^n}}&=1+\frac{c}{(\log(n+\nu))^\kappa}
+                  +O(e^{-\eta n}),\qquad \kappa>0,\label{eq:logprofile}\\
+ \text{or}\qquad
+ \frac{b_n}{\alpha^{2^n}}&=1+\frac{c}{(n+\nu)^\theta}
+                  +O(e^{-\eta n}),\qquad 0<\theta<1.\label{eq:powerprofile}
+\end{align}
+Then $\sum_n1/b_n$ is irrational. The errors need not be monotone, continuous,
+or of one sign.
+\end{theorem}
+
+\begin{corollary}[Rounded examples]\label{cor:rounded}
+For sufficiently large $N$, both series
+\[
+ \sum_{n=N}^{\infty}\frac1{\lfloor 2^{2^n}(1+1/\log(n+2))\rfloor},
+ \qquad
+ \sum_{n=N}^{\infty}\frac1{\lfloor 2^{2^n}(1+1/\sqrt{n+2})\rfloor}
+\]
+are irrational. The base $2$ may be replaced by any real $\alpha>1$.
+Floors may be replaced by ceilings, nearest-integer rounding, or a bounded
+integer change, provided the denominators remain positive.
+\end{corollary}
+\begin{proof}
+The relative rounding error is $O(\alpha^{-2^n})$, hence
+$O(e^{-\eta n})$ for every fixed $\eta>0$.
+\end{proof}
+
+\begin{theorem}[Periodic logarithmic modulations]\label{thm:periodic}
+Let $t_n$ be a real periodic sequence, not identically zero, and let
+$\alpha>1$, $\nu\ge2$, $\kappa>0$, $\eta>0$. If positive integers satisfy
+\[
+ \frac{b_n}{\alpha^{2^n}}
+   =1+\frac{t_n}{(\log(n+\nu))^\kappa}+O(e^{-\eta n}),
+\]
+then $\sum_n1/b_n$ is irrational.
+\end{theorem}
+For example, $t_n=1+2(-1)^n$ permits a leading correction that changes sign.
+No assertion is made for an arbitrary bounded, nonperiodic $t_n$.
+
+\paragraph{Comparison with the preceding note.}
+The previous rational-modulation manuscript allowed certain errors of
+polynomial order, such as $O(n^{-5})$ around $1+1/n$ \cite{previous}.
+The present note permits slower, nonrational leading profiles, but its
+positive-growth arguments require an exponentially small relative remainder.
+It is a complementary result, not a uniform improvement of the earlier error
+bound. In particular, $1+1/\log n+o(1/\log n)$ is \emph{not} covered as a class.
+
+\section{Exact integer tails and the modular reformulation}
+The normalized tails provide the integer quantities used both in the new
+analytic argument and in the known pseudo-greedy reformulation of
+Problem~243 \cite{koizumi}.
+
+\subsection{The integer certificate}
+Fix $N$ and suppose $S_N=\sum_{n=N}^\infty1/b_n=p/q\in\Q$, $q>0$.
+Write
+\begin{equation}\label{eq:tails}
+ T_n=\sum_{j=n}^\infty\frac1{b_j},\quad
+ D_n=q\prod_{j=N}^{n-1}b_j,\quad C_n=D_nT_n.
+\end{equation}
+Then
+\[
+ C_n=p\prod_{j=N}^{n-1}b_j-
+ q\sum_{j=N}^{n-1}\frac{\prod_{k=N}^{n-1}b_k}{b_j}
+ \in\Z_{>0}.
+\]
+The fractions $C_n/D_n$ are deliberately \emph{not reduced}.
+Their exact evolution is
+\begin{equation}\label{eq:exactupdate}
+ D_{n+1}=b_nD_n,\qquad C_{n+1}=b_nC_n-D_n.
+\end{equation}
+Conversely, integrality at $n=N$ with some integer $q>0$ already implies
+rationality of $T_N$. Thus no irrationality criterion is hidden in the
+normalization itself.
+
+\subsection{Centered residues and pseudo-greedy dynamics}
+Suppose $b_{n+1}/b_n^2\to1$. Quadratic growth gives
+\[
+ T_n=b_n^{-1}+b_{n+1}^{-1}+O(b_{n+1}^{-2}),\qquad
+ T_n^{-1}=b_n-\frac{b_n^2}{b_{n+1}}+O(b_n^{-1}).
+\]
+Consequently
+\begin{equation}\label{eq:gap}
+ \varepsilon_n=T_n^{-1}+1-b_n\longrightarrow0.
+\end{equation}
+For sufficiently large $n$, $b_n$ is therefore the nearest integer to
+$T_n^{-1}+1$. This also follows from Koizumi's stronger quantitative theorem
+\cite[Theorem~1]{koizumi}.
+
+For $C>0$ an integer, let $\cent_C(D)$ denote the unique integer congruent to
+$D$ modulo $C$ in $[-C/2,C/2)$. Once $|\varepsilon_n|<1/2$, put
+\[
+ e_n=\cent_{C_n}(D_n)=C_n\varepsilon_n.
+\]
+Then the entire trajectory is deterministic:
+\begin{equation}\label{eq:modular}
+ \boxed{\quad
+ b_n=\frac{D_n-e_n}{C_n}+1,\qquad
+ C_{n+1}=C_n-e_n,\qquad D_{n+1}=b_nD_n.
+ \quad}
+\end{equation}
+One further algebraic elimination yields
+\begin{align}
+ e_{n+1}&=\cent_{C_n-e_n}(e_nb_n^2),\label{eq:residue2}\\
+ b_{n+1}&=b_n(b_n-1)+1+
+       \frac{e_nb_n^2-e_{n+1}}{C_n-e_n}.\label{eq:secondorder}
+\end{align}
+For instance, modulo $C_{n+1}$ we have $C_n\equiv e_n$ and
+$D_n=C_n(b_n-1)+e_n\equiv e_nb_n$; multiplying by $b_n$ proves
+\eqref{eq:residue2}. The quotient in \eqref{eq:secondorder} is an integer.
+
+\begin{proposition}[Absorption]\label{prop:absorb}
+If $e_n=0$ at one step, then $e_j=0$ for every $j\ge n$, and
+\[
+ b_{j+1}=b_j^2-b_j+1\qquad(j\ge n).
+\]
+\end{proposition}
+\begin{proof}
+This follows immediately from \eqref{eq:residue2} and
+\eqref{eq:secondorder}.
+\end{proof}
+
+For a positive rational initial tail the nearest-integer rule defines a
+positive remainder at each step and these remainders decrease to zero.
+Indeed, $b_n>T_n^{-1}$; if the remainders had a positive limit, the denominators
+would be bounded, contradicting the repeated subtraction of their reciprocals.
+Thus the rule really gives a reciprocal expansion of the initial rational.
+Moreover, \eqref{eq:modular} gives
+\[
+ \frac{b_{n+1}}{b_n^2}
+ =\frac{1-b_n^{-1}+\varepsilon_n/b_n}{1-\varepsilon_n}
+       +\frac{1-\varepsilon_{n+1}}{b_n^2}.
+\]
+Hence $\varepsilon_n\to0$ implies $b_{n+1}/b_n^2\to1$.
+This proves the following exact reformulation, also given by Koizumi:
+\[
+ \begin{gathered}
+ \text{Problem 243 is true}\
+ \Longleftrightarrow\
+ \text{every rational pseudo-greedy trajectory satisfying }e_n/C_n\to0\\
+           \text{eventually has }e_n=0.
+ \end{gathered}
+\]
+It is not a proof of that statement. The current community database records
+Problem~243 as open \cite{database}.
+
+\subsection{The growth-base constraint cannot be discarded}
+If $b_{n+1}/b_n^2\to1$ and $b_n\to\infty$, let
+$\delta_n=\log b_{n+1}-2\log b_n=o(1)$. Then
+\[
+ \lambda=\lim_{n\to\infty}2^{-n}\log b_n
+\]
+exists, and
+\begin{equation}\label{eq:basetail}
+ \log b_n-2^n\lambda
+   =-\sum_{j=n}^{\infty}2^{n-j-1}\delta_j=o(1).
+\end{equation}
+In particular $b_n\sim\alpha^{2^n}$ with $\alpha=e^\lambda>1$.
+Positivity of $\lambda$ follows, for large $N$, from
+$b_{n+1}\ge b_n^2/2$ and $b_N>2$.
+A counterexample to \eqref{eq:263} must have the special value
+$\lambda=\log2$. A nonabsorbing rational trajectory at some other growth base
+would not automatically refute Problem~263.
+
+\section{An elementary half-integer obstruction}
+The implication from a positive solution of Problem~243 to the first question
+of Problem~263 can be seen without invoking any transcendence theorem for
+Sylvester growth constants.
+
+\begin{lemma}[Half-integer asymptotics]\label{lem:half}
+Suppose a positive integer sequence tends to infinity and eventually satisfies
+$b_{n+1}=b_n^2-b_n+1$. There is $\alpha>1$ such that
+\[
+ b_n=\alpha^{2^n}+\frac12+O(\alpha^{-2^n}).
+\]
+Consequently it cannot be asymptotic to $a^{2^n}$ for an integer $a\ge2$.
+\end{lemma}
+\begin{proof}
+Set $y_n=b_n-1/2$. Then exactly
+\[
+ y_{n+1}=y_n^2+\frac14,
+ \qquad
+ \log y_{n+1}-2\log y_n
+       =\log\left(1+\frac1{4y_n^2}\right).
+\]
+With $\log\alpha=\lim2^{-n}\log y_n$, the same summation as in
+\eqref{eq:basetail} gives
+\[
+ 2^n\log\alpha-\log y_n
+   =\sum_{j=n}^{\infty}2^{n-j-1}
+         \log\left(1+\frac1{4y_j^2}\right)=O(y_n^{-2}).
+\]
+Here $y_{n+1}\ge y_n^2$ bounds the tail. Exponentiating yields
+$\alpha^{2^n}=y_n+O(y_n^{-1})$, proving the asserted expansion.
+If also $b_n\sim a^{2^n}$, the growth base must be $\alpha=a$.
+The integer $b_n-a^{2^n}$ would then tend to $1/2$, an impossibility.
+\end{proof}
+
+\begin{corollary}
+A positive solution of Problem~243 implies a positive solution of the first
+question in Problem~263. This is an implication, not an equivalence.
+\end{corollary}
+
+The same reasoning supplies useful necessary conditions on a possible
+counterexample to \eqref{eq:263}. In its eventual centered-residue trajectory,
+$e_n\ne0$ for every $n$, since a zero residue would trigger the contradiction
+in Lemma~\ref{lem:half}. Because $e_n/C_n\to0$ and $|e_n|\ge1$, necessarily
+\begin{equation}\label{eq:necessaryC}
+ C_n\longrightarrow\infty,\qquad \log C_n=o(n).
+\end{equation}
+The second assertion also follows from $C_{n+1}/C_n=1-\varepsilon_n\to1$.
+Writing $u_n=b_n/2^{2^n}$, the product formula below shows in addition
+\begin{equation}\label{eq:necessaryprod}
+ \prod_{j=N}^{n-1}u_j\longrightarrow\infty.
+\end{equation}
+If the negative gap mass were finite,
+$\sum_n\max(-\varepsilon_n,0)<\infty$, then
+$C_{n+1}=C_n(1-\varepsilon_n)$ would give a uniform upper bound on $C_n$.
+Thus this mass must diverge for a counterexample. These are restrictions,
+not an exclusion of every possible counterexample.
+
+\section{An analytic-continuation exclusion criterion}
+The following criterion is the new mechanism used in this note. It separates
+the arithmetic issue (integer tails) from the analytic one (continuation of
+a comparison generating function).
+
+\begin{lemma}[Tail product formula]\label{lem:product}
+Let $A_n=\alpha^{2^n}$, $\alpha>1$, and $b_n=A_nu_n$ with $u_n\to1$.
+Then
+\[
+ T_n=\frac1{b_n}\left(1+O(A_n^{-1})\right).
+\]
+Under the rationality assumption in \eqref{eq:tails},
+\begin{equation}\label{eq:product}
+ C_{N+m}=\frac q{A_N}
+   \frac{\prod_{j=N}^{N+m-1}u_j}{u_{N+m}}
+        \left(1+O(A_{N+m}^{-1})\right).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Since $b_{n+1}\asymp b_n^2$, the terms after $b_n^{-1}$ sum to
+$O(b_n^{-2})$. Also
+$\prod_{j=N}^{N+m-1}A_j=A_{N+m}/A_N$. Substitution in
+\eqref{eq:tails} proves \eqref{eq:product}.
+\end{proof}
+
+\begin{theorem}[Continuation versus integer growth]\label{thm:criterion}
+Let $R_n>0$ tend to $1$, and put
+\[
+ H_m=\frac{\prod_{j=N}^{N+m-1}R_j}{R_{N+m}}\qquad(m\ge0).
+\]
+Assume
+\begin{equation}\label{eq:Hgrowth}
+ \log H_m=o(m),\qquad \frac{\log H_m}{\log m}\longrightarrow+\infty,
+\end{equation}
+and that $F_H(z)=\sum_{m\ge0}H_mz^m$ admits analytic continuation through
+at least one point of the unit circle. If positive integers satisfy
+\[
+ b_n/\alpha^{2^n}=R_n+O(e^{-\eta n}),\qquad \alpha>1,\quad\eta>0,
+\]
+then $\sum_n1/b_n$ is irrational.
+\end{theorem}
+\begin{proof}
+Suppose otherwise and use the integer tails $C_n$. Write
+$b_n=A_nR_nv_n$, so $v_n=1+O(e^{-\eta n})$. Their product converges to a
+positive limit $V_\infty$, and
+\[
+ \frac{\prod_{j=N}^{N+m-1}v_j}{v_{N+m}}
+        =V_\infty(1+O(e^{-\eta m})).
+\]
+By Lemma~\ref{lem:product}, for a constant $K>0$,
+\begin{equation}\label{eq:CHe}
+ C_{N+m}=KH_m+E_m,\qquad E_m=O(e^{-\eta m/2}).
+\end{equation}
+The exponential bound uses $H_m=e^{o(m)}$ and the doubly exponential
+smallness of $A_{N+m}^{-1}$. Thus
+\[
+ F_C(z):=\sum_{m\ge0}C_{N+m}z^m=K F_H(z)+F_E(z),
+\]
+where $F_E$ is holomorphic in a disk of radius greater than $1$.
+The integer-coefficient series $F_C$ has radius of convergence exactly $1$
+and extends through the same boundary point as $F_H$.
+
+The P\'olya--Carlson theorem says that an integer-coefficient series of
+radius $1$ is rational or has the whole unit circle as a natural boundary;
+see \cite[Theorem~1.1]{pc}. Hence $F_C$ is rational. Partial fractions of a
+rational function with no poles inside the unit disk imply
+$C_{N+m}=O(m^M)$ for some fixed $M$. This contradicts
+\eqref{eq:Hgrowth} and \eqref{eq:CHe}.
+\end{proof}
+
+\begin{remark}[A complementary elementary case]\label{rem:decay}
+With the same summable multiplicative error, if instead $H_m\to0$, then
+$C_{N+m}\sim KH_m\to0$, directly contradicting positive integrality.
+No continuation theorem is needed in that case.
+\end{remark}
+
+\section{Building the analytic continuation explicitly}
+We now verify, rather than assume, the analytic hypothesis for the profiles in
+Theorem~\ref{thm:main}.
+
+\subsection{The classical continuation input}
+We use the following form of the Le Roy--Lindel\"of theorem
+\cite[Introduction]{leroy}: if $\Phi$ is holomorphic in a neighborhood of the
+closed right half-plane and, for every $\epsilon>0$,
+\[
+ |\Phi(z)|\le C_\epsilon e^{\epsilon|z|}\qquad(\Re z\ge0),
+\]
+then $\sum_{m\ge0}\Phi(m)w^m$ continues off the nonnegative real axis.
+Combined with its original unit disk, this supplies continuation to the slit
+plane $\C\setminus[1,\infty)$ when the radius is $1$.
+This is the zero-exponential-type case of the classical theorem.
+It can also be obtained by the Lindel\"of contour representation: the factor
+$\pi/\sin(\pi z)$ gives vertical exponential decay and the zero-type bound
+allows the residue contour to be shifted to the right.
+
+\subsection{An interpolation by convergent differences}
+For either profile, take $N$ so large that all branches below are holomorphic
+for $\Re z>N-1$, and define
+\[
+ f(z)=\Log R(z),
+\]
+where
+\[
+ R(z)=1+\frac{c}{(\Log(z+\nu))^\kappa}
+ \quad\text{or}\quad
+ R(z)=1+\frac{c}{(z+\nu)^\theta}.
+\]
+All logarithms and powers are the principal branches on that half-plane;
+by increasing $N$ we ensure $|R(z)-1|<1/2$ there. Define
+\begin{equation}\label{eq:interpolant}
+ g(z)=\sum_{k=0}^{\infty}\bigl(f(N+k)-f(N+k+z)\bigr),\qquad
+ \Phi(z)=\exp\bigl(g(z)-f(N+z)\bigr).
+\end{equation}
+The series is locally uniformly convergent for $\Re z>-1/2$, because the
+following derivative bounds are summable along the positive integers:
+\begin{equation}\label{eq:fbounds}
+ \begin{array}{c|c|c}
+ & |f(w)| & |f'(w)|\\ \hline
+ \text{logarithmic} & O((\log|w+\nu|)^{-\kappa}) &
+  O\bigl(|w+\nu|^{-1}(\log|w+\nu|)^{-\kappa-1}\bigr)\\[2pt]
+ \text{fractional power} & O(|w+\nu|^{-\theta}) &
+  O(|w+\nu|^{-1-\theta})
+ \end{array}
+\end{equation}
+For an integer $m\ge0$, telescoping finite sums in \eqref{eq:interpolant}
+and letting the upper limit tend to infinity gives
+\[
+ g(m)=\sum_{j=N}^{N+m-1}f(j),\qquad \Phi(m)=H_m.
+\]
+The omitted last $m$ terms tend to zero for each fixed $m$.
+
+It remains to check the growth in the entire right half-plane, not just on
+the positive axis. Write $r=|z|\ge2$, $\Re z\ge-1/4$, and split the sum
+at $k=2r$. For $k\le2r$, use the two separate bounds on $f$ in
+\eqref{eq:fbounds}; for $k>2r$, integrate $f'$ on the segment from
+$N+k$ to $N+k+z$. Uniformly in this half-plane one obtains
+\begin{align*}
+ |g(z)|&\le C\left(1+
+   \sum_{k\le2r}\frac1{(\log(N+k))^\kappa}
+   +r\sum_{k>2r}\frac1{(N+k)(\log(N+k))^{\kappa+1}}\right)\\
+ &=O\left(\frac r{(\log r)^\kappa}\right)
+ \qquad\text{in the logarithmic case},\\
+ |g(z)|&\le C\left(1+\sum_{k\le2r}(N+k)^{-\theta}
+       +r\sum_{k>2r}(N+k)^{-1-\theta}\right)\\
+ &=O(r^{1-\theta})\qquad\text{in the power case}.
+\end{align*}
+The fixed shifts in these bounds are harmless. The same estimates, with
+an extra bounded term, bound $\log|\Phi(z)|$ from above. Both bounds are
+$o(r)$. Thus $\Phi$ has zero exponential type on a neighborhood of the
+closed right half-plane, as required. The generating function $F_H$
+therefore has the desired continuation.
+
+\subsection{Growth and proof of the main theorem}
+For $c>0$, summing $f(n)$ gives
+\begin{align}
+ \log H_m&=(c+o(1))\frac m{(\log m)^\kappa}
+                  &&\text{under \eqref{eq:logprofile}},\label{eq:loggrowth}\\
+ \log H_m&=\left(\frac c{1-\theta}+o(1)\right)m^{1-\theta}
+                  &&\text{under \eqref{eq:powerprofile}}.\label{eq:powergrowth}
+\end{align}
+For example, $\log(1+x)=x+O(x^2)$ and the quadratic correction is
+$o(\sum x_n)$ for each of these slowly decaying positive sequences.
+The elementary estimates
+$\sum_{j\le m}(\log j)^{-\kappa}\sim m/(\log m)^\kappa$ and
+$\sum_{j\le m}j^{-\theta}\sim m^{1-\theta}/(1-\theta)$ complete the calculation.
+Both expressions satisfy \eqref{eq:Hgrowth}. Theorem~\ref{thm:criterion}
+now proves irrationality. For $c<0$, the same asymptotics give
+$\log H_m\to-\infty$, and Remark~\ref{rem:decay} applies. This proves
+Theorem~\ref{thm:main}.
+
+\section{Periodic profiles: sign changes are allowed}
+Here we prove Theorem~\ref{thm:periodic}. Let $p$ be a period and
+\[
+ \mu=\frac1p\sum_{r=0}^{p-1}t_{N+r},\qquad
+ v=\frac1p\sum_{r=0}^{p-1}t_{N+r}^2.
+\]
+If $\mu\ne0$, periodic summation and the expansion of $\log(1+x)$ give
+\[
+ \log H_m=(\mu+o(1))m/(\log m)^\kappa.
+\]
+Thus $\mu<0$ is handled by decay, while $\mu>0$ has the required
+superpolynomial, subexponential growth.
+
+For $\mu>0$ one must interpolate residue classes separately; replacing
+$t_n$ by a trigonometric function of a complex argument would not provide
+the required growth bound. Define, for $0\le r<p$,
+\[
+ f_r(z)=\Log\left(1+
+ \frac{t_{N+r}}{(\Log(N+r+pz+\nu))^\kappa}\right),
+ \qquad F(z)=\sum_{r=0}^{p-1}f_r(z).
+\]
+Increasing $N$ again makes all these functions holomorphic for
+$\Re z>-1/2$. Set
+\[
+ G(z)=\sum_{k=0}^{\infty}(F(k)-F(k+z)),\qquad
+ \Phi_r(z)=\exp\left(G(z)+\sum_{j=0}^{r-1}f_j(z)-f_r(z)\right).
+\]
+Then $\Phi_r(k)=H_{pk+r}$. The same prefix/tail estimates as above prove
+zero exponential type for every $\Phi_r$. Hence each
+$\sum_{k\ge0}H_{pk+r}w^k$ continues through every point of the unit circle
+except possibly $1$. The decomposition
+\[
+ F_H(z)=\sum_{r=0}^{p-1}z^r\sum_{k\ge0}H_{pk+r}(z^p)^k
+\]
+gives continuation through every $z$ with $|z|=1$ and $z^p\ne1$.
+Theorem~\ref{thm:criterion} applies.
+
+Finally suppose $\mu=0$. Because $t_n$ has bounded partial sums,
+$\sum t_n/(\log(n+\nu))^\kappa$ converges by summation by parts.
+Since $t_n$ is not identically zero, $v>0$, and the quadratic term in
+$\log(1+x)$ gives
+\[
+ \log H_m=-\left(\frac v2+o(1)\right)
+                  \frac m{(\log m)^{2\kappa}}\longrightarrow-\infty.
+\]
+The cubic remainder is $o(m/(\log m)^{2\kappa})$.
+Remark~\ref{rem:decay} completes the proof.
+
+\section{Why finite local tests cannot close the absorption gap}
+The following construction illustrates a genuine obstacle. Related
+flat-residue constructions are presented in the independent working report
+\cite{flat}; the proof here is explicit and does not depend on an unverified
+claim from that report.
+
+\begin{proposition}[Arbitrarily long small nonzero gaps]\label{prop:flat}
+Given $L\ge1$ and $\epsilon>0$, a positive rational initial tail can be
+chosen so that its centered-residue expansion has $L$ consecutive nonzero
+gaps of magnitude less than $\epsilon$, followed by a zero gap and absorption.
+\end{proposition}
+\begin{proof}
+Choose a prime $p>L+\max(3,\epsilon^{-1})$ and put
+\[
+ C=p-L,\qquad M=\prod_{j=0}^{L-1}(C+j).
+\]
+Since $p\nmid M$, choose $T>0$ with $MT\equiv1\pmod p$.
+Increasing $T$ by a multiple of $p$, arrange $MT-1>10C$.
+Start the unreduced trajectory at $C_0=C$, $D_0=MT-1$.
+
+Let $M_j=\prod_{i=j}^{L-1}(C+i)$. We show inductively that for $j<L$,
+\[
+ C_j=C+j,\quad D_j\equiv-1\pmod{M_j},\quad p\mid D_j.
+\]
+These assertions hold at $j=0$. Since $C_j\ge3$, the centered residue is
+$e_j=-1$. Therefore $C_{j+1}=C_j+1$. Also
+$b_j=(D_j+1)/C_j+1\equiv1\pmod{M_{j+1}}$, whence
+$D_{j+1}=D_jb_j\equiv-1\pmod{M_{j+1}}$. Divisibility by $p$ persists.
+At step $L$, $C_L=p\mid D_L$, so $e_L=0$ and absorption follows.
+The nonzero gaps are exactly $-1/(C+j)$, all of magnitude less than
+$\epsilon$. The recurrence and the final telescoping Sylvester tail show
+that the reciprocal sum is the initial rational $C_0/D_0$.
+\end{proof}
+
+This is not a counterexample to either problem: the gaps eventually vanish,
+and the limiting growth base is not an integer by Lemma~\ref{lem:half}.
+It does rule out a uniform finite-window argument asserting that a fixed
+number of sufficiently small gaps forces an immediate zero gap. Treating
+centered residues as independent random samples would likewise be a
+heuristic, not a proof.
+
+\section{The remaining full-problem obstruction}
+For an unrestricted perturbation $b_n/2^{2^n}=1+o(1)$, the exact conditions
+proved above imply that any rational reciprocal sum would produce a
+rational initial state and a deterministic trajectory with
+\begin{equation}\label{eq:openbridge}
+ \boxed{\qquad
+ e_n\ne0,\quad e_n/C_n\longrightarrow0,\quad
+ \lim_{n\to\infty}2^{-n}\log b_n=\log2.
+ \qquad}
+\end{equation}
+Conversely, a rational pseudo-greedy trajectory satisfying these conditions
+would refute the first question in Problem~263, by \eqref{eq:basetail}.
+Thus exclusion of these trajectories is an exact remaining task.
+
+The P\'olya--Carlson theorem does not by itself exclude them. Their
+integer-tail generating function has radius $1$, but may have a natural
+boundary. No analytic continuation follows merely from
+$C_{n+1}/C_n\to1$. Nor have we proved that the rational-generating-function
+branch forces absorption in every case. In our explicit positive profiles,
+continuation excludes the natural-boundary branch and superpolynomial
+growth excludes the rational branch; both additional ingredients matter.
+
+Similarly, the usual small-positive-integer argument at the unmodified tail
+level stalls at this critical growth scale:
+\[
+ \left(\prod_{j=N}^{n-1}b_j\right)T_n
+ \asymp \prod_{j=N}^{n-1}(b_j/2^{2^j}).
+\]
+The right side can grow rather than tend to zero. Fixed-order finite
+differences alone also do not make a profile of size
+$\exp(n/(\log n)^\kappa)$ tend to zero. The analytic continuation step is
+precisely what replaces that earlier approach, not a proof that every
+possible irregular profile is covered.
+
+\section{Provenance and verification record}
+Koizumi's published paper establishes the pseudo-greedy framework and proves
+that all but countably many real bases are Type~2 irrationality bases
+\cite{koizumi}. It does not identify base $2$ as a nonexceptional base.
+Duverney's survey includes the classical integer-base criterion requiring
+summable relative perturbations \cite[Theorem~2.3]{duverney}.
+The leading positive perturbations $1/(\log n)^\kappa$ and $n^{-\theta}$,
+$0<\theta<1$, are not summable. Consequently that particular criterion
+cannot simply be substituted for the present proof. This comparison is
+not an exhaustive priority search.
+
+The complex-analytic ingredients are classical and explicitly cited.
+The present note proves their hypotheses for the displayed profiles and
+derives the resulting exclusion criterion. It makes no claim that this
+application is historically first. No unproved result in the user's corpus
+or in the preceding research note is used as a premise.
+
+The accompanying \texttt{verify\_exact.py} uses only integer and rational
+arithmetic. It checked 10,000 centered-residue states and their two-step
+identities, the trajectory beginning at $11/29$, flat transients of lengths
+$1$ through $10$, eight exact rounded square-root-profile denominators, and
+1,000 instances of the half-shift identity. All checks passed in the saved
+run. These finite checks do not verify the complex-analytic arguments or
+prove an infinite irrationality theorem. No Lean or other proof-assistant
+verification, external peer review, or unrestricted solution of Problem~263
+is asserted.
+
+\begin{thebibliography}{9}
+\small
+\bibitem{database}
+T. Tao and contributors, \emph{Erd\H{o}s problem database},
+entries 243 and 263, consulted 28 October 2026.
+\url{https://github.com/teorth/erdosproblems}.
+
+\bibitem{formal263}
+The Formal Conjectures Authors, \emph{Erd\H{o}s Problem 263},
+\path{FormalConjectures/ErdosProblems/263.lean}, consulted 28 October 2026.
+\href{https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/ErdosProblems/263.lean}{Formal Conjectures repository}.
+The main question is tagged \texttt{research open}; its \texttt{sorry}
+is a placeholder, not a proof.
+
+\bibitem{koizumi}
+J.~Koizumi, \emph{Irrationality of the reciprocal sum of doubly exponential
+sequences}, Integers \textbf{26} (2026), A28.
+\url{https://math.colgate.edu/~integers/aa28/aa28.pdf}.
+Also arXiv:2504.05933.
+
+\bibitem{pc}
+J.~P. Bell, K. Gunn, K.~D. Nguyen, and J.~C. Saunders,
+\emph{A general criterion for the P\'olya--Carlson dichotomy and application},
+arXiv:2206.00862 (2022), Theorem~1.1.
+\url{https://arxiv.org/html/2206.00862}.
+
+\bibitem{leroy}
+A.~Mkrtchyan, \emph{Multivariate analog of the Le Roy--Lindel\"of theorem
+about power series analytic continuation}, arXiv:2403.17021 (2024),
+Introduction, statement of the classical one-variable theorem.
+\url{https://arxiv.org/html/2403.17021}.
+
+\bibitem{duverney}
+D.~Duverney, \emph{Irrationality of fast converging series of rational
+numbers}, J. Math. Sci. Univ. Tokyo \textbf{8} (2001), 275--316.
+\url{https://www.ms.u-tokyo.ac.jp/journal/pdf/jms080206.pdf}.
+
+\bibitem{flat}
+\emph{Erd\H{o}s Problem a Day: Problem 243}, independent working report,
+dated 12 August 2026, consulted 28 October 2026.
+\url{https://www.erdosproblemaday.com/report/243}.
+Cited for prior flat-transient constructions, not as an independently
+refereed resolution of either problem.
+
+\bibitem{previous}
+\emph{A Rational-Modulation Exclusion for Doubly Exponential Reciprocal
+Sums}, research note prepared for Keio, 28 October 2026.
+Earlier manuscript in the present research session; not a proof dependency.
+\end{thebibliography}
+\end{document}
