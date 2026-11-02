@@ -1,0 +1,4778 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,longtable,array,enumitem}
+\usepackage{xcolor,xurl,hyperref,fancyhdr}
+\definecolor{ink}{HTML}{16324F}
+\definecolor{accent}{HTML}{1A626B}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+ pdfdisplaydoctitle=true,
+ pdftitle={Positive Certificates and Primitive Arithmetic for Euler's Constant},
+ pdfauthor={Keio--Shaitetsu research notes}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\setlist[enumerate]{topsep=4pt,itemsep=3pt}
+\setlist[itemize]{topsep=4pt,itemsep=3pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt minus 1pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}Positive certificates and primitive arithmetic}
+\fancyhead[R]{\small Euler's constant}\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setcounter{tocdepth}{2}
+\begin{document}
+\begin{center}
+{\LARGE\bfseries\color{ink}Positive Certificates and\\[4pt]
+Primitive Arithmetic for Euler's Constant}\par
+\vspace{8pt}
+{\large Target realization, exact optimization,\\
+and arithmetic obstructions}\par
+\vspace{12pt}
+{Keio--Shaitetsu research notes}\par
+{31 October 2026}\par
+\vspace{6pt}
+{\small A consolidated research manuscript with complete proofs}
+\end{center}
+\begin{abstract}
+We develop a unified framework for positive, logarithm-free approximation
+to Euler's constant in which every estimate is compared with the actual
+reduced denominator. Canonical Binet kernels yield rational brackets and
+a least-denominator selection with an exact rationality dichotomy.
+Farey geometry reduces the primitive-error minimum on a rational interval
+to logarithmically many candidates. Global positive target realization,
+effective polynomial-square representations, optimal Laguerre
+integerization, prime-residue tests, and support compression provide
+complementary analytic and arithmetic tools. We prove divergence for
+entire canonical, fixed-polynomial, and dyadic interpolation classes.
+A localized positive family has the exact arithmetic threshold
+\(q_M=o(M)\), and a one-step cutoff change removes a specified adverse
+prime factor from its reduced denominator. Signed cancellation gives
+an exponentially small integerized upper bound but does not guarantee
+nonvanishing. Additional synthesis results determine the sharp
+asymptotic degree of positive dyadic certificates, extend the selection
+dichotomy to general shrinking rational intervals, exhibit an unbounded
+gap between least-denominator and primitive-optimal selection, and prove
+an exponential height barrier for independent signed outputs.
+All statements retain their explicit hypotheses. The resulting tools
+do not establish the irrationality of Euler's constant.
+\end{abstract}
+\vspace{4pt}
+\noindent\textbf{Keywords.} Euler's constant; rational approximation;
+positive kernels; Farey fractions; Laguerre polynomials; integer linear forms.
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{The objective and the ten result groups}
+Throughout,
+\[
+ \gamma=\lim_{n\to\infty}(H_n-\log n),\qquad
+ H_n=\sum_{j=1}^n\frac1j,\qquad H_0=0.
+\]
+For a reduced rational \(p/q\), \(q>0\), its \emph{primitive error} is
+\[
+ \mathcal E(p/q)=q\left|\gamma-\frac pq\right|=|q\gamma-p|.
+\]
+The coefficients are integers; the value itself is not asserted to be
+an integer. If \(\gamma=a/b\) in lowest terms, then
+\(b(q\gamma-p)=aq-bp\in\mathbb Z\). Consequently a proved infinite
+sequence satisfying
+\[
+ 0<|q_j\gamma-p_j|\longrightarrow0,\qquad p_j,q_j\in\mathbb Z,
+\]
+would establish irrationality. The five requirements are exact logarithm
+cancellation and integer coefficients, nonvanishing, decay after actual
+denominator reduction, an infinite family, and unconditional proofs of
+these assertions for the same family.
+
+This manuscript consolidates the ten result groups selected from three
+research notes \cite{source-a,source-b,source-c}. Their constructions and
+proofs are reproduced and connected here, so no separate manuscript or
+supplement is needed to follow the argument. Standard external theorems
+are stated when used and attributed in the bibliography. The order below
+is a dependency order; the first column records the earlier research
+priority ranking, not a claim of historical priority.
+
+\small
+\begin{longtable}{@{}p{0.06\textwidth}p{0.51\textwidth}p{0.35\textwidth}@{}}
+\toprule Rank & Result group & Principal statements\\\midrule
+\endfirsthead
+\toprule Rank & Result group & Principal statements\\\midrule
+\endhead
+1 & Explicit least-denominator selection and its rationality dichotomy &
+Theorems~\ref{next-cutoff-selection}, \ref{stage3-nested-brackets}.\\
+2 & Exact finite primitive-error optimization and certificates &
+Theorems~\ref{stage3-farey-logarithmic-sail}, \ref{stage3-farey-certified-optimizer},
+\ref{stage3-farey-three-fractions}.\\
+3 & Constructive positive target realization and complete reduction &
+Theorems~\ref{next-cutoff-interpolation}, \ref{sea-analytic-positive-zeros}.\\
+4 & Complete polynomial-square target image and effective degree &
+Theorems~\ref{sea-square-exponential-lift}, \ref{sea-square-effective-degree}.\\
+5 & Optimal Laguerre integerization and surviving-prime tests &
+Theorems~\ref{next-square-normalization}, \ref{next-square-prime-block}.\\
+6 & Primitive-cost obstructions for entire coefficient classes &
+Theorems~\ref{next-cutoff-cost}, \ref{next-square-polynomial-filter},
+\ref{stage3-arithmetic-dyadic-obstruction}.\\
+7 & Support compression with exact denominator and error transfer &
+Theorem~\ref{sea-arith-cutoff-compression}.\\
+8 & Positive rational localization and the exact threshold &
+Theorems~\ref{stage3-localization-sandwich}, \ref{stage3-localization-asymptotic}.\\
+9 & Removal of an adverse prime factor by changing the cutoff &
+Theorem~\ref{stage3-localization-primes}.\\
+10 & Integerized signed cancellation and its nonvanishing obstruction &
+Theorem~\ref{stage3-counting-main}.\\
+\bottomrule
+\end{longtable}
+\normalsize
+
+\paragraph{What is additionally proved in this consolidation.}
+The synthesis sections prove a sharp degree law for globally nonnegative
+dyadic kernels, a general interval-selection dichotomy with a Fibonacci
+counterexample to asymptotic optimality of least-denominator selection,
+and a lower bound for the height of two independent outputs in the
+actual signed-cancellation lattice. These conclusions are proved here
+without assuming the irrationality of \(\gamma\). Their relation to
+classical polynomial and Diophantine tools is made explicit; no literature
+priority or external peer-review status is asserted.
+
+\paragraph{Conventions.}
+All logarithms are natural unless a base is shown. The notation
+\(v_p\) is the usual rational \(p\)-adic valuation, and
+\(\operatorname{odd}(n)\) is the largest odd divisor of a nonzero integer
+\(n\), with its sign discarded. Empty products are one. A polynomial's
+coefficient height always refers to the explicitly stated basis.
+Different uses of \(A,B\) and of \(q\) are locally specified: the
+polynomial-square forms \(A(f),B(f)\) are distinct from canonical
+coefficient normalizers, and a polynomial variable is distinguished
+from a reduced denominator by its argument.
+
+\section{Canonical compressed families with exact positive kernels}
+\label{next-cutoff-section}
+
+This section analyzes a complete low-degree family inside the shared-cutoff
+construction. No irrationality claim is made. The new construction gives
+positive, strictly monotone rational approximants in two parameters; its
+primitive cost can also be settled uniformly.
+
+Write
+\[
+ d\mu(u)=\frac{du}{e^{2\pi\sqrt u}-1},\qquad
+ \mu_j=\int_0^\infty u^j\,d\mu(u)
+       =\frac{|B_{2j+2}|}{2j+2}.
+\]
+For an integer $n\ge1$, Binet's identity \cite{dlmf-binet} is
+\[
+ H_n-\frac1{2n}=\gamma+\log n-\Phi(n^2),
+ \qquad \Phi(z)=\int_0^\infty\frac{d\mu(u)}{u+z}.
+\]
+An elementary moment estimate used below is
+\begin{equation}\label{next-cutoff-moment-ratio}
+ \frac{\mu_{j+1}}{\mu_j}
+ =\frac{(2j+3)(2j+2)}{4\pi^2}
+   \frac{\zeta(2j+4)}{\zeta(2j+2)}
+ <\frac{(j+1)^2}{4}.
+\end{equation}
+Indeed the zeta ratio is less than $1$, $\pi>3$, and
+$(2j+3)(2j+2)<9(j+1)^2$.
+
+\begin{theorem}[An exact positive and doubly monotone canonical family]
+\label{next-cutoff-canonical}
+For integers $m,t\ge0$, put
+\[
+ P_m(x)=\prod_{j=1}^{m}(4^jx-1),\quad
+ A_m=P_m(1),\quad s_m=\frac{P_m'(1)}{P_m(1)},\quad
+ a=2^t,\quad b=t+s_m,\quad R=4^{m+1}.
+\]
+Empty products have value $1$, so $s_0=0$. Define
+\[
+ C_{m,t}(x)=\frac{P_m(x)}{A_m}\bigl[1-b(x-1)\bigr]
+           =\sum_i c_i x^i,
+ \qquad
+ r_{m,t}=\sum_i c_i\left(H_{a2^i}-\frac1{2a2^i}\right).
+\]
+Then $r_{m,t}$ is rational and
+\begin{equation}\label{next-cutoff-positive-kernel}
+ E_{m,t}:=\gamma-r_{m,t}
+ =\int_0^\infty
+ \frac{u^m\{u+a^2[R+b(R-1)]\}}
+      {\prod_{i=0}^{m+1}(u+a^24^i)}\,d\mu(u)>0.
+\end{equation}
+Both coordinate increases are strict:
+\[
+ r_{m+1,t}>r_{m,t},\qquad r_{m,t+1}>r_{m,t}.
+\]
+Moreover, uniformly in both parameters,
+\begin{equation}\label{next-cutoff-two-sided}
+ \frac{a^{-2m-2}4^{-m(m+1)/2}}{3^{15}}
+ \le E_{m,t}
+ \le \mu_m(t+m+3)a^{-2m-2}4^{-m(m+1)/2}.
+\end{equation}
+In particular $r_{m,t}\to\gamma$ along every sequence $m+t\to\infty$.
+\end{theorem}
+
+\begin{proof}
+The defining polynomial satisfies
+\[
+ C_{m,t}(1)=1,\quad C_{m,t}'(1)=-t,\quad
+ C_{m,t}(4^{-j})=0\quad(1\le j\le m).
+\]
+Binet's identity therefore cancels all logarithms exactly. To evaluate the
+remaining kernel, first observe the rational identity
+\begin{equation}\label{next-cutoff-base-kernel}
+ \sum_{i=0}^m\frac{[x^i]P_m(x)}{u+a^24^i}
+ =\frac{A_m u^m}{\prod_{i=0}^m(u+a^24^i)}.
+\end{equation}
+After taking a common denominator, the numerator has degree at most $m$.
+Its first $m$ Taylor coefficients at zero vanish because
+$P_m(4^{-j})=0$ for $1\le j\le m$; its leading coefficient is
+$P_m(1)=A_m$. This proves the identity. Multiplication by $x$ shifts every
+index by one. Applying this observation to $C_{m,t}$ gives
+\eqref{next-cutoff-positive-kernel}, whose integrand is positive for $u>0$.
+
+For monotonicity, introduce the direction
+\[
+ J_{m,t}:=\int_0^\infty
+ \sum_i\frac{[x^i]\{P_m(x)(x-1)^2/A_m\}}{u+a^24^i}\,d\mu(u).
+\]
+Two shifts of \eqref{next-cutoff-base-kernel} give exactly
+\begin{equation}\label{next-cutoff-direction}
+ J_{m,t}
+ =a^2(R-1)\int_0^\infty
+ \frac{u^m\{4a^2(R-1)-3u\}}
+      {\prod_{i=0}^{m+2}(u+a^24^i)}\,d\mu(u).
+\end{equation}
+This integral is strictly positive. Indeed, for the positive measure
+$u^m\,d\mu$ and the strictly decreasing positive weight
+$w(u)=\prod_{i=0}^{m+2}(u+a^24^i)^{-1}$, the weighted mean of $u$ is at
+most $\mu_{m+1}/\mu_m$. This follows by integrating
+$(u-v)(w(u)-w(v))\le0$ against the product measure. By
+\eqref{next-cutoff-moment-ratio}, that mean is less than $(m+1)^2/4$,
+whereas $4a^2(R-1)/3$ is larger. For instance $(m+1)^2\le4^m$ and
+$4(R-1)/3\ge R$ suffice.
+
+Direct polynomial subtraction now gives
+\[
+ C_{m+1,t}-C_{m,t}
+ =-\frac{R[R+b(R-1)]}{(R-1)^2}
+        \frac{P_m}{A_m}(x-1)^2,
+\]
+\[
+ xC_{m,t+1}-C_{m,t}
+ =-(b+1)\frac{P_m}{A_m}(x-1)^2.
+\]
+In the second identity the common external base is $a=2^t$; the leading
+$x$ accounts for the new base $2a$. Both differences of gamma errors
+are negative multiples of $J_{m,t}>0$, proving strict monotonicity.
+
+For the upper bound in \eqref{next-cutoff-two-sided}, bound each
+denominator factor below by $a^24^i$. This gives
+\[
+ E_{m,t}\le
+ \frac{\mu_{m+1}+a^2[R+b(R-1)]\mu_m}
+ {a^{2m+4}4^{(m+1)(m+2)/2}}.
+\]
+Since
+$s_m=m+\sum_{j=1}^m(4^j-1)^{-1}<m+1$,
+and \eqref{next-cutoff-moment-ratio} implies
+$\mu_{m+1}/(a^2R\mu_m)<1$, this proves the stated upper bound.
+
+For the lower bound, integrate only over $1\le u\le2$.
+On that interval $d\mu(u)>3^{-12}du$, because
+$2\pi\sqrt u<12$ and $e<3$. Also
+\[
+ \prod_{i=0}^{m+1}(u+a^24^i)
+ \le a^{2m+4}4^{(m+1)(m+2)/2}
+      \exp\!\left(\sum_{i\ge0}\frac2{4^i}\right)
+ <27a^{2m+4}4^{(m+1)(m+2)/2}.
+\]
+The numerator is at least $a^2R$ there. Combining these inequalities
+proves the lower bound.
+
+Finally,
+\[
+ \frac{\mu_{m+1}4^{-(m+1)(m+2)/2}}
+      {\mu_m4^{-m(m+1)/2}}
+ <\frac{(m+1)^2}{4^{m+2}}\le\frac1{16}.
+\]
+Thus the upper bound is at most
+\[
+ \frac{t+m+3}{12}\,4^{-t(m+1)}16^{-m}
+ \le\frac{t+m+3}{12}\,4^{-t-m},
+\]
+which tends to zero uniformly as $t+m\to\infty$.
+\end{proof}
+
+\begin{theorem}[Complete compressed classification and raw-error optimum]
+\label{next-cutoff-classification}
+Fix $m,t$ and use the preceding notation. Every rational polynomial $C$
+of degree at most $m+2$ satisfying
+\[
+ C(1)=1,\qquad C'(1)=-t,\qquad
+ C(4^{-j})=0\quad(1\le j\le m)
+\]
+has the unique form
+\[
+ C_\kappa(x)=\frac{P_m(x)}{A_m}
+       \bigl[1-b(x-1)+\kappa(x-1)^2\bigr],
+ \qquad \kappa\in\mathbb Q.
+\]
+This includes every remainder of degree less than $m+3$ obtained from
+the shared-cutoff polynomial
+$(x-1)^2(2x-1)P_m(x)$, whenever these normalized constraints hold.
+
+Writing $d=R-1$, its exact gamma-error kernel is
+\[
+ F_\kappa(u)=
+ \frac{u^m(u^2+a^2A_\kappa u+a^4B_\kappa)}
+      {\prod_{i=0}^{m+2}(u+a^24^i)},
+\]
+where
+\[
+ A_\kappa=5R+d(b-3\kappa),\qquad
+ B_\kappa=4\{R^2+bRd+\kappa d^2\}.
+\]
+Consequently $F_\kappa(u)\ge0$ for all $u\ge0$ if and only if
+\begin{equation}\label{next-cutoff-quadratic-positivity}
+ B_\kappa\ge0,\qquad
+ A_\kappa\ge0\ \hbox{or}\ A_\kappa^2\le4B_\kappa.
+\end{equation}
+Among all these pointwise nonnegative kernels, the smallest integral is
+attained uniquely at
+\[
+ \kappa_{\min}=-\frac{R(R+bd)}{d^2}.
+\]
+At this parameter $C_{\kappa_{\min}}=C_{m+1,t}$, so the minimum error is
+exactly $E_{m+1,t}$. This is an optimum for the unnormalized integral;
+it is not an optimum for the final reduced-denominator error.
+\end{theorem}
+
+\begin{proof}
+Divisibility by $P_m$ and the two conditions at $1$ give the unique
+quadratic factor. Three shifts of \eqref{next-cutoff-base-kernel} yield
+the displayed numerator. A monic quadratic $v^2+Av+B$ is nonnegative
+on $v\ge0$ exactly when $B\ge0$ and either $A\ge0$ or its real minimum
+$B-A^2/4$ is nonnegative; this proves
+\eqref{next-cutoff-quadratic-positivity}.
+
+The condition $B_\kappa\ge0$ forces $\kappa\ge\kappa_{\min}$.
+At $\kappa_{\min}$, $B_\kappa=0$ and $A_\kappa>0$, so this endpoint is
+admissible. Its polynomial additionally vanishes at $4^{-m-1}$, hence
+the already proved polynomial identity identifies it with $C_{m+1,t}$.
+The error is the affine function
+\[
+ E(\kappa)=E_{m,t}+\kappa J_{m,t}.
+\]
+The preceding proof established $J_{m,t}>0$ for every $m,t$, so the
+minimum over all admissible parameters is attained uniquely at the
+least one, as claimed.
+\end{proof}
+
+\paragraph{A rational double-zero example.}
+For $m=0$, $t=4$, and $\kappa=80/9$, one has
+\[
+ C_\kappa(x)=\frac{125-196x+80x^2}{9},\qquad a=16,
+\]
+and the exact positive kernel is
+\[
+ F_\kappa(u)=
+ \frac{(u-6144)^2}
+ {(u+256)(u+1024)(u+4096)}.
+\]
+Thus an interior double zero, exact logarithmic cancellation, and global
+positivity coexist in a three-node formula. No quality claim about its
+final rational approximation is inferred from that zero.
+
+\begin{theorem}[An explicit positive certificate with a square-root logarithmic degree bound]
+\label{next-cutoff-interpolation}
+For every rational $p<\gamma$, an exact rational search constructs a
+globally positive rational kernel of mass exactly $\gamma-p$.
+When $1/2\le p<\gamma$, it constructs a dyadic polynomial $C$ with
+\[
+ C(1)=1,\qquad C'(1)=0,
+\]
+whose dyadic kernel is positive for all $u>0$ and whose corrected harmonic
+target is exactly $p$. If a separation bound
+$0<\varepsilon\le\gamma-p$ is available, any integer $M\ge32$ satisfying
+\[
+ 2^{-M^2/2}\le\varepsilon
+\]
+gives the explicit degree bound $\deg C\le M+1$ and support bound
+$n\le2^{M+1}$. In particular the degree bound is
+$O(\sqrt{\log(1/\varepsilon)})$ as $\varepsilon\to0$.
+
+For $p=P/Q$ in lowest terms, the complete primitive integrated form is
+exactly $Q\gamma-P$, regardless of the intermediate interpolation
+coefficient denominators. The construction does not select a sequence
+for which these primitive forms tend to zero.
+\end{theorem}
+
+\begin{proof}
+For $p<1/2$, use
+\[
+ \frac1{u+1}+12(1/2-p)K_1(u),\qquad
+ K_1(u)=\frac1{u+1}-\frac1{u+4}
+       +\frac1{u+9/4}-\frac1{u+9}.
+\]
+Each difference in $K_1$ is positive, and Binet's integral combined with
+digamma duplication \cite{dlmf-binet,dlmf-duplication}
+gives $\int K_1\,d\mu=1/12$, proving this assertion directly.
+
+Write $r_m=r_{m,0}$. The preceding theorem gives $r_0=1/2$ and
+$r_m\uparrow\gamma$, with every $r_m$ rational and exactly computable.
+If $p=1/2$, take $C=1$. Otherwise enumerate these exact rationals until
+the first $m\ge1$ with $r_m\ge p$. Define
+\[
+ \lambda=\frac{p-r_{m-1}}{r_m-r_{m-1}}\in(0,1],\qquad
+ C=(1-\lambda)C_{m-1,0}+\lambda C_{m,0}.
+\]
+All coefficients are rational. The constraints and target are exact by
+linearity, and the kernel is a convex combination of two strictly
+positive kernels. The search terminates precisely for $p<\gamma$ in
+the stipulated range $p\ge1/2$.
+
+For the quantitative bound, the moment formula gives
+$\mu_m<(2m+1)!$. Hence
+\[
+ E_{m,0}\le(m+3)(2m+1)!\,2^{-m(m+1)}.
+\]
+For $m\ge32$, the elementary inequalities
+$2m+1\le2^{m/4}$ and $m+3\le2^{m/2}$ imply
+\[
+ (m+3)(2m+1)!\le
+ 2^{m/2}(2m+1)^{2m+1}
+ \le2^{m^2/2+3m/4}.
+\]
+Consequently $E_{m,0}<2^{-m^2/2}$.
+If $M$ is as stated, then $r_M>\gamma-\varepsilon\ge p$, so the search
+terminates with $m\le M$. The degree and support bounds follow.
+
+The interpolation also has an exact nonnegative integer form. If the
+two bracketing targets have primitive pairs $(q_0,p_0),(q_1,p_1)$,
+put $\Delta=q_0p_1-q_1p_0>0$. For $p=P/Q$ reduced inside their interval,
+\[
+ u=Qp_1-Pq_1\ge0,\qquad v=Pq_0-Qp_0\ge0,
+\]
+and
+\[
+ u(q_0,p_0)+v(q_1,p_1)=\Delta(Q,P).
+\]
+Thus a nonnegative integer combination of the two positive primitive
+kernels gives exactly $\Delta(Q\gamma-P)$, whose full coefficient gcd
+is $\Delta$. This explicitly tracks the cancellation of all factors of
+the determinant, including primes already present in the base targets.
+
+Finally choose an integer $D$ that clears the integrated coefficient
+pair and is divisible by $Q$. The pair is $(D,DP/Q)$ and its gcd is
+$D/Q$, so complete reduction leaves $(Q,P)$. This arithmetic identity
+does not bound $Q(\gamma-p)$ for targets that have not yet been selected.
+\end{proof}
+
+
+% New synthesis result for the unified gamma paper.
+% This fragment uses the ambient theorem environments and the already defined
+% Euler constant gamma, harmonic numbers H_n, and Binet measure d\mu.
+% It contains no cross-reference to an external manuscript.
+
+\section{The sharp degree scale for positive dyadic certificates}
+\label{unified-degree-section}
+
+The exact-target constructions allow arbitrary rational coefficients.  Their
+height may therefore grow without restriction.  Nevertheless, positivity
+imposes a quantitative lower bound that depends only on the dyadic support.
+Together with the canonical construction, this determines the leading
+asymptotic constant in the smallest possible certificate degree.  This is
+an analytic complexity statement; it does not give primitive smallness.
+
+\begin{lemma}[A monic polynomial bound on the half-line]
+\label{unified-degree-monic}
+Let $P\in\mathbb R[u]$ be monic of degree $d\ge0$ and nonnegative on
+$[0,\infty)$.  Then
+\[
+ \int_0^1 P(u)\,du\ \ge\
+ \mathfrak c_d:=\frac{1}{(d+1)\binom{d}{\lfloor d/2\rfloor}^{\!2}}.
+\]
+The bound is attained among such polynomials.
+\end{lemma}
+
+\begin{proof}
+First, every polynomial nonnegative on the half-line has a representation
+\[
+ P(u)=S(u)^2+uT(u)^2,\qquad S,T\in\mathbb R[u].
+\]
+Here is a direct factorization proof in the monic case.  Every positive
+real root has even multiplicity, so its factor is a square.  A zero root
+contributes powers of $u=0^2+u\cdot1^2$.  A negative root contributes
+$u+a=(\sqrt a)^2+u\cdot1^2$, where $a>0$.  For a pair of nonreal
+conjugate roots, put $r=\sqrt{b^2+c^2}$, with $c\ne0$, and use
+\[
+ (u-b)^2+c^2=(u-r)^2+u\bigl(\sqrt{2(r-b)}\bigr)^2.
+\]
+Products remain of the stated form because
+\[
+ (S^2+uT^2)(V^2+uW^2)
+   =(SV-uTW)^2+u(SW+TV)^2.
+\]
+This proves the representation, including possible repeated roots.
+
+Write $d=2k+\alpha$, where $\alpha\in\{0,1\}$.  If $\alpha=0$,
+the degree and leading coefficient force $\deg S=k$, with leading
+coefficient $1$ or $-1$, and $\deg T\le k-1$.  If $\alpha=1$,
+they force $\deg T=k$, with leading coefficient $1$ or $-1$, and
+$\deg S\le k$.  Thus it suffices to bound the squared norm of a monic
+polynomial of degree $k$ for the weight $u^\alpha$ on $[0,1]$.
+
+For completeness, the relevant shifted Jacobi polynomial is
+\[
+ J_{k,\alpha}(u)=
+ \frac{1}{k!u^\alpha}\frac{d^k}{du^k}
+       \bigl[u^{k+\alpha}(u-1)^k\bigr].
+\]
+The expression is a polynomial, with leading coefficient
+$B=\binom{2k+\alpha}{k}$.  Integration by parts $k$ times shows
+that it is orthogonal, for the weight $u^\alpha$, to every polynomial
+of degree less than $k$.  All boundary terms vanish.  A second such
+calculation, followed by the elementary beta integral, gives
+\[
+ \int_0^1 u^\alpha J_{k,\alpha}(u)^2\,du
+ =B\int_0^1u^{k+\alpha}(1-u)^k\,du
+ =\frac{1}{2k+\alpha+1}.
+\]
+Consequently, for every monic $V$ of degree $k$, orthogonality yields
+\[
+ \int_0^1u^\alpha V(u)^2\,du
+ \ge \int_0^1u^\alpha\left(\frac{J_{k,\alpha}(u)}B\right)^2du
+ =\frac{1}{(2k+\alpha+1)B^2}=\mathfrak c_d.
+\]
+Applying this to $S$ or $T$, after changing its sign if necessary,
+proves the bound.  Equality is attained by
+$P=(J_{k,0}/B)^2$ when $d$ is even, and by
+$P=u(J_{k,1}/B)^2$ when $d$ is odd.  Both are nonnegative on the
+entire half-line.
+\end{proof}
+
+\begin{theorem}[A uniform lower bound at a fixed dyadic cutoff]
+\label{unified-degree-cutoff}
+Let $a\ge1$, let $d\ge0$ be an integer, and let $c_0,\ldots,c_d$ be
+real numbers satisfying $\sum_{i=0}^d c_i=1$.  Suppose that
+\[
+ \mathcal K(u)=\sum_{i=0}^d\frac{c_i}{u+a^24^i}\ge0
+ \qquad(u\ge0).
+\]
+For the Binet measure $d\mu(u)=du/(e^{2\pi\sqrt u}-1)$, one has
+\begin{align}
+ \int_0^\infty\mathcal K(u)\,d\mu(u)
+ &\ge
+ \frac{\mathfrak c_d}{3^7\prod_{i=0}^d(1+a^24^i)}
+ \label{unified-degree-product-bound}\\
+ &\ge
+ \frac{1}{3^8(d+1)a^{2d+2}2^{d^2+3d}}.
+ \label{unified-degree-elementary-bound}
+\end{align}
+In particular, the bounds hold without any restriction on coefficient
+height, coefficient signs, or rational denominators.
+\end{theorem}
+
+\begin{proof}
+Put
+\[
+ D(u)=\prod_{i=0}^d(u+a^24^i),\qquad P(u)=D(u)\mathcal K(u).
+\]
+The numerator $P$ is a polynomial of degree exactly $d$, and its leading
+coefficient is $\sum_i c_i=1$.  Since $D>0$ on the half-line, $P$ is
+nonnegative there.  On $0<u\le1$, the elementary inequalities
+$2\pi<7$ and $e<3$ give
+\[
+ \frac{1}{e^{2\pi\sqrt u}-1}>3^{-7},\qquad
+ D(u)\le\prod_{i=0}^d(1+a^24^i).
+\]
+The preceding lemma, applied after restricting the integral to $[0,1]$,
+proves \eqref{unified-degree-product-bound}.
+
+Furthermore,
+\[
+ \prod_{i=0}^d(1+a^24^i)
+ =a^{2d+2}2^{d(d+1)}
+       \prod_{i=0}^d(1+a^{-2}4^{-i})
+ <3a^{2d+2}2^{d(d+1)}.
+\]
+Indeed the last product is at most
+$2\exp(\sum_{i\ge1}4^{-i})=2e^{1/3}<3$.
+Finally $\binom d{\lfloor d/2\rfloor}\le2^d$, so
+$\mathfrak c_d\ge1/((d+1)2^{2d})$.  These estimates give
+\eqref{unified-degree-elementary-bound}.
+\end{proof}
+
+\begin{theorem}[Sharp asymptotic degree for exact positive dyadic targets]
+\label{unified-degree-sharp}
+For a rational number $p\in[1/2,\gamma)$, let $d_*(p)$ be the least
+degree of a polynomial $C(x)=\sum_i c_i x^i\in\mathbb Q[x]$ satisfying
+\[
+ C(1)=1,\qquad C'(1)=0,\qquad
+ \mathcal K_C(u):=\sum_i\frac{c_i}{u+4^i}\ge0\quad(u\ge0),
+\]
+and having the exact corrected harmonic target
+\[
+ p=\sum_i c_i\left(H_{2^i}-\frac1{2^{i+1}}\right).
+\]
+This minimum exists.  As rational $p$ approaches $\gamma$ from below,
+\begin{equation}
+ \frac{d_*(p)}{\sqrt{\log_2(1/(\gamma-p))}}\longrightarrow1.
+ \label{unified-degree-sharp-limit}
+\end{equation}
+No assumption about the rationality or irrationality of $\gamma$ is
+used.  If $p=P/Q$ is reduced, complete integer normalization still
+leaves exactly $Q\gamma-P$; the degree conclusion is independent of
+whether this primitive error is small.
+\end{theorem}
+
+\begin{proof}
+Binet's identity gives
+\[
+ H_{2^i}-\frac1{2^{i+1}}
+ =\gamma+i\log2-\int_0^\infty\frac{d\mu(u)}{u+4^i}.
+\]
+The two normalization conditions therefore imply
+\[
+ \gamma-p=\int_0^\infty\mathcal K_C(u)\,d\mu(u)>0.
+\]
+Put $\delta=\gamma-p$ and $L=\log_2(1/\delta)$.  The preceding
+theorem with $a=1$ yields, for every admissible degree $d$,
+\[
+ L\le d^2+3d+\log_2(d+1)+8\log_2 3.
+\]
+In particular $d_*(p)\to\infty$ as $\delta\to0$, and this inequality
+implies
+\[
+ \liminf_{p\uparrow\gamma}\frac{d_*(p)}{\sqrt L}\ge1.
+\]
+
+We recall the explicit canonical family to prove the matching upper bound.
+Set
+\[
+ P_m(x)=\prod_{j=1}^m(4^jx-1),\quad
+ A_m=P_m(1),\quad s_m=\frac{P_m'(1)}{P_m(1)},\quad
+ C_m(x)=\frac{P_m(x)}{A_m}[1-s_m(x-1)].
+\]
+For $m=0$, take $P_0=A_0=C_0=1$ and $s_0=0$.  These polynomials
+have $C_m(1)=1$, $C_m'(1)=0$, and degree at most $m+1$.
+The partial-fraction identity
+\[
+ \sum_i\frac{[x^i]P_m(x)}{u+4^i}
+   =\frac{A_m u^m}{\prod_{i=0}^m(u+4^i)}
+\]
+follows by comparing the numerator's leading coefficient and its first
+$m$ Taylor coefficients at zero.  Multiplication by $x$ shifts the
+indices by one; it follows that, with $R_m=4^{m+1}$,
+\[
+ \mathcal K_{C_m}(u)=
+ \frac{u^m\{u+R_m+s_m(R_m-1)\}}
+      {\prod_{i=0}^{m+1}(u+4^i)}>0\qquad(u>0).
+\]
+Let $r_m$ be its rational corrected target and put
+$E_m=\gamma-r_m$.  In particular $r_0=1/2$.
+
+The moment formula
+\[
+ \mu_j=\int_0^\infty u^j\,d\mu(u)
+ =\frac{2(2j+1)!\,\zeta(2j+2)}{(2\pi)^{2j+2}}
+\]
+gives $\mu_j<(2j+1)!$ and
+$\mu_{j+1}/\mu_j<(j+1)^2/4$.  The latter inequality follows from
+$\zeta(2j+4)/\zeta(2j+2)<1$, $\pi>3$, and
+$(2j+3)(2j+2)<9(j+1)^2$.
+Also $s_m=m+\sum_{j=1}^m(4^j-1)^{-1}<m+1$.
+Bounding each factor in the denominator of the positive kernel below
+by $4^i$ now gives
+\[
+ E_m\le\mu_m(m+3)2^{-m(m+1)}
+ <(m+3)(2m+1)!\,2^{-m(m+1)}.
+\]
+Consequently
+\[
+ \log_2 E_m\le -m^2+O(m\log(m+1)),\qquad E_m\longrightarrow0.
+\]
+The implied constant is absolute.
+
+For $p>1/2$, enumerate the rational numbers $r_m$ until the first
+index $j\ge1$ with $r_j\ge p$.  Such an index exists because
+$E_m\to0$.  Minimality gives $r_{j-1}<p\le r_j$, and hence
+\[
+ \lambda=\frac{p-r_{j-1}}{r_j-r_{j-1}}\in(0,1],\qquad
+ C=(1-\lambda)C_{j-1}+\lambda C_j
+\]
+is an admissible rational polynomial of degree at most $j+1$.
+Its positivity and exact target follow from linearity and convexity.
+For $p=1/2$, simply use $C=1$.  This proves existence of $d_*(p)$
+by exact rational comparisons, without an equality oracle for $\gamma$.
+
+Fix $\eta>0$ and take $m=\lceil(1+\eta)\sqrt L\rceil$.
+As $L\to\infty$,
+\[
+ \log_2 E_m\le -(1+\eta)^2L+O(\sqrt L\log L)<-L.
+\]
+Thus $E_m<\delta$, so $r_m>p$, and the first crossing index above
+satisfies $j\le m$.  Therefore
+\[
+ \limsup_{p\uparrow\gamma}\frac{d_*(p)}{\sqrt L}\le1+\eta.
+\]
+Letting $\eta\downarrow0$ proves \eqref{unified-degree-sharp-limit}.
+Finally, an integer $D$ clearing the integrated rational pair gives
+$(D,DP/Q)$ with gcd $D/Q$, leaving exactly $(Q,P)$.  This verifies
+the last assertion without a bound on intermediate coefficient heights.
+\end{proof}
+
+\paragraph{A quantitative price for positive support compression.}
+Suppose that an original normalized certificate has error $E>0$, and a
+target-changing operation replaces it by a globally nonnegative kernel
+supported at $a2^i$, $0\le i\le d$, with the same gamma coefficient $1$.
+Assume the complete logarithm condition is preserved, so both masses are
+log-free gamma errors.  If their targets are $p$ and $\widetilde p$, then
+\[
+ p-\widetilde p
+ = (\gamma-\widetilde p)-(\gamma-p)
+ \ge\frac{1}{3^8(d+1)a^{2d+2}2^{d^2+3d}}-E.
+\]
+In particular, if $E$ is at most half of this cutoff bound, any such
+positive compression must lower the target by at least half of the
+bound.  This applies to shared-cutoff compression whenever its normalized
+output kernel remains globally nonnegative.  A certificate merely proving
+that its integrated error is positive does not suffice for this conclusion.
+
+The sharp degree law concerns a fixed base and a specified pole grid.
+It does not bound arbitrary rational-node representations, support with a
+varying external base, or signed kernels with only a positive integral.
+Nor does it control the denominator $Q$ of a target or prove
+$Q(\gamma-P/Q)\to0$.
+
+\section{Global positive certificates with prescribed local data}
+\label{sea-analytic}
+
+The first three results join three requirements that were previously handled
+separately: control on the whole half-line, exact local vanishing, and an exact
+rational integral target. They do not provide a bound for the denominator of
+a well-chosen target.
+
+For $a>0$ and $u\geq0$, put
+\begin{align}
+h_a(u)&=\frac1{u+a^2},&
+K_a(u)&=h_a(u)+h_{a+1/2}(u)-h_{2a}(u)-h_{2a+1}(u),\\
+k_a(u)&=(1+u)K_a(u),&
+d\mu(u)&=\frac{du}{e^{2\pi\sqrt{u}}-1},\qquad
+\ell(f)=\int_0^\infty\frac{f(u)}{1+u}\,d\mu(u).
+\end{align}
+Binet's formula and digamma duplication \cite{dlmf-binet,dlmf-duplication}
+give
+\begin{equation}\label{sea-analytic-masses}
+\int h_1\,d\mu=\gamma-\frac12,\qquad
+\ell(k_a)=\int K_a\,d\mu=\frac1{4a(2a+1)},\qquad
+0<\ell(1)<\frac1{12}.
+\end{equation}
+For completeness, Binet gives $I(a):=\int h_a\,d\mu
+=\log a-\psi(a)-1/(2a)$. Substituting the duplication identity into
+$I(a)+I(a+1/2)-I(2a)-I(2a+1)$ yields the rational mass in
+\eqref{sea-analytic-masses}. The total mass of $\mu$ is $1/12$,
+so $0<\int h_1\,d\mu<1/12$ follows directly. In particular all the
+displayed kernel masses are rational when $a$ is rational.
+
+\begin{theorem}[Density with global and derivative control]
+\label{sea-analytic-density}
+Let $M\geq0$ be an integer and $L>0$. The rational linear span of
+$\{k_a:a\in\mathbb Q_{>0}\}$ is dense in the Banach space
+\[
+X_{M,L}=\{f\in C_0([0,\infty)):f|_{[0,L]}\in C^M([0,L])\},
+\quad
+\|f\|_X=\|f\|_\infty+\sum_{j=1}^M\|f^{(j)}\|_{[0,L]}.
+\]
+No derivative control at infinity is asserted.
+\end{theorem}
+
+\begin{proof}
+Completeness follows from uniform convergence of the functions and their
+local derivatives. Suppose a continuous real functional $\Lambda$ annihilates
+all rational-node kernels. Hahn--Banach, applied to the embedding of $X$
+in $C_0([0,\infty))\oplus C([0,L])^M$, and the measure representation of
+the dual give finite signed measures $\nu_0,\ldots,\nu_M$ such that
+\[
+\Lambda(f)=\int f\,d\nu_0+
+\sum_{j=1}^M\int_{[0,L]}f^{(j)}\,d\nu_j.
+\]
+Apply this integral expression to $g_a(u)=(1+u)/(u+a^2)$ and denote the
+result by $F(a)$. The expression is meaningful although $g_a\notin C_0$.
+For $a\geq1$, $|g_a|\leq1$ and $g_a(u)\to0$ at each finite $u$ as
+$a\to\infty$. Moreover
+\[
+g_a(u)=1+\frac{1-a^2}{u+a^2}
+\]
+shows that all its positive-order derivatives tend uniformly to zero on
+$[0,L]$. Thus $F(a)\to0$ by dominated convergence.
+
+Continuity in $a$ extends the annihilation identity from rational nodes to
+all $a>0$:
+\[
+F(a)+F(a+1/2)-F(2a)-F(2a+1)=0.
+\]
+Set $D(a)=F(a)-F(2a)$. Then $D(a+1/2)=-D(a)$, whereas
+$D(a+j/2)\to0$. Hence $D=0$. Iterating $F(a)=F(2a)$ and using the
+same limit proves $F=0$.
+
+Write $x=(1+u)^{-1}$. Differentiation with respect to $z=a^2$ at $z=1$
+now gives $\Lambda(x^n)=0$ for every $n\geq1$. Differentiation under
+each measure is justified by uniform bounds in a fixed neighborhood of
+$z=1$, including the required local derivatives.
+
+Polynomials in $x$ with zero constant term are dense in $X$. Here are
+details for this last approximation step. The change of variable identifies
+$X$ with functions continuous on $[0,1]$, zero at $0$, and $C^M$ on
+$[b,1]$, where $b=(1+L)^{-1}$; the local derivative norms are equivalent.
+Extend the Taylor polynomial at $b$ to its left and blend it, in a small
+interval strictly to the left of $b$, into a smooth uniform approximation
+of the remaining continuous function. This gives a global $C^M$ function
+that is unchanged on $[b,1]$ and arbitrarily close uniformly. A small smooth
+bump below $b$ restores its value $0$ at $0$. Approximate its $M$th
+derivative uniformly by a polynomial and integrate $M$ times with the
+initial derivatives fixed. The resulting polynomial is close in $C^M$ and
+is still zero at $0$. For $M=0$, ordinary polynomial approximation followed
+by subtraction of the value at $0$ suffices. Therefore $\Lambda=0$.
+This proves real density. Approximation of the finitely many coefficients
+in each combination by rational numbers proves rational-span density.
+\end{proof}
+
+\begin{theorem}[Exact rational jets and mass with a bounded correction]
+\label{sea-analytic-projection}
+Let $T_1,\ldots,T_s$ consist of distinct derivative evaluations
+$f\mapsto f^{(r)}(x)$, with $x\in[0,L]\cap\mathbb Q$ and $0\leq r\leq M$,
+together with the single functional $\ell$. There are positive rational
+nodes $a_1,\ldots,a_s$ for which $C_{ji}=T_j(k_{a_i})$ is an invertible
+rational matrix. The nodes can be found by exact rational enumeration.
+For $b\in\mathbb Q^s$, define
+\[
+\mathcal P_b(v)=v+\sum_{i=1}^s
+\bigl[C^{-1}(b-T(v))\bigr]_i k_{a_i}.
+\]
+This map satisfies $T(\mathcal P_b(v))=b$ and preserves the rational
+kernel span. If $T(F)=b$, then
+\[
+\|\mathcal P_b(v)-F\|_X\leq C_T\|v-F\|_X,
+\qquad
+C_T=1+\sum_{i,j}U_i|(C^{-1})_{ij}|V_j,
+\]
+where $U_i$ is any rational upper bound for $\|k_{a_i}\|_X$, and $V_j$
+can be taken as $1$ for an evaluation and $1/12$ for the mass functional.
+The upper bound $C_T$ is therefore computable in rational arithmetic.
+\end{theorem}
+
+\begin{proof}
+The functionals are independent. A smooth positive bump away from the
+finitely many evaluation points first eliminates the coefficient of $\ell$
+in any relation. Localized polynomial bumps then separate the derivative
+evaluations. Theorem~\ref{sea-analytic-density} implies full rank on the
+kernel span. All matrix entries at rational nodes are rational, so
+enumerating nodes and retaining independent columns terminates.
+The exact constraint identity follows by multiplication by $C$. The error
+bound follows from $b-T(v)=T(F-v)$ and the triangle inequality. Explicit
+rational norm bounds follow by summing, over the four terms defining $k_a$,
+\[
+\|g_a\|_\infty\leq\max(1,a^{-2}),\qquad
+\|g_a^{(r)}\|_{[0,L]}\leq
+\frac{r!|1-a^2|}{a^{2r+2}}\quad(r\geq1).
+\]
+Finally $\|\ell\|\leq1/12$ follows from
+\eqref{sea-analytic-masses}.
+\end{proof}
+
+\begin{theorem}[Prescribed zeros and an exact rational target]
+\label{sea-analytic-positive-zeros}
+Fix finitely many distinct nonnegative rational points $x_j$ and positive
+integer multiplicities $m_j$, with $m_j$ even whenever $x_j>0$.
+Let $d=\sum_jm_j$ and
+\[
+W(u)=\frac{\prod_j(u-x_j)^{m_j}}{(1+u)^d};
+\]
+use $W=1$ for an empty set. For rational $p$, the following are equivalent:
+\begin{enumerate}[label=(\roman*)]
+\item $p<\gamma$.
+\item There exist rational $c_i$, positive rational $a_i$, and rational
+$\eta>0$ such that
+\[
+R(u)=h_1(u)-\sum_i c_iK_{a_i}(u)
+\geq\frac{\eta W(u)}{1+u}\qquad(u\geq0),
+\quad
+\int R\,d\mu=\gamma-p,
+\]
+and the zeros of $R$ on $[0,\infty)$ are exactly the specified points,
+with exactly the specified multiplicities.
+\end{enumerate}
+Moreover $R(u)\sim1/u$ at infinity. If $p=P/Q$ is reduced, complete
+primitive normalization of its integrated identity gives exactly
+$Q\gamma-P$, independently of the intermediate coefficient denominators.
+\end{theorem}
+
+\begin{proof}
+Suppose $\epsilon=\gamma-p>0$. There exists a smooth function $G>0$,
+equal to $1$ sufficiently far out, such that $\ell(WG)=\epsilon$.
+Indeed, let $G_{\rm low}$ be a small positive constant on a long initial
+interval and $1$ in the far tail. Boundedness of $W$ and finiteness of
+$h_1d\mu$ show that these masses can tend to $0$. On the other hand,
+$G_{\rm high}=1+C\varphi$, for a nonnegative smooth bump $\varphi$
+away from the zero set, gives arbitrarily large masses. A suitable convex
+combination realizes $\epsilon$ exactly while remaining positive and
+equal to $1$ in the tail.
+
+Put $F_*=1-WG$. It belongs to $X_{M,L}$ for
+$M=\max_jm_j$ and $L$ beyond all the points. At each $x_j$ its value is
+$1$ and its derivatives of orders $1,\ldots,m_j-1$ are zero. Also
+\[
+\ell(F_*)=(\gamma-1/2)-(\gamma-p)=p-1/2\in\mathbb Q.
+\]
+For an empty zero set take $M=0$. Apply
+Theorems~\ref{sea-analytic-density} and \ref{sea-analytic-projection}
+to approximate $F_*$ by a rational combination $A$ of the weighted kernels
+$k_a=(1+u)K_a$, with all these
+jets and the mass exact. Near $x_j$, Taylor's theorem bounds the error by
+\[
+|A(u)-F_*(u)|\leq
+\frac{\|(A-F_*)^{(m_j)}\|}{m_j!}|u-x_j|^{m_j}.
+\]
+The leading coefficient of $WG$ at that point is strictly positive;
+the parity restriction ensures positivity on both sides of an interior
+zero. Sufficiently close approximation makes $1-A$ positive near each
+point, with precisely that order of vanishing. Away from small disjoint
+neighborhoods, $WG$ has a positive lower bound, since its limit is $1$.
+Uniform closeness proves positivity there too.
+
+Thus $R=h_1(1-A)$ has the required zero set and signs. The ratio
+$(1-A)/W$ extends positively and continuously across each zero and
+infinity. Its positive minimum admits a smaller positive rational
+$\eta$, proving the stated global bound. The mass is exact by construction;
+the tail follows from $K_a(u)=O(u^{-2})$. Conversely, the global bound
+has positive integral, so it implies $\gamma-p>0$.
+
+For the arithmetic claim, take a positive integer $D$ clearing the
+coefficients and both $D/2$ and $D(p-1/2)$. Then $Q\mid D$, and the
+integer coefficient pair of the integrated identity is
+$(D,DP/Q)$. Its gcd is $D/Q$, giving exactly $Q\gamma-P$.
+\end{proof}
+
+\paragraph{Finite verification and effective search.}
+For fixed rational data, enumerate rational kernel combinations and apply
+the exact projection. The denominators of $R-\eta W/(1+u)$ are positive
+on the half-line. Clearing them reduces verification to an exact polynomial
+sign test. Enumerating positive rational $\eta$ therefore gives a search
+that terminates exactly when $p<\gamma$. No bound for its degree, height,
+or running time is asserted. Most importantly, it does not select a
+sequence for which $Q\gamma-P\to0$.
+
+Two small certificates can be checked without a search:
+\begin{align}
+R_1&=h_1-\frac{12}{13}K_1
+=\frac{u(52u^2+325u+153)}
+{13(u+1)(u+4)(u+9)(4u+9)},\\
+\int R_1\,d\mu&=\gamma-\frac{15}{26};\nonumber\\
+R_2&=h_1+\frac{17}{5640}K_{1/2}-\frac{351}{376}K_1
+=\frac{u^2(752u^2+4820u+2943)}
+{47(u+1)(u+4)(u+9)(4u+1)(4u+9)},\\
+\int R_2\,d\mu&=\gamma-\frac{6509}{11280}.\nonumber
+\end{align}
+Positive numerator coefficients prove the sign globally and give exact
+orders $1$ and $2$ at the origin. These are worked finite examples,
+not evidence for an unproved infinite pattern.
+
+
+\section{Nested rational brackets from the canonical kernels}
+Define the positive measure and its moments by
+\[
+ d\mu(u)=\frac{du}{e^{2\pi\sqrt u}-1},\qquad
+ \mu_j=\int_0^\infty u^j\,d\mu(u)
+       =\frac{|B_{2j+2}|}{2j+2}.
+\]
+Here $B_k$ denotes a Bernoulli number; the polynomial quantity $B_m$
+used later is explicitly defined there and has a different role.
+Binet's identity \cite{dlmf-binet} gives, for integers $n\ge1$,
+\begin{equation}\label{stage3-binet}
+ H_n-\frac1{2n}=\gamma+\log n-
+       \int_0^\infty\frac{d\mu(u)}{u+n^2}.
+\end{equation}
+For $m\ge0$, set
+\[
+ P_m(x)=\prod_{j=1}^m(4^jx-1),\quad A_m=P_m(1),\quad
+ s_m=\frac{P_m'(1)}{A_m},\quad
+ C_m(x)=\frac{P_m(x)}{A_m}[1-s_m(x-1)].
+\]
+Empty products are $1$. Put
+\[
+ r_m=\sum_i[x^i]C_m(x)
+       \left(H_{2^i}-\frac1{2^{i+1}}\right),\qquad
+ E_m=\gamma-r_m.
+\]
+The first values are $r_0=1/2$, $r_1=31/54$, and
+$r_2=27269/47250$.
+
+\begin{lemma}[Positive kernels and a sharpened contraction]
+\label{stage3-canonical-baseline}
+For every $m\ge0$, with $R=4^{m+1}$ and
+$\lambda_m=R+s_m(R-1)$,
+\begin{equation}\label{stage3-canonical-integral}
+ E_m=\int_0^\infty
+ \frac{u^m(u+\lambda_m)}{\prod_{i=0}^{m+1}(u+4^i)}\,d\mu(u)>0.
+\end{equation}
+Define
+\[
+ \rho_m=\frac{9(m+1)^2}{16\cdot4^{m+1}}\le\frac9{64}.
+\]
+Then
+\begin{equation}\label{stage3-sharpened-ratio}
+ 0<\frac{E_{m+1}}{E_m}<\frac23\rho_m.
+\end{equation}
+In particular $r_m$ increases strictly to $\gamma$ and
+$E_{m+1}/E_m\to0$.
+\end{lemma}
+
+\begin{proof}
+The polynomial has $C_m(1)=1$ and $C'_m(1)=0$, so
+\eqref{stage3-binet} cancels every logarithm exactly. The elementary
+rational identity
+\[
+ \sum_{i=0}^m\frac{[x^i]P_m(x)}{u+4^i}
+ =\frac{A_mu^m}{\prod_{i=0}^m(u+4^i)}
+\]
+follows by taking a common denominator: its numerator has degree at
+most $m$, its first $m$ Taylor coefficients vanish because
+$P_m(4^{-j})=0$ for $1\le j\le m$, and its leading coefficient is
+$P_m(1)=A_m$. Shifting the indices once evaluates the contribution
+from $xP_m$ and gives \eqref{stage3-canonical-integral}.
+
+The exact moment formula also gives the stronger estimate
+\[
+ \frac{\mu_{m+1}}{\mu_m}
+ =\frac{(2m+3)(2m+2)}{4\pi^2}
+       \frac{\zeta(2m+4)}{\zeta(2m+2)}
+ <\frac{(m+1)^2}{6}.
+\]
+Indeed $(2m+3)(2m+2)\le6(m+1)^2$, $\pi>3$, and the zeta ratio is
+strictly less than $1$. The kernels $F_m$ in
+\eqref{stage3-canonical-integral} satisfy
+\[
+ \frac{F_{m+1}(u)}{F_m(u)}
+ =\frac{u(u+\lambda_{m+1})}{(u+4R)(u+\lambda_m)}
+ \le\frac{9u}{4R}.
+\]
+Here $s_{m+1}=s_m+R/(R-1)$ and
+\[
+ 9\lambda_m-\lambda_{m+1}
+ =\frac{R(R-4)}{R-1}+s_m(5R-8)\ge0.
+\]
+The function
+$W_m(u)=(u+\lambda_m)/\prod_{i=0}^{m+1}(u+4^i)$
+is strictly decreasing. Its logarithmic derivative is negative because
+$\lambda_m\ge R$. For the measure $u^m d\mu$, multiplication by a
+decreasing positive function cannot increase the mean of $u$.
+This follows by integrating
+$(u-v)(W_m(u)-W_m(v))\le0$ against its product measure.
+Consequently
+\[
+ \frac{E_{m+1}}{E_m}
+ \le\frac9{4R}\frac{\mu_{m+1}}{\mu_m}
+ <\frac{3(m+1)^2}{8R}=\frac23\rho_m.
+\]
+The ratio is uniformly at most $3/32<1$, which proves convergence of
+$E_m$ to zero. Since $\rho_m\to0$, the remaining assertions follow.
+\end{proof}
+
+\begin{theorem}[Strictly nested rational upper brackets]
+\label{stage3-nested-brackets}
+Put $w_m=r_{m+1}-r_m>0$ and
+\[
+ h_m=r_m+\frac{w_m}{1-\rho_m},\qquad
+ \delta_m=h_m-\gamma.
+\]
+These quantities satisfy
+\[
+ r_m<r_{m+1}<\gamma<h_{m+1}<h_m,
+ \qquad r_m\uparrow\gamma,\quad h_m\downarrow\gamma.
+\]
+More precisely,
+\begin{equation}\label{stage3-upper-gap-sandwich}
+ \frac{\rho_m E_m}{3(1-\rho_m)}<\delta_m
+ <\frac{\rho_m E_m}{1-\rho_m},
+\end{equation}
+and
+\[
+ 0<\frac{\delta_{m+1}}{\delta_m}
+ <2\rho_{m+1}\frac{1-\rho_m}{1-\rho_{m+1}}
+ \le\frac9{32}.
+\]
+Every endpoint $r_m,h_m$ is obtained using rational arithmetic only.
+\end{theorem}
+
+\begin{proof}
+Since $w_m=E_m-E_{m+1}$,
+\[
+ \delta_m=\frac{\rho_m E_m-E_{m+1}}{1-\rho_m}.
+\]
+The sharpened ratio gives the lower bound in
+\eqref{stage3-upper-gap-sandwich}; positivity of $E_{m+1}$ gives its
+upper bound. Dividing these bounds at successive indices and using
+\eqref{stage3-sharpened-ratio} gives the displayed contraction.
+The sequence $\rho_m$ is nonincreasing, since
+$\rho_{m+1}/\rho_m=(m+2)^2/(4(m+1)^2)\le1$.
+This proves strict decrease, convergence, and the uniform constant.
+\end{proof}
+
+For reference, let $\widehat p_m/\widehat q_m$ be the first mediant
+accepted by the Stern--Brocot search in $[r_m,r_{m+1}]$. Unimodularity
+of the two search parents proves that this is a least-denominator
+fraction in the interval. The search terminates: any fixed rational
+in the target interval bounds the increasing parent denominator sum
+until acceptance. All comparisons use the rational endpoints.
+Thus
+\begin{equation}\label{stage3-selected-form}
+ 0<\widehat q_m\gamma-\widehat p_m
+ \le\frac{\widehat q_m w_m}{1-\rho_m}.
+\end{equation}
+Also $\widehat q_m\to\infty$, because finitely many rational numbers
+have bounded denominator in $[r_0,1]$, and each fixed one below
+$\gamma$ is eventually below $r_m$. This proves infinitely many
+distinct targets, without assuming irrationality. The right side of
+\eqref{stage3-selected-form} is an explicit rational upper certificate;
+its convergence to zero is the unresolved condition.
+
+
+\begin{theorem}[Least-denominator selection and an exact rationality dichotomy]
+\label{next-cutoff-selection}
+Write $r_m=r_{m,0}$ and define the positive rational numbers
+\[
+ w_m=r_{m+1}-r_m,\qquad
+ \rho_m=\frac{9(m+1)^2}{16\cdot4^{m+1}}\le\frac9{64}.
+\]
+Choose a reduced fraction $\widehat p_m/\widehat q_m$ of least positive
+denominator in the closed rational interval $[r_m,r_{m+1}]$.
+It can be found by the Stern--Brocot interval algorithm using rational
+comparisons only; take its first accepted mediant as the definite selection.
+The denominators satisfy $\widehat q_m\to\infty$,
+without any rationality assumption on $\gamma$. Set
+\[
+ \mathcal U_m=\frac{\widehat q_m w_m}{1-\rho_m}.
+\]
+The associated forms have integer coefficients and satisfy the positive
+rational certificate
+\begin{equation}\label{next-cutoff-selected-certificate}
+ 0<\widehat q_m\gamma-\widehat p_m\le\mathcal U_m.
+\end{equation}
+For every $j\ge m+1$, the sharper fully rational bound
+\begin{equation}\label{next-cutoff-refined-certificate}
+ \widehat q_m\gamma-\widehat p_m
+ \le
+ \widehat q_m\left(r_j-\frac{\widehat p_m}{\widehat q_m}
+                   +\frac{w_j}{1-\rho_j}\right)
+\end{equation}
+also holds.
+
+The limit of the completely rational sequence $\mathcal U_m$ exists,
+with the exact dichotomy
+\begin{equation}\label{next-cutoff-dichotomy}
+ \lim_{m\to\infty}\mathcal U_m=
+ \begin{cases}
+  0,&\gamma\notin\mathbb Q,\\
+  1/b,&\gamma=a/b\text{ in lowest terms}.
+ \end{cases}
+\end{equation}
+In the rational case the primitive errors
+$\widehat q_m\gamma-\widehat p_m$ are eventually exactly $1/b$.
+Consequently proving $\mathcal U_m\to0$ would prove gamma irrationality;
+the theorem does not establish which branch in
+\eqref{next-cutoff-dichotomy} holds.
+\end{theorem}
+
+\begin{proof}
+Let $F_m$ denote the kernel in \eqref{next-cutoff-positive-kernel} at
+$t=0$. Put $E_m=\gamma-r_m>0$ and
+$\lambda_m=4^{m+1}+s_m(4^{m+1}-1)$. The exact kernels give
+\[
+ \frac{F_{m+1}(u)}{F_m(u)}
+ =\frac{u(u+\lambda_{m+1})}
+ {(u+4^{m+2})(u+\lambda_m)}.
+\]
+Writing $R=4^{m+1}$ and $d=R-1$, the identity
+$s_{m+1}=s_m+R/d$ shows
+\[
+ \lambda_{m+1}
+ =4R+s_m(4R-1)+\frac{R(4R-1)}d
+ \le9\lambda_m.
+\]
+Therefore $F_{m+1}/F_m\le9u/(4R)$.
+The function
+\[
+ \frac{u+\lambda_m}{\prod_{i=0}^{m+1}(u+4^i)}
+\]
+is strictly decreasing, since $\lambda_m\ge4^{m+1}$ and its logarithmic
+derivative is negative. The same weighted-mean argument as before thus
+gives
+\[
+ \frac{E_{m+1}}{E_m}
+ \le\frac9{4R}\frac{\mu_{m+1}}{\mu_m}<\rho_m.
+\]
+In particular $\rho_m\to0$, and
+\[
+ w_m<E_m\le\frac{w_m}{1-\rho_m}.
+\]
+These bounds prove \eqref{next-cutoff-selected-certificate} and
+\eqref{next-cutoff-refined-certificate}, because
+$\widehat p_m/\widehat q_m\le r_{m+1}<\gamma$.
+
+For completeness, start the Stern--Brocot search with Farey neighbours
+$0/1$ and $1/0$. Replace the lower neighbour by the mediant when the
+mediant is below $r_m$, and replace the upper neighbour when it is above
+$r_{m+1}$. Stop when the mediant lies in the target interval.
+The elementary integral comparison gives $\gamma\le3/2-\log2<1$,
+so the first mediant $1/1$ replaces the upper infinite endpoint.
+Thereafter both neighbour denominators are positive.
+The neighbours $a/b<c/d$ always satisfy $bc-ad=1$.
+Every reduced fraction strictly between them has denominator at least
+$b+d$, because its coefficient representation in these two unimodular
+columns consists of positive integers. The first accepted mediant
+therefore has least denominator. Termination follows by keeping any one
+rational in the nonempty target interval: until acceptance the sum of
+the neighbour denominators increases and is bounded by that rational's
+denominator. This also proves that the selection uses no gamma oracle.
+
+For any fixed denominator bound, there are only finitely many reduced
+fractions in the bounded interval $[r_0,\gamma)$ satisfying that bound.
+Each is eventually smaller than $r_m$, because $r_m\uparrow\gamma$.
+Consequently none can be selected for all sufficiently large $m$, which
+proves $\widehat q_m\to\infty$ and supplies infinitely many distinct targets.
+
+Suppose first that $\gamma$ is irrational. Fix $0<\eta<1/2$.
+An irrational rotation visits every fixed open arc with bounded gaps.
+Here is the elementary compactness argument: the pigeonhole principle
+makes the subgroup generated by $\gamma$ dense modulo $1$; finitely many
+translates of a fixed open arc cover the circle. A common shift makes
+their finitely many integer indices nonnegative. Their maximum then
+bounds a return time from every starting point.
+
+Apply this to the arc $(\eta/4,\eta/2)$. For all large $m$, there is an
+integer
+\[
+ \frac{\eta}{2E_m}\le q\le\frac{\eta}{E_m}
+ \quad\hbox{with}\quad
+ \frac\eta4<\{q\gamma\}<\frac\eta2.
+\]
+For $p=\lfloor q\gamma\rfloor$ this gives
+\[
+ E_m/4<\gamma-p/q<E_m.
+\]
+Since $E_{m+1}/E_m\to0$, the fraction lies in $[r_m,r_{m+1}]$ for all
+large $m$. Reduction can only lower its denominator, so the minimality
+of $\widehat q_m$ gives $\widehat q_m E_m\le\eta$.
+As $\eta$ is arbitrary, $\widehat q_m E_m\to0$ and hence
+$\mathcal U_m\to0$.
+
+Now suppose $\gamma=a/b$ in lowest terms. Every fraction $p/q<\gamma$
+has gap at least $1/(bq)$, so
+$\widehat q_m E_m\ge1/b$.
+Choose the smallest integer $q\ge1/(bE_m)$ in the residue class
+$aq\equiv1\pmod b$. Then
+\[
+ \frac1{bE_m}\le q<\frac1{bE_m}+b,\qquad
+ p=\frac{aq-1}{b}\in\mathbb Z,\qquad \gcd(p,q)=1.
+\]
+Its gap satisfies
+\[
+ \frac{E_m}{1+b^2E_m}<\gamma-p/q\le E_m.
+\]
+For large $m$ this gap exceeds $E_{m+1}$, so the fraction is in the target
+interval. Therefore
+\[
+ \frac1b\le\widehat q_m E_m\le\frac1b+bE_m,
+\]
+and $\widehat q_m E_m\to1/b$. Since
+$w_m/E_m=1-E_{m+1}/E_m\to1$ and $\rho_m\to0$,
+this proves the rational branch of \eqref{next-cutoff-dichotomy}.
+Finally each
+$\widehat q_m\gamma-\widehat p_m$ is a positive integral multiple of
+$1/b$ and is at most $\widehat q_m E_m\to1/b$.
+It must therefore equal $1/b$ for all sufficiently large $m$.
+\end{proof}
+
+
+
+
+\section{Logarithmic Farey reduction of the primitive optimization}
+\label{stage3-farey-section}
+
+Let $\alpha=a/b<\beta=c/d<\xi$, where the endpoint fractions are reduced
+and $b,d>0$. Set $v_0=(b,a)$, $v_1=(d,c)$ and
+$\Delta=\det(v_0,v_1)=bc-ad>0$. The linear functional
+\[
+ \mathcal L_\xi(q,p)=q\xi-p
+\]
+is strictly positive on every nonzero integer vector in the cone spanned
+by $v_0,v_1$. The following reduction replaces enumeration of a fundamental
+parallelogram of size $\Delta$ by a logarithmic number of candidates.
+
+\begin{theorem}[A logarithmic candidate set for the exact primitive minimum]
+\label{stage3-farey-logarithmic-sail}
+One can construct, using integer arithmetic only, a set $G$ of primitive
+vectors $(q,p)$ with $q>0$ and $\alpha\le p/q\le\beta$ such that
+\[
+ |G|\le\lfloor\log_2\Delta\rfloor+2
+\]
+and, simultaneously for every real $\xi>\beta$,
+\begin{equation}\label{stage3-farey-sail-minimum}
+ \min_{\substack{\alpha\le p/q\le\beta\\q>0,\ \gcd(p,q)=1}}
+       (q\xi-p)
+ =
+ \min_{(q,p)\in G}(q\xi-p).
+\end{equation}
+More generally the same equality holds for every linear functional
+strictly positive on the nonzero cone.
+After one extended Euclidean computation for $a,b$, the construction uses
+at most $2\lfloor\log_2\Delta\rfloor+1$ ceiling-Euclidean updates when
+$\Delta>1$. Each collinear run is handled by a single integer division.
+For $\Delta=1$, the two endpoint vectors suffice.
+
+The resulting lower envelope is a finite rational piecewise-linear
+function of $\xi$. No test for whether $\xi$ equals one of its rational
+breakpoints is part of the construction.
+\end{theorem}
+
+\begin{proof}
+The case $\Delta=1$ follows from the unimodular endpoint basis. Suppose
+$\Delta>1$. Choose integers $u,v$ with $bu+av=1$ and put
+$r_{\rm raw}=ud+vc$. A unimodular shear after
+\[
+ U=\begin{pmatrix}u&v\\-a&b\end{pmatrix}
+\]
+sends the two endpoint vectors to $(1,0)$ and $(r,\Delta)$, where
+$r\equiv r_{\rm raw}\pmod\Delta$ and $1\le r<\Delta$.
+The last assertion follows because the upper endpoint is primitive,
+so $\gcd(r,\Delta)=1$.
+
+In these transformed coordinates start with
+\[
+ z_0=(1,0),\quad z_1=(1,1),\qquad
+ D_0=\Delta,\quad D_1=\Delta-r.
+\]
+While $D_i>0$, use
+\[
+ h_i=\left\lceil\frac{D_{i-1}}{D_i}\right\rceil\ge2,\qquad
+ z_{i+1}=h_i z_i-z_{i-1},\qquad
+ D_{i+1}=h_iD_i-D_{i-1}.
+\]
+Then
+\[
+ 0\le D_{i+1}<D_i,\qquad
+ \det(z_i,z_{i+1})=1,\qquad
+ D_i=\det(z_i,(r,\Delta)).
+\]
+The coordinates are nondecreasing, with increasing second coordinate,
+so every ray remains in the cone and the terminal vector is exactly
+$(r,\Delta)$: it is a positive parallel primitive vector.
+The consecutive rays form a unimodular fan. Every integer vector in
+the cone is therefore a nonnegative integer combination of two adjacent
+fan vectors. A positive linear functional on such a nonzero combination
+is at least its value on one of those generators. Thus all fan vectors
+form an exact candidate set.
+
+When $h_i=2$, the vector $z_i$ lies on the line segment between
+$z_{i-1}$ and $z_{i+1}$. Throughout a run of such updates the vectors
+form an arithmetic progression, and a linear functional is minimized
+at one of the run endpoints. Consequently it is enough to retain
+$z_0$, the terminal vector, and precisely the vectors $z_i$ for which
+$h_i\ge3$.
+
+Every retained interior vertex satisfies
+$D_i<D_{i-1}/2$. Since the positive determinant remainders decrease,
+there are at most $\lfloor\log_2\Delta\rfloor$ such events.
+This proves the candidate count after applying the inverse unimodular
+map. All candidate vectors remain primitive, and their first coordinates
+are positive because they lie in the original cone.
+
+To skip a run with $h_i=2$, put $g=D_{i-1}-D_i>0$ and
+$k=\lfloor D_i/g\rfloor\ge1$. The next $k$ updates all have quotient $2$,
+and can be replaced by
+\[
+ z_{i+k}=z_i+k(z_i-z_{i-1}),\qquad D_{i+k}=D_i-kg.
+\]
+The predecessor is obtained by replacing $k$ by $k-1$. Either the
+remainder becomes zero or the next quotient is at least $3$.
+There is at most one such run between retained interior vertices,
+giving the stated update bound. Equality
+\eqref{stage3-farey-sail-minimum} follows from generation and removal of
+collinear candidates, and rationality of the breakpoints follows by
+equating two integer affine functions.
+\end{proof}
+
+\begin{theorem}[A terminating relative optimizer without an equality oracle]
+\label{stage3-farey-certified-optimizer}
+Let $G$ be the preceding finite set, and suppose rational brackets
+$L_j\le\xi\le U_j$ are available with $L_j>\beta$ and
+$U_j-L_j\to0$. Define
+\[
+ A_j=\min_{(q,p)\in G}(qL_j-p),\qquad
+ B_j=\min_{(q,p)\in G}(qU_j-p).
+\]
+Writing $M_\xi$ for the primitive minimum in
+\eqref{stage3-farey-sail-minimum}, one has
+\[
+ 0<A_j\le M_\xi\le B_j,\qquad
+ B_j-A_j\le Q_{\max}(U_j-L_j),
+ \quad Q_{\max}=\max_{(q,p)\in G}q.
+\]
+For every rational $\tau>0$, refinement until
+$B_j\le(1+\tau)A_j$ terminates. If $\widehat v_j$ is any candidate
+attaining $B_j$, then
+\[
+ M_\xi\le\mathcal L_\xi(\widehat v_j)
+ \le B_j\le(1+\tau)M_\xi.
+\]
+At any step all candidates with $qL_j-p>B_j$ may be discarded without
+losing a true optimum.
+
+For the canonical gamma intervals $[r_m,r_{m+1}]$, the rational
+brackets
+\[
+ L_j=r_j,\qquad
+ U_j=r_j+\frac{r_{j+1}-r_j}{1-\rho_j},
+ \qquad j\ge m+2,
+\]
+supply such an optimizer. This gives an explicit infinite family of
+positive primitive forms within any prescribed fixed relative factor
+of the true interval optimum. It does not prove that those optima
+tend to zero.
+\end{theorem}
+
+\begin{proof}
+For each candidate, replacing $\xi$ by $L_j$ or $U_j$ gives the stated
+lower and upper bounds. If a vector minimizes the lower expression, its
+upper expression is at most
+$A_j+Q_{\max}(U_j-L_j)$; minimizing the upper expression proves the
+difference estimate. The finite set has a strictly positive minimum
+$M_\xi$, so both $A_j$ and $B_j$ tend to $M_\xi$. Therefore the relative
+stopping condition holds after finitely many refinements. This argument
+does not require identifying a unique optimum or deciding whether
+$\xi$ equals a rational breakpoint. The bound for an upper-minimizing
+candidate follows directly. A discarded vector has actual value greater
+than $B_j$, whereas an undiscarded upper-minimizing vector has actual
+value at most $B_j$, so discarding is safe. The previously proved
+canonical gamma bounds verify all hypotheses of the application.
+\end{proof}
+
+\begin{theorem}[A three-fraction certificate for an exact primitive optimum]
+\label{stage3-farey-three-fractions}
+Suppose $a/b<c/d$ are Farey neighbours, so $bc-ad=1$, and
+\[
+ M=\frac{a+c}{b+d}<\xi<\frac cd.
+\]
+Then for every reduced fraction $p/q<M$ with $q>0$,
+\[
+ q\xi-p\ge b\xi-a>0,
+\]
+with equality only for $p/q=a/b$. Consequently, whenever
+\[
+ \alpha\le\frac ab\le\beta<M<\xi<\frac cd,
+\]
+the fraction $a/b$ is the unique primitive-error minimizer on
+$[\alpha,\beta]$, and
+\begin{equation}\label{stage3-farey-three-error}
+ 0<b\xi-a
+ =\frac1d-b\left(\frac cd-\xi\right)<\frac1d.
+\end{equation}
+For gamma, both strict comparisons must be certified: choose rational
+brackets with $M<L_k\le\gamma\le U_j<c/d$.
+Thus three fractions and rational comparisons certify an exact interval
+optimum without an equality oracle. In the canonical application below,
+the next interval's selected mediant satisfies $M<r_{m+2}$, while a
+computed upper bracket lies below $c/d$.
+\end{theorem}
+
+\begin{proof}
+First suppose $p/q\le a/b$. If $q\ge b$, then
+$q(\xi-p/q)\ge b(\xi-a/b)$, with equality only at the same primitive
+fraction. If $q<b$, the strict upper bound $\xi<c/d$ gives
+\[
+ (q\xi-p)-(b\xi-a)
+ >
+ \frac{cq-dp-1}{d}\ge0,
+\]
+because $cq-dp$ is a positive integer.
+
+If $a/b<p/q<M$, unimodularity gives the positive integers
+\[
+ s=cq-dp,\qquad t=bp-aq,\qquad
+ (q,p)=s(b,a)+t(d,c).
+\]
+The inequality $p/q<M$ is equivalent to $s>t$. Hence
+\[
+ (q,p)=(s-t)(b,a)+t(b+d,a+c).
+\]
+Both associated linear forms are strictly positive because
+$a/b<M<\xi$. Their positive integer combination has value strictly
+greater than $b\xi-a$. This proves the minimum statement.
+Finally $bc-ad=1$ gives
+$c/d-a/b=1/(bd)$ and therefore
+\eqref{stage3-farey-three-error}.
+\end{proof}
+
+\begin{proposition}[A quantitative parent-denominator target]
+\label{stage3-farey-parent-target}
+For the least-denominator fraction of $[r_m,r_{m+1}]$, let its final
+Stern--Brocot parents be $a_m/b_m<c_m/d_m$. Then
+\[
+ \widehat q_m=b_m+d_m,\qquad
+ \widehat q_m w_m<
+ \frac1{b_m}+\frac1{d_m},
+\]
+and consequently
+\begin{equation}\label{stage3-farey-parent-upper}
+ \mathcal U_m<
+ \frac{b_m^{-1}+d_m^{-1}}{1-\rho_m}.
+\end{equation}
+The lower-parent denominators satisfy $b_m\to\infty$ without assuming
+gamma irrationality. The upper-parent denominators satisfy the exact
+alternative:
+\begin{itemize}
+\item if gamma is irrational, then $d_m\to\infty$;
+\item if gamma is rational, then $c_m/d_m$ is eventually exactly gamma,
+so $d_m$ is eventually its reduced denominator.
+\end{itemize}
+In particular, an independent proof that $d_m$ is unbounded would
+suffice for condition 3. This proposition does not supply that proof.
+\end{proposition}
+
+\begin{proof}
+The selected fraction is the mediant of its final parents, so its
+denominator is $b_m+d_m$. The target interval lies strictly inside
+their Farey interval of length $1/(b_md_m)$, proving the quantitative
+inequalities.
+
+The selected denominators tend to infinity: otherwise a fixed rational
+would lie in infinitely many intervals converging strictly from below
+to gamma, forcing that rational to equal gamma, a contradiction.
+If the lower denominators had a bounded subsequence, finitely many
+possible lower parents would give a constant subsubsequence. The upper
+denominators would then tend to infinity, and the Farey gap would tend
+to zero, forcing that fixed lower parent to equal gamma. This contradicts
+its being strictly below every target interval. Thus $b_m\to\infty$.
+
+The same compactness argument shows that a bounded subsequence of
+$d_m$ forces gamma to be rational. Conversely, if gamma is a reduced
+rational, the finite Stern--Brocot path reaches it. For all sufficiently
+late intervals lying strictly below and sufficiently close to it, this
+rational becomes the right parent during that common initial path.
+Thereafter mediants with that right parent increase towards gamma.
+If a mediant overshot the target interval but still lay below gamma,
+it would replace the right parent. For late intervals this cannot occur
+before a mediant enters the interval: consecutive such mediants have
+gaps from gamma of the form $1/[d(b+kd)]$, with successive gap ratio
+tending to $1$, whereas $E_{m+1}/E_m\to0$.
+More explicitly, choose the first $k$ with gap at most $E_m$.
+Its gap is at least $E_m/(1+d^2E_m)$, which exceeds $E_{m+1}$ for all
+large $m$. It therefore lies inside the target interval and the search
+stops with right parent gamma unchanged. This proves eventual constancy.
+\end{proof}
+
+\begin{proposition}[An exact integer test for the final upper Farey parent]
+\label{stage3-farey-upper-parent-test}
+Let $0<\alpha=p_0/q_0<\beta=p_1/q_1<1$ be reduced rational endpoints.
+For a proposed reduced upper parent $c/d$ with
+$\beta<c/d\le1$, put
+\[
+ k_i=cq_i-dp_i>0\quad(i=0,1).
+\]
+Choose $b_0\in\{0,\ldots,d-1\}$ with $b_0c\equiv1\pmod d$;
+for $d=1$ use $b_0=0$. Define the integer
+\[
+ B_*=b_0+d\left\lfloor
+       \frac{q_0-1-b_0k_0}{dk_0}
+       \right\rfloor.
+\]
+Then $c/d$ is exactly the final upper parent in the Stern--Brocot
+least-denominator search on $[\alpha,\beta]$ if and only if
+\begin{equation}\label{stage3-farey-upper-parent-integer-test}
+ B_*>0,\qquad (B_*+d)k_1\le q_1.
+\end{equation}
+When these inequalities hold, the lower parent is
+\[
+ \frac{A_*}{B_*},\qquad A_*=\frac{B_*c-1}{d},
+\]
+and the selected fraction is
+$(A_*+c)/(B_*+d)$.
+
+For the canonical endpoints, this translates bounded upper-parent
+denominators into explicit floor and congruence inequalities involving
+only their harmonic numerator and denominator pairs. In particular,
+\[
+ \gcd(q_i,k_i)=\gcd(q_i,d).
+\]
+The existence of many primes dividing $q_i$ and not dividing $d$ merely
+makes $k_i$ a unit at those primes; it does not by itself contradict
+\eqref{stage3-farey-upper-parent-integer-test}.
+\end{proposition}
+
+\begin{proof}
+Set
+\[
+ X=\frac{q_0}{k_0}=\frac1{d(c/d-\alpha)},\qquad
+ Y=\frac{q_1}{k_1}=\frac1{d(c/d-\beta)}.
+\]
+A Farey lower neighbour $A/B$ of $c/d$ must satisfy
+$Bc-Ad=1$, so $Bc\equiv1\pmod d$.
+The conditions $A/B<\alpha$ and
+$(A+c)/(B+d)\ge\alpha$ are respectively
+\[
+ B<X,\qquad B+d\ge X.
+\]
+There is exactly one integer in the residue class $b_0\bmod d$
+satisfying these two inequalities: the largest such integer strictly
+below $X$. Since $Bk_0<q_0$ is equivalent to $Bk_0\le q_0-1$,
+that integer is exactly $B_*$ in the statement.
+It must be positive. The remaining condition that the mediant be at
+most $\beta$ is $B_*+d\le Y$, which is precisely the second inequality
+in \eqref{stage3-farey-upper-parent-integer-test}.
+
+Conversely these inequalities give a Farey pair whose open interval
+contains $[\alpha,\beta]$ and whose mediant belongs to that target
+interval. Every fraction in the open Farey interval has denominator at
+least the sum of the parent denominators, so the mediant is the unique
+least-denominator fraction in the target interval. A reduced fraction
+in $(0,1)$ has a unique Farey parent pair in $[0,1]$ with positive parent
+denominators: the right denominator is determined by the inverse
+congruence modulo the mediant denominator. Thus this pair is exactly
+the final pair from the Stern--Brocot search.
+The gcd assertion follows from $\gcd(p_i,q_i)=1$.
+\end{proof}
+
+\paragraph{Why positivity and prime-rich denominators alone do not settle the target.}
+The obstruction can be exhibited exactly for the rational limit $\xi=1/2$.
+Choose integers $D_m$ divisible by $4$, with
+$D_{m+1}\ge D_m^2$ and $D_m\to\infty$, and put
+\[
+ \ell_m=\frac12-\frac1{D_m}.
+\]
+The endpoint $\ell_m$ has reduced denominator exactly $D_m$, so the
+$D_m$ can be chosen to include any prescribed increasing lists of primes.
+The errors have ratio $D_m/D_{m+1}\to0$. They even have positive integral
+representations against the same Binet measure: since $\mu_0=1/12$,
+\[
+ \xi-\ell_m=\int\frac{12}{D_m}\,d\mu>0.
+\]
+Yet the least-denominator rational in
+$[\ell_m,\ell_{m+1}]$ is exactly
+\[
+ \frac{D_m/4}{D_m/2+1},
+\]
+and its primitive error is exactly $1/2$ for every $m$.
+Indeed odd denominators require $q\ge D_m/2$ and the smallest eligible
+odd denominator is $D_m/2+1$; even denominators require $q\ge D_m$.
+The displayed fraction belongs to the interval because
+$D_{m+1}\ge D_m+2$.
+Thus arbitrarily fast raw convergence, global positivity, and prescribed
+prime factors of the endpoint denominators do not by themselves imply
+primitive-error decay. This example does not imitate every
+gamma-specific harmonic coefficient identity.
+
+
+
+\subsection{Exact finite optima and a rational numerical certificate}
+In each of the eleven canonical intervals $m=0,\ldots,10$, the
+relative optimizer's surviving set reduces to one vector.
+The same vector is independently certified by the three-fraction
+criterion. The following selected rows show the actual optimum,
+the number of logarithmic-sail candidates, and an upward rational
+rounding of its positive primitive error.
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.55}
+\begin{tabular}{@{}rcrl@{}}
+\toprule
+$m$ & Exact optimal target & Candidates & Strict upper error bound\\
+\midrule
+0 & $\dfrac{4}{7}$ & 3 & $4.05096544\times10^{-2}$ \\[3pt]
+1 & $\dfrac{15}{26}$ & 6 & $7.60728744\times10^{-3}$ \\[3pt]
+2 & $\dfrac{157}{272}$ & 15 & $2.66085322\times10^{-3}$ \\[3pt]
+4 & $\dfrac{33841}{58628}$ & 49 & $1.84706856\times10^{-6}$ \\[3pt]
+6 & $\dfrac{9062634}{15700603}$ & 172 & $1.53583719\times10^{-9}$ \\[3pt]
+8 & $\dfrac{8788062966751}{15224921118955}$ & 723 & $9.04971062\times10^{-14}$ \\[3pt]
+10 & $\dfrac{2323006970406828281}{4024504377931443899}$ & 2728 & $3.81603071\times10^{-19}$ \\[3pt]
+\bottomrule
+\end{tabular}
+\normalsize
+\end{center}
+
+For $m=10$, the certifying triple is
+\[
+ \frac{2323006970406828281}{4024504377931443899},\qquad
+ \frac{3378631047479839813}{5853325287102525206},\qquad
+ \frac{1055624077073011532}{1828820909171081307}.
+\]
+The first and third fractions are Farey neighbours; the middle is
+their mediant. The first lies in $[r_{10},r_{11}]$, while the middle
+lies strictly above $r_{11}$ and strictly below $r_{12}<\gamma$.
+The rational upper bracket $h_{12}$ is below the third fraction.
+Thus the first fraction is the unique primitive-error optimum over
+the entire interval $[r_{10},r_{11}]$.
+
+A sharper, independently constructed rational Binet bracket proves
+\[
+ \begin{gathered}
+ \mathcal F_{10}
+ =4024504377931443899\,\gamma-2323006970406828281,\\
+ \frac{38160307067862345768}{10^{38}}
+ <\mathcal F_{10}
+ <\frac{38160307067862345769}{10^{38}}.
+ \end{gathered}
+\]
+Here is the exact bracket construction used by the verifier.
+Put
+\[
+ \ell_-=
+ 2\sum_{j=0}^{109}\frac1{(2j+1)3^{2j+1}},\qquad
+ \ell_+=\ell_-+\frac{2}{221\cdot3^{221}}\frac98.
+\]
+The positive series for $2\operatorname{artanh}(1/3)$ gives
+$\ell_-<\log2<\ell_+$. Define
+\[
+ S=\sum_{j=0}^{19}\frac{(-1)^j\mu_j}{64^{2j+2}},
+ \qquad R=\frac{\mu_{20}}{64^{42}}.
+\]
+Finite division of $1/(64^2+u)$ with an even number of terms shows
+\[
+ S<\int_0^\infty\frac{d\mu(u)}{64^2+u}<S+R.
+\]
+Consequently the entirely rational endpoints
+\[
+ g_-=H_{64}-\frac1{128}-6\ell_++S,\qquad
+ g_+=H_{64}-\frac1{128}-6\ell_-+S+R
+\]
+satisfy $g_-<\gamma<g_+$. Comparing the desired integer form at
+these two endpoints proves the displayed strict inequalities by
+integer cross multiplication.
+
+These are finite optimum certificates. They neither prove that the
+interval optima tend to zero nor assert a computational record for
+excluding rational denominators of $\gamma$.
+
+
+
+
+% Additional synthesis for the unified gamma manuscript, 31 October 2026.
+% Body fragment; the host supplies theorem environments and amsmath/amssymb.
+% References use labels preserved from the original constructive-selection
+% and stage-three manuscripts. No assertion of historical priority is made.
+
+\section{Selection and primitive optimization on shrinking intervals}
+\label{unified-selection-section}
+
+The next two results clarify the relationship between least-denominator
+selection and optimization of the actual primitive error. The first is a
+synthesis of the preceding constructions with standard irrational-rotation
+and Farey arguments. Its interval hypothesis is weaker than the contraction
+available for the canonical gamma kernels. The second shows that the two
+selection rules can nevertheless have arbitrarily different finite errors.
+Neither result determines whether Euler's constant is rational.
+
+For a real number $\xi$, define
+\[
+ \kappa(\xi)=
+ \begin{cases}
+  0,&\xi\notin\mathbb Q,\\
+  1/b,&\xi=a/b\text{ in lowest terms, }b>0.
+ \end{cases}
+\]
+All rational targets below are reduced, with positive denominators. Their
+primitive errors are $q\xi-p$; positivity follows from $p/q<\xi$.
+
+\begin{theorem}[A common limiting dichotomy for three selection rules]
+\label{unified-selection-window-dichotomy}
+Let $\xi\in\mathbb R$ and let
+\[
+ I_m=[\alpha_m,\beta_m],\qquad
+ \alpha_m,\beta_m\in\mathbb Q,
+ \qquad \alpha_m<\beta_m<\xi.
+\]
+Put
+\[
+ E_m=\xi-\alpha_m,\qquad E_m^+=\xi-\beta_m.
+\]
+Assume
+\begin{equation}\label{unified-selection-width-hypothesis}
+ E_m\longrightarrow0,
+ \qquad \limsup_{m\to\infty}\frac{E_m^+}{E_m}<1.
+\end{equation}
+No monotonicity or nesting of the intervals is required.
+
+Choose $p_m/q_m\in I_m$ of least positive denominator and set
+\[
+ S_m=q_m\xi-p_m,\qquad
+ M_m=\min_{\substack{p/q\in I_m\\q>0,\ \gcd(p,q)=1}}
+                     (q\xi-p).
+\]
+The minimum defining $M_m$ is attained and is strictly positive. Then
+\begin{equation}\label{unified-selection-three-limits}
+ q_m\longrightarrow\infty,
+ \qquad
+ \lim q_mE_m=\lim S_m=\lim M_m=\kappa(\xi).
+\end{equation}
+If $\xi=a/b$ is rational in lowest terms, then
+\begin{equation}\label{unified-selection-rational-stabilization}
+ S_m=M_m=1/b
+ \qquad\text{for all sufficiently large }m.
+\end{equation}
+
+More generally, suppose a reduced target $P_m/Q_m\in I_m$ satisfies
+\begin{equation}\label{unified-selection-relative-rule}
+ M_m\le T_m:=Q_m\xi-P_m\le(1+\tau_m)M_m,
+ \qquad 0<\tau_m<1.
+\end{equation}
+Then $Q_m\to\infty$ and $T_m\to\kappa(\xi)$. In the rational case,
+$T_m=1/b$ eventually. If additionally $\tau_m\to0$, then
+\begin{equation}\label{unified-selection-asymptotic-optimality}
+ \frac{T_m}{M_m}\longrightarrow1.
+\end{equation}
+When the endpoints and narrowing rational brackets for $\xi$ are
+effectively available, the relative rule can be implemented by
+Theorem~\ref{stage3-farey-certified-optimizer}, for any effectively given
+rational sequence $0<\tau_m<1$. It does not require an equality oracle.
+
+Finally, any positive numbers $C_m$ with $C_m/E_m\to1$ satisfy
+\begin{equation}\label{unified-selection-upper-limit}
+ q_m C_m\longrightarrow\kappa(\xi).
+\end{equation}
+In particular this applies to any asymptotically exact rational upper
+certificate for $E_m$.
+\end{theorem}
+
+\begin{proof}
+For a fixed interval, take any admissible primitive pair $(q_*,p_*)$.
+Since $E_m^+>0$, every admissible pair satisfies
+\[
+ q\xi-p=q(\xi-p/q)\ge qE_m^+.
+\]
+Pairs with $q>(q_*\xi-p_*)/E_m^+$ cannot improve the chosen pair.
+Only finitely many fractions in a bounded interval have a bounded
+denominator, proving existence and positivity of $M_m$.
+The same finiteness observation shows that every sequence of rational
+targets chosen in $I_m$ has denominator tending to infinity: otherwise
+a fixed rational would occur along a subsequence converging to $\xi$
+strictly from below, forcing that rational to equal $\xi$.
+
+Choose a fixed number $\theta\in(0,1)$ such that
+\[
+ E_m^+/E_m\le\theta
+\]
+for all sufficiently large $m$. We first suppose that $\xi$ is irrational.
+We use only the bounded-return property of an irrational rotation, not
+equidistribution. The elementary density of the forward orbit of an
+irrational rotation implies that, for every nonempty open arc $J$ of
+$\mathbb R/\mathbb Z$, the sets
+$J-j\xi$, $j\ge0$, cover the circle. Compactness gives a finite subcover.
+Consequently there is an integer $K_J$ such that, from every starting
+point, some iterate with index between $0$ and $K_J$ lies in $J$.
+The density assertion itself follows from the usual pigeonhole
+approximation of an irrational rotation by arbitrarily small nonzero
+rotations.
+
+Fix $h>0$ with $\theta(1+h)<1$, and fix $0<\eta<1$. Apply the bounded
+return property to
+\[
+ J=\bigl(\theta(1+h)\eta,\eta\bigr).
+\]
+For all sufficiently large $m$, the interval
+$[\eta/E_m,(1+h)\eta/E_m]$ is long enough to contain such a return.
+Thus there is an integer $q$ with
+\[
+ \frac{\eta}{E_m}\le q\le\frac{(1+h)\eta}{E_m},
+ \qquad \theta(1+h)\eta<\{q\xi\}<\eta.
+\]
+Put $p=\lfloor q\xi\rfloor$. Then
+\[
+ E_m^+\le\theta E_m
+   <\xi-p/q<E_m.
+\]
+After reduction the fraction still belongs to $I_m$ and its denominator
+does not increase. Minimality of $q_m$ therefore gives
+\[
+ q_mE_m\le(1+h)\eta.
+\]
+Since $\eta>0$ is arbitrary, $q_mE_m\to0$. The inequalities
+\[
+ 0<M_m\le S_m\le q_mE_m
+\]
+prove the other two limits in the irrational case.
+
+Now let $\xi=a/b$ be rational in lowest terms. Every positive primitive
+error is a positive integer multiple of $1/b$, so
+\[
+ q_mE_m\ge S_m\ge M_m\ge1/b.
+\]
+Choose the smallest integer $q\ge1/(bE_m)$ in the residue class
+$aq\equiv1\pmod b$, and put $p=(aq-1)/b$. For large $m$, this is a
+positive denominator and
+\[
+ \frac1{bE_m}\le q<\frac1{bE_m}+b,
+ \qquad \gcd(p,q)=1,
+\]
+because $aq-bp=1$. Its gap satisfies
+\[
+ \frac{E_m}{1+b^2E_m}<\xi-p/q\le E_m.
+\]
+For sufficiently large $m$, the left bound exceeds $\theta E_m$ and
+therefore exceeds $E_m^+$. This fraction belongs to $I_m$. Hence
+\[
+ \frac1b\le q_mE_m\le\frac1b+bE_m,
+\]
+which proves $q_mE_m\to1/b$. Since $S_m$ is a positive integer multiple
+of $1/b$ and $S_m\le q_mE_m$, eventually $S_m=1/b$. The inequalities
+$1/b\le M_m\le S_m$ then give $M_m=1/b$ as well.
+
+For a relative optimizer, the irrational case follows from
+$0<T_m<2M_m\to0$. In the rational case, eventually
+\[
+ 1/b\le T_m\le(1+\tau_m)/b<2/b.
+\]
+Its membership in $(1/b)\mathbb Z$ forces $T_m=1/b$.
+If $\tau_m\to0$, division of
+\eqref{unified-selection-relative-rule} by $M_m>0$ proves
+\eqref{unified-selection-asymptotic-optimality}. The effective assertion
+uses the finite candidate set of
+Theorem~\ref{stage3-farey-logarithmic-sail} and the terminating refinement
+rule of Theorem~\ref{stage3-farey-certified-optimizer}; for each fixed
+$m$, its strict gap $\xi-\beta_m>0$ lets the available lower rational
+bracket eventually exceed $\beta_m$.
+Finally \eqref{unified-selection-upper-limit} follows by multiplying
+$q_mE_m\to\kappa(\xi)$ by $C_m/E_m\to1$.
+\end{proof}
+
+\paragraph{The exact Farey-parent alternative.}
+Under the hypotheses of
+Theorem~\ref{unified-selection-window-dichotomy}, the parent criterion
+also holds for the general intervals, with a short proof that uses the
+rational stabilization just established. For all sufficiently large $m$,
+$q_m>1$. Let
+\[
+ \frac{a_m}{b_m}<\frac{p_m}{q_m}<\frac{c_m}{d_m},
+ \qquad b_m+d_m=q_m,\quad a_m+c_m=p_m,\quad
+ b_mc_m-a_md_m=1,
+\]
+be its canonical Farey parents, whose denominators lie between $1$ and
+$q_m-1$. They are the final Stern--Brocot parents in the positive-interval
+application. Since either parent has smaller denominator than $q_m$,
+minimality implies
+\[
+ a_m/b_m<\alpha_m<\beta_m<c_m/d_m.
+\]
+Their gap is $1/(b_md_m)$, and consequently
+\begin{equation}\label{unified-selection-parent-gap}
+ q_m(\beta_m-\alpha_m)<\frac1{b_m}+\frac1{d_m}.
+\end{equation}
+
+One always has $b_m\to\infty$. Indeed, on a subsequence with bounded
+$b_m$, one has $d_m=q_m-b_m\to\infty$. The parent gap then tends to
+zero and forces the lower parents to converge to $\xi$. A bounded
+denominator leaves only finitely many fractions near $\xi$, so some
+fixed lower parent would equal $\xi$, contradicting its strict position
+below $\alpha_m<\xi$.
+The same argument applied to a bounded subsequence of $d_m$ forces
+$\xi$ to be rational. Thus irrational $\xi$ implies $d_m\to\infty$.
+
+Conversely, if $\xi=a/b$ is reduced, the theorem gives
+$aq_m-bp_m=1$ for all sufficiently large $m$. Also $q_m>b$ eventually.
+The right Farey-parent denominator is the unique integer
+$d\in\{1,\ldots,q_m-1\}$ satisfying $p_md\equiv-1\pmod{q_m}$.
+The displayed determinant identity shows that it is $b$, with numerator
+$a$. Hence
+\begin{equation}\label{unified-selection-parent-stabilization}
+ \frac{c_m}{d_m}=\xi\quad\text{eventually if }\xi\in\mathbb Q.
+\end{equation}
+In this class of interval sequences the following statements are
+therefore equivalent:
+\[
+ \begin{aligned}
+ \xi\notin\mathbb Q
+ &\ \Longleftrightarrow\ d_m\to\infty
+    \ \Longleftrightarrow\ (d_m)\text{ is unbounded}\\
+ &\ \Longleftrightarrow\ M_m\to0
+    \ \Longleftrightarrow\ S_m\to0
+    \ \Longleftrightarrow\ q_mE_m\to0.
+ \end{aligned}
+\]
+These are exact equivalences, not an independent proof of any one of
+them for $\xi=\gamma$.
+
+\paragraph{Application to the canonical gamma intervals.}
+Take $\alpha_m=r_m$, $\beta_m=r_{m+1}$ and $\xi=\gamma$.
+Lemma~\ref{stage3-canonical-baseline} supplies the stronger condition
+$E_m^+/E_m=E_{m+1}/E_m\to0$, so the theorem applies. The rational upper
+quantity in Theorem~\ref{next-cutoff-selection} is
+\[
+ C_m=\frac{r_{m+1}-r_m}{1-\rho_m},\qquad
+ \frac{C_m}{E_m}
+ =\frac{1-E_{m+1}/E_m}{1-\rho_m}\longrightarrow1.
+\]
+Thus the original rational upper certificate, the selected primitive
+errors, and the true interval optima all have the same rationality
+dichotomy. Choosing, for example, $\tau_m=1/(m+2)$ in the effective
+relative optimizer additionally gives an explicit positive primitive
+sequence whose ratio to the true interval optimum tends to one.
+Every step terminates using rational comparisons. No uniform running-time
+bound and no convergence to zero for gamma are inferred.
+
+\begin{theorem}[Least denominator need not be asymptotically primitive-optimal]
+\label{unified-selection-fibonacci-separation}
+Let $\varphi=(1+\sqrt5)/2$, $\xi=\varphi^{-1}$, and let
+$F_0=0$, $F_1=1$, $F_{k+2}=F_{k+1}+F_k$ be the Fibonacci numbers.
+Put
+\[
+ r_n=\frac{F_{2n}}{F_{2n+1}}\qquad(n\ge1).
+\]
+For any integers $N>n\ge1$, the unique least-denominator fraction in
+$[r_n,r_N]$ is $r_n$, whereas the unique primitive-error minimizer there
+is $r_N$. Their exact errors are
+\begin{equation}\label{unified-selection-fibonacci-errors}
+ F_{2n+1}\xi-F_{2n}=\varphi^{-(2n+1)},\qquad
+ F_{2N+1}\xi-F_{2N}=\varphi^{-(2N+1)}.
+\end{equation}
+Consequently the quotient of the least-denominator error by the true
+primitive minimum is exactly
+\begin{equation}\label{unified-selection-fibonacci-ratio}
+ \varphi^{2(N-n)}.
+\end{equation}
+In particular, with $n_m=2^m$ and
+$I_m=[r_{n_m},r_{n_{m+1}}]$, one has
+\[
+ \frac{\xi-r_{n_{m+1}}}{\xi-r_{n_m}}\longrightarrow0,
+ \qquad
+ \frac{\text{least-denominator primitive error on }I_m}
+      {\text{least primitive error on }I_m}
+ =\varphi^{2^{m+1}}\longrightarrow\infty.
+\]
+Thus even the stronger contraction used in the canonical gamma
+construction does not, by itself, make least-denominator selection
+asymptotically primitive-optimal.
+\end{theorem}
+
+\begin{proof}
+The recurrence and $1-\xi=\xi^2$ give
+\begin{equation}\label{unified-selection-fibonacci-identity}
+ F_{k+1}\xi-F_k=(-1)^k\xi^{k+1}.
+\end{equation}
+For example the left side at $k+1$ is $-\xi$ times its value at $k$,
+and its value at $k=0$ is $\xi$. This proves the identity by induction.
+Consecutive Fibonacci numbers are coprime, so all fractions in the
+statement are reduced. The even-index identity puts $r_n$ strictly below
+$\xi$, while Cassini's identity gives
+\[
+ r_{n+1}-r_n=\frac1{F_{2n+1}F_{2n+3}}>0.
+\]
+
+Use $r_0=0$ for the next parent computation. The fractions
+\[
+ \ell_n=\frac{F_{2n-2}}{F_{2n-1}},\qquad
+ u_n=\frac{F_{2n-1}}{F_{2n}}
+\]
+are Farey neighbours, their mediant is $r_n$, and
+\[
+ \ell_n<r_n\le r_N<\xi<u_n.
+\]
+The last strict inequality follows from
+\eqref{unified-selection-fibonacci-identity} at the odd index $2n-1$.
+Every reduced fraction strictly between two Farey neighbours has
+denominator at least the sum of their denominators. Equality is possible
+only for their mediant: the coefficient representation in the two
+unimodular columns consists of positive integers. Here that sum is
+$F_{2n+1}$. Since $r_n$ belongs to the target interval, it is the unique
+least-denominator fraction there.
+
+For the primitive minimum, the fractions
+\[
+ \frac ab=r_N=\frac{F_{2N}}{F_{2N+1}},\qquad
+ \frac cd=\frac{F_{2N+1}}{F_{2N+2}}
+\]
+are Farey neighbours with $bc-ad=1$. Their mediant is
+$r_{N+1}$, and
+\[
+ r_N<r_{N+1}<\xi<c/d.
+\]
+The three-fraction principle of
+Theorem~\ref{stage3-farey-three-fractions} therefore gives
+\[
+ q\xi-p\ge b\xi-a
+ \quad\text{for every reduced }p/q<r_{N+1},
+\]
+with equality only at $p/q=r_N$. The whole interval $[r_n,r_N]$ is
+within this range, proving its unique primitive optimum.
+
+Equation~\eqref{unified-selection-fibonacci-identity} now proves
+\eqref{unified-selection-fibonacci-errors}, and their quotient is
+\eqref{unified-selection-fibonacci-ratio}. For the final interval
+sequence, write $n=n_m$ and $N=n_{m+1}$. Its raw-gap ratio is exactly
+\[
+ \frac{\xi-r_N}{\xi-r_n}
+ =\varphi^{-2(N-n)}\frac{F_{2n+1}}{F_{2N+1}}
+ <\varphi^{-2(N-n)}\longrightarrow0.
+\]
+Since $N-n=2^m$, the asserted unbounded error ratio follows.
+\end{proof}
+
+\paragraph{What the comparison adds.}
+The Fibonacci example does not assert the same behavior for gamma.
+It establishes that an asymptotic optimality claim cannot be deduced
+merely from rational interval endpoints, strict approach from below,
+and a raw-gap ratio tending to zero. Exact primitive optimization can
+therefore improve finite errors substantially even when a
+least-denominator selector already has the correct limiting dichotomy.
+Conversely, the first theorem shows that switching to a relative
+optimizer does not eliminate the unresolved rationality branch.
+An independent all-index arithmetic estimate is still required to
+prove primitive-error decay for Euler's constant.
+
+\section{Primitive obstructions for dyadic targets}
+
+\subsection{Canonical endpoints}
+
+\begin{theorem}[Uniform primitive-cost divergence of the canonical family]
+\label{next-cutoff-cost}
+Let $r_{m,t}=p_{m,t}/q_{m,t}$ be reduced with $q_{m,t}>0$.
+Except for $(m,t)=(0,0)$, set
+\[
+ N=2^{t+m+1},\quad k=t+m+1,\quad
+ B_{m,t}=tP_m(1)+P_m'(1)>0,\quad
+ \mathcal P_N=\prod_{N/2<\ell\le N,\ \ell\ {\rm prime}}\ell.
+\]
+Then
+\begin{equation}\label{next-cutoff-actual-denominator}
+ \frac{\mathcal P_N}{\gcd(\mathcal P_N,B_{m,t})}
+ \mid q_{m,t}
+\end{equation}
+and
+\begin{equation}\label{next-cutoff-cost-bound}
+ q_{m,t}(\gamma-r_{m,t})
+ \ge\frac{\mathcal P_N}
+ {3^{15}k\,2^{2k(k-1)}}.
+\end{equation}
+In particular the primitive errors tend to $+\infty$ along every
+sequence $m+t\to\infty$, although the raw errors tend to zero and the
+approximants increase strictly in both coordinates.
+\end{theorem}
+
+\begin{proof}
+The coefficients of $P_m(1)^2 C_{m,t}$ are integers. Its top
+coefficient is
+\[
+ -4^{m(m+1)/2}\{tP_m(1)+P_m'(1)\}.
+\]
+For an odd prime $\ell\in(N/2,N]$ not dividing $B_{m,t}$, only the top
+harmonic sum $H_N$ contains a denominator divisible by $\ell$, and it
+contains precisely the term $1/\ell$. All correction terms $1/(2n)$
+have power-of-two denominators. Thus the integer-coefficient harmonic
+sum has $\ell$-valuation $-1$. Division by $P_m(1)^2$ can only decrease
+that valuation. Every such prime therefore divides the actual reduced
+denominator, proving \eqref{next-cutoff-actual-denominator}. Here
+$N\ge4$, so all primes in the interval are odd.
+
+Moreover,
+\[
+ B_{m,t}=(t+s_m)P_m(1)
+ \le k\,4^{m(m+1)/2}.
+\]
+Use this in \eqref{next-cutoff-actual-denominator} and multiply by the
+lower bound in \eqref{next-cutoff-two-sided}. Since $a=2^t$,
+\[
+ q_{m,t}E_{m,t}\ge
+ \frac{\mathcal P_N}
+ {3^{15}k\,2^{2(m+1)(t+m)}}
+ \ge
+ \frac{\mathcal P_N}{3^{15}k\,2^{2k(k-1)}}.
+\]
+The prime number theorem \cite{dlmf-primes} gives
+$\log\mathcal P_N=N/2+o(N)$, whereas the logarithm of the remaining
+denominator in this bound is $O((\log N)^2)$. This proves the uniform
+divergence. All asymptotic estimates here depend only on $N$; no
+parameter-dependent short-interval assertion is used.
+
+The conclusion concerns this explicitly specified canonical family.
+It does not exclude rational choices of $\kappa$ in the larger
+compressed class, different moment prescriptions, or a target-changing
+operation with a separately proved primitive-error bound.
+\end{proof}
+
+\subsection{Odd-denominator cost of nonperturbative interpolation}
+\label{stage3-arithmetic-section}
+
+We examine arbitrary rational interpolation between consecutive canonical
+targets. The interpolation coefficient is allowed to have arbitrarily
+large numerator and denominator. The result excludes every dyadic rational
+interpolation, including choices whose heights grow without any restriction.
+For general coefficients it gives an explicit necessary cost in the odd
+part of their denominator. It does not exclude arbitrary rational
+interpolation.
+
+Recall the canonical polynomials and rational targets
+\[
+ P_m(x)=\prod_{j=1}^m(4^jx-1),\quad A_m=P_m(1),\quad
+ B_m=P_m'(1),\quad s_m=B_m/A_m,
+\]
+\[
+ C_m(x)=\frac{P_m(x)}{A_m}[1-s_m(x-1)]=\sum_i c_{m,i}x^i,
+ \qquad
+ r_m=\sum_i c_{m,i}f_i,
+ \quad f_i=H_{2^i}-\frac1{2^{i+1}}.
+\]
+Here $P_0=A_0=C_0=1$, $B_0=s_0=0$, and $r_0=1/2$.
+The exact positive-kernel identity is
+\[
+ E_m:=\gamma-r_m
+ =\int_0^\infty
+ \frac{u^m\{u+4^{m+1}+s_m(4^{m+1}-1)\}}
+ {\prod_{i=0}^{m+1}(u+4^i)}\,
+ \frac{du}{e^{2\pi\sqrt u}-1}>0.
+\]
+It also gives the uniform elementary bound
+\begin{equation}\label{stage3-arithmetic-raw-lower}
+ E_m\ge 3^{-15}2^{-m(m+1)}.
+\end{equation}
+Indeed, restrict the integral to $1\le u\le2$. Its numerator is at
+least $4^{m+1}$, its denominator is less than
+$27\,4^{(m+1)(m+2)/2}$, and the measure density is greater than
+$3^{-12}$ on that interval.
+
+\begin{theorem}[Exact two-adic arithmetic of the canonical targets]
+\label{stage3-arithmetic-two-adic}
+For every integer $m\ge0$,
+\[
+ v_2(r_m)=-1,\qquad v_2(r_{m+1}-r_m)=2m+1.
+\]
+Let $0<\lambda=u/v\le1$ be reduced, and write $v=2^L H$ with $H$ odd.
+If $q$ is the reduced denominator of
+$r=r_m+\lambda(r_{m+1}-r_m)$, then
+\[
+ v_2(q)=
+ \begin{cases}
+ 1,&0\le L\le2m+1,\\
+ 0,&L=2m+2,\\
+ L-2m-1,&L\ge2m+3.
+ \end{cases}
+\]
+In particular $2^L\le2^{2m+2}q$ for every such interpolation coefficient.
+\end{theorem}
+
+\begin{proof}
+Write $P_m(x)=\sum_i a_i x^i$, taking coefficients outside its support
+to be zero. For $0\le i\le m$,
+\[
+ v_2(a_i)=i(i+1).
+\]
+Indeed, in the elementary symmetric sum of $4,4^2,\ldots,4^m$, the
+unique term of least two-adic valuation is the product $4^1\cdots4^i$.
+The number $A_m$ is odd, and for $m\ge1$ the term $a_1$ uniquely has
+least valuation in $B_m=\sum_i i a_i$, so $v_2(B_m)=2$.
+
+For $m\ge1$ the coefficients of $C_m$ satisfy
+\[
+ c_{m,i}=\frac{(A_m+B_m)a_i-B_ma_{i-1}}{A_m^2}.
+\]
+Consequently $v_2(c_{m,0})=0$, $v_2(c_{m,1})\ge2$, and
+\[
+ v_2(c_{m,i})=i^2-i+2\quad(2\le i\le m+1).
+\]
+The unique term of least valuation in $H_{2^i}$ is $1/2^i$, hence
+$v_2(f_i)=-i-1$. The $i=0$ term of $r_m$ therefore has valuation $-1$,
+the $i=1$ term has valuation at least $0$, and every $i\ge2$ term has
+valuation $(i-1)^2\ge1$. This proves $v_2(r_m)=-1$; $m=0$ is direct.
+
+Put $D_m(x)=P_m(x)(x-1)^2/A_m=\sum_i d_i x^i$ and
+$Z_m=\sum_i d_i f_i$. From
+$A_md_i=a_i-2a_{i-1}+a_{i-2}$ one gets
+\[
+ v_2(d_0)=0,\quad v_2(d_1)=1,\quad v_2(d_2)=0,
+ \qquad v_2(d_i)=(i-2)(i-1)\quad(3\le i\le m+2).
+\]
+In $Z_m$, the $i=2$ term has valuation $-3$. The terms $i=0,1$ have
+valuation $-1$, the term $i=3$ (when present) has valuation $-2$, and
+all terms $i\ge4$ have valuation at least $1$. Thus $v_2(Z_m)=-3$.
+
+Set $R=4^{m+1}$. Direct polynomial subtraction gives
+\[
+ C_{m+1}-C_m=-\kappa_mD_m,\qquad
+ \kappa_m=\frac{R\{R+s_m(R-1)\}}{(R-1)^2}.
+\]
+For $m=0$ this coefficient has valuation $4$. For $m\ge1$,
+$v_2(s_m)=2$ and $v_2(R)\ge4$, so $v_2(\kappa_m)=2m+4$.
+Therefore $r_{m+1}-r_m=-\kappa_mZ_m$ has valuation $2m+1$.
+
+If $L>0$, reducedness makes $u$ odd, so the added term has valuation
+$2m+1-L$. If this is greater or less than $-1$, comparison with
+$v_2(r_m)=-1$ gives the displayed denominator exponent. At equality,
+the sum of two rational numbers of valuation $-1$ is two-adically integral,
+so the denominator is odd. If $L=0$, the added term has valuation at
+least $2m+1$, and the first branch again applies.
+\end{proof}
+
+\begin{theorem}[A necessary odd-denominator cost for every rational interpolation]
+\label{stage3-arithmetic-odd-cost}
+For $m\ge0$, put $k=m+1$, $N=2^{m+2}$, and
+\[
+ \mathcal P_N=\prod_{\substack{N/2<\ell\le N\\\ell\ \mathrm{prime}}}\ell,
+ \quad T_m=A_kB_k>0,
+ \quad G_m=\frac{\mathcal P_N}{\gcd(\mathcal P_N,T_m)}.
+\]
+Let $0<\lambda=u/v\le1$ be reduced, let $H$ be the odd part of $v$,
+and write $r=r_m+\lambda(r_{m+1}-r_m)=p/q$ in lowest terms.
+For every prime $\ell\mid G_m$, one has the exact formula
+\[
+ v_\ell(q)=\max\{0,1+v_\ell(v)-v_\ell(u)\}.
+\]
+In particular,
+\begin{equation}\label{stage3-arithmetic-prime-divisibility}
+ G_m\mid qu,
+ \qquad
+ q^2H\ge\frac{G_m}{2^{2m+2}}.
+\end{equation}
+Since
+\[
+ T_m<(m+2)2^{2(m+1)(m+2)},
+\]
+the odd denominator must satisfy the completely explicit bound
+\begin{equation}\label{stage3-arithmetic-required-odd-height}
+ H\ge
+ \frac{\mathcal P_N}
+ {(m+2)2^{2(m+1)(m+3)}q^2}.
+\end{equation}
+No smallness assumption on $\lambda$ is used.
+\end{theorem}
+
+\begin{proof}
+Fix a prime $\ell\mid G_m$. It is odd and does not divide $A_kB_k$.
+Since $A_m\mid A_k$, the lower target $r_m$ is $\ell$-integral:
+all its harmonic nodes are at most $N/2$, and its coefficient
+denominators divide $A_m^2$. The top coefficient of $A_k^2C_k$ is
+\[
+ -4^{k(k+1)/2}B_k.
+\]
+It is an $\ell$-unit, and only its harmonic term $H_N$ contains the
+single nonintegral summand $1/\ell$. The correction $1/(2N)$ is an
+$\ell$-unit. Hence $v_\ell(r_{m+1})=-1$ and
+$v_\ell(r_{m+1}-r_m)=-1$.
+
+If $v_\ell(\lambda)<1$, its product with the increment has negative
+valuation and dominates the integral base $r_m$. Otherwise both terms
+are integral. This proves the exact denominator formula. It implies
+$\ell\mid qu$ for every $\ell\mid G_m$, hence $G_m\mid qu$.
+The interval condition gives $u\le v=2^LH$, and the preceding theorem
+gives $2^L\le2^{2m+2}q$. Combining them yields
+$G_m\le qu\le2^{2m+2}q^2H$.
+
+Finally $A_k<2^{k(k+1)}$ and
+$B_k=s_kA_k<(k+1)A_k$, because
+$s_k=k+\sum_{j=1}^k(4^j-1)^{-1}<k+1$.
+This proves the bound on $T_m$ and then
+\eqref{stage3-arithmetic-required-odd-height}.
+\end{proof}
+
+\begin{theorem}[All dyadic interpolations fail, with unrestricted height]
+\label{stage3-arithmetic-dyadic-obstruction}
+For the preceding rational interpolation with $0<\lambda\le1$,
+\begin{equation}\label{stage3-arithmetic-complete-cost}
+ q(\gamma-r)\ge
+ \frac{\sqrt{\mathcal P_N}}
+ {3^{15}\sqrt{(m+2)H}\,2^{(m+1)(2m+5)}}.
+\end{equation}
+Consequently, along every sequence $m\to\infty$ for which the odd part
+$H=H_m$ of the reduced interpolation denominator satisfies
+$\log H_m=o(2^{m+2})$, the primitive errors tend to $+\infty$.
+More quantitatively, with $N_m=2^{m+2}$,
+\[
+ \liminf_{m\to\infty}\frac{\log(q(\gamma-r))}{N_m}
+ \ge\frac14-\frac12
+       \limsup_{m\to\infty}\frac{\log H_m}{N_m},
+\]
+whenever the right side is finite. Thus divergence also holds when the
+last limsup is strictly less than $1/2$.
+
+In particular every choice of dyadic rational coefficients
+$\lambda_m\in[0,1]\cap\mathbb Z[1/2]$ fails the primitive-smallness
+condition, even if their heights grow arbitrarily rapidly.
+For any rational-interpolation sequence with primitive error tending
+to zero, it is necessary that
+\[
+ \liminf_{m\to\infty}\frac{\log H_m}{2^{m+2}}\ge\frac12.
+\]
+The conclusion is a necessary condition, not a construction of weights
+satisfying it with successful primitive errors.
+\end{theorem}
+
+\begin{proof}
+The error is the convex combination
+$(1-\lambda)E_m+\lambda E_{m+1}$, so
+\eqref{stage3-arithmetic-raw-lower} gives
+\[
+ \gamma-r\ge3^{-15}2^{-(m+1)(m+2)}.
+\]
+Combine this with
+$q\ge\sqrt{G_m/(2^{2m+2}H)}$ and
+$G_m\ge\mathcal P_N/T_m$ to obtain
+\eqref{stage3-arithmetic-complete-cost}.
+The prime number theorem \cite{dlmf-primes} gives
+$\log\mathcal P_N=N/2+o(N)$, while $m^2=o(N)$. Taking logarithms proves
+the quantitative bound and the stated divergence.
+
+For dyadic coefficients $H=1$. The case $\lambda=0$, omitted from the
+divisibility theorem because its reduced numerator is zero, gives the
+canonical target $r_m$ itself. For $m\ge1$ this is the preceding
+interval's interpolation with coefficient $1$, so the same proved bound
+at index $m-1$ already gives divergence. Therefore allowing zero coefficients at any
+subsequence does not change the all-dyadic conclusion.
+
+Finally, if the primitive errors tend to zero, then they are eventually
+at most $1$. Squaring \eqref{stage3-arithmetic-complete-cost} gives
+\[
+ H_m\ge
+ \frac{\mathcal P_{N_m}}
+ {3^{30}(m+2)2^{2(m+1)(2m+5)}}
+\]
+at all sufficiently large nonzero-interpolation indices. Zero
+interpolation cannot occur infinitely often in a successful sequence.
+Taking logarithms proves the necessary liminf bound.
+\end{proof}
+
+\paragraph{Scope.}
+This argument permits completely nonperturbative weights and arbitrary
+two-adic denominator growth. It does not restrict the height of the odd
+denominator to be small by assumption and then declare all interpolation
+impossible: instead it proves how large that odd part must become for a
+possible successful sequence. A least-denominator target chosen by a
+Stern--Brocot algorithm may require precisely such enormous odd
+interpolation denominators, so that selection procedure is not excluded.
+The exact arithmetic above does not prove its primitive errors tend to zero.
+
+
+
+\section{Constructive extensions of the positive square map}
+\label{sea-square-section}
+
+The results in this section are auxiliary tools for choosing polynomial
+square forms.  They do not prove the irrationality of Euler's constant,
+and no claim of historical novelty is made.  In particular, a degree bound
+conditional on separation from a rational number is not a proof of that
+separation.
+
+Put $H_0=0$, $H_j=\sum_{h=1}^j1/h$, and
+\[
+ a_j=j!(1+jH_j),\qquad b_j=jj!.
+\]
+The moment normalization is fixed by the exact identity
+\[
+ \int_0^\infty t^j(t-1)\log t\,e^{-t}\,dt
+ =\Gamma'(j+2)-\Gamma'(j+1)
+ =j!\bigl(1+jH_j-j\gamma\bigr).
+\]
+For polynomials $f,g\in\mathbb Q[t]$, define the rational bilinear forms
+\[
+ \mathcal A(f,g)=\sum_{i,j}f_i g_j a_{i+j},\qquad
+ \mathcal B(f,g)=\sum_{i,j}f_i g_j b_{i+j},
+\]
+and write $A(q)=\mathcal A(q,q)$, $B(q)=\mathcal B(q,q)$.  Thus
+\begin{equation}
+ I(q):=A(q)-\gamma B(q)
+ =\int_0^\infty q(t)^2(t-1)\log t\,e^{-t}\,dt>0
+ \quad(q\ne0).
+ \label{sea-square-positive}
+\end{equation}
+For integer $q\ne0$, set $g(q)=\gcd(A(q),B(q))>0$ and
+$E(q)=I(q)/g(q)$.  For rational $q$, first clear coefficient denominators;
+the resulting primitive pair and $E(q)$ are independent of that choice.
+For a real parameter $\theta$, write
+\[
+ L_\theta(q)=A(q)-\theta B(q)
+ =\int_0^\infty q(t)^2(t-1)(\log t+\gamma-\theta)e^{-t}\,dt.
+\]
+We use $1/2<\gamma<7/12$, which follows directly from the positive Binet
+integral $\gamma-1/2=\int h_1\,d\mu<\int d\mu=1/12$.
+For nonnegative integer $\alpha$, our normalization is
+\[
+ L_j^{(\alpha)}(t)
+   =\sum_{h=0}^j\frac{(-1)^h}{h!}\binom{j+\alpha}{j-h}t^h.
+\]
+
+\begin{theorem}[A quantitative polynomial lift of exponential square tests]
+\label{sea-square-exponential-lift}
+Let $m=2k\ge2$, $\lambda>1$ be rational, and $0\le\theta\le1$.  Define
+\[
+ \alpha=m-1,\quad \sigma=\frac{\lambda-1}{2},\quad
+ \varrho=\frac{\lambda-1}{\lambda+1},\quad
+ c=\left(\frac{2}{\lambda+1}\right)^m,
+ \qquad f(t)=t^k e^{-\sigma t}.
+\]
+For $N\ge0$, the polynomial
+\[
+ q_N(t)=c\,t^k\sum_{j=0}^N\varrho^jL_j^{(\alpha)}(t)
+ \in\mathbb Q[t]
+\]
+has degree $N+k$.  Put
+\[
+ z=\frac{1+\varrho^2}{2},\qquad \tau=\frac{\varrho^2}{z},\qquad
+ \mathcal S_\alpha(z)=
+ \left[1+64\left(z\frac{d}{dz}+\alpha+4\right)^3\right]
+ (1-z)^{-\alpha-1},
+\]
+\[
+ \mathcal E_N=6c^2\alpha!\,\tau^{N+1}\mathcal S_\alpha(z),\qquad
+ \mathcal F=6\left(\frac{(m+2)!}{\lambda^{m+3}}
+                    +\frac{(m-1)!}{\lambda^m}\right).
+\]
+These bounds are positive rational numbers and $\mathcal E_N\to0$.
+The exact exponential test is
+\begin{equation}
+ L_\theta(f)=\frac{m!}{\lambda^{m+2}}
+ \left[(m+1-\lambda)(H_m-\log\lambda-\theta)+1\right],
+ \label{sea-square-exponential-test}
+\end{equation}
+and the entire-ray error satisfies
+\begin{equation}
+ |L_\theta(q_N)-L_\theta(f)|
+ \le \mathcal E_N+2\sqrt{\mathcal E_N\mathcal F}.
+ \label{sea-square-lift-error}
+\end{equation}
+Consequently a certified negative exponential test can be converted into a
+negative rational polynomial test by a terminating search in $N$.  Clearing
+the coefficients then gives an integer polynomial with the same sign.
+\end{theorem}
+
+\begin{proof}
+The Laguerre generating function and orthogonality \cite{dlmf-laguerre} give
+\[
+ e^{-\sigma t}=c\sum_{j\ge0}\varrho^jL_j^{(\alpha)}(t),\qquad
+ h_j:=\int_0^\infty t^\alpha e^{-t}
+                L_j^{(\alpha)}(t)^2\,dt=\frac{(j+\alpha)!}{j!}.
+\]
+These identities follow, respectively, from
+$(1-u)^{-\alpha-1}\exp(-tu/(1-u))$ and the Rodrigues formula.
+In the orthonormal Laguerre basis, multiplication by $t$ has diagonal
+$2j+\alpha+1$ and off-diagonal
+$-\sqrt{(j+1)(j+\alpha+1)}$.  The sum of absolute values in its $j$th row
+is at most $4(j+\alpha+1)$.  Since the matrix is tridiagonal, the row sum
+for the absolute values of its cube is at most
+$64(j+\alpha+4)^3$.  Symmetry and $2|uv|\le u^2+v^2$ therefore imply
+\[
+ \int_0^\infty t^\alpha(1+t^3)e^{-t}
+       \left|\sum_j d_jL_j^{(\alpha)}(t)\right|^2dt
+ \le\sum_jh_j[1+64(j+\alpha+4)^3]|d_j|^2.
+\]
+First this holds for finite sums.  Applying it to differences of finite
+tails proves convergence in the displayed weighted norm.  The generating
+function identifies that limit with the exponential, so this also justifies
+the infinite-tail estimate without a compactness or tail assumption.
+
+For $\theta\in[0,1]$, the signed density factor obeys
+\[
+ |(t-1)(\log t+\gamma-\theta)|\le W(t):=6(t^2+t^{-1}).
+\]
+Indeed $|\gamma-\theta|<1$ and $|\log t|\le t+t^{-1}$; bounding separately
+on $t\le1$ and $t\ge1$ proves the stated inequality.  With
+$\|u\|_W^2=\int W(t)|u(t)|^2e^{-t}dt$, the preceding Laguerre estimate gives
+\[
+ \|q_N-f\|_W^2
+ \le6c^2\alpha!\sum_{j>N}
+ \binom{j+\alpha}{\alpha}\varrho^{2j}
+       [1+64(j+\alpha+4)^3]
+ \le\mathcal E_N.
+\]
+Here $\varrho^{2j}=\tau^jz^j\le\tau^{N+1}z^j$, and the complete sum in
+$z$ equals $\mathcal S_\alpha(z)$.  Also $\|f\|_W^2=\mathcal F$.
+Cauchy--Schwarz applied to $(q_N-f)(q_N+f)$ proves
+\eqref{sea-square-lift-error}.
+
+Finally,
+\[
+ \int_0^\infty t^j\log t\,e^{-\lambda t}dt
+ =\frac{j!}{\lambda^{j+1}}(H_j-\gamma-\log\lambda).
+\]
+Substitution and $H_{m+1}=H_m+1/(m+1)$ give
+\eqref{sea-square-exponential-test}.  This evaluation also shows explicitly
+why its only unevaluated logarithm is the elementary $\log\lambda$;
+the eventual polynomial test has exactly the rational coefficients
+$A(q_N)-\theta B(q_N)$ when $\theta$ is rational.
+\end{proof}
+
+\begin{theorem}[An effective degree bound for exclusion and representation]
+\label{sea-square-effective-degree}
+Let $0<\varepsilon\le1/3$ and put
+\[
+ m=2\left\lceil\frac{48}{\varepsilon^2}\right\rceil,
+ \qquad N=8m^2,\qquad D=N+\frac m2<77000\varepsilon^{-4}.
+\]
+For every real $\theta\in[0,1]$ with
+$|\theta-\gamma|\ge\varepsilon$, there is a rational polynomial
+$q$ of degree at most $D$ such that $L_\theta(q)<0$.
+For rational $\theta$ this polynomial has an explicit construction using
+only rational arithmetic and certified bounds for $\log m$.
+
+Let
+\[
+ S_d=\{X\in\mathbb R:[a_{i+j}-Xb_{i+j}]_{0\le i,j\le d}
+                     \text{ is positive semidefinite}\}.
+\]
+Then
+\begin{equation}
+ S_D\subset(\gamma-\varepsilon,\gamma+\varepsilon).
+ \label{sea-square-effective-interval}
+\end{equation}
+For every rational $r$ with $|r-\gamma|\ge\varepsilon$, there is moreover
+an integer polynomial $q\ne0$ of degree at most $D$ such that
+$B(q)\ne0$ and $A(q)/B(q)=r$.  A search restricted to this degree therefore
+terminates.  No coefficient-height bound is asserted.
+\end{theorem}
+
+\begin{proof}
+Choose rational $\widetilde h$ with
+\[
+ |\widetilde h-(H_m-\log m-\theta)|\le1/m,
+ \qquad s=\widetilde h/2,\qquad\lambda=m(1+s).
+\]
+For rational $\theta$ this uses no digits or assumption about $\gamma$.
+For example, for $u=(m-1)/(m+1)$ the partial sums of
+$2\sum_{j\ge0}u^{2j+1}/(2j+1)$ approximate $\log m$ with remainder at most
+$2u^{2J+3}/((2J+3)(1-u^2))$ after index $J$.
+The elementary estimate
+\[
+ 0<H_m-\log m-\gamma<1/m
+\]
+follows by summing
+$0<\log(1+1/j)-1/(j+1)<1/(j(j+1))$ for $j\ge m$.
+Consequently $|s|\le1/3$ and $|s|\ge\varepsilon/4$.
+In particular $2m/3\le\lambda\le4m/3$ and $\lambda>1$.
+
+Write $h=H_m-\log m-\theta$ and $e=h-2s$, so $|e|\le1/m$.
+On $[-1/3,1/3]$ the function $g(s)=2s-\log(1+s)$ satisfies
+\[
+ s g(s)\ge\tfrac12s^2,\qquad |g(s)|\le\tfrac54|s|,
+\]
+as follows from $1/2\le g'(s)\le5/4$.  The bracket in
+\eqref{sea-square-exponential-test} is thus
+\[
+ 1+(1-ms)(g(s)+e)
+ \le1+\tfrac94|s|+1/m-\tfrac m2s^2
+ <2-\tfrac m2s^2\le-1.
+\]
+It follows that $L_\theta(f)\le-\eta$, where
+$\eta=m!/\lambda^{m+2}>0$ is rational.
+
+We record estimates establishing a fully explicit truncation order.
+With the notation of Theorem~\ref{sea-square-exponential-lift}, $m\ge96$
+and elementary binomial generating functions give
+\[
+ \mathcal S_{m-1}(z)\le257m^3(1-z)^{-m-3}.
+\]
+For clarity, use
+$(j+m+3)^3\le2(j+m)^3$ for $m\ge32$ and
+\[
+ (j+m)^3\binom{j+m-1}{m-1}
+ \le m(m+1)(m+2)\binom{j+m+2}{m+2},
+\]
+then $m(m+1)(m+2)\le2m^3$.
+Since
+\[
+ 1-z=\frac{2\lambda}{(\lambda+1)^2},\qquad
+ \tau=1-\frac{2\lambda}{\lambda^2+1},
+\]
+one obtains
+\[
+ \frac{\mathcal E_N}{\eta}
+ <60000m^7 2^m\exp\left(-\frac{3(N+1)}{4m}\right),
+ \qquad \frac{\mathcal F}{\eta}\le24m.
+\]
+For the first inequality, use
+\[
+ 6c^2(m-1)!\mathcal S_{m-1}(z)
+ <30000m^6(m-1)!(2/\lambda)^m
+\]
+and $\tau^{N+1}\le\exp(-3(N+1)/(4m))$.
+For $N=8m^2$,
+\[
+ \mathcal E_N<\frac{\eta}{1536m}.
+\]
+Indeed the logarithm of $92160000m^8 2^m e^{-6m}$ is negative for $m\ge96$;
+the inequalities
+\[
+ \log(92160000)<27,\qquad 8\log m\le2m,\qquad m\log2<m
+\]
+suffice.
+Thus
+\[
+ \mathcal E_N+2\sqrt{\mathcal E_N\mathcal F}<\eta/2,
+\]
+and the constructed $q_N$ has $L_\theta(q_N)<-\eta/2$.
+
+Each $S_d$ is a convex interval, contains $\gamma$, and the intervals are
+nested as $d$ grows.  The tests at $\theta=0,1$ exclude both endpoints,
+since their distances from $\gamma$ exceed $1/3$.  Therefore $S_D\subset(0,1)$;
+the other tests give \eqref{sea-square-effective-interval}.
+The degree estimate follows from $m\le98\varepsilon^{-2}$ and
+$8\cdot98^2+49<77000$.
+
+For rational $r\in[0,1]$ at the stated distance, the rational quadratic
+form $L_r$ on polynomials of degree at most $D$ has a negative vector and
+the positive vector $1$.  For $r<0$, use the test negative at $0$:
+its $B$ is negative by \eqref{sea-square-positive}, so it remains negative
+at every $r<0$.  Likewise the test negative at $1$ remains negative for
+$r>1$.  Thus the form is indefinite in every case.
+Its dimension is at least five.  If singular, a nonzero rational kernel
+vector is isotropic.  Otherwise Meyer's theorem for indefinite rational
+quadratic forms in at least five variables supplies a rational isotropic
+vector.  Clearing denominators gives $q\in\mathbb Z[t]\setminus\{0\}$.
+Equation~\eqref{sea-square-positive} forces $B(q)\ne0$, and hence
+$A(q)/B(q)=r$.  Enumeration of integer coefficient vectors of the bounded
+degree is a terminating exact algorithm; no bound for its running time
+or the coefficient height is implied.
+\end{proof}
+
+\paragraph{A quantitative enclosure and its scope.}
+For every integer $d\ge6237000$, the same argument yields the explicit
+enclosure
+\[
+ S_d\subset\left(\gamma-(77000/d)^{1/4},
+                 \gamma+(77000/d)^{1/4}\right).
+\]
+The condition $|r-\gamma|\ge\varepsilon$ remains essential in the
+representation theorem.  Applying it to an arbitrary rational $r$ without
+first establishing that condition would assume the desired exclusion.
+
+
+\section{Exact arithmetic in Laguerre coordinates}
+\label{next-square-section}
+
+This section makes the coefficient arithmetic of the positive square map
+explicit in the ordinary Laguerre basis. It provides an optimal universal
+normalization, a local prime-residue rule, and a full primitive-cost
+classification for fixed polynomial coefficient schedules. It does not
+exclude arbitrary growing sequences of coefficient vectors.
+
+Let
+\[
+ L_j(t)=\sum_{h=0}^j\frac{(-1)^h}{h!}\binom jh t^h,\qquad
+ H_0=0,\quad H_j=\sum_{h=1}^j\frac1h.
+\]
+For a rational polynomial $Q$, define the rational numbers $A(Q),B(Q)$ by
+\[
+ A(Q)-\gamma B(Q)
+ =I(Q):=\int_0^\infty Q(t)^2(t-1)\log t\,e^{-t}\,dt,\qquad
+ B(Q)=\int_0^\infty Q(t)^2(t-1)e^{-t}\,dt.
+\]
+Their rationality also follows from the matrices below. For every nonzero
+$Q$, $I(Q)>0$. Clear denominators in $(A(Q),B(Q))$ by any positive integer
+$D$ and let $g=\gcd(DA(Q),DB(Q))$. The primitive error is
+$E(Q)=DI(Q)/g$, independent of the choice of $D$ or nonzero rational
+scaling of $Q$. If $B(Q)\ne0$ and $q$ is the reduced denominator of
+$A(Q)/B(Q)$, then
+\begin{equation}
+ E(Q)=q\,\frac{I(Q)}{|B(Q)|}.
+ \label{next-square-primitive-error}
+\end{equation}
+If $B(Q)=0$, then $E(Q)=1$.
+
+\begin{theorem}[Optimal half-lcm normalization in Laguerre coordinates]
+\label{next-square-normalization}
+Let $Q_c=\sum_{j=0}^n c_jL_j$ with $c_j\in\mathbb Z$. Then $B(Q_c)$
+is an integer. For $n\ge2$, the smallest positive integer $D_n$ such that
+$D_nA(Q_c)\in\mathbb Z$ for every $c\in\mathbb Z^{n+1}$ is
+\[
+ D_n=\frac{\operatorname{lcm}(1,\ldots,n)}2.
+\]
+For $n=0,1$ it is $D_n=1$. The exact symmetric Gram matrices are
+\begin{align}
+ B_{ii}&=2i,& B_{i,i+1}&=-(i+1),&
+ B_{ij}&=0\quad(|i-j|\ge2),\label{next-square-b-gram}\\
+ A_{ii}&=2iH_i+2i+1,\qquad&
+ A_{i,i+1}&=-(i+1)H_i-\frac{3i}{2}-1,\label{next-square-a-near}\\
+ A_{ij}&=\frac{i+j+(j-i)^2}{(j-i)((j-i)^2-1)}
+ &&(j-i\ge2).\label{next-square-a-far}
+\end{align}
+Thus $(D_nA(Q_c),D_nB(Q_c))$ is an exact integer coefficient pair,
+without requiring factorial clearing of the polynomial coefficients.
+Its gcd must still be removed to obtain its primitive pair.
+\end{theorem}
+
+\begin{proof}
+The Laguerre recurrence is
+\[
+ tL_i=(2i+1)L_i-iL_{i-1}-(i+1)L_{i+1},
+\]
+and the $L_i$ are orthonormal for $e^{-t}dt$. This gives
+\eqref{next-square-b-gram}. The logarithmic Gram matrix is
+\[
+ \int_0^\infty \log t\,L_i(t)L_j(t)e^{-t}\,dt
+ =
+ \begin{cases}
+ H_i-\gamma,&i=j,\\
+ -1/|i-j|,&i\ne j.
+ \end{cases}
+\]
+One proof differentiates generalized Laguerre orthogonality at parameter
+zero. The norm derivative is $H_i-\gamma$, and
+\[
+ \left.\partial_\alpha L_i^{(\alpha)}\right|_{\alpha=0}
+ =\sum_{j<i}\frac{L_j}{i-j}.
+\]
+The last identity follows by differentiating the Laguerre generating
+function; see \cite{dlmf-laguerre}. All expressions are finite polynomial
+sums and the differentiated integrals have an integrable majorant.
+Multiplying this logarithmic matrix by the recurrence for $t-1$, including
+the $L_{n+1}$ term when necessary, gives
+\eqref{next-square-a-near}--\eqref{next-square-a-far}.
+
+Write $d_n=\operatorname{lcm}(1,\ldots,n)$. A quadratic form is
+integer-valued on all integer vectors exactly when its diagonal
+coefficients and twice its off-diagonal coefficients are integers.
+For $k=j-i\ge2$, the useful partial-fraction identity is
+\[
+ 2A_{ij}=\frac{2(i+1)}{k-1}-\frac{4i}{k}+\frac{2i}{k+1}.
+\]
+If $i\ge1$, all displayed denominators are at most $n$. If $i=0$, only
+$2/(k-1)$ remains. Together with \eqref{next-square-a-near}, this shows
+that $d_n/2$ clears the quadratic values.
+
+For sharpness, testing the vectors $e_i$ and $e_i+e_j$ forces every
+denominator in $A_{ii}$ and $2A_{ij}$. Row zero supplies
+$2/(k-1)$ for $2\le k\le n$, so for $n\ge3$ it forces
+$d_{n-1}/2$. Induct on $n$, starting at $n=2$. A new factor is needed
+only when $n$ is a prime power. For $n\ge3$,
+\[
+ 2A_{1n}=\frac{2[n(n-1)+2]}{(n-1)n(n-2)}.
+\]
+If $n=p^a$ for an odd prime $p$, this has $p$-adic valuation $-a$.
+If $n=2^a$ with $a\ge2$, its valuation at $2$ is $1-a$. These are
+exactly the new prime-power factors of $d_n/2$, proving optimality.
+\end{proof}
+
+For finite vectors $c,d$, pad both by zero and write
+\[
+ \mathcal B(c,d)=
+ \sum_{r\ge0}2r\,c_rd_r
+ -\sum_{r\ge0}(r+1)(c_rd_{r+1}+c_{r+1}d_r).
+\]
+Thus $B(Q_c)=\mathcal B(c,c)$.
+
+\begin{theorem}[Exact residue at a prime in the upper half]
+\label{next-square-prime-block}
+Let $p$ be an odd prime with $n/2<p\le n$, and let $s=n-p$. For an integer
+coefficient vector $c=(c_0,\ldots,c_n)$ put
+\[
+ d_r=c_{p+r}\ (0\le r\le s),\qquad
+ h_r=c_r\ (0\le r\le s+1),
+\]
+and pad these vectors by zero. Then $pA(Q_c)$ is $p$-integral and
+\begin{equation}
+ pA(Q_c)\equiv
+ \mathcal B(d,d)-2\mathcal B(h,d)\pmod p.
+ \label{next-square-prime-residue}
+\end{equation}
+If this residue is nonzero and $B(Q_c)\ne0$, the prime $p$ divides the
+actual reduced denominator of $A(Q_c)/B(Q_c)$.
+\end{theorem}
+
+\begin{proof}
+The normalization theorem shows that $v_p(A(Q_c))\ge-1$.
+In the diagonal terms, the residue of $pA_{ii}$ is $2i$ when $i\ge p$,
+and zero otherwise. In the adjacent cross terms, the residue of
+$2pA_{i,i+1}$ is $-2(i+1)$ when $i\ge p$, and zero otherwise.
+These give $\mathcal B(d,d)$.
+
+For a gap $k=j-i\ge2$, the only potentially nonzero residues of
+$2pA_{ij}$ occur at $k=p-1,p,p+1$. They are, respectively,
+\[
+ 2i,\qquad -4i,\qquad 2(i+1).
+\]
+The possible exceptional gap $2p-1$ has $i=0$ and residue zero.
+Collecting the three contributing diagonals gives
+\[
+ 2\sum_{r=0}^{s}(r+1)h_{r+1}d_r
+ -4\sum_{r=0}^{s}r h_rd_r
+ +2\sum_{r=1}^{s}r h_{r-1}d_r
+ =-2\mathcal B(h,d).
+\]
+At $n=2p-1$ the apparent overlapping endpoint has coefficient $s+1=p$
+and vanishes modulo $p$, so the same formula applies.
+
+If the residue is nonzero, $v_p(A(Q_c))=-1$. Since $B(Q_c)$ is an
+integer, $v_p(A(Q_c)/B(Q_c))=-1-v_p(B(Q_c))<0$. This proves survival
+in the reduced denominator, not merely in a chosen clearing factor.
+\end{proof}
+
+\begin{theorem}[Complete primitive-cost classification of fixed polynomial schedules]
+\label{next-square-polynomial-filter}
+Fix a nonzero polynomial $P(X,Y)\in\mathbb Q[X,Y]$ and put
+\[
+ Q_N(t)=\sum_{k=0}^N P(N,k)L_k(t).
+\]
+These polynomials are nonzero for all sufficiently large $N$.
+The quantity $B_N=B(Q_N)$ is a rational polynomial in $N$.
+Exactly one of the following holds:
+\begin{enumerate}
+\item $B_N$ is identically zero. Then $E(Q_N)=1$ for all sufficiently
+large $N$.
+\item $B_N$ is not identically zero. Then it is eventually nonzero and
+\[
+ \liminf_{N\to\infty}\frac{\log E(Q_N)}{N}\ge\frac12.
+\]
+\end{enumerate}
+In particular, no fixed polynomial coefficient schedule of this form
+has primitive error tending to zero.
+\end{theorem}
+
+\begin{proof}
+Clear the fixed coefficient denominators of $P$ once. This scales each
+$Q_N$ by the same nonzero rational factor and leaves its primitive error
+unchanged, so assume $P\in\mathbb Z[X,Y]$.
+
+Write $c_k=P(N,k)$ and define the integer-valued rational polynomial
+\begin{equation}
+ F_P(N)=2(N+1)P(N,N)P(N,N+1)-B_N.
+ \label{next-square-F-polynomial}
+\end{equation}
+Both $B_N$ and $F_P(N)$ are polynomials because sums of polynomial
+functions over $k=0,\ldots,N$ are polynomials in $N$. We first prove
+that $F_P$ is nonzero; it is essential not to infer this merely from
+nonconstancy in the second variable.
+
+Let $d$ be the total degree of $P$. Its highest homogeneous part gives
+a nonzero real polynomial $f$ such that, uniformly for $x\in[0,1]$,
+\[
+ P(N,Nx)=N^d f(x)+O_P(N^{d-1}).
+\]
+The exact discrete energy identity is
+\begin{equation}
+ B_N=(N+1)c_N^2-\sum_{k=0}^N c_k^2
+       +\sum_{k=0}^{N-1}(k+1)(c_k-c_{k+1})^2.
+ \label{next-square-energy}
+\end{equation}
+The last sum is $O_P(N^{2d})$, while the middle sum is a polynomial
+Riemann sum. Hence
+\[
+ B_N=N^{2d+1}
+ \left[f(1)^2-\int_0^1 f(x)^2\,dx\right]+O_P(N^{2d}),
+\]
+and therefore
+\begin{equation}
+ F_P(N)=N^{2d+1}
+ \left[f(1)^2+\int_0^1 f(x)^2\,dx\right]+O_P(N^{2d}).
+ \label{next-square-F-leading}
+\end{equation}
+The coefficient in brackets is strictly positive. Thus $F_P$ has
+degree exactly $2d+1$ and is nonzero for all sufficiently large $N$.
+
+Put $r=\deg_Y P$. Let $p$ be a prime with
+\[
+ N/2<p\le N,\qquad p>2r+2,
+\]
+and let $s=N-p$. In \eqref{next-square-prime-residue},
+$P(N,p+j)\equiv P(N,j)\pmod p$. Thus the residue becomes
+\[
+ pA(Q_N)\equiv
+ 2(s+1)P(N,s)P(N,s+1)-B_s(P(N,\cdot))\pmod p.
+\]
+For fixed $N$ the right side is a rational polynomial in $s$. Its
+coefficient denominators have no prime factors above $2r+2$:
+expand the polynomial summands of degree at most $2r+1$ in the Newton
+binomial basis and sum them. Since $s\equiv N\pmod p$, we may replace
+$s$ by $N$ and conclude
+\begin{equation}
+ pA(Q_N)\equiv F_P(N)\pmod p.
+ \label{next-square-poly-prime}
+\end{equation}
+When $B_N\ne0$, every prime in $(N/2,N]$ not dividing $F_P(N)$ therefore
+survives in the reduced denominator $q_N$ of $A(Q_N)/B_N$.
+For all sufficiently large $N$ the fixed lower restriction $p>2r+2$
+is automatic. Since the product of the distinct excluded primes divides
+the nonzero integer $F_P(N)$,
+\[
+ \log q_N\ge
+ \vartheta(N)-\vartheta(N/2)-\log|F_P(N)|
+ =\left(\frac12+o(1)\right)N.
+\]
+Here $\vartheta(x)=\sum_{p\le x}\log p$ and
+$\vartheta(x)\sim x$ is the prime number theorem
+\cite{dlmf-primes}.
+
+We must also control the real error; denominator growth alone would
+not suffice. If $Q$ has degree $j$ and highest Laguerre coefficient
+$c_j$, then
+\begin{equation}
+ I(Q)\ge e^{-2}\log2\,(j+1)c_j^2.
+ \label{next-square-real-lower}
+\end{equation}
+Indeed, restrict the positive integral to $t\ge2$ and use
+$(t-1)\log t\ge(t-2)\log2$. After $t=x+2$, the leading monomial
+coefficient is $(-1)^jc_j/j!$. The monic degree-$j$ orthogonal
+polynomial for $xe^{-x}dx$ has squared norm $j!(j+1)!$, so the
+orthogonal decomposition of $Q(x+2)$ gives
+\[
+ I(Q)\ge e^{-2}\log2
+ \left(\frac{c_j}{j!}\right)^2j!(j+1)!,
+\]
+which is \eqref{next-square-real-lower}. The norm identity follows
+directly from the generalized Laguerre Rodrigues formula by $j$
+integrations by parts.
+
+For all sufficiently large $N$, $P(N,Y)$ is a nonzero polynomial of
+degree at most $r$. It cannot vanish at the $r+1$ distinct integers
+$N,N-1,\ldots,N-r$. Consequently $\deg Q_N\ge N-r$, and its highest
+Laguerre coefficient is a nonzero integer. Thus $I(Q_N)$ has a positive
+linear lower bound. Since the nonzero polynomial $B_N$ has polynomial
+size, $I(Q_N)/|B_N|$ is bounded below by an inverse power of $N$.
+Equation \eqref{next-square-primitive-error} now proves the exponential
+primitive-error lower growth.
+
+If $B_N$ is identically zero, positivity gives $A(Q_N)>0$ whenever
+$Q_N\ne0$. Primitive normalization of the rational pair $(A(Q_N),0)$
+then gives error exactly one.
+\end{proof}
+
+\paragraph{Scope and an instructive zero-coefficient case.}
+Nonconstant coefficient profiles can satisfy $B_N\equiv0$. For example,
+$P(N,k)=3k-(2N+1)$ has this property; the first branch of the theorem
+includes it. The proof of \eqref{next-square-F-leading} remains valid
+in this case and does not assume that $B_N$ is nonzero.
+
+Let
+\[
+ \mathcal D_t=t\frac{d^2}{dt^2}+(1-t)\frac d{dt},
+ \qquad \mathcal D_tL_k=-kL_k.
+\]
+The theorem covers every fixed polynomial filter
+$P(N,-\mathcal D_t)$ applied to the zero-location kernel
+$\sum_{k=0}^N L_k(t)$. It therefore covers polynomial tapers of any
+fixed order and every fixed polynomial dependence on $N$.
+Coefficients such as $L_k(x_N)$ at nonzero $x_N$, filters whose degree
+grows with $N$, and arbitrary coefficient sequences are outside its
+scope.
+
+
+\section{Shared-cutoff support compression}
+
+\begin{theorem}[Compression at a shared cutoff and its primitive cost]
+\label{sea-arith-cutoff-compression}
+For $m\ge0$ define
+\[
+ T_m(x)=(x-1)^2(2x-1)\prod_{k=1}^m(4^kx-1),\qquad
+ d=m+3,\qquad s=1+m(m+1).
+\]
+For every $C\in\mathbb Z[x]$, division gives unique
+$S,R\in\mathbb Z[1/2][x]$ with
+\[
+ C=T_mS+R,\qquad \deg R<d.
+\]
+If $\deg C=L\ge d$, all coefficient denominators of $S$ and $R$ divide
+$2^{s(L-d+1)}$. Moreover,
+\begin{align}
+ R(1)&=C(1),& R'(1)&=C'(1),& R(1/2)&=C(1/2),\notag\\
+ R(4^{-k})&=C(4^{-k})&&&&(1\le k\le m).
+ \label{sea-arith-compression-invariants}
+\end{align}
+
+Let $a=2^t$, where $t\ge0$ is an integer, and assume
+\begin{equation}
+ Q=C(1)\ne0,\qquad C'(1)+tQ=0.
+ \label{sea-arith-whole-log-condition}
+\end{equation}
+For $C(x)=\sum c_ix^i$ and $R(x)=\sum r_ix^i$, define the corrected
+harmonic targets
+\begin{equation}
+ r_C=\frac1Q\sum_i c_i\left(H_{a2^i}-\frac1{2a2^i}\right),\qquad
+ r_R=\frac1Q\sum_i r_i\left(H_{a2^i}-\frac1{2a2^i}\right).
+ \label{sea-arith-corrected-targets}
+\end{equation}
+Both give log-free gamma forms. Their target difference is generally
+nonzero, but it satisfies the exact identity and bound
+\begin{align}
+ \Delta:=r_C-r_R
+   &=\frac1Q\sum_i[x^i](T_mS)H_{a2^i},\notag\\
+ |\Delta|&\le\Delta_{\max}:=
+ \frac{\mu_m a^{-2m-2}}{|Q|}
+ T_m^{\mathrm{abs}}(x_0)S^{\mathrm{abs}}(x_0),\qquad
+ x_0=4^{-m-1},
+ \label{sea-arith-compression-delta}
+\end{align}
+where $P^{\mathrm{abs}}(x)=\sum_i|[x^i]P|x^i$.
+
+Let $E$ be the least nonnegative integer with $2^ER\in\mathbb Z[x]$,
+and put
+\[
+ N_0=a2^{d-1},\qquad D_0=2\operatorname{lcm}(1,\ldots,N_0),\qquad
+ Z=2^ED_0\sum_i r_i\left(H_{a2^i}-\frac1{2a2^i}\right)\in\mathbb Z.
+\]
+The complete reduced denominator of $r_R$ is exactly
+\begin{equation}
+ q_R=\frac{|Q|2^ED_0}{\gcd(|Z|,|Q|2^ED_0)}.
+ \label{sea-arith-compressed-final-q}
+\end{equation}
+In particular,
+\[
+ \operatorname{odd}(q_R)\mid
+ \operatorname{odd}(Q)\operatorname{odd}
+        \bigl(\operatorname{lcm}(1,\ldots,N_0)\bigr).
+\]
+Every odd prime above $N_0$ not dividing $Q$ is therefore absent after
+compression, even if it appeared in the original target $r_C$.
+
+If independently certified rational bounds satisfy
+\[
+ 0<\ell\le\gamma-r_C\le u,\qquad \Delta_{\max}<\ell,
+\]
+then, with $P_R=q_Rr_R\in\mathbb Z$,
+\begin{equation}
+ 0<\ell-\Delta_{\max}\le\gamma-r_R\le u+\Delta_{\max},\qquad
+ 0<q_R\gamma-P_R\le q_R(u+\Delta_{\max}).
+ \label{sea-arith-compressed-error-transfer}
+\end{equation}
+This is a checkable transfer of a positive error certificate. It is not
+an assertion that the last upper bound tends to zero.
+\end{theorem}
+
+\begin{proof}
+The leading coefficient of $T_m$ is
+\[
+ 2\prod_{k=1}^m4^k=2^{1+m(m+1)}=2^s.
+\]
+Long division therefore introduces only powers of $2$ in denominators.
+Each of the at most $L-d+1$ steps increases the necessary power by at
+most $s$, giving the stated bound. The double root at $1$ and the other
+listed roots give \eqref{sea-arith-compression-invariants}. In particular
+the entire condition \eqref{sea-arith-whole-log-condition} is preserved.
+It is essential to include $tQ$: for $a>1$, cancellation of $C'(1)$
+alone would leave $Q\log a$.
+
+Subtract the corrected targets. Since $(T_mS)(1/2)=0$, the inverse first
+moment vanishes, and the $1/(2n)$ terms cancel in their difference.
+Also $(T_mS)(1)=(T_mS)'(1)=0$, so all gamma and logarithmic terms cancel
+when \eqref{stage3-binet} is summed over its coefficients.
+For $z>0$, the exact finite expansion is
+\[
+ \Phi(z)=\sum_{k=0}^{m-1}(-1)^k\mu_kz^{-k-1}
+    +(-1)^mz^{-m}\int\frac{u^m}{u+z}\,d\mu(u).
+\]
+For $m=0$ the sum is empty. The remainder has absolute value at most
+$\mu_mz^{-m-1}$. Each of the first $m$ terms vanishes in the coefficient
+sum because $(T_mS)(4^{-k})=0$ for $1\le k\le m$. Thus
+\[
+ |\Delta|\le
+ \frac{\mu_ma^{-2m-2}}{|Q|}(T_mS)^{\mathrm{abs}}(x_0)
+ \le\frac{\mu_ma^{-2m-2}}{|Q|}
+        T_m^{\mathrm{abs}}(x_0)S^{\mathrm{abs}}(x_0),
+\]
+which is \eqref{sea-arith-compression-delta}.
+
+All surviving indices satisfy $a2^i\le N_0$. Each corrected harmonic
+denominator divides $D_0$, and $2^E$ clears all $r_i$. Hence $Z$ is an
+integer, and reduction of $Z/(Q2^ED_0)$ gives
+\eqref{sea-arith-compressed-final-q}. The odd-part assertion follows
+immediately. Finally
+$\gamma-r_R=(\gamma-r_C)+\Delta$, so
+\eqref{sea-arith-compressed-error-transfer} follows from the triangle
+inequality and the exact value of $q_R$.
+\end{proof}
+
+\paragraph{An infinite shared-prime cancellation with positive errors.}
+Set the external base $a=1$, take $m=0$, and put
+\[
+ C_t(x)=1+x^tT_0(x),\qquad t\ge1.
+\]
+The remainder is $R=1$. Its corrected target is exactly
+$H_1-1/2=1/2$, with final denominator $2$. The original target is
+\[
+ r_{C_t}=\frac12+V_t,\qquad
+ V_t=\sum_{i=0}^3[x^i]T_0(x)H_{2^{t+i}}.
+\]
+Since $T_0^{\mathrm{abs}}(1/4)=75/32$, the finite Binet remainder gives
+\[
+ |V_t|\le\frac{25}{128\,4^t}<\frac3{40}.
+\]
+On the other hand $h_1(u)>1-u$ for $u>0$, so
+\[
+ \gamma-\frac12>\mu_0-\mu_1=\frac3{40}.
+\]
+Every original target and every compressed target therefore has a
+strictly positive gamma error.
+
+For any prime $\ell$ in $(2^{t+2},2^{t+3}]$, only the last harmonic sum
+in $V_t$ contains a denominator divisible by $\ell$, and its coefficient
+is $2$. It contains exactly the single term $1/\ell$ with such a
+denominator. Thus $v_\ell(r_{C_t})=-1$. All these primes disappear after
+compression. For instance the exact reduced denominators for $t=1,2$
+are respectively $90090$ and $9025222055850$ before compression, and
+$2$ afterward.
+
+This example explicitly removes a block of primes already present in
+the base. It lies outside an obstruction whose hypothesis requires that
+the base avoid that block. At the same time, it changes the target to
+$1/2$, leaving the error $\gamma-1/2$ fixed. It therefore proves the
+arithmetic cancellation mechanism without claiming the missing
+small-error estimate needed for irrationality.
+
+
+\section{Rational localization at the double zero of the positive weight}
+\label{stage3-localization-section}
+
+The positive square weight $(t-1)\log t$ vanishes quadratically at $t=1$.
+This section constructs rational polynomials localized at points tending
+to that zero. The coefficients depend on Laguerre values and lie outside
+the fixed-polynomial-schedule obstruction. The real integral becomes
+small with an explicit order, and its full primitive cost is expressed
+in terms of the actual reduced denominator. A one-step change of the
+cutoff also removes a specific adverse prime factor exactly.
+
+Let $L_k^{(1)}$ denote the generalized Laguerre polynomial with parameter
+$1$, and let $L_k=L_k^{(0)}$. For an integer $M\ge2$ and
+$\sigma\in\{0,-1\}$, define
+\[
+ N=M^2+\sigma,\qquad x=1-\frac1M,\qquad H=N+1,\qquad
+ w_k=\left(1-\frac{k}{H}\right)^2\quad(0\le k\le N),
+\]
+\begin{equation}
+ p_{N,x}(t)=
+ \sum_{k=0}^N\frac{w_kL_k^{(1)}(x)L_k^{(1)}(t)}{k+1},
+ \qquad Q_M(t)=t\,p_{N,x}(t).
+ \label{stage3-localization-family}
+\end{equation}
+These polynomials have rational coefficients, constructed without using
+a value or an assumption about the arithmetic nature of $\gamma$.
+Write
+\[
+ I_M=A_M-\gamma B_M
+ =\int_0^\infty Q_M(t)^2(t-1)\log t\,e^{-t}dt>0.
+\]
+The positivity is strict because $Q_M$ is nonzero. Indeed its ordinary
+Laguerre coefficient at index zero is $w_0L_0^{(1)}(x)=1$.
+
+\begin{theorem}[Exact rational certificates for the localized family]
+\label{stage3-localization-sandwich}
+Use the inner product
+$\langle f,g\rangle_1=\int_0^\infty f(t)g(t)t e^{-t}dt$ and put
+\[
+ H_j=\langle p_{N,x},t^j p_{N,x}\rangle_1,\qquad
+ T_M=H_2+H_1,\qquad U_M=H_3-H_2-H_1+H_0.
+\]
+Then all these numbers are rational, $B_M=H_2-H_1$, and
+\begin{equation}
+ \frac{2B_M^2}{T_M}\le I_M\le\frac{U_M}{2}.
+ \label{stage3-localization-rational-sandwich}
+\end{equation}
+When $B_M\ne0$, let $q_M$ be the actual reduced denominator of $A_M/B_M$.
+The complete primitive error $\mathcal E_M$ satisfies the entirely
+rational certificate
+\begin{equation}
+ \frac{2q_M|B_M|}{T_M}
+ \le\mathcal E_M
+ \le\frac{q_MU_M}{2|B_M|}.
+ \label{stage3-localization-primitive-sandwich}
+\end{equation}
+
+For exact integerization, put
+\[
+ F_M=H^2N!M^N,\qquad
+ D_N=\frac{\operatorname{lcm}(1,\ldots,N+1)}2,\qquad
+ S_M=D_NF_M^2.
+\]
+Then $S_MA_M,S_MB_M$ are integers. If
+$g_M=\gcd(S_MA_M,S_MB_M)>0$, the identities
+\[
+ \mathcal E_M=\frac{S_MI_M}{g_M},\qquad
+ q_M=\frac{S_M|B_M|}{g_M}\quad(B_M\ne0)
+\]
+use the complete gcd, not merely a chosen clearing factor.
+\end{theorem}
+
+\begin{proof}
+For every $t>0$,
+\[
+ \frac{2(t-1)^2}{t+1}
+ \le(t-1)\log t
+ \le\frac{(t-1)^2(t+1)}{2t}.
+\]
+For the lower inequality use
+$\log t=2\operatorname{artanh}((t-1)/(t+1))$.
+For the upper one, the derivative of
+$(t-t^{-1})/2-\log t$ is $(t-1)^2/(2t^2)\ge0$, and its value at $1$
+is zero. Multiplication by $Q_M(t)^2=t^2p_{N,x}(t)^2$ and integration
+gives the upper bound $U_M/2$. Cauchy--Schwarz gives
+\[
+ B_M^2
+ \le
+ \left(\int_0^\infty
+       \frac{t(t-1)^2}{t+1}p_{N,x}(t)^2t e^{-t}dt\right)
+ \left(\int_0^\infty t(t+1)p_{N,x}(t)^2t e^{-t}dt\right)
+ \le\frac{I_MT_M}{2}.
+\]
+This proves \eqref{stage3-localization-rational-sandwich}.
+Since $I_M>0$,
+\[
+ \mathcal E_M=q_M\left|\gamma-\frac{A_M}{B_M}\right|
+             =q_M\frac{I_M}{|B_M|},
+\]
+which gives \eqref{stage3-localization-primitive-sandwich}.
+
+The elementary identity
+\[
+ tL_k^{(1)}(t)=(k+1)(L_k(t)-L_{k+1}(t))
+\]
+shows that, with $z_k=w_kL_k^{(1)}(x)$,
+\[
+ Q_M=\sum_{k=0}^N z_k(L_k-L_{k+1}).
+\]
+Its ordinary Laguerre coefficient vector is
+$(z_0,z_1-z_0,\ldots,z_N-z_{N-1},-z_N)$.
+The finite coefficient formula for $L_k^{(1)}(x)$ shows that $F_M$
+clears this vector. Lemma~\ref{next-square-normalization}, applied to an integer
+Laguerre vector of length $N+2$, proves that $S_M$ clears $(A_M,B_M)$.
+The remaining identities follow by complete reduction of this pair.
+\end{proof}
+
+\begin{theorem}[Uniform localization and its exact arithmetic threshold]
+\label{stage3-localization-asymptotic}
+For either $\sigma=0$ or $\sigma=-1$ in
+\eqref{stage3-localization-family}, let
+\[
+ \kappa=\frac{128e}{315\pi}>0.
+\]
+Then, as $M\to\infty$,
+\[
+ B_M=-\kappa+O\left(\frac{\log M}{M}\right),\qquad
+ T_M=2\kappa M+O(\log M),\qquad
+ U_M=O(M^{-1}).
+\]
+Consequently
+\[
+ I_M=\Theta(M^{-1}),\qquad
+ \gamma-\frac{A_M}{B_M}=\Theta(M^{-1})
+\]
+with the second quantity positive for all sufficiently large $M$.
+For the actual reduced denominator,
+\begin{equation}
+ \mathcal E_M=\Theta\!\left(\frac{q_M}{M}\right).
+ \label{stage3-localization-threshold}
+\end{equation}
+Thus this particular family would satisfy primitive-error decay exactly
+if $q_M=o(M)$; equivalently, $Mg_M/S_M\to\infty$.
+Neither denominator condition is assumed or proved here.
+\end{theorem}
+
+\begin{proof}
+All estimates below are uniform for $x$ in the compact interval $[1/2,1]$.
+We use the established Laguerre asymptotic
+\cite{dlmf-laguerre-asymptotic}
+\begin{equation}
+ L_k^{(\alpha)}(x)=
+ \frac{e^{x/2}k^{\alpha/2-1/4}}
+      {\sqrt{\pi}\,x^{\alpha/2+1/4}}
+ \left[
+ \cos\!\left(2\sqrt{kx}
+       -\left(\frac{\alpha}{2}+\frac14\right)\pi\right)
+ +O(k^{-1/2})\right]
+ \label{stage3-localization-PR}
+\end{equation}
+for $\alpha=0,1$. Its compact-$x$ uniformity is essential because
+$x=1-1/M$ varies with $M$.
+
+Let $\phi_k=L_k^{(1)}/\sqrt{k+1}$, an orthonormal basis for the inner
+product $\langle\ ,\ \rangle_1$. Multiplication by $t$ has Jacobi matrix
+\[
+ J_{kk}=2k+2,\qquad
+ J_{k,k+1}=-\sqrt{(k+1)(k+2)}.
+\]
+The coefficient vector of $p_{N,x}$ is
+$c_k=w_kL_k^{(1)}(x)/\sqrt{k+1}$ for $k\le N$, and zero otherwise.
+Write
+\[
+ S=\|c\|^2,\qquad g=(J-x)c,\qquad \delta=\langle c,g\rangle.
+\]
+
+First, squaring \eqref{stage3-localization-PR} for $\alpha=1$ gives
+\begin{equation}
+ S=\kappa(x)\sqrt N+O(\log(N+2)),\qquad
+ \kappa(x)=\frac{128e^x}{315\pi x^{3/2}}.
+ \label{stage3-localization-norm}
+\end{equation}
+Here the nonoscillating sum is
+\[
+ \frac{e^x}{2\pi x^{3/2}}
+ \sum_{k=1}^N k^{-1/2}\left(1-\frac{k}{N+1}\right)^4,
+\]
+whose leading coefficient is
+\[
+ \frac{e^x}{2\pi x^{3/2}}
+ \int_0^1u^{-1/2}(1-u)^4du
+ =\frac{128e^x}{315\pi x^{3/2}}.
+\]
+The asymptotic remainders sum to $O(\log(N+2))$. For the oscillating
+sum, comparison with its integral has the same error bound:
+the phase derivative gives an integrable-on-finite-interval bound
+$O(1/t)$ for the derivative of the summand. Substitution $t=y^2$
+bounds the integral by $O(1)$ using integration by parts. The frequency
+$4\sqrt x$ stays bounded away from zero, so all constants are uniform.
+
+Second, the exact Jacobi localization identity is
+\[
+ \delta=\sum_{k=0}^{N}
+ L_k^{(1)}(x)L_{k+1}^{(1)}(x)(w_k-w_{k+1})^2,
+ \qquad w_{N+1}=0.
+\]
+The point bounds from \eqref{stage3-localization-PR} and
+$|w_k-w_{k+1}|\le2/(N+1)$ imply
+\begin{equation}
+ |\delta|=O(N^{-1/2}).
+ \label{stage3-localization-mean}
+\end{equation}
+No sign of the individual products is used.
+
+We also need a weighted residual bound, not just weak concentration.
+Put $H=N+1$, $L_{-1}^{(1)}=0$, and
+\[
+ U_k=L_k(x)+L_{k+1}(x),\qquad
+ V_k=L_{k-1}^{(1)}(x)+L_{k+1}^{(1)}(x).
+\]
+Direct substitution of the quadratic taper gives, for $0\le k\le N$,
+\[
+ g_k=\sqrt{k+1}
+ \left[\frac{2(H-k)}{H^2}U_k-\frac1{H^2}V_k\right],
+ \qquad
+ g_{N+1}=-\frac{\sqrt{N+2}}{H^2}L_N^{(1)}(x).
+\]
+All later coefficients vanish. The identities
+\[
+ L_{k+1}^{(1)}-L_k^{(1)}=L_{k+1},\qquad
+ L_{k+1}-L_k=-\frac{x}{k+1}L_k^{(1)}
+\]
+and \eqref{stage3-localization-PR} give
+\[
+ U_k=O((k+1)^{-1/4}),\quad
+ U_{k+1}-U_k=O((k+1)^{-3/4}),
+\]
+\[
+ V_k=O((k+1)^{1/4}),\quad
+ V_{k+1}-V_k=O((k+1)^{-1/4}).
+\]
+It follows that $g_k=O((k+1)^{1/4}/H)$ in the bulk, while
+$g_N,g_{N+1}=O(H^{-5/4})$ at the endpoint. Thus
+$\|g\|^2=O(N^{-1/2})$.
+
+For the additional factor of $J$, use the exact nonnegative energy
+identity
+\[
+ \langle g,Jg\rangle
+ =g_0^2+\sum_{k\ge0}
+   \bigl(\sqrt{k+1}\,g_k-\sqrt{k+2}\,g_{k+1}\bigr)^2.
+\]
+The displayed difference bounds show that the bulk differences are
+$O((k+1)^{1/4}/H)$; the two endpoint contributions are
+$O(H^{-3/4})$ before squaring. Therefore
+\begin{equation}
+ \langle g,(J+1)g\rangle=O(N^{-1/2}).
+ \label{stage3-localization-weighted-residual}
+\end{equation}
+This controls the required unbounded observable on the full half-line.
+
+The exact moment identities now give
+\[
+ B_M=(x^2-x)S+(2x-1)\delta+\|g\|^2,
+\]
+\[
+ T_M=(x^2+x)S+(2x+1)\delta+\|g\|^2.
+\]
+Since $\sqrt N=M+O(M^{-1})$, $x=1-M^{-1}$, and $\kappa(1)=\kappa$,
+these prove the stated asymptotics of $B_M$ and $T_M$.
+Finally,
+\[
+ U_M=\langle (J-1)c,(J+1)(J-1)c\rangle
+ \le2\langle g,(J+1)g\rangle
+      +2(x-1)^2\langle c,(J+1)c\rangle
+ =O(M^{-1}).
+\]
+The rational sandwich proves $I_M=\Theta(M^{-1})$:
+its lower bound is asymptotic to $\kappa/M$, and its upper bound is
+$O(M^{-1})$. Since $|B_M|\to\kappa$, both remaining assertions follow.
+\end{proof}
+
+\begin{theorem}[An adverse prime factor and its removal by one cutoff step]
+\label{stage3-localization-primes}
+For the family above:
+\begin{enumerate}
+\item If $\sigma=0$ and $M=p^e$ is any prime power, then
+\[
+ v_p(A_M/B_M)=-2e.
+\]
+Thus the actual reduced denominator contains $M^2$. Along every
+prime-power sequence $M\to\infty$, the primitive error is bounded below
+by a positive constant times $M$.
+\item If $\sigma=-1$ and $M=p^e$ with $p$ odd, then
+\[
+ v_p(q_M)\le2e-2.
+\]
+For $p\ge5$ this improves to
+\[
+ v_p(q_M)\le\max(0,2e-3).
+\]
+In particular, at $M=p$ every odd prime $p$, including $p=3$, is absent
+from the actual reduced denominator.
+\end{enumerate}
+These statements concern the indicated prime factor only. The second
+case does not bound the cost of all remaining denominator factors.
+\end{theorem}
+
+\begin{proof}
+Put $u_k=L_k-L_{k+1}$ and $z_k=w_kL_k^{(1)}(x)$, so
+$Q_M=\sum_{k=0}^N z_ku_k$. For $M=p^e$,
+$v_p(x)=-e$. The finite Laguerre formula gives
+\[
+ L_k^{(1)}(x)=\frac{(-x)^k}{k!}\bigl(1+p^e\mathbb Z_p\bigr).
+\]
+Every nonleading term divided by the leading term is an integer times
+$x^{-j}$ for some $j\ge1$. In particular the displayed leading unit is
+nonzero. Consequently, for $1\le j\le N$,
+\begin{equation}
+ v_p\!\left(\frac{z_{N-j}}{z_N}\right)
+ =je+v_p\!\left(\frac{N!}{(N-j)!}\right)+2v_p(j+1).
+ \label{stage3-localization-z-valuation}
+\end{equation}
+
+The ordinary Laguerre Gram matrices give exactly
+\begin{align}
+ B(u_N)&=6N+4,\label{stage3-localization-top-B}\\
+ A(u_N)&=(6N+4)H_N+7N+8,\label{stage3-localization-top-A}\\
+ 2\mathcal A(u_N,u_{N-1})
+ &=-2(4N+1)H_N-\frac{32N+7}{3}.
+ \label{stage3-localization-adjacent-A}
+\end{align}
+Here $\mathcal A$ denotes the bilinear form associated with $A$.
+
+First take $N=p^{2e}$. Every ratio in
+\eqref{stage3-localization-z-valuation} has valuation at least $3e$.
+Since $H_{p^{2e}}$ has the unique summand $1/p^{2e}$ of lowest
+$p$-adic valuation,
+\[
+ v_p(H_{p^{2e}})=-2e.
+\]
+For odd $p$, \eqref{stage3-localization-top-B} is a unit and
+\eqref{stage3-localization-top-A} has valuation $-2e$.
+For $p=2$, their valuations are respectively $2$ and $2-2e$.
+
+Write $Q_M/z_N=u_N+\sum_{j\ge1}(z_{N-j}/z_N)u_{N-j}$.
+In integer Laguerre coordinates of degree $N+1$, the denominators of
+quadratic coefficients divide
+$\operatorname{lcm}(1,\ldots,N+1)/2$. Its valuation is $2e$ for odd
+$p$ and $2e-1$ for $p=2$. Thus the perturbation in $A$ has valuation at
+least $e$ for odd $p$ and $e+1$ for $p=2$. The perturbation in $B$ has
+valuation at least $3e$. Both are strictly higher than the corresponding
+leading valuations. Division gives $v_p(A_M/B_M)=-2e$ in every case.
+The real lower bound then follows from
+\eqref{stage3-localization-threshold}.
+
+Now take $N=p^{2e}-1$ with $p$ odd. Pairing $j$ and $p^a-j$ in the
+sum over $p$-units shows
+\[
+ H_{p^a-1}=\frac1pH_{p^{a-1}-1}+V_a,\qquad v_p(V_a)\ge a.
+\]
+Also $v_p(H_{p-1})\ge1$. Hence
+\[
+ v_p(H_N)\ge2-2e.
+\]
+For $p\ge5$, pairing modulo $p^2$ and using
+$\sum_{j=1}^{p-1}j^{-2}\equiv0\pmod p$ gives
+$v_p(H_{p-1})\ge2$, improving this to $v_p(H_N)\ge3-2e$.
+
+The leading value $B(u_N)=6p^{2e}-2$ is a $p$-adic unit.
+Every ratio in \eqref{stage3-localization-z-valuation} has valuation
+at least $je$, so all changes to $B$ are divisible by $p$.
+Thus the normalized $B$ remains a unit.
+
+For $A$, all linear perturbation terms with $j\ge2$ and all quadratic
+perturbation terms are $p$-integral, because their numerator valuations
+are at least $2e$ and the global quadratic coefficient denominators
+have valuation at most $2e$. Only $j=1$ needs a local check.
+For $p\ge5$, \eqref{stage3-localization-adjacent-A} has valuation at least
+$\min(0,3-2e)$, and multiplication by $z_{N-1}/z_N$, of valuation $e$,
+cannot worsen that bound.
+
+For $p=3$, $v_3(4N+1)=1$. The adjacent coefficient in
+\eqref{stage3-localization-adjacent-A} therefore has valuation at least
+$\min(3-2e,-1)$. After multiplication by the ratio, its valuation is at
+least $\min(3-e,e-1)\ge2-2e$. This includes $p=3,e=1$.
+The leading value \eqref{stage3-localization-top-A} satisfies the same
+required lower bounds. Since the normalized $B$ is a unit, the stated
+bounds for the reduced denominator follow.
+\end{proof}
+
+\paragraph{What the one-step repair accomplishes.}
+The two cutoffs have the same rigorously proved real error order
+$\Theta(1/M)$. At $M=p$, changing $N=p^2$ to $N=p^2-1$ removes the
+entire selected prime-power denominator $p^2$ rather than merely
+changing a clearing factor. The exact checks give the following
+comparison:
+\[
+\begin{array}{c|cc|cc}
+ M=p&
+ \text{digits of }q\ (N=p^2)&
+ \text{digits of }q\ (N=p^2-1)&
+ v_p(q)\ (N=p^2)&v_p(q)\ (N=p^2-1)\\ \hline
+ 3&20&17&2&0\\
+ 5&86&79&2&0\\
+ 7&184&177&2&0
+\end{array}
+\]
+The remaining denominators in these examples are large.
+No estimate $q_M=o(M)$ is inferred from this local improvement.
+
+
+% Additional synthesis result, independently derived 31 October 2026.
+% Uses the localized family and its proved arithmetic estimates in the
+% unified manuscript.  No source manuscript is modified by this fragment.
+
+\subsection{The repaired cutoff still fails on two fixed-prime towers}
+\label{unified-repaired-towers-section}
+
+The cutoff change $M^2\mapsto M^2-1$ removes the selected prime
+entirely when $M$ itself is an odd prime.  It does not have that
+effect along prime-power towers with a fixed prime.  The following
+additional consequence gives exact valuations on two such towers.
+It is a further obstruction within the present construction, not a
+claim that every modified localization schedule fails.
+
+\begin{proposition}[Exact denominator costs after repair on the $3$- and $5$-power towers]
+\label{unified-repaired-towers}
+Use the localized family with $\sigma=-1$, so
+$N=M^2-1$, and let $q_M$ be the actual reduced denominator of
+$A_M/B_M$.  Then, for every integer $e\ge1$,
+\[
+ \begin{aligned}
+  M=3^e&:\qquad v_3(q_M)=2e-2,\\
+  M=5^e&:\qquad v_5(q_M)=\max(0,2e-3).
+ \end{aligned}
+\]
+In particular,
+\[
+ \frac{q_M}{M}\ge\frac{M}{9}\quad(M=3^e),
+ \qquad
+ \frac{q_M}{M}\ge\frac{M}{125}\quad(M=5^e, e\ge2).
+\]
+Together with Theorem~\ref{stage3-localization-asymptotic}, these
+bounds imply that the primitive errors tend to $+\infty$ on
+both fixed-prime towers, even with the repaired cutoff.
+\end{proposition}
+
+\begin{proof}
+First we determine the relevant harmonic valuations exactly.
+For an odd prime $p$ and an integer $a\ge2$, write
+\[
+ H_{p^a-1}=\frac1pH_{p^{a-1}-1}+V_{p,a},
+ \qquad
+ V_{p,a}=\sum_{\substack{1\le j<p^a\\p\nmid j}}\frac1j.
+\]
+Pairing $j$ with $p^a-j$ gives
+\[
+ \frac1j+\frac1{p^a-j}
+ =\frac{p^a}{j(p^a-j)},
+\]
+so $v_p(V_{p,a})\ge a$.  The exact initial values
+$H_2=3/2$ and $H_4=25/12$ now imply, by induction,
+\begin{equation}\label{unified-repaired-harmonic-valuations}
+ v_3(H_{3^a-1})=2-a,
+ \qquad
+ v_5(H_{5^a-1})=3-a
+ \qquad(a\ge1).
+\end{equation}
+Indeed, at each step $a\ge2$, the inherited valuations are
+$2-a$ and $3-a$, respectively, both strictly smaller than the
+unit-block lower bound $a$.  Thus no cancellation can change
+the leading valuation.
+
+We next check that these harmonic valuations survive the complete
+quadratic form.  Use the notation
+\[
+ u_k=L_k-L_{k+1},\qquad
+ z_k=\left(\frac{N+1-k}{N+1}\right)^2
+             L_k^{(1)}\!\left(1-\frac1M\right).
+\]
+For $M=p^e$, the leading-term valuation of the Laguerre polynomial
+shows $z_N\ne0$.  Normalize the polynomial by this coefficient:
+\[
+ \frac{Q_M}{z_N}=u_N+\sum_{j=1}^N t_j u_{N-j},
+ \qquad t_j=\frac{z_{N-j}}{z_N}.
+\]
+The exact coefficient estimate proved in
+Theorem~\ref{stage3-localization-primes} is
+\begin{equation}\label{unified-repaired-ratio-estimate}
+ v_p(t_j)=je+
+  v_p\!\left(\frac{N!}{(N-j)!}\right)+2v_p(j+1)
+ \ge je.
+\end{equation}
+For $j=1$ and either $p=3$ or $p=5$, equality is $v_p(t_1)=e$,
+because $N=p^{2e}-1$ and $2$ are $p$-adic units.
+
+The exact leading coefficients are
+\[
+ B(u_N)=6N+4=6p^{2e}-2,
+ \qquad
+ A(u_N)=(6p^{2e}-2)H_N+7p^{2e}+1.
+\]
+The first is a $p$-adic unit for both primes.
+For $e\ge2$, \eqref{unified-repaired-harmonic-valuations} gives
+the strictly negative valuations
+\begin{equation}\label{unified-repaired-top-valuations}
+ v_3(A(u_N))=2-2e,
+ \qquad
+ v_5(A(u_N))=3-2e.
+\end{equation}
+There is no cancellation within this leading expression:
+the harmonic term has negative valuation, while
+$7p^{2e}+1$ is a unit.
+
+All coefficients of the quadratic form $B$ in integer Laguerre
+coordinates are integers.  Therefore every change from $B(u_N)$
+after substituting \eqref{unified-repaired-ratio-estimate} is
+divisible by $p$, and
+\[
+ v_p\bigl(B(Q_M/z_N)\bigr)=0.
+\]
+For $A$, the half-lcm clearing factor in degree $N+1=p^{2e}$
+shows that every quadratic coefficient has valuation at least
+$-2e$ for these odd primes.  Consequently, every linear
+perturbation $t_j\,2\mathcal A(u_N,u_{N-j})$ with $j\ge2$
+has valuation at least $je-2e\ge0$, and every quadratic
+perturbation in the $t_j$ has valuation at least
+$(j+k)e-2e\ge0$.
+
+It remains to check the single adjacent linear perturbation.
+Its coefficient is exactly
+\[
+ C_N:=2\mathcal A(u_N,u_{N-1})
+ =-2(4N+1)H_N-\frac{32N+7}{3}.
+\]
+For $p=3$, the factor $4N+1=4\cdot3^{2e}-3$ has valuation
+one, while $32N+7=32\cdot3^{2e}-25$ is a unit.  Hence
+\[
+ v_3(t_1C_N)\ge e+\min(3-2e,-1)
+ =\min(3-e,e-1)>2-2e\qquad(e\ge2).
+\]
+For $p=5$, $4N+1$ and $3$ are units, and
+\eqref{unified-repaired-harmonic-valuations} gives
+\[
+ v_5(t_1C_N)\ge e+(3-2e)=3-e>3-2e
+ \qquad(e\ge2).
+\]
+Thus every perturbation has valuation strictly greater than the
+corresponding negative leading valuation in
+\eqref{unified-repaired-top-valuations}.  The full normalized
+$A$ retains that valuation.  Since the normalized $B$ is a unit
+and quadratic homogeneity cancels $z_N^2$ in $A_M/B_M$, this proves
+\[
+ v_3(A_M/B_M)=2-2e,
+ \qquad
+ v_5(A_M/B_M)=3-2e
+ \qquad(e\ge2).
+\]
+Reduction of a rational number makes its denominator valuation
+the negative part of its valuation, giving the asserted exponents
+for $e\ge2$.  At $e=1$, the odd-prime removal conclusion of
+Theorem~\ref{stage3-localization-primes} gives exponent zero in
+both cases, which is exactly the formula stated here.
+
+The resulting divisibilities are $M^2/9\mid q_M$ when
+$M=3^e$, and $M^2/125\mid q_M$ when $M=5^e$ and $e\ge2$.
+They imply the displayed bounds for $q_M/M$.
+Finally the established estimate
+$\mathcal E_M=\Theta(q_M/M)$ gives divergence of the primitive
+error on both towers.
+\end{proof}
+
+\paragraph{Small exact checks and their role.}
+The leading-unit checks at $e=2$ reduce to the finite rational sums
+$H_{80}$ and $H_{624}$.  Exact arithmetic gives
+\[
+ \begin{array}{c|c|c|c}
+ (p,M,N)&v_p(H_N)&
+ p^{-v_p(A(u_N))}A(u_N)\pmod p&B(u_N)\pmod p\\ \hline
+ (3,9,80)&-2&2&1\\
+ (5,25,624)&-1&4&3
+ \end{array}
+\]
+The perturbation bounds above show that the same scaled $A$
+residues hold for $A(Q_M/z_N)$, and that the $B$ residues also
+remain unchanged.  Thus these checks certify denominator exponents
+$2$ and $1$, respectively.  The all-index assertions follow from
+the valuation proof, not extrapolation from these checks.
+
+\subsection{A fresh-prime test after the cutoff repair}
+\label{sec:stage3-fresh-primes}
+
+The removal of a prime dividing the localization parameter does not
+control primes of the size of the cutoff.  The following exact test
+detects many such primes in the \emph{actual} reduced denominator.
+Here $A(Q)$ and $B(Q)$ have their positive-square meaning,
+$A(Q)-\gamma B(Q)=\int_0^\infty Q(t)^2(t-1)\log t\,e^{-t}\,dt$.
+
+\begin{proposition}[Fresh-prime denominator test]
+\label{prop:stage3-fresh-prime}
+Let $M\ge2$, $H=M^2$, $N=H-1$, $x=(M-1)/M$, and
+\[
+ w_k=\left(\frac{H-k}{H}\right)^2,\qquad
+ Q(t)=\sum_{k=0}^{N}w_kL_k^{(1)}(x)
+                    \bigl(L_k(t)-L_{k+1}(t)\bigr).
+\]
+Let $\ell$ be an odd prime with $H/2<\ell\le H$, and set
+$s=N-\ell$.  Define the truncated polynomial
+\[
+ W_{M,\ell}(t)=\sum_{r=0}^{s}w_rL_r^{(1)}(x)
+                    \bigl(L_r(t)-L_{r+1}(t)\bigr),\qquad
+ R_{M,\ell}=x^2B(W_{M,\ell})\pmod\ell.
+\]
+Then $s\ge0$, $s\le\ell-2$, the residue on the right is defined,
+and the two numbers on the left of
+\begin{equation}
+ \ell^3A(Q)\equiv\ell^2B(Q)\equiv R_{M,\ell}\pmod\ell
+ \label{eq:stage3-fresh-prime-residue}
+\end{equation}
+are $\ell$-integral.  If $R_{M,\ell}\ne0$, then
+\[
+ v_\ell(A(Q))=-3,\qquad v_\ell(B(Q))=-2,\qquad
+ v_\ell\!\left(\operatorname{den}\frac{A(Q)}{B(Q)}\right)=1.
+\]
+In particular, if $B(Q)\ne0$, the completely computable integer
+\[
+ G_M=\prod_{\substack{\ell\text{ odd prime},\ H/2<\ell\le H\\
+                         R_{M,\ell}\ne0}}\ell
+\]
+divides the actual reduced denominator $q_M$.
+\end{proposition}
+
+\begin{proof}
+Since $H=M^2$ is composite, $\ell\le H-1$, and $H<2\ell$
+gives $0\le s\le\ell-2$.  Such a prime divides neither $M$ nor
+$M-1$, so $x,H$ are $\ell$-adic units.  The finite Laguerre formula,
+Wilson's theorem, Lucas's congruence, and $x^\ell\equiv x$ give
+\begin{equation}
+ \ell L_{\ell+r}^{(1)}(x)\equiv xL_r^{(1)}(x)\pmod\ell
+ \qquad(0\le r\le s).
+ \label{eq:stage3-frobenius-block}
+\end{equation}
+For completeness, in
+$L_n^{(1)}(x)=\sum_{j=0}^n(-1)^j\binom{n+1}{j+1}x^j/j!$,
+the terms $j<\ell$ disappear after multiplication by $\ell$.
+Writing $j=\ell+a$ in the remaining terms gives
+\[
+ \frac{\ell}{(\ell+a)!}\equiv-\frac1{a!},\qquad
+ \binom{\ell+r+1}{\ell+a+1}\equiv\binom{r+1}{a+1},
+\]
+which proves \eqref{eq:stage3-frobenius-block}.
+
+Write $z_k=w_kL_k^{(1)}(x)$ and let $c$ be the ordinary Laguerre
+coefficient vector of $Q$:
+\[
+ c=(z_0,z_1-z_0,\ldots,z_N-z_{N-1},-z_N).
+\]
+The vector $\widetilde c=\ell c$ is $\ell$-integral, vanishes
+modulo $\ell$ in indices $0,\ldots,\ell-1$, and in indices
+$\ell,\ldots,H$ is congruent to $x$ times the \emph{complete}
+ordinary Laguerre coefficient vector of $W_{M,\ell}$, including
+its final coefficient $-z_s$.  This uses $w_{\ell+r}\equiv w_r$.
+The exact Gram form
+\[
+ B(c)=\sum_{i=0}^{H}2i c_i^2
+       -2\sum_{i=0}^{H-1}(i+1)c_ic_{i+1}
+\]
+therefore gives $B(\widetilde c)\equiv x^2B(W_{M,\ell})$.
+
+All entries of $\ell A$ are $\ell$-integral because $H<2\ell$.
+For indices $i,j\ge\ell$, its diagonal residues are $2i$,
+its adjacent cross-term residues are $-2(i+1)$, and its
+remaining cross-term residues vanish.  Indeed
+$\ell H_i\equiv1$ for $\ell\le i\le H$ and
+\[
+ 2A_{ij}=\frac{2(i+1)}{j-i-1}
+        -\frac{4i}{j-i}
+        +\frac{2i}{j-i+1}\qquad(j-i\ge2).
+\]
+The only possible exceptional gap within the high block is
+$j-i=\ell-1$.  It requires $H=2\ell-1$, $i=\ell$, and
+$j=2\ell-1$; the potential residue contains $i\equiv0$
+and is zero.  All terms involving a low coefficient vanish
+because that coefficient is divisible by $\ell$.
+Consequently $\ell A(\widetilde c)\equiv B(\widetilde c)$.
+Quadratic homogeneity proves \eqref{eq:stage3-fresh-prime-residue},
+and a nonzero residue gives the three exact valuations.
+\end{proof}
+
+\paragraph{Scope and a zero-residue example.}
+The nonzero-residue condition is sufficient, and is not necessary.
+For $M=5$, $N=24$, $\ell=17$, $s=7$, one has
+$x\equiv11\pmod{17}$ and $B(W_{5,17})\equiv0\pmod{17}$.
+Exact rational arithmetic nevertheless gives
+\[
+ v_{17}(A(Q))=-2,\qquad v_{17}(B(Q))=0,\qquad
+ v_{17}(q_5)=2.
+\]
+Thus a zero residue does not certify cancellation of the prime.
+The accompanying verifier checks the full rational forms and actual
+reduced denominators for $2\le M\le11$.  Its separate finite-field
+scan over $2\le M\le30$ has $786$ eligible pairs, of which $781$
+have nonzero residue.  The five zero pairs $(M,\ell)$ are
+$(5,17)$, $(17,197)$, $(19,241)$, $(23,487)$, and $(24,449)$.
+These finite data do not establish a lower bound for $G_M$ as
+$M\to\infty$.  Combined with the proved localization estimate,
+the proposition gives $\mathcal E_M\gg G_M/M$ for sufficiently
+large $M$; it supplies no unconditional global growth rate for
+$G_M$, and no irrationality proof.
+
+
+
+\section{Exact logarithm cancellation and the nonvanishing barrier}
+\label{stage3-counting-section}
+
+This section changes the construction. It obtains small log-free integer
+forms from a dense block of proper kernels. Positivity is not preserved
+by the counting argument. We prove that the same argument also produces
+formal-zero combinations, and then give a fixed-degree positive
+construction that would work if a specific independent-pair height bound
+were established. That height bound is not proved here.
+
+For $n\ge1$, define
+\[
+ R_n(u)=\frac{\prod_{k=0}^{2n-1}(4u+k^2)}
+              {\prod_{j=n}^{3n}(u+j^2)},\qquad
+ I_n=\int_0^\infty R_n(u)\,d\mu(u)>0.
+\]
+The residues, constant coefficient, and prime-log coefficients are
+\begin{align*}
+ A_{n,j}&=(-1)^{j-n}
+ \frac{4j^2(2j+2n-1)!(n+j-1)!}
+ {(2j-2n)!(j-n)!(3n-j)!(3n+j)!},\\
+ p_n&=\sum_{j=n}^{3n}A_{n,j}\left(H_j-\frac1{2j}\right),\qquad
+ E_{n,\ell}=\sum_{j=n}^{3n}A_{n,j}v_\ell(j).
+\end{align*}
+There is no polynomial part in the partial fraction decomposition, and
+$\sum_j A_{n,j}=16^n$. Thus Binet's formula gives exactly
+\begin{equation}\label{stage3-proper-linear-form}
+ I_n=16^n\gamma-p_n+\sum_{\ell\le3n}E_{n,\ell}\log\ell.
+\end{equation}
+Only primes occur in the last sum.
+
+\begin{lemma}[Uniform height and raw integral bounds]
+\label{stage3-proper-bounds}
+For every $n\ge1$ and $n\le j\le3n$,
+\[
+ 2A_{n,j}\in\mathbb Z,\qquad
+ 2|A_{n,j}|\le6\,2^{12n}.
+\]
+Moreover
+\begin{equation}\label{stage3-proper-U}
+ 0<I_n<U_n:=
+ \frac{(4n)!((n-1)!)^2}{8\,16^n((3n)!)^2},
+ \qquad U_{n+1}<U_n,
+\end{equation}
+and, with $\kappa_0=\log(729/16)$,
+\[
+ \log U_n=-\kappa_0 n+O(\log(n+1)).
+\]
+\end{lemma}
+
+\begin{proof}
+Put $a=j+n$ and $b=j-n$. With
+\[
+ B=\binom{2a}{b},\quad C=\binom a{2b},\quad
+ B'=\binom{2a-1}{b-1},\quad C'=\binom{a-1}{2b-1},
+\]
+where $B'=C'=0$ at $b=0$, direct factorial simplification gives
+\[
+ 2|A_{n,j}|=BC+4B'C+B'C'.
+\]
+This proves integrality. Every product in this expression is at most
+$2^{3a}\le2^{12n}$, proving the stated height bound.
+
+For the integral estimate, put
+$d\nu(u)=du/(2\sinh(2\pi\sqrt u))$. Then
+$1<d\mu/d\nu=1+e^{-2\pi\sqrt u}<2$.
+Let $T_j(u)=P_{2j}^{(1)}(2\sqrt u;\pi/2)$ be the even
+Meixner--Pollaczek polynomials in their usual normalization.
+Their generating function and orthogonality
+\cite{dlmf-mp,dlmf-mp-generating} imply
+\[
+ S_r(u):=\sum_{j=0}^r\binom rj T_j(u)
+       =\frac{4^r}{(2r)!}\prod_{k=0}^{r-1}(4u+k^2),
+ \qquad \int_0^\infty S_r\,d\nu=\frac1{16}.
+\]
+For clarity, the generating function of the binomial transform is
+$\cosh(4\sqrt u\arcsin\sqrt z)$, whose coefficient gives the displayed
+product. In the integral, all $T_j$ with $j>0$ vanish by orthogonality;
+the constant norm is $\int d\nu=1/16$. The product is positive for
+$u>0$, so $\int S_r d\mu<1/8$.
+Since
+\[
+ R_n(u)=\frac{(4n)!}{16^n}
+          \frac{S_{2n}(u)}{\prod_{j=n}^{3n}(u+j^2)},
+\]
+replacing each denominator factor by $j^2$ gives
+\eqref{stage3-proper-U}. A direct quotient estimate gives
+\[
+ \frac{U_{n+1}}{U_n}
+ =\frac{(4n+1)(4n+2)(4n+3)(4n+4)n^2}
+ {16(3n+1)^2(3n+2)^2(3n+3)^2}
+ \le\frac{16}{729}\left(1+\frac1n\right)^4
+ \le\frac{256}{729}<1.
+\]
+Finally Stirling's formula gives the logarithmic estimate.
+\end{proof}
+
+\begin{theorem}[Thin-block cancellation with an exponential bound, possibly zero]
+\label{stage3-counting-main}
+For integers $N\ge2$, define using integer operations
+\[
+ h_N=\max\left(1,\left\lfloor\sqrt{\lfloor\log_2N\rfloor}\right\rfloor\right),
+ \quad M=N+\left\lceil\frac N{h_N}\right\rceil,
+ \quad d=M-N+1,
+\]
+\[
+ D_N=4\operatorname{lcm}(1,\ldots,3M),\qquad
+ \delta_* =\log(729/16)-3>0.
+\]
+For every sufficiently large $N$, there is a nonzero integer vector
+$c=(c_N,\ldots,c_M)$ satisfying
+\[
+ \sum_{n=N}^M c_n E_{n,\ell}=0\quad\hbox{for every prime }\ell,
+ \qquad
+ \log\max(1,\|c\|_\infty)
+       =O\!\left(\frac N{\sqrt{\log N}}\right).
+\]
+Its exactly log-free form is
+\begin{equation}\label{stage3-counting-small-form}
+ F_N=D_N\sum_{n=N}^M c_n I_n=Q_N\gamma-P_N,
+ \qquad Q_N,P_N\in\mathbb Z,
+\end{equation}
+and satisfies
+\begin{equation}\label{stage3-counting-upper-bound}
+ |F_N|\le\exp(-\delta_*N+o(N)).
+\end{equation}
+This is an upper bound; $F_N$ is allowed to be exactly zero.
+
+Indeed, for every sufficiently large $N$, there also exists a nonzero
+integer vector of the same height order for which all prime-log
+coefficients, $Q_N$, and $P_N$ are zero simultaneously. Its rational
+kernel $\sum c_nR_n$ is nonzero and changes sign on $(0,\infty)$.
+\end{theorem}
+
+\begin{proof}
+Use the integer log matrix
+\[
+ V_{\ell,n}=2E_{n,\ell},\qquad
+ \ell\le3M\hbox{ prime},\quad N\le n\le M.
+\]
+It has $r=\pi(3M)$ rows and $d$ columns, and its entries have absolute
+value at most the integer
+\[
+ H_N=6(2M+1)\lceil\log_2(3M)\rceil 2^{12M}.
+\]
+The prime number theorem \cite{dlmf-primes} and the chosen block give
+\[
+ M/N\to1,\quad d\asymp\frac N{\sqrt{\log N}},\quad
+ r\asymp\frac N{\log N},\quad
+ \log H_N=O(N).
+\]
+Thus $d>r$ for all sufficiently large $N$.
+
+Here is the full counting argument. For any $r$-by-$d$ integer matrix
+with entries bounded by $H$, let $K$ be a positive integer such that
+\[
+ K^{d-r}>(3dH)^r.
+\]
+The $(K+1)^d$ vectors in $\{0,\ldots,K\}^d$ have images with at most
+$(2dKH+1)^r\le(3dKH)^r<K^d$ possible values. Two images coincide.
+Subtracting the input vectors gives a nonzero integer null vector of
+supremum norm at most $K$. Taking the smallest admissible integer $K$
+yields
+\[
+ \log K\le
+ \frac r{d-r}\log(3dH)+O(1)
+ =O\!\left(\frac N{\sqrt{\log N}}\right).
+\]
+This proves exact log cancellation and the height estimate. It also
+gives a finite, though not efficient, construction by enumeration.
+
+Since $2A_{n,j}$ is integral, every denominator in $p_n$ divides
+$4\operatorname{lcm}(1,\ldots,3M)=D_N$. Thus the coefficients
+\[
+ Q_N=D_N\sum c_n16^n,\qquad P_N=D_N\sum c_np_n
+\]
+in \eqref{stage3-counting-small-form} are integers. Positivity and
+monotonicity of the raw bounds give
+\[
+ |F_N|\le D_NdK U_N.
+\]
+The same prime number theorem gives
+$\log D_N=3M+o(M)=3N+o(N)$, while
+$\log(dK)=o(N)$. Lemma~\ref{stage3-proper-bounds} therefore proves
+\eqref{stage3-counting-upper-bound}. The margin is positive since
+$e<3$ gives $e^3<27<729/16$.
+
+To see exactly why nonvanishing is missing, append to $V$ the two
+integer rows $(16^n)_{n=N}^M$ and $(D_Np_n)_{n=N}^M$.
+Their entries still have logarithmic height $O(N)$: the residue bound,
+$H_j\le j$, and $\log D_N=O(N)$ suffice. Replacing $r$ by $r+2$
+does not change the asymptotic height estimate. The same counting
+argument therefore gives a nonzero vector annihilating all three
+types of coefficients. Its integral is exactly zero, as a formal
+identity, independently of the arithmetic nature of $\gamma$.
+
+Let $n_*$ be the largest index with nonzero coefficient. The pole at
+$u=-(3n_*)^2$ occurs in $R_{n_*}$ with nonzero residue and in none of
+the smaller-index kernels. Hence $\sum c_nR_n$ is not the zero
+rational function. It is continuous on $(0,\infty)$ and has zero
+integral against a strictly positive measure with full support.
+It must take both signs there. This proves the last assertion.
+\end{proof}
+
+\subsection{A fixed-degree positive construction from two independent pairs}
+Let $\mathcal K_N=\ker_{\mathbb Z}V$ and define the integer coefficient
+map
+\[
+ \Phi_N(c)=\left(D_N\sum c_n16^n,\ D_N\sum c_np_n\right).
+\]
+For $c\in\mathcal K_N$, the corresponding form is
+$F_c(\gamma)=Q_c\gamma-P_c$. Define $\sigma_2(N)$ as the least value of
+$\max(\|c^{(1)}\|_\infty,\|c^{(2)}\|_\infty)$ among pairs in
+$\mathcal K_N$ with
+\[
+ \det\begin{pmatrix}Q_1&P_1\\Q_2&P_2\end{pmatrix}\ne0.
+\]
+Set $\sigma_2(N)=\infty$ if no such pair exists. This definition is a
+property of explicitly given integer and rational matrices. It does
+not compare any computed value to $\gamma$.
+
+\begin{proposition}[A positive quadratic certificate and its exact missing bound]
+\label{stage3-counting-independent-pair}
+For every pair with nonzero determinant, the integer polynomial
+\[
+ W_N(X)=(Q_1X-P_1)^2+(Q_2X-P_2)^2
+\]
+is strictly positive for every real $X$. If, along an infinite sequence
+of indices tending to infinity,
+\begin{equation}\label{stage3-counting-sigma-target}
+ \limsup\frac{\log\sigma_2(N)}N<\delta_*,
+\end{equation}
+then, choosing a pair attaining $\sigma_2(N)$ at each of those indices,
+the resulting polynomials satisfy $W_N(\gamma)\to0$, and $\gamma$ is irrational.
+No estimate \eqref{stage3-counting-sigma-target} is proved here.
+\end{proposition}
+
+\begin{proof}
+Two independent coefficient pairs cannot vanish at the same real
+argument. Equivalently the leading coefficient is positive and the
+discriminant of $W_N$ is
+\[
+ -4(Q_1P_2-Q_2P_1)^2<0.
+\]
+For a pair attaining $\sigma_2(N)$, the raw estimates give
+\[
+ |F_{c^{(i)}}(\gamma)|\le D_Nd\sigma_2(N)U_N.
+\]
+The logarithm of this upper bound is
+$-\delta_*N+\log\sigma_2(N)+o(N)$. Under
+\eqref{stage3-counting-sigma-target} both forms tend to zero, and so
+does their sum of squares. If $\gamma=a/b$ were rational, then
+\[
+ b^2W_N(\gamma)
+ =(aQ_1-bP_1)^2+(aQ_2-bP_2)^2\in\mathbb Z_{>0},
+\]
+contradicting convergence to zero. The degree is the fixed number $2$,
+so this integerization introduces the fixed factor $b^2$ only.
+\end{proof}
+
+The preceding construction separates positivity from the sign of an
+integral kernel. It replaces that sign problem by an exact determinant
+test. It does not supply cheap independent pairs: the counting theorem
+controls a short null vector, which can lie in $\ker\Phi_N$.
+
+\begin{proposition}[Why dimension and entry height alone do not bound the pair]
+\label{stage3-counting-countermodel}
+For integers $H\ge2$, $s\ge1$, and any number of free coordinates
+$z_1,\ldots,z_k$ with $k\ge1$, impose
+\[
+ x_i-Hx_{i+1}=0,\quad y_i-Hy_{i+1}=0\quad(0\le i<s),
+ \qquad\Phi(x,y,z)=(x_s,y_s).
+\]
+The constraint matrix has rank $2s$, entries of absolute value at most
+$H$, and arbitrarily many independent null vectors of height $1$ with
+$\Phi=0$. Appending the two rows of $\Phi$ raises its rank by $2$.
+Nevertheless the least height of two null vectors with independent
+$\Phi$-images is exactly $H^s$.
+\end{proposition}
+
+\begin{proof}
+Every null vector has
+$x_i=H^{s-i}x_s$ and $y_i=H^{s-i}y_s$. If its height is less than
+$H^s$, both $x_s$ and $y_s$ are zero. The free coordinate vectors have
+height $1$, and the two choices $(x_s,y_s)=(1,0),(0,1)$ give independent
+images at height exactly $H^s$. The rank assertions follow directly
+from the independent chain constraints.
+\end{proof}
+
+This is not a failure theorem for the specific proper-kernel matrix.
+It proves that its additional arithmetic structure must be used:
+dimension, entry size, and formal rank alone cannot upgrade the
+counting theorem to the required independent-pair estimate.
+
+
+% Additional synthesis result, independently derived 31 October 2026.
+% This fragment uses the theorem/lemma environments of the unified manuscript.
+% Only this owned fragment was created; the source manuscripts are unchanged.
+
+\section{An actual-matrix height barrier for independent signed outputs}
+\label{unified-signed-height-section}
+
+The counting theorem produces short vectors in the integer kernel of the
+prime-log matrix, but it does not provide two independent coefficient
+pairs.  The following additional synthesis result shows that this
+distinction is unavoidable for the actual matrices considered here:
+subexponential-height log-null vectors can have formal outputs of rank
+at most one.  The proof combines the common gamma-coefficient factor
+with the integral estimate already established above.  The underlying
+integer determinant argument and Smith normal form are standard tools;
+no historical-priority claim is made for them.
+
+\begin{lemma}[An integer-output determinant bound]
+\label{unified-signed-determinant-lemma}
+Let $\Lambda\subseteq\mathbb Z^d$ be a lattice, let
+$a,b:\Lambda\to\mathbb Z$ be homomorphisms, and let $\theta$ be real.
+Suppose that, for constants $A,E>0$ and every $c\in\Lambda$,
+\[
+ |a(c)|\le A\|c\|_\infty,
+ \qquad
+ |\theta a(c)-b(c)|\le E\|c\|_\infty.
+\]
+Put $\mathcal L=\{(a(c),b(c)):c\in\Lambda\}\subseteq\mathbb Z^2$.
+If $\mathcal L$ has rank two, let
+$j=[\mathbb Z^2:\mathcal L]$.  Then every pair with independent
+outputs satisfies
+\begin{equation}\label{unified-signed-height-product}
+ \|c_1\|_\infty\|c_2\|_\infty\ge\frac{j}{2AE}.
+\end{equation}
+In particular, if $2AEK^2<1$, all outputs with
+$\|c\|_\infty\le K$ span a space of dimension at most one,
+whether or not the full image has rank two.
+
+When the full image has rank two, $j$ is the greatest common divisor
+of the determinants of all pairs of image vectors.  Thus it concerns
+the actual image lattice, which need not be saturated in $\mathbb Z^2$.
+\end{lemma}
+
+\begin{proof}
+Set $e_i=\theta a(c_i)-b(c_i)$.  Cancellation of $\theta$ gives
+\[
+ a(c_1)b(c_2)-a(c_2)b(c_1)
+   =a(c_2)e_1-a(c_1)e_2.
+\]
+Its absolute value is at most
+$2AE\|c_1\|_\infty\|c_2\|_\infty$.
+A nonzero determinant of two vectors of $\mathcal L$ is a nonzero
+integer multiple of the covolume $j$, proving
+\eqref{unified-signed-height-product}.
+
+For completeness, a rank-two sublattice of $\mathbb Z^2$ has a basis
+$(a_0,b_0),(0,b_1)$ with $a_0,b_1>0$: choose $a_0$ as the positive
+generator of its first-coordinate image, choose a vector above it,
+and choose $b_1$ as the positive generator of its vertical kernel.
+Subtracting a multiple of the first vector proves generation by these
+two vectors.  The index and the absolute basis determinant are both
+$a_0b_1$.  Every pair determinant is a multiple of this number, and
+the basis pair attains it, proving the gcd assertion.
+
+Finally, if $2AEK^2<1$, every determinant of two outputs in the
+specified height ball is an integer of absolute value less than one,
+and therefore is zero.  If one such output is nonzero, every other
+one is collinear with it; if none is nonzero, the assertion is
+immediate.
+\end{proof}
+
+\begin{lemma}[The exact image index and the fibres of the output map]
+\label{unified-signed-image-index}
+Let $C\in\mathbb Z^{r\times d}$ have row rank $r$, let
+$B\in\mathbb Z^{2\times d}$, and suppose
+$\operatorname{rank}\binom CB=r+2$.
+For a full-row-rank integer matrix $T$ with $s$ rows, write
+$\Delta_s(T)$ for the positive gcd of its $s$-by-$s$ minors;
+use $\Delta_0(C)=1$ when $r=0$.  Then
+\begin{equation}\label{unified-signed-index-formula}
+ \left[\mathbb Z^2:B(\ker_{\mathbb Z}C)\right]
+ =\frac{\Delta_{r+2}\!\left(\binom CB\right)}{\Delta_r(C)}.
+\end{equation}
+For any attained output $y=Bc_0$ with $Cc_0=0$, its entire fibre is
+\[
+ \{c\in\mathbb Z^d:Cc=0,\ Bc=y\}
+ =c_0+\ker_{\mathbb Z}\binom CB.
+\]
+Both integer kernels in this statement are saturated in
+$\mathbb Z^d$.  This does not assert that the image
+$B(\ker_{\mathbb Z}C)$ is saturated in $\mathbb Z^2$.
+\end{lemma}
+
+\begin{proof}
+Put $\mathcal H=\binom CB\mathbb Z^d$,
+$\mathcal C=C\mathbb Z^d$, and
+$\mathcal L=B(\ker_{\mathbb Z}C)$.
+Projection to the first $r$ coordinates gives the exact sequence
+of finite abelian groups
+\[
+ 0\longrightarrow\mathbb Z^2/\mathcal L
+ \longrightarrow\mathbb Z^{r+2}/\mathcal H
+ \longrightarrow\mathbb Z^r/\mathcal C
+ \longrightarrow0.
+\]
+Indeed, a class whose first coordinate lies in $\mathcal C$ can
+be represented by $(0,y)$ after subtracting a vector of
+$\mathcal H$, and $(0,y)$ lies in $\mathcal H$ exactly when
+$y\in\mathcal L$.  Taking group orders gives the ratio of the
+two image indices.
+
+For a full-row-rank integer matrix, its image index is the gcd of
+its maximal minors.  To see this, apply integer unimodular row and
+column operations to obtain Smith normal form.  Such operations
+preserve the image index and the gcd of the maximal minors; on
+the diagonal form both are the product of the nonzero diagonal
+entries.  This proves \eqref{unified-signed-index-formula}.
+The fibre identity follows by subtracting $c_0$.
+An integer kernel is saturated because $kTc=0$, for a nonzero
+integer $k$, implies $Tc=0$ in the torsion-free group
+$\mathbb Z^s$.
+\end{proof}
+
+\begin{theorem}[Independent signed outputs have an exponential height cost]
+\label{unified-signed-actual-barrier}
+Use the proper kernels, their rational bounds $U_n$ in
+\eqref{stage3-proper-U}, and the thin blocks of
+Theorem~\ref{stage3-counting-main}.  Thus
+\[
+ \mathcal K_N=\ker_{\mathbb Z}V,
+ \quad D_N=4\operatorname{lcm}(1,\ldots,3M),
+ \quad \delta_*=\log(729/16)-3.
+\]
+Set the explicit positive rational quantities
+\[
+ \mathcal S_N=\sum_{n=N}^M16^{n-N}
+     =\frac{16^{M-N+1}-1}{15},
+ \qquad
+ \mathcal T_N=\sum_{n=N}^M U_n,
+ \qquad G_N=D_N16^N.
+\]
+For $c\in\mathcal K_N$, write the integer form as
+\[
+ F_c(\gamma)=Q_c\gamma-P_c,
+ \qquad
+ a_N(c)=\frac{Q_c}{G_N}
+       =\sum_{n=N}^M c_n16^{n-N}\in\mathbb Z.
+\]
+Let $\sigma_2(N)$ be the least possible maximum input height of
+two vectors whose original coefficient pairs $(Q_c,P_c)$ are
+independent, and set it to $\infty$ if no such pair exists.
+Then, for every $N$ for which the block is defined,
+\begin{equation}\label{unified-signed-actual-finite}
+ \sigma_2(N)\ge
+ \bigl(2D_N\mathcal S_N\mathcal T_N\bigr)^{-1/2}.
+\end{equation}
+If the normalized image
+\[
+ \mathcal L_N
+   =\{(a_N(c),P_c):c\in\mathcal K_N\}
+\]
+has rank two and index $j_N$ in $\mathbb Z^2$, the sharper bound is
+\begin{equation}\label{unified-signed-actual-index}
+ \sigma_2(N)\ge
+ \sqrt{\frac{j_N}{2D_N\mathcal S_N\mathcal T_N}}.
+\end{equation}
+In particular, with the extended-real convention for $\log\infty$,
+\begin{equation}\label{unified-signed-actual-rate}
+ \liminf_{N\to\infty}\frac{\log\sigma_2(N)}N
+ \ge\frac{\delta_*}{2}
+ =\frac{\log(729/16)-3}{2}>0.
+\end{equation}
+
+More strongly, if $K_N\ge1$ and
+\[
+ \limsup_{N\to\infty}\frac{\log K_N}{N}
+ <\frac{\delta_*}{2},
+\]
+then, for all sufficiently large $N$, the formal outputs of
+\emph{all} $c\in\mathcal K_N$ with $\|c\|_\infty\le K_N$
+span a space of dimension at most one.  In particular this holds
+for every subexponential height schedule $K_N=\exp(o(N))$,
+including the heights produced by the counting argument.
+\end{theorem}
+
+\begin{proof}
+The exact formulas preceding
+\eqref{stage3-counting-upper-bound} give
+\[
+ P_c=D_N\sum_{n=N}^M c_np_n\in\mathbb Z,
+ \qquad F_c(\gamma)=D_N\sum_{n=N}^M c_nI_n.
+\]
+Consequently
+\[
+ |a_N(c)|\le\mathcal S_N\|c\|_\infty,
+ \qquad
+ |G_N\gamma a_N(c)-P_c|
+ \le D_N\mathcal T_N\|c\|_\infty.
+\]
+The two original pairs are independent exactly when the normalized
+pairs are independent, since their first coordinates differ by
+the same nonzero factor $G_N$.
+Apply Lemma~\ref{unified-signed-determinant-lemma} with
+\[
+ \theta=G_N\gamma,\quad A=\mathcal S_N,
+ \quad E=D_N\mathcal T_N.
+\]
+Every nonzero normalized determinant is an integer, and in the
+rank-two case it is a nonzero multiple of $j_N$.
+This proves both finite bounds; if there is no independent pair,
+\eqref{unified-signed-actual-finite} holds by the convention
+$\sigma_2(N)=\infty$.
+
+The thin-block choice gives $M-N=o(N)$, so
+\[
+ \log\mathcal S_N=o(N).
+\]
+Since $U_n$ decreases,
+$U_N\le\mathcal T_N\le(M-N+1)U_N$.  The proved asymptotic for
+$U_N$ therefore gives
+\[
+ \log\mathcal T_N=-\log(729/16)N+o(N).
+\]
+The already used least-common-multiple asymptotic gives
+$\log D_N=3N+o(N)$.  Hence
+\begin{equation}\label{unified-signed-determinant-scale}
+ 2D_N\mathcal S_N\mathcal T_N
+ =\exp\{-\delta_*N+o(N)\}.
+\end{equation}
+Taking logarithms of \eqref{unified-signed-actual-finite}
+proves \eqref{unified-signed-actual-rate}.
+Under the stated hypothesis on $K_N$, the product of
+\eqref{unified-signed-determinant-scale} with $K_N^2$ tends to zero.
+The final conclusion follows from the last assertion of
+Lemma~\ref{unified-signed-determinant-lemma}.
+\end{proof}
+
+\paragraph{Exact arithmetic and scope.}
+The index $j_N$, whenever the normalized image has rank two, can be
+computed without any evaluation of $\gamma$.
+Choose a maximal independent set of rows of the integer log matrix
+as $C$, and let the two rows of $B$ be
+$(16^{n-N})_{n=N}^M$ and $(D_Np_n)_{n=N}^M$.
+Then Lemma~\ref{unified-signed-image-index} gives its exact value.
+All vectors with a fixed formal output differ by the saturated
+integer kernel of the stacked matrix; changing a vector inside
+that fibre changes neither its formal linear form nor its
+primitive arithmetic error.
+
+The new conclusion is a lower height bound for the actual
+proper-kernel matrices, not just for an unrelated model matrix.
+It does not prove that every short output is zero, and it does
+not exclude independent outputs at larger heights.
+In particular, the previously stated sufficient target
+$\limsup\log\sigma_2(N)/N<\delta_*$ is not contradicted:
+an exponential-rate window between $\delta_*/2$ and $\delta_*$
+remains.  Neither existence of suitable pairs in that window nor
+irrationality of $\gamma$ is established here.
+
+\section{The remaining estimates and how the results fit together}
+\label{unified-final-scope}
+
+The positive and signed constructions address different requirements.
+The following table records proved statements and the precise estimates
+that are not supplied by this manuscript. A hypothesis in the last column
+is not used as if it had been established.
+
+\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth}
+ >{\raggedright\arraybackslash}p{0.35\textwidth}
+ >{\raggedright\arraybackslash}p{0.35\textwidth}@{}}
+\toprule Construction & Proved properties & Remaining requirement\\\midrule
+\endfirsthead
+\toprule Construction & Proved properties & Remaining requirement\\\midrule
+\endhead
+Canonical interval selection &
+Integer coefficients, exact log cancellation, positive forms, terminating
+selection, divergent denominators, exact limiting dichotomy &
+An independent proof that
+\(\widehat q_m(r_{m+1}-r_m)\to0\).\\
+Primitive optimization &
+An exact finite candidate set; a terminating relative optimizer; a
+three-fraction exact certificate when its hypotheses hold &
+A proved zero limit of the interval minima for \(\xi=\gamma\).\\
+Positive target realization &
+Every strict rational lower target has a global positive certificate;
+complete reduction gives the target's exact primitive pair &
+Selection of an infinite target sequence with primitive error tending
+to zero.\\
+Localized squares with the repaired cutoff &
+Positive integral error of order \(M^{-1}\), exact rational bounds,
+and removal of the designated prime when \(M\) is prime &
+A global denominator bound \(q_M=o(M)\) along a specified infinite
+sequence. The \(3\)- and \(5\)-power towers fail.\\
+Signed thin-block combinations &
+All logarithms cancel; integerization is included in the exponentially
+small upper bound; formal-zero combinations also exist &
+Nonzero integrated output with the required height, or sufficiently
+small independent output pairs.\\
+\bottomrule
+\end{longtable}
+\normalsize
+
+The new results sharpen this map. The positive dyadic degree law is
+optimal on its specified fixed pole grid, even with unlimited coefficient
+height. It settles an analytic complexity question but leaves the
+target denominator uncontrolled. The interval theorem proves that
+least-denominator selection, true primitive optimization, and relative
+optimization share a limiting rationality dichotomy. Its Fibonacci
+counterexample shows that the finite errors of these procedures can
+nevertheless differ by arbitrarily large factors. Finally, the actual
+signed matrix requires exponential height for two independent outputs.
+In the notation of the signed construction,
+\[
+ \liminf_{N\to\infty}\frac{\log\sigma_2(N)}N
+ \ge\frac{\delta_*}{2},
+\]
+whereas a sufficient estimate for its proposed two-square route would be
+\[
+ \limsup_{\substack{N\to\infty\\N\in\mathcal N}}
+       \frac{\log\sigma_2(N)}N<\delta_*
+\]
+on an infinite set \(\mathcal N\). The lower bound does not imply that
+such a set exists, and it does not contradict the stated sufficient
+upper target.
+
+There is therefore no transfer of nonvanishing from one family to the
+smallness estimate of another family. A completed irrationality argument
+would have to establish the missing property within one specified
+infinite construction. The present results provide exact constructions,
+optimization tools, arithmetic exclusions, and complexity laws with
+which that further problem can be studied.
+
+\appendix
+\section{Source integration, corrected normalization, and reproducibility}
+\label{unified-reproducibility}
+
+\subsection{What was integrated}
+
+All ten selected result groups are proved in this manuscript. The
+canonical family, target interpolation, rationality dichotomy, and
+Laguerre arithmetic come from source A; global positive realization,
+effective square tests, and support compression come from source B;
+nested brackets, finite optimization, interpolation valuations,
+localization, cutoff repair, and signed cancellation come from source C.
+The additional synthesis results are the sharp degree law, the general
+interval dichotomy, the Fibonacci separation example, the exact repaired
+prime-power costs, and the actual-matrix independence barrier.
+
+Repeated definitions and one duplicate proof of the half-lcm clearing
+factor have been consolidated. The monomial moment is
+\[
+ \int_0^\infty t^s(t-1)\log t\,e^{-t}\,dt
+ =s!\bigl(1+sH_s-s\gamma\bigr).
+\]
+One redundant displayed formula in source C contained an extra \(s\)
+inside these braces. That typographical error is corrected here.
+The quadratic matrices, the source B moments, and the localization
+arguments use the normalization displayed above. For example
+\(A(L_1)=5\) and \(B(L_1)=2\), so \(I(L_1)=5-2\gamma\).
+The integration does not assume that the superseded expression is valid.
+
+Classical inputs include Binet's integral, digamma duplication,
+Laguerre and Meixner--Pollaczek identities, the prime number theorem,
+and Meyer's rational isotropy theorem. Each is identified at its point
+of use. The new monic-polynomial estimate and the image-index formula
+include their own proofs from factorization, integration by parts,
+and integer lattice operations.
+
+\subsection{Exact checks and their logical role}
+
+The proof of the sharp degree estimate is symbolic. As a separate
+finite check, the leading coefficients, orthogonality, and norms in
+its shifted Jacobi calculation were verified in rational arithmetic for
+\(\alpha=0,1\) and degrees \(0,\ldots,12\). The signed determinant
+argument and the image-index identity were independently checked
+against the actual proper-kernel coefficient map.
+
+The short Python program below uses only the standard library and
+exact fractions. It verifies the seven displayed finite error bounds,
+membership of their targets in the claimed canonical intervals, and
+the three-fraction certificate for the exact optimum at \(m=10\).
+It also checks the two strict rational bounds surrounding that optimum.
+Its successful output is
+\begin{center}
+\small\texttt{PASS: rational targets, seven error bounds, and exact m=10 optimum}
+\end{center}
+The reported finite candidate counts come from the finite
+ceiling-Euclidean construction; they are not needed by this verifier
+or by any asymptotic theorem.
+
+These checks supplement the all-index proofs. In particular they do
+not prove convergence of the gamma-specific primitive errors.
+The TeX source contains the entire manuscript and bibliography:
+there are no external \texttt{\string\input}, \texttt{\string\include},
+figure, or BibTeX-file dependencies. A standard TeX installation
+with the listed packages can compile it using \texttt{pdflatex} twice
+or \texttt{latexmk -pdf}.
+
+\subsection{A self-contained rational certificate verifier}
+The following code contains no decimal approximation of \(\gamma\).
+Finite decimal strings in the comparison table are parsed as exact
+rational upper bounds.
+
+\begingroup\footnotesize
+\begin{verbatim}
+
+from fractions import Fraction as F
+from math import gcd
+
+def bernoulli(n):
+    a = [F(0)] * (n + 1)
+    for m in range(n + 1):
+        a[m] = F(1, m + 1)
+        for j in range(m, 0, -1):
+            a[j-1] = j * (a[j-1] - a[j])
+    return a[0]
+
+def mu(j):
+    return abs(bernoulli(2*j + 2)) / (2*j + 2)
+
+# Store only the harmonic numbers needed by dyadic targets.
+harm, h = {}, F(0)
+for n in range(1, 2**14 + 1):
+    h += F(1, n)
+    if n & (n-1) == 0:
+        harm[n] = h
+
+def target(m):
+    p = [1]
+    for j in range(1, m+1):
+        t = [0] * (len(p)+1)
+        for i, v in enumerate(p):
+            t[i] -= v
+            t[i+1] += 4**j * v
+        p = t
+    a = sum(p)
+    s = F(sum(i*v for i, v in enumerate(p)), a)
+    c = [F(0)] * (len(p)+1)
+    for i, v in enumerate(p):
+        c[i] += (1+s) * F(v, a)
+        c[i+1] -= s * F(v, a)
+    assert sum(c) == 1
+    assert sum(i*v for i, v in enumerate(c)) == 0
+    return sum(v*(harm[2**i]-F(1, 2**(i+1)))
+               for i, v in enumerate(c))
+
+r = [target(m) for m in range(14)]
+assert all(r[i] < r[i+1] for i in range(13))
+rho = lambda m: F(9*(m+1)**2, 16*4**(m+1))
+upper = lambda m: r[m] + (r[m+1]-r[m])/(1-rho(m))
+
+# A rational Binet bracket, with an explicit positive remainder.
+ell_lo = 2*sum(F(1, (2*j+1)*3**(2*j+1))
+               for j in range(110))
+ell_hi = ell_lo + F(2, 221*3**221)*F(9, 8)
+s = sum((-1)**j * mu(j)/64**(2*j+2) for j in range(20))
+rem = mu(20)/64**42
+g_lo = harm[64]-F(1, 128)-6*ell_hi+s
+g_hi = harm[64]-F(1, 128)-6*ell_lo+s+rem
+assert g_lo < g_hi
+
+rows = [
+    (0, 4, 7, '4.05096544e-2'),
+    (1, 15, 26, '7.60728744e-3'),
+    (2, 157, 272, '2.66085322e-3'),
+    (4, 33841, 58628, '1.84706856e-6'),
+    (6, 9062634, 15700603, '1.53583719e-9'),
+    (8, 8788062966751, 15224921118955, '9.04971062e-14'),
+    (10, 2323006970406828281, 4024504377931443899,
+     '3.81603071e-19'),
+]
+for m, p, q, bound in rows:
+    assert gcd(p, q) == 1
+    assert r[m] <= F(p, q) <= r[m+1]
+    assert 0 < q*g_lo-p < q*g_hi-p < F(bound)
+
+p, q = 2323006970406828281, 4024504377931443899
+pc, qc = 1055624077073011532, 1828820909171081307
+assert q*pc-p*qc == 1
+mediant = F(p+pc, q+qc)
+assert r[11] < mediant < r[12]
+assert upper(12) < F(pc, qc)
+assert F(38160307067862345768, 10**38) < q*g_lo-p
+assert q*g_hi-p < F(38160307067862345769, 10**38)
+print('PASS: rational targets, seven error bounds, and exact m=10 optimum')
+
+\end{verbatim}
+\endgroup
+
+\begin{thebibliography}{99}
+
+\bibitem{source-a}
+Keio--Shaitetsu research notes, \emph{Constructive Gamma Kernels and
+Exact Arithmetic Costs}, 31 October 2026, internal source manuscript.
+
+\bibitem{source-b}
+Keio--Shaitetsu research notes, \emph{Eighteen Auxiliary Theorems for
+Gamma Approximation}, 31 October 2026, internal source manuscript.
+
+\bibitem{source-c}
+Keio--Shaitetsu research notes, \emph{Primitive Costs for Euler's Constant},
+31 October 2026, internal source manuscript.
+
+\bibitem{dlmf-binet}
+NIST Digital Library of Mathematical Functions, \S5.9,
+especially equation 5.9.15 (Binet's digamma integral).
+\url{https://dlmf.nist.gov/5.9.E15}.
+
+\bibitem{dlmf-duplication}
+NIST Digital Library of Mathematical Functions, \S5.5,
+equation 5.5.8 (digamma duplication).
+\url{https://dlmf.nist.gov/5.5.E8}.
+
+\bibitem{dlmf-laguerre}
+NIST Digital Library of Mathematical Functions, \S18.12,
+equation 18.12.13 (Laguerre generating function), and \S18.3
+(orthogonality and normalization).
+\url{https://dlmf.nist.gov/18.12.E13};
+\url{https://dlmf.nist.gov/18.3}.
+
+\bibitem{dlmf-primes}
+NIST Digital Library of Mathematical Functions, \S27.2,
+equation 27.2.3 (the prime number theorem).
+The corresponding $\vartheta(x)\sim x$ follows by partial summation.
+\url{https://dlmf.nist.gov/27.2.E3}.
+
+\bibitem{dlmf-laguerre-asymptotic}
+NIST Digital Library of Mathematical Functions,
+Section 18.15(iv), Laguerre asymptotics, equations 18.15.14--15.
+\url{https://dlmf.nist.gov/18.15#iv}.
+
+\bibitem{dlmf-mp}
+NIST Digital Library of Mathematical Functions,
+Section 18.19, Meixner--Pollaczek definitions and orthogonality,
+equations 18.19.6--9.
+\url{https://dlmf.nist.gov/18.19}.
+
+\bibitem{dlmf-mp-generating}
+NIST Digital Library of Mathematical Functions,
+Section 18.23, Meixner--Pollaczek generating function,
+equation 18.23.7.
+\url{https://dlmf.nist.gov/18.23.E7}.
+
+\end{thebibliography}
+\end{document}
