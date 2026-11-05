@@ -1,0 +1,1913 @@
+\begin{filecontents*}[overwrite]{algebraic_monodromy_verify.py}
+"""Exact finite checks; these do not replace the proofs in the manuscript."""
+from pathlib import Path
+import json
+import sympy as sp
+
+
+def mul(a, b):
+    return tuple(a[b[i]] for i in range(len(a)))
+
+
+def inv(a):
+    result = [0] * len(a)
+    for i, image in enumerate(a):
+        result[image] = i
+    return tuple(result)
+
+
+def generated(generators):
+    identity = tuple(range(len(generators[0])))
+    elements = {identity}
+    todo = [identity]
+    while todo:
+        a = todo.pop()
+        for b in generators:
+            c = mul(a, b)
+            if c not in elements:
+                elements.add(c)
+                todo.append(c)
+    return sorted(elements)
+
+
+def subgroup(generator):
+    identity = tuple(range(len(generator)))
+    result = [identity]
+    g = generator
+    while g != identity:
+        result.append(g)
+        g = mul(g, generator)
+    return result
+
+
+def cosets(group, inertia):
+    return sorted({tuple(sorted(mul(h, a) for a in inertia)) for h in group})
+
+
+def fixed_cosets(a, quotient):
+    return sum(tuple(sorted(mul(a, h) for h in c)) == c for c in quotient)
+
+
+def cover_check(name, generators, characters):
+    group = generated(generators)
+    order = len(group)
+    index = {a: i for i, a in enumerate(group)}
+    identity = tuple(range(len(generators[0])))
+    quotients = [cosets(group, subgroup(a)) for a in generators]
+    r = len(generators)
+    rows = order + sum(map(len, quotients))
+    edges = r * order
+    boundary = sp.zeros(rows, edges)
+    offset = order
+    for i, quotient in enumerate(quotients):
+        coset_index = {h: j for j, c in enumerate(quotient) for h in c}
+        for h in group:
+            column = i * order + index[h]
+            boundary[index[h], column] = -1
+            boundary[offset + coset_index[h], column] = 1
+        offset += len(quotient)
+    kernel_vectors = boundary.nullspace()
+    dimension = len(kernel_vectors)
+    kernel = (sp.Matrix.hstack(*kernel_vectors)
+              if kernel_vectors else sp.zeros(edges, 0))
+    pivots = list(kernel.T.rref()[1]) if dimension else []
+    pivot_inverse = kernel[pivots, :].inv() if dimension else sp.zeros(0, 0)
+    product = identity
+    for a in generators:
+        product = mul(product, a)
+    infinity = cosets(group, subgroup(inv(product)))
+    affine_character = {}
+    projective_character = {}
+    for a in group:
+        permutation = []
+        a_inverse = inv(a)
+        for i in range(r):
+            permutation.extend(i * order + index[mul(a_inverse, h)] for h in group)
+        moved = kernel[permutation, :]
+        coordinates = pivot_inverse * moved[pivots, :] if dimension else sp.zeros(0, 0)
+        assert moved == kernel * coordinates
+        trace = sp.trace(coordinates)
+        expected = ((r - 1) * (order if a == identity else 0)
+                    - sum(fixed_cosets(a, q) for q in quotients) + 1)
+        assert trace == expected
+        affine_character[a] = trace
+        projective_character[a] = trace - fixed_cosets(a, infinity) + 1
+    multiplicities = {}
+    for label, character in characters.items():
+        aff = sp.simplify(sum(affine_character[a] * sp.conjugate(character(a))
+                              for a in group) / order)
+        proj = sp.simplify(sum(projective_character[a] * sp.conjugate(character(a))
+                               for a in group) / order)
+        assert aff.is_integer and aff >= 0
+        assert proj.is_integer and proj >= 0
+        multiplicities[label] = {"affine": int(aff), "projective": int(proj)}
+    compact_dimension = projective_character[identity]
+    assert compact_dimension.is_integer and compact_dimension >= 0
+    assert compact_dimension % 2 == 0
+    assert sum(value["affine"] * characters[label](identity)
+               for label, value in multiplicities.items()) == dimension
+    assert sum(value["projective"] * characters[label](identity)
+               for label, value in multiplicities.items()) == compact_dimension
+    return {"name": name, "group_order": order, "finite_branch_count": r,
+            "affine_homology_dimension": dimension,
+            "genus": int(compact_dimension / 2),
+            "points_above_infinity": len(infinity),
+            "multiplicities": multiplicities,
+            "deck_actions_checked": order}
+
+
+records = []
+# Rational characters suffice for C2, C2 x C2, and S3; no floating arithmetic.
+c2 = (1, 0)
+char_c2 = {"trivial": lambda a: sp.Integer(1),
+           "sign": lambda a: sp.Integer(1 if a == (0, 1) else -1)}
+for count in (1, 2, 3, 4, 5):
+    records.append(cover_check(f"C2_{count}_finite_branches", [c2] * count, char_c2))
+
+g1 = tuple(i ^ 1 for i in range(4))
+g2 = tuple(i ^ 2 for i in range(4))
+chars_biquad = {}
+for bit in range(4):
+    chars_biquad[f"chi_{bit}"] = (
+        lambda a, bit=bit: sp.Integer((-1) ** ((bit & a[0]).bit_count())))
+records.append(cover_check("biquadratic", [g1, g2], chars_biquad))
+
+s = (1, 0, 2)
+t = (0, 2, 1)
+
+
+def parity(a):
+    return (-1) ** sum(a[i] > a[j] for i in range(len(a)) for j in range(i + 1, len(a)))
+
+
+chars_s3 = {"trivial": lambda a: sp.Integer(1),
+            "sign": lambda a: sp.Integer(parity(a)),
+            "standard": lambda a: sp.Integer(sum(a[i] == i for i in range(3)) - 1)}
+records.append(cover_check("S3_two_transpositions", [s, t], chars_s3))
+records.append(cover_check("S3_three_transpositions", [s, t, s], chars_s3))
+
+# Cyclic groups C_m: compare the general character multiplicity formula with
+# exact ranks of projection onto inertia-fixed vectors, represented as integers.
+cyclic = []
+for m in range(2, 13):
+    for proposed_exponents in ((1,), (1, 1), (1, 2)):
+        # A residue-zero inertia exponent is unramified, so it is not a
+        # branch value. Removing that unnecessary star arm leaves both
+        # homology character formulas unchanged.
+        branch_exponents = tuple(a % m for a in proposed_exponents if a % m)
+        infinity_exponent = -sum(branch_exponents) % m
+        entries = []
+        for character in range(m):
+            fixed = [int(character * a % m == 0) for a in branch_exponents]
+            fixed_infinity = int(character * infinity_exponent % m == 0)
+            affine = len(branch_exponents) - 1 - sum(fixed) + int(character == 0)
+            projective = affine - fixed_infinity + int(character == 0)
+            assert affine >= 0 and projective >= 0
+            entries.append((affine, projective))
+        assert sum(p for _, p in entries) % 2 == 0
+        cyclic.append({"degree": m, "finite_inertia_exponents": list(branch_exponents),
+                       "affine_multiplicities": [a for a, _ in entries],
+                       "projective_multiplicities": [p for _, p in entries]})
+
+# Exact rational certificates for the Laurent cover x=t^m+t^(-m).
+z = sp.symbols("t")
+rational_checks = 0
+for m in range(2, 7):
+    dx = m * z ** (m - 1) - m * z ** (-m - 1)
+    for k in range(-7, 8):
+        if k % m == 0:
+            continue
+        primitive = sp.Rational(m, k + m) * z ** (k + m) - sp.Rational(m, k - m) * z ** (k - m)
+        assert sp.expand(sp.diff(primitive, z) - z ** k * dx) == 0
+        rational_checks += 1
+
+# Polynomial inverse tower, checked directly as rational functions for 20 steps.
+current = z
+dx_cubic = 3 * z ** 2 + 1
+for depth in range(1, 21):
+    following = sp.integrate(sp.expand(current * dx_cubic), z)
+    assert sp.expand(sp.diff(following, z) - dx_cubic * current) == 0
+    current = following
+    rational_checks += 1
+
+result = {"arithmetic": "exact integer/rational symbolic arithmetic",
+          "graph_cases": records, "cyclic_cases": cyclic,
+          "rational_primitive_certificates_checked": rational_checks,
+          "failures": 0,
+          "scope": "Finite checks of characters and example certificates, not a formal verification of the general theorem."}
+target = Path(__file__).with_suffix(".json")
+target.write_text(json.dumps(result, indent=2) + "\n")
+print(json.dumps({"graph_cases": len(records), "cyclic_cases": len(cyclic),
+                  "deck_actions_checked": sum(r["deck_actions_checked"] for r in records),
+                  "rational_primitive_certificates_checked": rational_checks,
+                  "failures": 0}, indent=2))
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{integration_verify.py}
+"""Exact checks for the curve criterion and one-primitive residue theorem.
+
+Finite nondependence checks are decisive only because the proved 2d/d+1
+degree theorem supplies a finite stopping bound. This script checks examples,
+not the general algebraic-geometric proof.
+"""
+import json
+from pathlib import Path
+import sympy as s
+
+x, y, z, t = s.symbols('x y z t')
+results=[]
+
+def eq(name, lhs, rhs=0):
+    residual=s.cancel(lhs-rhs)
+    assert residual==0, (name,residual)
+    results.append({'name':name,'pass':True})
+
+def rank_over_k(fs, variable):
+    den=s.prod(s.denom(s.cancel(f)) for f in fs)
+    ps=[s.Poly(s.cancel(f*den),variable) for f in fs]
+    n=max(p.degree() for p in ps)
+    return s.Matrix([[p.nth(i) for p in ps] for i in range(n+1)]).rank()
+
+def orbit(name,r,v,var,bound,expected_rank):
+    delta=lambda f:s.cancel(s.diff(f,x)+v*s.diff(f,var))
+    fs=[r]
+    for j in range(bound): fs.append(delta(fs[-1]))
+    rank=rank_over_k(fs,var)
+    assert rank==expected_rank,(name,rank)
+    results.append({'name':name,'pass':True,'derivatives_tested':bound+1,
+                    'rank_over_Qx':rank,'proved_order_bound':bound})
+    return fs
+
+# Rational function fields are regular over k=Q(x), so bound d+1 applies.
+orbit('Laurent eigenfunctions: degree 3, exact order 2',y+y**-2,y,y,4,2)
+orbit('Ramified ambient field: r=y^2+y^4, exact order 3',y**2+y**4,1/(2*y),y,5,3)
+orbit('Ramification obstruction: r=y, delta y=1/(2y)',y,1/(2*y),y,2,3)
+orbit('Coupled pole: alpha=x+y, a=1/y, residue y',y,y/(1-y),y,2,3)
+orbit('Moving residue pole with delta y=0',1/(y-x),s.Integer(0),y,2,3)
+orbit('Pole relocation: delta y=y^2, r=1/y, exact order 2',1/y,y**2,y,2,2)
+
+# Parameter-dependent primitive fields from closed rational one-forms.
+for aa,bb,alpha,label in [
+    (1/(x+y),1/(x+y),x*y,'log(x+y), alpha=xy'),
+    (2*y/(x*x+y*y),2*x/(x*x+y*y),x+y*y,'log(x^2+y^2), alpha=x+y^2')]:
+    eq('Closed one-form: '+label,s.diff(aa,x),s.diff(bb,y))
+    ee=s.cancel(aa-s.diff(alpha,y))
+    nu=s.cancel(s.diff(alpha,x)-bb)
+    vv=s.cancel(nu/ee)
+    dd=lambda h:s.cancel(s.diff(h,x)+vv*s.diff(h,y))
+    eq('Parameter-dependent normalization: '+label,dd(ee)/ee+s.diff(vv,y))
+    cc=x+y*y
+    eq('Parameter-dependent simple residue transport: '+label,
+       (s.diff(cc,x)+s.diff(vv*cc,y))/ee,dd(cc/ee))
+
+aa=1/(x+y)
+kernel=1/t
+dxlog=lambda h:s.diff(h,x)+aa*s.diff(h,t)
+dylog=lambda h:s.diff(h,y)+aa*s.diff(h,t)
+eq('log(x+y) kernel telescope',dxlog(kernel),dylog(kernel))
+orbit('log(x^2+y^2) kernel nonexistence by degree-two bound',
+      (x*x+y*y)/(2*y),-x/y,y,3,4)
+
+# Coupled primitive pole with a rational part in the primitive derivative.
+for alpha, label in [(x*y,'xy'),(x+y*y,'x+y^2')]:
+    aa=1/y
+    ee=s.cancel(aa-s.diff(alpha,y))
+    vv=s.cancel(s.diff(alpha,x)/ee)
+    dd=lambda h:s.cancel(s.diff(h,x)+vv*s.diff(h,y))
+    eq('Normalization identity for alpha='+label,
+       dd(ee)/ee+s.diff(vv,y))
+    cc=x+y*y
+    raw=s.diff(cc,x)+s.diff(vv*cc,y)
+    eq('Simple residue transport for alpha='+label,raw/ee,dd(cc/ee))
+    # A double-pole term reduces to S(c)/p; test parameter transport.
+    SS=lambda h:s.cancel(s.diff(h/ee,y))
+    residue=s.cancel(SS(cc)/ee)
+    # Dx(c/p^2) = c_x/p^2 + 2 alpha_x c/p^3.
+    next_residue=s.cancel((SS(s.diff(cc,x))+SS(SS(2*s.diff(alpha,x)*cc))/2)/ee)
+    eq('Double residue transport for alpha='+label,next_residue,dd(residue))
+
+a=1+1/y
+dy=lambda f:s.cancel(s.diff(f,y)+a*s.diff(f,t))
+dx=lambda f:s.diff(f,x)
+p=t-x-y
+f=(1+y**-3)/p  # eta*(y+y^-2)/p, eta=1/y
+P=lambda f:s.cancel(dx(dx(f))+dx(f)-2*f)  # (Dx-1)(Dx+2)
+g=-((dx(y/p)+2*y/p)+(dx(y**-2/p)-y**-2/p))
+eq('Coupled positive example: exact order-two certificate',P(f),dy(g))
+
+# A genuinely algebraic coupled pole alpha^2=y+x. Work in k(z), y=z^2-x.
+yp=z*z-x
+a=1/yp
+dyz=lambda f:s.cancel(s.diff(f,z)/(2*z)+a*s.diff(f,t))
+dxz=lambda f:s.cancel(s.diff(f,x)+s.diff(f,z)/(2*z))
+eta=a-1/(2*z)
+f=(-t+2*z*z/yp)/(t*t-z*z)
+c1=s.cancel(s.limit((t-z)*f,t,z))
+eq('Algebraic pole normalized residue equals z',c1/eta,z)
+df=dxz(f)
+regular=s.cancel((t-z)**2*df)
+c2=s.cancel(regular.subs(t,z))
+c1new=s.cancel(s.diff(regular,t).subs(t,z))
+transport=s.cancel((c1new+s.diff(c2/eta,z)/(2*z))/eta)
+delta_z=1/(2*z-z*z+x)
+eq('Algebraic pole residue transport',transport,delta_z)
+vv=s.cancel((1/(2*z))/eta)
+delta_coeff=lambda h:s.cancel(dxz(h)+vv*dyz(h))
+eq('Algebraic pole normalization identity via implicit derivatives',
+   delta_coeff(eta)/eta+s.diff(vv,z)/(2*z))
+orbit('Algebraic coupled pole obstruction, normalized residue z',z,delta_z,z,2,3)
+
+q=t*t-y-x
+alog=1/y
+dylog=lambda f:s.cancel(s.diff(f,y)+alog*s.diff(f,t))
+f_log=dylog(q)/q
+eq('Algebraic coupled positive example: logarithmic derivative',s.diff(f_log,x),dylog(-1/q))
+
+# Polynomial remainder is treated by three rational-CT induction steps.
+dy0=lambda f:s.cancel(s.diff(f,y)+s.diff(f,t)/y)
+P1=lambda f:s.cancel(s.diff(f,x)+f/x)
+P2=lambda f:s.cancel(s.diff(f,x)+2*f/x)
+H=t*t/(x+y)
+g2=1/(x+y)
+R1=s.cancel(s.diff(H,x)-dy0(g2*t*t))
+eq('Polynomial induction first remainder',R1,-2*t/(y*(x+y)))
+g1=2/(x*(x+y))
+R0=s.cancel(P1(R1)-dy0(g1*t))
+eq('Polynomial induction second remainder',R0,-2/(x*y*(x+y)))
+g0=2/(x*x*(x+y))
+eq('Polynomial induction final rational identity',P2(R0),dy0(g0))
+cert=s.cancel(P2(P1(g2*t*t))+P2(g1*t)+g0)
+eq('Polynomial induction combined order-three telescope',P2(P1(s.diff(H,x))),dy0(cert))
+
+out=Path(__file__).with_name('integration_verification.json')
+out.write_text(json.dumps({'all_passed':True,'checks':results},indent=2))
+print(json.dumps({'all_passed':True,'number_of_checks':len(results),'result_file':str(out)}))
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{beta_problem3_certify.py}
+"""Rigorous compact positivity certificate for Qi--Lim--Nantomah Problem 3.
+
+All intervals have rational endpoints.  A comparison succeeds only when Arb
+certifies the sign for the entire interval; there are no floating grid tests.
+"""
+from flint import arb, fmpq, ctx
+from math import factorial
+
+ctx.prec = 192
+
+def iv(a, b):
+    return arb(a).union(arb(b))
+
+def pg(n, x):
+    if n == 0:
+        return x.digamma()
+    return (-1)**(n+1) * factorial(n) * arb(n+1).zeta(x)
+
+def data(x):
+    z, u, v, w = [pg(k, x) for k in range(4)]
+    Z, U, V = [pg(k, 1/x) for k in range(3)]
+    H = z+x*u
+    Hp = 2*u+x*v
+    Hpp = 3*v+x*w
+    return z,u,v,w,Z,U,V,H,Hp,Hpp
+
+def cleared_log_convexity(x):
+    z,u,v,w,Z,U,V,H,Hp,Hpp = data(x)
+    return (x*x*((x*Hp+x*x*Hpp)*H-x*x*Hp*Hp)*z*z*Z*Z
+            -x*x*((x*u+x*x*v)*z-x*x*u*u)*H*H*Z*Z
+            -((x*U+V)*Z-U*U)*H*H*z*z)
+
+def B_and_critical(x):
+    z,u,v,w,Z,U,V,H,Hp,Hpp = data(x)
+    P=z*Z
+    Pp=u*Z-z*U/(x*x)
+    ratio=(P/H).log()
+    B=ratio/x.log()
+    # sign of B', denominator x*(log x)^2 positive
+    C=x*x.log()*(Pp/P-Hp/H)-ratio
+    return B,C
+
+def prove_positive(a,b):
+    stack=[(fmpq(a),fmpq(b),0)]
+    count=0
+    certified=[]
+    while stack:
+        lo,hi,depth=stack.pop()
+        val=cleared_log_convexity(iv(lo,hi))
+        if val>0:
+            count+=1
+            certified.append((str(lo),str(hi),str(val)))
+            continue
+        if depth>=30:
+            raise ArithmeticError((lo,hi,val))
+        mid=(lo+hi)/2
+        stack.extend([(lo,mid,depth+1),(mid,hi,depth+1)])
+    print('CERTIFIED cleared log-convexity positive on [2/3,1]; pieces =',count)
+    from pathlib import Path
+    import json
+    Path(__file__).with_name('beta_problem3_boxes.json').write_text(json.dumps(certified,indent=2)+'\n')
+
+if __name__=='__main__':
+    prove_positive(fmpq(2,3),fmpq(1))
+    lo=fmpq(76859975974774087,10**17)
+    hi=fmpq(76859975974774089,10**17)
+    blo,clo=B_and_critical(arb(lo))
+    bhi,chi=B_and_critical(arb(hi))
+    assert clo<0 and chi>0
+    print('CERTIFIED critical point in',lo,hi)
+    B,_=B_and_critical(iv(lo,hi))
+    assert B > arb(fmpq(59728368638449725,10**16))
+    assert B < arb(fmpq(59728368638450275,10**16))
+    print('CERTIFIED threshold enclosure =',B)
+    for a,b in [(fmpq(4,3),fmpq(3,2))]:
+        assert pg(0,arb(a))<0 and pg(0,arb(b))>0
+    print('CERTIFIED unique digamma zero in (4/3,3/2)')
+\end{filecontents*}
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm]{geometry}
+\usepackage{booktabs,longtable,array,enumitem,xcolor,listings,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{bookmark}
+\hypersetup{pdftitle={Finite Criteria for Integration Stability and a Sharp Polygamma Parameter Problem},pdfauthor={Keio},pdfsubject={Research manuscript with proofs and reproducible verification programs}}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{1em}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Keio}
+\fancyhead[R]{\small Integration stability and polygamma parameters}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\N}{\mathbb N}
+\DeclareMathOperator{\Stab}{Stab}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Gal}{Gal}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\Tr}{Tr}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,breaklines=true,
+columns=fullflexible,keepspaces=true,showstringspaces=false,
+frame=single,rulecolor=\color{black!20},numbers=left,numberstyle=\tiny\color{black!50},
+xleftmargin=1.5em,framexleftmargin=1em}
+\title{Finite Criteria for Integration Stability\\
+and a Sharp Polygamma Parameter Problem}
+\author{Keio\thanks{Research development, independent internal mathematical audits,
+and manuscript preparation with ChatGPT. No external peer review or
+proof-assistant certification is claimed.}}
+\date{2 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We study three questions in symbolic integration and special functions.
+First, finite monodromy representations describe the algebraic functions
+that admit indefinitely repeated algebraic or elementary integration.
+Affine homology controls algebraic primitives, while projective homology
+controls elementary primitives. The proof combines the existing
+Gavrilov--Pakovich moment theorem with finite group algebras, valuations,
+and the geometry of divisors. Second, for a differential function field
+of transcendence degree one, a function of field degree $d$ that is
+D-finite has order at most $2d$. Normalized pole residues turn this into
+a terminating existence test for creative telescoping in one primitive
+extension. Third, we determine the complete admissible parameter interval
+in Open Problem~3 of Qi--Lim--Nantomah (2025): it is
+$[-1,\beta_*)$, where $\beta_*\approx5.972836863845$ is specified by a
+unique, rigorously isolated critical point. The latter proof includes one
+finite ball-arithmetic certificate. The sources and scope of each claim
+are explicit. Neither unrestricted Chen--Kauers Problem~6 nor Problem~8
+is claimed solved; this manuscript is not a report of one hundred
+conjecture closures. Historical priority and a new foundational method
+are not certified.
+\end{abstract}
+
+\section{Problems, scope, and verification}
+This manuscript records the results that survived proof checks in a
+research round drawing on the Verifiable Mathematical Reasoning Corpus,
+at commit\par\noindent\texttt{ecd87de3348dcb706a76bb12fde722d7a348a012}\par\noindent
+(2 November 2026), and on the primary references below. Existing corpus
+claims are not recounted as new results. An infinite family of examples
+is not counted as an infinite family of independently posed conjectures.
+
+\begin{center}\small
+\begin{tabular}{p{0.29\linewidth}p{0.62\linewidth}}
+\toprule
+Historical target & Result and scope \\
+\midrule
+Chen (2022), algebraic stability question &
+A representation-theoretic classification for arbitrary algebraic
+function fields, extending the earlier polynomial-inverse counterexamples.\\[4pt]
+Chen--Kauers Problem 8 &
+Classification for algebraic inputs, with both algebraic and elementary
+primitive requirements. General transcendental elementary inputs remain
+outside the theorem.\\[4pt]
+Chen--Kauers Problem 6 &
+A full existence test in one rational primitive extension with arbitrary
+coupled algebraic poles. General Liouvillian and difference towers are
+not resolved.\\[4pt]
+Qi--Lim--Nantomah Open Problem 3 &
+The original strict inequality is solved for all real parameters and
+all positive arguments, including both parameter endpoints.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The proof methods use established mathematical tools. In particular,
+the moment theorem, Liouville's theorem, normalization of derivations,
+Riemann--Roch, and rigorous ball arithmetic are credited to prior work.
+A targeted search did not locate identical versions of the results
+stated here, but this is not a certification of historical firstness.
+Other problems from the same polygamma article already have public
+solutions and are explicitly excluded from new-result claims.
+
+The single source contains the verification programs as
+\texttt{filecontents*} blocks. Ordinary compilation extracts them;
+no shell escape is required. The programs are supplementary exact
+checks except for the explicitly identified ball-arithmetic lemma,
+whose finite computation is part of the proof. They do not constitute
+a formal proof-assistant development.
+
+\tableofcontents
+\clearpage
+% Fragment. Uses shared L,G,Y,S,A,D and names its projector e_{\mathrm{aff}}.
+% Labels are prefixed aff:. Bibliography: Chen2022, GP2014, SSS2025.
+\section{Algebraic primitive towers and affine homology}
+
+Put $D=d/dx$. An algebraic function $f$ is \emph{algebraically stable} if there
+are algebraic functions $f_0=f,f_1,f_2,\ldots$ with $Df_{j+1}=f_j$.
+Chen asks for a description of this class in Section~5 of
+\cite{Chen2022}. The condition is stronger than the elementary-integrability
+condition in Chen--Kauers Problem~8: logarithms are not allowed in the present
+primitive tower.
+
+Let $\pi:Y\to\mathbb P^1_x$ be a finite connected Galois cover and write
+\[
+ L=\C(Y),\qquad G=\operatorname{Gal}(L/\C(x)),\qquad
+ S=\pi^{-1}(\infty),\qquad A=\mathcal O(Y\setminus S).
+\]
+Thus $A$ is the integral closure of $\C[x]$ in $L$. Deck transformations act on
+functions by $g\cdot q=q\circ g^{-1}$; they preserve $A$ and commute with $D$.
+Let $H=H_1(Y\setminus S,\C)$. For $V\in\operatorname{Irr}(G)$ let $e_V\in\C[G]$ be the
+central idempotent of its simple block, and define
+\begin{equation}\label{aff:eq:good}
+ e_{\mathrm{aff}}=\sum_{V\not\subset H}e_V.
+\end{equation}
+Here $V\not\subset H$ means that its multiplicity is zero; the projector
+can include nontrivial representations as well as the trivial one.
+
+\begin{theorem}[Structural classification]\label{aff:thm:main}
+With the notation above,
+\begin{align}
+ A\cap\operatorname{Stab}(D,L)&=e_{\mathrm{aff}}A,\label{aff:eq:regular-class}\\
+ \operatorname{Stab}(D,L)&=\bigcup_{N\ge0}D^N(e_{\mathrm{aff}}A).\label{aff:eq:full-class}
+\end{align}
+The union is increasing. Allowing primitives in an algebraic extension of $L$
+does not enlarge either class. If the finite branch values have inertia groups
+$I_1,\ldots,I_r$, then
+\begin{equation}\label{aff:eq:character-formula}
+ [H:V]=(r-1)\dim V-\sum_{i=1}^r\dim V^{I_i}
+              +\begin{cases}1&V=\mathbf1,\\0&V\ne\mathbf1.\end{cases}
+\end{equation}
+In particular the trivial representation is always permitted.
+\end{theorem}
+
+This is a finite representation-theoretic description, rather than a condition
+requiring infinitely many integrations. Its main external input is
+\cite[Theorem~2.1]{GP2014}; that moment theorem is credited throughout. The
+structural deduction is the identification of all cycle conditions with a
+two-sided ideal, followed by pole removal. We do not assert that this is the
+first formulation of the consequence in the literature.
+
+\subsection{Primitives, moments, and descent}
+
+\begin{lemma}\label{aff:lem:stability}
+Let $F$ be a differential field with constants $\C$ and $Dx=1$.
+An element $q\in F$ is stable if and only if every $x^nq$, $n\ge0$, has a
+primitive in $F$. Moreover $q$ is stable if and only if $Dq$ is stable.
+\end{lemma}
+\begin{proof}
+Repeated integration by parts proves the forward implication. Conversely,
+if $DH_j=x^jq$ for $0\le j<k$, then
+\[
+ F_k=\frac1{(k-1)!}\sum_{j=0}^{k-1}(-1)^j\binom{k-1}{j}
+                 x^{k-1-j}H_j
+ \quad\text{satisfies}\quad D^kF_k=q.
+\]
+These arbitrarily deep primitives give a coherent tower. Indeed,
+$\ker D^k=\C[x]_{<k}$, by induction using $Dx=1$; discrepancies between
+chosen levels can therefore be corrected by polynomial primitives.
+Differentiation preserves stability. If $Dq$ is stable, a stable primitive
+of $Dq$ differs from $q$ by a constant, which is also stable.
+\end{proof}
+
+\begin{lemma}[Trace descent]\label{aff:lem:trace}
+If $f\in L$ has an algebraic $N$th primitive, it has one in $L$.
+Algebraic stability is consequently unchanged by finite algebraic extension.
+\end{lemma}
+\begin{proof}
+The primitive $g$ belongs to some finite extension $E/L$. Unique extension of
+derivations in characteristic zero implies that differentiation commutes with
+field trace. Thus
+\[
+ D^N\left(\frac{\operatorname{Tr}_{E/L}(g)}{[E:L]}\right)=f.
+\]
+Apply this at every depth and use the polynomial-kernel correction from
+Lemma~\ref{aff:lem:stability}.
+\end{proof}
+
+For $q\in A$, all differentials $x^nq\,dx$ have poles only in $S$. Such a
+differential is exact in $L$ if and only if all its periods on $Y\setminus S$
+vanish. Vanishing periods make path integration single-valued, and the
+small-loop periods give zero residues. Local primitives then extend
+meromorphically across $S$, producing a global meromorphic function on $Y$.
+Consequently
+\begin{equation}\label{aff:eq:periods}
+ q\in A\cap\operatorname{Stab}(D,L)
+ \quad\Longleftrightarrow\quad
+ \int_\gamma x^nq\,dx=0
+ \quad(n\ge0,\ \gamma\in H_1(Y\setminus S,\C)).
+\end{equation}
+
+\subsection{The moment theorem and the group-algebra ideal}
+
+Choose an embedded star in the $x$-plane joining a regular value to each finite
+branch value, and let $\Gamma$ be its inverse image. This graph is a deformation
+retract of $Y\setminus S$. Orient edges from lifts of the center toward lifts
+of branch values. For each branch-value label $i$, choose a reference edge and
+write its translates as $e_{i,h}=h e_{i,1}$, $h\in G$.
+
+We use the following specialization of the established moment theorem
+\cite[Theorem~2.1 and the subsequent edge-count formula]{GP2014}.
+If $\gamma$ is a graph cycle with edge coefficients $c_{i,h}$, then, for $q\in A$,
+all moments $\int_\gamma x^nq\,dx$ vanish if and only if
+\begin{equation}\label{aff:eq:gp}
+ \sum_{h\in G}c_{i,h}\,q(hp(z))=0
+ \quad\text{for every label }i.
+\end{equation}
+Here $p(z)$ is a reference inverse branch for the chosen arm. The hypotheses
+hold because $q\,dx$ has no poles away from $S$. The same criterion holds for
+complex cycles by the Cauchy-integral argument in the cited proof: the
+generating function is a sum of Cauchy integrals whose densities are precisely
+these branch sums with the complex edge coefficients. Vanishing moments make
+that function zero near infinity, and its jump across each arm forces the
+corresponding density to vanish. The reverse implication follows by summing
+the arm integrals. Thus the complex-cycle equivalence does not rely on
+extending an integral-cycle equivalence by linearity alone.
+
+Define
+\[
+ u_{\gamma,i}=\sum_{h\in G}c_{i,h}h^{-1}\in\C[G],\qquad
+ U=\operatorname{span}_{\C}\{u_{\gamma,i}\},\qquad J=\C[G]U.
+\]
+The inverse in this formula is essential: $q(hp)=(h^{-1}\cdot q)(p)$.
+Translating a cycle by $a\in G$ gives
+\begin{equation}\label{aff:eq:right-ideal}
+ u_{a\gamma,i}=u_{\gamma,i}a^{-1}.
+\end{equation}
+Thus $U$ is a right ideal and $J$ is two-sided. Conditions \eqref{aff:eq:gp} are
+exactly $Uq=0$. Applying $a\in G$ to any identity $uq=0$ gives $(au)q=0$;
+therefore
+\begin{equation}\label{aff:eq:ideal-condition}
+ Uq=0\quad\Longleftrightarrow\quad Jq=0.
+\end{equation}
+
+\begin{lemma}\label{aff:lem:blocks}
+The ideal $J$ is the sum of the simple matrix blocks of $\C[G]$ indexed by
+the irreducible types occurring in $H$.
+\end{lemma}
+\begin{proof}
+Every edge orbit is regular, so
+$C_1(\Gamma,\C)=\bigoplus_{i=1}^r\C[G]$. As a graph has no two-chains,
+$H=\ker\partial$ embeds in this direct sum. Its coordinate projections have
+exactly its collective irreducible support: each image is a quotient of the
+semisimple module $H$, and a nonzero isotypic component must have a nonzero
+coordinate projection because the embedding is injective.
+
+Inversion in $\C[G]$ changes left modules into dual right modules. Hence the
+right-ideal support of $U$ is dual to the support just described. A two-sided
+ideal generated by a nonzero part of a simple matrix block contains that
+entire block and no block absent from the generators. Finally $H$ has an
+integral, hence real, character; its support is closed under duality. This
+identifies the blocks of $J$ as claimed.
+\end{proof}
+
+The annihilator of these blocks on $L$ is $e_{\mathrm{aff}}L$, and its intersection with
+$A$ is $e_{\mathrm{aff}}A$. Equations \eqref{aff:eq:periods}--\eqref{aff:eq:ideal-condition}
+and Lemma~\ref{aff:lem:blocks} prove \eqref{aff:eq:regular-class}.
+
+The character formula follows from the connected-graph sequence
+\[
+ 0\longrightarrow H\longrightarrow C_1(\Gamma)
+  \longrightarrow C_0(\Gamma)\longrightarrow\C\longrightarrow0.
+\]
+The center vertices form a regular orbit; those above branch value $i$ form
+$G/I_i$. Thus
+\[
+ [H]=(r-1)[\C[G]]-\sum_i[\C[G/I_i]]+[\mathbf1].
+\]
+Taking multiplicities and using Frobenius reciprocity proves
+\eqref{aff:eq:character-formula}. It also covers the trivial degree-one cover,
+where $r=0$ and $G$ is trivial.
+
+\subsection{Removing finite poles and a finite decision test}
+
+For nonzero $f\in L$ and $P\notin S$, set
+\[
+ e_P=\operatorname{ord}_P(x-x(P)),\qquad m_P=\max(0,-\operatorname{ord}_Pf),\qquad
+ N_f=\max_{P\notin S}\left\lceil\frac{m_P}{e_P}\right\rceil,
+\]
+with an empty maximum equal to zero. Only the finitely many poles of $f$
+contribute.
+
+\begin{lemma}[Pole removal]\label{aff:lem:poles}
+If $D^{N_f}q=f$ with $q\in L$, then $q\in A$.
+\end{lemma}
+\begin{proof}
+At a finite point choose a local parameter $t$ with
+$x-x(P)=t^{e_P}$. Then
+$D=(e_Pt^{e_P-1})^{-1}d/dt$. A pole of order $k>0$ of $q$ therefore gives
+a pole of order exactly $k+N_fe_P$ of $f$, with a nonzero leading
+coefficient. But $m_P\le N_fe_P$, a contradiction.
+\end{proof}
+
+If $f$ is stable, trace descent supplies such a $q$. It is itself stable:
+given $j$, choose $h$ with $D^{N_f+j}h=f$. Then
+$D^jh-q\in\ker D^{N_f}=\C[x]_{<N_f}$, and subtracting a polynomial
+$j$th primitive from $h$ gives a $j$th primitive of $q$.
+Lemma~\ref{aff:lem:poles} and \eqref{aff:eq:regular-class} imply $q\in e_{\mathrm{aff}}A$.
+The converse in \eqref{aff:eq:full-class} follows because derivatives preserve
+stability. A primitive of a stable regular element has no finite pole, again
+by the local pole calculation; hence it belongs to $e_{\mathrm{aff}}A$. This proves that
+the union is increasing and completes Theorem~\ref{aff:thm:main}.
+
+\begin{theorem}[Finite Riemann--Roch certificate]\label{aff:thm:finite}
+For nonzero $f\in L$, set $N=N_f$. At $P\in S$ write $e_P=-\operatorname{ord}_Px$ and put
+\[
+ B_P=\max\{Ne_P-\operatorname{ord}_Pf,(N-1)e_P,0\},\qquad
+ E_f=\sum_{P\in S}B_PP.
+\]
+Then $f$ is algebraically stable if and only if the finite-dimensional linear
+system
+\begin{equation}\label{aff:eq:finite-system}
+ q\in\mathcal L(E_f),\qquad (1-e_{\mathrm{aff}})q=0,\qquad D^Nq=f
+\end{equation}
+has a solution. The zero function is stable separately.
+\end{theorem}
+\begin{proof}
+It remains only to bound the poles at infinity of a primitive $q$. Choose
+a local parameter $z$ with $x=z^{-e_P}$, so
+$D=-e_P^{-1}z^{e_P+1}d/dz$. On a Laurent monomial $z^{-k}$, $D^N$ shifts
+the exponent by $Ne_P$ and has nonzero coefficient unless
+$k\in\{0,e_P,\ldots,(N-1)e_P\}$ (the exceptional set is empty when $N=0$).
+Distinct exponents remain distinct.
+If a leading pole is not exceptional, its order is
+$k=Ne_P-\operatorname{ord}_Pf$; if it is exceptional, $k\le(N-1)e_P$.
+This proves the bound. Necessity and sufficiency now follow from
+Theorem~\ref{aff:thm:main} and Lemma~\ref{aff:lem:poles}.
+\end{proof}
+
+For an effectively presented algebraic function, a finite procedure is thus:
+construct a finite Galois normal closure and its group action; compute the
+finite inertia data and \eqref{aff:eq:character-formula}; compute the divisor of
+$f$, the bound $E_f$, and a basis of $\mathcal L(E_f)$; then solve
+\eqref{aff:eq:finite-system} by linear algebra. Equality in the function field
+reduces to coefficient equality in a finite algebraic basis over $\C(x)$.
+This is a mathematical finite procedure with the usual effective curve and
+constant-field operations supplied. It is not a computability claim for
+arbitrary unnamed complex constants.
+
+For a non-Galois field $K=\C(x,f)$, apply the procedure in a normal closure
+$L$. A successful certificate gives algebraic stability; conversely stability
+in the algebraic closure descends to $K$ and hence to $L$ by
+Lemma~\ref{aff:lem:trace}. No extra Galois hypothesis on the input is required.
+
+\subsection{Examples and consistency checks}
+
+\paragraph{Cyclic powers.}
+For $x=t^m$ every irreducible type is absent from affine homology. Therefore
+\eqref{aff:eq:full-class} gives
+\[
+ \operatorname{Stab}(D,\C(t))=\C[x]\oplus
+       \bigoplus_{i=1}^{m-1}\C[x,x^{-1}]t^i.
+\]
+Indeed $D^Nt^k$ is a constant multiple of $t^{k-Nm}$; the multiple vanishes
+exactly when a polynomial in $x$ is differentiated too often. This agrees
+with the existing classification in \cite[Proposition~5.3(iii)]{SSS2025}.
+
+\paragraph{A biquadratic cover.}
+Let $s^2=x$ and $t^2=x-1$. The group is $C_2\times C_2$ and the two finite
+inertia groups flip $s$ and $t$, respectively. Formula
+\eqref{aff:eq:character-formula} assigns multiplicity zero to the trivial
+character and to the characters of $s$ and $t$, and multiplicity one to
+their product. Thus $s+t$ is stable, while $st=\sqrt{x(x-1)}$ is not
+algebraically stable. Explicitly,
+\[
+ D\left(\tfrac23s^3+\tfrac23t^3\right)=s+t,
+\]
+and continued integration stays algebraic term by term. The latter product
+is nevertheless elementary-stable, illustrating the distinction in scope.
+
+\paragraph{Hyperelliptic fields.}
+For $y^2=P(x)$ with $P$ squarefree of degree $d\ge2$, the sign representation
+has affine-homology multiplicity $d-1$ and is forbidden. The only permitted
+regular functions are $\C[x]$. Since their derivatives remain polynomials,
+\[
+ \operatorname{Stab}(D,\C(x,y))=\C[x].
+\]
+This includes positive-genus examples and is a full statement about the
+function field, not merely its regular coordinate ring.
+
+\paragraph{The cubic normal closure.}
+For $x=u^3+u$, the normal closure has group $S_3$ and two transposition inertia
+groups. The multiplicities of the trivial, standard and sign representations
+are respectively $0,0,1$. The standard component is allowed, in agreement
+with the polynomial primitive tower for the cubic inverse. This permits
+nonabelian examples excluded by the specific radical-sum description proposed
+in \cite{Chen2022}.
+
+\paragraph{A Laurent cover.}
+Let $x=t^m+t^{-m}$, $m\ge2$. The Galois group is dihedral, the covering curve
+is $\mathbb P^1_t$, and $S=\{0,\infty\}$. Affine homology is one-dimensional:
+rotations act trivially and inversion $t\mapsto t^{-1}$ acts by minus one.
+Thus, with $A=\C[t,t^{-1}]$,
+\[
+ A\cap\operatorname{Stab}(D,\C(t))
+   =\C[x]+\operatorname{span}_{\C}\{t^k:k\in\Z,\ m\nmid k\}.
+\]
+The invariant symmetric terms $t^{jm}+t^{-jm}$ are polynomials in $x$.
+For $m\nmid k$ the rule
+\[
+ \int t^k\,dx=
+  \frac{m}{k+m}t^{k+m}-\frac{m}{k-m}t^{k-m}
+\]
+never reaches a zero denominator under iteration. The forbidden rotation-
+invariant antisymmetric part produces logarithmic obstructions. In particular
+$t^m+t^{-m}=x$ is stable, while $t^m-t^{-m}$ is not algebraically stable.
+
+\begin{corollary}[The exact abelian scope of the proposed class]
+\label{aff:cor:abelian-scope}
+Inside the maximal abelian extension of $\C(x)$, the algebraically stable
+elements are exactly the finite sums
+\[
+ \sum_i p_i(x)(x-c_i)^{\alpha_i},\qquad
+ p_i\in\C[x],\quad c_i\in\C,\quad
+ \alpha_i\in\Q\setminus\{-1,-2,\ldots\}.
+\]
+Thus Chen's proposed description is correct with this abelian restriction.
+\end{corollary}
+\begin{proof}
+Work in a finite abelian Galois extension containing the element. For a
+nontrivial character $\chi$, let $q_\chi$ count the finite inertia groups on
+which it is nontrivial. Formula~\eqref{aff:eq:character-formula} gives
+$[H:\chi]=q_\chi-1$. Hence a permitted nontrivial character is ramified at
+exactly one finite value $c$. The quotient by $\ker\chi$ is cyclic and is
+ramified only at $c$ and infinity. Kummer theory makes its field
+$\C((x-c)^{1/m})$: in a Kummer equation $y^m=R(x)$, every other finite
+valuation of $R$ is divisible by $m$ and can be removed by an $m$th power;
+the remaining exponent at $c$ is coprime to $m$.
+
+The regular $\chi$-component consists of polynomial multiples of
+$(x-c)^{a/m}$ with $0<a<m$, and its derivative closure consists of finite
+sums of noninteger rational powers centered at $c$. The trivial component
+contributes $\C[x]$. Theorem~\ref{aff:thm:main} proves necessity. Conversely,
+each displayed term admits algebraic primitives at every depth, and a finite
+collection of the indicated radicals lies in a finite abelian Kummer
+compositum. Trace descent ensures that allowing primitives outside that
+compositum does not change the necessity argument.
+\end{proof}
+
+\subsection{Relation to earlier work and remaining limits}
+
+The all-cycle moment criterion is already provided by Gavrilov--Pakovich
+\cite{GP2014}. The present deduction organizes it into central representation
+blocks and combines that organization with an explicit finite-pole and
+Riemann--Roch reduction. Sahu--Seiss--Srinivasan \cite{SSS2025} study finite
+elementary integration and classify several specific differential fields,
+including the cyclic radical case checked above. Their stated results do not
+give the arbitrary finite-cover representation criterion used here.
+
+The conclusion concerns Chen's algebraic-stability classification question.
+It does not establish a classification of all elementary-stable elementary
+functions, or even invoke such a classification. No assertion is made that
+every permitted representation is generated by genus-zero polynomial
+subcovers; that stronger compositional reformulation would need another proof.
+The characterization is one result related to a pre-existing question, not
+many separate conjecture resolutions. A literature search cannot certify
+absence of prior formulations, so no historical firstness claim is included.
+
+
+\section{Elementary stability of arbitrary algebraic inputs}
+\label{sec:elementary-monodromy}
+
+We now allow elementary primitives, while retaining algebraic inputs.  This
+distinction changes the controlling representation from affine to projective
+homology.  The result below does not classify transcendental elementary
+functions and hence does not settle the full scope of Problem~8
+of~\cite{CK2016}.
+
+Retain the notation $L=\C(Y)$, $G$, $x$, $S=x^{-1}(\infty)$,
+$A=\mathcal O(Y\setminus S)$, and $D=d/dx$ for a connected finite Galois
+cover $x:Y\to\mathbf P^1$.  A function is \emph{elementary-stable} if it has
+an elementary primitive of every order.  Let
+\[
+ H_{\mathrm{proj}}=H_1(Y,\C),\qquad
+ e_{\mathrm{proj}}
+   =\sum_{\rho\notin\operatorname{supp}H_{\mathrm{proj}}}e_\rho,
+\]
+where $e_\rho$ is the central primitive idempotent of $\C[G]$ associated
+with an irreducible representation $\rho$.  The set of summands is invariant
+under Galois conjugacy of characters, because $H_1(Y,\Q)$ is a rational
+representation.  Thus $e_{\mathrm{proj}}\in\Q[G]$.  It is also fixed by
+the involution $g\mapsto g^{-1}$, since projective homology is self-dual.
+We use the action $(g f)(P)=f(g^{-1}P)$ on functions, and the corresponding
+action on differentials.  Divisors and homology carry the deck action.
+
+\begin{theorem}[Projective-homology criterion]
+\label{thm:elementary-projective}
+The elementary-stable functions in $L$ are precisely
+\[
+ \operatorname{Stab}_{\mathrm{elem}}(L)=e_{\mathrm{proj}}L.
+\]
+If $K=L^J$ is an intermediate field, then
+\[
+ \operatorname{Stab}_{\mathrm{elem}}(K)
+   =e_{\mathrm{proj}}L\cap K=e_{\mathrm{proj}}K.
+\]
+In particular, the stable set is a $\C(x)$-vector space, invariant under $D$.
+\end{theorem}
+
+Elementary stability is equivalent to elementary integrability of every
+moment $x^n f$, $n\geq0$.  In one direction, integrate by parts using an
+$(n+1)$st primitive of $f$.  In the other direction, if $DI_j=x^j f$ for
+$0\leq j<N$, then
+\[
+ \frac1{(N-1)!}\sum_{j=0}^{N-1}
+    (-1)^j\binom{N-1}{j}x^{N-1-j}I_j
+\]
+is an $N$th primitive of $f$.  Finite sums and products by polynomials
+therefore preserve stability.  Initially independent choices for the
+different orders can be adjusted to a compatible tower.  Indeed,
+$\ker D^N=\C[x]_{<N}$ in an elementary closure with constant field $\C$;
+the difference between a chosen $N$th primitive and the derivative of an
+$(N+1)$st primitive is such a polynomial and can be removed by a
+polynomial correction.
+
+We first prove the sufficient condition in a stronger form.
+
+\begin{lemma}[Differentials supported on absent representations]
+\label{lem:good-differential}
+Every meromorphic differential $\omega$ on $Y$ satisfying
+$e_{\mathrm{proj}}\omega=\omega$ has an elementary primitive.
+\end{lemma}
+
+\begin{proof}
+Write $e=e_{\mathrm{proj}}$, and choose a finite $G$-invariant set $T$
+containing the poles of $\omega$.  Its residue vector $r$ belongs to
+$\operatorname{Div}^0_T\otimes_{\Z}\C$, by the residue theorem, and
+$er=r$ by equivariance.  Here $\operatorname{Div}^0_T$ is the lattice of
+degree-zero divisors supported on $T$.
+
+Choose a positive integer $M$ such that $Me\in\Z[G]$.  This group-ring
+element induces an endomorphism of $\operatorname{Jac}(Y)$, with zero
+action on $H_1(\operatorname{Jac}(Y),\Z)\simeq H_1(Y,\Z)$.  It is
+therefore the zero endomorphism: its complex-linear lift to the universal
+cover vanishes on the full period lattice.  Consequently, for every
+$B\in\operatorname{Div}^0_T$, the integral divisor $MeB$ has trivial
+Jacobian class and is principal.
+
+Take a lattice basis $B_1,\ldots,B_a$ of $\operatorname{Div}^0_T$ and
+write $r=\sum_j c_j eB_j$.  Choose $u_j\in L^*$ with
+$\operatorname{div}(u_j)=MeB_j$.  The logarithmic differential
+\[
+ \eta=\frac1M\sum_j c_j\frac{du_j}{u_j}
+\]
+has residue vector $r$.  The differential $e\eta$ remains a finite
+$\C$-linear combination of logarithmic derivatives, is fixed by $e$, and
+has residue vector $er=r$.  Thus $\theta=\omega-e\eta$ has zero
+residues and is fixed by $e$.
+
+The periods of a differential with zero residues define a functional on
+$H_1(Y,\C)$.  The period map is $G$-equivariant, and its target has zero
+$e$-part.  Hence every period of $\theta$ is zero.  Path integration now
+gives a single-valued primitive; zero residues ensure that its local
+Laurent expansions are meromorphic at the poles.  Therefore $\theta=da$
+for some $a\in L$.  The identity $\omega=da+e\eta$ is an elementary
+primitive certificate.
+\end{proof}
+
+To prove necessity, we require periods that annihilate every allowed
+logarithmic term.  Put $H_{\mathrm{aff}}=H_1(Y\setminus S,\C)$ and
+$U_S=A^*/\C^*$.  The divisor map embeds $U_S$ into
+$\operatorname{Div}^0_S$, so $U_S$ is free abelian of finite rank.  Define
+\[
+ \ell_u(\gamma)=\frac1{2\pi i}\int_\gamma\frac{du}{u},\qquad
+ W_S=\bigcap_{u\in A^*}\ker\ell_u\subseteq H_{\mathrm{aff}}.
+\]
+The functionals $\ell_u$ are integer-valued on integral homology.
+Consequently $W_S$ is a rational $G$-submodule; its irreducible support
+is closed under duality.
+
+\begin{lemma}[Unit-adjusted periods]
+\label{lem:unit-periods}
+\begin{enumerate}
+\item Every elementary-integrable meromorphic differential with poles only
+in $S$ has zero periods on $W_S$.
+\item The natural map $W_S\to H_{\mathrm{proj}}$ is surjective.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For the first assertion, Liouville's theorem
+(as stated in~\cite[Theorem~3.2]{Chen2022}) and trace from a finite
+algebraic extension give
+\[
+ \omega=da+\sum_i c_i\frac{db_i}{b_i},\qquad
+ a\in L,\quad b_i\in L^*,\quad c_i\in\C.
+\]
+Trace descends the exact term, while logarithmic derivatives descend by
+norms.  The function $a$ has no pole outside $S$: such a pole would give
+$da$ a pole of order at least two, whereas logarithmic derivatives have
+at most simple poles.
+
+Choose a $\Q$-linearly independent basis $\beta_1,\ldots,\beta_b$ of
+the $\Q$-span of the $c_i$.  Clearing denominators and taking products
+of the $b_i$ rewrites the logarithmic sum as
+\[
+ \frac1N\sum_{j=1}^b\beta_j\frac{dv_j}{v_j},\qquad v_j\in L^*.
+\]
+At $P\notin S$, its residue is zero.  The equality
+$\sum_j\beta_j\operatorname{ord}_P(v_j)=0$ and $\Q$-linear
+independence force every order to vanish.  Thus all $v_j$ are $S$-units,
+and integration over $W_S$ kills both the exact and logarithmic terms.
+
+For the second assertion, the boundary-loop sequence is
+\[
+ 0\longrightarrow B_S\longrightarrow H_{\mathrm{aff}}
+   \longrightarrow H_{\mathrm{proj}}\longrightarrow0,
+\]
+where $B_S$ is generated by small loops about the points of $S$, subject
+to their single sum relation.  Choose a basis $u_1,\ldots,u_b$ of $U_S$.
+The map
+\[
+ B_S\longrightarrow\C^b,
+ \qquad \gamma\longmapsto
+       (\ell_{u_1}(\gamma),\ldots,\ell_{u_b}(\gamma))
+\]
+is surjective.  Indeed, its rows are the integer vectors
+$\operatorname{div}(u_j)$, which are independent over $\Q$ and hence
+over $\C$.  Any lift of a projective homology class can therefore be
+adjusted by a boundary class to kill all unit windings.  The adjusted
+lift belongs to $W_S$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:elementary-projective}]
+If $f=e_{\mathrm{proj}}f$, then every $x^n f\,dx$ is fixed by
+$e_{\mathrm{proj}}$, because $x$ and $dx$ are $G$-invariant.
+Lemma~\ref{lem:good-differential} and the moments criterion prove
+elementary stability.
+
+Conversely, first let $q\in A$ be elementary-stable.  By
+Lemma~\ref{lem:unit-periods},
+\begin{equation}
+ \int_\gamma x^n q\,dx=0
+ \qquad(\gamma\in W_S,\ n\geq0).
+ \label{eq:unit-all-moments}
+\end{equation}
+Use the constellation graph of $x$: the inverse image of a star joining
+an ordinary value to all finite branch values.  This graph is a
+deformation retract of $Y\setminus S$.  Each family of edges above one
+star arm is a regular $G$-set.
+
+The moment theorem of Gavrilov--Pakovich~\cite[Theorem~2.1 and
+formula~(15)]{GP2014} turns~\eqref{eq:unit-all-moments} into branch-sum
+identities on every arm.  Its Cauchy-integral proof applies also to
+complex cycles: the generating function is a sum of Cauchy integrals
+whose densities are the branch sums with the complex edge coefficients.
+Zero moments give the zero generating function near infinity, and its
+jump across each arm forces that density to vanish.  Thus the use of
+the complex subspace $W_S$ is justified directly by the proof, without
+requiring a basis consisting of individual closed loops.
+
+Label the edges over an arm by $e_h=h e_1$.  If a cycle has coefficients
+$c_h$ on that arm, the associated identity is
+\[
+ u q=0,
+ \qquad u=\sum_h c_h h^{-1}\in\C[G].
+\]
+Let $U$ be the sum of the images of all arm projections of $W_S$,
+followed by this inversion.  Deck translation by $a$ sends $u$ to
+$ua^{-1}$, so $U$ is a right ideal.  Applying a deck automorphism to
+$uq=0$ gives $(au)q=0$; consequently $Jq=0$ for the two-sided ideal
+$J=\C[G]U$.
+
+The arm projections together embed $W_S$ into a direct sum of regular
+representations.  Their combined irreducible support is exactly that
+of $W_S$.  Inversion dualizes the corresponding blocks, but this does
+not change the support because $W_S$ is rational.  By semisimplicity,
+$J$ therefore contains precisely the blocks occurring in $W_S$.
+Lemma~\ref{lem:unit-periods} shows that these include every block of
+$H_{\mathrm{proj}}$.  Hence $(1-e_{\mathrm{proj}})q=0$.
+
+For arbitrary stable $f\in L$, choose a nonzero $R\in\C[x]$ such
+that $q=R(x)f\in A$.  This is possible by assigning sufficiently high
+zeros at the finitely many finite $x$-values below its poles.  Polynomial
+multiplication preserves stability, so the preceding argument gives
+$q=e_{\mathrm{proj}}q$.  Division by $R(x)$ yields
+$f=e_{\mathrm{proj}}f$.
+
+Finally, a finite algebraic extension does not alter elementary
+integrability, by Liouville trace and norm descent.  Applying this to
+all moments proves the intermediate-field assertion.  Centrality of
+$e_{\mathrm{proj}}$ makes it preserve the $J$-fixed field, and its
+commutation with $D$ and with $\C(x)$ proves the remaining assertions.
+\end{proof}
+
+The projector is determined by finite monodromy data.  If the finite
+branch values have inertia groups $I_1,\ldots,I_r$ and the inertia
+group at infinity is $I_\infty$, the graph chain complex, followed by
+removal of the boundary-loop module, gives
+\[
+ [H_{\mathrm{proj}}]
+  =(r-1)[\C[G]]-\sum_{i=1}^r[\C[G/I_i]]
+       -[\C[G/I_\infty]]+2[\mathbf1].
+\]
+Thus the multiplicity of $\rho$ is
+\[
+ (r-1)\dim\rho-\sum_{i=1}^r\dim\rho^{I_i}
+       -\dim\rho^{I_\infty}+2\delta_{\rho,\mathbf1}.
+\]
+This is a structural finite-data criterion, with no assumption of
+computability for arbitrary complex coefficients.
+
+\begin{example}
+If $Y$ has genus zero, $e_{\mathrm{proj}}=1$ and every element of $L$
+is elementary-stable.  This agrees with rational parametrization.
+If $L=\C(x,y)$ with $y^2=P(x)$, where $P$ is squarefree of degree at
+least three, then $Y$ has positive genus and the hyperelliptic
+involution acts as $-1$ on $H_1(Y,\C)$.  The good projector is the
+averaging projector, so the elementary-stable elements of this field
+are exactly $\C(x)$.
+\end{example}
+
+\begin{example}[A stable subspace on a positive-genus Galois curve]
+Consider
+\[
+ L=\C(x,\sqrt{x},\sqrt{x-1},\sqrt{x-2}),\qquad G\simeq(C_2)^3.
+\]
+The inertia generators at $0,1,2$ are the three coordinate vectors,
+and the generator at infinity is their sum. Riemann--Hurwitz gives
+$2g(Y)-2=8(-2)+4\cdot4=0$, so $g(Y)=1$.
+For a nontrivial character supported on $j$ coordinates, the number
+of branch points on which it is nontrivial is $j+(j\bmod2)$.
+The projective multiplicity is therefore zero when $j=1$ or $2$,
+and two when $j=3$. It follows that the elementary-stable space has
+$\C(x)$-dimension seven, with basis
+\[
+ 1,\ \sqrt{x},\ \sqrt{x-1},\ \sqrt{x-2},\
+ \sqrt{x(x-1)},\ \sqrt{x(x-2)},\ \sqrt{(x-1)(x-2)}.
+\]
+The remaining basis element $\sqrt{x(x-1)(x-2)}$ is not elementary-stable.
+Thus the criterion also identifies proper stable subspaces inside
+positive-genus Galois function fields.
+\end{example}
+
+\begin{corollary}[The abelian case]
+\label{cor:elementary-abelian}
+Inside the maximal abelian algebraic extension of $\C(x)$, the
+elementary-stable elements are exactly the finite sums
+\[
+ \sum_{j=1}^m a_j(x)\,u_j(x)^{r_j},
+ \qquad a_j\in\C(x),\quad r_j\in\Q,
+\]
+where each $u_j$ is a nonconstant fractional linear function.
+\end{corollary}
+
+\begin{proof}
+Work first in a finite abelian Galois extension.  For a nontrivial
+one-dimensional character $\chi$, the displayed multiplicity formula
+simplifies to $b_\chi-2$, where $b_\chi$ counts all branch points,
+including infinity, whose inertia has nontrivial image under $\chi$.
+Thus $\chi$ is absent from projective homology exactly when
+$b_\chi=2$.
+
+The cyclic quotient cover corresponding to $\ker\chi$ consequently
+has exactly two branch points.  Such a connected cover is totally
+ramified at both points and is obtained by taking a root of a
+fractional linear function carrying those points to $0$ and $\infty$.
+Its character eigenspaces are one-dimensional over $\C(x)$ and are
+generated by rational powers of that fractional linear function.
+Character decomposition gives the asserted form.  Conversely, each
+displayed summand belongs to a cyclic genus-zero function field and
+is elementary-stable; finite sums preserve stability.  Taking the
+union over finite abelian extensions completes the proof.
+\end{proof}
+
+The proof combines Liouville theory, the Jacobian, and the published
+moment theorem.  The classification above is a conclusion for
+algebraic inputs, not an assertion that the underlying methods or all
+of their consequences are historically new.
+
+\section{A finite existence criterion in a single primitive extension}
+\label{int:section}
+
+This section gives a terminating criterion for arbitrary rational inputs in
+one primitive extension.  It does not settle Chen--Kauers Problem~6 in its
+full scope: nested Liouvillian towers and difference fields are not covered.
+The proof uses classical normalization and algebraic-curve theory.  Its
+historical novelty is not established by the literature checks reported here.
+
+\subsection{A degree bound for differential finiteness}
+
+Let $(k,d)$ be a differential field of characteristic zero, and let
+$(K,\delta)$ be a finitely generated differential extension of transcendence
+degree one.  Thus $\delta|_k=d$.  We call $r\in K$ \emph{$D$-finite over $k$}
+if $\operatorname{span}_k\{\delta^j r:j\geq0\}$ is finite dimensional.
+The algebraic closure of $k$ inside a function field is called its
+\emph{relative algebraic constant field}; this is different from its field
+of $\delta$-constants.
+
+\begin{lemma}[Finite generation of the relevant differential subfield]
+\label{int:stabilize}
+If $r$ is transcendental over $k$, put $d_0=[K:k(r)]$ and
+\[
+ E_i=k(r,\delta r,\ldots,\delta^i r).
+\]
+There are at most $\lfloor\log_2 d_0\rfloor$ strict inclusions in this
+chain.  At the first equality $E_i=E_{i+1}$, the field $E_i$ is
+$\delta$-stable and equals $E=k\langle r\rangle$.
+\end{lemma}
+\begin{proof}
+Every strict inclusion multiplies $[E_i:k(r)]$ by an integer at least two,
+while $[E_i:k(r)]\leq d_0$.  At an equality, differentiation sends each
+field generator of $E_i$ into $E_i$; the quotient rule then gives
+$\delta E_i\subseteq E_i$.  Hence a plateau cannot be followed by a
+strict inclusion.
+\end{proof}
+
+Let $X$ be the nonsingular complete curve over $k$ with function field
+$E=k\langle r\rangle$, and let $D=(r)_\infty$ be the pole divisor of $r$.
+We allow a finite relative algebraic constant extension of $k$, so $X$
+need not be geometrically connected over $k$.
+
+\begin{theorem}[Curve criterion]
+\label{int:curve}
+For $r$ transcendental over $k$, the following conditions are equivalent:
+\begin{enumerate}
+\item $r$ is $D$-finite over $k$;
+\item $\delta\mathcal O_{X,P}\subseteq\mathcal O_{X,P}$ at every closed
+point $P$, and $\delta\mathfrak m_P\subseteq\mathfrak m_P$ at every pole
+of $r$;
+\item $\delta\mathcal L(D)\subseteq\mathcal L(D)$, where
+$\mathcal L(D)$ is the Riemann--Roch space of $D$.
+\end{enumerate}
+When these conditions hold, the minimal scalar differential order of $r$
+is at most $\dim_k\mathcal L(D)$.
+\end{theorem}
+\begin{proof}
+Suppose first that the orbit space $W$ of $r$ is finite dimensional;
+adjoining $1$ to $W$ is harmless.  The ring $A=k[W]$ is a finitely
+generated $\delta$-stable domain with fraction field $E$.
+Seidenberg's normalization theorem in characteristic zero~\cite{Seidenberg1966} implies that
+its integral closure $B$ in $E$ is also $\delta$-stable.
+Let $S$ be the union of the pole supports of a basis of $W$ on $X$.
+The normalized affine curve $\operatorname{Spec}B$ is $X\setminus S$.
+Localization therefore proves regularity of $\delta$ away from $S$.
+
+Fix $P\in S$ and a local parameter $z$.  The completed local field has
+a coefficient field which is finite algebraic over $k$: lift a separating
+primitive element of the residue field by Hensel's lemma.  The unique
+extension of $d$ preserves this coefficient field.  Thus the derivation
+on Laurent series consists of coefficient differentiation and
+$(\delta z)\,\partial_z$.
+Choose $w\in W$ with maximal pole order $m>0$ at $P$ and write
+$w=c z^{-m}+\cdots$, with $c\ne0$.  If
+$v_P(\delta z)=\ell\leq0$, and $b$ is the leading coefficient of
+$\delta z$, then
+\[
+ \delta w=-mcb\,z^{-m-1+\ell}+\text{higher terms}.
+\]
+Coefficient differentiation has exponent at least $-m$, so this leading
+term cannot cancel.  It contradicts maximality of $m$, since
+$\delta w\in W$.  Hence $v_P(\delta z)\geq1$: the derivation is regular
+and tangent to the maximal ideal at $P$.  This proves condition~2.
+
+Under condition~2, differentiation preserves regularity outside the poles
+of $r$.  At a pole, write $h=z^n u$ with $u$ a local unit.  Tangency and
+the product rule give $v_P(\delta h)\geq v_P(h)$.  Every defining
+valuation bound of $\mathcal L(D)$ is consequently preserved, proving
+condition~3.  Finally, this finite-dimensional space contains $r$, so
+the first $\dim_k\mathcal L(D)+1$ derivatives are linearly dependent.
+\end{proof}
+
+\begin{corollary}[Explicit stopping bound]
+\label{int:bound}
+For transcendental $r\in K$, if $r$ is $D$-finite over $k$, its minimal
+order is at most
+\[
+                    2[K:k(r)].                         \tag{I.1}
+\]
+If $k$ is relatively algebraically closed in $K$, the sharper bound
+$[K:k(r)]+1$ holds.  If $r$ is algebraic over $k$, it is $D$-finite of
+order at most $[k(r):k]$.
+\end{corollary}
+\begin{proof}
+Let $c_E$ be the relative algebraic constant field of $E$,
+$q=[c_E:k]$, and $e=[E:k(r)]$.  The pole divisor of $r$ has degree
+$e$ over $k$, or $e/q$ over $c_E$.  Therefore
+\[
+ \dim_k\mathcal L(D)
+ =q\dim_{c_E}\mathcal L(D)
+ \leq q(e/q+1)=e+q\leq2e\leq2[K:k(r)].
+\]
+Here we used the elementary Riemann--Roch estimate
+$\dim\mathcal L(D)\leq\deg D+1$ and $q\leq e$.
+In the regular case $q=1$.  For algebraic $r$, differentiating its
+separable minimal polynomial shows that $k(r)$ is $\delta$-stable, and
+finite-dimensional linear algebra applies directly.
+\end{proof}
+
+Consequently $D$-finiteness in a supplied transcendence-degree-one
+differential function field can be decided by a finite computation.
+For transcendental $r$, compute $d_0=[K:k(r)]$ and test
+\[
+                  r,\delta r,\ldots,\delta^{2d_0}r
+                  \quad\text{for dependence over }k.       \tag{I.2}
+\]
+The earliest dependence gives the minimal operator; absence of a
+dependence proves nonexistence.  These are effective algebraic operations
+over a computably presented characteristic-zero field with factorization.
+For example, represent $K$ over $k(y)$, clear denominators in the
+coordinates of the tested elements, and compare coefficients of $y$.
+The field degree in (I.1) is not the degree of an unreduced numerator in
+an arbitrary algebraic presentation.  Normalization and Riemann--Roch
+are used in the proof, but need not be implemented to execute (I.2).
+
+\subsection{Normalized residues at arbitrary algebraic poles}
+
+Let $C$ be algebraically closed of characteristic zero, let $k=C(x)$,
+and choose $a,b\in k(y)$ satisfying $a_x=b_y$, with $a$ having no
+rational antiderivative with respect to $y$ in $k(y)$.
+Let $t$ be transcendental and set
+\[
+ F=C(x,y,t),\qquad D_x=\partial_x+b\partial_t,\qquad
+ D_y=\partial_y+a\partial_t.                            \tag{I.3}
+\]
+The compatibility condition makes these derivations commute.  This
+includes primitives of arbitrary rational closed one-forms, such as
+$\log(x+y)$ and $\log(x^2+y^2)$.
+We seek nonzero $P\in k[D_x]$ and $g\in F$ such that $Pf=D_yg$.
+All assertions concern certificates in this specified field.
+
+For an arbitrary $f\in F$, choose a finite normal algebraic extension
+$K/k(y)$ splitting its denominator as a polynomial in $t$.
+Both coefficient derivations extend uniquely to $K$ and commute.
+At a root $\alpha\in K$, put
+\[
+ p=t-\alpha,\qquad \eta=a-\partial_y\alpha,\qquad
+ \nu=\partial_x\alpha-b,\qquad v=\frac\nu\eta,\qquad
+ \delta_\alpha=\partial_x+v\partial_y.                  \tag{I.4}
+\]
+Here $\eta\ne0$.  Indeed, an algebraic primitive of $a$ would yield,
+by normalized trace to $k(y)$, a rational primitive of $a$, contrary to
+the hypothesis.
+
+Write the principal part of $f$ at $p$ as
+$\sum_{j=1}^m c_jp^{-j}$, and define the $k$-linear operator and residue
+\[
+ S_\alpha(c)=\partial_y(c/\eta),\qquad
+ h_\alpha(f)=\frac1\eta
+       \sum_{j=1}^m\frac{S_\alpha^{j-1}(c_j)}{(j-1)!}.
+                                                               \tag{I.5}
+\]
+This explicit reduction invariant is not the ordinary coefficient of
+$p^{-1}$.
+
+\begin{lemma}[Reduction and parameter transport]
+\label{int:residue}
+For every finite $t$-pole $\alpha$,
+\[
+ h_\alpha(D_yg)=0,\qquad
+ h_\alpha(D_xf)=\delta_\alpha h_\alpha(f).              \tag{I.6}
+\]
+All finite residues vanish if and only if
+$f=D_yG+H$ for some $G\in K(t)$ and $H\in K[t]$.
+\end{lemma}
+\begin{proof}
+Since $D_yp=\eta$, for $j\geq2$ we have
+\[
+ \frac{c}{p^j}
+ =D_y\!\left(-\frac{c}{(j-1)\eta p^{j-1}}\right)
+       +\frac{S_\alpha(c)}{(j-1)p^{j-1}}.              \tag{I.7}
+\]
+Repeated reduction leaves exactly $\eta h_\alpha(f)/p$.
+The residue of $D_y(c/p^j)$ vanishes by cancellation of its two
+successive terms in (I.5).  Distinct finite poles and the polynomial
+part are independent, proving the final assertion.
+
+It suffices to verify transport on a simple reduced term, since
+$D_xD_y=D_yD_x$.  Direct calculation gives
+\[
+ h_\alpha\!\left(D_x\frac{c}{p}\right)
+   =\frac{c_x+\partial_y(vc)}{\eta}
+   =\delta_\alpha\!\left(\frac c\eta\right).          \tag{I.8}
+\]
+The second equality follows from
+\[
+ \frac{\delta_\alpha\eta}{\eta}+\partial_yv=0,
+ \qquad \eta_x=-\nu_y.                                \tag{I.9}
+\]
+Dividing the reduced coefficient by $\eta$ is essential: without this
+normalization the transport has a zeroth-order term and is not a
+derivation.  Equations (I.6) imply, for every $P\in k[D_x]$,
+$h_\alpha(Pf)=P(\delta_\alpha)h_\alpha(f)$.
+\end{proof}
+
+\begin{theorem}[Complete decision for one primitive extension]
+\label{int:primitive}
+For every rational $f\in F$ in (I.3), a telescope with coefficients in
+$k$ and certificate in $F$ exists if and only if each normalized residue
+$h_\alpha(f)$ is $D$-finite over $k$ for $\delta_\alpha$.
+This condition is decidable by Corollary~\ref{int:bound} and the finite
+tests (I.2).  In the affirmative case a telescope and its certificate
+can be constructed, with a computable finite order bound.
+\end{theorem}
+\begin{proof}
+Necessity follows immediately from Lemma~\ref{int:residue}.
+For sufficiency, construct an annihilator over $k$ for each residue and
+take a common left multiple $P\in k[D_x]$.
+The lemma gives $Pf=D_yG+H$ with $G\in K(t)$ and $H\in K[t]$.
+Average over $\operatorname{Gal}(K/k(y))$.  The original $Pf$ is fixed
+and the Galois action commutes with differentiation, so the averaged
+identity has $G\in F$ and $H\in k(y)[t]$.
+
+We prove by induction on $n=\deg_tH$ that $H$ telescopes with a
+certificate in $k(y)[t]$.  Write $H=h_nt^n+\cdots$.
+Rational creative telescoping gives $P_0\in k[D_x]\setminus\{0\}$
+and $g_n\in k(y)$ such that $P_0h_n=\partial_yg_n$.
+Since $D_xt=b$ lowers the degree of a power of $t$, the polynomial
+\[
+             P_0H-D_y(g_nt^n)
+\]
+has degree at most $n-1$: its leading coefficient vanishes, and all
+terms involving derivatives of $t$ have lower degree.
+By induction it has a telescope $Q_0$ and polynomial
+certificate $J_0$.  Thus
+\[
+       Q_0P_0H=D_y\bigl(Q_0(g_nt^n)+J_0\bigr).
+\]
+The degree-zero case is rational creative telescoping itself.
+We obtain $QH=D_yJ$ and hence $QPf=D_y(QG+J)$ in $F$.
+
+For the order bound, each transcendental residue contributes at most
+$2[K:k(h_\alpha)]$ to the order of the common left multiple; algebraic
+residues contribute their finite extension degrees.  Each subsequent
+rational-telescoping stage has a finite effective bound, for example
+the degree of the squarefree denominator in $y$, and there are finitely
+many stages.  These computations give a finite bound before the final
+search for a minimal telescope.  They do not give a compact bound solely
+in terms of the original displayed numerator degrees.
+\end{proof}
+
+\subsection{Checks, scope, and prior work}
+
+The symbolic verifier uses exact rational arithmetic.  For $a=1/y$ and
+$\alpha^2=y+x$, set $z=\alpha$, so $y=z^2-x$.  The rational input
+\[
+ f=\frac{-t+2(y+x)/y}{t^2-y-x}
+\]
+has normalized residue $z$ at $t=z$, and its transported derivation is
+\[
+             \delta_\alpha z=\frac1{2z-z^2+x}.
+\]
+Here $K=k(z)$ and $[K:k(z)]=1$.  The three functions
+$z,\delta_\alpha z,\delta_\alpha^2z$ are independent over $k$.
+The sharp regular-field stopping bound $d_0+1=2$ therefore proves that
+this input has no telescope in the specified field.
+
+For a positive coupled example take $a=1+1/y$, $p=t-x-y$, and
+$f=(1+y^{-3})/p$.  Its normalized residue is $y+y^{-2}$ and
+$\delta=\partial_x+y\partial_y$.  Its exact minimal order is two:
+\[
+ (D_x-1)(D_x+2)f=D_yg,\qquad
+ g=-(D_x+2)\frac y p-(D_x-1)\frac{y^{-2}}p.
+\]
+The verifier also checks (I.9), simple- and double-pole transport for
+$\alpha=xy$ and $\alpha=x+y^2$, implicit differentiation for the
+algebraic pole, and an explicit three-step polynomial-remainder
+certificate.  For $t=\log(x+y)$ it verifies $D_x(1/t)=D_y(1/t)$.
+For $t=\log(x^2+y^2)$, the residue of $1/t$ is
+$(x^2+y^2)/(2y)$ and transport is $\partial_x-(x/y)\partial_y$;
+the four derivatives required by its degree-two bound are independent.
+It additionally verifies transport at a coupled pole in each of these
+two parameter-dependent primitive fields.
+These checks supplement the proofs; no uncontrolled
+finite prefix is used to infer nonexistence.
+
+The classical inputs must be separated from the present application.
+Seidenberg's \emph{Derivations and integral closure} (1966)~\cite{Seidenberg1966} supplies the
+normalization theorem.  Ngo--Nguyen--van der Put--Top~\cite{Ngo2015},
+\emph{Equivalence of differential equations of order one} (2015),
+Theorem~2.1 and Remark~2.2, identify regular curve derivations with the
+Painlev\'e property and give an effective regularity test, building on
+Muntingh--van der Put (2007).  Matzat--van der Put (2003),
+Proposition~2.10, characterizes $D$-finite elements inside a
+Picard--Vessiot field by membership in its Picard--Vessiot ring.
+The argument here uses these established geometric ideas to obtain the
+explicit field-degree bound and the normalized-residue application.
+
+Combot's \emph{Symbolic integration on planar differential foliations}~\cite{Combot2023}
+(arXiv:2306.12573, 2023), Section~4.1, already gives a terminating
+algorithm for rational $G(y,\log y+h)$; it includes earlier weighted
+Cauchy-kernel examples.  The present input $f(x,y,t)$ permits independent
+parameter dependence and arbitrary coupled algebraic poles.  Complete
+reduction in primitive towers~\cite{Du2025} and in a transcendental
+Liouvillian extension~\cite{CDG2026} supplies related residue and
+bounded-order frameworks.  No exhaustive priority claim is made here.
+In particular, Theorem~\ref{int:primitive} is a complete result for its
+stated single-extension class, and is not a complete resolution of the
+original general CK6 problem.
+
+\section{The sharp exponent window in Qi--Lim--Nantomah Open Problem 3}
+\label{beta:section}
+
+Let $\psi=\Gamma'/\Gamma$ denote the digamma function. In Open Problem~3
+of \cite[Section~4]{QLN2025}, Qi, Lim, and Nantomah ask for the largest set
+of real $\beta$ such that
+\begin{equation}\label{beta:original}
+ F_\beta(x):=x^\beta\bigl[\psi(x)+x\psi'(x)\bigr]
+                 -\psi(x)\psi(1/x)>0\qquad(x>0).
+\end{equation}
+The result below preserves the original function, its entire positive domain,
+and its strict inequality. The case $\beta=0$ was established in
+\cite{QLN2025}; see also \cite{SLQ2026}. Our literature search did not locate
+the sharp range proved here. This search does not certify historical priority.
+In particular, related results and a different exponent problem from the same
+source already appear in \cite{Pudim}; those results are not claimed here.
+
+Put
+\begin{equation}\label{beta:HP}
+ H(x)=\psi(x)+x\psi'(x),\qquad P(x)=\psi(x)\psi(1/x),
+\end{equation}
+and denote the unique positive zero of $\psi$ by $\lambda$.
+For $1/\lambda<x<1$, define
+\begin{equation}\label{beta:BC}
+ B(x)=\frac{\log(P(x)/H(x))}{\log x},\qquad
+ C(x)=x\log x\left(\frac{P'(x)}{P(x)}-\frac{H'(x)}{H(x)}\right)
+                          -\log\frac{P(x)}{H(x)}.
+\end{equation}
+The positivity needed for these definitions is proved below.
+
+\begin{theorem}\label{beta:main}
+The function $C$ has exactly one zero $x_*$ in $(1/\lambda,1)$.
+With $\beta_*=B(x_*)$, the full answer to \eqref{beta:original} is
+\begin{equation}\label{beta:answer}
+ \bigl\{\beta\in\mathbb R:F_\beta(x)>0\text{ for every }x>0\bigr\}
+       =[-1,\beta_*).
+\end{equation}
+The endpoint is specified by a unique equation and has the rigorous enclosures
+\begin{align}
+ \frac{76859975974774087}{10^{17}}
+       &<x_*<\frac{76859975974774089}{10^{17}},\label{beta:rootbox}\\
+ 5.9728368638449725&<\beta_*<5.9728368638450275.
+ \label{beta:thresholdbox}
+\end{align}
+The upper endpoint is excluded: $F_{\beta_*}(x_*)=0$.
+\end{theorem}
+
+The proof is analytic except for the compact positivity lemma
+\ref{beta:certified-lemma}, whose explicit expression is certified on a finite
+partition by rigorous ball arithmetic. The full verification code is included
+with this paper. Thus the conclusion is unconditional, with a stated
+computer-assisted component; it does not rely on numerical sampling.
+
+\subsection{A global admissible exponent}
+
+We use the classical bound
+\begin{equation}\label{beta:productbound}
+ P(x)\leq\gamma^2\qquad(x>0),
+\end{equation}
+where $\gamma$ is Euler's constant; see
+\cite[Proposition~4]{AlzerJameson2017} and \cite[Theorem~2]{QLN2025}.
+The elementary inequalities
+\begin{equation}\label{beta:constants}
+ 0<\gamma<\frac35,\qquad \frac43<\lambda<\frac32
+\end{equation}
+will suffice. For the first upper bound, strict convexity of $u\mapsto1/u$
+on the intervals $[k-1/2,k+1/2]$, $k\geq2$, gives
+$\gamma<1-\log(3/2)<3/5$; the last inequality follows from
+$\log(3/2)>2/5$. The two digamma signs giving the bounds on $\lambda$
+are also checked by the certificate below.
+
+The recurrence and positive series for the polygamma functions give
+\begin{align}
+ H(x)&=-\gamma+\sum_{k=1}^\infty
+                 \frac{x(2k+x)}{k(k+x)^2},\label{beta:Hseries}\\
+ H'(x)&=\sum_{k=1}^\infty\frac{2k}{(k+x)^3}>0.
+ \label{beta:Hprime}
+\end{align}
+Consequently $H$ increases strictly from $-\gamma$ to infinity and has
+exactly one zero, denoted by $h$. Keeping the first three positive summands
+in \eqref{beta:Hseries} yields
+\begin{align}
+ H(1/3)&>-\gamma+\frac7{16}+\frac{13}{98}+\frac{19}{300}>0,
+ \label{beta:hbound}\\
+ H(2/3)&>-\gamma+\frac{16}{25}+\frac7{32}+\frac{40}{363}
+             >\frac{24}{25}-\gamma>\gamma^2.
+ \label{beta:Hbound}
+\end{align}
+In particular $0<h<1/3<1/\lambda$.
+We also use
+\begin{equation}\label{beta:trigamma}
+ \psi'(x)>\frac1x+\frac1{2x^2}\qquad(x>0).
+\end{equation}
+Indeed, the trapezoidal rule strictly overestimates the integral of the
+strictly convex function $u\mapsto(x+u)^{-2}$ on each $[k,k+1]$.
+Summing over $k\geq0$ proves \eqref{beta:trigamma}.
+
+\begin{lemma}\label{beta:minusone}
+For every $x>0$, $F_{-1}(x)>0$.
+\end{lemma}
+\begin{proof}
+We prove $H(x)/x>P(x)$ in five intervals, including their endpoints where
+appropriate.
+
+If $0<x<h$, then $x<1/3$ and $x+1<4/3<\lambda$. Hence
+$\psi(x)=\psi(x+1)-1/x<-1/x$, while
+$\psi(1/x)>\psi(3)=3/2-\gamma>\gamma$. Since $H(x)>-\gamma$,
+\[
+ P(x)<-\frac\gamma x<\frac{H(x)}x.
+\]
+If $h\leq x\leq1/\lambda$, then $H(x)\geq0$ and $P(x)\leq0$;
+they never vanish simultaneously, so the required inequality is strict.
+
+If $1/\lambda\leq x\leq1$, then $x>2/3$ and
+\eqref{beta:Hbound}--\eqref{beta:productbound} imply
+\[
+ \frac{H(x)}x\geq H(x)>\gamma^2\geq P(x).
+\]
+If $1\leq x\leq\lambda<3/2$, use $\psi(x)\geq-\gamma$ and
+\eqref{beta:trigamma} to obtain
+\[
+ \frac{H(x)}x>
+ \frac{1-\gamma}{x}+\frac1{2x^2}
+ >\frac{22}{45}>\frac9{25}>\gamma^2\geq P(x).
+\]
+Finally, if $x\geq\lambda$, then $H(x)>0$ and $P(x)\leq0$.
+This completes all five intervals.
+\end{proof}
+
+\subsection{Reduction to a uniquely determined compact minimum}
+
+The standard expansions at zero and infinity imply, as $x\to0^+$,
+\begin{equation}\label{beta:asymptotics}
+ H(x)=-\gamma+O(x),\qquad
+ P(x)\sim-\frac{\log(1/x)}x.
+\end{equation}
+If $\beta<-1$, the negative term $-\gamma x^\beta$ dominates
+$\log(1/x)/x$, so \eqref{beta:original} fails near zero. Therefore
+$\beta\geq-1$ is necessary.
+
+Suppose now that $\beta\geq-1$. On $(0,h)$, increasing $\beta$ from
+$-1$ increases $x^\beta H(x)$, since $x<1$ and $H(x)<0$.
+On $[h,1/\lambda]$, the signs $H\geq0$ and $P\leq0$ suffice.
+On $[1,\infty)$, increasing $\beta$ also increases $x^\beta H(x)$,
+since $H(x)>0$. Lemma~\ref{beta:minusone} therefore proves the desired
+strict positivity outside $(1/\lambda,1)$.
+On that remaining interval, $H>P>0$, by \eqref{beta:Hbound} and
+\eqref{beta:productbound}. Taking logarithms and using $\log x<0$ gives
+\begin{equation}\label{beta:compactreduction}
+ F_\beta(x)>0\quad\Longleftrightarrow\quad\beta<B(x).
+\end{equation}
+
+For the uniqueness argument put
+\[
+ t=-\log x,\qquad T=\log\lambda,\qquad
+ W(t)=\log\frac{H(e^{-t})}{P(e^{-t})}\quad(0<t<T).
+\]
+Then $B(e^{-t})=W(t)/t$. At the first endpoint,
+\[
+ W(0)=\log\frac{\zeta(2)-\gamma}{\gamma^2}>0,
+\]
+where the expression denotes the continuous extension to $t=0$.
+At the other endpoint, the simple zero of $\psi(1/x)$ gives
+\begin{equation}\label{beta:Wend}
+ W(t)=-\log(T-t)+O(1),\qquad
+ W'(t)=\frac1{T-t}+O(1)\quad(t\to T^-).
+\end{equation}
+
+\begin{lemma}[Certified compact convexity]\label{beta:certified-lemma}
+The function $W$ satisfies $W''(t)>0$ for $0<t<T$.
+\end{lemma}
+
+\begin{proof}
+We specify the exact expression and its finite verification.
+Write
+\[
+ z=\psi(x),\ u=\psi'(x),\ v=\psi''(x),\ w=\psi'''(x),\qquad
+ Z=\psi(1/x),\ U=\psi'(1/x),\ V=\psi''(1/x).
+\]
+Thus $H=z+xu$, $H'=2u+xv$, and $H''=3v+xw$.
+For $D=x\,d/dx$, direct differentiation yields
+\begin{equation}\label{beta:clearedidentity}
+ D^2\log\frac HP=\frac{\mathcal N(x)}{x^2H^2z^2Z^2},
+\end{equation}
+where
+\begin{align}
+ \mathcal N(x)={}&
+ x^2\bigl[(xH'+x^2H'')H-x^2(H')^2\bigr]z^2Z^2\notag\\
+ &-x^2\bigl[(xu+x^2v)z-x^2u^2\bigr]H^2Z^2\notag\\
+ &-\bigl[(xU+V)Z-U^2\bigr]H^2z^2.
+ \label{beta:numerator}
+\end{align}
+Unlike the logarithmic expression, $\mathcal N$ has no singularity at
+$Z=0$. It can therefore be verified on the larger rational interval
+$[2/3,1]$, which contains $[1/\lambda,1]$.
+
+The accompanying script \texttt{beta\_problem3\_certify.py} evaluates
+\eqref{beta:numerator} using Arb's rigorous ball arithmetic
+\cite{Johansson2017}, through python-flint~0.9.0 at 192-bit precision.
+Starting from $[2/3,1]$, it bisects intervals at their exact rational midpoints.
+An interval is accepted only if the ball enclosing the entire expression
+$\mathcal N$ is strictly positive. Digamma values are evaluated by Arb's
+digamma routine, and for $n\geq1$ the identity
+\[
+ \psi^{(n)}(x)=(-1)^{n+1}n!\,\zeta(n+1,x)
+\]
+supplies the other values using rigorous Hurwitz-zeta evaluation.
+The run terminates with 64 accepted intervals; all endpoints and resulting
+balls are recorded in \texttt{beta\_problem3\_boxes.json}. Its relevant
+output is
+\begin{verbatim}
+CERTIFIED cleared log-convexity positive on [2/3,1]; pieces = 64
+CERTIFIED unique digamma zero in (4/3,3/2)
+\end{verbatim}
+This verifies $\mathcal N(x)>0$ throughout $[2/3,1]$.
+On $(1/\lambda,1)$ the denominator in \eqref{beta:clearedidentity} is
+strictly positive. Finally, $D=-d/dt$, so $D^2\log(H/P)=W''(t)$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{beta:main}]
+By Lemma~\ref{beta:certified-lemma},
+\[
+ \frac d{dt}\bigl[tW'(t)-W(t)\bigr]=tW''(t)>0.
+\]
+The expression in brackets tends to $-W(0)<0$ as $t\to0^+$ and to
+infinity as $t\to T^-$, by \eqref{beta:Wend}. Thus it has exactly one
+zero. Consequently $W(t)/t$, and equivalently $B(x)$, has exactly one
+minimum. Differentiating \eqref{beta:BC} gives
+\[
+ B'(x)=\frac{C(x)}{x(\log x)^2},
+\]
+which proves the asserted unique zero of $C$.
+
+For the two exact rational endpoints $x_-,x_+$ in
+\eqref{beta:rootbox}, the same script certifies
+$C(x_-)<0<C(x_+)$. Evaluation of $B$ on the full ball
+$[x_-,x_+]$ gives
+\begin{verbatim}
+CERTIFIED critical point in
+76859975974774087/100000000000000000
+76859975974774089/100000000000000000
+CERTIFIED threshold enclosure = [5.9728368638450 +/- 2.75e-14]
+\end{verbatim}
+This implies \eqref{beta:rootbox}--\eqref{beta:thresholdbox}.
+The necessity of $\beta\geq-1$ and the compact equivalence
+\eqref{beta:compactreduction} now show that precisely
+$-1\leq\beta<\min B=\beta_*$ are admissible. At the minimum,
+$x_*^{\beta_*}H(x_*)=P(x_*)$, so the upper endpoint is excluded.
+\end{proof}
+
+\begin{remark}\label{beta:scope}
+The theorem determines the original global parameter set, including both
+endpoint decisions. The implicit constant is specified by a proved unique
+equation with a certified rational isolating interval, rather than by an
+unevaluated global optimization. The reduction to compact convexity and the
+use of interval arithmetic are established mathematical techniques; no claim
+of a historically new general proof method is made.
+\end{remark}
+
+
+\section{Limits and excluded claims}
+The results above give finite criteria and one sharp parameter answer.
+They do not establish the requested target of one hundred newly solved
+difficult conjectures. The full elementary-function classification in
+Chen--Kauers Problem~8 and the arbitrary-tower existence problem in
+Problem~6 remain outside the proved scope.
+
+An independently derived proof of complete monotonicity of
+$[\log\Gamma(x)+\log\Gamma(1/x)]''$ was removed from the new-results
+list after a valid public proof dated 17 May 2026 was located in the
+Pudim repository~\cite{Pudim}. The same repository also discusses other
+questions from Qi--Lim--Nantomah, including its separate $n=2$ problem.
+This does not resolve Open Problem~3, whose $n=0$ parameter range is
+the subject of the present theorem. The 2026 alternative-positivity
+paper~\cite{SLQ2026} proves the unweighted case, not the sharp full range.
+
+Graph and Erd\H{o}s-problem investigations in the same round produced
+partial reductions and finite searches, not additional complete
+closures. None is included in the theorem count. A failed bounded
+counterexample search is not a proof of a universal statement.
+
+\appendix
+\section{Reproduction}
+Compile this source twice with \texttt{pdflatex}. In the compilation
+directory, run the extracted Python programs listed below. The compact
+polygamma certificate uses \texttt{python-flint 0.9.0} at 192-bit
+precision; the symbolic checks use \texttt{SymPy 1.14.0}. All accepted
+intervals are certified in full, rather than sampled at points.
+\subsection*{algebraic\_monodromy\_verify.py}
+\lstinputlisting{algebraic_monodromy_verify.py}
+\subsection*{integration\_verify.py}
+\lstinputlisting{integration_verify.py}
+\subsection*{beta\_problem3\_certify.py}
+\lstinputlisting{beta_problem3_certify.py}
+\begin{thebibliography}{99}
+\bibitem{CK2016} S. Chen and M. Kauers,
+\emph{Some Open Problems related to Creative Telescoping},
+arXiv:1609.03768 (2016). \url{https://arxiv.org/abs/1609.03768}.
+
+\bibitem{Chen2022} S. Chen,
+\emph{Stability Problems in Symbolic Integration},
+Proceedings of ISSAC 2022, 517--524.
+\url{https://doi.org/10.1145/3476446.3535502};
+arXiv:2202.06305, Section 5.
+
+\bibitem{GP2014} L. Gavrilov and F. Pakovich,
+\emph{Moments on Riemann surfaces and hyperelliptic Abelian integrals},
+Comment. Math. Helv. 89 (2014), 125--155.
+\url{https://doi.org/10.4171/CMH/314}; arXiv:1107.3029.
+
+\bibitem{SSS2025} C. Sahu, M. Seiss, and V. R. Srinivasan,
+\emph{Iterated and Generalized Iterated Integrals},
+arXiv:2504.04846 (2025). \url{https://arxiv.org/abs/2504.04846}.
+
+\bibitem{Rosenlicht1972} M. Rosenlicht,
+\emph{Integration in finite terms}, Amer. Math. Monthly 79 (1972), 963--972.
+\url{https://doi.org/10.1080/00029890.1972.11993166}.
+
+\bibitem{Seidenberg1966} A. Seidenberg,
+\emph{Derivations and integral closure}, Pacific J. Math. 16 (1966), 167--173.
+\url{https://msp.org/pjm/1966/16-1/pjm-v16-n1-p16-s.pdf}.
+
+\bibitem{Ngo2015} L. X. C. Ngo, K. A. Nguyen, M. van der Put, and J. Top,
+\emph{Equivalence of differential equations of order one},
+J. Symbolic Comput. 71 (2015), 47--59.
+\url{https://doi.org/10.1016/j.jsc.2014.09.041}.
+
+\bibitem{Combot2023} T. Combot,
+\emph{Symbolic integration on planar differential foliations},
+arXiv:2306.12573 (2023), Section 4.1.
+\url{https://arxiv.org/abs/2306.12573}.
+
+\bibitem{Du2025} H. Du, Y. Gao, W. Li, and Z. Li,
+\emph{Complete Reduction for Derivatives in a Primitive Tower},
+arXiv:2510.13456 (2025).
+\url{https://arxiv.org/abs/2510.13456}.
+
+\bibitem{CDG2026} S. Chen et al.,
+\emph{Complete Reduction for Derivatives in a Transcendental Liouvillian Extension},
+arXiv:2602.03592v3 (2026).
+\url{https://arxiv.org/abs/2602.03592}.
+
+\bibitem{QLN2025} F. Qi, D. Lim, and K. Nantomah,
+\emph{Monotonicity and positivity of several functions involving ratios and
+products of polygamma functions}, J. Inequal. Appl. 2025, article 5.
+\url{https://doi.org/10.1186/s13660-024-03245-8}, Section 4, Open Problem 3.
+
+\bibitem{AlzerJameson2017} H. Alzer and G. Jameson,
+\emph{A harmonic mean inequality for the digamma function and related results},
+Rend. Semin. Mat. Univ. Padova 137 (2017), 203--209.
+\url{https://doi.org/10.4171/RSMUP/137-10}.
+
+\bibitem{SLQ2026} Y. Shuang, D. Lim, and F. Qi,
+\emph{Alternative proofs for the positivity of a function involving the
+product of two digamma functions}, Aust. J. Math. Anal. Appl. 23 (2026),
+no. 1, article 5, 6 pp.
+\url{https://ajmaa.org/searchroot/files/pdf/v23n1/v23i1p5.pdf}.
+
+\bibitem{Johansson2017} F. Johansson,
+\emph{Arb: efficient arbitrary-precision midpoint-radius interval arithmetic},
+IEEE Trans. Comput. 66 (2017), 1281--1292.
+\url{https://doi.org/10.1109/TC.2017.2690633}.
+
+\bibitem{Pudim} Pudim project,
+\emph{pudim-ai-demo-zetalaw}, public research repository,
+\texttt{APPLICATIONS.md}, APP-0004 and associated staged proof
+(dated 17 May 2026); APP-0007, APP-0008, and APP-0011.
+Inspected 2 November 2026.
+\url{https://github.com/pudim-project/pudim-ai-demo-zetalaw}.
+
+\bibitem{VMRC} QEEDDD,
+\emph{Verifiable Mathematical Reasoning Corpus},
+commit \texttt{ecd87de3348dcb706a76bb12fde722d7a348a012},
+2 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\end{thebibliography}
+
+\end{document}

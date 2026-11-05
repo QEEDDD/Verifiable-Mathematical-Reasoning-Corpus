@@ -1,0 +1,751 @@
+\begin{filecontents*}[overwrite]{verify_polynomial_inverse.py}
+"""Exact checks accompanying the uniform polynomial-pullback proof."""
+from fractions import Fraction
+from pathlib import Path
+import json
+
+
+def add_term(poly, degree, coefficient):
+    poly[degree] = poly.get(degree, Fraction(0)) + coefficient
+    if not poly[degree]:
+        del poly[degree]
+
+
+def primitive(poly, degree):
+    answer = {}
+    for power, coefficient in poly.items():
+        add_term(answer, power + degree,
+                 coefficient * Fraction(degree, power + degree))
+        add_term(answer, power + 1, coefficient / (power + 1))
+    return answer
+
+
+def differentiate(poly):
+    return {power - 1: coefficient * power
+            for power, coefficient in poly.items() if power}
+
+
+def multiply_by_cover_derivative(poly, degree):
+    answer = dict(poly)
+    for power, coefficient in poly.items():
+        add_term(answer, power + degree - 1, degree * coefficient)
+    return answer
+
+
+def serial(poly):
+    return {str(power): str(poly[power]) for power in sorted(poly)}
+
+
+checks = 0
+families = []
+cubic = []
+for degree in range(3, 11):
+    current = {1: Fraction(1)}
+    for depth in range(1, 21):
+        following = primitive(current, degree)
+        assert differentiate(following) == multiply_by_cover_derivative(current, degree)
+        assert max(following) == depth * degree + 1
+        assert min(following) == depth + 1
+        assert len(following) == depth + 1
+        checks += 1
+        if degree == 3 and depth <= 3:
+            cubic.append(serial(following))
+        current = following
+    families.append({"degree": degree, "depth": 20,
+                     "final_polynomial_degree": max(current),
+                     "final_monomial_count": len(current)})
+
+assert cubic == [
+    {"2": "1/2", "4": "3/4"},
+    {"3": "1/6", "5": "9/20", "7": "9/28"},
+    {"4": "1/24", "6": "19/120", "8": "117/560", "10": "27/280"},
+]
+
+result = {"arithmetic": "fractions.Fraction (exact rational arithmetic)",
+          "identities_checked": checks, "failures": 0,
+          "families": families, "cubic_first_three_primitives": cubic,
+          "scope": "Finite exact checks support, but do not replace, the all-degree/all-depth proof."}
+target = Path(__file__).with_suffix(".json")
+target.write_text(json.dumps(result, indent=2) + "\n")
+print(json.dumps(result, indent=2))
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{verify_cover_classifier.py}
+"""Exact finite classification checks on polynomial covers (SymPy).
+
+Acceptance returns a polynomial q with D^N(q)=f. Rejection returns an
+exact linear functional separating f from the bounded polynomial image.
+The infinite-order theorem and the degree bound are proved in the paper.
+"""
+from pathlib import Path
+import json
+import sympy as S
+
+t=S.symbols('t')
+
+def delta(f,p):
+    return S.cancel(S.diff(f,t)/S.diff(p,t))
+
+def iterate(f,p,n):
+    for _ in range(n):
+        f=delta(f,p)
+    return f
+
+def classify(name,p,f,expected):
+    p,f=S.expand(p),S.cancel(f)
+    num,den=S.fraction(f)
+    if f == 0:
+        return dict(name=name,stable=True,N=0,degree_bound=0,witness='0')
+    dp=S.Poly(S.diff(p,t),t,domain=S.QQ)
+    N=0
+    pole_data=[]
+    for fac,m in S.factor_list(den,t)[1]:
+        factor=S.Poly(fac,t,domain=S.QQ)
+        val=0
+        z=dp
+        while z.rem(factor).is_zero:
+            val+=1
+            z=z.exquo(factor)
+        e=val+1
+        N=max(N,(m+e-1)//e)
+        pole_data.append(dict(factor=str(fac),pole_order=int(m),ramification_index=int(e)))
+    d=S.degree(p,t)
+    beta=S.degree(num,t)-S.degree(den,t)
+    B=int(max(d*N+beta,d*(N-1)))
+    assert B>=0
+    images=[iterate(t**j,p,N) for j in range(B+1)]
+    common=S.Poly(1,t,domain=S.QQ)
+    for g in images+[f]:
+        common=S.lcm(common,S.Poly(S.fraction(g)[1],t,domain=S.QQ))
+    cols=[S.Poly(S.cancel(g*common.as_expr()),t,domain=S.QQ) for g in images]
+    target=S.Poly(S.cancel(f*common.as_expr()),t,domain=S.QQ)
+    max_degree=max([0,int(target.degree())]+[int(q.degree()) for q in cols if not q.is_zero])
+    A=S.Matrix([[q.nth(i) for q in cols] for i in range(max_degree+1)])
+    b=S.Matrix([target.nth(i) for i in range(max_degree+1)])
+    rank=A.rank()
+    consistent=rank==A.row_join(b).rank()
+    assert consistent==expected,name
+    data=dict(name=name,cover=str(p),f=str(f),N=int(N),degree_bound=B,
+              poles=pole_data,matrix_shape=list(A.shape),stable=consistent)
+    if consistent:
+        sol,params=A.gauss_jordan_solve(b)
+        sol=sol.subs({z:0 for z in params})
+        q=S.expand(sum(sol[j]*t**j for j in range(B+1)))
+        assert S.cancel(iterate(q,p,N)-f)==0
+        data['polynomial_witness']=str(q)
+    else:
+        w=next(v for v in A.T.nullspace() if (v.T*b)[0]!=0)
+        assert w.T*A==S.zeros(1,A.cols)
+        assert (w.T*b)[0]!=0
+        data['separating_functional']=[str(v) for v in w]
+        data['nonzero_pairing']=str((w.T*b)[0])
+    data['verified']=True
+    print(json.dumps(data),flush=True)
+    return data
+
+if __name__=='__main__':
+    p=t**3+t
+    cases=[
+        ('cubic inverse',p,t,True),
+        ('first derivative',p,1/(3*t*t+1),True),
+        ('weighted first derivative',p,t/(3*t*t+1),True),
+        ('third derivative of a polynomial',p,iterate(t*t,p,3),True),
+        ('simple ordinary pole',p,1/t,False),
+        ('double critical denominator',p,1/(3*t*t+1)**2,False),
+        ('quartic inverse second derivative',t**4+t,iterate(t**3,t**4+t,2),True),
+        ('quintic inverse',t**5+t,t,True),
+        ('quintic ordinary pole',t**5+t,1/t,False),
+        ('cyclic fractional power',t**4,t**-1,True),
+        ('cyclic logarithmic obstruction',t**4,t**-4,False),
+        ('cyclic delayed logarithmic obstruction',t**4,t**-8,False),
+        ('cyclic negative fractional power',t**4,t**-7,True),
+        ('multiple ramification', (t*t+1)**3-1,
+         iterate(t,(t*t+1)**3-1,3),True),
+    ]
+    results=[classify(*case) for case in cases]
+    Path(__file__).with_suffix('.json').write_text(json.dumps(results,indent=2)+'\n')
+\end{filecontents*}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,array}
+\usepackage{xcolor,microtype,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,citecolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={Polynomial Inverses and Algebraic Integration: Counterexamples to Chen's Stability Conjecture},pdfauthor={Keio}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\setlength{\emergencystretch}{3em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Keio}
+\fancyhead[R]{\small Polynomial inverses and algebraic integration}
+\fancyfoot[C]{\thepage}
+\title{Polynomial Inverses and Algebraic Integration\\[5pt]
+\large Counterexamples to Chen's Algebraic-Stability Conjecture\\
+and a Complete Criterion on Fixed Polynomial Covers}
+\author{Keio\thanks{Research development, independent internal checks, and manuscript preparation with ChatGPT.}}
+\date{2 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Chen's 2022 algebraic-stability conjecture proposes that algebraic functions
+admitting arbitrarily many algebraic primitives are precisely finite
+polynomial linear combinations of rational powers of shifted variables.
+We give counterexamples in every degree $d\ge3$: an inverse branch of
+$t^d+t=x$ has an infinite primitive tower in $\mathbb C[t]$, yet generates
+a non-Galois extension of $\mathbb C(x)$ and therefore cannot belong to
+the proposed class. More generally, every polynomial inverse is
+algebraically stable, and it lies in that class exactly when its defining
+polynomial has the form $a(t-b)^d+c$. For a fixed polynomial cover
+$x=P(t)$, we classify all algebraically stable elements of $\mathbb C(t)$
+as $\bigcup_{n\ge0}\delta^n\mathbb C[t]$, where
+$\delta=P'(t)^{-1}d/dt$. Finite pole orders give an explicit bound reducing
+membership to one polynomial linear system. The proofs use classical
+substitution, field trace, valuations, and Galois theory. They refute
+the stated 2022 conjecture, but do not solve the full elementary-function
+classification in Chen--Kauers Problem~8. Historical priority is not
+certified. Two exact verification programs are included in the single
+TeX source.
+\end{abstract}
+
+\section{The historical target and the scope of the result}
+Original Problem~8 of Chen--Kauers~\cite{CK2016} asks which elementary
+functions remain elementary after arbitrarily many integrations.
+This is a broad classification problem. In his later study,
+Chen~\cite[Section~5]{Chen2022} proposed a more specific description
+for functions whose repeated primitives can all be chosen algebraic.
+The counterexamples below concern that exact description. They are
+not a redefinition of the original elementary-function problem.
+
+We distinguish two properties. A function is \emph{algebraically stable}
+if it admits a coherent infinite sequence of primitives in
+$\overline{\mathbb C(x)}$. It is \emph{elementary-stable} if those primitives
+may use elementary extensions, including logarithms. Algebraic stability
+implies elementary stability; the converse fails even on rationally
+parametrized algebraic curves. The distinction also separates both
+notions from stability of the minimum order of a differential equation,
+studied in~\cite{CFGL2023}.
+
+\paragraph{Source verification and priority.}
+The conjecture used here occurs in the conclusion of arXiv:2202.06305v1,
+printed page~14, and is retained in the author's eight-page
+conference-format manuscript, Section~5, PDF page~7. Its coefficient
+and exponent restrictions are reproduced mathematically below.
+A 2025 paper continues to study the related algebraic-stability problem
+through special fields~\cite[Proposition~5.3]{SSS2025}. A search during
+preparation did not identify an earlier identical disproof. This limited
+search does not establish firstness, and the methods themselves are
+classical. The claims are the displayed theorems and the resulting
+contradiction to the stated conjecture, not a new foundational principle
+or an independently certified priority claim.
+% Manuscript fragment: requires amsmath, amssymb, amsthm and theorem/proposition
+% environments. Bibliography key Chen2022 should refer to Stability Problems
+% in Symbolic Integration, ISSAC 2022, DOI 10.1145/3476446.3535502.
+\section{Polynomial inverses and Chen's algebraic-stability conjecture}
+\label{sec:polynomial-inverses}
+
+We address the specific algebraic-stability conjecture proposed in Section~5
+of Chen's \emph{Stability Problems in Symbolic Integration}~\cite{Chen2022}. Its asserted
+description of the elements stable under $d/dx$ in
+$\overline{\mathbb C(x)}$ is the class of finite sums
+\begin{equation}\label{eq:chen-proposed-algebraic-class}
+ \sum_{i=1}^{r}p_i(x)(x-c_i)^{\alpha_i},\qquad
+ p_i\in\mathbb C[x],\quad c_i\in\mathbb C,\quad
+ \alpha_i\in\mathbb Q\setminus\{-1,-2,\ldots\}.
+\end{equation}
+Here stability means the existence of a sequence $f_0,f_1,\ldots$ in the
+algebraic closure with $f_0=f$ and $Df_{n+1}=f_n$ for every $n\ge0$.
+We give counterexamples to the proposed necessity in
+\eqref{eq:chen-proposed-algebraic-class}. This is a statement about that
+specific conjecture; it is not a classification of all elementary-stable
+functions and does not close Chen--Kauers Problem~8. No assertion of historical
+priority is needed for the mathematical arguments below.
+
+\begin{proposition}[Polynomial pullback primitives]
+\label{prop:polynomial-pullback}
+Let $P\in\mathbb C[t]$ be nonconstant and identify $x=P(t)$. Every
+$Q(t)\in\mathbb C[t]$ is stable under $D=d/dx$ in the finite algebraic
+extension $\mathbb C(t)/\mathbb C(x)$. In particular, every local inverse
+branch $t=t(x)$ of a polynomial admits an infinite tower of algebraic
+primitives in the same function field.
+\end{proposition}
+
+\begin{proof}
+The derivation extends uniquely to the function field, where
+\[
+ D=\frac1{P'(t)}\frac d{dt}.
+\]
+Define a linear map on polynomials by
+\begin{equation}\label{eq:pullback-primitive-map}
+ (J_PQ)(t)=\int_0^t P'(u)Q(u)\,du.
+\end{equation}
+The integral in \eqref{eq:pullback-primitive-map} is ordinary polynomial
+antidifferentiation, so $J_PQ\in\mathbb C[t]$, and the chain rule gives
+$D(J_PQ)=Q$. Consequently $f_n=J_P^nQ$ is the required infinite tower.
+Although $D$ need not preserve the polynomial subring, the right-inverse
+construction does; no assertion that $\mathbb C[t]$ is a differential subring
+is being made.
+\end{proof}
+
+\begin{proposition}[An abelian-extension obstruction]
+\label{prop:abelian-obstruction}
+Every function of the form \eqref{eq:chen-proposed-algebraic-class} generates
+a Galois extension of $\mathbb C(x)$ whose Galois group is abelian.
+\end{proposition}
+
+\begin{proof}
+Write $\alpha_i=a_i/m_i$ with $a_i\in\mathbb Z$ and $m_i\ge1$, and choose
+$u_i$ with $u_i^{m_i}=x-c_i$. Because $\mathbb C$ contains all roots of unity,
+$\mathbb C(x,u_i)/\mathbb C(x)$ is a cyclic Galois extension, allowing the
+trivial case. Its splitting polynomial is $T^{m_i}-(x-c_i)$. The compositum
+\[
+ E=\mathbb C(x,u_1,\ldots,u_r)
+\]
+is finite Galois, and its Galois group embeds into a product of cyclic groups,
+so is abelian. The displayed sum belongs to $E$. Every subgroup of an abelian
+group is normal; therefore every intermediate field, including the field
+generated by the sum, is Galois over $\mathbb C(x)$, with abelian group.
+\end{proof}
+
+\begin{theorem}[Which polynomial inverses have the proposed form]
+\label{thm:polynomial-inverse-classification}
+Let $P\in\mathbb C[t]$ have degree $d\ge1$, and identify $x=P(t)$. The
+function $t$ has a representation of the form
+\eqref{eq:chen-proposed-algebraic-class} if and only if
+\begin{equation}\label{eq:affine-power-polynomial}
+ P(t)=a(t-b)^d+c
+ \qquad(a\in\mathbb C^*,\ b,c\in\mathbb C).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The sufficiency follows from
+$t=b+a^{-1/d}(x-c)^{1/d}$. Conversely, a representation of the proposed form
+implies by Proposition~\ref{prop:abelian-obstruction} that
+$\mathbb C(t)/\mathbb C(P(t))$ is Galois. It has degree $d$, so its
+automorphism group $G$ has order $d$.
+
+For $\sigma\in G$, write $\sigma(t)=r_\sigma(t)\in\mathbb C(t)$. The identity
+$P(r_\sigma(t))=P(t)$ shows that $r_\sigma$ has no finite pole and that
+$\deg r_\sigma=1$. Hence the maps $r_\sigma$ form a finite group of affine
+transformations. The point
+\[
+ b=\frac1{|G|}\sum_{\sigma\in G}r_\sigma(0)
+\]
+is fixed by every map $r_\sigma$: applying any affine group element commutes
+with this average and permutes the terms. In the coordinate $u=t-b$, the
+group therefore consists of multiplications $u\mapsto\lambda u$. It is a
+subgroup of $\mathbb C^*$ of order $d$, hence the group of $d$th roots of
+unity. Invariance of the degree-$d$ polynomial $P(b+u)$ then forces all its
+nonconstant monomials to have degrees divisible by $d$. Consequently
+$P(b+u)=au^d+c$ with $a\ne0$, proving \eqref{eq:affine-power-polynomial}.
+\end{proof}
+
+\begin{theorem}[Counterexamples in every degree at least three]
+\label{thm:polynomial-inverse-counterexamples}
+For any integer $d\ge3$, let $t_d$ satisfy
+\begin{equation}\label{eq:inverse-family}
+ t_d^d+t_d=x.
+\end{equation}
+Then $t_d$ is stable under $d/dx$ in $\overline{\mathbb C(x)}$, but it has
+no representation of the form \eqref{eq:chen-proposed-algebraic-class}.
+Hence the proposed necessity in Chen's algebraic-stability conjecture is false.
+\end{theorem}
+
+\begin{proof}
+Stability follows from Proposition~\ref{prop:polynomial-pullback} with
+$P(t)=t^d+t$ and $Q(t)=t$. It remains to prove that
+$\mathbb C(t)/\mathbb C(t^d+t)$ is not Galois.
+
+The polynomial $T^d+T-x$ is irreducible over $\mathbb C(x)$. Indeed
+$x-T^d-T$ is irreducible in $\mathbb C[x,T]$: viewed as a polynomial in $x$
+over $\mathbb C[T]$, its leading coefficient is a unit and its degree is one.
+Gauss's lemma then proves the asserted irreducibility over $\mathbb C(x)$.
+Thus the extension has degree $d$ and is separable.
+
+Suppose an automorphism over $\mathbb C(t^d+t)$ sends $t$ to $r(t)\in
+\mathbb C(t)$. Then
+\begin{equation}\label{eq:deck-equation}
+ r(t)^d+r(t)=t^d+t.
+\end{equation}
+A finite pole of $r$ would give a finite pole on the left, with the highest
+pole order coming from $r^d$ and therefore unable to cancel. The right side
+has no finite poles, so $r$ is a polynomial. Comparing degrees in
+\eqref{eq:deck-equation} gives $\deg r=1$; write $r(t)=at+b$ with $a\ne0$.
+Since $d\ge3$, comparison of the coefficient of $t^{d-1}$ gives
+$da^{d-1}b=0$, hence $b=0$. Leading coefficients give $a^d=1$, while the
+coefficient of $t$ gives $a=1$. Thus the identity is the only automorphism.
+An extension of degree $d>1$ with only one automorphism is not Galois.
+
+If $t_d$ had the proposed representation, Proposition~\ref{prop:abelian-obstruction}
+would make its generated extension Galois, a contradiction.
+\end{proof}
+
+The same obstruction excludes even finite sums of rational multiples of
+rational-function radicals whose compositum is abelian. The proof uses
+polynomial substitution and elementary Galois theory; it does not introduce
+a new foundational principle or rely on a conjectural classification.
+
+\paragraph{The cubic example and its first three primitives.}
+For $x=t^3+t$, choose all integration constants to make the polynomials vanish
+at $t=0$. The first three primitives of $t$ are
+\begin{align*}
+ F_1(t)&=\frac34t^4+\frac12t^2,\\
+ F_2(t)&=\frac9{28}t^7+\frac9{20}t^5+\frac16t^3,\\
+ F_3(t)&=\frac{27}{280}t^{10}+\frac{117}{560}t^8
+          +\frac{19}{120}t^6+\frac1{24}t^4.
+\end{align*}
+They satisfy $DF_1=t$, $DF_2=F_1$, and $DF_3=F_2$, with
+$D=(3t^2+1)^{-1}d/dt$. An independent check of non-Galoisness in degree three
+is the discriminant
+\[
+ \operatorname{disc}_T(T^3+T-x)=-4-27x^2,
+\]
+which has two simple zeros and is not a square in $\mathbb C(x)$.
+
+More generally the tower for \eqref{eq:inverse-family} can be computed using
+the monomial rule
+\[
+ J_P(t^m)=\frac{d}{m+d}t^{m+d}+\frac1{m+1}t^{m+1}.
+\]
+Starting from $t$, its $n$th member has degree $nd+1$. This exact recurrence
+also gives reproducible symbolic verification of as many initial levels as
+desired; such checks illustrate the uniform proof rather than replace it.
+\section{Complete algebraic-stability classification on a polynomial cover}
+\label{sec:classification}
+Fix a nonconstant $P\in\mathbb C[t]$, put $x=P(t)$, and write
+$K=\mathbb C(t)$ and $\delta=P'(t)^{-1}d/dt$.
+The next result classifies all rational functions in this presentation,
+with algebraic primitives allowed in the entire algebraic closure.
+It is more restrictive than elementary integration, where logarithms
+are permitted, and more general than considering only the inverse
+function $t$ itself.
+
+\begin{lemma}[Descent of algebraic primitives]\label{lem:trace}
+Let $K$ be a characteristic-zero differential field. If $f\in K$ and
+$\delta^n g=f$ for an element $g$ algebraic over $K$, then there is
+$h\in K$ with $\delta^n h=f$.
+\end{lemma}
+\begin{proof}
+The finite extension $L=K(g)$ is stable under the uniquely extended
+derivation: differentiating the minimal polynomial expresses $\delta g$
+in $L$, since its derivative with respect to its indeterminate is nonzero
+at $g$. Every $K$-embedding of $L$ into an algebraic closure commutes
+with the extended derivation, by uniqueness. Thus field trace commutes
+with $\delta$ and its powers. The normalized trace
+$h=[L:K]^{-1}\operatorname{Tr}_{L/K}(g)$ satisfies $\delta^n h=f$.
+\end{proof}
+
+\begin{lemma}[Finite pole growth]\label{lem:pole-growth}
+At a finite point $a$, put
+$e_a=\operatorname{ord}_{t=a}(P(t)-P(a))\ge1$.
+If $g\in K$ has a pole of order $k>0$ at $a$, then $\delta^n g$
+has a pole of exactly $k+ne_a$ at $a$, for every $n\ge0$.
+\end{lemma}
+\begin{proof}
+With $u=t-a$, write $P(t)-P(a)=c u^{e_a}+O(u^{e_a+1})$ and
+$g=b u^{-k}+O(u^{1-k})$, with $bc\ne0$. Then
+\[
+ \delta g=-\frac{kb}{e_a c}u^{-k-e_a}
+                 +O(u^{1-k-e_a}).
+\]
+The leading coefficient is nonzero in characteristic zero. Iterating
+the same calculation proves the assertion.
+\end{proof}
+
+\begin{theorem}[Classification and a finite decision bound]
+\label{thm:cover-classification}
+For nonzero $f\in\mathbb C(t)$, let $m_a$ be its pole order at each
+finite pole $a$. Define
+\begin{equation}\label{eq:N-bound}
+ N(f)=\max_{a\text{ a finite pole of }f}
+              \left\lceil\frac{m_a}{e_a}\right\rceil,
+ \qquad \max\varnothing=0.
+\end{equation}
+The following are equivalent:
+\begin{enumerate}
+\item $f$ is stable under $d/dx$ in $\overline{\mathbb C(x)}$;
+\item $f=\delta^Nq$ for some $q\in\mathbb C[t]$, with $N=N(f)$;
+\item $f$ has an algebraic $N(f)$-fold primitive.
+\end{enumerate}
+In particular,
+\begin{equation}\label{eq:stable-union}
+ \operatorname{Stab}(\delta,\overline{\mathbb C(x)})\cap\mathbb C(t)
+   =\bigcup_{n\ge0}\delta^n\mathbb C[t].
+\end{equation}
+For $f=0$ all assertions hold trivially.
+\end{theorem}
+\begin{proof}
+The implication (1)$\Rightarrow$(3) is immediate. For (3)$\Rightarrow$(2),
+Lemma~\ref{lem:trace} descends an algebraic $N$-fold primitive to some
+$q\in K$. Suppose $q$ has a finite pole at $a$, of order $k>0$.
+Lemma~\ref{lem:pole-growth} implies that $f$ has a pole there of order
+$m_a=k+Ne_a>Ne_a$. But the choice of $N$ gives $Ne_a\ge m_a$, a
+contradiction. A pole of $q$ outside the pole set of $f$ is excluded by
+the same lemma. Hence $q$ has no finite poles and is a polynomial.
+If $N=0$, the hypothesis says simply that $f$ has no finite poles, with
+the same conclusion.
+
+For (2)$\Rightarrow$(1), polynomial primitives are supplied by $J_P$
+from~\eqref{eq:pullback-primitive-map}. A coherent primitive sequence
+for $f=\delta^Nq$ begins with
+\[
+ \delta^Nq,\ \delta^{N-1}q,\ldots,q,\ J_Pq,\ J_P^2q,\ldots.
+\]
+Every element lies in $K$. This proves the equivalence and the union
+description. The union is increasing: $\mathbb C[t]\subseteq
+\delta\mathbb C[t]$ because $\delta J_P$ is the identity on polynomials.
+\end{proof}
+
+\begin{proposition}[A polynomial degree bound]\label{prop:q-degree}
+Let $d=\deg P$ and, for a reduced fraction $f=A/B\ne0$, put
+$\beta=\deg A-\deg B$. If $f=\delta^Nq$ for a polynomial $q$, then
+\begin{equation}\label{eq:q-degree}
+ \deg q\le B_f:=\max\{Nd+\beta,\ d(N-1)\}.
+\end{equation}
+Here $\beta$ is the growth degree at infinity, the negative of the
+valuation at infinity. For $N=0$, the bound is $\deg q=\beta$.
+\end{proposition}
+\begin{proof}
+Write $P(t)=c t^d+O(t^{d-1})$. If $M=\deg q>d(N-1)$, then successive
+leading terms under $\delta$ have degrees $M-d,M-2d,\ldots,M-Nd$,
+and their combined leading coefficient contains the nonzero factor
+\[
+ (dc)^{-N}\prod_{j=0}^{N-1}(M-jd).
+\]
+Consequently $\beta=M-Nd$ and $M=Nd+\beta$. If
+$M\le d(N-1)$ there is nothing to prove. The case $N=0$ is immediate.
+\end{proof}
+
+Theorems~\ref{thm:cover-classification} and~\ref{prop:q-degree} give a
+terminating decision procedure over an effective coefficient field.
+Factor the reduced denominator of $f$, calculate its pole orders and
+the corresponding multiplicities in $P'$, and form $N(f)$.
+Then substitute
+\[
+ q(t)=\sum_{j=0}^{B_f}c_jt^j
+\]
+into $\delta^Nq=f$, clear denominators, and solve the finite linear
+system. If $B_f<0$, no nonzero polynomial candidate exists, so the
+answer is negative. A solution provides the whole primitive tower;
+inconsistency proves that no algebraic $N$-fold primitive, and hence
+no algebraic stability, is possible. Over $\mathbb Q$, factorization
+over $\mathbb Q$ suffices for computing $N$: all roots of a given
+irreducible factor have the same denominator and $P'$ multiplicities.
+
+This is a complete classification in the stated fixed polynomial
+cover. It does not assert that every algebraic function belongs to
+such a presentation.
+
+\section{Elementary stability and the scope of Problem 8}
+\label{sec:elementary}
+The distinction between algebraic and elementary primitives is essential.
+An algebraic function may fail the classification above and nevertheless
+admit arbitrarily many elementary primitives.
+
+\begin{lemma}[Polynomial moments and repeated integration]
+\label{lem:moments}
+In a differential field with $Dx=1$, if $H_j'=x^jf$ for all $j\ge0$,
+then a coherent primitive sequence is given by $G_0=f$ and
+\begin{equation}\label{eq:moment-primitive}
+ G_n=\frac1{(n-1)!}\sum_{j=0}^{n-1}
+       (-1)^j\binom{n-1}{j}x^{n-1-j}H_j,\qquad n\ge1.
+\end{equation}
+Conversely, the existence of all repeated primitives implies the
+integrability of all $x^jf$ in the same field.
+\end{lemma}
+\begin{proof}
+Differentiating~\eqref{eq:moment-primitive}, the terms containing $f$
+cancel by the binomial theorem when $n>1$, and the remaining terms give
+$G_{n-1}$. For $n=1$, the derivative is $f$. Conversely, if
+$D^{j+1}g=f$, repeated integration by parts expresses a primitive of
+$x^jf$ as a finite sum of polynomial multiples of derivatives of $g$.
+\end{proof}
+This equivalence is already used in Chen--Kauers~\cite{CK2016} and
+Chen~\cite[Lemma~2.10]{Chen2022}; it is recalled to make the scope clear.
+
+\begin{proposition}[Rationally parametrized elementary stability]
+\label{prop:rational-cover}
+Let $x=R(t)$ for any nonconstant rational function
+$R\in\mathbb C(t)$. Every $f\in\mathbb C(t)$ is elementary-stable
+over $\mathbb C(x)$.
+\end{proposition}
+\begin{proof}
+For every $j\ge0$, substitution gives
+\[
+ x^jf\,dx=R(t)^j f(t)R'(t)\,dt,
+\]
+a rational differential in $t$. Its primitive is a rational function
+plus a finite constant linear combination of logarithms of rational
+functions in $t$, by partial fractions. Since $t$ is algebraic over
+$\mathbb C(x)$, these primitives are elementary over that field.
+Lemma~\ref{lem:moments} constructs all repeated elementary primitives.
+\end{proof}
+
+For example, on $x=t^3+t$, the function $f=1/t$ has
+$N(f)=1$ but no algebraic primitive:
+\[
+ \int f\,dx=\int\frac{3t^2+1}{t}\,dt
+          =\frac32t^2+\log t.
+\]
+Its nonzero simple residue prevents a rational primitive in $\mathbb C(t)$,
+and Lemma~\ref{lem:trace} prevents an algebraic primitive in any finite
+extension. Nevertheless it is elementary-stable by
+Proposition~\ref{prop:rational-cover}.
+
+Chen--Kauers Problem~8 asks for the class of \emph{all} elementary-stable
+functions. The results here settle neither higher-genus algebraic
+presentations in general nor arbitrary nested exponential and logarithmic
+extensions. They refute a particular proposed algebraic classification
+and give exact positive and negative results on a substantial family.
+The full original problem remains unresolved by this manuscript.
+
+\section{Concrete examples and exact verification}
+\subsection{An elementary real branch}
+The cubic counterexample has a unique real branch, because
+$t\mapsto t^3+t$ is strictly increasing. It can be written explicitly as
+\begin{equation}\label{eq:real-cubic}
+ t(x)=\frac2{\sqrt3}\sinh\!\left(
+       \frac13\operatorname{arsinh}\!\left(\frac{3\sqrt3}{2}x\right)
+       \right).
+\end{equation}
+The identity $\sinh(3u)=4\sinh^3u+3\sinh u$ verifies $t^3+t=x$.
+Thus the example can also be presented using familiar elementary
+functions. Its exclusion from Chen's proposed class does not mean it
+is inexpressible using nested radicals or elementary compositions;
+it excludes the particular finite sum in
+\eqref{eq:chen-proposed-algebraic-class}.
+
+Its first primitive is already enough to display the mechanism:
+\[
+ \frac{d}{dx}\left(\frac34t(x)^4+\frac12t(x)^2\right)
+ =\frac{3t^3+t}{3t^2+1}=t.
+\]
+The map $J_P$ supplies every later primitive without introducing a
+larger field or an unproved limiting step.
+
+\subsection{Positive and negative classification examples}
+For $x=t^3+t$, set $q(t)=3t^2+1$. Representative outcomes of the finite
+algorithm are shown below. In this table ``stable'' means
+\emph{algebraically} stable. All listed functions are elementary-stable
+by Proposition~\ref{prop:rational-cover}.
+\begin{center}
+\begin{tabular}{@{}lrrl@{}}
+\toprule
+Input & $N(f)$ & $B_f$ & Algebraic outcome\\
+\midrule
+$t$ & $0$ & $1$ & Stable: polynomial tower\\
+$1/q$ & $1$ & $1$ & Stable: $\delta(t)=1/q$\\
+$t/q$ & $1$ & $2$ & Stable: $\delta(t^2/2)=t/q$\\
+$\delta^3(t^2)$ & $3$ & $6$ & Stable: witness $t^2$\\
+$1/t$ & $1$ & $2$ & No algebraic first primitive\\
+$1/q^2$ & $1$ & $0$ & No algebraic first primitive\\
+\bottomrule
+\end{tabular}
+\end{center}
+The second negative case follows because a candidate polynomial
+primitive would have degree at most zero and therefore derivative zero.
+This conclusion concerns primitives in the entire algebraic closure,
+by trace descent, not just a failed choice of rational ansatz.
+
+On the cyclic cover $x=t^4$, the same algorithm accepts $t^{-1}$ and
+$t^{-7}$ but rejects $t^{-4}$ and $t^{-8}$. For example,
+\[
+ \delta^2\left(-\frac{16}{3}t\right)=t^{-7},\qquad
+ t^{-8}=x^{-2}.
+\]
+The latter has a first algebraic primitive $-x^{-1}$, followed by a
+logarithmic obstruction. This tests the distinction between one-time
+algebraic integrability and stability.
+
+\subsection{Verification record}
+The first embedded program uses only Python's exact rational arithmetic.
+It verifies the primitive recurrence for each $d=3,\ldots,10$ through
+depth $20$: all $160$ identities pass. It also checks the first three
+cubic primitives printed above and the degree of every tested tower
+element. These finite checks supplement the uniform proof, which
+applies to every $d\ge3$ and every depth.
+
+The second program implements the classification in
+Theorem~\ref{thm:cover-classification} over $\mathbb Q$. It checks $14$
+examples, including ordinary poles, simple and multiple ramification,
+and delayed logarithmic obstructions. Every positive case returns a
+polynomial $q$ and verifies $\delta^Nq=f$ exactly. Every negative case
+returns a row vector $w$ for the cleared linear system $Ac=b$ such that
+\[
+ wA=0,\qquad wb\ne0.
+\]
+This is an exact inconsistency certificate. All $14$ outcomes pass their
+independent identity or separating-functional checks. The proof of the
+degree bound is essential: an inconsistent arbitrary truncated ansatz
+would not certify nonexistence.
+
+\paragraph{Reproduction from a single source.}
+The source includes the bibliography and both Python programs in
+\texttt{filecontents*} blocks. Normal LaTeX compilation extracts the
+programs without executing them. Run
+\begin{verbatim}
+python3 verify_polynomial_inverse.py
+python3 verify_cover_classifier.py
+\end{verbatim}
+The first program uses the standard Python library; the second requires
+SymPy. Both produce JSON records. No shell escape, external bibliography,
+or separate figure file is required to compile the paper.
+
+\section{Consequences and remaining questions}
+The conjectured algebraic classification fails by explicit counterexamples
+of every degree at least three. The obstruction is structural: the
+proposed expression class lies in abelian extensions, whereas polynomial
+inverse branches need not generate normal extensions at all. Repeated
+algebraic integration is therefore compatible with this nonabelian
+field-theoretic behavior.
+
+For polynomial covers, the corrected description
+\eqref{eq:stable-union} is complete and effective. It explains both the
+counterexamples and their stable rational derivatives, and gives finite
+negative certificates for functions that acquire logarithms after a
+bounded number of integrations. It does not propose a universal
+replacement classification for all algebraic functions.
+
+The full Chen--Kauers Problem~8 still requires arbitrary elementary
+towers to be treated. This manuscript does not prove that every
+elementary-stable function is D-finite, does not classify positive-genus
+algebraic function fields in general, and does not certify the absence
+of earlier equivalent results. The counterexample proof is unconditional
+and self-contained; external review and a broader priority assessment
+remain separate tasks.
+
+\begin{thebibliography}{9}
+\bibitem{CK2016}
+S. Chen and M. Kauers,
+\emph{Some open problems related to creative telescoping},
+arXiv:1609.03768, 2016, original Problem~8.
+\url{https://arxiv.org/abs/1609.03768}.
+
+\bibitem{Chen2022}
+S. Chen, \emph{Stability problems in symbolic integration},
+Proceedings of ISSAC 2022, pp.~517--524,
+\url{https://doi.org/10.1145/3476446.3535502}.
+Preprint: \url{https://arxiv.org/abs/2202.06305}.
+The conjecture is in Section~5, printed p.~14 of the preprint.
+Author's conference-format manuscript:
+\url{http://www.mmrc.iss.ac.cn/~schen/Chen2022stable.pdf}.
+
+\bibitem{CFGL2023}
+S. Chen, R. Feng, Z. Guo, and W. Lu,
+\emph{Stability problems on D-finite functions},
+Proceedings of ISSAC 2023, pp.~164--172,
+\url{https://doi.org/10.1145/3597066.3597085}.
+\url{https://arxiv.org/abs/2311.05897}.
+
+\bibitem{SSS2025}
+C. Sahu, M. Seiss, and V. R. Srinivasan,
+\emph{Iterated and generalized iterated integrals},
+arXiv:2504.04846, 2025;
+Journal of Algebra and Its Applications,
+\url{https://doi.org/10.1142/S0219498826502865}.
+\url{https://arxiv.org/abs/2504.04846}.
+\end{thebibliography}
+\end{document}

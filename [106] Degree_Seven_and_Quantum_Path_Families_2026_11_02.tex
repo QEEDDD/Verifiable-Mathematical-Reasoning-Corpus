@@ -1,0 +1,1800 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,enumitem,listings,xcolor,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black,hypertexnames=false]{hyperref}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{.25em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Exact local potentials and quantum path families}
+\fancyhead[R]{\small Research manuscript}\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\rad}{rad}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\ecc}{ecc}
+\newcommand{\Z}{\mathbb Z}\newcommand{\R}{\mathbb R}\newcommand{\Q}{\mathbb Q}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{black!20},aboveskip=8pt,belowskip=8pt}
+\title{Exact Local Potentials for the Randi\'c--Radius Problem\\[5pt]
+\large The degree-seven case and new randomized quantum mixing families}
+\author{Keio Research Notes\\\small With internal proof audits and exact computational certificates}
+\date{2 November 2026}
+\hypersetup{pdftitle={Exact Local Potentials for the Randic-Radius Problem},pdfauthor={Keio Research Notes}}
+\begin{document}
+\maketitle
+\begin{abstract}
+We prove that every finite connected simple graph of maximum degree at
+most seven satisfies
+\(\sum_{uv\in E(G)}1/\max(d_u,d_v)\ge\rho(G)\), where
+\(\rho\) is the minimum eccentricity over vertex and edge-interior
+centres with demand at the original vertices. Consequently its
+Randi\'c index is at least \(\rad(G)-1/2\). The proof combines a
+minimal-counterexample reduction with exact rational local potentials.
+A first certificate bounds a hypothetical core by twelve vertices;
+fourteen further dual certificates and one simplicity constraint reduce
+this to eleven. An exhaustive integer-arithmetic core check completes
+the proof. The source, certificate data, and verifiers are included in
+the single TeX file.
+Independently, we construct bounded compactly supported observation-time
+densities giving exact uniform quantum mixing on \(P_{3p-1}\) for
+every prime \(p\notin\{5,7\}\); the excluded cases are impossible
+by an existing obstruction. A second construction covers
+\(P_{2^A p^k-1}\) for primes \(p\ge5\), every \(A\ge1\), and
+every \(k\ge2\).
+These are advances on specified infinite classes. Neither the unrestricted
+Fajtlowicz conjecture nor the classification of all quantum paths is
+settled here. Historical priority and comparative research value are
+not certified.
+\end{abstract}
+
+\section{Original targets and the exact scope of the results}
+Fajtlowicz's 1988 conjecture asks whether every connected graph satisfies
+\(R(G)\ge\rad(G)-1\), where
+\[
+ R(G)=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}}.
+\]
+We retain this original statement. Our graph theorem proves a stronger
+inequality on the class \(\Delta(G)\le7\), with no restriction on the
+number of vertices. It is a bounded-degree case, not a proof of the
+unrestricted named conjecture. Cygan, Pilipczuk and \v{S}krekovski proved
+the corresponding classical radius conclusions for maximum degree four
+\cite{CPS}. Doig's later work treats cactus graphs and gives further
+context \cite{Doig2023}.
+
+For quantum walks, the target is exact uniformity of all averaged
+transition probabilities under a single freely chosen observation-time
+law. This is the randomized observation problem discussed by
+Coutinho and Guo \cite{CoutinhoGuo2024} and studied for paths by Kang
+\cite{Kang2026}. Our family classifications use this same notion.
+They do not concern uniformity of the standard Ces\`aro time average,
+instantaneous uniform mixing, or the separate rank-two average-mixing
+problem. Published cases and obstructions are distinguished from the
+new positive constructions below.
+
+\paragraph{Starting material.}
+We inspected the 102 numbered research drafts in the repository
+\cite{Corpus}, at commit
+\begin{center}\small\texttt{ecd87de3348dcb706a76bb12fde722d7a348a012}.\end{center}
+Its timestamp is 2 November 2026, 19:38:17, UTC+09:00; a fresh fetch
+confirmed this snapshot. The repository's own provenance statement
+identifies it as an unrefereed collection and warns that it may contain
+errors. We use its statements as research leads and reproduce the
+analytic reduction needed from [087]. The preceding research note's
+factorial core bound and odd-prime-power mixing theorem are starting
+points, not results counted again in this round.
+
+\paragraph{Methodological contribution and limits.}
+The auxiliary graph problem is to assign rational potentials to local
+degree types so that every permitted edge pays for the local vertex
+inequality. Solving this finite problem converts a qualitative
+minimal-counterexample reduction into a small, exact certificate.
+The quantum construction instead prescribes moments on the actual
+frequency-relation torus and then corrects them on a finite interval of
+observation times. A positive quadratic density supplies correlations
+with a dependent phase; a separate root-label construction handles a
+fixed zero mode. These are concrete constructions relative to the
+inspected source material. Linear programming duality, character
+orthogonality and harmonic analysis are established tools; we do not
+assert a historically unprecedented foundational principle.
+
+The requested conjunction of an unchanged previously open named problem,
+a complete unrestricted solution, historical novelty, and higher value
+than all previous work has \emph{not} been established. Complete proofs
+for the stated classes, a bounded literature search, and global priority
+are different claims. Exact computations and independent audits support
+the results here; they are not a proof-assistant formalization or external
+peer review.
+
+
+\section{The modified Randi\'c--radius inequality through degree seven}
+\label{sec:g7-main}
+
+For a finite simple graph put
+\[
+ M(G)=\sum_{uv\in E(G)}\frac1{\max(d_G(u),d_G(v))},
+ \qquad R(G)=\sum_{uv\in E(G)}\frac1{\sqrt{d_G(u)d_G(v)}}.
+\]
+Let $\Gamma(G)$ replace every edge by a unit segment, and define the
+\emph{vertex-demand absolute radius}
+\[
+ \rho(G)=\min_{x\in\Gamma(G)}\max_{v\in V(G)}d(x,v).
+\]
+The maximum here is over graph vertices, not over all points of the
+metric realization. This distinction matters, for example on cycles.
+
+\begin{theorem}\label{thm:g7-main}
+Every connected finite simple graph of maximum degree at most seven satisfies
+\[
+ M(G)\ge\rho(G)\ge\operatorname{rad}(G)-\tfrac12.
+\]
+Consequently $R(G)\ge\operatorname{rad}(G)-\tfrac12$, and in particular
+Fajtlowicz's inequality $R(G)\ge\operatorname{rad}(G)-1$ holds throughout
+this class.
+\end{theorem}
+
+This is a bounded-degree result. It does not prove either the unrestricted
+Fajtlowicz conjecture or the unrestricted Caporossi--Hansen conjecture.
+For the classical Randi\'c--radius problem, the established
+chemical-graph case has maximum degree four \cite{CPS}; corpus manuscript~\cite{Corpus087} develops the absolute-radius
+reduction and proves the degree-five case. We reproduce the necessary
+analytic reduction below. The new step is an exact degree-type potential:
+it bounds every residual core by twelve vertices, and a second finite
+certificate excludes order twelve. All rational certificates and their
+standard-library verifier are included in the accompanying single source.
+No claim that a literature search establishes worldwide priority is made.
+
+\subsection{Elementary metric and deletion identities}
+
+The minimum defining $\rho$ is attained at a vertex or an edge midpoint.
+Indeed, on an edge $uv$, at coordinate $t\in[0,1]$, distance to a vertex
+$w$ is $\min\{t+d(u,w),1-t+d(v,w)\}$; the two integer endpoint distances
+differ by at most one. The upper envelope has a minimum at $0$, $1/2$,
+or $1$. Thus
+\begin{equation}\label{eq:g7-rhoformula}
+ 2\rho(G)=\min\left\{
+ 2\operatorname{rad}(G),\
+ \min_{uv\in E(G)}\left(1+2\max_w\min\{d(u,w),d(v,w)\}\right)
+ \right\},
+\end{equation}
+so $\rho\in\{\operatorname{rad}-1/2,\operatorname{rad}\}$.
+Deleting a non-bridge edge cannot decrease $\rho$.
+
+For a leaf $\ell$ with support $p$, $d=d_G(p)\ge2$, let $\lambda$ count
+neighbors of $p$ other than $\ell$ whose full degrees are less than $d$.
+Directly recomputing affected weights gives
+\begin{equation}\label{eq:g7-leaf}
+ M(G)-M(G-\ell)=\frac1d-\frac\lambda{d(d-1)}\ge0.
+\end{equation}
+For an edge $uv$ with both degrees at least two, let $\beta_u$ count
+lower-degree neighbors of $u$ other than $v$, and define $\beta_v$
+symmetrically. Then
+\begin{equation}\label{eq:g7-edge}
+ M(G-uv)-M(G)=
+ \frac{\beta_u}{d_u(d_u-1)}+
+ \frac{\beta_v}{d_v(d_v-1)}-\frac1{\max(d_u,d_v)}.
+\end{equation}
+An edge is called \emph{supportive} when this change is positive.
+
+\begin{lemma}\label{lem:g7-leafmetric}
+For a connected graph with at least three vertices and a leaf $\ell$,
+\[
+ \rho(G)-\tfrac12\le\rho(G-\ell)\le\rho(G).
+\]
+Deleting any set of leaves lowers $\rho$ by at most one. If two leaves
+have the same support and $G$ is not a star, deleting one of them leaves
+$\rho$ unchanged.
+\end{lemma}
+\begin{proof}
+Distances between retained vertices and edge points do not change.
+A center lying in a deleted pendant edge can be moved to its support,
+proving the upper bound. Let $y$ be a vertex or midpoint center of
+$G-\ell$, with value $\rho'$, and let $p$ support $\ell$. If
+$d(y,p)\le\rho'-1/2$, the same point has value at most $\rho'+1/2$ in
+$G$. Otherwise $d(y,p)=\rho'$, since both quantities are half-integers.
+Move $y$ by $1/2$ toward $p$. All retained vertices are then within
+$\rho'+1/2$, as is $\ell$. This proves the lower bound. For a set of
+leaves, a center of the retained graph is within one extra unit of
+every removed leaf. Finally, for two leaves at $p$, choose a center
+of the graph after one deletion outside the remaining pendant edge:
+if necessary, its projection to $p$ is at least as good. The remaining
+leaf then has the same distance as the deleted one, proving equality.
+\end{proof}
+
+\begin{lemma}[Cut-vertex padding]\label{lem:g7-padding}
+Suppose $v$ is a cut vertex and $V(G)\setminus\{v\}=A\sqcup B$ with no
+edge from $A$ to $B$, where both $G[A]$ and $G[B]$ contain an edge.
+Let $H_A=G[A\cup\{v\}]$, and obtain $G_A$ by adding $d_B(v)$ new leaves
+at $v$. Define $G_B$ symmetrically. Then degrees of retained vertices
+are preserved, and
+\[
+ M(G)=M(G_A)+M(G_B)-1,
+ \qquad \rho(G)\le\rho(G_A)+\rho(G_B)-1.
+\]
+\end{lemma}
+\begin{proof}
+The two padded graphs preserve all original edge weights, while their
+new leaf weights sum to $(d_A(v)+d_B(v))/d_G(v)=1$.
+Put $\rho_A=\rho(G_A)$ and choose a center $y_A\in\Gamma(H_A)$;
+a center in a new pendant edge can be projected to $v$. Set
+$s_A=d(y_A,v)$. Since $G_A$ has a leaf at $v$, $s_A\le\rho_A-1$.
+Define $y_B,s_B$ similarly. On a geodesic from $y_A$ through $v$ to
+$y_B$, with signed coordinate $p\in[-s_A,s_B]$, every vertex is within
+\[
+ \max\{\rho_A+s_A+p,\rho_B+s_B-p\}.
+\]
+If the balancing point lies in this interval, the minimum of this
+upper bound is $(\rho_A+\rho_B+s_A+s_B)/2\le\rho_A+\rho_B-1$.
+If it lies outside, one endpoint gives at most $\max(\rho_A,\rho_B)$,
+which is also at most $\rho_A+\rho_B-1$ because both radii are at least
+one.
+\end{proof}
+
+\subsection{The residual core and the source budget}
+
+\begin{proposition}\label{prop:g7-reduction}
+If $M\ge\rho$ fails among connected graphs of maximum degree at most
+$D\ge3$, a counterexample exists of the form $G=K+L$, where $K$ is
+$2$-connected of order at least three and $L$ consists of at most one
+leaf per core vertex, such that:
+\begin{enumerate}[label=(\roman*)]
+\item all full core degrees lie in $[3,D]$, every core edge is supportive,
+and every core vertex has a lower-degree neighbor in $G$;
+\item $\delta:=M(G)-M(K)<1$;
+\item exactly $s\le2$ core vertices have core degree two. They have full
+degree three, carry leaves, are independent, and have core neighbors
+of full degree at least four.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+Choose a counterexample minimizing lexicographically its cyclomatic
+number $|E|-|V|+1$ and then its number of edges. Every non-bridge edge
+is supportive; otherwise deleting it decreases cyclomatic number,
+does not increase $M$, and does not decrease $\rho$.
+
+At a cut vertex, at most one component after deletion can contain an
+edge. Otherwise apply Lemma~\ref{lem:g7-padding}. Each padded graph
+has the same degree bound and smaller lexicographic size: its
+cyclomatic number cannot increase, and if unchanged, the omitted
+component's internal edge makes the edge count smaller. Minimality
+and the two padding inequalities contradict $M(G)<\rho(G)$.
+
+No leaf can have a degree-two support, except in the already valid
+star $P_3$: deleting such a leaf drops $M$ by exactly $1/2$ and drops
+$\rho$ by at most $1/2$. No vertex carries two leaves, because deleting
+one does not increase $M$ and, outside stars, leaves $\rho$ unchanged.
+Stars satisfy $M\ge\rho$. If $G$ were a tree, the cut-vertex property
+would make it a star or double star; the preceding restrictions leave
+only $P_4$ among the latter, already excluded by the degree-two support
+argument. Thus $G$ contains a $2$-connected block $K$ of order at least
+three. The cut-vertex property forces every vertex outside $K$ to be
+an attached leaf, proving the asserted form.
+
+A core vertex $u$ with no lower-degree neighbor would have no leaf.
+For a neighbor $v$ one has $d_v\ge d_u$, and
+\eqref{eq:g7-edge}, with $\beta_u=0$ and $\beta_v\le d_v-1$, contradicts
+supportiveness. A full core degree of two is consequently impossible.
+A full degree-three vertex has to carry a leaf, since all core degrees
+are at least three; two such vertices cannot be adjacent because
+\eqref{eq:g7-edge} would then give zero. Conversely a core-degree-two
+vertex must carry its one leaf and have full degree three.
+
+Deleting any nonempty subset $L'$ of leaves produces a smaller graph,
+so minimality and Lemma~\ref{lem:g7-leafmetric} give
+$M(G)-M(G-L')<\rho(G)-\rho(G-L')\le1$. In particular $\delta<1$.
+If $L'$ consists of the leaves at the full degree-three vertices, its
+exact drop is $s/3$: their other neighbors retain degrees at least
+four. Hence $s/3<1$, so $s\le2$.
+\end{proof}
+
+A \emph{source} is a core vertex without a lower-degree core neighbor.
+Every source has a leaf. Sources are independent: unequal degrees
+contradict the definition at the higher endpoint, and for equal degree
+$d\ge3$ the deletion change is $(3-d)/[d(d-1)]\le0$.
+Deleting just their leaves changes no retained edge weight. Therefore
+\begin{equation}\label{eq:g7-source}
+ \sum_{v\text{ a source}}\frac1{d_v}\le\delta<1.
+\end{equation}
+In particular, if $N_d$ counts full core degrees and $d_0$ is the least
+occupied degree, then $N_{d_0}<d_0$. This budget will remove degree
+profiles before the final finite certificate.
+
+\subsection{Degree-type potentials and the order-twelve exclusion}
+
+In this subsection, a decorated core has minimum core degree at least
+two and at most one added leaf at each core vertex; it is supportive
+if every core edge is supportive. For a core vertex define its type
+$t=(d,p,l)$ by its full degree, leaf indicator, and number of
+lower-degree neighbors in $G$. Put $g_d=d(d-1)$.
+For $D=7$ all possible types belong to the following set of size $45$:
+\[
+ \mathcal T=\{(3,1,1)\}\ \cup\
+ \{(d,p,l):4\le d\le7,\ p\in\{0,1\},\ 1\le l\le d\}.
+\]
+Including types that cannot actually occur only enlarges our relaxation.
+For an edge joining $t=(d,p,l)$ to $u=(e,q,m)$ with $d<e$,
+supportiveness is equivalent to
+\begin{equation}\label{eq:g7-compatible}
+ \frac{l}{g_d}>\frac{e-m}{g_e};
+ \qquad\text{for }d=e\text{ it is equivalent to }l+m\ge d.
+\end{equation}
+These tests leave $802$ allowed unordered type pairs, including pairs
+of the same type. A vertex of type $t$ has $l-p$ lower-degree core
+neighbors and $d-l$ equal-or-higher-degree core neighbors.
+
+Simultaneously deleting all leaves gives the exact identity
+\begin{equation}\label{eq:g7-delta}
+ \delta=\sum_t n_t\frac{p(d-l)}{g_d}
+ -\sum_{\substack{uv\in E(K)\\d_u=d_v=d,\ p_u=p_v=1}}\frac1{g_d}.
+\end{equation}
+Indeed, deleting a host's leaf removes $1/d$ and increases each edge
+to a lower-degree retained neighbor by $1/g_d$. Equal-degree edges
+increase only when both endpoints are hosts, producing the final
+correction.
+
+\begin{lemma}[Rational potential certificate]\label{lem:g7-potential}
+Every supportive decorated core with full degrees in $[3,7]$ satisfies
+\[
+ |V(K)|\le\frac{875}{68}\,\delta.
+\]
+\end{lemma}
+\begin{proof}
+The included certificate assigns rational numbers $\alpha_t,\beta_t$
+to the $45$ types. With $C=875/68$, it verifies exactly
+\begin{align}
+ (l-p)\alpha_t+(d-l)\beta_t+C\frac{p(d-l)}{g_d}&\ge1,
+                                                    \label{eq:g7-vcert}\\
+ \beta_t+\alpha_u&\le0 &&(d<e),\label{eq:g7-ecert1}\\
+ \beta_t+\beta_u+C\frac{pq}{g_d}&\le0 &&(d=e),\label{eq:g7-ecert2}
+\end{align}
+where the last two inequalities range over allowed pairs only.
+These are $45+802$ explicit rational comparisons. Sum
+\eqref{eq:g7-vcert} over vertices. Each unequal-degree edge contributes
+$\beta$ at its lower endpoint and $\alpha$ at its higher endpoint;
+an equal-degree edge contributes two $\beta$ terms. Applying
+\eqref{eq:g7-ecert1}--\eqref{eq:g7-ecert2} and
+\eqref{eq:g7-delta} proves the lemma. The supplied verifier checks the
+certificate with integer fractions and does not invoke an optimizer.
+\end{proof}
+
+Thus $\delta<1$ forces $|K|\le12$. To exclude twelve, let
+$N=(N_3,N_4,N_5,N_6,N_7)$. The exact candidate list consists of
+\begin{equation}\label{eq:g7-profiles}
+ N_d\ge0,\quad\sum N_d=12,\quad N_3\le2,
+ \quad N_{d_0}<d_0\text{ for the least occupied degree }d_0.
+\end{equation}
+There are $896$ such integer profiles. At a fixed profile, discard
+any type failing
+\begin{equation}\label{eq:g7-typefilter}
+ N_d>0,\qquad l-p\le\sum_{e<d}N_e,
+ \qquad d-l\le\sum_{e\ge d}N_e-1.
+\end{equation}
+Every discarded type violates a necessary distinct-neighbor count.
+
+\begin{lemma}[Finite profile exclusion]\label{lem:g7-profiles}
+No supportive decorated core of order twelve, with full degrees in
+$[3,7]$ and $\delta<1$, exists.
+\end{lemma}
+\begin{proof}
+We specify the finite certificate mathematically so that its checks
+are independent of how its coefficients were found. Let $x_{tu}$ be
+the number of allowed core edges of type pair $tu$. The lower and
+upper incidence equations at type $t=(d,p,l)$ are
+\[
+ \sum_{u:d_u<d}x_{tu}=(l-p)n_t,
+ \qquad
+ \sum_{u:d_u\ge d}x_{tu}=(d-l)n_t,
+\]
+where a same-type edge contributes twice to the second sum. Add the
+five degree-count equations $\sum_{t:d_t=d}n_t=N_d$.
+The objective is the right side of~\eqref{eq:g7-delta}.
+
+A dual vector comprises two unrestricted rational multipliers per
+type and five degree-count multipliers. It is a certificate of a
+lower bound on $\delta$ if its coefficient on every retained vertex
+or edge variable is at most that variable's coefficient in
+\eqref{eq:g7-delta}. The resulting bound is the dot product of its
+last five entries with $N$. All variables being nonnegative, this
+implication follows by summing inequalities, without linear-programming
+duality as an external assumption.
+
+The included data contain $14$ such rational vectors. The verifier
+reconstructs all profiles~\eqref{eq:g7-profiles}, retains the columns
+specified by~\eqref{eq:g7-typefilter} and~\eqref{eq:g7-compatible},
+and confirms that at least one vector proves $\delta\ge1$ for each
+of $895$ profiles. Its sole residual profile is
+\[
+ N=(0,3,3,3,3).
+\]
+For this profile let $Z$ be the degree-six vertices with $l=1$.
+They form an independent set by~\eqref{eq:g7-compatible}. Every one
+needs five distinct equal-or-higher-degree neighbors. There are only
+six vertices of degree at least six, so $|Z|\le1$ (the case $Z$ empty
+is immediate). Incorporating this one additional inequality, the
+residual rational certificate proves
+\[
+ \delta\ge\frac{103}{84}>1.
+\]
+Its multiplier on $|Z|\le1$ is $-61/420$; all other added capacity
+multipliers are zero. The verifier checks every coefficient and the
+exact lower bound. This excludes the residual case and proves the
+lemma.
+\end{proof}
+
+The certificate data are small: one $45$-type potential, fourteen
+$95$-entry profile vectors, and one residual vector. The single source
+contains their compressed numerical payload and a Python verifier
+using only \texttt{fractions}, \texttt{json}, and other standard-library
+modules. The reconstructed profile count, uncovered profile, and exact
+residual bound are all asserted by the verifier. No floating-point
+solver result is used as a proof certificate.
+
+\subsection{The finite core inequality and conclusion}
+
+\begin{lemma}[Exhaustive finite core certificate]\label{lem:g7-smallcores}
+If $K$ is $2$-connected, has at most eleven vertices, maximum degree
+at most seven, minimum degree at least two, and exactly $s\le2$
+vertices of degree two, then
+\begin{equation}\label{eq:g7-coreineq}
+ \rho(K)\le M(K)-1+\frac s3.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Generate every $2$-connected graph of the stated order and degree
+bounds with \texttt{geng}; retain precisely those with $s\le2$.
+For each retained graph, compute all distances by breadth-first
+search and $2\rho$ by~\eqref{eq:g7-rhoformula}. Let
+$W=\operatorname{lcm}(6,2,3,\ldots,\Delta(K))$ and let $J=WM(K)$,
+computed as a sum of integers $W/\max(d_u,d_v)$. The exact integer
+comparison is
+\[
+ 3W(2\rho)\le6J-6W+2Ws.
+\]
+No violation occurs. The enumeration and integer checker are included
+in the reproducibility material. The counts below distinguish the
+unrestricted-degree checks through order nine from the degree-seven
+checks at orders ten and eleven; the former are a safe enlargement.
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+Order&Maximum-degree filter&Eligible cores&Minimum slack\\
+\midrule
+4&none&2&$0$\\
+5&none&6&$1/6$\\
+6&none&44&$1/6$\\
+7&none&385&$1/4$\\
+8&none&$6\,268$&$3/10$\\
+9&none&$179\,303$&$1/3$\\
+10&7&$7\,355\,341$&$5/14$\\
+11&7&$473\,655\,792$&$1/2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Slack means $M(K)-1+s/3-\rho(K)$. Order three has no eligible graph.
+An independent Python implementation, using \texttt{Fraction} and
+separate graph decoding and distance calculations, reproduced every
+count and slack through order nine, for $186\,008$ eligible cores.
+The higher-order C run was newly executed, rather than inferred from
+the earlier corpus table. Enumeration completeness uses the standard
+\texttt{nauty} generator; this is a computer-assisted finite proof,
+not a proof-assistant formalization.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:g7-main}]
+If a counterexample of maximum degree seven exists,
+Proposition~\ref{prop:g7-reduction} supplies $G=K+L$ with $\delta<1$.
+Lemmas~\ref{lem:g7-potential} and~\ref{lem:g7-profiles} give $|K|\le11$.
+Let $L_3$ be the leaves attached at the $s$ full degree-three core
+vertices. Their exact deletion drop is $s/3$, and subsequent leaf
+deletions do not increase $M$. Thus $M(K)\le M(G)-s/3$.
+Adding leaves raises $\rho$ by at most one. By
+Lemma~\ref{lem:g7-smallcores},
+\[
+ \rho(G)\le\rho(K)+1\le M(K)+s/3\le M(G),
+\]
+a contradiction. Finally, $R\ge M$ termwise and
+$\rho\ge\operatorname{rad}-1/2$ by~\eqref{eq:g7-rhoformula}.
+\end{proof}
+
+For reproducibility, the generator was built from the
+\texttt{lonnen/nauty} source mirror, release marker
+\texttt{This\_is\_nauty2\_9\_0.txt}, commit
+\texttt{3915d891af81630853ab485f2696828a31253cd9}.
+The high-order commands are
+\begin{lstlisting}[language=bash,basicstyle=\ttfamily\footnotesize,breaklines=true]
+geng -C -d2 -D7 -q 10 | graph_corechk
+geng -C -d2 -D7 -q 11 | graph_corechk
+python3 graph_verify_compact.py graph_degree7_compact_certificate.json
+\end{lstlisting}
+The generator, independent rational certificate, and two graph checkers
+serve different roles: generation establishes finite coverage,
+the rational certificate proves the reduction in order, and the
+checkers evaluate the finite core inequality. The bounded-degree
+restriction remains essential to the result stated here.
+
+
+\section{Randomized uniform mixing when the path modulus is three times a prime}
+\label{sec:three-prime-paths}
+
+For a graph with adjacency matrix $A$, a probability law for the observation
+time $T\geq0$ gives \emph{randomized uniform mixing} if
+\[
+ \mathbb E\bigl|(e^{iTA})_{uv}\bigr|^2=\frac1{|V|}
+ \qquad(u,v\in V).
+\]
+The same law must work for every initial vertex. This is the ordinary
+adjacency quantum walk with a freely chosen time law. It is different from
+the standard Ces\`aro average, which fixes the averaging protocol to
+$\lim_{L\to\infty}L^{-1}\int_0^L$. In particular, nothing here settles
+the rank-two Ces\`aro question in \cite[Open Problem~4.1]{CoutinhoGuo2024}.
+The randomized path question is discussed separately in
+\cite[Section~4.2]{CoutinhoGuo2024}.
+
+\begin{theorem}[The three-times-prime family]
+\label{thm:three-prime-paths}
+Let $p$ be a prime. The unweighted path $P_{3p-1}$ admits randomized
+uniform mixing if and only if $p\notin\{5,7\}$. In every positive case,
+the time law can be chosen to have a bounded, compactly supported
+probability density on $[0,\infty)$.
+\end{theorem}
+
+Kang's negative theorem already excludes $p=5,7$, and his positive
+theorem includes $p=2$ \cite{Kang2026}. The additional cases established
+below are the surviving members of this particular arithmetic family.
+This is not an all-path classification.
+
+\subsection{Spectral target and exact realization in time}
+Write $q=n+1$ for the modulus of $P_n$. Its eigenvalues, normalized
+eigenvectors and spectral projectors are
+\[
+ \lambda_j=2\cos(\pi j/q),\qquad
+ v_j(u)=\sqrt{2/q}\sin(\pi ju/q),\qquad
+ E_j=v_jv_j^{\mathsf T}\quad(1\leq j,u<q).
+\]
+Let $R$ reverse the vertex order and let $\circ$ denote the entrywise
+product. Two useful identities are
+\begin{equation}\label{eq:new-path-spectral}
+ D_0:=\sum_j E_j\circ E_j
+ =\frac1q\left(J+\frac{I+R}{2}\right),\qquad
+ \sum_{j\equiv\ell\pmod2}E_j\circ E_\ell=\frac{I+R}{2}.
+\end{equation}
+For the first identity, expand the product of two squared sines and use
+\(\sum_{j=1}^{q-1}\cos(2\pi aj/q)=q\mathbf1_{q\mid a}-1\).
+For the second, use $Rv_j=(-1)^{j+1}v_j$ and expand
+\[
+ \frac12\left[
+ \left(\sum_jE_j\right)\circ\left(\sum_jE_j\right)
+ +\left(\sum_j(-1)^jE_j\right)\circ
+  \left(\sum_j(-1)^jE_j\right)\right].
+\]
+Consequently, phase coherences equal to $1$ on the diagonal, $-c$ on
+distinct equal-parity pairs, and $0$ on opposite-parity pairs give the
+mixing matrix
+\begin{equation}\label{eq:new-path-target}
+ (1+c)D_0-c\frac{I+R}{2}=\frac Jn\qquad\text{when }c=1/n.
+\end{equation}
+Only real parts of these coherences enter the mixing matrix, although
+our constructions satisfy the displayed complex moments as well.
+
+When $q$ is odd, each pair $j,q-j$ has one odd and one even member,
+and $\lambda_{q-j}=-\lambda_j$. Thus it suffices to construct the
+$m=(q-1)/2$ odd-index phases with
+\begin{equation}\label{eq:new-odd-moments}
+ \mathbb E W_i\overline W_j=-c\quad(i\ne j),\qquad
+ \mathbb E W_iW_j=0\quad(\text{all }i,j),
+\end{equation}
+and take even phases to be their reflected conjugates. All these laws
+must be supported on the actual orbit closure of the time flow.
+
+The next lemma supplies the passage from that closure to an actual
+observation-time law. It will also be used for other path families.
+
+\begin{lemma}[Exact finite-time realization]\label{lem:exact-finite-time}
+Let $\mathcal T$ be a finite-dimensional torus, and let
+$\gamma(t)$, $t\geq0$, be an equidistributed linear flow in $\mathcal T$.
+Let $F_1,\ldots,F_D$ be distinct nontrivial cosine characters, identified
+modulo sign. Suppose a probability measure $\mu$ on $\mathcal T$ has the
+desired finite moment vector $b_j=\int F_j\,d\mu$ and satisfies
+$\mu\geq\eta H$ for some $\eta>0$, where $H$ is Haar probability.
+Then a bounded, compactly supported probability density $\rho$ on
+$[0,\infty)$ satisfies
+$\int_0^\infty F_j(\gamma(t))\rho(t)\,dt=b_j$ for every $j$.
+\end{lemma}
+\begin{proof}
+Inversion-symmetrize $\mu$, which preserves its cosine moments and its
+Haar lower bound. Convolve it with a nonnegative product Fej\'er
+approximate identity. The resulting trigonometric-polynomial density
+is at least $\eta$, and its finitely many specified moments converge to
+$b_j$. Distinct cosine characters have Haar inner products
+$\int F_iF_j\,dH=\delta_{ij}/2$. If the moment error is $\delta_j$,
+adding $2\sum_j\delta_jF_j$ corrects every moment, preserves the
+integral, and changes the sup norm by at most $2\sum_j|\delta_j|$.
+Choosing the approximation sufficiently close gives a trigonometric
+polynomial $f\geq\eta/2$ with exactly the desired moments.
+
+Put $F_0=1$, $b_0=1$, and regard $F$ and $b$ as column vectors.
+Along the flow define
+\[
+ G_L=\frac1L\int_0^L F(\gamma(t))F(\gamma(t))^{\mathsf T}\,dt,
+ \qquad b_L=\frac1L\int_0^L F(\gamma(t))f(\gamma(t))\,dt.
+\]
+Equidistribution gives
+$G_L\to\operatorname{diag}(1,1/2,\ldots,1/2)$ and $b_L\to b$.
+Therefore, for all sufficiently large finite $L$,
+$a_L=G_L^{-1}(b-b_L)$ exists and tends to zero. Set
+\[
+ \rho(t)=\frac{f(\gamma(t))+a_L^{\mathsf T}F(\gamma(t))}{L}
+             \mathbf1_{[0,L]}(t).
+\]
+For sufficiently large $L$ this is nonnegative, since $f\geq\eta/2$.
+The defining linear system gives $\int\rho F=b$, including
+$\int\rho=1$. Boundedness and compact support are immediate.
+\end{proof}
+
+For the path constructions, a law satisfying \eqref{eq:new-odd-moments}
+at some $c>c_0=1/n$ supplies the lemma's Haar component by taking
+\begin{equation}\label{eq:new-haar-mix}
+ \mu=(1-c_0/c)H+(c_0/c)\nu_c.
+\end{equation}
+Every relevant off-diagonal Hermitian or holomorphic character has
+zero Haar integral: distinct odd eigenvalues are neither equal nor
+opposite, and none is zero. The mixture therefore has exactly the
+target moments. For the full spectrum, the analogous assertion uses
+the nonzero eigenvalue differences. Repeated cosine characters are
+listed just once when applying Lemma~\ref{lem:exact-finite-time}.
+
+\subsection{The exact relation torus for \texorpdfstring{$q=3p$}{q=3p}}
+Assume $p\geq5$, and put
+\[
+ r=\frac{p-1}{2},\qquad m=3r+1,\qquad n=6r+2.
+\]
+The odd indices partition into the singleton $p$ and the $r$ triples
+\[
+ \{j,2p-j,2p+j\},\qquad j=1,3,\ldots,p-2.
+\]
+Each triple of frequencies sums to zero. Exactly one index in each
+triple is divisible by $3$; call its phase $U_a$. The sum of those
+frequencies is
+\begin{equation}\label{eq:new-global-relation}
+ \sum_{b=1,3,\ldots,p-2}2\cos(\pi b/p)=1=\lambda_p.
+\end{equation}
+The trigonometric sum is $\sin((p-1)\pi/p)/\sin(\pi/p)=1$.
+Hence the singleton phase satisfies $W_0=\prod_{a=1}^r U_a$.
+
+These $r+1$ relations generate the entire integer relation lattice.
+Indeed, the real cyclotomic field $K=\mathbb Q(2\cos(\pi/q))$ has
+degree $\varphi(6p)/2=p-1=2r$. The odd-index eigenvalues span $K$:
+powers of $\lambda_1$ expand into $1$ and frequencies
+$2\cos(a\pi/q)$, periodicity and reflection reduce all these to the
+odd modes, and $1=\lambda_p$ is already present. Thus their rational
+relation space has dimension $m-2r=r+1$. The disjoint triple relations
+and \eqref{eq:new-global-relation} are independent, because only the
+latter has a nonzero singleton coordinate. To check saturation, take
+an integral vector in their rational span. Its singleton coordinate
+forces the coefficient of the extra relation to be integral. After
+subtracting that multiple, the three coordinates in each disjoint
+triple force its remaining coefficient to be integral.
+
+The character criterion for a linear torus flow now shows that its
+closure is exactly $\mathcal T\cong(S^1)^{2r}$ with characters
+\begin{equation}\label{eq:new-three-torus}
+ \chi_{a1}=u_a,\qquad \chi_{a2}=v_a,\qquad
+ \chi_{a3}=-u_a-v_a,\qquad
+ \gamma=\sum_{a=1}^r u_a.
+\end{equation}
+Here $u_a,v_a$ are a free integral character basis, $U_a$ is the phase
+of $u_a$, and $W_0$ is the phase of $\gamma$.
+Every nontrivial character of this torus has a nonzero time frequency;
+its time average tends to zero. This also proves the equidistribution
+needed in Lemma~\ref{lem:exact-finite-time}.
+
+\subsection{Anticorrelating the triple modes while cancelling singleton moments}
+Call the $3r$ triple phases the old modes. For $r\geq4$, we first
+construct a law $\nu_d$ with old-mode off-diagonal Hermitian moments
+$-d$, all holomorphic moments zero, and all singleton--old Hermitian
+moments zero. The allowable interval is
+\begin{equation}\label{eq:new-dmax}
+ 0<d\leq d_{\max}:=\frac{r-2}{3r^2-r-4}.
+\end{equation}
+Put $B=\sqrt{3-6d}$ and choose $\theta$ with
+$1+2\cos\theta=B$. For each triple use an independently uniform
+permutation of
+\begin{equation}\label{eq:new-triple-template}
+ Y_a(1,e^{i\theta},e^{-i\theta}),\qquad Y_a^3=1.
+\end{equation}
+The designated $U_a$ is its fixed indexed coordinate, and the product
+of the three entries is one. It remains to construct exchangeable
+labels with pair correlation
+\[
+ \mathbb E Y_a\overline Y_b=-A_d,
+ \qquad A_d=\frac{3d}{1-2d}\quad(a\ne b).
+\]
+
+Choose positive $s_1+s_2=r$ with neither size divisible by $3$.
+One can take $(1,r-1)$ if $r\equiv0,2\pmod3$, and $(2,r-2)$ if
+$r\equiv1\pmod3$. Uniformly partition the $r$ positions into these
+two sizes. Within each group distribute labels among the three cube
+roots with counts differing by at most one, uniformly permute, and
+apply an independent common uniform cube-root rotation. In a group
+of size $s\not\equiv0\pmod3$, the label sum has squared modulus
+one. Its ordered off-diagonal correlation sum is therefore $-(s-1)$.
+The groups have zero cross correlations, so exchangeability makes the
+overall off-diagonal label correlation
+\[
+ -A_{\max}=-\frac{r-2}{r(r-1)}.
+\]
+Mix this distribution with independent uniform labels to attain any
+$0\leq A_d\leq A_{\max}$, which is precisely
+\eqref{eq:new-dmax}. Both component laws may be generated with the
+same two independent group rotations.
+
+The within-triple Hermitian correlation in
+\eqref{eq:new-triple-template} is $(B^2-3)/6=-d$.
+Between different triples it is $-B^2A_d/9=-d$.
+All old-mode holomorphic second moments vanish: use a group's common
+rotation, of charge two if both factors are in that group and of
+charge one otherwise.
+
+The global relation $W_0=\prod U_a$ is now useful. Under the common
+rotation $\omega$ of a group of size $s$, it changes by $\omega^s$.
+For a singleton--old Hermitian or holomorphic moment, rotate the group
+not containing the old phase. Since $3\nmid s$, the moment vanishes.
+For $\mathbb E W_0^2$, either group has nonzero charge $2s$ modulo $3$,
+so that moment also vanishes. This proves all the asserted properties
+of $\nu_d$ on the exact torus \eqref{eq:new-three-torus}.
+
+\subsection{A positive density supplies the missing singleton correlations}
+Let $S$ be the sum of the $L=3r$ old phases. For $\alpha>0$ define
+on Haar measure $H$ of the actual torus
+\begin{equation}\label{eq:new-star-density}
+ f_\alpha=\frac{|W_0-\alpha S|^2}{Z},\qquad Z=1+L\alpha^2.
+\end{equation}
+For $r\geq4$, its moments are
+\begin{equation}\label{eq:new-star-moments}
+ \mathbb E_{f_\alpha H}W_i\overline W_j=\frac{\alpha^2}{Z}
+ \ (i\ne j\text{ old}),\qquad
+ \mathbb E_{f_\alpha H}W_0\overline W_i=-\frac\alpha Z,
+ \qquad \mathbb E_{f_\alpha H}W_iW_j=0
+ \ \text{for all modes}.
+\end{equation}
+Here is the character check, including possible collisions. In each
+block the old characters are $u,v,-u-v$; their six nonzero ordered
+differences are distinct. Differences supported on two different
+blocks are likewise distinguished by their two nonzero components.
+Thus all nonzero ordered old differences are distinct. No old sum
+(including a doubled character) equals an old difference: simultaneous
+multiplication of every triple by a cube root gives charge two to a
+sum and charge zero to a difference. No old characters are negatives
+of one another.
+The character $\gamma$ in \eqref{eq:new-three-torus} has support on
+all $r$ blocks, and $\gamma\pm\chi_i$ has support on at least $r-1$.
+For $r\geq4$ these cannot equal old sums or differences, supported on
+at most two blocks. Moreover, $2\gamma$ cannot be a sum or difference
+of two old characters. These observations rule out all unintended
+collisions among the constant term, old differences, and
+$\pm(\gamma-\chi_i)$ in the expansion of
+\eqref{eq:new-star-density}. They also rule out every holomorphic
+second-moment character from this Fourier support. Character
+orthogonality therefore proves normalization and
+\eqref{eq:new-star-moments}.
+
+Mix $f_\alpha H$ and $\nu_d$ with weights $t$ and $1-t$. To obtain
+the common Hermitian value $-c$, set
+\begin{equation}\label{eq:new-mixture-parameters}
+ t=cZ/\alpha,\qquad d=\frac{c(1+\alpha)}{1-t}.
+\end{equation}
+Then the singleton--old value is $-c$, the old--old value is
+$-(1-t)d+c\alpha=-c$, and all holomorphic moments remain zero.
+
+Take $\alpha=1/4$ and $c_0=1/(6r+2)$. At $c=c_0$ the parameters are
+\[
+ t_0=\frac{3r+16}{24r+8}<1,\qquad d_0=\frac5{21r-8}.
+\]
+For $r\geq7$ we have $d_0<d_{\max}$, since
+\[
+ (r-2)(21r-8)-5(3r^2-r-4)=6r^2-45r+36>0.
+\]
+Explicitly define
+\begin{equation}\label{eq:new-explicit-c}
+ c_{\max}=\frac{4(r-2)}{18r^2+5r-52},\qquad
+ c=\frac{c_0+c_{\max}}2.
+\end{equation}
+The same inequality gives $c_{\max}>c_0$.
+Substitution in \eqref{eq:new-mixture-parameters} shows $0<t<1$ and
+$0<d<d_{\max}$: indeed $c_{\max}$ is exactly the value for
+$d=d_{\max}$, and its denominator is positive before $t$ reaches one.
+We have therefore constructed \eqref{eq:new-odd-moments} at a strict
+value $c>c_0$. The Haar mixture \eqref{eq:new-haar-mix},
+Lemma~\ref{lem:exact-finite-time}, and
+\eqref{eq:new-path-target} prove the theorem for every prime $p\geq17$.
+
+\subsection{Small positive cases and the two obstructions}
+For $p=11,13$, the complete rational certificates in
+Section~\ref{sec:exact-33-39} give laws on the actual phase torus at
+$c=1/17>1/32$ and $c=1/20>1/38$, respectively. In each case the law
+is explicitly symmetrized under complex conjugation; thus the exact
+cosine-moment verification also establishes the stated complex
+moments. The same Haar mixture and finite-time lemma apply.
+
+For $p=3$, $q=9$, the odd frequencies at indices $1,3,5,7$ have the
+single relation $\lambda_1+\lambda_5+\lambda_7=0$; the singleton is
+$\lambda_3=1$. This is the entire integral relation lattice, by the
+same field-degree and saturation argument (the field has degree three).
+Use $c=1/6>1/8$, $B=\sqrt2$, and uniformly permute
+$(1,e^{i\theta},e^{-i\theta})$ in the triple, with
+$1+2\cos\theta=B$. Independently take the singleton in $\{1,-1\}$
+with mean $-1/(2\sqrt2)$, and apply a common uniform cube-root rotation
+to all four phases. The triple product remains one. The within-triple
+correlation is $(B^2-3)/6=-1/6$, the singleton--triple correlation is
+$[-1/(2\sqrt2)]B/3=-1/6$, and all holomorphic moments vanish under
+the common rotation. Haar mixing and the lemma prove the required
+bounded compactly supported density.
+
+For $p=2$, $q=6$, the spectrum is $\sqrt3,1,0,-1,-\sqrt3$ and the
+two positive frequencies are rationally independent. On its two-torus
+take the phase ramp $z_j=e^{i(3-j)\xi}$, $1\leq j\leq5$, and give
+$\xi\in\mathbb R/(2\pi\mathbb Z)$ the density
+\[
+ 1-2c(\cos2\xi+\cos4\xi),\qquad c=9/40>1/5,
+\]
+relative to normalized Haar measure. This density is at least $1/10$,
+and its coherences are $-c$ at nonzero even index differences and zero
+at odd differences. It respects the spectral pairing and fixed zero
+mode. Haar mixing on the actual two-torus and
+Lemma~\ref{lem:exact-finite-time} finish this case; this is the small
+instance of Kang's phase-ramp construction \cite{Kang2026}.
+
+Finally, $p=5$ and $p=7$ give moduli $15$ and $21$, respectively.
+Kang's forced-coherence theorem and parity-collision obstruction
+\cite[Theorems S13 and S18]{Kang2026} exclude every time probability
+law. Concretely, at $q=15$,
+$\lambda_1-\lambda_3=\lambda_4-\lambda_5$, and at $q=21$,
+$\lambda_3-\lambda_6=\lambda_7-\lambda_9$.
+In either identity one pair has equal parity and the other opposite
+parity, requiring the same cosine moment to equal both $-1/(q-1)$
+and zero. This completes Theorem~\ref{thm:three-prime-paths}.
+
+\paragraph{Scope and priority.}
+The added proof combines two independently rotated label groups with
+the nonnegative density \eqref{eq:new-star-density} to accommodate
+the extra global frequency relation. Torus approximation, spectral
+coherences and moment correction have prior antecedents; they are
+not presented as unprecedented general principles. A targeted review
+of the primary sources available through 2 November 2026 found no
+earlier identical $q=3p$ classification. This is a bounded literature
+assessment, not a proof of universal absence. The classification of
+randomized uniform mixing for all paths remains unresolved here.
+
+
+\subsection{Exact certificates at \texorpdfstring{$q=33$ and $q=39$}{q=33 and q=39}}
+\label{sec:exact-33-39}
+For completeness, the following finite certificates supply the two exceptional
+positive cases used in the $q=3p$ theorem. They use only rational and integer
+arithmetic, and all their data are included below.
+
+Let $\alpha=2\cos(\pi/q)$ and let $P$ be its monic minimal polynomial of
+degree $D=\varphi(2q)/2$. Each digit string $(z_0,\ldots,z_{D-1})$ assigns
+$\exp(2\pi i z_a/3)$ to the phase of $\alpha^a$.
+For an odd eigenvalue $\lambda_j=f_j(\alpha)$, with $f_j$ reduced modulo $P$,
+the corresponding phase is
+$W_j=\exp(2\pi i\sum_a[f_j]_a z_a/3)$.
+Each string is given its displayed integer numerator divided by the common
+denominator. Independently apply a uniform Galois permutation
+$j\mapsto \min(aj\bmod 2q,\,2q-(aj\bmod 2q))$, with
+$1\leq a<q$ and $\gcd(a,2q)=1$.
+Finally symmetrize under complex conjugation.
+
+The exact moments are
+\[
+ \mathbb E(W_i\overline W_j)=-c\quad(i\ne j),\qquad
+ \mathbb E(W_iW_j)=0\quad(\hbox{all }i,j),
+\]
+with $c=1/17>1/32$ for $q=33$ and $c=1/20>1/38$ for $q=39$.
+The weights are strictly positive. Mixing with Haar measure and applying the
+finite-time realization lemma proves exact randomized uniform mixing for
+$P_{32}$ and $P_{38}$.
+
+The following self-contained Python program verifies every original moment,
+not just a symmetry-reduced linear system. It uses only the Python standard
+library. It independently reconstructs $\Phi_{2q}$, checks
+$z^DP(z+z^{-1})=\Phi_{2q}(z)$, reconstructs all eigenvalue polynomials by
+$f_0=2$, $f_1=x$, $f_j=xf_{j-1}-f_{j-2}$, and checks all moments using
+$2\cos(2\pi a/3)\in\{2,-1\}$. The two successful outputs are exact integer
+identities, with no floating-point tolerance.
+
+{\footnotesize
+\begin{verbatim}
+"""Exact self-contained certificates for q=33 and q=39. Standard library only."""
+import math
+from fractions import Fraction
+from functools import lru_cache
+
+DATA = [
+(33, '1/17', 93636,
+ [1, 12, 12, -43, -43, 34, 34, -10, -10, 1, 1],
+ '''
+1000100222:861 1111112012:6966 2211020212:738 1020111021:3291
+2021012210:9426 2110221112:492 1010122220:537 1110122002:279 0022122120:8934
+0211221201:6355 2011120111:6545 2220010111:753 0211021122:246
+1210210002:5028 1201020110:7506 1012011110:6099 1102211121:408
+0011010102:12240 2120011011:1092 2010010001:4521 1201111112:4167
+2002221222:408 0022221202:3437 2102221011:1830 1122111202:16 1100201122:1461
+'''),
+(39, '1/20', 131434191810,
+ [1, -12, -12, 79, 79, -103, -103, 53, 53, -12, -12, 1, 1],
+ '''
+102112020210:1219154721 210001220021:628594164 010210102001:3382052226
+002202222201:3675239955 010111122122:1728477428 021100020010:2940379970
+100111000001:3965588986 200211122010:2906351488 010011102102:4734733751
+111222202210:3564520628 020102000120:5735642133 100112021101:4034972285
+221111021112:2788054669 020022212001:7937340702 202022002101:637385244
+111122121020:8713871385 221201220112:3725747503 002210102000:5800572994
+020110100222:1417269602 211222220111:3281813885 102222220002:9389547438
+010021111110:1490195401 202011220110:10254004493 110100110021:725348383
+222201122022:6875879692 112000100021:1660697195 210002210000:5226070479
+000100102220:4969493108 110010001010:8367080149 221110110102:3745625330
+212211012222:4187656967 122021112212:1724829456
+'''),
+]
+
+def trim(a):
+ while len(a)>1 and a[-1]==0:a.pop()
+ return a
+
+def divide(a,b):
+ a=a[:];b=trim(b[:]);assert b[-1]==1
+ quo=[0]*max(1,len(a)-len(b)+1)
+ while len(a)>=len(b) and any(a):
+  j=len(a)-len(b);v=a[-1];quo[j]=v
+  for i,x in enumerate(b):a[i+j]-=v*x
+  trim(a)
+ return trim(quo),trim(a)
+
+@lru_cache(None)
+def cyclotomic(n):
+ a=[-1]+[0]*(n-1)+[1]
+ for d in range(1,n):
+  if n%d==0:
+   a,r=divide(a,list(cyclotomic(d)));assert r==[0]
+ return tuple(a)
+
+def verify(q,c_text,den,P,pairs):
+ pairs=[s.split(':') for s in pairs.split()]
+ seeds=[list(map(int,z)) for z,a in pairs]
+ nums=[int(a) for z,a in pairs]
+ assert q%2 and q>=3
+ D=len(P)-1;assert P[-1]==1
+ # Verify the real polynomial by its exact cyclotomic lift.
+ lift=[0]*(2*D+1)
+ for a,coef in enumerate(P):
+  for b in range(a+1):lift[D+2*b-a]+=coef*math.comb(a,b)
+ assert tuple(trim(lift))==cyclotomic(2*q)
+ # The lift implies P(alpha)=0 and degree(P)=phi(2q)/2.
+ f=[[2],[0,1]]
+ for j in range(2,q):
+  a=[0]+f[-1];b=f[-2]
+  a += [0]*max(0,len(b)-len(a))
+  for i,v in enumerate(b):a[i]-=v
+  f.append(divide(trim(a),P)[1])
+ inds=list(range(1,q,2));pos={j:i for i,j in enumerate(inds)};m=len(inds)
+ V=[f[j]+[0]*(D-len(f[j])) for j in inds]
+ perms=[]
+ for a in range(1,q):
+  if math.gcd(a,2*q)==1:
+   pp=[]
+   for j in inds:
+    z=(a*j)%(2*q);z=min(z,2*q-z);pp.append(pos[z])
+   perms.append(pp)
+ assert len(perms)==D
+ assert len(seeds)==len(nums) and all(a>0 for a in nums) and sum(nums)==den
+ assert all(len(z)==D and all(a in (0,1,2) for a in z) for z in seeds)
+ c=Fraction(c_text);assert c>Fraction(1,q-1)
+ # Accumulate original (not orbit-reduced) moments.
+ diff=[[0]*m for _ in range(m)];summ=[[0]*m for _ in range(m)]
+ for seed,num in zip(seeds,nums):
+  e=[sum(a*b for a,b in zip(v,seed))%3 for v in V]
+  for pp in perms:
+   ee=[e[j] for j in pp]
+   for i in range(m):
+    for j in range(i,m):summ[i][j]+=num*(2 if (ee[i]+ee[j])%3==0 else -1)
+    for j in range(i):diff[i][j]+=num*(2 if (ee[i]-ee[j])%3==0 else -1)
+ scale=2*D*den
+ for i in range(m):
+  for j in range(i,m):assert summ[i][j]==0
+  for j in range(i):assert Fraction(diff[i][j],scale)==-c
+ print(f'q={q}: EXACT PASS; {len(seeds)} seeds x {D} Galois images; c={c} > 1/{q-1}.')
+
+
+for entry in DATA: verify(*entry)
+\end{verbatim}
+}
+
+
+\section{Twice an odd prime power}
+\label{sec:twice-prime-powers}
+
+The zero eigenvalue creates an additional first-moment constraint when
+$q$ is even. The following construction handles that constraint as well
+as the relations among the nonzero eigenvalues.
+
+\begin{theorem}\label{thm:twice-prime-powers}
+Let $p\ge5$ be prime and $k\ge2$. There is a bounded, compactly
+supported probability density on $[0,\infty)$ for which the averaged
+mixing matrix of $P_{2p^k-1}$ is exactly $J/(2p^k-1)$.
+\end{theorem}
+
+\begin{proof}
+Set
+\[
+ s=p^k,\quad q=2s,\quad h=(p-1)/2,\quad
+ r=(p^{k-1}-1)/2,\quad \ell=r+h,\quad c_0=(2s-1)^{-1}.
+\]
+For $c$ near $c_0$ define
+\[
+ B=\sqrt{p(1-(p-1)c)},\quad \beta=B/p,\quad
+ a=\frac{pc}{1-(p-1)c};\qquad a\beta^2=c.
+\tag{EP1}
+\]
+At $c=c_0$, $a=(4r+1)^{-1}$. We shall construct the required
+coherences for $c>c_0$ sufficiently close, then use a positive Haar
+component and the exact finite-time transfer proved earlier.
+
+\paragraph{The two independent frequency sectors.}
+Write $\zeta=e^{\pi i/(2s)}$ and
+$\lambda_j=\zeta^j+\zeta^{-j}$, $1\le j<2s$.
+The field automorphism $\zeta\mapsto-\zeta$ fixes every even-index
+frequency and negates every odd-index frequency. It is indeed an
+automorphism, since $\gcd(2s+1,4s)=1$. Thus the rational spans of
+the two sectors intersect only at zero. The odd sector contains the
+zero mode $j=s$, whose phase is fixed at one.
+
+After selecting one signed representative from each nonzero pair
+$\{\lambda,-\lambda\}$, each sector has $pr+h$ representatives,
+partitioned into $r$ disjoint $p$-tuples with signed sum zero and
+$h$ free representatives. Here is a direct construction for both
+sectors. Put $t=p^{k-1}$. In the even sector, write
+$\lambda_{2u}=2\cos(\pi u/s)$ and choose the odd representatives
+$1\le u\le s-2$. For each odd $1\le j<t$, take the $p$ exponents
+$j+2tv$, $0\le v<p$, modulo $2s$, and reflect into $[0,s]$.
+They are distinct odd indices with cosine sum zero. Their residue
+classes modulo $2t$, up to sign, show that the blocks are disjoint;
+the unused representatives are $t,3t,\ldots,(p-2)t$.
+These representatives span the real field
+$\mathbb Q(2\cos(\pi/s))$, of degree $\varphi(s)/2=ht$.
+Indeed their sum is $1$, and every cosine at an integral multiple
+of $\pi/s$ is their signed representative or the constant $2$;
+powers of $2\cos(\pi/s)$ expand into such cosines.
+
+In the odd sector, for each odd $1\le j<t$, sum the
+$p$ cosines with exponents $j+4tu$, $0\le u<p$, modulo $4s$.
+Their sum is zero. Reflect the exponents into $[0,2s]$ and then
+into $[0,s]$, recording a minus sign at the second reflection.
+This gives $p$ distinct odd representatives. Residue classes modulo
+$2t$, up to sign, prove that the resulting tuples are disjoint.
+The unused representatives are $t,3t,\ldots,(p-2)t$.
+
+The odd frequency span is the negative eigenspace of the displayed
+field involution. Odd powers of $2\cos(\pi/(2s))$ span that
+eigenspace and expand into odd cosines; consequently its dimension
+is $\varphi(s)/2=ht$. The even sector has the same dimension.
+Since $pr+h-ht=r$, the displayed relations exhaust the rational
+relations in each sector. Their integer lattices are saturated:
+the rows have disjoint supports and coefficients $\pm1$.
+Conjugating representative coordinates where necessary makes every
+block relation a product equal to one. There are no cross-sector
+relations. The time-flow closure is therefore the direct product
+of two tori, each consisting of $r$ product-one $p$-blocks and
+$h$ free phases. The character criterion also gives equidistribution
+of the actual nonnegative-time flow on this torus.
+
+\paragraph{An exchangeable root-label construction.}
+For either $\mu=0$ or $\mu=-a\beta$, we construct $\ell$ exchangeable
+$p$th roots $Y_i$ satisfying
+\[
+ \mathbb E Y_i=\mu,\qquad \mathbb E Y_i^2=-a,\qquad
+ \mathbb E Y_i\overline{Y_j}=\mathbb E Y_iY_j=-a\quad(i\ne j).
+\tag{EP2}
+\]
+Here and below all prescribed moments are real. We first treat $k\ge3$. Since
+$\ell\equiv-1\pmod p$, take $(\ell+1)/p$ complete sets of the
+$p$th roots, remove one copy of $1$, and uniformly permute the
+remaining multiset. Its sum and its sum of squares both equal $-1$.
+Rotate it by a common $p$th root $Z$, then independently conjugate
+each coordinate with probability $1/2$. Put $z=a\ell$ and
+$b=-\ell\mu$, and assign to $Z=e^{i\theta}$ the mass
+\[
+ \frac{1+2b\cos\theta+2z\cos(2\theta)}p.
+\tag{EP3}
+\]
+Fourier orthogonality on the $p$th roots, using $p\ge5$, gives
+$\mathbb EZ=b$ and $\mathbb EZ^2=z$. The constructed vector has
+first moment $-b/\ell=\mu$, second moment $-z/\ell=-a$, and
+both off-diagonal moments equal $-d$, where
+\[
+ d=\frac1{2\ell}-\frac{a}{\ell-1}.
+\tag{EP4}
+\]
+Indeed, before the independent conjugations the sum of real parts
+is $-\cos\theta$. Its expected square is $(1+z)/2$, whereas the
+expected sum of squared real parts is $(\ell-z)/2$. Subtracting
+and dividing by $\ell(\ell-1)$ proves (EP4).
+
+These are probability masses with a strict margin at $c_0$.
+Since $r\ge2h(h+1)$ and $h\ge2$,
+\[
+ z=\frac{r+h}{4r+1}\le\frac27,\qquad
+ \beta^2<\frac1p\le\frac15.
+\]
+For $x=\cos\theta$, the numerator in (EP3) is at least
+\[
+ 1-2z-\frac{b^2}{4z}\ge\frac{29}{70}>0.
+\]
+An iid root vector with single-coordinate masses
+\[
+ \frac{1+2\mu\cos\theta-2a\cos(2\theta)}p
+\tag{EP5}
+\]
+has the same first and second moments and off-diagonal moments
+$\mu^2$. Its masses are positive: at $c_0$, $a\le1/49$ and
+$|\mu|\le a/\sqrt5$. Finally $d>a$, because this is equivalent to
+\[
+ (4r+1)(\ell-1)>2\ell^2.
+\]
+The difference is $2r^2-3r+h-1-2h^2$; it increases with $r$
+and, at $r=2h(h+1)$, equals $8h^4+16h^3-5h-1>0$.
+Mix the dependent law with the iid law, giving the former weight
+$(a+\mu^2)/(d+\mu^2)\in(0,1)$. This proves (EP2).
+All inequalities are strict, so the construction persists for
+$c>c_0$ sufficiently close.
+
+\paragraph{The square case.}
+It remains to construct (EP2) when $k=2$, for which $r=h$ and
+$\ell=p-1$. At $c_0$,
+\[
+ a=\frac1{2p-1},\qquad \beta^2=\frac{2p-1}{2p^2-1}.
+\]
+Choose the integer $j$ nearest to $p/6$ and put
+\[
+ u=\cos(2\pi j/p),\quad \sigma=1-2u,\quad
+ \tau=3-4u^2,\quad D=1+(\tau-\sigma^2)/2.
+\]
+Since $p\equiv\pm1\pmod6$, the angle lies in
+$[2\pi/7,2\pi/5]$. Hence $3/10<u<5/8$ and
+\[
+ \sigma^2<4/25,\qquad \tau>23/16,\qquad 27/16<D<9/4.
+\tag{EP7}
+\]
+The upper bound for $u$ follows, for example, from the polynomial
+$8u^3+4u^2-4u-1$ for $\cos(2\pi/7)$, which is increasing
+between $1/2$ and $5/8$ and positive at $5/8$.
+
+Use two root multisets of length $\ell$. Let $M_0$ be all $p$th
+roots with $1$ removed. Let $M_1$ be all $p$th roots with
+$1,e^{2\pi i j/p},e^{-2\pi i j/p}$ removed and two copies of $1$
+added. Their sums and square sums are respectively $(-1,-1)$ and
+$(\sigma,\tau)$. Uniformly permute the chosen multiset, rotate it
+by a common root, then independently conjugate each coordinate.
+Define
+\[
+ V=\ell/2-a\ell(\ell-1/2),\quad
+ w=\frac{1-\ell+2a\ell^2}{D},\quad
+ z_0=\frac{a\ell-\tau w/2}{1-w},\quad
+ b_0=\frac{-\ell\mu}{1-w}.
+\]
+Choose $M_1$ with probability $w$, using rotation masses
+$(1-\cos(2\theta))/p$. Choose $M_0$ with probability $1-w$,
+using rotation masses
+\[
+ \frac{1+2b_0\cos\theta+2z_0\cos(2\theta)}p.
+\tag{EP8}
+\]
+The first two total moments are
+\[
+ \mathbb E\sum_iY_i=-(1-w)b_0=\ell\mu,\qquad
+ \mathbb E\sum_iY_i^2=-(1-w)z_0-w\tau/2=-a\ell.
+\]
+Moreover, writing $C_i=\operatorname{Re}Y_i$, we have
+\[
+ \mathbb E\Big(\sum_i C_i\Big)^2
+ =\frac{(1-w)(1+z_0)}2+\frac{w\sigma^2}{4}
+ =\frac{1+a\ell-wD}{2}=V,
+ \qquad \mathbb E\sum_i C_i^2=\frac{\ell(1-a)}2.
+\]
+Exchangeability and the independent conjugations make both
+ off-diagonal moments equal to
+$[V-\ell(1-a)/2]/[\ell(\ell-1)]=-a$. Thus (EP2) holds once
+these are verified to be probability laws.
+
+At $c_0$ put
+\[
+ H=(2p-1)D-p,\qquad N=(p-1)D-p\tau/2.
+\]
+Then $w=p/[(2p-1)D]\in(0,1)$, $z_0=N/H$, and
+$|b_0|\le\beta(p-1)D/H$. Also
+\[
+ N=\frac{p(2-\sigma^2)}2-D>\frac{23p}{25}-\frac94>0,
+ \qquad 1-2z_0=\frac{D+p(\tau-1)}H>0.
+\]
+The numerator of (EP8) is bounded below on the whole circle by
+$1-2z_0-b_0^2/(4z_0)$. This is positive provided
+\[
+ 4N[D+p(\tau-1)]>\beta^2(p-1)^2D^2.
+\]
+Since $\beta^2<1/p$, (EP7) reduces this to the sufficient inequality
+\[
+ 4p\Big(\frac{23p}{25}-\frac94\Big)(7p+27)>81(p-1)^2.
+\]
+The left side minus the right side is
+$644p^3/25-1116p^2/25-81p-81$, which equals $1618$ at $p=5$
+and has positive increasing derivative for $p\ge5$. Therefore
+(EP8) has a strict positive margin. The other rotation law is
+nonnegative and fixed. All strict conditions persist for
+$c>c_0$ sufficiently close, completing (EP2) also for $k=2$.
+
+\paragraph{Templates with two power sums.}
+There exist $p$ unit phases $v_1,\ldots,v_p$ such that
+\[
+ \prod v_i=1,\qquad \sum v_i=B,\qquad \sum v_i^2=B^2/p.
+\tag{EP6}
+\]
+Use a template $(1,e^{i\theta_1},e^{-i\theta_1},\ldots,
+ e^{i\theta_h},e^{-i\theta_h})$. With $x_j=\cos\theta_j$,
+it suffices to prescribe
+\[
+ \sum x_j=(B-1)/2=:S,\qquad
+ \sum x_j^2=h(1-c)/2=:Q.
+\]
+For the chosen $c$ we have $0<c<1/p$ and $1<B<\sqrt p$.
+On the connected cube slice $\sum x_j=S$, the minimum square sum
+is $S^2/h<1/2$, while $Q>h(1-1/p)/2\ge4/5$.
+An extreme point of this slice has at least $h-1$ coordinates
+in $\{-1,1\}$, so its square sum is at least $h-1\ge h/2>Q$.
+Continuity supplies the desired template.
+
+\paragraph{The phase law and the zero mode.}
+Use the first $r$ labels in (EP2) for the $p$-blocks. In block $a$,
+uniformly permute the template (EP6) multiplied by $Y_a$.
+The product is $Y_a^p=1$, the conditional coordinate mean is
+$\beta Y_a$, and both the diagonal and distinct holomorphic
+second moments are $\beta^2\mathbb EY_a^2=-c$.
+The distinct internal Hermitian moment is
+$(B^2-p)/(p(p-1))=-c$.
+
+For each of the $h$ free phases, use one remaining label: retain
+it with probability $\beta$, and otherwise use an independent
+$p$th root of mean zero and second moment $a\beta$.
+The latter is supplied by masses
+$(1+2a\beta\cos(2\theta))/p$, which are positive.
+Its resulting first moment is $\beta\mu$, and its second moment is
+\[
+ \beta(-a)+(1-\beta)a\beta=-a\beta^2=-c.
+\]
+All distinct cross-block, block/free and free/free Hermitian and
+holomorphic moments are also $\beta^2(-a)=-c$.
+Thus every representative has first moment $\beta\mu$.
+
+Choose $\mu=0$ for the even sector and $\mu=-a\beta$ for the odd
+sector, and take the two sector laws independently. The first
+moments are respectively zero and $-c$. Every same-parity
+coherence between distinct modes is $-c$, including a mode and
+its negative partner, and including the fixed zero mode in the odd
+sector. Every opposite-parity coherence is zero by independence.
+Independent conjugations used in orienting the signed relations
+preserve all these real target moments.
+
+We have constructed the full forced-coherence target at $c>c_0$
+on the exact time-flow torus. Mixing with Haar measure in proportion
+$c_0/c$ gives the target at $c_0$ and a positive Haar component.
+All nonzero frequency-difference characters have Haar mean zero.
+The previously proved smoothing, finite-character correction and
+finite-time Gram correction yield an actual bounded compactly
+supported density on $[0,\infty)$. The path spectral identity now
+gives $J/(q-1)$.
+\end{proof}
+
+Together with the known positive result for twice a prime and the
+known parity-collision obstruction, this classifies all moduli
+$q=2p^k$ with $p$ odd prime and $k\ge1$: the negative cases are
+exactly $p=3$, $k\ge2$. The next section extends the positive
+construction to higher powers of two when $k\ge2$. General
+mixed-prime moduli remain outside this theorem. This is a
+classification of one infinite family, not an all-path classification.
+
+
+\section{Higher powers of two times an odd prime power}
+\label{sec:higher-two-powers}
+
+The same templates also accommodate a larger power of two in the
+path modulus. The new ingredient is a root-label law for the changed
+numbers of relation blocks and free phases.
+
+\begin{theorem}\label{thm:higher-two-powers}
+Let $p\ge5$ be prime, $k\ge2$ and $A\ge2$. There is a bounded,
+compactly supported probability density on $[0,\infty)$ whose
+averaged mixing matrix on $P_{2^A p^k-1}$ is exactly
+$J/(2^A p^k-1)$.
+\end{theorem}
+
+\begin{proof}
+Put $R=2^{A-2}p^{k-1}$, so $q=4pR$, and use $B,\beta,a$ as in
+(EP1), now with $c_0=(4pR-1)^{-1}$. At $c_0$,
+\[
+ a=(4R-1)^{-1},\qquad \beta^2=(4R-1)/(4pR-1)<1/p.
+\]
+In particular $p\mid R$ and $R\ge p$.
+
+\paragraph{The relation lattice.}
+Let $\zeta=e^{2\pi i/(8pR)}$. The involution
+$\zeta\mapsto-\zeta$ separates even and odd index frequency spans.
+Both have dimension $(p-1)R$. Indeed, the even span is the real
+field of the primitive $q$th root, of degree $\varphi(q)/2$;
+the constant belongs to this span by the sum of the nontrivial
+$p$th roots, and cosine expansions of powers give the whole field.
+The odd span is the negative eigenspace, since odd powers of
+$\zeta+\zeta^{-1}$ expand into odd-index cosines.
+
+For each $1\le j<2R$, sum the $p$ cosines with exponents
+$j+8Rv$, $0\le v<p$, modulo $8pR$. Reflect into $[0,4pR]$
+and then $[0,2pR]$, recording the sign of the second reflection.
+These are disjoint $p$-tuples: their residues modulo $4R$, up to
+sign, distinguish them, and $0<j<2R$ excludes a repeated or zero
+representative. Odd $j$ give $R$ blocks covering all $pR$ odd
+representatives. Even $j$ give $R-1$ blocks, leaving the $p-1$
+free representatives $2R,4R,\ldots,2(p-1)R$. The zero mode is
+$j=2pR$, which is even. The dimension counts give exactly $R$
+and $R-1$ relations respectively. Disjoint support and coefficients
+$\pm1$ make the displayed relation lattices saturated. Thus the
+exact time-flow torus consists of these product-one blocks and
+free phases, with independent parity sectors.
+
+\paragraph{Odd-sector labels.}
+Take $R/p$ complete sets of $p$th roots, uniformly permute them,
+and independently conjugate each coordinate. The first and diagonal
+holomorphic moments vanish, while both off-diagonal moments are
+$-1/[2(R-1)]$. Mix this law with weight $w=2a(R-1)$ and an iid
+law with masses
+\[
+ \frac{1-2a\cos(2\theta)/(1-w)}p.
+\]
+The result has zero first moments and every required second moment
+$-a$. At $c_0$, $0<w<1$ and $a/(1-w)=1/(2R+1)<1/2$,
+so this remains valid for $c>c_0$ sufficiently close.
+
+\paragraph{Even-sector labels away from two exceptional cases.}
+Set $\ell=R+p-2$ and $\mu=-a\beta$. Take $(\ell+2)/p$ full
+root sets, remove two copies of $1$, uniformly permute, rotate
+by a common root of first moment $b=-\ell\mu/2$ and second
+moment $z=a\ell/2$, then independently conjugate the coordinates.
+The rotation masses are
+\[
+ \frac{1+2b\cos\theta+2z\cos(2\theta)}p.
+\tag{HP1}
+\]
+The multiset sum and square sum are both $-2$. Thus first moments
+are $\mu$, diagonal holomorphic moments are $-a$, and both
+off-diagonal moments are $-d$, with
+\[
+ d=\frac{(1-3a)\ell-4}{2\ell(\ell-1)}.
+\]
+For the last formula, the squared total real part has expectation
+$2(1+z)$ and the sum of squared real parts has expectation
+$(\ell-2z)/2$. Mix this law with the iid law (EP5), using dependent
+weight $(a+\mu^2)/(d+\mu^2)$. This gives every second moment
+$-a$ whenever $d>a$.
+
+At $c_0$, this inequality is equivalent to
+\[
+ F:=R^2-9R-p^2+3p>0.
+\tag{HP2}
+\]
+For $R\ge2p$, $F$ increases with $R$ and at $R=2p$ equals
+$3p(p-5)$. Hence (HP2) holds except at $(p,R)=(5,10)$.
+The allowed $R$ values have no value strictly between $p$ and
+$2p$. For $R\ge2p$, $z<3/16$ and $|b|=z\beta$, so the numerator
+of (HP1) is greater than $197/320$. Also $a\le1/39$ and
+$|\mu|<a/\sqrt5$, so (EP5) is strictly positive. All these
+conditions persist for $c>c_0$ close.
+
+\paragraph{The cases $R=p$ and $(p,R)=(5,10)$.}
+Choose the integer $j$ nearest $p/4$ and put
+\[
+ u=\cos(2\pi j/p),\quad v=u^2=\sin^2(\pi/(2p)),\quad
+ T=2-4v,\quad D=3(1-v).
+\]
+Since $\pi^2<10$, $0<v<5/(2p^2)$. Let $M_0$ be the preceding
+multiset with sum and square sum $-2$. From $M_0$, remove one
+copy of each of $e^{2\pi i j/p},e^{-2\pi i j/p}$ and add two
+copies of $1$, producing $M_1$ with sum $-2u$ and square sum $T$.
+Both multisets have $\ell$ entries. Define
+\[
+ V=\ell/2-a\ell(\ell-1/2),\quad
+ w=\frac{2+a\ell-V}{D},\quad
+ z_0=\frac{a\ell-wT/2}{2(1-w)},\quad
+ b_0=\frac{-\ell\mu}{2(1-w)}.
+\]
+Use $M_1$ with probability $w$, rotating with masses
+$(1-\cos(2\theta))/p$. Use $M_0$ with probability $1-w$,
+rotating with masses
+\[
+ \frac{1+2b_0\cos\theta+2z_0\cos(2\theta)}p.
+\tag{HP3}
+\]
+Uniformly permute and independently conjugate in each case.
+The total first moment is $-2(1-w)b_0=\ell\mu$, the total
+holomorphic square moment is
+$-2(1-w)z_0-wT/2=-a\ell$, and the squared total real part has
+expectation
+\[
+ 2(1-w)(1+z_0)+wv=2+a\ell-wD=V.
+\]
+Consequently both off-diagonal moments equal $-a$.
+
+For $R=p$, let $H=(2p-1)-(4p-1)v$. At $c_0$ the parameters are
+\[
+ w=\frac{2p}{(4p-1)(1-v)}\in(0,1),\qquad
+ z_0=\frac{(p+1)v-1}{H}<0,\qquad
+ |b_0|=\frac{(p-1)(1-v)\beta}{H}.
+\]
+Here $H>0$ and $z_0<0$ follow from $v<5/(2p^2)$ and $p\ge5$.
+The numerator of (HP3) is at least
+\[
+ 1+2z_0-2|b_0|
+ =\frac{(1-v)[2p-3-2(p-1)\beta]}H>0,
+\]
+since $\beta<1/\sqrt p<1/2$. All necessary inequalities are
+strict and persist for $c>c_0$ close.
+For $(p,R)=(5,10)$, (HP2) is an equality and $w(c_0)=0$.
+At $c_0$, (HP3) is the strictly positive law (HP1). Since
+$dw/da=\ell(\ell+1/2)/D>0$, the same construction is valid
+with $0<w<1$ for $c>c_0$ sufficiently close.
+
+\paragraph{Assembly and actual time.}
+Apply template (EP6) to the blocks. For each even free phase,
+retain its label with probability $\beta$ and otherwise use
+independent root noise of first moment zero and second moment
+$a\beta$, exactly as in the previous theorem. All distinct
+same-parity coherences are $-c$, including the negative partners;
+first moments are zero in the odd sector and $-c$ in the even
+sector, giving the correct coherences with the fixed even zero
+mode. Independent sectors give zero opposite-parity coherences.
+Thus the full target holds at some $c>c_0$. The positive Haar
+mixture and exact finite-time transfer yield the claimed density.
+\end{proof}
+
+This extension leaves moduli $2^A p$ with $A\ge2$ and general
+mixed odd-prime factors outside the construction. It is not an
+all-path classification.
+
+
+\section{What the constructions do and do not resolve}
+
+The local-potential problem is a finite auxiliary problem with an exact
+answer: the displayed incidence rules admit the rational certificate
+with constant $875/68$. The profile constraints sharpen its consequence
+from twelve vertices to eleven. Applied to the original radius
+inequality, this proves the complete degree-seven case for graphs of
+arbitrary order. It does not remove the degree restriction. In
+particular, a proof of the auxiliary certificate problem is not being
+presented as a resolution of the unrestricted Fajtlowicz conjecture.
+
+The phase-moment problem has two additional mechanisms: a quadratic
+torus density couples a dependent phase to the remaining modes, and
+exchangeable root multisets satisfy the first moments imposed by a
+fixed zero mode. Strict feasibility allows an exact correction along
+the actual time flow. These constructions settle the stated path
+families with the observation rule unchanged. A complete classification
+of all path moduli remains outside the results.
+
+The source search checked the repository snapshot, the radius papers
+\cite{CPS,Doig2023}, the quantum-walk problem survey
+\cite{CoutinhoGuo2024}, and Kang's arithmetic classification
+\cite{Kang2026}, together with targeted searches for higher-degree
+radius bounds and the path families treated here. No identical solution
+was identified in the inspected material. This is a bounded search,
+not a proof that no earlier equivalent argument exists. Neither a
+historically unprecedented principle nor a ranking above all previous
+corpus results follows from it. The manuscript is a research draft
+supported by internal independent checks; it has not undergone external
+peer review or proof-assistant verification.
+
+\appendix
+\section{Reproducibility from this single source}
+\label{app:repro}
+
+The TeX source compiles without external figures, bibliography files,
+or data files. It also contains, after the document terminator, a
+compressed text bundle with the following contents:
+\begin{itemize}[nosep]
+\item the full rational graph certificate and its Python verifier;
+\item the C finite-core checker and an independent Python checker;
+\item exact quantum certificates for $q=33,39$ and their verifier;
+\item the recorded finite graph checks and generator provenance.
+\end{itemize}
+Compression is only a transport format: all mathematical data are
+ordinary decimal integers or rational strings. Python's standard
+library suffices to extract and verify the rational certificates.
+
+Save the following as \texttt{extract.py}, then run
+\texttt{python3 extract.py paper.tex}, replacing \texttt{paper.tex}
+with the actual source filename. The script creates a fresh
+\texttt{repro} directory beside the source.
+\begin{lstlisting}[language=Python]
+import base64, json, pathlib, sys, zlib
+source = pathlib.Path(sys.argv[1])
+s = source.read_text(encoding="utf-8")
+begin = "%" + "BEGIN_EMBEDDED_REPRO_BUNDLE"
+end = "%" + "END_EMBEDDED_REPRO_BUNDLE"
+payload = s.split(begin, 1)[1].split(end, 1)[0]
+encoded = "".join(line[1:].strip() for line in
+                  payload.splitlines() if line.startswith("%"))
+files = json.loads(zlib.decompress(base64.b64decode(encoded)))
+out = source.parent / "repro"
+out.mkdir(exist_ok=False)
+for name, content in files.items():
+    assert pathlib.Path(name).name == name
+    (out / name).write_text(content, encoding="utf-8")
+print("Extracted", len(files), "files to", out)
+\end{lstlisting}
+
+From the extracted directory, the two fast exact checks are:
+\begin{lstlisting}[language=bash]
+python3 graph_verify_compact.py graph_degree7_compact_certificate.json
+python3 quantum_compute_exceptional_verify.py
+\end{lstlisting}
+The first must report $45$ types, $802$ allowed pairs, $896$ profiles,
+$895$ profiles covered by the fourteen ordinary dual vectors, and
+residual lower bound $103/84$. The second checks every required
+Hermitian and holomorphic moment for both exceptional quantum cases.
+Neither verification needs a linear optimization package.
+
+To reproduce the exhaustive graph step, install the cited version of
+\texttt{geng} from nauty \cite{Nauty}. Compile the bundled C checker
+and run the following commands from the extracted directory:
+\begin{lstlisting}[language=bash]
+cc -O3 -std=c11 graph_corechk.c -o graph_corechk
+for n in 4 5 6 7 8 9; do
+    geng -C -d2 -q "$n" | ./graph_corechk
+done
+geng -C -d2 -D7 -q 10 | ./graph_corechk
+geng -C -d2 -D7 -q 11 | ./graph_corechk
+python3 graph_corecheck_python.py /absolute/path/to/geng
+\end{lstlisting}
+The C program's pass/fail decision uses only integers; its decimal
+minimum-slack display is diagnostic. The independent Python program
+uses exact fractions and checks orders four through nine. The two
+higher-order minimum-slack witnesses were also checked with exact
+fractions. The generator supplies completeness up to graph isomorphism;
+the checker does not itself certify the generator. The C parser is
+intended for these small, header-free graph6 records only.
+
+The $q=33,39$ verifier is printed in full in
+Section~\ref{sec:exact-33-39}. The remaining quantum proofs are analytic
+and require no finite search. Their use of continuity is justified by
+explicit strict inequalities at the target parameter; in the single
+boundary case $q=200$, the mixture weight increases from zero on the
+required side while the other probability masses remain positive.
+
+\section{The global graph potential}
+For direct inspection, the first graph certificate is printed below.
+Each row gives $t=(d,p,l)$ and the multipliers in
+\eqref{eq:g7-vcert}--\eqref{eq:g7-ecert2}, with $C=875/68$.
+The profile certificates and residual vector are in the embedded
+bundle. Their exact coefficient inequalities are specified in
+Lemma~\ref{lem:g7-profiles} and checked by the bundled program.
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{crr@{\qquad}crr@{\qquad}crr}
+\toprule $t$&$\alpha_t$&$\beta_t$&$t$&$\alpha_t$&$\beta_t$&$t$&$\alpha_t$&$\beta_t$\\\midrule
+$(3,1,1)$ & $0$ & $-\frac{671}{408}$ & $(5,1,2)$ & $\frac{61}{136}$ & $-\frac{125}{272}$ & $(6,1,6)$ & $\frac{1}{5}$ & $-\frac{137}{170}$\\[2pt]
+$(4,0,1)$ & $\frac{875}{272}$ & $-\frac{201}{272}$ & $(5,1,3)$ & $\frac{313}{400}$ & $-\frac{787}{850}$ & $(7,0,1)$ & $\frac{137}{170}$ & $\frac{11}{340}$\\[2pt]
+$(4,0,2)$ & $\frac{919}{544}$ & $-\frac{647}{544}$ & $(5,1,4)$ & $\frac{201}{272}$ & $-\frac{253}{136}$ & $(7,0,2)$ & $\frac{57}{136}$ & $\frac{11}{340}$\\[2pt]
+$(4,0,3)$ & $\frac{671}{408}$ & $-\frac{535}{136}$ & $(5,1,5)$ & $\frac{1}{4}$ & $-\frac{253}{136}$ & $(7,0,3)$ & $\frac{74}{255}$ & $\frac{11}{340}$\\[2pt]
+$(4,0,4)$ & $\frac{1}{4}$ & $-\frac{2743}{816}$ & $(6,0,1)$ & $\frac{253}{136}$ & $-\frac{117}{680}$ & $(7,0,4)$ & $\frac{373}{1360}$ & $-\frac{11}{340}$\\[2pt]
+$(4,1,1)$ & $0$ & $-\frac{201}{272}$ & $(6,0,2)$ & $\frac{787}{850}$ & $-\frac{181}{850}$ & $(7,0,5)$ & $\frac{181}{850}$ & $-\frac{11}{340}$\\[2pt]
+$(4,1,2)$ & $\frac{1007}{816}$ & $-\frac{647}{544}$ & $(6,0,3)$ & $\frac{53}{85}$ & $-\frac{74}{255}$ & $(7,0,6)$ & $\frac{117}{680}$ & $-\frac{11}{340}$\\[2pt]
+$(4,1,3)$ & $\frac{671}{408}$ & $-\frac{2743}{816}$ & $(6,0,4)$ & $\frac{125}{272}$ & $-\frac{57}{136}$ & $(7,0,7)$ & $\frac{1}{7}$ & $-\frac{11}{340}$\\[2pt]
+$(4,1,4)$ & $\frac{1}{3}$ & $-\frac{2743}{816}$ & $(6,0,5)$ & $\frac{107}{272}$ & $-\frac{263}{272}$ & $(7,1,1)$ & $0$ & $-\frac{19}{136}$\\[2pt]
+$(5,0,1)$ & $\frac{175}{68}$ & $-\frac{107}{272}$ & $(6,0,6)$ & $\frac{1}{6}$ & $-\frac{137}{170}$ & $(7,1,2)$ & $\frac{1}{6}$ & $-\frac{19}{136}$\\[2pt]
+$(5,0,2)$ & $\frac{647}{544}$ & $-\frac{125}{272}$ & $(6,1,1)$ & $0$ & $-\frac{467}{2040}$ & $(7,1,3)$ & $\frac{79}{408}$ & $-\frac{125}{816}$\\[2pt]
+$(5,0,3)$ & $\frac{404}{425}$ & $-\frac{787}{850}$ & $(6,1,2)$ & $\frac{787}{850}$ & $-\frac{2093}{5100}$ & $(7,1,4)$ & $\frac{49}{272}$ & $-\frac{125}{816}$\\[2pt]
+$(5,0,4)$ & $\frac{389}{544}$ & $-\frac{253}{136}$ & $(6,1,3)$ & $\frac{787}{850}$ & $-\frac{7271}{10200}$ & $(7,1,5)$ & $\frac{49}{272}$ & $-\frac{1}{6}$\\[2pt]
+$(5,0,5)$ & $\frac{1}{5}$ & $-\frac{253}{136}$ & $(6,1,4)$ & $\frac{125}{272}$ & $-\frac{1009}{1632}$ & $(7,1,6)$ & $\frac{117}{680}$ & $-\frac{1}{6}$\\[2pt]
+$(5,1,1)$ & $\frac{2743}{816}$ & $-\frac{107}{272}$ & $(6,1,5)$ & $\frac{107}{272}$ & $-\frac{409}{408}$ & $(7,1,7)$ & $\frac{1}{6}$ & $-\frac{1}{6}$\\[2pt]
+\bottomrule\end{tabular}\end{center}
+
+\begingroup\small\setlength{\parskip}{0pt}
+\begin{thebibliography}{9}
+\setlength{\itemsep}{3pt}
+\bibitem{CPS}
+M.~Cygan, M.~Pilipczuk, and R.~\v{S}krekovski,
+\emph{On the inequality between radius and Randi\'c index for graphs},
+MATCH Communications in Mathematical and in Computer Chemistry
+\textbf{67} (2012), 451--466.
+\url{https://match.pmf.kg.ac.rs/electronic_versions/Match67/n2/match67n2_451-466.pdf}.
+
+\bibitem{Doig2023}
+M.~I.~Doig, \emph{Block eccentricity, a radius bound, and an application
+to the Randi\'c index}, arXiv:2309.11613v1, 20 September 2023.
+\url{https://arxiv.org/abs/2309.11613}.
+
+\bibitem{Corpus}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus},
+102 numbered research drafts, snapshot
+\texttt{ecd87de3348dcb706a76bb12fde722d7a348a012}, 2 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{Corpus087}
+VMRC, item [087], \emph{Spanning trees of small diameter and the
+Randi\'c index}, file
+\texttt{[087] fajtlowicz\_radius\_core\_reduction.tex},
+unrefereed research draft in the snapshot of \cite{Corpus}.
+
+\bibitem{CoutinhoGuo2024}
+G.~Coutinho and K.~Guo,
+\emph{Selected open problems in continuous-time quantum walks},
+Special Matrices \textbf{12} (2024), 20240025.
+\href{https://doi.org/10.1515/spma-2024-0025}{doi:10.1515/spma-2024-0025}.
+
+\bibitem{Kang2026}
+M.~Kang, \emph{Arithmetic of Bohr Frequencies Governs Uniform Mixing
+in Randomly Timed Quantum Spin Chains}, arXiv:2609.14463v1,
+13 September 2026.
+\url{https://arxiv.org/abs/2609.14463v1}.
+
+\bibitem{Nauty}
+B.~D.~McKay and A.~Piperno,
+\emph{Practical Graph Isomorphism, II}, Journal of Symbolic Computation
+\textbf{60} (2014), 94--112.
+\href{https://doi.org/10.1016/j.jsc.2013.09.003}{doi:10.1016/j.jsc.2013.09.003}.
+Software: \url{https://users.cecs.anu.edu.au/~bdm/nauty/}.
+The runs used nauty 2.9.0, source mirror and commit given in
+Section~\ref{sec:g7-main}.
+\end{thebibliography}
+\endgroup
+\end{document}
+
+%BEGIN_EMBEDDED_REPRO_BUNDLE
+%eNrtfQtz2zi25l/hZqrbok1JBAgCpBy6N93JvTu725l0TXZ6p2RdFyVSiRKZkvVw4qTTv32/A/AB6mE73bN1a2vTbknkAXDe5+AA
+%YKTPT96s0uXbq9t8NZveXU0W18t0sukt754Mnlzqv3/oFmfzNney/M0qz7vr/DYvnEm+2syms0m6yZ3tela8cRbF3PR7dbd5uyic
+%9SYtsnSVOfPZeJWu7nqXxf9ap2/ygbPUHQLnCO0SbsipquHKoth7t14Ul8XLhbNYbmbXs0/pZkYUF3MgcxYrZzpfAFS86S4Xs2Lj
+%pKvZ5u11vplNnNka7OYZmDHyXRbT1eLama5AAjjWzux6uVhtnH8rAU66dn4pOy3TzVsIU3V5hduyZbYBc4vFvB6+XC2y7WRzWZT3
+%b9M1DfWIcW99t74sCFlCKDq47aWrN7dDNnKd2dSZ50UNcy+Yk8/XuSbWubqazub51ZXb+wCBror0Ou+cPE5bJ+4lrLFJE7rpQT3Z
+%ukMs9FZ5ml1t8o+bjosur5NhJ/CYx9zR2bCTeUtv7k6h0MyZFc4qLd7kHeFFGrQEqOOjJ93Mm3bmZWcYflm8SIZ4p9aZV6KiXnmx
+%vc5X4Kvz2h1cFg7+oz7vGgwzj1Tw2q2a6b/cu/Guk9fDd6MGls7niw95lnTmZ9cXSaaVlyVJbjT2S2fuZaedrMtc9+KXTt699vJT
+%fDCSs0KBESWWwYteulzmRdYB/XfUp0gMG+fpeg1tOkWSiNCBU2sLvXCTJPL5ZfFjMvylsyRCc7cmqHVGIpNUr8Hzj85ZMuxSx5u6
+%0w67fsWXUZlWyAvHxjR8PZyNRgTR6jCQd6MR8MO6+dSZLObb6+LqNp1v886d977SICi9f1pY6tQYoc73ljpX+Wa7KpxuZ95duqd3
+%Q376ftTVYpmbMzY6o4viLOsG5TiwmbwYvu8Wo/MsIe6G/ug813bClelT4qWhswrHuzPEZYekd2vmKeBu8ysjw7rzsmL+fZ4vk+HM
+%udeTGjG0tC+HxKMxVnf5NFlvrzsvhwMCuhoKsSoogIOR22Ulu+/XyTrfdIiq2xKAIGfD4uy95uS9p/2kxcYLMumMWHu/1lTemWst
+%4jKh+BueLBebvNjM0vnJ6PynBB4xPJkg8SBbbk5GtbP9lKApUqEnI3BRAoeb7XKedzbavTaEG4M3d8t8fTIaJcnry+JVUva5Tped
+%X7yPxhM/ll1r0tTfhGapTq+TemMS5tNs2Xntvap0XxI2LpGeGW8Yn/10uu/yFwmrot24bomicrUZHGMniCkAnuaDksgrch/4xyvj
+%PE8T3/Si8DjYB5+GkSak9KDL4i/Os/mckjDly7VTLDAHzCnT3Tn5x8l8m+WZMzaz1XqxXU1yZ7zN3uQbTAvVoDp5YaKqM1NgZ6xC
+%WEkv6BaBna90h3CnQ7cQdp+6n9zv1y3C3a7038ukUwReIbwi9ArpMV737hbS3e8/na3Wm6Sg9F4F0Md26Lwkn/14YKiOIj1+9FR/
+%nAWDSjlVqnzZ+CblxKqZUmMsL4t/JsP5bL0pnfHOOOMd0S9DwfS/yraVS1rI/gksTOgwQoruEOgOoDh0aiz/BPlxmtWmMsBSbWio
+%2PxchmyjZsL2o87Aeynz4kdkxS/APFmgmsD04p+v8ut0VqCeqCm91BFVilsSBCaTOvYSmVu7e1rcdeCNHerrfE9cjWdZlhcmKVE+
+%+qXz0T39pPn96H1yypB86enMizxl4mzHg+68GlM14p8eFIAptJTirBqlo6kW6IAhK7FhQjPbNdKjOPC9wPyZvP0X58VHiIs+6xlZ
+%0a4LzxFrm1Xq6Oy2AorNGszSbOvoommN2mg+m8w2VBq+TGoyNIVoXe7p8Xxd5tCK3EnjMmtKo7rjCVIhjb8s7hLL/dCBhlzlN0iz
+%7vmnQ23bMbVdFs+2sPT5eFvbe6f+sbLAyq58dBLq9zkKICt4x4ttkbUnG3RctcsQ3eki8XeC/tm2MtGQZkzM4tomNHNDT0mSNbcc
+%KXPl1o5OKhjtxPW4xqbJubb2nmnpk+TZ1vji8GRcQsbbuh9F4i2SrBb9VvuaNT1hRrx1TZa5bWeZTxRqt6NEl5cogyTzBPddt1Tv
+%O+99uz8xvzMH7QXqmQmX1eIDJgP39NaYY/HB0KYYeLb1PtGc8KOucxoz6Bi7LWPs9kCMnR3vNdY4a5kNUszVzA+8SKBepymETKUL
+%7Wx7vVx3Pp+8mS/G8C8zVw9E6FWQHNMOIKgka1BdDQwQNp2fXA9qOEmz69l6PRsjW1ZpB6Ni6e0k0QET3slilc0KLLnqrtVyIM9O
+%qoSgsVZxVHU8Gbz0GiDVxasrLaHhxTiNHrl+m/JQngzKhU3P3FtLivHdJl9jTdF7m3/MZhASCwwzcpNutmD0BL6EDKGzh16/UfZ4
+%m09QOi1JudnJF2+GwrDYJJwU/sQrF6uTxSqfvH3fm9Aitej3nZ8AgHnyGzCNbGKwDLTh8nTy1qwnnY7+kB4WptDOObkVvC1zeBcK
+%L/LJBjpx8t6bnslOb3Ksabs/uQ4ttZxrmrP0Eusi4RQfmvD6KW5uSbUTVBmLadnF4QPHrGqd1dtF53+4ztPE+Zk+uw5zzpx1PzCC
+%z+96zq9O4swn1x3W612nH4HAPZXOegJJkJ2RYGeFrlecp8T2ovf2YgdGyt8FrmgsAcnfqLTeFuvZmyKnLLZxtgE/vyQX0+thAKCM
+%8g5NzrNhwEc1hNozJEoC6oZ65O1ilsFSqzVFK4BQe7o6XbufsVBaIzd1ZXDuXOfXNCM+83xvPfuUQ0XP3HPH6r9M1mfsXJMZzzaJ
+%7yG+MeNS5MN+HYK/S9j5u6fF+buzM7cGztBp9vTd+QzAz8ifHRqd+O5nGn+6PDvT5Akoz7/QZ7d7Tt3QfHGB2++Z+/kZisnfErZ9
+%CjwQ+115M8MA/NWCzhfwBP32ZpJRJVLfp15zPQYbH94ihjq4asCbJP1ufJ4m4/NxsgHici2RnhMBEoQmvQ7GkjYcGD0fIo6g/wbF
+%pCC9OLezBWnGyRZbZAHyyPU8YXl8boa+AWAoxSihXQ2tP8PNFGXtukOIKwuYawoCF3Q1SbjMZL0sTDcgoN0Rd0TUoLL/orv4WDjB
+%bptZscXMbuxODe55WdyQo7whF0GEEb9UmOHjOWFpW60orYbus1FydTXezubAe7VcLCfIMHAXwF1NW3d5yl2NjTWgBDnBWZ+dNZCL
+%5y5o6UutWzOtdjDut9/WF9xmHgrFSNOlUfOv8BSLUQ5Gk+eaUzT92je2/9WbuaezvbE/20JucbOFkNvKXymq0uTZcDs6T8/T75MU
+%RcJn6nlrCT/ZfOqkRujbi63r/HwGoiTadnSB99vRD/p6oK/d8y91BaJprn0QXfuguva1bqsGuM75BuANMaMDee2PhptREsNx6nu8
+%SAJidJ3nhQ6DNYw3XSV0b+KTKuHKqVZkPlI/DSmmlfh0d5NMV+c35zffJzeQE42/QfS2nDcubFRMv09+N9ibocXUGlqztzc6yc41
+%o7/RAOKSPr7UZgezKw4J48NG+ax75LbNWmoilyLSW1LURe6ia3OvLcRP86cr+BSo4LL2t6/zAOc+F3i6tT1WJ4qPNsMfcPMBJD7U
+%8tzUTH4YPdWXt3T5QwMdNFBN5Obi+qNLeG9IeVqs649nrJGM7mrhMN/pidVBW5/rKa3/qzWjAXLhOMHpr6cr3SpPf0arPP0V7RzQ
+%9W7QzN+uE+reJFR3xT1MmesEY7sYecbbzesy8MoUiPzXMZduB6O6QOj2O7Lnn/5aZ6VpZz1/qnOl+9mkzPWcJrfVZHnXoZzpmSTW
+%ZAxguQA2aJUyLvm4ruemncsn//jr3/7ns9d//dtL57u1zpHl4Mr1pmVPJNd8tUIipVJlnXw3n2camS5zynuqKNbzdPI++a4nsDDc
+%1DiRnjzq7Wl+PWKSxPmyVwLBGFdmL93s2D9qJ7uErrdj1HwoW9ZmT3ozu87NxvTxrW6zTZflk0VW5n6q0NcJXfao6lh23PMiQfXZ
+%oQLApSl4rJdQuhajYgLLCjYYDcY9LA31Xit1nlDPi4uZ+z0zexTNkir0uswrt2zTZEi1hI4o56rpUyCbvNebRfWipFqPFWYNQfBt
+%A78tVxa06sLKYJAiPHpplqHhPEV86OutWTq9NwvnatqulGDKO0QrYTIbxYhcVG/NqhIwL3X1mjV/0zMTGyekIAuTdqjUe8rptALT
+%06Ak8HJR5Ojys16mYAXCPBSF1BUsevSB3O/uylO4teAkCvBvn966Hu0oEz2K+sYKrXFaD1kyLM7Y6LQ4zzAaeeVmm2/zBNeV7jRq
+%DTWKI9gHQ+521GwxZ0gsF8WAPpIMLUgeelC15vygVVounLRc7tNCcwAOq060KKWymSekJOQg3a9eg1NX96goLT3URoY2BjVGuvDY
+%mUGs7VDnR6/Jj24tYoVfq9IE7M9ddvZLZ+0FLlayGp+2a7WUpj5YyNOWqr52G//R9+RD4OpKn99cXTlJ4lw+ubqiQvDq6vJJqU+s
+%P2gpvMAM3JwPHT0eunxC6xU6zjIb1uvtfGO2MOtNRnsHg/n1/gQK8DoV9F4tYIPOsKbtnXR/OsFbxun95sSjVSDijcrHxXbTGvrX
+%Vy88OkdKXq+2ebXvoN0eLjXPUzgheff5JqFc06O3jn3iQVlE76r1DPJ6IyRN7JRzfpvUwVf1oL0FOtmjfV6i0eyhaPoI4ZKBW6NA
+%XFJ36mrUR36gwd5thXTZ+5DOkG2qDfllz9iQOEmqrelS08nnk+JkUHgnOt/TEhtUvRNgnV1vr6+01c0KWhNxvZN8ni6xxL1aQ7Ii
+%w5AVLa07lma6G/jXlxaZetvV3LrnexsNZYM3nW/Xb21DHNiSOLAOby+/9U4AkQV35mJvQY4Vd7GBhHTquN3kV/nHSb40a/nyXNc+
+%SzZbhet8PqUl9wb+jhWptWG41n5wkwSB3oHCRdxz/r5zjKzPmXvV4W05P103R7FH57+qfVtMWke189X2apJCdIrL589eP8OCfHhZ
+%dILAc05Yn6kTz4kDGUjavRgyz2HcvLoiKN8CYV5d5pdv1G2ktztOTi4L5vs+XpzzQSSZw/R/3Gd8IGMpHc4Z87nPca+CyKFrRhA2
+%CHiM2Yea0Blvg1hw9KdGTigGIubor1s59wdhoAg73YLcgKvYIbI0Fq1RHIjLAsjMPRvIIAwdTUy/DWQocE9jmb5XYeD4mhoNGXAh
+%IQunW5/Qhz4HtxiqGfbR3ZfEjUaGe+nHsVPzygbCj0CeutIfHwCn8B1iRcPYgPkQh/D5WmMDEXLmlOi0tEwqUgdpkiQmjFpALQ8f
+%BALyE3+kK8IXBb6jpWW6nUliR3OLwUxIKBcGon2pThBrc3Mf5mYBE4FgMYtgy9LqXW1yelOxeXVpy698D8tX02vXA7hmgVQHuYE6
+%FArCaU0aa0H9PApjyCgcX+uY9AotBEHE/RAySdIe+nJtbDRIFfIgjmFEYzBtVwimeCSUErCOtp6v8fgDHgs/UHGsfO2STDdpCrEM
+%wyiKI/gWcUKIzAAfLsJEFDl+OYC0OxAqwP+BCqE/3VkzhQFBKGEzX2rKhn9yh0GoqIUzRLbGwzVf5BGBiBWH3DArZ4YAWZqrKPJD
+%IWVMiIy9iVMVB6DtK5/8hIj6WlHwZEROyIXQDGk9EPVBpFigX+TXOuS08QeB4qEScNjABEjJ6yCMfD9UPI51oBhX1XHLBLSKaCXC
+%RmITMgGP4CVBBALMGIbr2IiDKIaJRUAuz4xSdVAwEfsMTT7TEhhVE9znAPpCxIFjyGpXhcg8DEQURAGpiJcjwJGMVBipWFIGYNxk
+%GOrPpPRlrEDDeBfX7xANDgTFCRWTG5kg00lDAAeoMsQSq0KPrB/Bv/zIB8M6QzGjDdKdCCWYCuBGOrWU6QfhGSkZQklIQpyXfsS0
+%P4oIzhfKOtzqQ3+sGq7LMlpvLTimlEZdow/+hl02wmw7SHvLxbLjHqjEs9ntDLUBHV8P9CIhHQ5GtNlGiMe4rmfwsUFG5fzNdpFg
+%haJrQOYZkl36GLtnzN3lJTEthqOiqvqdd0lrIAoTzS5q3sXw3Si5rQrSvSNXcJoOZ2fvRt3k9vQjdSu10IinAUDkenXTZfFf66mq
+%Q6WLWz7zcTeZLzaL69mkrIKxTgIbZyRfp8Da6WzIquI/O7A4QkVUfJcl1clT6q2SWqd6MWMRyFAGV+pcJYl5xKNiWT93YDi1lkg3
+%3kQ/XoTVS+G98pbpbGVOdvQVlnS99XKOQguFiFnYrHURSI1lCx0S0W5PtraOk1HO0DmMHvHJS+sx1BeKRlcqeNLDHUoJbr7jptC4
+%SBBcznNtz1dul53XTxvUHvMXx3oSbpWnc2e5mN8V0Aoux3fObLOuiqhaXShZpvRIgf7U/ob1zHPjYMRW6k0WUFTLN141C5lxY6yU
+%DhQJy/A5Vi7jbjo6S2jsKRU+WFtej3UANKKVD4qQ79Aw100Sy4z89MbVMr2GMNTu6KNYFGCvOul8+TZ1E988JaPPM8BUsnw76/Ab
+%t89JnmkyHPKRN/Q9Nqpcy3p+i3s3RoqUhD6b6qgYJ/jkekGSOmcoscrw8z0TPl0TTG4TNbeHooZiRnep14vGV8sw8V659BgdrbJR
+%VpvFeOXvN1imoWZerJPP7wYz+ymrhgiNcr+cX2tX0DdA9Y9kOEVEm4h6rhml+9L7NAbqSrIt89X1ullsp3a83dTxpq32ZpLBaGQK
+%eJiJveWyWrK1EJfLmU9JJz19536nzXf+Sa9mPxGC7ieItawUAgGHn8qDX81O3bC0HEQ/rkGtoP68DdahBjBdUyi59TMY6YXfiNU0
+%0V6FvkuwUisaZNVjG5+IRoOEBtODgzBHg+1TGal6j0gzADyTpCreOyaJ1MlnclG3QLFdZtz52WSyvd7O6ZnUxWr2ZkZHivS4hUMP
+%R2y6qzzbTvLMda4X11jFrHt6c2RK3kzOuLuvdO2OziHa9fHm0srErwcFVEfEmn9Pa0SbLkeWg4rS03EZ9uOq561HfV33u6DZuvhH
+%ve2yXOqsRVYyLpADUw7Pa9xjuWz8ZWbzduzJSrSQTPQYFTw6AZNISuSTnTwH8Cwn/OAH84FZGhvdHkDlDkh3xxB1jyCik808QRo8
+%Na5ymPFDbFfbKzX35Sp8n6+yZ+0hDZ+eJg937E4oWPWieHpyk3y++TJwXvzvZz+9dl49+/vfz53PTSB8Mf7ofHQ+P//i/Hs6X8xo
+%7Zi+ydfn8NDPky/OhcP6n+GFX3onevozDzXAxVb6iSRaVFYnwp1TDXYPbuZWD/Fu3q4W2zdvGdOP7mL9PCRBPxs7XD4pLp8MHLMy
+%0ffm3BgjCa5qsNlGIRitlW1wvloZsNmfRnGOEpPZW9S+tT/t94JQMdqh/usPP7x4/vvn/1jY6MwOBuELe5yHBP/iHeCX/cv4xdoD
+%6xWFwvcoxyGKWOL4v/8Alp/9/h+3n384zDPWEj16itehHfzRAZvQjgelT5jtqtqGOW4VUdPQrBKIN3Lb+0FGIN/iamdPiDr4PdTi
+%xzQa7tOS99FiffkwNX6MmtynJsSfJhccI6f2yWERdz898SA9Hh2jFx1QJpfRfQSDPnvQfCKOj1GM9ykyLG/94H4hg/tJMtnzaZfn
+%qD+XuSV+lBM/OiTvCUW/DMWffjfb0/e78qMpyuMUsQJWRPH56MNxkvIP5B3xMM0Xv/y+OE70DyQ72ro4SpWHRrf/9qIY30M2+gPq
+%hfPfMyGUNv33H25+H9+j5PjrCZsYuId0QNvDG+e//fDj89+XX0ratq8/9E9h4PSfL5/Uz8KDOG6f40PpE1vz8B2dwzyJVNiXEbH7
+%RD+5B+BwqP95DBY/wvPrT15+BuWn0J9VP1a2s7Kd6fawHB+W48NyfFiOp89Qf7KyHyv7sbJfhYfpfrLEJ0t8ssQnS3yyxEefUn+y
+%sj8r+7OyPyv7V3iZ7q9K/KrEr0r8qsSvSvyqxE+fSn+ychwrx7FyHCvHsXJcRYdh3Ag6L/9ljn5G8kqfqcAA9KSkZT1jk3IifdKV
+%CtOAD5MBkbEfV9w0cZ+ZG90Us7gfClGOEsrc6KYaBzWFQdhngSybyjkGyJQI+hGr4P4hEsz3lenzAI0dZGWO34c33thlQN1QqnHr
+%Jh5aTcIXfYGqTDepCAyFftkURJYKeBi05AwPgRuGDvDATMd9FgIWQFb/EAu1wg6xcJCz+k7TYQoaqZDVqHVTxCw6GBRVOhB9HoYV
+%EW45SKhs8pVwmgUZ2HbtV+QDjFB+2weExEBfHGSK+3HQD5l/sFFx+ITehj7EHAbFfSYDfog/gbbG62vjtfmr79DE4GM1i5Xcu/BK
+%U7vwQGkTVIq2m2qt77dUptpv6asD0Kpn3HIJeQCq4iaSSGVNwIjY0t/xlr48yGN/n6wGUWbChHRV7iYgMa3NbGEG6mXeTMP1v0ag
+%lCXUF8pZ9oPa7bQlYJswKknXnk+nUQYioBtwV+k84oF1e/97g0UErCGyg6PFQDdWfawJ91BZ4C4yDh0n6Zs2KmpicXnDZJ+LZkg1
+%vObJJsX7TKgjDBCkptcNY4tZmxyuYwt+L7mQEO5BbRkbhsQRyYk2t+RuNcRHGho5dhqEYAcaKjOGjHioOhzhx7Yw3PUAataoCPAg
+%5ofhUoV78K9935eCMIc8akPg3PIP4a9zmYrqiCmvLF+qYTbxBkopK64jr9QS8w+ZXugYaScoBbPISO5EbihQNUghxVfKsjMwgD1Z
+%nZFapI5qo0r+MZKpqSNa47oR/N4Po69l7DHo2i2Y9ZmMHmC2zKwiYhpNCW5G2nQZVMMDEe0Tbmut1cSpfKtSfavBx42QsTymlh2m
+%wJPY0wWC0vjvAW2I0B7eamIMpReyJj80jDUB8ShjtRTRjN3RidXSsG9DqdC19GG1cAlMQvj7LUftKq2obkItiALbgjXcYqgJ1pby
+%rcCW4UEcmH8UVU9xNSVRRRyV6kb5xuA+td1bohnltYqOAK4m+M5kbAH9Y6Djk/D9o+3rbsAjVF5sD4kNx2gh6xtygWgfK4ptrBiC
+%r2Y29JsJM6KiVPgHkdMahh9q4pEexuUDirIKOqop/TLNojqrSVq8MEt4ixhDEc3F44VsD7YJowV1IdunHBxRQYyqKT7UgBs4YCQe
+%5ShBbCbK0o/9sh7mgkp8ETZMl6aUYWzPTiVJG6pZr4oYG80Dc0esmnnP5nmflbKBysY42lfrHjOVIoSgMBWqJthov9vSQ8shRSCr
+%RQKXKDZrZ/cbBZONGnWKeGdVhnTAdyZpjoVDOc2wGO4ayv3OD0SKhUJSGbKPwLrsVnPzwfmaHR4DChVaLpEoQ6tEDKPwUbmnQcf7
+%MtzDG0Q1JhurJVu3CtSDwauo+G84rxfaDZhqrIZzq8HiotVfajz7DRGh2e9+gBNa0zarBVEVUdwPmpumQrb5wAqg7sFs68laNuvS
+%Bvt/4t1iva5F4z+Ptk55WO8G/u5kahG1Z9JGGSGuyim6UifkxaBqeBy24wz9GN8Ls9AXVXnCd/s9HGHVaFZFuDW6ubrfR6nyCITY
+%HdNcBoeAPG5G1fjRXmeKNk2s0ZDAuKgmDR7taaWrF/J8D47sEfrC36MkxE4ENlMmq/Hb9TIsLctyV28n+dGeYRCLgdyDKmulYfEb
+%HsTh7/FgTZEWCzQ3B/VWUUvbwj+gbYw7oDJ7NfCQ28Bjees2li1/4KLVysTOvXzMyqjFXFWYNo5qVbyNKuwAazyjBjastFBW/LSX
+%RLZ1ZFX5c7FXxVozbV3GhgRWstl1COWhAQ/NKW00rFXrWGTtm/vnP5SqtId0aNguRmszo9UUN5s/h5KBv08IaaHZjWlTtXZYWg0H
+%iOgOrX2XdqjKCLUwDw+IZvOCugaCHaAYBNZe0o5qpL1Tc7/92mywZl/ucQo5qvYuV/fwF1ibVkcZbDWIgFirSmOLbAOqdV3O3hzh
+%QXqoy8UGQ8gp4fpVNWw33TdbNmKro95s8bETDkSmVomtXpSvtVvZ5rDhJGAU1fWf1RA1NpMth9vTeeM7cdXUOqdSIfQQ8rIgkHTy
+%0NxiyaCa2UgfPMi6dtgZ+lCaiFDJBagmSkMJjjK78tcdVDu3D1TLWFRgXjk8Uuola1XcovxrOPha/m0yESmWy0NUeBjHLQ3uiGYr
+%9LEs7OnD5iXkWCSrsGYmosqjMajF2k5TC8tuWxDcg7RlB1+1dLFjDjMXHiFCscrCg21YG/LmgGKfN3LDB3k7vk+2P4JgxMwerHaY
+%BkZ56KsL7zDqC1UFeVMBtIzQVAt6FVqnsRre5shCI8rzh5IYj2yjKMxUtvKaFsJnItpOCnDvoB/JikxTvzMD/tod49Y4qSBbwMPw
+%MLEHd7PpiEkEoolEe3RX0nme9MVX83g/WuZH5JHSP96BMi8XD0ohqx0OZfG5M3qHGQ6TiUD8WQnbJCXVkZE8QjGyDLZDsWXMP8xN
+%yUQbc9wgblOxW9qctpraEraaGD0swFnI95uOZl1aoPlib+8anKm9Aj2gPXM/CvheILdYaop8OuHeXw8o2iLD+rrOdVRNNEIEFOV+
+%tR1Ca0ymqvN6ElAFO4+hyGaF2tT9khLd13qPNYrBanWRb1F4MHRhuaqvNYx2ZSp0wtqkblY8qlmm3lPNP4zdBtv4G9Gsin1vN6GJ
+%XTJCuL/gthhg0hQBeyzYS24brKxp2oIT8eAAlkOsWCtpmxN1kKDV2YJiXLNGb7MRVlOXBT66gxU3O/4NpB1vSu+v70Lam60EiR+V
+%Wtq8VtHUsmu1kg7sPZsqSi01Wntitg0baNB4a3PqwZqd6Hobmx5H4e2p9f+V9y573AHRfTNc7WF2jNR4w0qftHPB5VdPZjV2+0Sm
+%PkSz9lUa9K1HNGr6j3Kvduddjnc3i3aUF5IbfQ0Vy4X7+08p9IO9Gak5bao92tZKvbFU8dHArIOTuiqvHThsRgr+L/PjLi0YouAr
+%XCoiw9XJlPbHyrNsOh9U9dm5jZdxqqj8R+wCtVmjPQIhxVF+Gd3UR+kVVrvH/bvPZL0D27dC7MBoJ8Uvz9N2sAfVGaVAIVQvoRv4
+%wWjeo0pHSLXqaigtB8o9ll2ZSh+1tN/lUT+uztKbSxv89dmjLUXDeBNZ6k/ltZgeDdh7ZoBOEkO5l+sb8gcihtHJZuWWTHetqmfS
+%XKVY9v/ZEwV05B9aCf9eOf7vPmDQ5eHXKvM/6/3byf+fP/n3/eOn/qzhpXk0LzAP8bWOI62ODz0b0wxvziNtOs1ll1w03p8WLDAc
+%GeVmUE7Q9tg2yuZgYJfR7s6g5tBivye3DxVYbO/0W34VHIY3s8EuyUofj9fif+67skzYckl4K6+mWbtBtg44rBbaz249KdscYmBM
+%s4lvtxwPwcbgLa4OPMlqOaE1bfHWoUxzbkC8NIcwVkNYRbANZMwmSBG1Z/J6KtwLuCiO+zEX/l7IxbxiMrR6tPs/HHk1FtqJDw8i
+%ad3cf4aAhVyFsD3KokR7YqIpEejJtEg85ojYxs58xFTADsjBY5Q+0SHsko6Qgkg+qryUccNkC4vNhegrtc8BPIlH++D4MMO0rqpx
+%2/0PsiJsK9mc2HALC8pQuQ890lnXvvucHF1mNV30A6S8PpgRca2ApmF3LVmCaXPAeqS2wUMFptpH8whu0L1mzJZONepiB8EtVdsN
+%PD7YX9LGRdVfVs7A6XGesNrlqVVKAoWi/Ncu1Q8CmH8pqX8EQP+DF/LrMvmUv6xB/6rlX7QTwb9m/WAth+rNB76LCmqs/13H4x6c
+%q9H1mx0lXj2vVblqja0pdg4SqIF0cljvgnELdbALEn2xi9riKdgHiV1cjQ6ih8nVD7PyfUQHyPG+Okzuq/7tRhDuAATfBcR/6tk3
+%i/HSWW39tx7LEXtrwd1/F1LpqjE665vT9TIGtuNjMUBmt2SjEc/K7kPm+d/+vv392T/zlVz6+ptHffv7857EvOr929+3vz/uSe0/
+%duT629+3v6/1JHbw+tvft7/7PImK73FZfMde6JXfgUNf/1N9acMw9GKPwa3gV8JjocfQSXks9rjvcXTnHg88Ljweelx6XHk88njs
+%Bb4XhF4gvUB5gnsi8AT6UBtaeICBAY3E0ABwdOXoyANqB2qBdoziGBaEwBFGeAGpBFbJ8OJ4oU0KvIgM+kiFF/optCu0K7QptCni
+%AW2K2oAjQluEsRHaI8AjwCPAY+COAY8BjzEuRluMtjj2hO/jxfCCJD5E8QVeIV7SE9CMYIAzwFmEV0y/6eiJCG3ALYAbSze80C9G
+%P9AQoCFAQ8ToAzoCdATohKARgkYIGiFohKARgkboow1GCEErhBlC2CGEIUJYIgTNEPRCGCOENUKYI4Q9QhgkhEVCmCTk1Ac4oOsQ
+%ug5hlxA6DqHjEDoOYZtQEAx9BfoK9A2BM0SfEH1C9AnRJ8RY2CMM0Q82CGGDEDYIJfor9IfuQ8ghoS8JWSRkkZBFQhYJWSRkkb7C
+%K8IL/SCThEwS+pPQn4RsErJJyCYhm4RsEvqUkE9CPgn5JOSTkE9CPgn5JOSS8CkJn5KQT0I++pUCCX+S8CcJf5IC7ZBXQl4JeSXk
+%lZBTQk4JOSVkk5BNQjYJ2ST8TcLfJPxNwt8kZJWQVUJWCVklZJWQVcK3JHxLwrckfEtGgEeAw8ckfEzCx2QEvLC/hP0l7C9hbwl7
+%S+hJQU8KelLQk4KeFPSkoCcFPSnoSUFPCnpS0JOCnhT0pKAnBT0p6ElBTwp6UtCTgn4U9KOgHwW9KNhdcYJjPPSjoB8F3SjoRkE3
+%CvpQ0IeCPhT0oQTaoAsFmyvYXEEPCnpQ0IOCHhTiTCHOFOJMIb6UwjjEGH0RVUQ/+unTdYRX7NHvBUTgNwK/EfiLwF8EO0awYwS7
+%ReAvAn8ReIjAQyToR0MxHjxEQo6+mB95Wq4Wt3mRFhPrC8uK8psCl9s1fbPZ9az8MrV8kkUqy4NARNlkDAWmSo7HjE+zHFrJVIqG
+%1DePtWkc9Y+70C90rOmHMTSeIt1u7hzei3v+ga6rfLlYz3B1Z3q/3WyW60G//2a2ebsd0zdQ9+f0K5pFX+M5gMHmOYhZmEUxS6cR
+%gwtHYZCORRRO6Qv2Ix6lAeNhMMniBo35EkP98yQGxd9WGbh3RK8XO9tildPPT9FPeJZfWX3u6NRNvzJEX6FY/TCn6tUozQ+WXm03
+%0+hK/0Yq4a2/vc4QNF/ZWn2RXG9ZCh/LaZr7MopVxKbpJICu2WQq0mAaRhM2jXGbq5SngmdxnrE0VBE+pQrDmIuwNoUlWPWLpgY/
+%vFaMJzxOwyhD9IvIZ1Nf5CKP/WmaTqfR2J+kMoryOI0ylY05mwopJqnKUwQlmxzB3/q5MENJxGM5VhHxPc1ZAMGCaRAqyTIWy3Ts
+%j5WKkJ9kFuRjGU24nLBJFPnjGF1Y+fxKSelRPwVTyjcRSHJqHENHEqE5nQZMwPAsi2WeT6KA5UGmIkyGqT+JfUxOk3DCMhFnMs8m
+%wX3yHf4G3fL7BYWfT2AkhhkVkyVHkvWFHDMVZxMZ5lka5MFYIL1MgiidhhM1ngRxFjCZ5bmfhv49ZI99SWwpr0pzzNxwdzWFhCKN
+%kHP4WNGzPnGMvDT1+VRFuRinfsjRS+KVxmwcTzmDou8h3Po2T0MtzKfZWEyijIVpxMeY6ujwcixzJKMUkwLCLIMGpjmJFoupmKaM
+%KxVOslRN/Xi8R+2h71M0ZGFJPkmzbJJh0ghQQLBgytMs4lOpYLOMc0xS4zBPBVwuncRQeRZlmYQPw+kmvP4iR0qBX/4P0oAZ+w==
+%END_EMBEDDED_REPRO_BUNDLE

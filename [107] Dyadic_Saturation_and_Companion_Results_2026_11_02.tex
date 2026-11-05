@@ -1,0 +1,1872 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable,enumitem,xcolor,fancyhdr,listings}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black,hypertexnames=false]{hyperref}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{.25em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Dyadic saturation of vanishing sign sums}
+\fancyhead[R]{\small Research manuscript}\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\N}{\mathbb N}\newcommand{\Z}{\mathbb Z}\newcommand{\R}{\mathbb R}
+\newcommand{\Dset}{\mathcal D}\newcommand{\wt}{\operatorname{wt}}
+\newcommand{\LL}{\mathcal L}\newcommand{\UU}{\mathcal U}
+\DeclareMathOperator{\ord}{ord}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{black!20},aboveskip=8pt,belowskip=8pt}
+\title{Dyadic Saturation of Vanishing Periodic Sign Sums\\[5pt]
+\large Explicit cycle constructions, an exact period bound,\\and companion graph and spectral results}
+\author{Keio Research Notes\\\small Developed with computational and independent proof checks}
+\date{2 November 2026}
+\hypersetup{pdftitle={Dyadic Saturation of Vanishing Periodic Sign Sums},pdfauthor={Keio Research Notes}}
+\begin{document}
+\maketitle
+\begin{abstract}
+Let $\Dset$ be the positive integers $N$ admitting an $N$-periodic function
+$f:\Z\to\{-1,1\}$ with zero mean and $\sum_{n\ge1}f(n)/n=0$.
+For every odd integer $m\ge3$, we construct such a function with
+$N=2^a m$ and $a\le5\lceil\log_2m\rceil+10$; in particular
+$N\le32768m^6$. A cyclic-word construction balances the exact
+$2$-adic valuation weights of $H(mu)-mH(u)$. Signed binary expansions
+transfer the balance to periodic signs, and an elementary Dirichlet-series
+identity proves exact vanishing. No numerical approximation to the
+infinite sum is used in the existence proof. Together with the exclusion
+of powers of two, this classifies the dyadic saturation of $\Dset$ and
+settles the prime-lift conjecture explicitly left open in corpus item
+[093]. It does not classify $\Dset$ itself. Independent appendices
+prove a factorial order bound for supportive decorated graph cores and
+give an exact annular counterexample to the common-smallness question
+for first Steklov eigenfunctions as printed in a 2020 problem list,
+together with a sharp normalized replacement for multiplicity two.
+A further appendix constructs exact randomized-time uniform mixing
+on every path $P_{p^k-1}$, where $p$ is an odd prime and $k\ge2$.
+The manuscript distinguishes these mathematical conclusions from
+unverified claims of historical priority or comparative research value.
+\end{abstract}
+
+\section{Results, provenance, and scope}
+For a periodic function of mean zero, write
+\[
+ \LL(f)=\sum_{n=1}^{\infty}\frac{f(n)}n.
+\]
+The series converges by summation by parts. Define
+\begin{equation}\label{eq:Ddef}
+ \Dset=\left\{N\ge1:\ \exists f:\Z\to\{-1,1\},\quad
+ f(n+N)=f(n),\quad \sum_{n=1}^N f(n)=0,\quad \LL(f)=0\right\}.
+\end{equation}
+Here $N$ is a period, not necessarily the least period. This convention
+matters: $\Dset$ is closed under taking positive multiples.
+
+Murty and Pathak ask for a classification of the periods in
+\eqref{eq:Ddef}; their Section 4.4 records Tengely's example of period
+$36$ and rules out $N\equiv2\pmod4$ \cite{MP2022}. This is different
+from the classical Erd\H{o}s problem in which the function is zero,
+rather than a sign, on multiples of the period. We retain that distinction
+throughout.
+
+The immediate starting point is corpus item [093] \cite{Corpus093}.
+Its Theorem E supplies a signed-digit construction, its Theorem C treats
+Fermat primes, and its Conjecture 9.1 asks whether
+\[
+ a_0(p):=\min\{a\ge0:2^ap\in\Dset\}<\infty
+ \quad\hbox{for every odd prime }p.
+\]
+The same item reports an unsuccessful search at $p=127$. Our main result
+removes that existence obstruction for every odd multiplier, including
+composite multipliers.
+
+\begin{theorem}[Explicit dyadic lifts]\label{thm:main}
+For every odd integer $m\ge3$, there are an integer $a$ and an explicitly
+constructible $2^am$-periodic sign function $f$ such that
+\begin{equation}\label{eq:main}
+ a\le5\lceil\log_2m\rceil+10,\qquad
+ \sum_{n=1}^{2^am}f(n)=0,\qquad \LL(f)=0.
+\end{equation}
+The construction can therefore be made with $2^am\le32768m^6$.
+\end{theorem}
+
+\begin{corollary}[Exact dyadic saturation]\label{cor:saturation}
+For a positive integer $n$, some $2^jn$, $j\ge0$, belongs to $\Dset$
+if and only if $n$ is not a power of two. In particular, $a_0(p)$ is
+finite for every odd prime $p$, and
+\[
+ \{a\ge0:2^ap\in\Dset\}=\{a\ge a_0(p)\}.
+\]
+\end{corollary}
+
+The existence part of Theorem~\ref{thm:main} is elementary and
+self-contained. Only the exclusion of pure powers of two in
+Corollary~\ref{cor:saturation} uses a published necessary condition of
+Okada, in the form stated by Murty and Pathak \cite[Theorem 1.1]{MP2022}.
+The proof is supplied in Section~\ref{sec:consequences}.
+
+\paragraph{What changes relative to the source.}
+The new step relative to [093] is an exact cyclic-word filling argument.
+It replaces a search for a suitable digit tree by a uniform construction
+on sufficiently long multiplication cycles. The transfer to signs is
+reproved directly, and it works for every odd integer $m$, so no
+assumption of primality is hidden in the proof. The exponent bound is
+deliberately coarse; it is an existence bound, not a formula for $a_0$.
+
+\paragraph{Snapshot and verification status.}
+The inspected repository contains numbered items [001]--[102]. Its
+commit is
+\begin{center}\small\texttt{ecd87de3348dcb706a76bb12fde722d7a348a012}.\end{center}
+The commit timestamp is 2 November 2026, 19:38:17, UTC+09:00.
+The repository describes its contents as research drafts rather than
+peer-reviewed or formally verified theorems. We do not infer correctness
+from a title or from inclusion in that repository. The existence theorem
+below includes its required proofs. The companion graph theorem is also
+proved independently; its subsequent radius application explicitly
+identifies the earlier reduction it uses.
+
+\section{The finite cyclic-word problem}
+For a nonzero integer $z$ put
+\[
+ \wt(z)=2^{v_2(z)}.
+\]
+We first solve a finite problem: construct a cyclic word of odd integers
+$h_0,\ldots,h_{t-1}$ for which every $h_{i+1}-mh_i$ is nonzero and
+\begin{equation}\label{eq:wordbudget}
+ \sum_{i=0}^{t-1}\wt(h_{i+1}-mh_i)
+       =(m-1)\sum_{i=0}^{t-1}\wt(h_i).
+\end{equation}
+Indices are read modulo $t$. Since all $h_i$ will be odd, the right-hand
+side is simply $(m-1)t$.
+
+\begin{lemma}[An exact cyclic budget]\label{lem:word}
+Let $m\ge3$ be odd, and set
+\begin{equation}\label{eq:parameters}
+ \ell=\lceil\log_2m\rceil,\quad r=v_2(m-1),\quad
+ s=v_2(m^2-1),\quad t=2^{\ell+3},\quad b=2^r.
+\end{equation}
+There is a cyclic word satisfying \eqref{eq:wordbudget}, all of whose
+entries belong to $\{1,-1\}\cup\{m+2^M:M>s\}$. It can be chosen with
+\begin{equation}\label{eq:wordbounds}
+ \max_i|h_i|<2^{2\ell+4},\qquad
+ \max_i|h_{i+1}-mh_i|<2^{3\ell+5}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Start with the constant word $h_i=1$, whose total weight is $tb$.
+At an isolated odd position replace $1$ by $A$, leaving its neighbors
+equal to $1$. This changes the total weight by
+\begin{equation}\label{eq:excursion}
+ \wt(A-m)+\wt(1-mA)-2b.
+\end{equation}
+If $A=m+2^M$ with $M>s$, the two weights are $2^M$ and $2^s$.
+Indeed $1-mA=1-m^2-m2^M$ has valuation $s$ because the two summands
+have different valuations. Thus \eqref{eq:excursion} equals
+$2^M+C$, where $C=2^s-2b$.
+
+Suppose first that $m\equiv1\pmod4$. Then $s=r+1$, so $C=0$.
+The missing weight is
+\[
+ D=t(m-1-b)\ge0.
+\]
+If $D=0$, retain the constant word. Otherwise, for each set bit $2^M$
+in the binary expansion of $D$, insert one excursion with $A=m+2^M$.
+Every such exponent is greater than $s$: $D$ is divisible by
+$2^{\ell+3+r}$ and $\ell+3+r>r+1=s$. Also
+$D<2^{2\ell+3}$, so there are at most $2\ell+3$ excursions. For
+$m\equiv1\pmod4$, $m\ge5$ and $\ell\ge3$; hence
+$2(2\ell+3)\le t$. Place these entries at successive odd positions.
+Their incident edge pairs are disjoint, and their increments sum to $D$.
+
+For $m=3$ the constant word already works, because $b=m-1=2$.
+It remains to treat $m\equiv3\pmod4$, $m\ge7$. Here $b=2$ and
+$C=2^s-4>0$. An excursion with $A=-1$ has both edge weights
+$2^{v_2(m+1)}=2^{s-1}$, and therefore contributes exactly $C$.
+Put
+\[
+ k=2^{\ell+1},\qquad D=t(m-3),\qquad B=D-kC.
+\]
+Since $2^{s-1}\mid m+1\le2^\ell$, we have $s\le\ell+1$ and
+$C\le2m-2$. Consequently
+\[
+ B\ge2^{\ell+1}\{4(m-3)-(2m-2)\}
+   =2^{\ell+2}(m-5)>0.
+\]
+Both $D$ and $kC$ are divisible by $2^{s+1}$: $D$ contains
+$2^{\ell+3}$, while $C=4(2^{s-2}-1)$ contains exactly $2^2$.
+Thus every bit in $B$ has exponent $M>s$. Moreover
+$B<D<2^{2\ell+3}$, so $B$ has at most $2\ell+3\le k$ set bits.
+Use one high excursion $A=m+2^M$ for each such bit and use $A=-1$
+for the remaining excursions, making exactly $k$ excursions.
+Their total increment is $B+kC=D$, as required. They fit because
+$2k=t/2\le t$.
+
+No edge difference in any of these words vanishes: its weight has
+just been computed, and the unchanged differences are $1-m\ne0$.
+Every binary power used is less than $tm<2^{2\ell+3}$; hence
+$|h_i|<2^{2\ell+4}$. Since $m+1\le2^\ell$, the elementary estimate
+$|h_{i+1}-mh_i|\le(m+1)\max|h_i|$ gives the looser second bound
+in \eqref{eq:wordbounds}.
+\end{proof}
+
+\section{Multiplication cycles and congruence compatibility}
+Write $\UU_j=(\Z/2^j\Z)^\times$ for $j\ge1$ and let $\UU_0$
+be a one-point set. The following step turns the word into a function
+on units, with the congruence conditions needed for signed digits.
+
+\begin{lemma}[Paired cycles]\label{lem:cycles}
+With the parameters in \eqref{eq:parameters}, put
+\[
+ J=\ell+s+2,\qquad q=2^J.
+\]
+Multiplication by $m$ on $\UU_J$ has all cycles of length $t$, and
+negation pairs distinct cycles. There is a function $H:\UU_J\to\Z$
+such that, on extending it periodically to odd integers and putting
+$G(u)=H(mu)-mH(u)$, the following hold:
+\begin{align}
+ &H(-u)=-H(u),\quad H(u)\ne0,\quad G(u)\ne0,\label{eq:anti}\\
+ &H(u)\equiv H(v)\pmod{2^j}\quad\hbox{if }u\equiv v\pmod{2^j},\label{eq:lipschitz}\\
+ &\sum_{u\in\UU_J}\wt(G(u))
+       =(m-1)\sum_{u\in\UU_J}\wt(H(u)).\label{eq:unitbudget}
+\end{align}
+The congruence assertion holds for every $j\ge1$.
+\end{lemma}
+\begin{proof}
+For even $e$, the elementary lifting identity gives
+$v_2(m^e-1)=s+v_2(e)-1$. It follows that
+$\ord_{2^J}(m)=2^{J-s+1}=2^{\ell+3}=t$. This identity can also be
+obtained by repeatedly factoring $m^{2e}-1$; for odd $e$ the valuation
+of $m^e-1$ is $v_2(m-1)$.
+
+If $m\equiv1\pmod4$, no power is $-1\pmod{2^J}$.
+If $m\equiv3\pmod4$, an even power is $1\pmod4$, and an odd power
+$m^e$ satisfies $v_2(m^e+1)=v_2(m+1)=s-1<J$. Thus $-1$ never lies
+in the subgroup generated by $m$. All cycles are consequently paired
+with distinct negative cycles.
+
+Choose one cycle in each pair, choose its initial unit $u$, and use the
+word of Lemma~\ref{lem:word} to set
+\[
+ H(m^iu)=q h_i,\qquad H(-m^iu)=-q h_i\quad(0\le i<t).
+\]
+This is well-defined. Every value is a multiple of $q$, so
+\eqref{eq:lipschitz} holds when $j\le J$; for $j>J$, the two values
+are identical. On each positive cycle, $G(m^iu)=q(h_{i+1}-mh_i)$,
+and the negative cycle has the opposite values. The word budget,
+multiplied by $q$ and summed over the pairs, proves
+\eqref{eq:unitbudget}. All nonvanishing assertions follow from the word.
+\end{proof}
+
+Lifting $H,G$ to $\UU_a$, $a\ge J$, multiplies both sums in
+\eqref{eq:unitbudget} by $2^{a-J}$. By \eqref{eq:wordbounds},
+\[
+ M:=\max_{u}\{|H(u)|,|G(u)|\}<2^{J+3\ell+5}.
+\]
+The choice
+\begin{equation}\label{eq:adepth}
+ a=J+3\ell+7
+\end{equation}
+therefore ensures
+\begin{equation}\label{eq:size}
+ 4M+1<2^{a+1}.
+\end{equation}
+Because $s\le\ell+1$, this choice satisfies $a\le5\ell+10$.
+One may use any smaller $a\ge J$ satisfying \eqref{eq:size}; this
+is how the numerical examples below are shortened.
+
+\section{Signed binary trees and their exact layer sums}
+Every odd integer $x$ with $|x|<2^{a+1}$ has a unique expansion
+\begin{equation}\label{eq:signed}
+ x=\sum_{i=0}^{a}2^i d_i(x),\qquad d_i(x)\in\{-1,1\}.
+\end{equation}
+Indeed, $(x+2^{a+1}-1)/2$ is an integer between $0$ and
+$2^{a+1}-1$; its binary digits $b_i$ give $d_i=2b_i-1$.
+Digits $0,\ldots,j$ agree for two inputs if those inputs agree
+modulo $2^{j+2}$.
+
+\begin{definition}
+A signed digit tree of depth $a$ is a family of functions
+$d_i:\UU_i\to\{-1,1\}$, $0\le i\le a$. Its value function is
+\[
+ X(u)=\sum_{i=0}^a2^i d_i(u\bmod2^i),\qquad u\in\UU_a.
+\]
+Its associated $2^a$-periodic sign function $A$ is defined by
+\[
+ A(2^{a-i}u)=d_i(u),\quad u\in\UU_i,
+\]
+where $i=0$ denotes the zero residue modulo $2^a$.
+\end{definition}
+
+Suppose $H$ satisfies \eqref{eq:lipschitz} and \eqref{eq:size}.
+For $\kappa\in\{-1,1\}$ the numbers
+$X(u)=\kappa+4H(u)$ have consistent signed expansions: the digit $d_i$
+depends only on $u\bmod2^i$, and the digits $d_0,d_1$ are constant.
+For $i\ge1$ this follows from congruence modulo $2^{i+2}$, and
+for $i=0$ it follows from the common residue modulo $4$.
+In particular $d_0=-\kappa$.
+
+For any tree, set
+\[
+ u_0=u_1=1,\quad u_i=2^{i-1}\ (i\ge1),\qquad
+ S_i=\sum_{v\in\UU_i}d_i(v),\qquad
+ \overline X=\frac1{2^{a-1}}\sum_{u\in\UU_a}X(u).
+\]
+Counting the lifts from $\UU_i$ to $\UU_a$ gives
+\begin{equation}\label{eq:mean}
+ \overline X=d_0+2\sum_{i=1}^a S_i,
+ \qquad \sum_{n=1}^{2^a}A(n)=\sum_{i=0}^aS_i
+       =\frac{\overline X+d_0}{2}.
+\end{equation}
+Thus an antisymmetric $H$ and $X=\kappa+4H$ always produce a
+mean-zero sign function, since $\overline X=\kappa$ and $d_0=-\kappa$.
+
+The logarithmic layer statistic is
+\begin{equation}\label{eq:E}
+ E(A)=aS_0+\sum_{i=1}^a(a-i-1)S_i.
+\end{equation}
+We next compute it directly from the valuation weights of $H$.
+
+\begin{lemma}[Signed-digit pairing]\label{lem:pairing}
+Define
+\[
+ \lambda_a(x)=a2^{1-a}d_0(x)
+       +\sum_{i=1}^a(a-i-1)2^{i-a}d_i(x).
+\]
+If $z\ne0$, $\kappa=\pm1$, and $4|z|+1<2^{a+1}$, then
+\begin{equation}\label{eq:pairing}
+ \lambda_a(\kappa+4z)+\lambda_a(\kappa-4z)
+       =-\kappa\,2^{v_2(z)+3-a}.
+\end{equation}
+Consequently, for $X=\kappa+4H$ with antisymmetric nonzero $H$,
+\begin{equation}\label{eq:Eweight}
+ E(A)=-\kappa\,2^{2-a}\sum_{u\in\UU_a}\wt(H(u)).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let $x_k=\sum_{i<k}2^i d_i(x)$. Direct summation gives
+\[
+ 2^a\lambda_a(x)=\sum_{k=1}^a x_k-x+(a+1)d_0(x).
+\]
+Write $v=v_2(z)$, $x=\kappa+4z$, $y=\kappa-4z$.
+Then $d_0(x)=d_0(y)=-\kappa$ and $x_1=y_1=-\kappa$.
+For $k\ge2$, the unique representatives $x_k,y_k$ in
+$(-2^k,2^k)$ have sum $2\kappa-\kappa2^{k+1}$ when $k\le v+1$,
+and sum $2\kappa$ when $k>v+1$. This follows by reducing $x,y$
+modulo $2^{k+1}$ in the signed expansion: the exceptional case is
+exactly $x\equiv y\equiv\kappa\pmod{2^{k+1}}$.
+The size assumption implies $v\le a-2$. Summing these expressions
+therefore yields \eqref{eq:pairing}.
+
+Counting lifts in each digit shows
+$E(A)=\sum_{u\in\UU_a}\lambda_a(X(u))$. Pairing $u$ with $-u$
+and using \eqref{eq:pairing} proves \eqref{eq:Eweight}; each pair
+has the same valuation twice, which accounts for the factor $2^{2-a}$.
+\end{proof}
+
+\section{An elementary cancellation identity}\label{sec:transfer}
+The next lemma applies to arbitrary real layer coefficients, not only
+signs. It is the analytic transfer needed below.
+
+\begin{lemma}[Constant value function]\label{lem:cancellation}
+Let $a\ge1$ and let $C$ be a mean-zero, $2^a$-periodic function. Define its layer
+functions $c_i$ and sums $S_i$ as above, and suppose
+\[
+ X_C(u)=\sum_{i=0}^a2^i c_i(u\bmod2^i)
+\]
+is constant on $\UU_a$. Then
+\begin{equation}\label{eq:cancellation}
+ \LL(C)=-2^{-a}E(C)\log2.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Equation \eqref{eq:mean}, which is linear and remains valid for real
+coefficients, shows that the constant is $-c_0$. For real $z>1$ set
+\[
+ D_i(z)=\sum_{\substack{n\ge1\\n\text{ odd}}}\frac{c_i(n)}{n^z}
+ \quad(i\ge1).
+\]
+Grouping the series for $C$ by its dyadic valuation gives
+\[
+ 2^{az}\sum_{n\ge1}\frac{C(n)}{n^z}
+ =c_0\zeta(z)+\sum_{i=1}^a2^{iz}D_i(z).
+\]
+Since $\sum_{i\ge1}2^i c_i(n)=-2c_0$ for odd $n$, the right side
+equals
+\begin{equation}\label{eq:abel}
+ c_0(2^{1-z}-1)\zeta(z)
+   +\sum_{i=1}^a(2^{iz}-2^i)D_i(z).
+\end{equation}
+Periodicity gives $\lim_{z\downarrow1}(z-1)D_i(z)=S_i/2^i$.
+For example, subtract the mean $S_i/2^i$ from the $2^i$-periodic
+coefficient sequence supported on odd integers; the remainder has
+bounded partial sums. Also $(z-1)\zeta(z)\to1$. Taking the limit in
+\eqref{eq:abel} yields
+\[
+ 2^a\LL(C)=\left(-c_0+\sum_{i=1}^a iS_i\right)\log2.
+\]
+The same bounded-partial-sum argument justifies the limit of the
+mean-zero series on the left. Since $\sum_iS_i=0$,
+$E(C)=c_0-\sum_{i\ge1}iS_i$, proving the assertion.
+\end{proof}
+
+\begin{proposition}[Transfer to an arbitrary odd multiplier]\label{prop:transfer}
+Let $m\ge3$ be odd and $a\ge2$. Suppose $H:\UU_a\to\Z$
+satisfies \eqref{eq:anti}--\eqref{eq:lipschitz}, with
+$G(u)=H(mu)-mH(u)$, the size condition \eqref{eq:size}, and
+\[
+ \sum_{u\in\UU_a}\wt(G(u))=(m-1)\sum_{u\in\UU_a}\wt(H(u)).
+\]
+Form the signed digit trees with value functions
+\[
+ X=1+4H,\qquad Y=-1+4G,
+\]
+and let $A,B$ be their associated dyadic sign functions. Then
+\begin{equation}\label{eq:fexplicit}
+ f(n)=\begin{cases}A(n),&m\nmid n,\\B(n/m),&m\mid n\end{cases}
+\end{equation}
+is a $2^am$-periodic sign function of mean zero and $\LL(f)=0$.
+\end{proposition}
+\begin{proof}
+Antisymmetry and \eqref{eq:mean} give $\sum A=\sum B=0$ over
+their dyadic period. Multiplication by odd $m$ permutes all dyadic
+layers, so $A\circ m:n\mapsto A(mn)$ also has zero mean and the
+same layer sums as $A$.
+Put $C=mA+B-A\circ m$. Its value function is
+\[
+ mX(u)+Y(u)-X(mu)=m-2,
+\]
+which is constant. The pairing lemma gives
+\[
+ E(A)=-2^{2-a}\sum_u\wt(H(u)),\qquad
+ E(B)= 2^{2-a}\sum_u\wt(G(u)).
+\]
+Thus $E(C)=(m-1)E(A)+E(B)=0$. Lemma~\ref{lem:cancellation}
+implies $\LL(C)=0$.
+
+The function in \eqref{eq:fexplicit} is a sign at every integer,
+including multiples of the full period. In the period $2^am$, the
+sum of $A(n)$ is $m\sum A=0$, the sum removed at multiples of $m$
+is $\sum A(mn)=0$, and the replacement sum is $\sum B=0$.
+Hence its mean is zero. Finally,
+\[
+ f(n)=A(n)+\mathbf1_{m\mid n}\{B(n/m)-A(n)\}
+\]
+and convergence of all three mean-zero dyadic series gives
+\[
+ \LL(f)=\LL(A)+\frac{\LL(B)-\LL(A\circ m)}m
+         =\frac{\LL(C)}m=0.
+\]
+This argument uses no primality assumption on $m$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Use the word of Lemma~\ref{lem:word}, place it on the paired cycles
+of Lemma~\ref{lem:cycles}, and lift the resulting functions to depth
+\eqref{eq:adepth}. The size and valuation requirements of
+Proposition~\ref{prop:transfer} all hold. That proposition constructs
+$f$ and proves exact vanishing. The depth bound follows from
+$J\le2\ell+3$. Finally $2^\ell<2m$, so
+\[
+ 2^am\le2^{5\ell+10}m<2^{15}m^6=32768m^6.
+\]
+\end{proof}
+
+\section{Exclusions and consequences}\label{sec:consequences}
+\begin{proposition}[No pure power of two]\label{prop:pure}
+For every $a\ge0$, $2^a\notin\Dset$.
+\end{proposition}
+\begin{proof}
+The case $a=0$ is excluded by the mean condition. Suppose $a\ge1$
+and that a periodic sign function $f$ has period $2^a$ and vanishing
+harmonic sum. The necessary unit equations in Okada's criterion
+\cite[Theorem 1.1]{MP2022}, specialized to the monoid generated by
+$2$, give, for every odd integer $u$,
+\[
+ 0=\sum_{j=0}^{a-1}2^{-j}f(2^ju)+2^{1-a}f(0).
+\]
+The second term is the exact geometric tail for $j\ge a$.
+Write $c=f(0)$. Multiplication by $2^{a-1}$ shows
+\[
+ 2^{a-1}f(u)+\sum_{j=1}^{a-1}2^{a-1-j}f(2^ju)+c=0.
+\]
+The sum of the absolute weights after the first term is exactly
+$2^{a-1}$. Equality can hold only when all those signs are opposite
+to $f(u)$. Thus $f(u)=-c$ on odd residues, while $f(2^ju)=c$
+on every nonzero even layer, as well as at zero. Consequently
+$f(n)=c(-1)^n$ and $\LL(f)=-c\log2\ne0$, a contradiction.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:saturation}]
+If $n$ is a power of two, all its dyadic multiples are excluded by
+Proposition~\ref{prop:pure}. Otherwise write $n=2^bm$ with $m\ge3$
+odd, and apply Theorem~\ref{thm:main} to $m$. If its constructed
+depth is below $b$, enlarge the period by a power of two. This gives
+a dyadic multiple of $n$ in $\Dset$. Closure under multiples also
+shows that each set of admissible depths is an upper interval of integers.
+\end{proof}
+
+\begin{corollary}[A minimal period for every odd prime]
+For each odd prime $p$, $2^{a_0(p)}p$ is a minimal element of
+$\Dset$ in the divisibility order. These elements are distinct for
+distinct primes, so there are infinitely many such minimal elements.
+\end{corollary}
+\begin{proof}
+A proper divisor either is a power of two, excluded above, or equals
+$2^bp$ with $b<a_0(p)$, excluded by definition. Distinct odd prime
+factors make the resulting integers distinct.
+\end{proof}
+
+This does not assert that the corresponding function has been given
+at its least possible depth. It also does not claim that infinitely
+many minimal elements were previously unknown: [093] already obtains
+an infinite family by another route. The strengthening here is that
+every odd prime supports one.
+
+\section{Explicit certificates and independent checks}\label{sec:checks}
+The construction is algorithmic, even when the full sign period is
+too long to print. A compact certificate consists of the cyclic word,
+the depth $J$, representatives of the paired cycles, and the chosen
+digit depth $a$. Formula \eqref{eq:fexplicit} then evaluates any term
+without listing the full period.
+
+For $m=127$, the parameters are
+\[
+ \ell=7,\quad s=8,\quad J=17,\quad t=1024,\quad k=256.
+\]
+The baseline deficit is $D=126976$ and $C=252$. After the $k$ baseline
+excursions, the remaining budget is
+\[
+ B=D-kC=62464=2^{10}+2^{12}+2^{13}+2^{14}+2^{15}.
+\]
+Use $h_{2j+1}=127+2^M$ for these five exponents, use $h_{2j+1}=-1$
+for the other $251$ excursions, and set all other entries to $1$.
+On paired cycles modulo $2^{17}$, put $H=\pm2^{17}h$ as in the proof.
+The exact maxima are
+\[
+ \max|H|=4311613440,\qquad \max|G|=547574775808.
+\]
+Depth $a=41$ satisfies \eqref{eq:size}, proving
+\[
+ 127\cdot2^{41}\in\Dset.
+\]
+This is a constructive upper bound, not an assertion that $a_0(127)=41$.
+The deliberately conservative depth selection in the verifier may be
+reduced further without changing the proof.
+
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+$m$ & $J$ & cycle length $t$ & excursions & verified depth $a$\\
+\midrule
+3&7&32&0&11\\
+5&8&64&0&13\\
+7&9&64&16&20\\
+9&10&128&0&16\\
+11&9&128&32&24\\
+13&9&128&1&25\\
+15&11&128&32&26\\
+17&12&256&0&19\\
+31&13&256&64&31\\
+127&17&1024&256&41\\
+\bottomrule
+\end{tabular}
+\end{center}
+None of the displayed depths is claimed optimal. In particular, small
+depths already known for $3,5,17$ are much better than these generic outputs.
+
+The integer verifier in Appendix~\ref{app:code} checks every paired
+cycle, antisymmetry, the exact valuation budget, signed-digit compatibility,
+the constant master identity, both zero period sums, and the vanishing
+logarithmic layer statistic. All odd multipliers $3\le m\le63$ and
+the additional multiplier $127$ passed. A separate implementation
+checked the cyclic budget, order, negation separation, and uniform size
+bound for all $4,999$ odd multipliers from $3$ through $9,999$.
+It also checked $4,072$ signed-digit pairing identities with a separate
+recursive decoder. These are finite checks of formulas; the proofs
+above, rather than extrapolation from the checks, establish the infinite theorem.
+
+\section{What the research request has and has not achieved}
+The main theorem closes the exact existence conjecture in [093], without
+changing its prime quantifier, and strengthens it to all odd multipliers.
+It also answers the newly formulated finite cyclic-word problem and
+transfers its solution to harmonic cancellation. It does not settle the
+external problem of classifying every individual $N\in\Dset$.
+
+The companion results below have distinct statuses. The graph
+appendix proves a general finite-core bound, but leaves the unrestricted
+Randi\'c--radius conjectures open. The Steklov appendix refutes the
+question as printed in the cited 2020 list, even after adding unit
+perimeter, but uses classical spectral tools. That exact mathematical
+answer does not establish that the observation is historically new.
+The randomized-time quantum-walk appendix resolves every higher odd-prime-power
+modulus left outside the cited classification; it does not
+classify all paths, and it is distinct from standard Ces\`aro averaging.
+
+\begin{center}\small
+\begin{tabular}{p{.43\linewidth}p{.48\linewidth}}
+\toprule
+Requested condition & Supported conclusion in this manuscript\\
+\midrule
+An unchanged, previously stated target & Yes for [093], Conjecture 9.1; the external period-classification question is retained and remains open here.\\
+An unconditional complete proof & Yes for the dyadic-lift theorem and the explicitly stated companion theorems.\\
+A complete solution of a longstanding external named problem & The printed Steklov statement is refuted; its continuing open status and priority are not certified. The external number-theory classification is not solved.\\
+A historically unprecedented proof principle & Not established. The new cyclic filling step is distinguished from the preceding corpus construction, but its ingredients are classical.\\
+No identical prior solution & Targeted source checks found no matching general dyadic-lift theorem; this is not a proof of absence.\\
+A result more valuable than every earlier corpus result & No justified ranking is available.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Primary sources were inspected on 2 November 2026. Searches included the
+Okada-space period problem, dyadic periodic sign cancellation, and the
+Steklov common-point question. Mathematical correctness, bibliographic
+priority, and comparative significance are separate claims. The strict
+conjunction of all requested success conditions has therefore not been
+established, and this document should not be represented as such a claim.
+
+\appendix
+
+\section{A finite source budget for supportive graph cores}
+\label{sec:graph-source-budget}
+
+This section closes a specific auxiliary gap in corpus manuscript
+\cite[Remark~\texttt{rem:D6}]{Corpus087}: for each fixed maximum degree,
+the stated supportive-core conditions force an explicit finite bound on
+core order. It does not establish the unrestricted Randi\'c--radius
+conjectures. The proof combines an exact deletion identity with a forest
+whose degrees increase away from its roots.
+
+All graphs in this section are finite and simple. Write
+\[
+ M(G)=\sum_{uv\in E(G)}\frac{1}{\max(d_G(u),d_G(v))}.
+\]
+An edge $e$ is \emph{supportive} if $M(G-e)>M(G)$. A
+\emph{decorated core} is a graph $G$ obtained from a graph $K$ by attaching
+at most one pendant leaf to each vertex of $K$. In this section ``core''
+only names the distinguished subgraph: no connectivity hypothesis on
+$K$ is needed for the principal theorem. All degrees denoted by $d_v$
+are degrees in $G$.
+
+\begin{lemma}[Exact deletion formulas]
+\label{lem:graph-exact-deletion}
+Let $uv$ be an edge whose endpoints have degrees at least two, and set
+\[
+ \beta_u=|\{w\in N_G(u)\setminus\{v\}:d_w<d_u\}|,
+ \qquad
+ \beta_v=|\{w\in N_G(v)\setminus\{u\}:d_w<d_v\}|.
+\]
+Then
+\begin{equation}\label{eq:graph-delete-edge}
+ M(G-uv)-M(G)=
+ \frac{\beta_u}{d_u(d_u-1)}+
+ \frac{\beta_v}{d_v(d_v-1)}-
+ \frac1{\max(d_u,d_v)}.
+\end{equation}
+If $\ell$ is a leaf with support $p$ of degree $d\ge2$, and
+$\lambda$ counts the neighbors of $p$ other than $\ell$ whose degrees
+are less than $d$, then
+\begin{equation}\label{eq:graph-delete-leaf}
+ M(G)-M(G-\ell)=\frac1d-\frac{\lambda}{d(d-1)}\ge0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Deleting $uv$ removes its weight. The weight of another incident edge
+$uw$ changes only when $d_w<d_u$, in which case its increase is
+$1/(d_u-1)-1/d_u=1/[d_u(d_u-1)]$. The corresponding statement at $v$
+gives~\eqref{eq:graph-delete-edge}. For leaf deletion, the removed
+weight is $1/d$ and the other affected edges have exactly the same
+increments. Since $\lambda\le d-1$, the resulting drop is nonnegative.
+These are the elementary degree calculations used in
+\cite{Corpus087,Corpus094}.
+\end{proof}
+
+\begin{theorem}[Source budget and finite core bound]
+\label{thm:graph-source-budget}
+Let $D\ge3$ be an integer and let $G$ be a decorated core with
+\[
+ 3\le d_v\le D\quad(v\in V(K)),
+ \qquad M(G-e)>M(G)\quad(e\in E(K)).
+\]
+If $M(G)-M(K)<1$, then
+\begin{equation}\label{eq:graph-factorial-bound}
+ |V(K)|\le B(D):=3\sum_{j=1}^{D-2}j!-1.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Call $s\in V(K)$ a \emph{source} if it has no core neighbor of strictly
+smaller full degree, and let $S$ be the set of sources.
+
+Every source has a pendant leaf. Otherwise a source $u$ would have no
+lower-degree neighbor in $G$. For any core edge $uv$ incident to $u$,
+we would have $d_v\ge d_u$, $\beta_u=0$, and $\beta_v\le d_v-1$.
+Formula~\eqref{eq:graph-delete-edge} would give
+\[
+ M(G-uv)-M(G)
+ \le\frac{d_v-1}{d_v(d_v-1)}-\frac1{d_v}=0,
+\]
+contrary to supportiveness. Such an edge exists because $d_u\ge3$
+and there is at most one pendant neighbor.
+
+The set $S$ is independent. If adjacent sources have unequal degrees,
+the higher-degree endpoint has a lower-degree core neighbor, which
+contradicts its definition. If adjacent sources $u,v$ both have degree
+$d$, their only lower-degree neighbors are their respective leaves.
+Thus $\beta_u=\beta_v=1$, and
+\[
+ M(G-uv)-M(G)=\frac2{d(d-1)}-\frac1d
+             =\frac{3-d}{d(d-1)}\le0.
+\]
+The equality case $d=3$ also fails the strict supportive condition.
+
+Let $L_S$ be the leaves attached to sources. Deleting all of $L_S$
+changes no surviving edge weight. Indeed, sources are independent,
+and every core neighbor of a source $s$ has unchanged degree at least
+the original $d_s$. Consequently
+\begin{equation}\label{eq:graph-source-identity}
+ M(G)-M(G-L_S)=\sum_{s\in S}\frac1{d_s}.
+\end{equation}
+Delete the remaining pendant leaves one at a time. Their supports still
+have degree at least two, because their original core degrees were at
+least two. Each deletion has nonnegative drop by
+\eqref{eq:graph-delete-leaf}. Therefore
+\begin{equation}\label{eq:graph-source-budget}
+ \sum_{s\in S}\frac1{d_s}
+ \le M(G)-M(K)<1.
+\end{equation}
+
+For every non-source core vertex choose one lower-degree core neighbor
+as its parent. Parent degrees strictly decrease, so the chosen edges
+form a rooted forest with root set $S$. Every root of degree $d$ has at
+most $d-1$ children, because one incident edge leads to its pendant
+leaf. Every non-root of degree $d$ has at most $d-1$ children, because
+one incident edge leads to its parent. Degrees strictly increase along
+each root-to-leaf path.
+
+Define integers
+\begin{equation}\label{eq:graph-forest-recursion}
+ F_D(D)=1,\qquad
+ F_D(d)=1+(d-1)F_D(d+1)\quad(3\le d<D).
+\end{equation}
+They decrease as $d$ increases. Induction on $D-d$ therefore bounds a
+subtree rooted at a degree-$d$ vertex by $F_D(d)$, even if some children
+skip degree levels. Hence
+\[
+ |V(K)|\le\sum_{s\in S}F_D(d_s).
+\]
+For $3\le d<D$ the recurrence gives
+\[
+ dF_D(d)-(d+1)F_D(d+1)
+ =d+(d^2-2d-1)F_D(d+1)>0.
+\]
+Thus $dF_D(d)\le3F_D(3)$ for every admissible degree. By
+\eqref{eq:graph-source-budget},
+\[
+ |V(K)|\le3F_D(3)\sum_{s\in S}\frac1{d_s}<3F_D(3).
+\]
+Expanding~\eqref{eq:graph-forest-recursion} gives
+$F_D(3)=\sum_{j=1}^{D-2}j!$. Integrality proves
+\eqref{eq:graph-factorial-bound}.
+\end{proof}
+
+\begin{proposition}[Exact integer refinement]
+\label{prop:graph-knapsack}
+Under the hypotheses of Theorem~\ref{thm:graph-source-budget}, the bound
+$B(D)$ can be replaced by
+\begin{equation}\label{eq:graph-knapsack}
+ B_*(D)=\max\left\{
+ \sum_{d=3}^D n_dF_D(d):
+ n_d\in\mathbb Z_{\ge0},\quad
+ \sum_{d=3}^D\frac{n_d}{d}<1
+ \right\}.
+\end{equation}
+The following values are exact:
+\begin{center}
+\begin{tabular}{r|rrrrr}
+$D$&4&5&6&7&8\\\hline
+$B(D)$&8&26&98&458&2618\\
+$B_*(D)$&7&22&82&382&2182
+\end{tabular}
+\end{center}
+These are bounds from the source budget, not claims that corresponding
+graphs exist.
+\end{proposition}
+\begin{proof}
+Take $n_d$ to be the number of degree-$d$ sources in the proof above.
+The feasible set in~\eqref{eq:graph-knapsack} is finite, because
+$n_d\le d-1$. The table is reproduced by the following exact recurrence.
+Put $L=\operatorname{lcm}(3,\ldots,D)$ and initialize $A(0)=0$ and
+$A(w)=-\infty$ for $1\le w<L$. Process $w=0,1,\ldots,L-1$ in order;
+for each $d$ with $w+L/d<L$, update
+\[
+ A(w+L/d)\ \leftarrow\
+ \max\{A(w+L/d),\ A(w)+F_D(d)\}.
+\]
+The maximum of the final $A(w)$ is $B_*(D)$. Positive integer weights
+ensure that this recurrence visits every admissible multiset of source
+degrees. Only integer arithmetic is involved.
+\end{proof}
+
+\subsection{Application conditional on the corpus reduction}
+
+Let $\rho(G)$ be the absolute radius: minimize the maximum distance to
+a vertex over all points of the unit-edge metric realization of $G$.
+Equivalently, $2\rho(G)$ is the minimum diameter of a spanning tree.
+The stronger inequality $M(G)\ge\rho(G)$ would imply
+$R(G)\ge\operatorname{rad}(G)-\tfrac12$, and hence Fajtlowicz's
+$R(G)\ge\operatorname{rad}(G)-1$. The chemical-graph results of
+\cite{CPS} provide established context for this approach.
+
+\begin{corollary}[Finite criterion using the earlier structure theorem]
+\label{cor:graph-finite-criterion}
+Assume the minimal-counterexample reduction proved in
+\cite[Proposition~\texttt{prop:structure}]{Corpus087}. For each fixed
+$D\ge3$, the following are equivalent:
+\begin{enumerate}
+\item $M(G)\ge\rho(G)$ for every connected graph with maximum degree
+at most $D$;
+\item the same inequality holds for every such graph with at most
+$2B_*(D)$ vertices.
+\end{enumerate}
+One may replace $2B_*(D)$ by the closed bound $2B(D)$.
+\end{corollary}
+\begin{proof}
+Only the second implication needs proof. If the universal assertion
+fails, the cited reduction supplies a minimal counterexample $G=K+L$
+with at most one leaf per core vertex, all full core degrees between
+three and $D$, every core edge supportive, and $M(G)-M(K)<1$.
+Proposition~\ref{prop:graph-knapsack} bounds $|K|$ by $B_*(D)$.
+Since $|L|\le|K|$, this contradicts the second assertion.
+\end{proof}
+
+The external dependency in this corollary is explicit; the present
+section does not reproduce the earlier cut-vertex padding and
+absolute-radius arguments. For $D=6$ the criterion requires checking
+orders at most $164$, or $196$ with the simpler factorial bound.
+Neither check has been performed here. The finite reduction therefore
+settles the auxiliary fixed-degree size question, while leaving both
+the degree-six inequality and the unrestricted named conjectures
+unresolved. It also supplies no claim of worldwide priority for the
+source-budget method.
+
+\subsection{Independent exact-arithmetic audit}
+
+A separate checker enumerated every labelled core on $3$ through $6$
+vertices with minimum core degree at least two, and every subset of
+vertices receiving a pendant leaf. It recomputed $M(G-e)$ directly
+from each edge-deleted graph using exact rational arithmetic, rather
+than using~\eqref{eq:graph-delete-edge} to decide supportiveness.
+Among $780\,616$ decorated graphs, $736$ had all core edges supportive
+and all full core degrees at least three. For every accepted graph,
+the checker verified source independence, the exact identity
+\eqref{eq:graph-source-identity}, its lower bound on total leaf drop,
+and the forest estimate. It also checked
+\eqref{eq:graph-factorial-bound} whenever the total drop was less than
+one. Every check passed. These computations check small cases and the
+implementation; the all-orders result rests on the analytic proof.
+\section{A separate spectral audit: common small values of Steklov eigenfunctions}
+\label{sec:steklov-audit}
+
+This section records an independent, elementary correction to a question
+in the April 2020 eigenvalue miniconference list. It is separate from the
+arithmetic construction in the main text. Open Problem~10, attributed to
+Jean Lagac\'e in \cite{Lagace2020}, asks whether a surface or planar domain
+has a point at which every first positive Steklov eigenfunction, normalized
+in boundary $L^2$, has absolute value below $1/\sqrt2$, or below some other
+universal constant. The printed formulation imposes neither simple
+connectivity nor a boundary-length normalization. We address that printed
+formulation; no claim is made about an unstated intended restriction.
+
+The proposed threshold fails even after imposing perimeter one. Without
+scale normalization, no universal positive constant works. A natural
+replacement involving eigenspace dimension is valid, and its constant is
+optimal when the first eigenspace has dimension two. All ingredients are
+classical: separation of variables, finite-dimensional evaluation norms,
+and the subharmonicity of a harmonic vector norm. In particular, this
+section does not claim a historically new proof principle. The specific
+priority of the correction below has not been certified.
+
+\subsection{Evaluation norms and a universal strict bound}
+
+Let $\Omega\subset\R^d$ be a bounded connected Lipschitz domain, with
+boundary measure $L=|\partial\Omega|$. Let $H$ be an $m$-dimensional real
+space of harmonic functions in $H^1(\Omega)$ whose boundary traces are
+linearly independent. Give $H$ the boundary $L^2$ norm, and choose an
+orthonormal basis $u_1,\ldots,u_m$. At an interior point define
+\[
+ \kappa_H(x)=\sup\{|u(x)|:u\in H,\ \|u\|_{L^2(\partial\Omega)}=1\}.
+\]
+Cauchy--Schwarz, with equality for a coefficient vector proportional to
+$(u_1(x),\ldots,u_m(x))$ when this vector is nonzero, gives
+\begin{equation}\label{eq:steklov-evaluation}
+ \kappa_H(x)^2=\sum_{j=1}^m u_j(x)^2.
+\end{equation}
+Thus this expression is independent of the orthonormal basis.
+
+\begin{proposition}[A common small-value point]\label{prop:steklov-universal}
+If $H$ contains a nonconstant function, there is an interior point $x$ such
+that
+\[
+ \kappa_H(x)<\sqrt{m/L}.
+\]
+In particular, this holds for every positive Steklov eigenspace, and for
+any finite direct sum of positive Steklov eigenspaces, with $m$ its total
+dimension.
+\end{proposition}
+
+\begin{proof}
+Put $U=(u_1,\ldots,u_m)$ and $w=|U|$. The Lipschitz chain rule gives
+$w\in H^1(\Omega)$. The function $w$ is weakly subharmonic: locally the
+smooth approximants $(\epsilon^2+|U|^2)^{1/2}$ have nonnegative Laplacian
+by Cauchy--Schwarz, and their gradients converge locally in $L^2$ to
+$\nabla w$. Consequently
+\[
+ \int_\Omega\nabla w\cdot\nabla\varphi\leq0
+ \qquad(\varphi\in H^1_0(\Omega),\ \varphi\geq0),
+\]
+first for smooth compactly supported tests and then by positive
+approximation in $H^1_0$.
+
+Suppose $w\geq c:=\sqrt{m/L}$ throughout the interior. The Sobolev trace
+preserves order and commutes with the norm map. Orthonormality therefore
+implies
+\[
+ \operatorname{Tr}w\geq c,\qquad
+ \int_{\partial\Omega}(\operatorname{Tr}w)^2=m=c^2L.
+\]
+Hence $\operatorname{Tr}w=c$ almost everywhere, so $w-c$ is a nonnegative
+member of $H^1_0(\Omega)$. Testing subharmonicity with $w-c$ yields
+$\int_\Omega|\nabla w|^2\leq0$. Thus $w$ is constant. Interior smoothness
+of the harmonic functions now gives
+\[
+ 0=\Delta|U|^2=2\sum_{j=1}^m|\nabla u_j|^2,
+\]
+forcing every member of $H$ to be constant, a contradiction.
+For a positive Steklov eigenvalue a nonzero constant cannot satisfy
+$\partial_\nu u=\sigma u$, proving the stated application.
+\end{proof}
+
+\subsection{The first eigenspace of a round annulus}
+
+For $0<a<1$ let $A_a=\{x\in\R^2:a<|x|<1\}$. We use the usual convention
+$\Delta u=0$ in $A_a$ and $\partial_\nu u=\sigma u$ on both boundary
+circles. The separation of variables recalled below is classical; see
+\cite[Example~4.2.5]{GP2017}.
+
+\begin{lemma}\label{lem:steklov-annulus}
+The first positive Steklov eigenvalue of $A_a$ has multiplicity exactly
+two. Its eigenspace is
+\[
+ \operatorname{span}\{F_a(r)\cos\theta,F_a(r)\sin\theta\},
+ \qquad F_a(r)=r+c_a/r,
+\]
+where $c_a$ is the positive root of
+\begin{equation}\label{eq:steklov-c-root}
+ c_a^2+\frac{(1-a)(1+a^2)}{1+a}c_a-a^2=0,
+ \qquad a^2<c_a<a.
+\end{equation}
+The eigenvalue is $(1-c_a)/(1+c_a)$.
+\end{lemma}
+
+\begin{proof}
+The angular frequency $n\geq1$ has harmonic radial profiles
+$Ar^n+Br^{-n}$. Its lowest eigenvalue is the minimum of
+\[
+ Q_n(f)=
+ \frac{\displaystyle\int_a^1\left(r|f'|^2+n^2|f|^2/r\right)\,dr}
+ {\displaystyle |f(1)|^2+a|f(a)|^2}.
+\]
+For every nonzero admissible profile, $Q_n(f)>Q_1(f)$ when $n\geq2$.
+Applying this to a minimizing profile in the $n$th sector shows that its
+lowest eigenvalue strictly exceeds that in the first sector. The radial
+sector $n=0$ consists of the zero eigenvalue and the eigenvalue
+\[
+ \sigma_{\mathrm{rad}}=\frac{1+a}{a\log(1/a)}>1;
+\]
+the last inequality follows from $\log(1/a)<a^{-1}-1$.
+
+For frequency one write $F=r+c/r$. The two boundary equations imply
+$c=(1-\sigma)/(1+\sigma)$ and
+\[
+ a(1-a^2)\sigma^2-(1+a)(1+a^2)\sigma+(1-a^2)=0.
+\]
+This quadratic is positive at zero and negative at one. Its leading
+coefficient is positive, so its smaller root lies in $(0,1)$ and the
+other exceeds one. Hence the smaller root is the first positive
+eigenvalue of the whole annulus, occurring only in the sine and cosine
+modes. Eliminating $\sigma$ gives \eqref{eq:steklov-c-root}. The polynomial
+there is negative at $c=a^2$ and positive at $c=a$; its unique positive
+root therefore satisfies the displayed bounds.
+\end{proof}
+
+The two basis functions in Lemma~\ref{lem:steklov-annulus} are orthogonal
+on the boundary and have common squared norm $\pi D_a$, where
+\[
+ D_a=(1+c_a)^2+a(a+c_a/a)^2.
+\]
+Because $a<\sqrt{c_a}<1$, the minimum of $F_a$ occurs at
+$r=\sqrt{c_a}$ and equals $2\sqrt{c_a}$. Scaling a planar domain by a
+factor $s$ multiplies boundary measure by $s$ and the squared evaluation
+norm of boundary-unit eigenfunctions by $s^{-1}$. Thus the annulus
+\[
+ \widehat A_a=\frac1{2\pi(1+a)}A_a,
+ \qquad |\partial\widehat A_a|=1,
+\]
+has minimum squared first-eigenspace evaluation norm
+\begin{equation}\label{eq:steklov-annular-M}
+ M(a)=\min_{x\in\overline{\widehat A_a}}\kappa_{E_1}(x)^2
+     =\frac{8(1+a)c_a}{(1+c_a)^2+a(a+c_a/a)^2}.
+\end{equation}
+The minimum occurs in the interior, so using the closure here does not
+change its value.
+
+\subsection{An exact counterexample and the optimal replacement}
+
+\begin{theorem}[An exact perimeter-one counterexample]
+\label{thm:steklov-counterexample}
+For the smooth connected domain
+\[
+ \Omega=\frac1{3\pi}\{x\in\R^2:\tfrac12<|x|<1\},
+ \qquad |\partial\Omega|=1,
+\]
+the first positive Steklov eigenspace satisfies
+\[
+ \min_{x\in\overline\Omega}\kappa_{E_1}(x)^2
+ =-8+\frac{40\sqrt{17}}{17}
+ =\frac{16(\sqrt{17}-1)}{17+3\sqrt{17}}>\frac12.
+\]
+Consequently no point of $\Omega$ has the common small-value property
+with threshold $1/\sqrt2$ posed in the printed question.
+\end{theorem}
+
+\begin{proof}
+At $a=1/2$, the first eigenvalue on the unscaled annulus is
+$(5-\sqrt{17})/2$, and
+\[
+ c_{1/2}=\frac{\sqrt{17}-1}{8},\qquad
+ D_{1/2}=\frac{51+9\sqrt{17}}{32}.
+\]
+Substitution into \eqref{eq:steklov-annular-M} gives the formula. For a
+simple exact strict comparison, $4<\sqrt{17}<5$ makes its last expression
+larger than $16\cdot3/32=3/2$. At each point, the supremum defining
+$\kappa_{E_1}$ is attained by a unit vector of coefficients. Thus the
+failure is of the required universal quantifier over all normalized
+eigenfunctions, rather than merely a comparison of one chosen basis.
+\end{proof}
+
+\begin{corollary}[Scaling and sharp multiplicity-two correction]
+\label{cor:steklov-sharp}
+Without fixing a geometric scale, no positive universal constant can
+replace $1/\sqrt2$ in the printed question. Among smooth connected planar
+domains whose first positive Steklov eigenspace has dimension two, the
+least universal constant $C$ such that some interior point satisfies
+\[
+ |u(x)|<\frac{C}{\sqrt{|\partial\Omega|}}
+ \quad\text{for every }u\in E_1(\Omega),\quad
+ \|u\|_{L^2(\partial\Omega)}=1,
+\]
+is exactly $C=\sqrt2$.
+\end{corollary}
+
+\begin{proof}
+The strictly positive minimum in Theorem~\ref{thm:steklov-counterexample}
+becomes arbitrarily large under shrinking dilations, proving the first
+assertion. Proposition~\ref{prop:steklov-universal} proves the second
+assertion with $C=\sqrt2$. Conversely, \eqref{eq:steklov-c-root} gives
+$c_a\to1$ as $a\uparrow1$, and hence $M(a)\to2$. Every smaller constant
+therefore fails on a sufficiently thin round annulus of perimeter one.
+For consistency with the strict universal inequality, note also that
+\[
+ D_a-4(1+a)c_a=(1-c_a)^2+a(a-c_a/a)^2>0,
+\]
+so $M(a)<2$ for every individual annulus. The sharp constant is approached
+but the limiting thin annulus is not itself a domain in the class.
+\end{proof}
+
+The last corollary is an optimal statement for the explicitly specified
+multiplicity-two class. It does not assert that the first positive
+Steklov eigenvalue always has multiplicity two, nor does it settle
+additional topological restrictions absent from the printed question.
+The original problem list establishes the provenance of the question;
+the classical annulus formula establishes the provenance of the main
+computational ingredient. Neither fact certifies historical priority of
+this particular correction.
+\section{Exact randomized uniform mixing on ternary-power paths}
+\label{sec:ternary-paths}
+
+This section concerns a random observation time for the ordinary adjacency
+quantum walk. It does not concern the standard Ces\`aro average mixing
+matrix. In particular, its conclusion does not answer the rank-two
+Ces\`aro question discussed in corpus item [077].
+
+Coutinho and Guo explicitly asked whether the randomized uniform mixing
+known for $P_3$ and $P_4$ extends to larger paths
+\cite[Section~4.2]{CoutinhoGuo2024}. Kang subsequently proved positive
+results when the number of vertices plus one is a prime, twice a prime,
+or a power of two, and several infinite families of negative results
+\cite{Kang2026}. The latter paper explicitly leaves the moduli outside
+its stated positive and negative families unresolved. Thus the theorem
+below resolves an infinite surviving subfamily; it neither gives an
+all-path classification nor asserts that every path has the property.
+
+\begin{theorem}[Ternary-power paths]
+\label{thm:ternary-uam}
+Let $k\ge2$ and $n=3^k-1$. If $A$ is the adjacency matrix of the
+unweighted path $P_n$, there is a bounded, compactly supported probability
+density $\rho$ on $[0,\infty)$ such that
+\[
+ \int_0^\infty |(e^{itA})_{uv}|^2\rho(t)\,dt=\frac1n
+ \qquad(1\le u,v\le n).
+\]
+The same density works simultaneously for every initial vertex.
+\end{theorem}
+
+\subsection{The covariance that yields uniform mixing}
+Put $q=n+1$. The eigenvalues and normalized eigenvectors are
+\[
+ \lambda_j=2\cos\frac{\pi j}{q},\qquad
+ v_j(u)=\sqrt{\frac2q}\sin\frac{\pi ju}{q}
+ \quad(1\le j,u\le q-1).
+\]
+Write $E_j=v_jv_j^{\mathsf T}$, let $R$ reverse the vertex order, and
+let $J$ be the all-ones matrix. The sine product identity gives
+\begin{equation}\label{eq:ternary-cesaro}
+ D_0:=\sum_j E_j\circ E_j
+   =\frac1q\left(J+\frac{I+R}{2}\right).
+\end{equation}
+Indeed, expand the product of two squared sines into cosines and use
+\(\sum_{j=1}^{q-1}\cos(2\pi aj/q)=q\mathbf1_{q\mid a}-1\).
+This proves the displayed identity entry by entry.
+Furthermore $Rv_j=(-1)^{j+1}v_j$, so
+\begin{equation}\label{eq:ternary-parity}
+ \sum_{j\equiv\ell\ ({\rm mod}\ 2)}E_j\circ E_\ell
+ =\frac12\left[
+   \left(\sum_jE_j\right)\circ\left(\sum_jE_j\right)
+   +\left(\sum_j(-1)^jE_j\right)\circ
+    \left(\sum_j(-1)^jE_j\right)\right]
+ =\frac{I+R}{2}.
+\end{equation}
+
+Suppose phases $z_1,\ldots,z_n$ have covariance
+\begin{equation}\label{eq:ternary-covariance}
+ \mathbb E[z_j\overline z_\ell]=
+ \begin{cases}
+  1,&j=\ell,\\
+  -c,&j\ne\ell\text{ and }j\equiv\ell\pmod2,\\
+  0,&j\not\equiv\ell\pmod2.
+ \end{cases}
+\end{equation}
+The expected mixing matrix is then
+\[
+ (1+c)D_0-c\frac{I+R}{2}.
+\]
+At $c=c_0:=1/n$ this is exactly $J/n$. Since $q$ is odd,
+each pair $j,q-j$ has one odd and one even member. It therefore suffices
+to construct odd-index phases $W_1,\ldots,W_m$, $m=n/2$, satisfying
+\begin{equation}\label{eq:ternary-odd-covariance}
+ \mathbb E[W_i\overline W_j]=-c\quad(i\ne j),
+ \qquad \mathbb E[W_iW_j]=0\quad\text{for all }i,j,
+\end{equation}
+and set the even-index phases to the conjugates of their reflected
+odd-index partners. These are precisely the conjugacy constraints of
+the actual time flow, because $\lambda_{q-j}=-\lambda_j$.
+
+\subsection{All frequency relations, including the integer lattice}
+Write $q=3s$, where $s=3^{k-1}$, and put
+\[
+ r=\frac{s-1}{2},\qquad m=3r+1,\qquad n=6r+2.
+\]
+The odd indices partition into the singleton $s$ and the disjoint triples
+\[
+ \{j,2s-j,2s+j\},\qquad j=1,3,\ldots,s-2.
+\]
+Here $\lambda_s=1$, and the cosine addition formula gives
+\begin{equation}\label{eq:ternary-triples}
+ \lambda_j+\lambda_{2s-j}+\lambda_{2s+j}=0.
+\end{equation}
+There are no further independent rational relations. To prove this,
+the real cyclotomic field
+\(K=\mathbb Q(2\cos(\pi/q))\) has degree
+\(\varphi(2q)/2=s\). The odd-mode frequencies span $K$ over
+$\mathbb Q$: powers of $\lambda_1$ are combinations of $1$ and
+$2\cos(a\pi/q)$, the latter reduce by periodicity and reflection to
+the displayed modes, every even mode equals the negative of an odd
+mode, and $1=\lambda_s$ is already present. Thus their span has
+dimension $s=m-r$. The $r$ disjoint relations
+\eqref{eq:ternary-triples} are independent and exhaust the rational
+relation space. They also generate the integer relation lattice:
+in any rational combination of the disjoint relation vectors, the
+three coordinates on each triple equal its combination coefficient;
+integral coordinates force that coefficient to be integral.
+
+It follows from the character criterion for a linear torus flow that
+\(t\mapsto(e^{it\lambda_j})_{j\ {
+m odd}}\) is dense and
+equidistributed in exactly the torus
+\begin{equation}\label{eq:ternary-torus}
+ \mathcal T=\left\{(W_0,(W_{a1},W_{a2},W_{a3})_{a=1}^r):
+ |W_i|=1,\quad W_{a1}W_{a2}W_{a3}=1\right\}.
+\end{equation}
+Its dimension is $2r+1=s$. The singleton $W_0$ is unrestricted.
+This step accounts for the dependent modes; it does not replace them
+with independent phases.
+
+\subsection{An exchangeable constrained-phase construction}
+First suppose $r>1$. We construct \eqref{eq:ternary-odd-covariance}
+at a value $c>c_0$. Set explicitly
+\[
+ c=\frac1{4(r+1)},\qquad
+ B=\sqrt{3-6c},\qquad
+ \alpha=\frac{9c}{B^2}=\frac3{4r+2},\qquad \beta=\frac B3.
+\]
+Then $c>c_0$, $0<\beta<1$, and
+\(\alpha<1/(r+1)\). Let $L=r+1$ and
+$\omega=e^{2\pi i/3}$. We need exchangeable cube-root labels
+$Y_0,\ldots,Y_r$ with
+\(\mathbb E[Y_a\overline Y_b]=-\alpha\) for distinct positions.
+
+Distribute $L$ labels among $1,\omega,\omega^2$ with counts differing
+by at most one, uniformly permute the positions, and multiply all labels
+by an independent uniform cube root. If $\epsilon=0$ when $3\mid L$
+and $\epsilon=1$ otherwise, the squared modulus of their sum is
+$\epsilon$. Hence their common off-diagonal correlation is
+\[
+ -b_L=\frac{\epsilon-L}{L(L-1)},\qquad
+ b_L\ge\frac1L.
+\]
+Mixing this distribution with independent uniform cube-root labels
+realizes every correlation between $-b_L$ and zero, including $-\alpha$.
+
+Choose $\theta$ with $\cos\theta=(B-1)/2$. Conditional on the labels,
+independently and uniformly permute the three entries of
+\[
+ (W_{a1},W_{a2},W_{a3})
+   =Y_a(1,e^{i\theta},e^{-i\theta}),\qquad 1\le a\le r.
+\]
+Their product is one and their conditional sum is $BY_a$. Set the
+singleton $W_0=Y_0$ with probability $\beta$ and otherwise take an
+independent uniform cube root. A distinct pair in the same triple has
+correlation
+\[
+ \frac{B^2-3}{6}=-c.
+\]
+A pair from different triples has correlation
+\(B^2(-\alpha)/9=-c\), while a singleton--triple pair has correlation
+\((B/3)\beta(-\alpha)=-c\). The law is invariant under simultaneous
+multiplication of every phase by $\omega$, which preserves every
+triple-product constraint. Therefore
+\(\mathbb E[W_iW_j]=\omega^2\mathbb E[W_iW_j]=0\).
+This proves \eqref{eq:ternary-odd-covariance} at the chosen $c>c_0$.
+
+For $r=1$, which is $P_8$, use $c=1/6>c_0=1/8$ and $B=\sqrt2$.
+Uniformly permute $(1,e^{i\theta},e^{-i\theta})$, where
+$\cos\theta=(B-1)/2$, for the single triple. Independently take the
+singleton in $\{1,-1\}$ with mean $-3c/B=-1/(2\sqrt2)$.
+Apply a common uniform cube-root rotation to all four phases. The
+within-triple correlation is $-c$; the singleton--triple correlation
+is $(-3c/B)(B/3)=-c$; and the holomorphic second moments vanish
+by the same rotation argument. This handles the smallest case with
+strict margin as well.
+
+\subsection{Exact transfer to a compactly supported time density}
+Let $\nu_c$ denote the constructed measure on $\mathcal T$, and let
+$H$ be Haar probability measure on that torus. Every off-diagonal
+Hermitian moment and every holomorphic second moment appearing in
+\eqref{eq:ternary-odd-covariance} is a nontrivial character: distinct
+odd modes have neither equal nor opposite frequencies. Its Haar
+average is therefore zero. The mixture
+\[
+ \mu=\left(1-\frac{c_0}{c}\right)H+\frac{c_0}{c}\nu_c
+\]
+has the target covariance for $c_0$, and has a strictly positive Haar
+component $\eta=1-c_0/c$.
+
+A measure on the orbit closure alone would not yet prove the theorem.
+We give the exact finite-time transfer. Symmetrize $\mu$ under inversion,
+which preserves the real target moments. Choose the finite list
+$F_0=1,F_1,\ldots,F_D$ of distinct cosine characters, modulo sign,
+that occur in the mixing entries. Distinct entries of this list are
+Haar-orthogonal, with squared norms $1,1/2,\ldots,1/2$.
+Convolve $\mu$ with a positive product Fej\'er approximate identity
+on $\mathcal T$. Its density is at least $\eta$ and its finitely
+many target moments converge to those of $\mu$. If the discrepancy
+in moment $F_j$ is $\delta_j$, add $2\sum_{j=1}^D\delta_jF_j$.
+Orthogonality corrects every moment exactly, preserves normalization,
+and changes the sup norm by at most $2\sum_j|\delta_j|$.
+For a sufficiently close approximation we thus obtain a finite
+trigonometric-polynomial density $f\ge\eta/2$ with exact target
+moment vector $b$ (including $b_0=1$).
+
+Write $F(t)$ and $f(t)$ for their evaluations along the time flow.
+Define
+\[
+ G_T=\frac1T\int_0^T F(t)F(t)^{\mathsf T}\,dt,
+ \qquad b_T=\frac1T\int_0^T F(t)f(t)\,dt.
+\]
+Equidistribution gives
+\(G_T\to\operatorname{diag}(1,1/2,\ldots,1/2)\) and
+$b_T\to b$. Hence $G_T$ is invertible for all sufficiently large
+finite $T$, and
+\[
+ a_T=G_T^{-1}(b-b_T)\longrightarrow0.
+\]
+For such a sufficiently large $T$, set
+\[
+ \rho_T(t)=\frac1T\left(f(t)+a_T^{\mathsf T}F(t)\right)
+ \mathbf1_{[0,T]}(t).
+\]
+The strict lower bound on $f$ and $a_T\to0$ give $\rho_T\ge0$.
+The defining linear system gives exactly
+\(\int\rho_TF=b\), including \(\int\rho_T=1\).
+Thus $\rho_T$ is a bounded compactly supported probability density
+on actual observation times, with the required exact moments.
+Equations \eqref{eq:ternary-cesaro}--\eqref{eq:ternary-covariance}
+now give $J/n$ and finish the proof of
+Theorem~\ref{thm:ternary-uam}.
+
+\paragraph{Contribution boundary.}
+The theorem covers $P_8,P_{26},P_{80},P_{242},\ldots$.
+The cyclotomic relation analysis and constrained-phase construction are
+the added ingredients relative to the independent-mode cases in
+\cite{Kang2026}. The spectral covariance target, torus methods,
+and finite-moment correction have established antecedents and are
+not claimed as historically unprecedented principles. A targeted
+primary-source review through 2 November 2026 found no earlier
+identical ternary-power theorem; this is a bounded priority assessment,
+not a certification of worldwide absence. The larger classification
+problem remains open outside the established families.
+\subsection{Extension to every odd prime power}
+\label{sec:odd-prime-power-uam}
+
+The preceding phase construction admits a stronger form. This closes
+every odd-prime-power modulus, while retaining the distinction between
+randomized observation and the standard Ces\`aro average.
+
+\begin{theorem}[All odd prime powers]
+\label{thm:prime-power-uam}
+For every odd prime $p$ and every integer $k\ge2$, the path
+$P_{p^k-1}$ admits a bounded, compactly supported probability density
+on $[0,\infty)$ whose averaged quantum mixing matrix is exactly
+$J/(p^k-1)$.
+\end{theorem}
+
+\begin{proof}
+Put
+\[
+ q=p^k=ps,\quad h=\frac{p-1}{2},\quad
+ r=\frac{s-1}{2},\quad m=\frac{q-1}{2}=pr+h,
+ \quad c_0=\frac1{2m}.
+\]
+We reuse the spectral covariance calculation and exact finite-time
+transfer above. It remains to identify the phase torus and construct
+the target covariance with a strictly positive Haar component.
+
+\emph{The exact relation lattice.}
+For every odd $j$ with $1\le j<s$, consider the exponents
+$j+2s\ell$, $0\le\ell<p$, modulo $2q$, and reflect an exponent
+larger than $q$ to $2q$ minus that exponent. They give $p$ distinct
+odd mode indices in $\{1,\ldots,q-2\}$. Their frequencies have
+sum zero by summing a regular $p$-gon. As $j$ ranges over these
+$r$ values, the resulting $p$-tuples are disjoint. The remaining
+$h$ mode indices are
+\[
+ s,3s,\ldots,(p-2)s.
+\]
+One way to verify the partition is to classify odd exponents modulo
+$2s$, up to negation. The residues $j$ and $-j$, with odd $j<s$,
+give the nonexceptional pairs of classes. The exceptional class is
+$s\equiv-s\pmod{2s}$; after reflection and exclusion of the
+non-mode index $q$, it gives exactly the displayed $h$ singletons.
+
+The odd-mode frequencies span the real cyclotomic field of degree
+\(\varphi(2q)/2=h s\). The proof by powers of
+$2\cos(\pi/q)$ is the same as before; the constant is in the span
+because
+\[
+ \sum_{a=1,3,\ldots,p-2}2\cos\frac{\pi a}{p}=1.
+\]
+Since $m-r=hs$, the disjoint $p$-tuple sums exhaust all rational
+relations. Their integer lattice is saturated for the same coordinate
+reason as in the ternary case. The actual time-flow closure is
+therefore the torus consisting of $r$ blocks of $p$ phases, each
+with product one, and $h$ unrestricted singleton phases.
+
+\emph{Exchangeable root labels with a strict margin.}
+Assume first $r\ge2$. Let $\omega=e^{2\pi i/p}$.
+As $r=pu+h$ for an integer $u\ge0$, form a multiset of $r$ roots
+containing $u$ complete sets of the $p$th roots and the $h$ extra
+roots
+\[
+ 1,\omega^2,\omega^4,\ldots,\omega^{2h-2}.
+\]
+Its sum has squared modulus
+\[
+ d_p=\left|\frac{1-\omega^{2h}}{1-\omega^2}\right|^2
+     =\frac1{4\cos^2(\pi/p)}\le1.
+\]
+Uniformly permute its positions and apply a common independent
+uniform $p$th-root rotation. The resulting exchangeable vector
+$Y=(Y_1,\ldots,Y_r)$ has zero coordinate means and common
+off-diagonal correlation $-b$, where
+\[
+ b=\frac{r-d_p}{r(r-1)}>\frac1{2r}.
+\]
+The strict inequality follows from $d_p\le1<(r+1)/2$.
+By mixing with independent uniform $p$th-root coordinates, we can
+therefore arrange any pair correlation $-\alpha$ with $0\le\alpha\le b$.
+
+Choose $c>c_0$ sufficiently close to $c_0$, and define
+\[
+ B=\sqrt{p\bigl(1-(p-1)c\bigr)},\qquad
+ \alpha=\frac{p^2c}{B^2}=\frac{pc}{1-(p-1)c},\qquad
+ \beta=\frac Bp.
+\]
+At $c=c_0$ we have $\alpha=1/(2r)$. Hence the choice can be made so
+that $0<\alpha<b$, $\alpha<1/(2r-1)$, $B>0$, and $0<\beta<1$.
+Take $Y$ with pair correlation $-\alpha$ as just constructed.
+
+We also need a second vector $Y'$ with the same internal correlations
+and with every cross correlation equal to $-\alpha$. With probability
+\[
+ t=\frac{\alpha r}{1-(r-1)\alpha}\in(0,1),
+\]
+let $Y'$ be the negative of a uniform random permutation of $Y$;
+otherwise let it be an independent copy of $Y$. Both alternatives
+have internal pair correlation $-\alpha$. In the first alternative a
+cross correlation is
+\[
+ -\frac{1-(r-1)\alpha}{r};
+\]
+in the second it is zero, because the coordinate means vanish.
+Thus every cross correlation is $-\alpha$. The coordinates of $Y'$
+need only be unit phases: they will be used for the unrestricted
+singletons, so the possible minus sign causes no product constraint.
+The joint law of $(Y,Y')$ is invariant under common multiplication
+by $\omega$.
+
+\emph{Blocks and singletons.}
+Choose $\theta$ so that $1+(p-1)\cos\theta=B$. This is possible:
+for the chosen $c$ we have $0<B<\sqrt p<p$ and hence
+$-1<(B-1)/(p-1)<1$. For each block $a$, independently permute
+the $p$ phases
+\[
+ Y_a\bigl(1,
+ \underbrace{e^{i\theta},e^{-i\theta},\ldots,
+ e^{i\theta},e^{-i\theta}}_{h\text{ conjugate pairs}}\bigr).
+\]
+Their product is $Y_a^p=1$ and their conditional sum is $BY_a$.
+For singleton $b\in\{1,\ldots,h\}$, retain $Y'_b$ with
+probability $\beta$, and otherwise use an independent uniform
+$p$th root. Make these choices independently. There are enough
+coordinates since $h\le r$.
+
+The correlation of distinct phases within one block is
+\[
+ \frac{B^2-p}{p(p-1)}=-c.
+\]
+For phases in different blocks it is
+$-(B/p)^2\alpha=-c$. For a singleton and a block phase it is
+$-\beta(B/p)\alpha=-c$, and for distinct singletons it is
+$-\beta^2\alpha=-c$. All diagonal correlations are one.
+Common multiplication by $\omega$ preserves the joint law and
+all block products. Since $p$ is odd, $\omega^2\ne1$; therefore
+every holomorphic second moment is zero. We have obtained
+\eqref{eq:ternary-odd-covariance} for the full odd-mode system
+at a value $c>c_0$.
+
+If $r=1$, then $s=3$, so necessarily $p=3$ and $k=2$.
+This is exactly the separately treated $P_8$ case above.
+For all other parameters the preceding construction applies.
+
+Finally mix the constructed measure with Haar measure in proportion
+$c_0/c$ to obtain the exact target $c_0$ and a positive Haar
+component. Distinct odd modes have neither equal nor opposite
+frequencies, so the relevant Haar moments vanish. The smoothing,
+finite-character correction and finite-time Gram argument above
+apply on the now identified phase torus without change. They produce
+an actual bounded compactly supported time density, and the
+spectral covariance identity gives $J/(p^k-1)$.
+\end{proof}
+
+The new cases include $P_8,P_{24},P_{26},P_{48},P_{80},P_{120},
+P_{124},\ldots$. Prime moduli themselves were already covered by
+\cite{Kang2026}; the added assertion is the entire family of higher
+odd prime powers. Neither this theorem nor the preceding ternary
+specialization settles all remaining composite moduli. The bounded
+priority statement above applies to this stronger family as well.
+\section{Reproducible integer certificates}\label{app:code}
+The following Python programs are embedded in this single source file.
+They can be copied from the \texttt{lstlisting} environments and run
+independently. The main theorem requires no external data file or
+computer search. The first verifier uses only the Python standard library.
+Its default run includes the compact certificate for $m=127$.
+
+\subsection{Full cycle and digit-tree verification}
+The depth chosen by this implementation is conservative. A lower depth
+satisfying the displayed size inequalities is equally valid.
+
+\begin{lstlisting}[language=Python]
+from math import ceil, log2
+
+def v2(n):
+    assert n
+    return (abs(n)&-abs(n)).bit_length()-1
+
+def weight(n):
+    return 1 << v2(n)
+
+def certificate(p):
+    assert p>1 and p%2
+    L=(p-1).bit_length()
+    s=v2(p*p-1)
+    r=v2(p-1)
+    t=1<<(L+3)
+    J=L+s+2
+    q=1<<J
+    a0=1<<r
+    D=t*(p-1-a0)
+    exc=[]
+    if p%4==1:
+        for M in range(D.bit_length()):
+            if D>>M&1:
+                assert M>s
+                exc.append(p+(1<<M))
+    elif p==3:
+        assert D==0
+    else:
+        C=(1<<s)-4
+        k=1<<(L+1)
+        B=D-k*C
+        assert B>0 and B%(1<<(s+1))==0
+        for M in range(B.bit_length()):
+            if B>>M&1:
+                assert M>s
+                exc.append(p+(1<<M))
+        assert len(exc)<=k
+        exc += [-1]*(k-len(exc))
+    assert 2*len(exc)<=t
+    h=[1]*t
+    for i,A in enumerate(exc): h[2*i+1]=A
+    g=[h[(i+1)%t]-p*h[i] for i in range(t)]
+    assert all(x and x%2 for x in h)
+    assert all(g)
+    assert sum(map(weight,g))==(p-1)*sum(map(weight,h))
+    # Build all cycles modulo 2^J, paired by negation.
+    H={}
+    for u in range(1,q,2):
+        if u in H:continue
+        x=u
+        for i in range(t):
+            assert x not in H and (-x)%q not in H
+            H[x]=q*h[i]
+            H[(-x)%q]=-q*h[i]
+            x=p*x%q
+        assert x==u
+    G={u:H[p*u%q]-p*H[u] for u in H}
+    assert len(H)==q//2
+    assert all(H[q-u]==-v for u,v in H.items())
+    assert sum(map(weight,G.values()))==(p-1)*sum(map(weight,H.values()))
+    a=max(J,(4*max(max(map(abs,H.values())),max(map(abs,G.values())))+1).bit_length())
+    # This a is conservative: condition is 4*max+1 < 2^(a+1).
+    assert 4*max(map(abs,H.values()))+1<1<<(a+1)
+    assert 4*max(map(abs,G.values()))+1<1<<(a+1)
+    assert a<=5*L+10
+    X={u:1+4*v for u,v in H.items()}
+    Y={u:-1+4*v for u,v in G.items()}
+    assert all(Y[u]+p*X[u]-X[p*u%q]==p-2 for u in H)
+    # Unique signed binary digits for odd |x|<2^(a+1).
+    def digits(x):
+        z=(x+(1<<(a+1))-1)//2
+        return [2*((z>>i)&1)-1 for i in range(a+1)]
+    def layer_sums(X):
+        sums=[]
+        for i in range(a+1):
+            b=max(1,min(i,J))
+            d={}
+            for u,x in X.items():
+                k=u% (1<<b)
+                z=digits(x)[i]
+                assert k not in d or d[k]==z
+                d[k]=z
+            multiplicity=1 if i<=J else 1<<(i-J)
+            sums.append(multiplicity*sum(d.values()))
+        return sums
+    SH=layer_sums(X);SG=layer_sums(Y)
+    assert sum(SH)==sum(SG)==0
+    # e_0=a, e_i=a-i-1 for i>=1.
+    e=[a]+[a-i-1 for i in range(1,a+1)]
+    assert sum(ei*(gi+(p-1)*hi) for ei,gi,hi in zip(e,SG,SH))==0
+    return dict(p=p,L=L,s=s,J=J,t=t,excursions=len(exc),a=a,N=f'{p}*2^{a}',
+                maxH=max(map(abs,H.values())),maxG=max(map(abs,G.values())))
+
+if __name__=='__main__':
+    import sys,json
+    for p in map(int,sys.argv[1:] or [3,5,7,11,13,17,31,127]):
+        print(json.dumps(certificate(p)),flush=True)
+
+\end{lstlisting}
+
+\subsection{Independent arithmetic audit}
+This implementation uses a recursive signed-digit decoder and sums
+excursion increments without constructing the full digit trees.
+Its final optional numerical block checks the scalar in the elementary
+transfer lemma with \texttt{mpmath}; these numerical checks are not used
+as a proof of vanishing. All preceding checks use exact integers.
+
+\begin{lstlisting}[language=Python]
+from fractions import Fraction
+from math import log2
+import mpmath as mp
+
+def v(n):
+    assert n
+    n=abs(n); r=0
+    while n%2==0:n//=2;r+=1
+    return r
+
+def digits(n,a):
+    # Recover recursively using lowest signed digit congruence, independently.
+    out=[]
+    for i in range(a):
+        d=1 if n%4==3 else -1
+        out.append(d);n=(n-d)//2
+    assert n in (-1,1)
+    return out+[n]
+
+def lamnum(n,a):
+    d=digits(n,a)
+    return 2*a*d[0]+sum((a-i-1)*(1<<i)*d[i] for i in range(1,a+1))
+
+pair_count=0
+for a in range(2,12):
+    for h in range(1,1<<(a-1)):
+        if 4*h+1>=1<<(a+1): continue
+        for e in [-1,1]:
+            assert lamnum(e+4*h,a)+lamnum(e-4*h,a)==-e*(1<<(v(h)+3))
+            pair_count+=1
+print('pairing exact tests',pair_count)
+
+for m in range(3,10000,2):
+    L=(m-1).bit_length();s=v(m*m-1);r=v(m-1)
+    t=1<<(L+3);J=L+s+2;b=1<<r
+    if m%4==1:
+        D=t*(m-1-b)
+        E=[m+(1<<j) for j in range(D.bit_length()) if D&(1<<j)]
+    elif m==3:E=[]
+    else:
+        k=1<<(L+1);C=(1<<s)-4;D=t*(m-3);B=D-k*C
+        assert B==t*(m-2-(1<<(s-2)))>0
+        E=[m+(1<<j) for j in range(B.bit_length()) if B&(1<<j)]
+        E.extend([-1]*(k-len(E)))
+    assert 2*len(E)<=t
+    total=t*b
+    maxh=max([1]+[abs(x) for x in E]);maxg=m-1
+    for x in E:
+        total+=(1<<v(x-m))+(1<<v(1-m*x))-2*b
+        maxg=max(maxg,abs(x-m),abs(1-m*x))
+    assert total==(m-1)*t
+    a=J+3*L+7
+    assert a<=5*L+10
+    assert 4*(1<<J)*max(maxh,maxg)+1<1<<(a+1)
+    assert pow(m,t,1<<J)==1 and pow(m,t//2,1<<J)!=1
+    # A subgroup containing -1 would have its unique order-two element equal -1.
+    assert pow(m,t//2,1<<J)!=(1<<J)-1
+print('cycle and bound audits: all odd m 3..9999')
+
+# Independent exact elementary logarithm transfer, numerically cross-checking only constants.
+mp.mp.dps=70
+for a in range(2,8):
+    q=1<<a
+    levels=[[3]]+[[2*i-3+(u%3) for u in range(1,1<<i,2)] for i in range(1,a)]
+    K=-3
+    top=[]
+    for u in range(1,q,2):
+        top.append(Fraction(K-levels[0][0]-sum((1<<i)*levels[i][((u%(1<<i))-1)//2] for i in range(1,a)),q))
+    levels.append(top)
+    vals=[]
+    for n in range(1,q+1):
+        if n==q:vals.append(Fraction(levels[0][0]));continue
+        i=a-v(n);u=n//(1<<v(n));vals.append(Fraction(levels[i][(u-1)//2]))
+    assert sum(vals)==0
+    S=list(map(sum,levels))
+    B=a*S[0]+sum((a-i-1)*S[i] for i in range(1,a+1))
+    L=-sum(mp.mpf(c.numerator)/c.denominator*mp.digamma(mp.mpf(n)/q) for n,c in enumerate(vals,1))/q
+    predicted=-mp.log(2)*mp.mpf(B.numerator)/B.denominator/q
+    assert abs(L-predicted)<mp.mpf('1e-60')
+print('digamma transfer cross-check: a=2..7')
+
+\end{lstlisting}
+
+\subsection{Graph deletion checks and the source-budget table}
+The next program is the exact labelled-core check described in the graph
+appendix. It recomputes graph indices using rational numbers. A full run
+through core order six may take appreciably longer than the arithmetic
+checks above.
+
+\begin{lstlisting}[language=Python]
+from fractions import Fraction as Q
+from itertools import combinations
+from math import factorial
+import json
+
+def m(adj):
+    d=list(map(len,adj))
+    return sum((Q(1,max(d[u],d[v])) for u in range(len(adj)) for v in adj[u] if u<v),Q(0))
+def drop_vertices(adj,remove):
+    return [set(x)-remove if i not in remove else set() for i,x in enumerate(adj)]
+def check(adj,n):
+    d=list(map(len,adj)); coreedges=[(u,v) for u in range(n) for v in adj[u] if u<v and v<n]
+    val=m(adj)
+    for u,v in coreedges:
+        a=[set(x) for x in adj];a[u].remove(v);a[v].remove(u)
+        if m(a)<=val:return False
+    if min(d[:n])<3:return False
+    src=[u for u in range(n) if all(d[v]>=d[u] for v in adj[u] if v<n)]
+    leaves={next(v for v in adj[u] if v>=n) for u in src}
+    assert all(not(set(src)&adj[u]) for u in src)
+    budget=sum((Q(1,d[u]) for u in src),Q(0))
+    assert val-m(drop_vertices(adj,leaves))==budget
+    full=val-m(drop_vertices(adj,set(range(n,len(adj)))))
+    assert full>=budget
+    D=max(d);F={D:1}
+    for j in range(D-1,2,-1):F[j]=1+(j-1)*F[j+1]
+    assert n<=sum(F[d[u]] for u in src)
+    if full<1:assert n<=3*sum(factorial(j) for j in range(1,D-1))-1
+    return True
+
+counts={}; tested=0
+for n in range(3,7):
+    poss=list(combinations(range(n),2));passed=0;decorated=0
+    for mask in range(1<<len(poss)):
+        a=[set() for _ in range(n)]
+        for i,(u,v) in enumerate(poss):
+            if (mask>>i)&1:a[u].add(v);a[v].add(u)
+        if min(map(len,a))<2:continue
+        for lmask in range(1<<n):
+            b=[set(x) for x in a]
+            for u in range(n):
+                if (lmask>>u)&1:
+                    b[u].add(len(b));b.append({u})
+            decorated+=1
+            if check(b,n):passed+=1
+    tested+=decorated;counts[n]={'decorations':decorated,'all_supportive':passed}
+print(json.dumps({'tested':tested,'by_core_order':counts,'status':'all exact checks passed'},indent=2))
+
+\end{lstlisting}
+
+The table of integer improvements is reproduced by this short program.
+\begin{lstlisting}[language=Python]
+from math import lcm, factorial
+for D in range(4,9):
+    F={D:1}
+    for d in range(D-1,2,-1):
+        F[d]=1+(d-1)*F[d+1]
+    L=lcm(*range(3,D+1))
+    dp=[-1]*L; dp[0]=0
+    for w in range(L):
+        if dp[w]<0: continue
+        for d in range(3,D+1):
+            v=w+L//d
+            if v<L: dp[v]=max(dp[v],dp[w]+F[d])
+    print(D,3*sum(factorial(j) for j in range(1,D-1))-1,max(dp))
+\end{lstlisting}
+
+\section{Source and dependency record}
+The positive arithmetic construction uses only the explicit lemmas proved
+in Sections 2--6. The pure-power exclusion uses the published Okada unit
+equations, and its reduction to the alternating harmonic series is proved
+here. No theorem about Euler's constant, no assumed independence of
+Dirichlet $L$-values, and no unverified numerical zero enters that argument.
+The graph order theorem is independent of the corpus; only its radius
+corollary invokes the earlier structure reduction. The Steklov argument
+uses standard variational and Sobolev facts whose exact applications
+are given in its proof.
+
+The quantum-walk proof identifies the full integer frequency-relation
+lattice and constructs a measure on its constrained torus. Its final
+finite-time correction is included explicitly, so a limiting torus law
+is not being substituted for a distribution on actual observation times.
+
+The initial research screen also rejected proposed new targets when an
+identical or broader result was already present in recent primary
+literature. Those abandoned directions are not counted as results of
+this manuscript. The bibliography below lists the sources actually used
+for the stated theorems and their provenance.
+
+\begin{thebibliography}{99}\small
+\bibitem{MP2022}
+M.~Ram Murty and S.~Pathak,
+\emph{The Okada space and vanishing of $L(1,f)$},
+Functiones et Approximatio Commentarii Mathematici
+\textbf{66} (2022), no.~1, 35--57,
+\href{https://doi.org/10.7169/facm/1952}{doi:10.7169/facm/1952}.
+Inspected author manuscript dated 7 April 2021:
+\url{https://www.cmi.ac.in/~siddhi/Okada_space_RM_SP_Final.pdf}.
+Theorem 1.1 gives the necessary unit equations; Section 4.4 states the
+period-classification question and Theorem 4.8.
+
+\bibitem{Okada1982}
+T.~Okada, \emph{On a certain infinite series for a periodic arithmetical
+function}, Acta Arithmetica \textbf{40} (1982), 143--153.
+The needed criterion is used through its explicit restatement in
+\cite[Theorem 1.1]{MP2022}.
+
+\bibitem{Corpus093}
+Research audit XXIV, corpus item [093],
+\emph{When can $\sum f(n)/n$ vanish for a periodic $f$ with values $\pm1$?},
+file \texttt{[093] pm1\_vanishing\_paper.tex}, research draft.
+Theorem E and Conjecture 9.1, in the repository snapshot specified
+in Section 1.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{Corpus087}
+VMRC, corpus item [087],
+\emph{Spanning trees of small diameter and the Randi\'c index},
+file \texttt{[087] fajtlowicz\_radius\_core\_reduction.tex}, research draft.
+Proposition \texttt{prop:structure} and Remark \texttt{rem:D6};
+same repository snapshot as \cite{Corpus093}.
+
+\bibitem{Corpus094}
+VMRC, corpus item [094], \emph{A bag reduction for the Randi\'c--radius problem},
+file \texttt{[094] Randic\_radius\_bag\_reduction.tex}, research draft;
+same repository snapshot as \cite{Corpus093}.
+
+\bibitem{CPS}
+M.~Cygan, M.~Pilipczuk, and R.~\v{S}krekovski,
+\emph{On the inequality between radius and Randi\'c index for graphs},
+MATCH Communications in Mathematical and in Computer Chemistry
+\textbf{67} (2012), 451--466.
+\url{https://match.pmf.kg.ac.rs/electronic_versions/Match67/n2/match67n2_451-466.pdf}.
+
+\bibitem{Lagace2020}
+\emph{Open problems from the miniconference on sharp eigenvalue estimates
+for partial differential operators}, April 2020,
+Open Problem 10, proposed by Jean Lagac\'e, printed page 3.
+\url{https://publish.illinois.edu/eigenvalues2020/files/2020/04/Open-problems.pdf}.
+The complete four-page problem list was inspected.
+
+\bibitem{GP2017}
+A.~Girouard and I.~Polterovich,
+\emph{Spectral geometry of the Steklov problem},
+Journal of Spectral Theory \textbf{7} (2017), 321--359.
+\href{https://doi.org/10.4171/JST/164}{doi:10.4171/JST/164}.
+Example 4.2.5 treats annuli by separation of variables.
+\url{https://ems.press/content/serial-article-files/33609}.
+\bibitem{CoutinhoGuo2024}
+G.~Coutinho and K.~Guo,
+\emph{Selected open problems in continuous-time quantum walks},
+Special Matrices \textbf{12} (2024), 20240025.
+\href{https://doi.org/10.1515/spma-2024-0025}{doi:10.1515/spma-2024-0025}.
+Section 4.2 discusses randomized observation times.
+
+\bibitem{Kang2026}
+M.~Kang, \emph{Arithmetic of Bohr Frequencies Governs Uniform Mixing
+in Randomly Timed Quantum Spin Chains}, arXiv:2609.14463v1,
+13 September 2026.
+\url{https://arxiv.org/abs/2609.14463v1}.
+The inspected version establishes several positive and negative families
+and leaves other moduli outside its classification.
+\end{thebibliography}
+\end{document}

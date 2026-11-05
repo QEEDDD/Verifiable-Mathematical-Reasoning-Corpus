@@ -1,0 +1,821 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[a4paper,margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable,xcolor,listings}
+\usepackage{fancyhdr}
+\usepackage[unicode,hidelinks]{hyperref}
+\hypersetup{pdftitle={Period Obstructions for Weighted Binary Expansions},pdfauthor={Keio},pdfsubject={Denominator valuations, periodic expansions, and the Borwein--Loring periodicity question}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\ord}{ord}
+\setlength{\emergencystretch}{2em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Period obstructions for weighted binary expansions}
+\fancyhead[R]{\small 2 November 2026}
+\fancyfoot[C]{\thepage}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{blue!45!black},commentstyle=\color{black!55},
+  stringstyle=\color{black!75},showstringspaces=false,
+  columns=fullflexible,keepspaces=true,breaklines=true,
+  frame=single,rulecolor=\color{black!20},framesep=5pt,
+  xleftmargin=6pt,xrightmargin=6pt,aboveskip=10pt,belowskip=10pt}
+\title{\textbf{Period Obstructions for\\Weighted Binary Expansions}\\[5pt]
+\large Denominator valuations and a 1990 periodicity question}
+\author{Keio}
+\date{2 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For binary digits $\varepsilon_n$, consider the weighted value
+$X=\sum_{n\ge1}n\varepsilon_n/2^n$. We prove that an eventually periodic
+representation with a nonconstant tail forces an odd prime square in the
+reduced denominator of $X$. Consequently, no rational with a nontrivial
+squarefree odd denominator part has any eventually periodic representation;
+in particular this holds for $1/3$. This rules out the universal periodicity
+possibility raised by Borwein and Loring in 1990. More precisely, an exact
+valuation identity and a finite closure under prime divisors of
+multiplicative orders give an explicit integer $D_Q$, depending only on
+the odd denominator $Q$ of $X$, such that every ordinary periodic-tail
+denominator divides $D_Q$ and every minimal period divides
+$\ord_{D_Q}(2)$. We give full proofs, a general-base extension, boundary
+examples, and an exact reproducible verifier. This does not resolve
+Erd\H{o}s Problem~\#261; historical priority of the additional results is
+not certified by the bounded literature search reported here.
+\end{abstract}
+
+\section{The historical question and the auxiliary problem}
+Borwein and Loring call an expression
+\begin{equation}\label{eq:weighted-def}
+ x=\sum_{n\ge1}\frac{n\varepsilon_n}{2^n},\qquad
+ \varepsilon_n\in\{0,1\},
+\end{equation}
+a $*$-binary representation. On printed page~391 of~\cite{BL1990}, they
+leave open the possibility that every rational in the range admits a
+periodic representation and single out $1/3$. Their discussion explicitly
+allows a period to start after a finite initial segment. The question
+therefore concerns eventual periodicity, which is the convention used
+throughout this manuscript.
+
+The quantifier is essential: ruling out one algorithm's periodic output
+would not rule out other representations. Corollary~\ref{cor:squarefree-periodicity}
+rules out \emph{every} eventually periodic representation of $1/3$, with
+an arbitrarily long preperiod allowed. Thus it gives a negative answer
+to that particular universal possibility without changing its meaning.
+It is an unnumbered question in the cited paper, rather than an
+established named conjecture or the whole of Erd\H{o}s~\#261.
+
+Our auxiliary problem is to find a finite, explicit bound for the
+ordinary binary tail denominators that can occur when the \emph{weighted}
+value has a prescribed odd denominator $Q$. A periodic ordinary binary value has denominator
+dividing $2^r-1$, but differentiating the corresponding generating
+function introduces a second power of this factor. The key question is
+which prime factors can cancel. The exact identity in
+Lemma~\ref{lem:denominator-amplification} controls that cancellation;
+Theorem~\ref{thm:denominator-period-bound} then propagates the resulting
+constraints through strictly decreasing primes. This gives an explicit arithmetic obstruction and applies it to the
+historical question.
+The tools---geometric series, prime valuations, and multiplicative
+orders---are classical; no new foundational principle is claimed.
+
+The research began with the weighted-tail viewpoint in manuscript~[090]
+of the supplied corpus~\cite{Corpus090}, inspected at the fixed commit
+recorded in the bibliography. That corpus is used as a source of research
+directions, not as an assumption of correctness. Every assertion needed
+for the present result is proved below.
+
+
+\section{Denominators and eventual periods in weighted binary expansions}
+\label{sec:weighted-periods}
+
+For a binary sequence $\varepsilon=(\varepsilon_n)_{n\ge1}$, write
+\[
+ X(\varepsilon)=\sum_{n\ge1}\frac{n\varepsilon_n}{2^n}.
+\]
+Every $x\in[0,2]$ admits such a representation; the elementary greedy construction is recalled below. We determine an explicit restriction on every eventual period of a representation of a fixed rational number. In particular, $1/3$ has no eventually periodic representation. This answers the specific periodicity possibility discussed by Borwein and Loring on printed page~391 of~\cite{BL1990}. It does not settle either of the remaining questions in Erd\H{o}s Problem~\#261: universal finite representability of $n2^{-n}$ or continuum multiplicity for some rational value.
+
+The periodic-tail formula used below is classical generating-function algebra. In the closely related recent literature, Wang and Grau Ribas~\cite[Lemma~A.12 and Propositions~7.2/A.15]{Wang2026v1} use this formula and the identification of the primitive binary period with a multiplicative order to obtain a density estimate. The argument here extracts prime valuations from the same formula and propagates them through the prime divisors of multiplicative orders. No claim that the underlying generating-function identity is new is intended.
+
+For an odd prime $p$, define
+\[
+ t_p=\operatorname{ord}_p(2),\qquad
+ w_p=v_p(2^{t_p}-1).
+\]
+Here $v_p$ is the usual additive valuation, with $v_p(0)=+\infty$. In particular $w_p\ge1$ and $t_p\mid p-1$.
+
+\begin{lemma}[Periodic tail formula]\label{lem:periodic-tail-formula}
+Suppose that $\varepsilon_{N+i}=e_i$ for $i\ge1$, where $(e_i)$ is periodic of minimal period $r$, with digits in $\{0,1\}$. Put
+\[
+ M=2^r-1,\qquad
+ S=\sum_{i=1}^r e_i2^{r-i},\qquad
+ T=\sum_{i=1}^r i e_i2^{r-i},
+\]
+\[
+ y=\sum_{i\ge1}\frac{e_i}{2^i}=\frac{S}{M},\qquad
+ z=\sum_{i\ge1}\frac{i e_i}{2^i}
+   =\frac{MT+rS}{M^2}.
+\]
+Then
+\begin{equation}\label{eq:periodic-tail-shift}
+ 2^NX(\varepsilon)=I+Ny+z,
+ \qquad I=\sum_{n=1}^{N}n\varepsilon_n2^{N-n}\in\mathbb Z.
+\end{equation}
+If the periodic word is nonconstant and $d$ is the reduced denominator of $y$, then $d>1$ is odd and
+\[
+ r=\operatorname{ord}_d(2)<d.
+\]
+\end{lemma}
+
+\begin{proof}
+Summing over positions $i+kr$ gives
+\[
+ y=\sum_{i=1}^r\frac{e_i2^{-i}}{1-2^{-r}},\qquad
+ z=\sum_{i=1}^r e_i2^{-i}
+ \left(\frac{i}{1-2^{-r}}+
+       \frac{r2^{-r}}{(1-2^{-r})^2}\right),
+\]
+which yields the displayed formulas. Separating the finite prefix proves~\eqref{eq:periodic-tail-shift}. A nonconstant periodic binary word represents a rational $y$ strictly between zero and one. Multiplication by $2^s$ shifts the ordinary binary digits by $s$ places; its fractional part returns to $y$ precisely when $d\mid 2^s-1$. Uniqueness of the nonterminating binary expansion therefore identifies its minimal period with the multiplicative order of $2$ modulo $d$. Euler's theorem gives $r\le\varphi(d)<d$.
+\end{proof}
+
+
+\begin{lemma}[Order lifting]\label{lem:order-lifting}
+For an odd prime $p$ and every $a\ge1$,
+\[
+ \ord_{p^a}(2)=t_p p^{\max(0,a-w_p)}.
+\]
+Moreover, if $t_p\mid r$, then
+$v_p(2^r-1)=w_p+v_p(r)$.
+\end{lemma}
+\begin{proof}
+For $u\equiv1\pmod p$ and odd $p$, the binomial theorem gives
+$v_p(u^m-1)=v_p(u-1)+v_p(m)$. To see this, an exponent coprime to
+$p$ leaves the valuation unchanged, while raising to the power $p$
+increases it by exactly one; iteration proves the identity.
+Apply it to $u=2^{t_p}$. Any exponent giving $1$ modulo $p^a$ is a
+multiple $t_pm$, and it works exactly when $w_p+v_p(m)\ge a$.
+The least such multiple proves the order formula. The final assertion
+also uses $p\nmid t_p$.
+\end{proof}
+
+\begin{lemma}[Exact denominator amplification]\label{lem:denominator-amplification}
+Under the nonconstant-tail hypotheses of Lemma~\ref{lem:periodic-tail-formula}, let $Q$ be the odd part of the reduced denominator of $X(\varepsilon)$. For an odd prime $p\mid d$, put
+\[
+ a=v_p(d),\qquad b=v_p(r).
+\]
+If $a>b$, then
+\begin{equation}\label{eq:exact-amplification}
+ v_p(Q)=a+w_p.
+\end{equation}
+In particular, the odd denominator of $X(\varepsilon)$ is divisible by the square of some prime.
+\end{lemma}
+
+\begin{proof}
+Write $k=v_p(M)$. Reduction of $S/M$ gives $v_p(S)=k-a$. Since $a>b$,
+\[
+ v_p(rS)=k-a+b<k\le v_p(MT).
+\]
+Thus the two numerator summands in $MT+rS$ cannot cancel at their least valuation, and
+\[
+ v_p(z)=k-a+b-2k=-k-a+b.
+\]
+As $p\mid d$, the number $t_p$ divides $r$. Since $p\nmid t_p$, the lifting-the-exponent identity gives
+\[
+ k=v_p(2^r-1)=w_p+v_p(r/t_p)=w_p+b.
+\]
+Consequently $v_p(z)=-a-w_p$. On the other hand $v_p(Ny)\ge-a$ and $v_p(I)\ge0$. These terms cannot cancel the strictly smaller valuation of $z$ in~\eqref{eq:periodic-tail-shift}. Multiplication by $2^N$ leaves every odd-prime valuation unchanged, proving~\eqref{eq:exact-amplification}.
+
+Finally, $r<d$ implies $d\nmid r$. Hence there is a prime $p\mid d$ with $v_p(d)>v_p(r)$. For this prime, $v_p(Q)=a+w_p\ge2$.
+\end{proof}
+
+\begin{corollary}[Squarefree-denominator obstruction]\label{cor:squarefree-periodicity}
+Let $x\in\mathbb Q\cap[0,2]$, and suppose that the odd part $Q>1$ of its reduced denominator is squarefree. Then no binary representation
+\[
+ x=\sum_{n\ge1}n\varepsilon_n2^{-n}
+\]
+is eventually periodic. In particular, every such representation of $1/3$ is aperiodic after every finite prefix.
+\end{corollary}
+
+\begin{proof}
+A nonconstant periodic tail contradicts Lemma~\ref{lem:denominator-amplification}. An eventually constant binary sequence gives a dyadic value: a zero tail is finite, while a one tail contributes
+\[
+ \sum_{n>N}\frac n{2^n}=\frac{N+2}{2^N}.
+\]
+Either is incompatible with $Q>1$.
+\end{proof}
+
+For completeness, existence of the representations appearing in the corollary follows directly from a tail interval. Start with $\rho_0=x$ and at step $n\ge1$ choose a digit $\varepsilon_n$ for which
+\[
+ \rho_n=2\rho_{n-1}-n\varepsilon_n\in[0,n+2].
+\]
+If $\rho_{n-1}\in[0,n+1]$, exclusion is possible for $2\rho_{n-1}\le n+2$ and inclusion is possible for $2\rho_{n-1}\ge n$; these conditions cover the interval. Then
+\[
+ x-\sum_{j=1}^n\frac{j\varepsilon_j}{2^j}
+ =2^{-n}\rho_n\longrightarrow0.
+\]
+Thus the conclusion for $1/3$ is not vacuous.
+
+\begin{definition}[Prime set and period bound attached to a denominator]
+\label{def:denominator-period-bound}
+For an odd positive integer $Q$, let $\mathcal P_Q$ be the smallest set of odd primes with the following properties:
+\begin{enumerate}
+\item it contains every prime $p$ with $v_p(Q)>w_p$;
+\item if $q\in\mathcal P_Q$, it contains every odd prime divisor of $t_q$.
+\end{enumerate}
+This set is finite, since $t_q\mid q-1$ and hence every newly added prime is smaller than its parent. For $p\in\mathcal P_Q$ set
+\[
+ e_p=\max\left\{0,\ v_p(Q)-w_p,\
+                 \max_{\substack{q\in\mathcal P_Q\\q>p}}v_p(t_q)\right\},
+ \qquad D_Q=\prod_{p\in\mathcal P_Q}p^{e_p}.
+\]
+An empty inner maximum is zero and an empty product is one. Every prime in $\mathcal P_Q$ has $e_p\ge1$. If $D_Q>1$, put $R_Q=\operatorname{ord}_{D_Q}(2)$.
+\end{definition}
+
+\begin{theorem}[A bound for every eventual period]\label{thm:denominator-period-bound}
+Let $x$ be rational with reduced denominator $2^sQ$, where $Q$ is odd. Suppose a binary representation of $x$ has a nonconstant eventual period. Let $d$ be the reduced denominator of the ordinary binary value of a periodic tail, and let $r$ be its minimal period. Then
+\[
+ d\mid D_Q.
+\]
+Consequently $D_Q>1$ and
+\[
+ r\mid R_Q.
+\]
+The bound depends only on the odd denominator of $x$, independently of the numerator, the dyadic denominator, the preperiod, and the chosen representation.
+\end{theorem}
+
+\begin{proof}
+For each prime $p\mid d$, put $a_p=v_p(d)$ and $b_p=v_p(r)$. We first prove the following alternative:
+\begin{equation}\label{eq:prime-alternative}
+ a_p\le v_p(Q)-w_p
+ \quad\hbox{or}\quad
+ a_p\le v_p(t_q)\text{ for some prime }q\mid d\text{ with }q>p.
+\end{equation}
+If $a_p>b_p$, Lemma~\ref{lem:denominator-amplification} gives equality in the first alternative. Otherwise $a_p\le b_p$. The standard order formula at odd prime powers is
+\[
+ \operatorname{ord}_{q^a}(2)
+   =t_q q^{\max\{0,a-w_q\}}.
+\]
+Since $r=\operatorname{lcm}_{q\mid d}\operatorname{ord}_{q^{a_q}}(2)$, taking its $p$-valuation yields
+\[
+ b_p=\max\left\{\max\{0,a_p-w_p\},\
+                \max_{\substack{q\mid d\\q>p}}v_p(t_q)\right\}.
+\]
+Here $q<p$ contributes zero because $t_q\mid q-1<p$, and $t_p$ is coprime to $p$. The first entry is strictly smaller than $a_p$. Thus $b_p\ge a_p$ forces the second alternative in~\eqref{eq:prime-alternative}.
+
+Now process the prime divisors of $d$ in decreasing order. The largest one must satisfy the first alternative, so it is a seed of $\mathcal P_Q$ and its exponent is at most $e_p$. For any smaller prime $p$, the first alternative again makes it a seed with the required exponent bound. In the second alternative, the larger prime $q$ has already been placed in $\mathcal P_Q$; since $p\mid t_q$, the closure rule places $p$ there too, and the definition of $e_p$ bounds $a_p$. This proves $d\mid D_Q$. Multiplicative orders under divisibility then give
+\[
+ r=\operatorname{ord}_d(2)\mid\operatorname{ord}_{D_Q}(2)=R_Q.
+\]
+\end{proof}
+
+\begin{corollary}[A finite list of possible tail words]\label{cor:finite-tail-alphabet}
+For a fixed odd denominator $Q$, every ordinary binary value of a nonconstant periodic tail belongs to the finite set
+\[
+ \left\{\frac{j}{D_Q}:1\le j<D_Q\right\}.
+\]
+Thus finitely many periodic binary tail sequences can occur, including their phases. This does not bound the point at which a tail begins.
+\end{corollary}
+
+\begin{proof}
+The reduced denominator $d$ of the tail value divides $D_Q$, and the value lies strictly between zero and one. Each such rational has a unique nonterminating, purely periodic binary expansion.
+\end{proof}
+
+\begin{example}[The squarefree obstruction has a real boundary]
+Although $1/3$ has no eventually periodic representation, $1/9$ does:
+\[
+ \frac19=\frac7{2^7}+\frac8{2^8}
+          +\sum_{k\ge0}\frac{9+2k}{2^{9+2k}}.
+\]
+Indeed the finite prefix contributes $11/128$. The tail begins after $N=8$ and has periodic word $10$, for which $y=2/3$ and $z=10/9$. Its weighted contribution is therefore
+\[
+ 2^{-8}(8y+z)=\frac{29}{1152},\qquad
+ \frac{11}{128}+\frac{29}{1152}=\frac19.
+\]
+\end{example}
+
+\begin{remark}[Scope and examples]
+Theorem~\ref{thm:denominator-period-bound} is a necessary condition for periodic representability, not a criterion asserting its existence for each rational numerator. It bounds the period and not the preperiod. For example,
+\[
+\begin{array}{c|ccccc}
+ Q&9&25&49&81&121\\\hline
+ D_Q&3&5&21&27&55\\
+ R_Q&2&4&6&18&20
+\end{array}
+\]
+where the primes occurring here have $w_p=1$. Thus every nonconstant eventual period at odd denominator $49$ divides $6$, and at odd denominator $121$ it divides $20$. Squarefree $Q$ has no seed, giving $D_Q=1$ and recovering the obstruction above. These conclusions concern a classical periodicity question adjacent to Erd\H{o}s~\#261; they provide no proof of infinite branching or continuum multiplicity.
+\end{remark}
+
+\section{Examples and the role of higher prime valuations}
+The period bound is attained for some denominators. The purely periodic
+word $0011$ has $r=4$, $M=15$, $S=3$, and $T=10$, so its weighted
+value is $18/25$. Its minimal period is $4=R_{25}$. For $Q=49$, take
+a zero prefix of length one followed by the repeated word $000011$.
+Here $y=1/21$ and $z=38/147$, and hence
+\[
+ x=\frac12\left(\frac1{21}+\frac{38}{147}\right)=\frac{15}{98}.
+\]
+Its minimal period is $6=R_{49}$. The prime $3$ in $D_{49}=21$ comes
+from $\ord_7(2)=3$; it need not divide $Q$ itself. Thus simply retaining
+the primes dividing $Q$ would lose valid tails.
+
+The use of $w_p$, rather than the weaker uniform lower bound $w_p\ge1$,
+also matters. For the prime $p=1093$, exact modular arithmetic gives
+\[
+\begin{array}{c|rrrr}
+ m&364&182&52&28\\\hline
+ 2^m\bmod1093&1&1092&27&121
+\end{array}
+\]
+and
+\[
+ 2^{364}\equiv1\pmod{1093^2},\qquad
+ 2^{364}\equiv1064432260\not\equiv1\pmod{1093^3}.
+\]
+Trial division proves that $1093$ is prime. Since the prime divisors of
+$364$ are $2,7,13$, the table proves $t_{1093}=364$, and the second
+line proves $w_{1093}=2$. For $Q=1093^2$ there is consequently no seed
+in Definition~\ref{def:denominator-period-bound}; thus $D_Q=1$.
+
+\begin{corollary}
+No weighted binary representation of $1/1093^2$ is eventually periodic.
+\end{corollary}
+\begin{proof}
+Theorem~\ref{thm:denominator-period-bound} excludes a nonconstant
+periodic tail, and a constant tail would give a dyadic rational.
+\end{proof}
+This conclusion is not covered by the squarefree-denominator corollary.
+The number-theoretic property of $1093$ is used only as an explicitly
+checked example, not as an unproved input.
+
+
+\section{The denominator obstruction in every integer base}
+\label{sec:general-base}
+
+Fix an integer $b\geq 2$ and use the full digit alphabet
+$\{0,1,\ldots,b-1\}$.  A weighted base-$b$ representation is an expansion
+\[
+ x=\sum_{n=1}^{\infty}\frac{n\varepsilon_n}{b^n},
+ \qquad \varepsilon_n\in\{0,1,\ldots,b-1\}.
+\]
+If $x$ is rational with reduced positive denominator $q$, write
+\[
+ Q=\prod_{\substack{p\mid q\\p\nmid b}}p^{v_p(q)},
+\]
+where $v_p$ denotes the usual prime-adic valuation.  Thus $Q$ is the part
+of the denominator coprime to $b$.
+
+\begin{theorem}\label{thm:general-base-obstruction}
+Let $x$ have an eventually periodic weighted base-$b$ representation.
+If its eventual tail is neither constantly $0$ nor constantly $b-1$,
+then the reduced denominator of $x$ is divisible by $p^2$ for some prime
+$p\nmid b$.  If the eventual tail is constantly $0$ or constantly $b-1$,
+then $Q\mid b-1$.
+
+Consequently, if a rational number $x$ has squarefree $Q$ and
+$Q\nmid b-1$, then none of its weighted base-$b$ representations is
+eventually periodic.
+\end{theorem}
+
+\begin{proof}
+Choose $N\geq0$ such that $\delta_i=\varepsilon_{N+i}$ is purely
+periodic, and let $r$ be its least positive period.  Put
+\[
+ M=b^r-1,\qquad
+ S=\sum_{i=1}^{r}\delta_i b^{r-i},\qquad
+ T=\sum_{i=1}^{r}i\delta_i b^{r-i}.
+\]
+Summing the geometric series and its derivative gives
+\begin{equation}\label{eq:general-base-periodic-tail}
+ y:=\sum_{i=1}^{\infty}\frac{\delta_i}{b^i}=\frac{S}{M},
+ \qquad
+ z:=\sum_{i=1}^{\infty}\frac{i\delta_i}{b^i}
+     =\frac{MT+rS}{M^2}.
+\end{equation}
+Writing the finite prefix as
+$F=\sum_{n=1}^{N}n\varepsilon_n b^{-n}$, we therefore have
+\begin{equation}\label{eq:general-base-shift}
+ x=F+b^{-N}(z+Ny).
+\end{equation}
+
+First suppose that the periodic tail is neither all $0$ nor all $b-1$.
+Then $0<y<1$.  Its reduced denominator $d$ divides $M$ and satisfies
+$d>1$, so $\gcd(d,b)=1$.  The least period of the ordinary base-$b$
+expansion of $y$ is
+\[
+ r=\operatorname{ord}_d(b)\leq\varphi(d)<d.
+\]
+Indeed, $b^s y-y$ is an integer precisely when $d\mid b^s-1$;
+uniqueness of the ordinary base-$b$ expansion of this nonterminating
+rational identifies these integers $s$ with its periods.  In particular,
+$d\nmid r$.  We may therefore choose a prime $p\mid d$ such that
+\[
+ a:=v_p(d)>h:=v_p(r).
+\]
+Let $k=v_p(M)$.  Reduction of $S/M$ gives $v_p(S)=k-a$, and hence
+\[
+ v_p(rS)=k-a+h<k\leq v_p(MT).
+\]
+The two summands in the numerator of $z$ have distinct $p$-adic
+valuations.  Thus
+\[
+ v_p(MT+rS)=k-a+h,
+\]
+and the exponent of $p$ in the reduced denominator of $z$ is exactly
+\[
+ E=2k-(k-a+h)=k+a-h>a\geq1.
+\]
+The denominator of $Ny$ has $p$-exponent at most $a$, so addition of
+$Ny$ cannot cancel the larger exponent $E$ in the denominator of $z$.
+Moreover, $p\nmid b$, since $p\mid M$.  Multiplication by $b^{-N}$ and
+addition of the finite base-$b$ rational $F$ likewise leave this exponent
+unchanged.  Equation~\eqref{eq:general-base-shift} therefore proves that
+$p^2$ divides the reduced denominator of $x$.
+
+If the tail is all $0$, then $x=F$ and $Q=1$.  If the tail is all
+$b-1$, direct summation gives
+\[
+ y=1,\qquad z=\frac{b}{b-1},\qquad
+ x=F+b^{-N}\left(N+\frac{b}{b-1}\right).
+\]
+All denominator factors outside the primes dividing $b$ consequently
+divide $b-1$.  This proves the two exceptional cases and the stated
+consequence.
+\end{proof}
+
+The extremal-tail exception is necessary.  For example, in base $3$
+the constant digit sequence $\varepsilon_n=2$ represents
+$\sum_{n\geq1}2n3^{-n}=3/2$, whose reduced denominator is squarefree.
+Constant interior digits $1,\ldots,b-2$, when they exist, are covered
+by the nonextremal case of Theorem~\ref{thm:general-base-obstruction}.
+
+\begin{lemma}\label{lem:general-base-existence}
+Every real number $x\in[0,b/(b-1)]$ has a weighted base-$b$
+representation with digits in $\{0,1,\ldots,b-1\}$.
+\end{lemma}
+
+\begin{proof}
+Set $w_n=n/b^n$ and let
+\[
+ H_n=(b-1)\sum_{j>n}\frac{j}{b^j}
+     =b^{-n}\left(n+\frac{b}{b-1}\right)
+     \qquad(n\geq0).
+\]
+Thus $H_0=b/(b-1)$, $H_n\to0$, and
+$H_n>w_n$ for $n\geq1$.  The intervals
+\[
+ [d w_n,d w_n+H_n],\qquad d=0,1,\ldots,b-1,
+\]
+overlap and cover
+$[0,(b-1)w_n+H_n]=[0,H_{n-1}]$.
+Starting with $R_0=x$, choose at step $n$ a digit $\varepsilon_n$
+whose interval contains $R_{n-1}$, and put
+$R_n=R_{n-1}-\varepsilon_n w_n$.  Then $0\leq R_n\leq H_n$.
+For example, the explicit greedy choice
+\[
+ \varepsilon_n=
+ \min\left\{b-1,\left\lfloor\frac{R_{n-1}}{w_n}\right\rfloor\right\}
+\]
+has this property.  Since
+$x-\sum_{j=1}^{n}\varepsilon_j w_j=R_n\to0$, the desired expansion
+follows.
+\end{proof}
+
+In particular, for every prime $p\nmid b(b-1)$ the number $1/p$ lies
+in the interval of Lemma~\ref{lem:general-base-existence} and has at
+least one weighted base-$b$ representation, but none is eventually
+periodic.  In base $2$ one may take $p=3$.
+
+\section{Periodic representations are isolated}
+\label{sec:periodic-isolation}
+
+For $x\in[0,2]$, equip the representation fiber
+\[
+ \mathcal F_x=
+ \left\{(\varepsilon_n)\in\{0,1\}^{\mathbb N}:
+       x=\sum_{n=1}^{\infty}\frac{n\varepsilon_n}{2^n}\right\}
+\]
+with the subspace topology inherited from the product topology on
+$\{0,1\}^{\mathbb N}$.  A representation is isolated if some finite
+initial digit block distinguishes it from every other member of
+$\mathcal F_x$.
+
+\begin{theorem}\label{thm:periodic-isolation}
+Every eventually periodic binary weighted representation is an
+isolated point of its full representation fiber.
+\end{theorem}
+
+\begin{proof}
+Let $\varepsilon\in\mathcal F_x$ be eventually periodic.  If its tail
+is constantly $0$, then fixing the digits through the start of that
+tail leaves the smallest possible remaining sum, namely zero.
+Every subsequent digit is therefore forced.  The same argument with
+the largest possible remaining sum applies to a tail constantly $1$.
+Both cases give isolation.
+
+Otherwise choose $N\geq0$ and $r\geq1$ such that the tail after $N$
+is periodic with period $r$ and contains both digits.  Choose an integer
+$L\geq\max\{N,2^{r+1}\}$.  Suppose that another representation
+$\eta\in\mathcal F_x$ agrees with $\varepsilon$ through index $L$,
+and let $n>L$ be their first differing index.
+
+If $\varepsilon_n=1$ and $\eta_n=0$, equality of the represented
+numbers would require the loss $n2^{-n}$ to be compensated by later
+changes.  The largest available compensation is obtained by turning
+every later zero of $\varepsilon$ into a one.  Every block of $r$
+consecutive digits in this tail contains a one, so in particular
+\[
+ \sum_{t\geq1}\frac{1-\varepsilon_{n+t}}{2^t}
+ \leq 1-2^{-r}.
+\]
+Using also $\sum_{t\geq1}t2^{-t}=2$, we obtain
+\[
+ \begin{split}
+ 2^n\sum_{m>n}\frac{m(1-\varepsilon_m)}{2^m}
+ &=\sum_{t\geq1}\frac{(n+t)(1-\varepsilon_{n+t})}{2^t}\\
+ &\leq n(1-2^{-r})+2<n,
+ \end{split}
+\]
+where the strict inequality follows from $n>2^{r+1}$.  Compensation
+is impossible.
+
+If $\varepsilon_n=0$ and $\eta_n=1$, the required compensation would
+instead come from deleting later ones.  Since every block of $r$
+tail digits contains a zero, the identical estimate with
+$\varepsilon_{n+t}$ in place of $1-\varepsilon_{n+t}$ again bounds
+the available compensation strictly below $n2^{-n}$.
+Both cases are impossible.  Thus the cylinder fixing the first $L$
+digits meets $\mathcal F_x$ only at $\varepsilon$, proving isolation.
+\end{proof}
+
+This theorem gives only one direction: eventual periodicity implies
+isolation.  It does not prove that an isolated representation of a
+rational number is eventually periodic.  In particular, excluding
+eventually periodic representations of $1/3$ does not establish that
+its representation fiber is perfect or uncountable.
+
+\section{Literature, scope, and verification}
+\subsection{What has and has not been established}
+The completed mathematical result is an obstruction to eventual
+periodicity for all representations of the stated rational numbers,
+together with a denominator-dependent bound on every possible
+nonconstant period. The original universal periodicity possibility
+is false. The statements are unconditional and their proofs do not
+depend on the finite calculations.
+
+Neither remaining assertion of Erd\H{o}s~\#261 is proved here. In the
+formal-conjectures snapshot~\cite{Formal261}, these ask whether every
+positive integer $n$ has a nontrivial finite representation of $n2^{-n}$,
+and whether some rational number has continuum many representations
+by increasing positive integers. Aperiodicity is a property of one
+sequence; it does not imply that a value has many representations.
+The missing converse discussed in Section~\ref{sec:periodic-isolation}
+must not be silently assumed. We therefore do not present this work
+as fulfilling the requested conjunction of a still-open named
+Erd\H{o}s problem, a complete solution, and certified historical priority.
+
+\subsection{Relation to previous methods}
+The closest identified antecedent is Wang and Grau Ribas~\cite{Wang2026v1},
+specifically Lemma~A.12 and Proposition~A.15 in version~1. It contains
+the periodic-tail identity and multiplicative-order reduction used in
+Section~\ref{sec:weighted-periods}. Those ingredients are credited as
+prior work. The additional conclusions developed here are the exact
+valuation obstruction and its finite propagation through prime
+divisors of orders. We use no density theorem from that preprint.
+
+The literature check examined Borwein--Loring, the 2020 paper of
+Tengely--Ulas--Zygad\l{}o~\cite{TUZ2020}, and all four available versions
+of arXiv:2606.24972, together with title, citation, and phrase searches
+for weighted or $*$-binary expansions, eventual periodicity, $1/3$,
+and squarefree denominators. No earlier identical resolution or
+period-divisor theorem was found in those sources. This is a bounded
+search result, not a proof that no prior solution exists. The original
+source documents that the periodicity possibility was unresolved there
+in 1990; this manuscript does not certify that it remained unresolved
+through every intervening publication. In particular, the argument
+does not establish a historically new foundational principle.
+
+\subsection{Exact checks and reproducibility}
+Appendix~\ref{app:code} contains the full standard-library Python
+verifier. It enumerates every nonconstant binary word of lengths
+$2$ through $17$, including words with a smaller minimal period.
+For lengths at most $8$, every shift $N=0,\ldots,2^r-2$ is tested;
+for larger lengths it uses
+$N\in\{0,1,2,r,r+1,2^r-2,1000007\}$.
+It computes the reduced odd denominator exactly, checks $d\mid D_Q$
+and $r_{\min}\mid R_Q$, and checks the exact valuation identity
+whenever its hypothesis holds. The completed run produced
+\[
+\begin{array}{lr}
+\toprule
+\text{Nonconstant words}&262108\\
+\text{Word--shift cases}&1917164\\
+\text{Exact valuation checks}&3810912\\
+\text{Failed assertions}&0\\
+\bottomrule
+\end{array}
+\]
+Adding a finite prefix contributes an integer to the scaled expression
+and cannot change its reduced odd denominator; the dyadic scaling
+likewise leaves that denominator unchanged. The checker therefore
+tests the relevant arithmetic directly. The finite counts are
+consistency checks only. All word lengths, shifts, and prefixes are
+covered by the proofs, not by an extrapolation of these counts.
+
+\appendix
+\section{Self-contained exact verifier}\label{app:code}
+Save the following listing as \texttt{verify\_period\_bounds.py} and run with Python~3.9 or later:
+\begin{center}\texttt{python verify\_period\_bounds.py 17}\end{center}
+It uses only integer arithmetic. The default argument is $17$; a
+smaller argument shortens the diagnostic run. The verifier is embedded
+in this single \LaTeX{} source and needs no external data.
+% VERIFIER-BEGIN
+\begin{lstlisting}
+
+"""Independent exact checks for the proposed weighted-period bound.
+
+No numerical fitting or floating point is used. This tests finite words; the
+mathematical proof is the separate descending-prime/valuation argument.
+"""
+from functools import lru_cache
+from math import gcd, lcm
+import json
+import sys
+
+
+@lru_cache(None)
+def factor(n):
+    out = []
+    p = 2
+    while p * p <= n:
+        a = 0
+        while n % p == 0:
+            n //= p
+            a += 1
+        if a:
+            out.append((p, a))
+        p = 3 if p == 2 else p + 2
+    if n > 1:
+        out.append((n, 1))
+    return tuple(out)
+
+
+def vp(n, p):
+    assert n > 0
+    a = 0
+    while n % p == 0:
+        n //= p
+        a += 1
+    return a
+
+
+@lru_cache(None)
+def prime_data(p):
+    assert p > 2
+    t = p - 1
+    for q, _ in factor(p - 1):
+        while t % q == 0 and pow(2, t // q, p) == 1:
+            t //= q
+    w = 1
+    while pow(2, t, p ** (w + 1)) == 1:
+        w += 1
+    return t, w
+
+
+@lru_cache(None)
+def bound(Q):
+    Qf = dict(factor(Q))
+    seeds = {p for p, a in Qf.items() if a > prime_data(p)[1]}
+    closure = set(seeds)
+    pending = list(seeds)
+    while pending:
+        q = pending.pop()
+        tq, _ = prime_data(q)
+        for p, _ in factor(tq):
+            if p != 2 and p not in closure:
+                closure.add(p)
+                pending.append(p)
+    D = 1
+    period = 1
+    exponents = {}
+    for p in closure:
+        tp, wp = prime_data(p)
+        incoming = [vp(prime_data(q)[0], p) for q in closure if q > p]
+        ep = max([Qf.get(p, 0) - wp, 0] + incoming)
+        assert ep > 0
+        exponents[p] = ep
+        D *= p ** ep
+        period = lcm(period, tp * p ** max(0, ep - wp))
+    return D, period, exponents
+
+
+def run(max_period=17):
+    cases = 0
+    words = 0
+    exact_valuation_checks = 0
+    for r in range(2, max_period + 1):
+        M = 2 ** r - 1
+        for S in range(1, M):
+            words += 1
+            d = M // gcd(S, M)
+            df = dict(factor(d))
+            minimal_r = 1
+            for p, a in df.items():
+                tp, wp = prime_data(p)
+                minimal_r = lcm(minimal_r, tp * p ** max(0, a - wp))
+            T = sum(i * 2 ** (r - i) for i in range(1, r + 1)
+                    if (S >> (r - i)) & 1)
+            # Exhaust every shift residue for r<=8. For larger periods use
+            # several shifts, including a much larger, irregular one.
+            shifts = range(M) if r <= 8 else (0, 1, 2, r, r + 1, M - 1, 10**6 + 7)
+            for N in shifts:
+                num = M * (T + N * S) + r * S
+                Q = M * M // gcd(M * M, num)
+                D, period, _ = bound(Q)
+                assert D % d == 0, (r, S, N, d, Q, D)
+                assert period % minimal_r == 0, (r, S, N, minimal_r, Q, period)
+                for p, a in df.items():
+                    b = vp(minimal_r, p)
+                    if a > b:
+                        _, w = prime_data(p)
+                        assert vp(Q, p) == a + w, (r, S, N, p, Q, a, b, w)
+                        exact_valuation_checks += 1
+                cases += 1
+        print(f"r={r}: cumulative cases={cases}", flush=True)
+    # An important boundary example: seed 7 must bring in prime 3.
+    assert bound(49)[:2] == (21, 6)
+    # Explicit Wieferich-prime cases exercise w_p>1 in the construction.
+    assert prime_data(1093)[1] >= 2
+    assert bound(1093**2)[0] == 1
+    assert bound(1093**3)[0] % 1093 == 0
+    report = {
+        "max_word_length": max_period,
+        "nonconstant_words": words,
+        "word_shift_cases": cases,
+        "exact_valuation_checks": exact_valuation_checks,
+        "failures": 0,
+        "example_Q49": {"D": bound(49)[0], "period_bound": bound(49)[1]},
+        "wieferich_1093": prime_data(1093),
+    }
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    run(int(sys.argv[1]) if len(sys.argv) > 1 else 17)
+
+\end{lstlisting}
+% VERIFIER-END
+
+\begin{thebibliography}{9}
+\raggedright
+\bibitem{BL1990}
+P.~B. Borwein and T.~A. Loring,
+\emph{Some questions of Erd\H{o}s and Graham on numbers of the form
+$\sum g_n/2^{g_n}$},
+Mathematics of Computation \textbf{54} (189) (1990), 377--394.
+\href{https://doi.org/10.1090/S0025-5718-1990-0990598-9}{doi:10.1090/S0025-5718-1990-0990598-9}.
+\href{https://www.cecm.sfu.ca/~pborwein/PAPERS/P46.pdf}{Author-hosted PDF}.
+
+\bibitem{Wang2026v1}
+H. Wang and J.~M. Grau Ribas,
+\emph{Positive dyadic density for rational weighted binary expansions},
+arXiv:2606.24972v1 [math.NT], 23 June 2026;
+especially Lemma~A.12 (p.~21) and Proposition~A.15 (p.~22).
+\url{https://arxiv.org/pdf/2606.24972v1}.
+Version~1 is specified because later versions change the title,
+authorship, and organization.
+
+\bibitem{TUZ2020}
+S. Tengely, M. Ulas, and J. Zygad\l{}o,
+\emph{On a Diophantine equation of Erd\H{o}s and Graham},
+Journal of Number Theory \textbf{217} (2020), 445--459.
+\href{https://doi.org/10.1016/j.jnt.2020.05.006}{doi:10.1016/j.jnt.2020.05.006}.
+\url{https://arxiv.org/abs/2008.01501}.
+
+\bibitem{Corpus090}
+Keio, \emph{Tent rigidity for the Erd\H{o}s--Graham equation
+$n/2^n=\sum_i a_i/2^{a_i}$ and the Tengely--Ulas--Zygad\l{}o conjecture},
+29 October 2026, manuscript~[090] in
+\emph{Verifiable Mathematical Reasoning Corpus}.
+Repository snapshot inspected 2 November 2026:
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/ecd87de3348dcb706a76bb12fde722d7a348a012}{commit \texttt{ecd87de3348dcb706a76bb12fde722d7a348a012}}.
+This is a research-direction source, not a theorem dependency.
+
+\bibitem{Formal261}
+Google DeepMind and contributors, \emph{Formal Conjectures},
+\nolinkurl{FormalConjectures/ErdosProblems/261.lean},
+snapshot inspected 2 November 2026,
+\href{https://github.com/google-deepmind/formal-conjectures/blob/d995ef5d306637c0a2e489c7e579647168d7df2f/FormalConjectures/ErdosProblems/261.lean}{commit \texttt{d995ef5d306637c0a2e489c7e579647168d7df2f}}.
+Used for the precise separation of the numbered problem's parts;
+not a proof source for the present theorems.
+\end{thebibliography}
+\end{document}

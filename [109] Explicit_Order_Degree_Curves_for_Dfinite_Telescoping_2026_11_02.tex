@@ -1,0 +1,707 @@
+\begin{filecontents*}[overwrite]{verify_dfinite_curve.py}
+"""Exact tests of the differential matrix order-degree curve.
+
+Requires SymPy. The proof is in the accompanying manuscript; these finite
+computations check the implementation, polynomial identities, and kernel counts.
+"""
+from pathlib import Path
+import json
+import time
+import sympy as S
+from sympy.polys.matrices import DomainMatrix
+
+x, y = S.symbols('x y')
+
+def poly(v):
+    return S.Poly(v, x, y, domain=S.QQ)
+
+def verify(name, A, B, D, r=None, d=None):
+    start = time.monotonic()
+    m = A.rows
+    D = S.sympify(D)
+    Cx, Cy = A/D, B/D
+    curvature = Cx.diff(y)-Cy.diff(x)+Cx*Cy-Cy*Cx
+    assert all(S.cancel(v) == 0 for v in curvature)
+    entries = [D]+list(A)+list(B)
+    t = max([0]+[int(poly(v).degree(x)) for v in entries if v != 0])
+    s = max([0]+[int(poly(v).degree(y)) for v in entries if v != 0])
+    if r is None:
+        r = m*(s+1)
+    if d is None:
+        d = m*t*((2*r-1)*s+r)//(r+1-m*(s+1))
+    surplus = (r+1-m*(s+1))*(d+1)-m*t*((2*r-1)*s+r)
+    assert surplus > 0
+    a, b = d+(r-1)*t, (r-1)*s
+    np = (r+1)*(d+1)
+    nu = m*(a+1)*(b+1)
+    E = m*(d+r*t+1)*(r*s+1)
+    N = [S.Matrix([[1]+[0]*(m-1)])]
+    for i in range(r):
+        V = D*N[-1].diff(x)+N[-1]*A-i*S.diff(D,x)*N[-1]
+        N.append(V.applyfunc(S.expand))
+    T = [(N[i]*D**(r-i)).applyfunc(S.expand) for i in range(r+1)]
+    columns = []
+    for i in range(r+1):
+        for j in range(d+1):
+            columns.append([poly(v*x**j) for v in T[i]])
+    for ell in range(m):
+        for j in range(a+1):
+            for k in range(b+1):
+                u = S.Matrix([[0]*m])
+                u[ell] = x**j*y**k
+                V = -D*u.diff(y)-u*B+(r-1)*S.diff(D,y)*u
+                columns.append([poly(v) for v in V])
+    assert len(columns) == np+nu
+    rows = {}
+    for col, components in enumerate(columns):
+        for ell, p in enumerate(components):
+            for (ix,iy), val in p.terms():
+                assert ix <= d+r*t and iy <= r*s
+                if val:
+                    row = ell*(d+r*t+1)*(r*s+1)+ix*(r*s+1)+iy
+                    rows.setdefault(row,{})[col] = S.QQ.convert(val)
+    dm = DomainMatrix(rows,(E,np+nu),S.QQ)
+    ns = dm.nullspace().to_Matrix()
+    good = [list(ns.row(i)) for i in range(ns.rows)
+            if any(ns[i,j] for j in range(np))]
+    assert good
+    v = min(good,key=lambda w:sum(bool(q) for q in w))
+    den = S.ilcm(*[S.denom(z) for z in v])
+    v = [int(den*z) for z in v]
+    content = S.igcd(*v)
+    v = [int(z//content) for z in v]
+    ps = [sum(v[i*(d+1)+j]*x**j for j in range(d+1)) for i in range(r+1)]
+    U = S.Matrix([[sum(v[np+(ell*(a+1)+j)*(b+1)+k]*x**j*y**k
+                       for j in range(a+1) for k in range(b+1))
+                    for ell in range(m)]])
+    residual = sum((ps[i]*T[i] for i in range(r+1)),S.zeros(1,m))
+    residual -= D*U.diff(y)+U*B-(r-1)*S.diff(D,y)*U
+    assert all(S.expand(v) == 0 for v in residual)
+    # Independently verify the un-cleared rational connection identity.
+    R = U/D**(r-1)
+    raw = sum((ps[i]*N[i]/D**i for i in range(r+1)),S.zeros(1,m))
+    raw -= R.diff(y)+R*Cy
+    assert all(S.cancel(v) == 0 for v in raw)
+    ur = {i:{j-np:c for j,c in row.items() if j >= np} for i,row in rows.items()}
+    ur = {i:row for i,row in ur.items() if row}
+    udm = DomainMatrix(ur,(E,nu),S.QQ)
+    pure_kernel = nu-udm.rank()
+    assert pure_kernel <= m*(a+1)
+    norm = lambda p: sum(abs(c) for c in poly(p).coeffs())
+    alpha = max(sum(norm(A[i,j]) for j in range(m)) for i in range(m))
+    beta = max(sum(norm(B[i,j]) for j in range(m)) for i in range(m))
+    delta = norm(D)
+    HP = max(delta**(r-i)*S.prod(alpha+2*j*t*delta for j in range(i))
+             for i in range(r+1))
+    HU = max(1,beta+2*(r-1)*s*delta)
+    assert all(sum(sum(abs(v) for v in p.coeffs()) for p in col) <= HP
+               for col in columns[:np])
+    assert all(sum(sum(abs(v) for v in p.coeffs()) for p in col) <= HU
+               for col in columns[np:])
+    K = min(max(HP,HU)**E, HP**np*HU**nu)
+    assert max(abs(z) for z in v) <= K
+    result = dict(name=name,m=m,t=t,s=s,r=r,d=d,rows=E,columns=np+nu,
+                  positive_surplus=surplus,kernel_dimension=ns.rows,
+                  pure_certificate_kernel=pure_kernel,
+                  pure_kernel_bound=m*(a+1),
+                  actual_order=max(i for i,p in enumerate(ps) if p != 0),
+                  actual_degree=max(int(S.degree(p,x)) for p in ps if p != 0),
+                  P=[str(S.factor(p)) for p in ps],
+                  certificate_row=[str(S.factor(v)) for v in R],
+                  height_bound_bits=int(K).bit_length(),
+                  seconds=round(time.monotonic()-start,3),verified=True)
+    print(json.dumps(result),flush=True)
+    return result
+
+if __name__ == '__main__':
+    Z = S.zeros(1)
+    M = S.Matrix([[0,1,0],[0,0,1],[1,1,0]])
+    cases = [
+        ('constant',Z,Z,1),
+        ('sine translate',S.Matrix([[0,1],[-1,0]]),S.Matrix([[0,1],[-1,0]]),1),
+        ('rank-three polynomial exponential translate',x*M,M,1),
+        ('Airy translate',S.Matrix([[0,1],[x+y,0]]),S.Matrix([[0,1],[x+y,0]]),1),
+        ('exponential times Airy',y*S.eye(2),S.Matrix([[x,1],[y,x]]),1),
+        ('Bessel translate',S.Matrix([[0,x+y],[-(x+y),-1]]),S.Matrix([[0,x+y],[-(x+y),-1]]),x+y),
+        ('rank-two nilpotent flat module',S.zeros(2),S.Matrix([[0,1],[0,0]]),1),
+    ]
+    result = [verify(*case) for case in cases]
+    Path(__file__).with_name('dfinite_curve_checks.json').write_text(json.dumps(result,indent=2)+'\n')
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{verify_special_function_certificates.py}
+"""Check exact rank-two special-function certificates in their ODE modules."""
+import sympy as S
+from pathlib import Path
+import json
+x,y = S.symbols('x y')
+
+def check(name,Cx,Cy,coefficients,certificate):
+    curvature = Cx.diff(y)-Cy.diff(x)+Cx*Cy-Cy*Cx
+    assert all(S.cancel(v)==0 for v in curvature)
+    v = S.Matrix([[1,0]])
+    lhs = S.zeros(1,2)
+    for p in coefficients:
+        lhs += p*v
+        v = (v.diff(x)+v*Cx).applyfunc(S.cancel)
+    residual = lhs-certificate.diff(y)-certificate*Cy
+    assert all(S.cancel(v)==0 for v in residual)
+    return dict(name=name,coefficients=list(map(str,coefficients)),
+                certificate=list(map(str,certificate)),verified=True)
+
+if __name__=='__main__':
+    z=x+y*y
+    airy=S.Matrix([[0,1],[z,0]])
+    bessel=S.Matrix([[0,1],[-1,-1/z]])
+    data=[
+        check('Airy quadratic pullback',airy,2*y*airy,[-1,-2*x,0,2],S.Matrix([[y,0]])),
+        check('Bessel quadratic pullback',bessel,2*y*bessel,[1,2*x,3,2*x],S.Matrix([[0,y/z]])),
+        check('Airy product pullback',S.Matrix([[0,y],[x*y*y,0]]),
+              S.Matrix([[0,x],[x*x*y,0]]),[1,x],S.Matrix([[y,0]]))
+    ]
+    print(json.dumps(data,indent=2))
+    Path(__file__).with_name('special_function_checks.json').write_text(json.dumps(data,indent=2)+'\n')
+\end{filecontents*}
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,booktabs,array}
+\usepackage{xcolor,microtype,fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,citecolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={Explicit Order-Degree Curves for Differential D-Finite Telescoping},pdfauthor={Keio}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\setlength{\emergencystretch}{3em}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Keio}
+\fancyhead[R]{\small Order--degree curves for differential telescoping}
+\fancyfoot[C]{\thepage}
+\title{Explicit Order--Degree Curves for\\Differential D-Finite Telescoping\\[5pt]
+\large A connection-matrix refinement addressing Chen--Kauers Problem 3}
+\author{Keio\thanks{Research development, computational checks, and manuscript preparation with ChatGPT.}}
+\date{2 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For a bivariate differential D-finite input presented by rank-$m$ rational
+connection matrices $A/D$ and $B/D$, we give an explicit sufficient
+order--degree curve using only the maximum bidegrees $(t,s)$ of $A,B,D$.
+For every integer $r\ge m(s+1)$, a telescoper of exact order $r$ exists with
+degree at most
+\[
+ \left\lfloor\frac{mt[(2r-1)s+r]}{r+1-m(s+1)}\right\rfloor.
+\]
+A polynomial certificate support bound and an integer coefficient bound
+are obtained simultaneously. The argument counts polynomial unknowns
+in the generalized Apagodu--Zeilberger ansatz and controls the
+certificate-only kernel by evaluation at an ordinary point. It imposes
+no Fuchsian or regular-singularity assumption. The result addresses
+the differential setting of Chen--Kauers Problem~3; it does not establish
+a first resolution, a new foundational principle, or an extension to
+arbitrary discrete and mixed Ore systems. Seven exact ansatz computations
+and three special-function certificate identities accompany the proof.
+Their verification scripts are embedded in the single TeX source.
+\end{abstract}
+
+\section{Question and contribution}
+Chen and Kauers' original arXiv Problem~3 asks for an order--degree curve
+for general D-finite functions~\cite{CK2016}. Their definition permits
+a sufficient bound above an order threshold; it does not demand the
+true minimum order or a sharp boundary. This note supplies a concrete
+formula in the full bivariate \emph{differential} setting. The problem's
+surrounding discussion also includes summation, which is not covered here.
+
+The finite input used in the theorem consists of derivative multiplication
+matrices. It is available from any finite-rank annihilating ideal by
+standard normal forms. No telescoper or reduced integration quotient
+must be computed to evaluate the bound. This separates the result from
+a bound that uses the output operator itself as an input parameter.
+
+\paragraph{Attribution and status.}
+The vector ansatz and certificate-kernel subtraction already occur in
+Chen--Kauers--Koutschan~\cite[Theorem~6]{CKK2014}; the present calculation
+tracks both polynomial degrees explicitly. Kauers' book discusses
+order--degree bounds in its broader treatment of creative
+telescoping~\cite[Section~5.5]{Kauers2023}. Van der Hoeven's reduction
+framework gives polynomial complexity and degree control for nonminimal
+differential telescopers in its representation~\cite[Section~9]{vdH2018}.
+Consequently, general degree control is not itself a new discovery here.
+The particular direct formula below was not identified in the sources
+examined, but that observation does not establish historical priority.
+This manuscript presents a proved quantitative refinement, not a
+certified first solution of a currently open problem.
+
+\paragraph{What is proved.}
+The proof covers every finite-rank differential presentation over a
+characteristic-zero field, including irregular singularities. It also
+provides explicit support bounds for a certificate and, over the
+rationals, an arithmetic extension of the rank-one construction.
+The proof and finite checks have been reviewed during preparation;
+they have not undergone external peer review or proof-assistant
+formalization.
+\section{An input-level order--degree curve for differential D-finite functions}
+\label{gd:section}
+
+Chen and Kauers' original Problem~3 asks for an order--degree curve for
+general D-finite functions. We establish such a curve for every bivariate
+\emph{differential} D-finite input, expressed in its rational connection
+matrices. These matrices are computed from the input annihilating ideal;
+no telescoper or reduced telescoping quotient is assumed available.
+The construction refines the generalized Apagodu--Zeilberger polynomial
+ansatz of Chen, Kauers, and Koutschan~\cite{CKK2014} by tracking both polynomial
+degrees. It is not asserted to be a historically new methodological
+principle. Discrete and mixed Ore variants are outside the theorem.
+
+\subsection{Input representation}
+\label{gd:representation}
+
+Let $\mathbb K$ be a characteristic-zero field, and put
+$\mathcal R=\mathbb K(x,y)\langle\partial_x,\partial_y\rangle$.
+Suppose first that a nonzero D-finite function $f$ is given together with
+a basis $F=(F_1,\ldots,F_m)^T$ of its derivative module over
+$\mathbb K(x,y)$, with $F_1=f$. Such a basis exists: the derivative
+module is finite-dimensional and contains the nonzero element $f$.
+Every $F_j$ is an operator in $\mathcal R$ applied to $f$, so rational
+row combinations of $F$ are permitted certificate functions. Clearing
+denominators gives
+\begin{equation}\label{gd:connection}
+ \partial_xF=\frac AD F,\qquad
+ \partial_yF=\frac BD F,
+ \qquad A,B\in\mathbb K[x,y]^{m\times m},\quad
+ 0\ne D\in\mathbb K[x,y].
+\end{equation}
+
+The same representation is effective from a proper D-finite left ideal
+$I\subseteq\mathcal R$ of finite rank $m$. Compute a left Gr\"obner
+basis and enumerate its standard differential monomials
+$b_1=1,b_2,\ldots,b_m$. Normal forms of
+$\partial_x b_j$ and $\partial_y b_j$ give the two multiplication
+matrices. A common denominator supplies~\eqref{gd:connection} in the
+formal quotient module $\mathcal R/I$, with $F_j=[b_j]$ and
+$F_1=[1]$. If $I$ is merely contained in the annihilator of a particular
+function, the evaluated $b_j(f)$ may be dependent; this causes no problem,
+because the formal identity modulo $I$ implies the identity on $f$.
+If $I=\mathcal R$, the represented function is zero and $P=1$ is trivial.
+
+The parameters below are explicit in this computed connection
+presentation. We do not claim a conversion bound solely in terms of the
+degrees of an arbitrary unprocessed PDE generating set. All presentation
+steps precede the telescoping calculation and use only the supplied
+D-finite ideal. Over an effectively computable coefficient field, they
+are ordinary finite normal-form and rational-function computations.
+
+\subsection{The order--degree theorem}
+
+\begin{theorem}\label{gd:curve}
+Assume~\eqref{gd:connection}, with $m\ge1$, and let $t,s\ge0$ be integer
+upper bounds on the $x$- and $y$-degrees of $D$ and every entry of $A,B$.
+Let $r,d$ be nonnegative integers such that
+\begin{equation}\label{gd:condition}
+ r+1>m(s+1),\qquad
+ \bigl[r+1-m(s+1)\bigr](d+1)
+   >mt\bigl[(2r-1)s+r\bigr].
+\end{equation}
+Set
+\begin{equation}\label{gd:boxes}
+ a=d+(r-1)t,\qquad b=(r-1)s.
+\end{equation}
+There exist polynomials $p_0,\ldots,p_r\in\mathbb K[x]$, not all zero,
+and a row $U\in\mathbb K[x,y]^{1\times m}$ such that
+\begin{align}
+ &\deg_xp_i\le d,\qquad
+   \deg_xU_j\le a,\qquad \deg_yU_j\le b,\label{gd:degrees}\\
+ &\sum_{i=0}^r p_i(x)\partial_x^iF_1
+    =\partial_y\left(D^{1-r}UF\right).
+       \label{gd:telescoping}
+\end{align}
+In the formal quotient presentation, this states
+$P-\partial_yQ\in I$, where
+\[
+ P=\sum_{i=0}^rp_i(x)\partial_x^i\ne0,\qquad
+ Q=D^{1-r}\sum_{j=1}^m U_jb_j\in\mathcal R.
+\]
+Consequently, for every integer $r\ge m(s+1)$ there is a telescoper
+of \emph{exact} order $r$ and degree at most $\lfloor c(r)\rfloor$, where
+\begin{equation}\label{gd:hyperbola}
+ \boxed{\displaystyle
+ c(r)=\frac{mt\bigl[(2r-1)s+r\bigr]}{r+1-m(s+1)}.}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Let $v_0=(1,0,\ldots,0)$ and recursively define polynomial rows
+\begin{equation}\label{gd:derivative}
+ v_{i+1}=D\partial_xv_i+v_iA-i(\partial_xD)v_i.
+\end{equation}
+By induction, $\partial_x^iF_1=D^{-i}v_iF$ and every entry of $v_i$
+has bidegree at most $(it,is)$. Put $w_i=v_iD^{r-i}$, whose entries
+have bidegree at most $(rt,rs)$.
+
+Make an ansatz with the degree bounds~\eqref{gd:degrees}.
+The coordinate identity sufficient for~\eqref{gd:telescoping} is
+\begin{equation}\label{gd:coefficient}
+ \sum_{i=0}^r p_iw_i
+  =D\partial_yU+UB-(r-1)(\partial_yD)U.
+\end{equation}
+Every coordinate has bidegree at most $(d+rt,rs)$. With
+\[
+ n_P=(r+1)(d+1),\qquad
+ n_U=(a+1)(b+1),\qquad
+ E=(d+rt+1)(rs+1),
+\]
+coefficient comparison yields a homogeneous linear system over
+$\mathbb K$ with at most $mE$ equations and $n_P+mn_U$ unknowns.
+
+We exclude solutions supported only on the certificate coordinates.
+Such a row $U$ satisfies
+\begin{equation}\label{gd:homogeneous}
+ \partial_yU
+   =U\frac{(r-1)(\partial_yD)I_m-B}{D}.
+\end{equation}
+Choose $y_0\in\{0,1,\ldots,s\}$ with $D(x,y_0)\ne0$ in
+$\mathbb K[x]$; at least one exists because $\deg_yD\le s$.
+Over $\mathbb K(x)$ the coefficient matrix in~\eqref{gd:homogeneous}
+is regular at $y_0$. Formal power-series substitution around $y_0$
+shows uniqueness for a prescribed value $U(x,y_0)$: the coefficient
+of $(y-y_0)^{j+1}$ is determined by earlier coefficients after division
+by the nonzero integer $j+1$. Therefore evaluation at $y_0$ injects
+the bounded polynomial solution space into
+$(\mathbb K[x]_{\le a})^m$. Its dimension over $\mathbb K$ is at most
+$m(a+1)$.
+
+The full solution space has dimension at least $n_P+mn_U-mE$, and
+direct expansion gives
+\begin{align*}
+ n_P+mn_U-mE-m(a+1)
+ &=\bigl[r+1-m(s+1)\bigr](d+1)\\
+ &\hspace{1em}-mt\bigl[(2r-1)s+r\bigr]>0.
+\end{align*}
+It consequently contains a vector with some $p_i\ne0$, proving
+the first assertion. Notice that only coordinate matrices enter the
+argument; no analytic regularity of the solution functions is required.
+
+For the curve, choose $d=\lfloor c(r)\rfloor$. Then
+$d+1>c(r)$, so~\eqref{gd:condition} holds. The constructed operator
+may have order $k<r$. In that case replace $P$ by
+$\partial_x^{r-k}P$ and $Q$ by $\partial_x^{r-k}Q$.
+Commutation of the two derivations preserves the certificate identity.
+The new operator has order exactly $r$, and its coefficient degrees
+do not increase, since left multiplication by $\partial_x$ only
+differentiates existing coefficients or shifts their operator indices.
+This proves~\eqref{gd:hyperbola} with the exact-order convention.
+\end{proof}
+
+\begin{proposition}\label{gd:balanced}
+Two uniform admissible pairs in Theorem~\ref{gd:curve} are
+\begin{align*}
+ r&=m(s+1),&
+ d&=mt\bigl[m(s+1)(2s+1)-s\bigr],\\
+ r&=2m(s+1)-1,&
+ d&=t(4ms+2m-1).
+\end{align*}
+The second gives order $O(m(s+1))$ and degree $O(mt(s+1))$.
+The curve~\eqref{gd:hyperbola} has horizontal asymptote $mt(2s+1)$.
+\end{proposition}
+\begin{proof}
+For the first pair the surplus in the strict inequality
+of~\eqref{gd:condition} is one. For the second it is
+$m(s+1+2ts)>0$. The asymptote follows by dividing the numerator and
+denominator of~\eqref{gd:hyperbola} by $r$.
+\end{proof}
+
+\begin{remark}\label{gd:sharpness}
+The formula gives a sufficient region and does not identify the true
+minimum order, optimal degree, or a generic sharp curve. Neither
+$t=0$ nor $s=0$ needs exclusion. The exact-order adjustment in the
+proof preserves the degree bound, but it is not asserted to preserve
+the original certificate box in~\eqref{gd:degrees}.
+\end{remark}
+
+\subsection{An arithmetic extension over the rationals}
+
+\begin{proposition}\label{gd:height}
+Suppose $A,B,D$ have integer coefficients. Define
+\begin{align*}
+ \alpha&=\max_i\sum_j\|A_{ij}\|_1,&
+ \beta&=\max_i\sum_j\|B_{ij}\|_1,&
+ \delta&=\|D\|_1,\\
+ H_P&=\max_{0\le i\le r}
+  \left\{\delta^{r-i}\prod_{j=0}^{i-1}(\alpha+2jt\delta)\right\},\\
+ H_U&=\max\{1,\beta+2(r-1)s\delta\},&
+ H&=\max\{H_P,H_U\}.
+\end{align*}
+Here $\|\cdot\|_1$ denotes the coefficient $\ell_1$ norm and an empty
+product equals one. With $n_P,n_U,E$ as in the proof of
+Theorem~\ref{gd:curve}, one may choose integer $p_i,U_j$ in
+\eqref{gd:telescoping}, with some $p_i\ne0$, such that every coefficient
+has absolute value at most
+\begin{equation}\label{gd:heightbound}
+ \min\{H^{mE},H_P^{n_P}H_U^{mn_U}\}.
+\end{equation}
+This assertion bounds the operator of order at most $r$ before any
+exact-order adjustment. For $m,t,s\ge1$, the balanced pair in
+Proposition~\ref{gd:balanced} gives
+\[
+ O\!\left(m^3ts^3\,[h+\log(mts+2)]\right)
+\]
+bits per coefficient, where $h=\log_2\max\{1,\alpha,\beta,\delta\}$.
+\end{proposition}
+
+\begin{proof}
+For polynomial rows use the sum of the coefficient $\ell_1$ norms of
+their entries. Then $\|vA\|_1\le\alpha\|v\|_1$, and
+recurrence~\eqref{gd:derivative} gives
+\[
+ \|v_{i+1}\|_1\le(\alpha+2it\delta)\|v_i\|_1.
+\]
+Every telescoper column in the coefficient system has $\ell_1$ norm
+at most $H_P$. A certificate column involves one row of $B$ and one
+scalar derivative contribution; its norm is at most
+$\beta+2(r-1)s\delta\le H_U$.
+
+Choose independent columns and a nonsingular maximal-rank square
+submatrix. Setting one free coordinate to its determinant and solving
+for the pivot coordinates by the adjugate produces integer kernel
+vectors whose coordinates are maximal-rank minors. They span the
+rational kernel. Since that kernel has a nonzero telescoper projection,
+one such vector has a nonzero telescoper projection. Hadamard's
+inequality bounds a minor by $H^{mE}$ and, by counting the two types
+of columns, by $H_P^{n_P}H_U^{mn_U}$. If the matrix has rank zero,
+use a unit vector in a telescoper coordinate instead.
+
+For the balanced choice,
+$n_P=O(m^2ts^2)$ and $mn_U=O(m^3ts^3)$, while
+$\log H_P=O(ms[h+\log(mts+2)])$ and
+$\log H_U=O(h+\log(ms+2))$.
+Taking logarithms of the second bound in~\eqref{gd:heightbound}
+proves the assertion.
+\end{proof}
+
+\subsection{Relation to the original problem and prior work}
+
+Theorem~\ref{gd:curve} covers the full class of finite-rank
+\emph{differential} D-finite presentations, rather than a selected
+function family. Its constants can be calculated directly from
+derivative multiplication matrices before telescoping. This supplies
+an explicit sufficient order--degree curve for the integration setting
+of original Problem~3.
+
+The generalized Apagodu--Zeilberger theorem of Chen, Kauers, and
+Koutschan~\cite{CKK2014} already uses these multiplication matrices and bounds the
+dimension of the certificate-only kernel. Its ansatz has coefficients
+in $\mathbb K(x)$ and gives an order bound. The calculation here bounds
+the unknown coefficients polynomially in $x$, counts both degrees,
+and yields~\eqref{gd:hyperbola}. Thus the formula is an explicit
+bidegree refinement of an established method. Independent verification
+of this derivation does not establish absence of an identical prior
+bound or a first-resolution claim. Since the original problem's
+surrounding discussion also includes summation, the result should not
+be described as resolving all shift, $q$-shift, or mixed variants.
+
+\section{Construction and worked identities}
+\subsection{A finite algorithm}
+An effective implementation follows the proof directly.
+\begin{enumerate}
+\item Compute $A,B,D$ from a derivative basis or an annihilating ideal,
+and read off $m,t,s$.
+\item Choose $r\ge m(s+1)$ and $d=\lfloor c(r)\rfloor$, or choose the
+balanced pair of Proposition~\ref{gd:balanced}.
+\item Generate $v_0,\ldots,v_r$ by~\eqref{gd:derivative} and expand the
+coordinate equations~\eqref{gd:coefficient} in $x$ and $y$.
+\item Compute a basis of the homogeneous coefficient kernel. Select a
+vector with a nonzero telescoper projection, which the dimension
+argument guarantees exists.
+\item Recover $P,Q$ and verify $P-\partial_yQ$ by normal form modulo
+the original ideal. Raise the order by left multiplication only if
+an exact requested order is needed.
+\end{enumerate}
+This gives an algorithm over an effectively computable field.
+The curve is measured after construction of the connection presentation;
+no bound on the cost of converting arbitrary input PDE generators is
+included. The proof also works with an annihilating ideal strictly
+smaller than the full annihilator, though its rank and degree bounds
+may then be less economical.
+
+\subsection{Rank two: an exponential times an Airy solution}
+Let $g''(y)=yg(y)$ and set
+\[
+ f=e^{xy}g(y),\qquad
+ F=\begin{pmatrix}e^{xy}g(y)\\e^{xy}g'(y)\end{pmatrix}.
+\]
+The formal differential module has the compatible presentation
+\[
+ D=1,\qquad A=yI_2,\qquad
+ B=\begin{pmatrix}x&1\\y&x\end{pmatrix},
+ \qquad m=2,\ t=s=1.
+\]
+Since $F_2=(\partial_y-x)f$, the certificate belongs to the required
+derivative module. Directly,
+\begin{equation}\label{ex:airy-exponential}
+ (\partial_x-x^2)f
+   =\partial_y(F_2-xf)
+   =\partial_y\bigl((\partial_y-2x)f\bigr).
+\end{equation}
+For this presentation the uniform curve is
+$c(r)=(6r-2)/(r-3)=6+16/(r-3)$, for $r\ge4$.
+Some guaranteed degree bounds are
+\[
+\begin{array}{c|rrrrrr}
+ r&4&5&6&7&8&20\\\hline
+ \lfloor c(r)\rfloor&22&14&11&10&9&6
+\end{array}
+\]
+Identity~\eqref{ex:airy-exponential} is much smaller than these sufficient
+bounds. This illustrates why a valid general curve should not be
+confused with the optimal curve for a particular function.
+
+\subsection{A quadratic Airy pullback}
+Put $z=x+y^2$ and let $g''(z)=zg(z)$. For
+$F=(g(z),g'(z))^T$, one has
+\[
+ A=\begin{pmatrix}0&1\\z&0\end{pmatrix},\qquad
+ B=2yA,\qquad D=1.
+\]
+The parameters $m=2,t=1,s=3$ are valid. Writing $f=g(z)$,
+the Airy equation gives $f_{xxx}=f+zf_x$, and therefore
+\begin{equation}\label{ex:airy-quadratic}
+ (2\partial_x^3-2x\partial_x-1)f
+ =f+2y^2f_x=\partial_y(yf).
+\end{equation}
+This identity has order three and degree one. The general theorem, which
+does not inspect the Airy equation's special cancellations, starts at
+$r=8$ and gives $d=106$ there. Equation~\eqref{ex:airy-quadratic}
+fits the theorem's ansatz at that order after zero padding.
+
+\subsection{A moving denominator in a Bessel pullback}
+Let $g$ solve the Bessel equation $zg''+g'+zg=0$ and retain $z=x+y^2$.
+For $F=(g(z),g'(z))^T$ a polynomial common-denominator presentation is
+\[
+ D=z,\qquad
+ A=\begin{pmatrix}0&z\\-z&-1\end{pmatrix},\qquad B=2yA.
+\]
+Again $m=2,t=1,s=3$. The certificate identity is
+\begin{equation}\label{ex:bessel}
+ (2x\partial_x^3+3\partial_x^2+2x\partial_x+1)f
+   =\partial_y\left(\frac{y}{z}\partial_x f\right).
+\end{equation}
+For verification, use $f_{xx}=-f-f_x/z$ and
+$f_{xxx}=-f_x+f/z+2f_x/z^2$. Both sides then equal
+\[
+ -\frac{2y^2}{z}f+
+ \left(\frac1z-\frac{4y^2}{z^2}\right)f_x.
+\]
+Thus the rational certificate is valid as a differential-module identity,
+including its moving algebraic denominator. No assertion about evaluating
+an improper integral across a certificate pole follows automatically.
+
+\subsection{From identities to definite integrals}
+For fixed endpoints $a,b$, whenever differentiation under the integral
+and the endpoint evaluations are justified, $Pf=\partial_y(Qf)$ yields
+\[
+ P\int_a^b f(x,y)\,dy=(Qf)(x,b)-(Qf)(x,a).
+\]
+A homogeneous equation for the integral requires those boundary terms
+to vanish or to be handled separately. The theorem is an algebraic
+creative-telescoping statement; it does not impose convergence or
+boundary conditions on arbitrary branches of its input functions.
+
+\section{Exact checks and reproducibility}
+The first embedded script constructs the entire coefficient system over
+$\mathbb Q$, computes its nullspace, selects a nonzero telescoper
+projection, and checks both the cleared polynomial identity and the
+uncleared rational connection identity. It separately computes the
+certificate-only kernel and checks the column norm bounds used in
+Proposition~\ref{gd:height}. All seven cases below passed.
+The actual kernel dimensions are computed over $\mathbb Q$; zero
+equation rows are counted in the stated matrix sizes.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Presentation & $(m,t,s)$ & $(r,d)$ & Matrix size & Pure kernel\\
+\midrule
+Constant & $(1,0,0)$ & $(1,0)$ & $1\times3$ & $1$\\
+Sine translate & $(2,0,0)$ & $(2,0)$ & $2\times5$ & $0$\\
+Rank-three translate & $(3,1,0)$ & $(3,9)$ & $39\times76$ & $0$\\
+Airy translate & $(2,1,1)$ & $(4,22)$ & $270\times323$ & $0$\\
+Exponential times Airy & $(2,1,1)$ & $(4,22)$ & $270\times323$ & $0$\\
+Bessel translate & $(2,1,1)$ & $(4,22)$ & $270\times323$ & $0$\\
+Nilpotent module & $(2,0,0)$ & $(2,0)$ & $2\times5$ & $1$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The translate examples use $g(x+y)$ with the defining sine, Airy, or
+order-zero Bessel equation. The rank-three example uses
+$g(y+x^2/2)$ with $g^{(3)}=g'+g$. The nilpotent example is the formal cyclic
+module with $\partial_xF=0$ and
+$\partial_yF=\left(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right)F$;
+its rank is that of the supplied presentation, not necessarily of a
+particular scalar solution.
+
+The second script verifies~\eqref{ex:airy-quadratic},
+\eqref{ex:bessel}, and the product-pullback identity
+$(x\partial_x+1)g(xy)=\partial_y(yg(xy))$ in their rank-two differential
+modules. All three residual vectors are exactly zero. These calculations
+use symbolic rational arithmetic, not numerical values of Airy or Bessel
+functions. Their role is to check examples and the implemented construction;
+the general theorem is proved by the dimension argument, not by these tests.
+
+\paragraph{Single-source use.}
+The TeX source contains its bibliography and two Python programs in
+\texttt{filecontents*} blocks. A normal compilation writes the programs
+to the compilation directory. With Python and SymPy installed, run
+\begin{verbatim}
+python3 verify_dfinite_curve.py
+python3 verify_special_function_certificates.py
+\end{verbatim}
+The programs emit exact-check results and save JSON records. Compiling
+the PDF does not execute Python or require shell escape. No separate
+bibliography database, figure file, or source fragment is needed.
+
+\section{Scope of the outcome}
+The established statement is an explicit sufficient curve, with a full
+proof, for all bivariate differential D-finite inputs in a finite-rank
+connection presentation. It extends the rank-one count to arbitrary
+rank and gives certificate and arithmetic bounds. It does not claim
+minimum order, optimal degree, basis invariance, or a curve for arbitrary
+shift and mixed systems.
+
+The historical problem predates this manuscript, and the differential
+target has not been replaced by a specially chosen function family.
+However, a new underlying principle and absence of identical earlier
+solutions have not been established. Existing methods already supply
+the main mechanism and broader degree-control results. Thus this note
+does not meet the stronger standard of a certified new closure of a
+still-open named problem. It records the precise result that has been
+proved, with the attribution and limitations needed to assess it.
+
+\begin{thebibliography}{9}
+\bibitem{CK2016}
+S. Chen and M. Kauers,
+\emph{Some open problems related to creative telescoping},
+arXiv:1609.03768, 2016, especially original Problem~3.
+\url{https://arxiv.org/abs/1609.03768}.
+
+\bibitem{CKK2014}
+S. Chen, M. Kauers, and C. Koutschan,
+\emph{A generalized Apagodu--Zeilberger algorithm},
+Proceedings of ISSAC 2014, pp.~107--114.
+\url{https://doi.org/10.1145/2608628.2608641};
+\url{https://arxiv.org/abs/1402.2409}.
+
+\bibitem{Kauers2023}
+M. Kauers, \emph{D-Finite Functions}, Algorithms and Computation in
+Mathematics, vol.~30, Springer, 2023, Section~5.5.
+\url{https://doi.org/10.1007/978-3-031-34652-1}.
+
+\bibitem{vdH2018}
+J. van der Hoeven, \emph{Creative telescoping using reductions},
+draft of 8 June 2018, especially Section~9 and Theorem~9.8.
+\url{https://www.texmacs.org/joris/redtel/redtel.pdf}.
+\end{thebibliography}
+\end{document}
