@@ -1,0 +1,1516 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=24mm,headheight=14pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools,mathrsfs}
+\usepackage{booktabs,array,longtable,xcolor,hyperref,listings,fancyhdr}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,bookmarksdepth=2,
+urlcolor=blue!45!black,pdftitle={Swisher's (H.3): Ordinary and Supersingular Primes}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\setlength{\emergencystretch}{2em}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Swisher's (H.3): unified proof manuscript}
+\fancyhead[R]{\small Ordinary and supersingular primes}
+\fancyfoot[C]{\thepage}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,breaklines=true,
+columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,
+rulecolor=\color{black!25},aboveskip=10pt,belowskip=10pt}
+\title{Swisher's (H.3):\\ Ordinary and Supersingular Primes\\[7pt]
+\large A Unified Proof Manuscript with the Small-Prime Correction}
+\author{Research manuscript}
+\date{Unified edition: 10 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We present a unified proof of the ordinary and supersingular branches of
+Swisher's conjecture (H.3) for $p>3$, together with the corrected
+supersingular statement at $p=3$. The common input is an integral Hecke
+trace in the raw cubic parameter. An explicit extra normalizer makes
+this parameter a Hauptmodul and gives an all-level formal congruence
+with precision $p^{3s}$ for every odd prime. At ordinary primes,
+canonical CM specialization gives the multiplier
+$-\Gamma_p(1/4)^4$, identified exactly using Guo's weaker published
+recurrence; arbitrary raw lengths and the full cutoff are also covered.
+At supersingular primes, the value and first two derivatives of a
+Legendre pullback are transported to the full integral crystal. An
+exact differential residual and a weighted Taylor estimate give the
+two-step modulus $p^{3s-1}$ for $p\ge7$ and $3^{3s-2}$ for $p=3$.
+The common trace argument is included once, both specialization arguments
+are included in full, and independent finite identities and reproducible
+verification programs are supplied as appendices.
+\end{abstract}
+\noindent\textit{Status.} This is a newly written research proof manuscript.
+The arguments have undergone internal mathematical and exact computational
+checks. External expert review and a definitive assessment of novelty
+remain pending. Standard modular and crystalline inputs are cited
+explicitly; the new connecting arguments are written out below.
+\setcounter{tocdepth}{1}
+\tableofcontents
+\clearpage
+
+\section{The combined statement and its precise scope}\label{sec:statement}
+
+For an odd prime $p$ and integers $m\ge1$, $s\ge0$, define
+\[
+ A_{m,s}=\sum_{0\le2k<mp^s}\frac{(1/2)_k^3}{k!^3},
+ \qquad H_s=A_{1,s},\qquad H_0=1,
+ \qquad
+ \epsilon_p=\begin{cases}1,&p=3,\\0,&p\ge5.\end{cases}
+\]
+The prime is suppressed in this notation; $H_s(3)$ will indicate the
+specialization $p=3$ when needed. Here $(a)_k$ is the rising factorial,
+$v_p(p)=1$, and $\Gamma_p$ denotes Morita's $p$-adic gamma function,
+the continuous extension to $\mathbb Z_p$ of
+\[
+ \Gamma_p(n)=(-1)^n\prod_{\substack{1\le j<n\\p\nmid j}}j
+ \qquad(n\ge1).
+\]
+
+\begin{theorem}[Ordinary and supersingular recurrences]\label{thm:main}
+Let $p$ be an odd prime.
+\begin{enumerate}
+\item If $p\equiv1\pmod4$, then for every $m,s\ge1$,
+\begin{equation}\label{eq:ordinarytarget}
+ A_{m,s}\equiv-\Gamma_p(1/4)^4A_{m,s-1}
+                  \pmod{p^{3s+3v_p(m)}}.
+\end{equation}
+\item If $p\equiv3\pmod4$, then $H_1\equiv0\pmod{p^2}$ and, for
+every $s\ge2$,
+\begin{equation}\label{eq:sstarget}
+ H_s\equiv p^2H_{s-2}\pmod{p^{3s-1-\epsilon_p}}.
+\end{equation}
+\end{enumerate}
+\end{theorem}
+
+For $p>3$, the half-length case $m=1$ of the first assertion, the
+supersingular first level, and the supersingular two-step recurrence
+are the three statements listed as (H.3) in \cite[Table~2, (H.3)]{Swisher}.
+The theorem treats every level in their stated ranges. Its $p=3$
+conclusion uses the necessary correction discussed below.
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}\toprule
+Prime range & Sum and levels & Recurrence & Modulus\\\midrule
+$p\equiv1\pmod4$ & $A_{m,s}$, $m,s\ge1$
+ & one step & $p^{3s+3v_p(m)}$\\
+$p\equiv3\pmod4$ & $H_1$ & $H_1\equiv0$ & $p^2$\\
+$p\ge7$, $p\equiv3\pmod4$ & $H_s$, $s\ge2$
+ & two steps & $p^{3s-1}$\\
+$p=3$ & $H_s$, $s\ge2$ & two steps & $3^{3s-2}$\\\bottomrule
+\end{tabular}
+\end{center}
+
+The ordinary full-cutoff case is $m=2$:
+\[
+ \sum_{k=0}^{p^s-1}\frac{(1/2)_k^3}{k!^3}
+ \equiv-\Gamma_p(1/4)^4
+ \sum_{k=0}^{p^{s-1}-1}\frac{(1/2)_k^3}{k!^3}
+ \pmod{p^{3s}}.
+\]
+The arbitrary-length and full-cutoff extensions in this manuscript
+concern ordinary primes only. The supersingular assertion concerns
+the exact half cutoff $(p^s-1)/2$.
+
+\subsection{The necessary correction at three}
+
+The unqualified exponent $3s-1$ fails at $p=3$, already at $s=2$:
+\[
+ H_2(3)=\frac{2576763}{2097152},\qquad
+ H_2(3)-9=-\frac{3^4\cdot201205}{2^{21}}.
+\]
+Thus $v_3(H_2(3)-9)=4$, whereas $3s-1=5$. The exponent in
+\eqref{eq:sstarget} is $3s-2$ at $3$, and is attained by this example.
+This is a correction to the small-prime statement, not an unresolved
+exception in the proof of the corrected theorem.
+
+\subsection{Common input and the two specialization arguments}
+
+Sections~\ref{sec:rawparameter}--\ref{sec:rawtrace} establish the common
+formal congruence directly. Retaining the raw parameter makes its
+$p^s$ truncation exactly the half-length sum in (H.3). The argument
+uses the modular framework of \cite{Beukers,Katz}, with the
+excellent-lift viewpoint of \cite{BV3}, and includes its own Hecke
+trace induction. No result from a separate unpublished manuscript is
+assumed.
+
+Sections~\ref{sec:ordinary}--\ref{sec:gamma} treat ordinary primes.
+The point $u=1/64$ is a zero of the second Hasse--Witt factor in the
+BV3 cubic chart, so specialization is performed on an ordinary
+modular-curve chart. Guo proved the half- and full-cutoff recurrences
+modulo $p^{s+1}$ in \cite{Guo}, equations (1.9)--(1.10) in the arXiv
+version. Only the half-cutoff comparison is used to identify the
+constant multiplier; the higher precision comes from the trace.
+
+Sections~\ref{sec:jets}--\ref{sec:sscm} start afresh from the all-odd-prime
+formal theorem on the Legendre base. They do not specialize an ordinary
+canonical lift at a supersingular point. An integral rank-three jet
+congruence is first transported to a regular lift on the full crystal,
+and only then evaluated at $\lambda=1/2$. This proof does not depend
+on the ordinary CM or gamma-multiplier conclusion.
+
+\section{The raw cubic parameter and the half-length truncation}\label{sec:rawparameter}
+
+Put
+\[
+ \mathcal F(X)=\sum_{k\geq0}\binom{2k}{k}^{3}X^{2k},\qquad
+ \mathcal F_L(X)=\sum_{0\leq 2k<L}\binom{2k}{k}^{3}X^{2k}.
+\]
+Thus the sum in Swisher's conjecture (H.3) is exactly
+\[
+ H_s=\mathcal F_{p^s}(1/8)
+     =\sum_{k=0}^{(p^s-1)/2}\frac{(1/2)_k^3}{k!^3}.
+\]
+This identity does not discard a tail of a longer truncation.
+For $q=e^{2\pi i\tau}$ define
+\[
+ x(\tau)=\frac{\eta(2\tau)^{12}\eta(8\tau)^{12}}
+                   {\eta(4\tau)^{24}},\qquad
+ \Theta(\tau)=\frac{\eta(4\tau)^{20}}
+                   {\eta(2\tau)^8\eta(8\tau)^8}.
+\]
+The eta products and theta identities used here are classical; see
+\cite[Appendix~C, Section~9.1]{Beukers} and \cite[Section~20.7]{DLMF}.
+The product expansions give $x\in q+q^2\mathbb Z[[q]]$ and
+$\Theta\in1+q\mathbb Z[[q]]$.  If $z=4\tau$, the usual theta identities give
+\begin{equation}\label{raw:theta}
+ x=\frac{\vartheta_2(z)^2\vartheta_4(z)^2}
+             {4\vartheta_3(z)^4},\qquad
+ \Theta=\vartheta_3(z)^4.
+\end{equation}
+Writing $\lambda(z)=\vartheta_2(z)^4/\vartheta_3(z)^4$, one has
+\begin{equation}\label{raw:lambda}
+ 16x^2=\lambda(1-\lambda),\qquad
+ \mathcal F(x)=
+ {}_2F_1(1/2,1/2;1;\lambda)^2=\Theta.
+\end{equation}
+The second identity is the classical quadratic transformation followed by
+Clausen's identity, with the branch specified by the expansion at $q=0$.
+We use the determinant-normalized slash action
+$(f|_2B)(\tau)=\det(B)(c\tau+d)^{-2}f(B\tau)$
+for $B=\left(\begin{smallmatrix}a&b\\c&d\end{smallmatrix}\right)$.
+
+\subsection{The extra normalizer and its Hauptmodul}
+
+Let
+\[
+ \Gamma_0=\Gamma_0(16),\qquad
+ R=\begin{pmatrix}1&1/2\\8&5\end{pmatrix},\qquad
+ W=\begin{pmatrix}0&-1\\16&0\end{pmatrix},\qquad
+ G=\langle\Gamma_0,R,W\rangle.
+\]
+Matrices are interpreted projectively when acting on the upper half plane.
+This is not merely the usual Atkin--Lehner extension
+$\Gamma_0(16)+16$: the additional coset represented by $R$ is essential.
+In particular one cannot apply an Atkin--Lehner-only theorem without checking
+the argument for this extra normalizer.
+
+\begin{lemma}\label{raw:group}
+Both $R$ and $W$ normalize $\Gamma_0$.  The quotient $G/\Gamma_0$ has
+order four.  Moreover
+\[
+ x\circ R=x,\quad x\circ W=x,\qquad
+ \Theta|_2R=\Theta,\quad \Theta|_2W=-\Theta.
+\]
+The function $x$ is a Hauptmodul for $G$.  The zeros of $\Theta$ are precisely
+the two $\Gamma_0$-cusps with denominator $4$, and these form one $G$-orbit.
+At either of these cusps the orders of $x$ and $\Theta$ on $X_0(16)$ are
+$-2$ and $2$, respectively.
+\end{lemma}
+
+\begin{proof}
+The eta-quotient criterion applies at level $16$.  For $x$, the two exponent
+sums are $24$ and $24$, and its character is trivial.  For $\Theta$, the two
+sums are zero and its character is also trivial.  Ligozat's cusp-order formula \cite[Proposition~3.2.8]{Ligozat}
+gives the following complete table.  A denominator-$c$ cusp has width
+$16/\gcd(c^2,16)$.
+\[
+\begin{array}{c|rrrrr}
+ c&1&2&4&8&16\\ \hline
+ \text{number of cusps}&1&1&2&1&1\\
+ \operatorname{ord}_c(x)&1&1&-2&1&1\\
+ \operatorname{ord}_c(\Theta)&0&0&2&0&0\\
+ \text{width}&16&4&1&1&1
+\end{array}
+\]
+The eta products have neither zeros nor poles in the upper half plane.
+
+For an integral matrix $B=\left(\begin{smallmatrix}a&b\\16c&d\end{smallmatrix}\right)$
+with odd determinant, direct multiplication gives
+\begin{equation}\label{raw:conjugation}
+ R^{-1}BR=
+ \begin{pmatrix}
+ 5a+40b-8c-4d & (5a-5d)/2+25b-4c\\
+ 8(d-a)-64b+16c & -4a-40b+8c+5d
+ \end{pmatrix}.
+\end{equation}
+Here $a,d$ are odd, so all entries are integral and the lower left entry is
+divisible by $16$.  This proves the required inclusion for $\Gamma_0$.
+The reverse inclusion follows in the same way, or from
+\[
+ R^2=\begin{pmatrix}5&3\\48&29\end{pmatrix}\in\Gamma_0.
+\]
+The normalization by $W$ is the usual Fricke normalization.  In addition
+$W^{-1}RW=R^{-1}$.  Hence $G/\Gamma_0$ has at most four elements.
+The cosets represented by $1,R,W,RW$ are distinct: after scaling to determinant
+one, the latter three cannot be integral matrices in $\Gamma_0$.
+Thus the index is exactly four.
+
+Conjugation by $D_4=\operatorname{diag}(4,1)$ sends $\Gamma_0$ to
+$\{\pm\gamma:\gamma\in\Gamma(4)\}$, sends $W$ projectively to
+$S=\left(\begin{smallmatrix}0&-1\\1&0\end{smallmatrix}\right)$, and sends $R$ to
+\[
+ R'=\begin{pmatrix}1&2\\2&5\end{pmatrix}
+   =\begin{pmatrix}1&0\\2&1\end{pmatrix}
+    \begin{pmatrix}1&2\\0&1\end{pmatrix}.
+\]
+For the theta expression in \eqref{raw:theta}, each of the two factors on the
+right changes the sign of $x$, while their product preserves it.
+The transformation $S$ interchanges $\vartheta_2$ and $\vartheta_4$, with
+the common automorphy factors canceling in $x$.  The form
+$\vartheta_3(z)^4$ has trivial weight-two character on $\Gamma(2)$, whereas
+$\vartheta_3(-1/z)^4=-z^2\vartheta_3(z)^4$.  These facts prove the four
+transformation assertions.
+
+The divisor table shows that $x:X_0(16)\to\mathbb P^1$ has degree four.
+It factors through the degree-four quotient by $G/\Gamma_0$, so the induced
+map $X(G)\to\mathbb P^1$ has degree one.  This proves the Hauptmodul assertion.
+Finally $W(1/4)=-1/4$, so $W$ exchanges the two denominator-$4$ cusp classes.
+\end{proof}
+
+\section{The integral Hecke trace at every raw cutoff}\label{sec:rawtrace}
+
+For an odd prime $p$, put
+\[
+ M(16,p)=\left\{\begin{pmatrix}a&b\\16c&d\end{pmatrix}:
+ a,b,c,d\in\mathbb Z,\ ad-16bc=p\right\}.
+\]
+Formula \eqref{raw:conjugation} proves
+$R^{-1}M(16,p)R=M(16,p)$; the same identity for $W$ follows from its Fricke
+normalization.  Thus conjugation by every element of $G$ preserves this
+Hecke set and permutes its left $\Gamma_0$-cosets.
+These cosets have the usual representatives
+\[
+ \beta_\infty=\begin{pmatrix}p&0\\0&1\end{pmatrix},\qquad
+ \beta_j=\begin{pmatrix}1&j\\0&p\end{pmatrix}
+ \quad(0\leq j<p).
+\]
+For every $\beta\in M(16,p)$, the cusp $\beta(1/4)$ has denominator with
+$2$-adic valuation exactly two after reduction to lowest terms: its
+numerator is odd and its denominator is $4$ times an odd integer, and any
+cancellation factor divides the odd integer $p$.  Hence it belongs to one
+of the two denominator-$4$ classes.  Both have width one and belong to the
+same $G$-orbit.  This is the cusp condition needed in the trace argument.
+
+Let $P\in\mathbb Z[T]$.  Define
+\[
+ Q_P(\tau)=\frac{\Theta(\tau)P(x(p\tau))}{\Theta(p\tau)},\qquad
+ G_P(q)=\frac{\Theta(q^p)P(x(q))}{\Theta(q)},
+\]
+and, using the determinant-normalized slash operator,
+\[
+ R_\beta(\tau)=p\,
+       \frac{\Theta(\tau)}{(\Theta|_2\beta)(\tau)}P(x(\beta\tau)).
+\]
+The sum $\operatorname{Tr}_p(P)=\sum_{[\beta]}R_\beta$ is $G$-invariant.
+Indeed left multiplication by $\Gamma_0$ does not change a summand;
+right multiplication by $\Gamma_0$ permutes the summands; and for either
+normalizer $g=R,W$, the factors $\Theta|_2g=\pm\Theta$ cancel to give
+$R_\beta(g\tau)=R_{g^{-1}\beta g}(\tau)$.  Moreover
+\begin{equation}\label{raw:trace}
+ \operatorname{Tr}_p(P)=Q_P+p^3U_pG_P,
+ \qquad U_p\left(\sum b_nq^n\right)=\sum b_{pn}q^n.
+\end{equation}
+For the $p$ finite representatives, the factor is $p^2$ before summing,
+and the root-of-unity sum contributes the remaining factor $p$.
+
+There are no poles in the upper half plane or at cusps outside the pole
+orbit of $x$.  The latter assertion follows either directly from the
+denominator classes, or from the adjugate argument: if $\beta c'$ were in
+the pole orbit, then $p\beta^{-1}$ and normalizer conjugation would put
+$c'$ in that orbit as well.
+At $c=1/4$, precisely one Hecke branch multiplies the local order by $p$,
+and the other $p$ branches divide it by $p$.  This follows from Hermite
+normal form after a matrix sending $\infty$ to $c$.  Equality of the cusp
+widths makes these the actual local scaling factors.  Since the orders of
+$\Theta$ and $x$ are $2$ and $-2$, the unique possible largest pole has
+order at most $2(p-1)+2p\deg P$.  Consequently
+\begin{equation}\label{raw:tracepoly}
+ \operatorname{Tr}_p(P)=\Pi_P(x),\qquad
+ \Pi_P\in\mathbb Z[T],\qquad
+ \deg\Pi_P\leq p\deg P+p-1.
+\end{equation}
+Polynomiality follows from the Hauptmodul and the single pole orbit.
+Integrality follows by comparing the integral $q$-expansion in
+\eqref{raw:trace}, using $x=q+O(q^2)$.
+
+Let $q(X)\in X+X^2\mathbb Z[[X]]$ be the compositional inverse of $x(q)$,
+and define
+\[
+ \sigma_p(X)=x(q(X)^p),\qquad
+ \rho_p(X)=\mathcal F(X)/\mathcal F(\sigma_p(X)).
+\]
+The first series is congruent to $X^p$ modulo $p$.
+
+\begin{theorem}\label{raw:formal}
+For every odd prime $p$ and all $m,s\geq1$,
+\[
+ \rho_p(X)\mathcal F_{mp^{s-1}}(\sigma_p(X))
+       -\mathcal F_{mp^s}(X)
+       \in p^{3s}\mathbb Z_p[[X]].
+\]
+\end{theorem}
+
+\begin{proof}
+Fix $m$.  Set $K_j=mp^j$, and interpret $\mathcal F_{K_{-1}}$ as zero.
+Apply \eqref{raw:trace}--\eqref{raw:tracepoly} to
+$P=\mathcal F_{K_{s-1}}$.  Its trace polynomial has degree strictly less
+than $K_s$, because $p(K_{s-1}-1)+p-1=K_s-1$.
+Assuming the assertion at level $s-1$, its $q$-form gives
+\[
+ G_P(q)\equiv\mathcal F_{K_{s-2}}(x(q^p))
+                    \pmod{p^{3(s-1)}}.
+\]
+Applying $p^3U_p$ gives $p^3\mathcal F_{K_{s-2}}(x(q))$ modulo $p^{3s}$.
+For $s=1$ the same conclusion holds because both sides are zero modulo
+$p^3$.  Thus $Q_P$ is congruent modulo $p^{3s}$ to an integral polynomial
+in $x$ of degree less than $K_s$.
+On the other hand
+\[
+ Q_P=\mathcal F(X)
+       \frac{\mathcal F_{K_{s-1}}(\sigma_p(X))}
+            {\mathcal F(\sigma_p(X))}
+     \in\mathcal F(X)+X^{K_s}\mathbb Z[[X]].
+\]
+Comparing coefficients below $K_s$ identifies the polynomial modulo
+$p^{3s}$ with $\mathcal F_{K_s}$.  Coefficients at or above $K_s$ vanish
+modulo $p^{3s}$, as required.  This also starts the induction.
+\end{proof}
+
+\section{Integral specialization on the ordinary modular curve}\label{sec:ordinary}
+
+We now restrict to $p\equiv1\pmod4$.  The use of the ordinary modular curve
+in this section is essential: the second Hasse--Witt factor of the
+cubic parameter vanishes at $64X^2=1$, so the original BV3 ring that
+inverts that factor cannot be evaluated there.
+
+Conjugating by $D_4$ identifies $X_0(16)$ analytically with the full-level
+curve $X(4)$ (with $\pm1$ identified).  Since $p\equiv1\pmod4$, choose a
+fourth root of unity in $\mathbb Z_p$; the corresponding component of
+$X(4)$ has good reduction and a Tate cusp with local parameter
+$q=e^{2\pi iz/4}$.  The functions and forms in \eqref{raw:theta} are
+defined on this component.  They have coefficients in $\mathbb Z_p$.
+
+For a precise integral chart, let $V$ be the smooth compactified
+level-four component over $\mathbb Z_p$ with the two pole-cusp sections
+removed, and let $A_0=\mathcal O(V)$. This is affine. The functions have
+no vertical poles at odd primes: for $x$ use
+\eqref{raw:lambda} and normality; for $\Theta$ use
+\[
+ \Theta^6=\frac{\Delta(4\tau)^5}
+                  {\Delta(2\tau)^2\Delta(8\tau)^2}.
+\]
+The curves in this identity are related by prime-to-$p$ isogenies, and
+their discriminants do not vanish on smooth elliptic fibers.
+At retained cusps the leading constants are powers of two and roots
+of unity. Consequently $\Theta$ trivializes the weight-two Hodge line
+bundle on $V$ in characteristic zero and in characteristic $p$.
+
+Let $\operatorname{Ha}$ denote the mod-$p$ Hasse invariant of weight
+$p-1$. The quotient
+$\operatorname{Ha}/\Theta^{(p-1)/2}$ is a function on $V_{\mathbb F_p}$.
+Choose a lift $h_4\in A_0$ and put
+\[
+ A=A_0[1/h_4],\qquad \widehat A=\varprojlim_n A/p^nA.
+\]
+Its special fiber is the ordinary locus of $V$ and is geometrically
+integral. At the Tate cusp $h_4$ is a unit, so $q$-expansions lie in
+$\mathbb Z_p[[q]]$. The resulting formal open is stable under the
+canonical quotient, since its reduction is Frobenius. A CM level
+marking may require a finite unramified extension; all the following
+arguments remain valid after that base change.
+
+The following standard facts about the ordinary
+modular curve are used in their integral form.
+
+\begin{enumerate}
+\item Quotienting by the canonical connected subgroup of order $p$ gives
+an integral Frobenius lift $\Phi$ on the ordinary formal curve.  On the
+Tate parameter it sends $q$ to $q^p$.  It carries prime-to-$p$ level
+structures along the quotient and reduces to Frobenius modulo $p$.
+\item If $\phi:E\to E'$ is the canonical isogeny, then
+$p^{-1}\phi^*: \omega_{E'}\to\omega_E$ is an isomorphism on the ordinary
+formal locus.  For the weight-two form $\Theta$, its ratio with the
+image of $\Phi^*\Theta$ under this normalized map is an integral unit
+$\rho\in\widehat A^\times$, with $q$-expansion
+$\Theta(q)/\Theta(q^p)$.
+\item The $q$-expansion homomorphism is injective modulo $p$ on $A/pA$.
+Indeed a rational function on the integral special-fiber modular curve
+whose expansion at a smooth cusp is zero is identically zero.
+Consequently, for every $e\geq0$,
+\begin{equation}\label{raw:saturation}
+ \widehat A\cap p^e\mathbb Z_p[[q]]=p^e\widehat A.
+\end{equation}
+The higher powers follow by successive division by $p$.  This is the
+integral $q$-expansion principle, not an assertion about convergence of
+the individual hypergeometric period at a unit argument.
+\end{enumerate}
+These are the standard canonical-subgroup and $q$-expansion constructions
+on the ordinary modular curve: see Katz, Proposition~2.7.1 for
+divisibility detected by a $q$-expansion, Theorems~3.1 and~3.3 and
+Section~3.4 for the ordinary canonical quotient, and Appendix~A2.1--A2.2
+for the normalized differential and its Tate-curve expansion \cite{Katz}.  They can
+also be made on a finer auxiliary prime-to-$p$ level and then descended.
+
+The pole cusps and the ordinary locus are preserved under reduction of
+$\Phi$, so $\Phi^*x$ is integral on this formal open.  Its $q$-expansion
+is $x(q^p)$; therefore it realizes the same formal $\sigma_p$ as above.
+All terms of Theorem~\ref{raw:formal} belong to $\widehat A$.  Applying
+\eqref{raw:saturation} to their $q$-expansions yields
+\begin{equation}\label{raw:analytic}
+ \rho\,\mathcal F_{mp^{s-1}}(\Phi^*x)
+       -\mathcal F_{mp^s}(x)\in p^{3s}\widehat A.
+\end{equation}
+Thus the full exponent $3s$ is retained under evaluation at every point
+of this ordinary formal open.  No assertion about convergence of
+$\mathcal F(1/8)$ is required.
+
+
+\subsection{The ordinary CM point and its canonical branch}
+
+At $z=i$, equivalently $\tau=i/4$, one has $\lambda(i)=1/2$ and
+$x(i/4)=1/8$. The sign follows from the positive real theta constants.
+The elliptic curve in the $z$ coordinate has complex multiplication by
+$\mathbb Z[i]$; at $p\equiv1\pmod4$ it has good ordinary reduction.
+A full level-four marking can be chosen over a finite unramified
+extension with integer ring $\mathcal O$.
+
+Write $p=a^2+b^2$, with $a$ odd and $b$ even, and choose the Gaussian
+generator $\beta$ of the prime above $p$ which has positive valuation in
+the chosen embedding. Its kernel has connected reduction, so the isogeny
+given by $\beta$ is the canonical connected quotient at this CM lift.
+Since $\beta\equiv1\pmod2$, it fixes the full level-two structure.
+After the target is identified with the same CM elliptic curve, its
+Legendre parameter is therefore still $\lambda=1/2$.
+
+Applying $\Phi^*$ to $16x^2=\lambda(1-\lambda)$ now gives
+\[
+ (\Phi^*x)^2=1/64
+\]
+at the CM point. The integral Frobenius lift reduces to $x\mapsto x^p$,
+so $\Phi^*x\equiv1/8\pmod p$. Since $p$ is odd, the two roots $1/8$
+and $-1/8$ are distinct modulo $p$. Consequently
+\begin{equation}\label{raw:fixed}
+ (\Phi^*x)(i/4)=1/8.
+\end{equation}
+This proves fixedness on the required canonical branch.
+
+For an explicit check on the finer level structure, let
+$\alpha=a+bi$ be the unit generator and $\beta=a-bi$, so that
+$\alpha\beta=p$. The matrix of multiplication by $\beta$ on level-four
+homology, up to transpose and sign convention, reduces modulo $4$ to
+$\pm I$ or
+\[
+ \pm R'\equiv\pm\begin{pmatrix}1&2\\2&1\end{pmatrix}.
+\]
+Indeed $a$ is odd, and $b$ is either $0$ or $2$ modulo $4$. Both matrices
+preserve $x$ and have eigenvalue $+1$ on $\Theta$.
+If $\omega$ is the differential after identifying the target with the
+same CM curve, the normalized target differential is
+$\omega'=(p/\beta)\omega=\alpha\omega$, since
+$\phi^*\omega'=p\omega$. Weight two means that
+$\Theta(E,\alpha\omega)=\alpha^{-2}\Theta(E,\omega)$. Hence
+\begin{equation}\label{raw:scalar}
+ \rho(i/4)=\alpha^2.
+\end{equation}
+The main conclusion below requires only that this value is a single
+fixed unit $L_p$; its exact gamma normalization will follow from Guo's
+published theorem.
+
+All CM statements here concern the maximal-order curve at $z=i$.
+The original lattice with period ratio $\tau=i/4$ has conductor four,
+and an unrestricted norm-$p$ endomorphism assertion on that lattice
+would be incorrect. The level-four model and the canonical quotient
+give the fixedness statement actually used.
+
+
+\section{The ordinary gamma multiplier and arbitrary-length recurrence}\label{sec:gamma}
+
+Let $L_p$ be the value of $\rho$ at the ordinary CM point. The previous
+section proves that $L_p$ is a fixed $p$-adic unit, independent of $m,s$,
+and that for every $m,s\ge1$
+\begin{equation}\label{eq:geometric}
+ A_{m,s}\equiv L_pA_{m,s-1}\pmod{p^{3s}}.
+\end{equation}
+One may compute $L_p$ as the Gaussian unit-root square in
+\eqref{raw:scalar}. For the gamma normalization, there is a shorter route
+which uses only the published weaker recurrence.
+
+\begin{lemma}\label{lem:units}
+For $p\equiv1\pmod4$, each $H_s$ is a $p$-adic unit, and
+$H_s\equiv H_1^s\pmod p$.
+\end{lemma}
+\begin{proof}
+Put $d=(p-1)/2$. The coefficient
+$c_k=\binom{2k}{k}^3/64^k$ is zero modulo $p$ if a base-$p$ digit of
+$k$ exceeds $d$. Otherwise Lucas's congruence and Fermat's theorem give
+$c_k\equiv\prod_j c_{k_j}\pmod p$, where $k_j$ are those digits.
+Every digit string with $0\le k_j\le d$ represents an integer at most
+$(p^s-1)/2$. Hence the half-length sum factors as $H_1^s$ modulo $p$.
+Guo's published first-level case gives
+$H_1\equiv-\Gamma_p(1/4)^4\pmod p$, which is a unit.
+\end{proof}
+
+\begin{lemma}\label{lem:scalar}
+The constant $L_p$ in \eqref{eq:geometric} equals
+$-\Gamma_p(1/4)^4$ exactly in $\mathbb Z_p$.
+\end{lemma}
+\begin{proof}
+Write $g_p=-\Gamma_p(1/4)^4$. Guo's theorem
+\cite[arXiv equation~(1.9)]{Guo} states
+\[
+ H_s\equiv g_pH_{s-1}\pmod{p^{s+1}}\qquad(s\ge1).
+\]
+The case $m=1$ of \eqref{eq:geometric} gives the same recurrence with
+$L_p$ and modulus $p^{3s}$. Subtracting and using Lemma~\ref{lem:units}
+therefore gives $L_p-g_p\in p^{s+1}\mathbb Z_p$ for every $s$.
+The intersection of these ideals is zero. This proves the exact equality.
+If the CM marking was evaluated over an unramified extension with
+integer ring $\mathcal O$, run this argument first in $\mathcal O$.
+It proves the same equality and hence descent to $\mathbb Z_p$.
+\end{proof}
+
+\begin{proof}[Proof of the ordinary assertion in Theorem~\ref{thm:main}]
+Substitute Lemma~\ref{lem:scalar} into \eqref{eq:geometric}. This gives
+the assertion with modulus $p^{3s}$. Write $m=p^v m_0$, with $p\nmid m_0$.
+Then $A_{m,s}=A_{m_0,s+v}$ and
+$A_{m,s-1}=A_{m_0,s+v-1}$. Applying the same assertion at level $s+v$
+gives the displayed stronger modulus $p^{3s+3v_p(m)}$.
+For $m=1$ the upper summation index is exactly $(p^s-1)/2$; for $m=2$
+it is $p^s-1$. Thus both stated truncation conventions follow.
+\end{proof}
+
+
+\section{Integral Legendre jets and change of Frobenius lift}\label{sec:jets}
+
+Throughout this section, $p$ may be any odd prime. The local ring
+notation is reset on the punctured Legendre base; the restriction
+$p\equiv1\pmod4$ in Section~\ref{sec:ordinary} is not imposed here.
+Write
+\[
+ D=\lambda(1-\lambda),\qquad h=1-2\lambda,\qquad
+ A=\widehat{\mathbb Z_p[\lambda,D^{-1}]},
+\]
+where completion is $p$-adic.  Put
+\[
+ N_s=(p^s-1)/2,\qquad
+ P_s(\lambda)=\sum_{k=0}^{N_s}\binom{2k}{k}^3(D/16)^k,
+ \qquad Y_s=(P_s,P_s',P_s'')^{\mathsf T}.
+\]
+The desired half-length sum is
+\[
+ H_s=P_s(1/2)=\sum_{k=0}^{(p^s-1)/2}\frac{(1/2)_k^3}{k!^3}.
+\]
+The quadratic pullback is essential: the differential equation in the
+raw cubic parameter is singular at $X=1/8$, whereas the connection used
+below is regular at $\lambda=1/2$.
+
+The formal input is Theorem~\ref{raw:formal}, proved above by the raw Hecke trace.  In the present notation, on the ordinary locus it gives
+\begin{equation}\label{ss:ordinaryscalar}
+ P_s(\lambda)-\rho(\lambda)P_{s-1}(\sigma(\lambda))
+       \in p^{3s}A^{\mathrm{ord}},
+\end{equation}
+where $\sigma$ is the ordinary canonical quotient lift and
+$\rho=(L/L^\sigma)^2$, with
+$L={}_2F_1(1/2,1/2;1;\lambda)$.  This is an identity of integral analytic
+quotients; the individual series $L$ need not converge at unit arguments.
+Here
+\[
+ A^{\mathrm{ord}}=
+ \widehat{\mathbb Z_p[\lambda,D^{-1},\mathscr H^{-1}]}
+\]
+and $\mathscr H$ is any integral lift of the nonzero Legendre Hasse
+polynomial; both hats denote $p$-adic completion.  Equivalently it is
+the $p$-adic completion of the localization of $A$ at $\mathscr H$.
+To obtain \eqref{ss:ordinaryscalar}, substitute
+$X^2=D/16$ in the even raw truncations and use the ordinary
+$q$-expansion principle.  The corresponding ordinary Frobenius lifts
+commute with this modular pullback.  All terms are integral on the
+ordinary locus, and divisibility of their cusp expansions gives the
+stated divisibility in $A^{\mathrm{ord}}$; the integral ordinary
+$q$-expansion principle is Katz's Proposition~2.7.1
+\cite{Katz}, and the canonical quotient is constructed in his
+Theorems~3.1 and~3.3 and Section~3.4.  The raw Tate parameter satisfies
+$q_E=q_{\rm raw}^{\,4}$, so its replacement by $q_{\rm raw}^p$ is exactly
+$q_E\mapsto q_E^p$ on the Legendre Tate curve.  The fact that the raw
+truncations are even makes the substitution $X^2=D/16$ integral without
+choosing a square root of $\lambda$.
+
+\subsection{An exact differential-equation residual}
+
+Set
+\[
+ P=\frac{h}{D},\qquad Q=-\frac1{4D}.
+\]
+The Legendre equation is $y''+Py'+Qy=0$.  Its symmetric-square equation
+has monic operator
+\[
+ \mathcal L=\partial^3+3P\partial^2+
+    (P'+4Q+2P^2)\partial+(2Q'+4PQ).
+\]
+Equivalently,
+\begin{equation}\label{ss:operator}
+ D^2\mathcal L=D^2\partial^3+3Dh\partial^2+
+                         (1-7D)\partial-h/2.
+\end{equation}
+
+\begin{lemma}\label{ss:residual}
+For every $s\geq0$,
+\[
+ \mathcal L P_s
+  =-\frac{p^{3s}}2\,
+       \frac{\binom{2N_s}{N_s}^{3}}{16^{N_s}}
+       h D^{N_s-2}\in p^{3s}A.
+\]
+In particular the jet vector satisfies
+$Y_s'=CY_s+r_se_3$, where $C$ is the integral companion matrix of
+$\mathcal L$, $r_s\in p^{3s}A$, and $e_3=(0,0,1)^{\mathsf T}$.
+\end{lemma}
+
+\begin{proof}
+Direct differentiation gives
+\[
+ (D^2\mathcal L)(D^k)
+   =h\left(k^3D^{k-1}-\frac{(2k+1)^3}{2}D^k\right).
+\]
+For $a_k=\binom{2k}{k}^3/16^k$ one has
+$k^3a_k=(2k-1)^3a_{k-1}/2$.  All interior terms therefore cancel, and
+the last term is $-(2N_s+1)^3a_{N_s}hD^{N_s}/2$.
+Since $2N_s+1=p^s$, division by the unit $D^2$ in $A$ proves the claim.
+\end{proof}
+
+\subsection{The integral rank-three Frobenius matrix}
+
+We use the constant quadratic twist
+\[
+ E^-_\lambda:\quad y^2=-x(x-1)(x-\lambda).
+\]
+At $\lambda=0$ its nodal tangents are $\pm1$, so its Tate degeneration
+is split.  This makes the following weight-one normalization unambiguous.
+For the usual Legendre curve the weight-one matrix differs by the
+constant sign $(-1/p)$; its symmetric square is identical.  This sign
+and the usual Legendre Frobenius normalization are recorded explicitly
+in Shirai's introduction, equations~(1), (3), and~(4) \cite{Shirai}.
+
+Let $\omega=dx/y$ and $\eta=\nabla_{\partial_\lambda}\omega$.
+These form an integral basis of $H^1_{\mathrm{dR}}(E^-_\lambda/A)$.
+Indeed in the usual basis $(\omega,x\omega)$ one has
+\begin{equation}\label{ss:basis}
+ \eta=\frac{\omega}{2(1-\lambda)}
+       -\frac{x\omega}{2\lambda(1-\lambda)},
+\end{equation}
+whose determinant is a unit for every odd $p$.  The relation follows by
+reducing the exact differential $d(x(x-1)/y)$.  The Gauss--Manin
+connection is
+\[
+ \nabla\binom{\omega}{\eta}
+ =\begin{pmatrix}0&1\\-Q&-P\end{pmatrix}
+       \binom{\omega}{\eta}\,d\lambda.
+\]
+
+Let $\phi:A\to A$ be any lift of Frobenius.  The integral crystalline
+Frobenius of this smooth proper elliptic family gives a matrix $M_\phi$
+with entries in $A$.  Our convention is a row convention:
+\[
+ F_\phi(\phi^*(\omega,\eta)^{\mathsf T})
+       =M_\phi(\omega,\eta)^{\mathsf T}.
+\]
+Its determinant is $p$ times a unit, by the cup product and the action
+of Frobenius on $H^2$.  Consequently
+\begin{equation}\label{ss:V}
+ V_\phi=pM_\phi^{-1}\in M_2(A).
+\end{equation}
+This uses the adjugate of a rank-two matrix and does not invert the
+Hasse invariant.  For the underlying integral comparison, one can use
+the Dieudonne crystal of the elliptic scheme's $p$-divisible group:
+Berthelot--Messing \cite[\S2, Theorem~2, p.~23]{BM} gives its local
+freeness, the construction on pp.~24--25 gives integral $F,V$ with
+$FV=VF=p$, and \cite[\S3, equation~(3.1), p.~27]{BM} identifies it with
+relative $H^1_{\rm cris}$, compatibly with the Hodge filtration.
+Its evaluation on the smooth lift is integral de Rham cohomology.
+For the completed comparison and the canonical integral Frobenius map,
+see also \cite[Remark~60.24.14, Tag~07MZ; Theorem~60.26.4,
+Tag~07N5]{Stacks}; the latter map is constructed before inverting $p$.
+The first Hodge line is carried into $pH^1$ by Frobenius: modulo $p$
+this follows from the pullback of regular differentials under relative
+Frobenius being zero, together with the integral comparison and its
+functoriality.  In the row convention this says that the first row
+of $M_\phi$ is divisible by $p$ at a Frobenius-fixed fiber.
+
+The symmetric-square jet basis is
+\[
+ \omega^2,\qquad2\omega\eta,\qquad
+ 2\eta^2-2P\omega\eta-2Q\omega^2.
+\]
+Its change-of-basis matrix from $(\omega^2,\omega\eta,\eta^2)$ is
+\begin{equation}\label{ss:S}
+ S=\begin{pmatrix}1&0&0\\0&2&0\\-2Q&-2P&2\end{pmatrix},
+ \qquad\det S=4.
+\end{equation}
+Define the integral period-side Frobenius matrix
+\begin{equation}\label{ss:Bphi}
+ B_\phi=S\operatorname{Sym}^2(V_\phi)(S^\phi)^{-1}\in M_3(A).
+\end{equation}
+The word ``period-side'' records the inverse in \eqref{ss:V}; confusing
+this matrix with the cohomology-row matrix would reverse the required
+Hodge divisibility.
+
+On the ordinary canonical lift $\sigma$, write $a=L/L^\sigma$.
+Here the exact differential normalization deserves to be specified.
+The connected subgroup quotient reduces to relative Frobenius;
+transporting the ordered $2$-torsion gives the parameter $\sigma(\lambda)$.
+Its model-scaling unit relative to $E^-_{\sigma(\lambda)}$ is congruent
+to one modulo $p$ and therefore has a unique square root congruent to
+one for odd $p$.  This identifies the quotient pullback with the
+crystalline $F_\sigma$, without an unspecified quadratic twist.
+One may make this identification on a finite etale auxiliary level
+and descend; the matrices in our displayed basis already lie over $A$.
+
+On the split Tate chart, the differential satisfies
+$\omega=L(\lambda)\omega_{\rm Tate}$, with constant term one.  This
+identity follows either from the normalized Tate period or from its
+Legendre differential equation and its initial value at $\lambda=0$.
+The canonical isogeny sends $z\mapsto z^p$ and hence pulls back
+$\omega_{\rm Tate}$ to $p\omega_{\rm Tate}$
+\cite[Appendix~A2, especially (A2.2.1) and (A2.2.7), pp.~175--177]{Katz}.
+Consequently its differential is exactly
+\[
+ \omega^\sigma\longmapsto c\omega,
+ \qquad c=p\frac{L^\sigma}{L}=\frac p a.
+\]
+The identity on the whole ordinary ring follows from the integral
+$q$-expansion principle; thus no parameter-dependent unit is being
+suppressed.  Horizontality now gives
+\[
+ M_\sigma=
+ \begin{pmatrix}c&0\\c'/\sigma'&c/\sigma'\end{pmatrix},
+ \qquad
+ pM_\sigma^{-1}=
+ \begin{pmatrix}a&0\\a'&a\sigma'\end{pmatrix}.
+\]
+These equalities can be read in the fraction field; the resulting
+matrices are the integral ones above.  Taking the symmetric square in
+the jet basis yields
+\begin{equation}\label{ss:Bsigma}
+ B_\sigma=
+ \begin{pmatrix}
+ \rho&0&0\\
+ \rho'&\rho\sigma'&0\\
+ \rho''&2\rho'\sigma'+\rho\sigma''&\rho(\sigma')^2
+ \end{pmatrix},\qquad \rho=a^2.
+\end{equation}
+In particular its columns have respective valuations at least $0,1,2$,
+because $\sigma'\equiv\sigma''\equiv0\pmod p$.
+Differentiating \eqref{ss:ordinaryscalar} twice therefore gives
+\begin{equation}\label{ss:ordinaryjet}
+ Y_s-B_\sigma Y_{s-1}^\sigma\in(p^{3s}A^{\mathrm{ord}})^3.
+\end{equation}
+
+\subsection{Changing the lift without losing three digits}
+
+Recall the definition of $\epsilon_p$ from Section~\ref{sec:statement}.
+
+\begin{lemma}[Taylor transport with a third-order residual]
+\label{ss:taylor}
+Let $R$ be one of the above $p$-adically complete differential rings, with
+$\partial R\subseteq R$, and let $u,v:R\to R$ be substitutions congruent
+modulo $p$.  Suppose $Y=(f,f',f'')^{\mathsf T}$ and
+$Y'=CY+re_3$, with $r\in p^bR$ and the integral companion matrix $C$.
+If $T(u,v)$ is horizontal Taylor transport from $v$ to $u$, then
+\[
+ Y^u-T(u,v)Y^v\in
+ p^{b+3-\epsilon_p}R\ \oplus\
+ p^{b+2}R\ \oplus\ p^{b+1}R.
+\]
+\end{lemma}
+
+\begin{proof}
+Put $\delta=u(\lambda)-v(\lambda)\in pR$.
+The matrices of iterated covariant differentiation have integral
+entries.  Differentiating the inhomogeneous companion system repeatedly
+shows that its residual first enters the three jet coordinates at
+derivative orders $3,2,1$, respectively.  Subsequent coefficients are
+integral combinations of the coefficients of $C$, their derivatives,
+and derivatives of $r$; hence they remain in $p^bR$.
+
+Subtract the horizontal Taylor series from the ordinary Taylor series
+for $Y$.  The resulting three sums start at orders $3,2,1$ and their
+$n$th terms are divisible by $p^b\delta^n/n!$.  They converge since
+$v_p(\delta^n/n!)\geq n-v_p(n!)\to\infty$ for odd $p$.
+For the three starting orders, the respective lower bounds are
+\[
+ \min_{n\geq3}(n-v_p(n!))=3-\epsilon_p,\quad
+ \min_{n\geq2}(n-v_p(n!))=2,\quad
+ \min_{n\geq1}(n-v_p(n!))=1.
+\]
+This proves the assertion and identifies the unique extra loss at $p=3$.
+\end{proof}
+
+\begin{proposition}\label{ss:regularjet}
+For any integral Frobenius lift $\phi$ of the punctured Legendre base and
+all $s\geq1$,
+\[
+ Y_s-B_\phi Y_{s-1}^\phi\in(p^{3s-\epsilon_p}A)^3.
+\]
+\end{proposition}
+
+\begin{proof}
+First work on the ordinary localization.  The crystalline
+change-of-lift isomorphism is horizontal Taylor transport; see
+\cite[\S2.1, pp.~19--20]{BM} and
+\cite[Proposition~60.17.4, Tag~07JH]{Stacks}, where the divided-power
+Taylor formula and its cocycle identity are explicit.
+In the rank-two row convention, if $T_2(\sigma,\phi)$ transports
+solution coordinates from $\phi$ to $\sigma$, the cohomology matrices
+satisfy
+\[
+ M_\phi=T_2(\sigma,\phi)^{-1}M_\sigma,
+ \qquad V_\phi=V_\sigma T_2(\sigma,\phi).
+\]
+Taking symmetric squares and changing to the jet bases gives precisely
+$B_\phi=B_\sigma T(\sigma,\phi)$.
+Apply Lemma~\ref{ss:taylor} to $Y_{s-1}$, using
+$b=3(s-1)$ from Lemma~\ref{ss:residual}.  Multiplication by
+$B_\sigma$ adds at least $0,1,2$ to its three columns.  Therefore
+\[
+ B_\sigma\bigl(Y_{s-1}^\sigma-
+                    T(\sigma,\phi)Y_{s-1}^\phi\bigr)
+                \in(p^{3s-\epsilon_p}A^{\mathrm{ord}})^3.
+\]
+Combine this with \eqref{ss:ordinaryjet}.
+
+Both $Y_s$ and $B_\phi Y_{s-1}^\phi$ already belong to $A^3$, since
+\eqref{ss:Bphi} is integral on the whole smooth Legendre base.
+The map $A/pA\to A^{\mathrm{ord}}/pA^{\mathrm{ord}}$ is injective:
+the latter is localization at the nonzero Hasse polynomial in the
+integral domain $\mathbb F_p[\lambda,D^{-1}]$.
+Successive division by $p$ then gives
+$A\cap p^eA^{\mathrm{ord}}=p^eA$ for every $e$.
+This descends the congruence without any additional loss.
+\end{proof}
+
+\section{Supersingular CM specialization}\label{sec:sscm}
+
+Assume now $p\equiv3\pmod4$ and choose
+\[
+ \phi(\lambda)=\frac12+\left(\lambda-\frac12\right)^p.
+\]
+It is an integral Frobenius lift, preserves invertibility of $D$
+modulo $p$, and fixes $\lambda_0=1/2$.
+The elliptic curve $E^-_{1/2}$ has good supersingular reduction and
+Frobenius trace zero.  For example, it is a quadratic twist of
+$y^2=x^3-x$; at $p\equiv3\pmod4$ the trace of that curve is zero by
+pairing $x$ with $-x$ in its quadratic-character sum.
+Let $M=M_\phi(1/2)$.  Its characteristic polynomial is $T^2+p$, so
+\[
+ M^2=-pI_2,\qquad V=pM^{-1}=-M.
+\]
+Frobenius--Hodge divisibility says that the first row of $M$ is in
+$p\mathbb Z_p^2$.  Consequently, for $B=B_\phi(1/2)$,
+\begin{equation}\label{ss:CMmatrix}
+ B^2=p^2I_3,\qquad (1,0,0)B\in p^2\mathbb Z_p^3.
+\end{equation}
+The first assertion follows by taking a symmetric square.  For the
+second, the first symmetric-square basis vector is $\omega^2$, and the
+first row of $S$ in \eqref{ss:S} is $(1,0,0)$; multiplying by the integral
+inverse of $S$ preserves divisibility by $p^2$.
+
+\begin{theorem}\label{ss:main}
+For every prime $p\equiv3\pmod4$ and every integer $s\geq2$,
+\[
+ H_s-p^2H_{s-2}\in p^{3s-1-\epsilon_p}\mathbb Z_p.
+\]
+Thus the exponent is $3s-1$ for $p\geq7$, and $3s-2$ for $p=3$.
+\end{theorem}
+
+\begin{proof}
+Evaluate Proposition~\ref{ss:regularjet} at $\lambda_0$ and write
+\[
+ Y_s(\lambda_0)=B Y_{s-1}(\lambda_0)+E_s,
+ \qquad E_s\in(p^{3s-\epsilon_p}\mathbb Z_p)^3.
+\]
+Applying this at two consecutive levels gives
+\[
+ Y_s(\lambda_0)-p^2Y_{s-2}(\lambda_0)=E_s+BE_{s-1}.
+\]
+By \eqref{ss:CMmatrix}, the first coordinate of the second term is
+divisible by $p^{2+3(s-1)-\epsilon_p}=p^{3s-1-\epsilon_p}$; the first
+term has one more factor of $p$.  The first coordinate of $Y_s(\lambda_0)$
+is $H_s$, proving the asserted two-step recurrence.
+\end{proof}
+
+\subsection{A coupled auxiliary-sum formulation}
+
+For $s\geq0$ put
+\[
+ W_s=\sum_{k=0}^{(p^s-1)/2}(4k+1)\frac{(1/2)_k^3}{k!^3}
+     =H_s-\frac12P_s''(1/2).
+\]
+The second equality follows by differentiating $D=\lambda(1-\lambda)$
+twice at $\lambda=1/2$: $D'=0$, $D''=-2$, and $D=1/4$.
+
+\begin{corollary}\label{ss:coupled}
+For each $p\equiv3\pmod4$ there is a unit
+$\mu_p\in\mathbb Z_p^\times$, the square of an integral crystalline
+matrix coefficient, such that for every $s\geq1$,
+\[
+ \begin{split}
+ H_s&\equiv-\frac{p^2}{\mu_p}W_{s-1}
+                    \pmod{p^{3s-\epsilon_p}},\\
+ W_s&\equiv-\mu_p H_{s-1}
+                    \pmod{p^{3s-\epsilon_p}}.
+ \end{split}
+\]
+No special-function identification of $\mu_p$ is needed or asserted.
+\end{corollary}
+
+\begin{proof}
+At $\lambda=1/2$, equation~\eqref{ss:basis} gives
+$\eta=(1-2x)\omega$.  After adjoining $i$, the CM automorphism
+$(x,y)\mapsto(1-x,iy)$ acts on $(\omega,\eta)$ as
+$\operatorname{diag}(i,-i)$.  Since $p\equiv3\pmod4$, crystalline
+Frobenius conjugates $i$ to $-i$.  Its matrix, and hence $V=-M$, is
+off diagonal:
+\[
+ V=\begin{pmatrix}0&b\\c&0\end{pmatrix},\qquad bc=-p.
+\]
+The Hodge-row divisibility and integrality give $v_p(b)=1$ and
+$v_p(c)=0$.  Set $\mu_p=c^2$; then $b^2=p^2/\mu_p$.
+
+At this point $P=0$ and $Q=-1$, so in symmetric-square solution
+coordinates the first and third entries of the vector corresponding
+to $Y_s$ are
+\[
+ H_s,\qquad \tfrac12P_s''(1/2)-H_s=-W_s.
+\]
+The middle entry is zero because $P_s(\lambda)=P_s(1-\lambda)$.
+The symmetric square of the displayed off-diagonal matrix interchanges
+the first and third coordinates with factors $b^2$ and $c^2$.
+Proposition~\ref{ss:regularjet}, with the integral basis change
+\eqref{ss:S}, therefore gives the two congruences with the same modulus.
+\end{proof}
+
+In particular these congruences prove the exact valuations
+\[
+ v_p(H_s)=2\lceil s/2\rceil,\qquad
+ v_p(W_s)=2\lfloor s/2\rfloor.
+\]
+For $p\geq7$ this follows immediately by induction from
+$H_0=W_0=1$, because each error term has strictly higher valuation
+than the displayed leading term.  For $p=3$ the same induction starts
+from the explicit values $H_1=9/8$ and $W_1=13/8$; at all later levels
+the error valuation is again strictly higher.
+In particular $H_1\in p^2\mathbb Z_p$. Together with
+Theorem~\ref{ss:main}, this proves the supersingular assertion
+in Theorem~\ref{thm:main}, including its first level.
+
+\paragraph{What supplies the exponent.}
+The scalar ordinary theorem alone cannot be evaluated at this point.
+The proof uses its differentiated rank-three form, the exact
+$p^{3s}$ differential-equation residual, and weighted Taylor transport
+to an integral crystalline matrix that is defined on the supersingular
+fiber.  The loss of one digit comes from combining the previous-level
+error $p^{3s-3}$ with the Hodge-row factor $p^2$.  The additional loss at
+$p=3$ comes from $3!$ in the order-three Taylor term.  Frobenius slopes
+or the identity $B^2=p^2I$ by themselves do not supply either estimate.
+
+\section{Precision, scope, and exact computational checks}\label{sec:checks}
+
+Theorem~\ref{thm:main} addresses the half-length sums at every stated
+level for all odd primes, with exponent $3s-2$ at $p=3$.
+For ordinary primes it also gives arbitrary raw lengths, including
+the full cutoff. The supersingular proof uses
+$2N_s+1=p^s$ in its exact differential residual; an extension to another
+cutoff would require a separate residual estimate.
+
+The two losses in the supersingular exponent have different sources.
+The one-step jet congruence has precision $3s-\epsilon_p$.
+In the two-step composition, the preceding error has precision
+$3(s-1)-\epsilon_p$, and the first-row Hodge factor restores two digits.
+This gives $3s-1-\epsilon_p$. The extra loss at $p=3$ occurs in
+$\delta^3/3!$ in Taylor transport. Both estimates are part of the
+proof, independently of the numerical patterns below.
+
+\subsection{Ordinary half- and full-cutoff checks}
+
+The ordinary verification program checks the multiplier as the
+Gaussian unit root of
+\[
+ X^2-2(a^2-b^2)X+p^2,
+ \qquad p=a^2+b^2,\quad a\text{ odd}.
+\]
+It checks $23$ prime/level pairs, in both half and full cutoffs,
+at precision $p^{3s+3}$. Every tested half- and full-cutoff defect
+has valuation exactly $3s$.
+\begin{center}
+\begin{tabular}{@{}lll@{}}\toprule
+Prime & Levels $s$ & Observed half-sum defect valuations\\\midrule
+$5$ & $1,\ldots,6$ & $3,6,9,12,15,18$\\
+$13,17$ & $1,\ldots,4$ & $3,6,9,12$\\
+$29,37,41$ & $1,2,3$ & $3,6,9$\\\bottomrule
+\end{tabular}
+\end{center}
+At $p=5$, the upper-half tail at level two has valuation four, below
+the target six, whereas its recurrence defect has valuation seven
+in the exact calculation. The raw-cutoff argument handles both sums
+without requiring that tail itself to vanish at the target precision.
+
+\subsection{Supersingular half-cutoff checks}
+
+The supersingular program works at precision $p^{3s_{\max}+5}$ and
+removes $p$-power factors before every division. The table lists
+$v_p(H_s-p^2H_{s-2})$ in increasing order of $s$. Each displayed
+valuation is exact at the working precision.
+\begin{center}
+\begin{tabular}{@{}lll@{}}\toprule
+Prime & Levels $s$ & Observed two-step defect valuations\\\midrule
+$3$ & $2,\ldots,10$ & $4,7,10,13,16,19,22,25,28$\\
+$7$ & $2,\ldots,6$ & $5,8,11,14,17$\\
+$11$ & $2,\ldots,5$ & $5,8,11,14$\\
+$19,23$ & $2,3,4$ & $5,8,11$\\
+$31,43,47$ & $2,3$ & $5,8$\\\bottomrule
+\end{tabular}
+\end{center}
+These are $30$ prime/level recurrence checks. They establish sharpness
+in the tested cases, not equality of the defect valuation for every
+prime and level.
+
+\subsection{Formal checks and reproducibility}
+
+A third program checks the raw formal identity directly from the eta
+products. Its $13$ parameter sets include primes $3,5,7,11$, several
+values of $m$, and levels through $s=4$. Computations use exact modular
+arithmetic, with an explicit bound preventing integer overflow in
+the NumPy convolutions. Each parameter set checks only the finite
+coefficient window specified in the program.
+
+All three programs are reproduced in Appendix~\ref{app:programs}.
+The two numerical recurrence programs use only Python's standard
+library; the eta-product program also requires NumPy. The combined
+evidence consists of $23$ ordinary prime/level pairs (each checked in
+two cutoffs), $30$ supersingular recurrence pairs, and $13$ finite
+formal parameter sets. These categories are distinct. The general
+claims are supplied by the preceding arguments, rather than by an
+extrapolation from the computations.
+
+
+\appendix
+\section{An independent finite identity and valuation bound}\label{app:finite}
+
+Fix an odd prime $p\equiv3\pmod4$.  Write
+\[
+ b_j=\frac{(1/2)_j}{j!}=\frac{\binom{2j}{j}}{4^j},\qquad
+ q_s=p^s,\qquad n_s=(q_s-1)/2,\qquad
+ H_s=\sum_{k=0}^{n_s}b_k^3.
+\]
+For an odd positive integer $t\equiv1\pmod4$, put
+\[
+ C(t)=b_{(t-1)/4}^2,
+ \qquad U_s=\frac{\binom{p^s-1}{(p^s-1)/2}}{4^{p^s-1}}.
+\]
+This appendix supplies an independent finite identity and valuation
+bound. It is not needed for the supersingular argument in
+Sections~\ref{sec:jets}--\ref{sec:sscm}.
+
+\subsection{Exact interpolation identity}
+
+\begin{proposition}\label{prop:finite-lagrange}
+For every integer $n\ge0$, with $q=2n+1$,
+\begin{align}
+ \sum_{k=0}^n b_k^3
+ &=q^2b_n^2\sum_{l=0}^{\lfloor n/2\rfloor}
+ \frac{b_l^2(n!)^2}{(4l+1)(n-2l)!(n+2l+1)!} \label{eq:lagrange-first}\\
+ &=q\frac{\binom{2n}{n}}{16^n}
+ \sum_{l=0}^{\lfloor n/2\rfloor}
+ \binom{q}{n-2l}\frac{b_l^2}{4l+1}. \label{eq:lagrange-second}
+\end{align}
+\end{proposition}
+\begin{proof}
+Consider the polynomial in $T^2$ of degree $n$
+\[
+ \mathcal A_n(T)=\sum_{k=0}^n b_k^3
+       \prod_{j=0}^{k-1}\left(1-\frac{T^2}{(2j+1)^2}\right).
+\]
+Let $\mathsf P_j$ denote the classical Legendre polynomial of degree $j$.
+For $0\le j\le n$, the terminating Clausen identity gives
+\[
+ \mathcal A_n(2j+1)
+ ={}_3F_2\!\left(\begin{matrix}-j,j+1,1/2\\1,1\end{matrix};1\right)
+ =\mathsf P_j(0)^2.
+\]
+This value is zero for odd $j$, and is $b_{j/2}^2$ for even $j$.
+Lagrange interpolation at the nodes $(2j+1)^2$ gives the coefficient
+\[
+ L_j(0)=\prod_{\substack{0\le i\le n\\i\ne j}}
+ \frac{-(2i+1)^2}{(2j+1)^2-(2i+1)^2}
+ =\frac{(-1)^j((2n+1)!!)^2}
+ {4^n(2j+1)(n-j)!(n+j+1)!}.
+\]
+Only $j=2l$ contributes.  Since
+$((2n+1)!!)^2/4^n=q^2b_n^2(n!)^2$, this proves
+\eqref{eq:lagrange-first}.  Using
+$q^2b_n^2(n!)^2/q!=q\binom{2n}{n}/16^n$ proves
+\eqref{eq:lagrange-second}.
+\end{proof}
+
+In particular, define the finite index set
+\[
+ \mathcal T_s=\{t\in\mathbb Z:0<t\le p^s,\ t\equiv1\pmod4\}.
+\]
+Then the exact identity becomes
+\begin{equation}\label{eq:exact-Hs-kernel}
+ H_s=\sum_{t\in\mathcal T_s}\mathcal K_s(t),\qquad
+ \mathcal K_s(t)=p^sU_s\binom{p^s}{(p^s-t)/2}\frac{C(t)}t.
+\end{equation}
+Every quantity in this equation is rational; no convergence or analytic
+continuation is used.
+
+\subsection{Carries and unconditional divisibility}
+
+\begin{lemma}\label{lem:kernel-valuation}
+If $t=4l+1\in\mathcal T_s$ and $a=v_p(t)$, then
+\[
+ v_p(\mathcal K_s(t))=2s+2v_p\binom{2l}{l}-2a,
+ \qquad
+ v_p\binom{2l}{l}\ge\lceil a/2\rceil.
+\]
+Consequently,
+\[
+ v_p(\mathcal K_s(t))\ge2s-2\lfloor a/2\rfloor,
+ \qquad
+ v_p(H_s)\ge2\lceil s/2\rceil.
+\]
+For even $s$, equality holds: $v_p(H_s)=s$.
+\end{lemma}
+\begin{proof}
+$U_s$ is a $p$-adic unit.  If $t<p^s$ and
+$k=(p^s-t)/2$, then $v_p(k)=a$ and
+$v_p\binom{p^s}{k}=s-a$.  The latter follows from
+$\binom{p^s}{k}=(p^s/k)\binom{p^s-1}{k-1}$ and Lucas's
+theorem.  For $t=p^s$, the same formula gives $s-a=0$.
+Equation \eqref{eq:exact-Hs-kernel} gives the exact valuation asserted.
+
+For the carry bound, write $p=4h+3$.  The base-$p$ digits forced by
+$4l+1\equiv0\pmod{p^a}$ alternate, from the least significant end,
+between $3h+2$ and $h$.  If $a$ is odd, the last forced digit is
+$3h+2$; if $a$ is even, it is $h$.  In adding $l+l$, each
+$3h+2$ digit produces a carry, and each following $h$ digit,
+with its incoming carry, produces none.  Thus at least
+$\lceil a/2\rceil$ carries occur.  Kummer's theorem proves the bound.
+
+For odd $s$, $p^s\equiv3\pmod4$, so $p^s\notin\mathcal T_s$ and
+$a\le s-1$.  This gives valuation at least $s+1$.
+For even $s$, the only term with $a=s$ is $t=p^s$, and its carry
+count is exactly $s/2$.  Its valuation is $s$, whereas every other
+term has valuation at least $s+2$.  There can be no cancellation of
+this unique least-valued term.
+\end{proof}
+
+
+
+\section{Reproducible verification programs}\label{app:programs}
+Each listing is a separate executable source file. Save it under the
+specified name and run it with Python 3; it writes a JSON record next
+to its source. Listings B.1 and B.3 use only the standard library.
+Listing B.2 additionally requires NumPy. Their finite scope is described
+in Section~\ref{sec:checks}.
+
+\subsection{Ordinary half- and full-cutoff recurrences}
+Save as \path{check_recurrences.py}.
+\begin{lstlisting}
+"""Finite exact checks; the all-level theorem is proved in the paper."""
+from math import isqrt, comb
+from pathlib import Path
+import json
+
+def strip(n, p):
+    v = 0
+    while n % p == 0:
+        n //= p
+        v += 1
+    return n, v
+
+def valuation(n, p, precision):
+    n %= p**precision
+    if n == 0:
+        return {'value': precision, 'exact': False}
+    return {'value': strip(n, p)[1], 'exact': True}
+
+def terms(p, length, precision):
+    """Terms ((1/2)_k/k!)^3; all divisions are on p-units."""
+    modulus = p**precision
+    unit, v = 1, 0
+    for k in range(length):
+        assert v >= 0
+        yield (0 if 3*v >= precision else
+               pow(unit, 3, modulus)*pow(p, 3*v, modulus) % modulus)
+        a, va = strip(2*k+1, p)
+        b, vb = strip(2*k+2, p)
+        unit = unit*a*pow(b, -1, modulus) % modulus
+        v += va-vb
+
+def gaussian_trace(p):
+    for a in range(1, isqrt(p)+1, 2):
+        b = isqrt(p-a*a)
+        if a*a+b*b == p:
+            return a, b, 2*(a*a-b*b)
+    raise ValueError(p)
+
+def unit_root(p, trace, precision):
+    modulus = p**precision
+    u = trace % p
+    assert u != 0
+    for _ in range(precision):
+        u = (u-(u*u-trace*u+p*p)*
+             pow(2*u-trace, -1, modulus)) % modulus
+    assert (u*u-trace*u+p*p) % modulus == 0
+    return u
+
+def check():
+    records = []
+    for p in [5, 13, 17, 29, 37, 41]:
+        a, b, trace = gaussian_trace(p)
+        for s in range(1, 7):
+            if p**s > 100000:
+                break
+            precision = 3*s+3
+            modulus = p**precision
+            u = unit_root(p, trace, precision)
+            current = list(terms(p, p**s, precision))
+            previous = list(terms(p, p**(s-1), precision))
+            half = sum(current[:(p**s+1)//2]) % modulus
+            prevhalf = sum(previous[:(p**(s-1)+1)//2]) % modulus
+            full = sum(current) % modulus
+            prevfull = sum(previous) % modulus
+            if s == 1:
+                direct = sum(pow(comb(2*k, k), 3, modulus)*
+                             pow(64, -k, modulus) for k in range(p)) % modulus
+                assert full == direct
+            rec = {'p': p, 's': s, 'a': a, 'b': b,
+                   'precision': precision, 'modulus': modulus, 'unit_root': u,
+                   'half': half, 'previous_half': prevhalf,
+                   'full': full, 'previous_full': prevfull,
+                   'half_defect': valuation(half-u*prevhalf, p, precision),
+                   'full_defect': valuation(full-u*prevfull, p, precision),
+                   'tail': valuation(full-half, p, precision),
+                   'tail_defect': valuation(full-half-u*(prevfull-prevhalf),
+                                             p, precision)}
+            assert rec['half_defect'] == {'value': 3*s, 'exact': True}
+            assert rec['full_defect'] == {'value': 3*s, 'exact': True}
+            records.append(rec)
+    return {'scope': 'Finite checks, not a proof of untested cases.',
+            'prime_level_pairs': len(records), 'all_passed': True,
+            'all_half_and_full_defects_exactly_3s': True, 'records': records}
+
+if __name__ == '__main__':
+    result = check()
+    Path(__file__).with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
+    print(json.dumps({k:v for k,v in result.items() if k != 'records'}))
+
+
+\end{lstlisting}
+
+\subsection{Raw formal eta-product check}
+Save as \path{check_raw_formal.py}.
+\begin{lstlisting}
+from math import comb
+import numpy as np
+import json
+from pathlib import Path
+
+
+def mul(a,b,N,mod):
+ return np.convolve(a,b)[:N+1]%mod
+
+def eta_product(N, exponents, mod):
+ a=np.zeros(N+1,dtype=np.int64);a[0]=1
+ for d,e in exponents.items():
+  for n in range(1,N//d+1):
+   step=d*n
+   b=np.zeros(N+1,dtype=np.int64)
+   for k in range(N//step+1):
+    if e>=0:
+     if k>e: break
+     coeff=(-1)**k*comb(e,k)
+    else: coeff=comb(-e+k-1,k)
+    b[k*step]=coeff%mod
+   a=mul(a,b,N,mod)
+ return a
+
+def substitute_p(a,p,N):
+ b=np.zeros(N+1,dtype=np.int64)
+ b[:p*(N//p)+1:p]=a[:N//p+1]
+ return b
+
+def check(p,s,m,N,extra=1):
+ mod=p**(3*s+extra)
+ assert (N+1)*(mod-1)**2<2**63
+ R=eta_product(N,{1:12,4:12,2:-24},mod)
+ theta=eta_product(N,{2:20,1:-8,4:-8},mod)
+ rr=mul(R,R,N,mod)
+ u=np.zeros(N+1,dtype=np.int64);u[1:]=rr[:N]
+ curr=np.zeros(N+1,dtype=np.int64);prev=curr.copy();power=curr.copy();power[0]=1
+ lim=min((m*p**s-1)//2,N)
+ lower=(m*p**(s-1)-1)//2
+ for j in range(lim+1):
+  aj=pow(comb(2*j,j),3,mod)
+  curr=(curr+aj*power)%mod
+  if j<=lower:prev=(prev+aj*power)%mod
+  if j<lim:power=mul(power,u,N,mod)
+ defect=(mul(theta,substitute_p(prev,p,N),N,mod)-mul(substitute_p(theta,p,N),curr,N,mod))%mod
+ req=p**(3*s)
+ bad=[(int(j),int(v)) for j,v in enumerate(defect) if v%req]
+ nonzero=[int(j) for j,v in enumerate(defect) if v]
+ return dict(p=p,s=s,m=m,q_even_degree=N,required_exponent=3*s,extra_precision=extra,failures=bad[:5],first_nonzero_at_extra_precision=nonzero[:8])
+
+if __name__=='__main__':
+ out=[]
+ for p,s,m,N in [(3,1,1,80),(3,2,1,100),(3,3,1,150),(3,4,1,180),(5,1,1,100),(5,2,1,150),(5,3,1,180),(5,3,2,220),(5,3,3,260),(5,3,5,360),(7,2,1,180),(7,2,3,220),(11,2,1,200)]:
+  r=check(p,s,m,N)
+  out.append(r);print(json.dumps(r),flush=True)
+ Path(__file__).with_suffix('.json').write_text(json.dumps(out,indent=2))
+
+\end{lstlisting}
+
+\subsection{Supersingular half-cutoff recurrence}
+Save as \path{check_supersingular.py}.
+\begin{lstlisting}
+"""Exact finite checks of the half-cutoff supersingular recurrence.
+
+This program does not establish an untested prime or level.
+"""
+from pathlib import Path
+import json
+from math import comb
+
+def strip(n, p):
+    v = 0
+    while n % p == 0:
+        n //= p
+        v += 1
+    return n, v
+
+def val(n, p, e):
+    n %= p**e
+    return {'value': e, 'exact': False} if not n else {'value': strip(n,p)[1], 'exact': True}
+
+def levels(p, max_s):
+    e=3*max_s+5
+    mod=p**e
+    ends={(p**s-1)//2:s for s in range(max_s+1)}
+    out={}
+    unit=1;v=0;total=0
+    for k in range((p**max_s+1)//2):
+        term=0 if 3*v>=e else pow(unit,3,mod)*pow(p,3*v,mod)%mod
+        total=(total+term)%mod
+        if k in ends:
+            s=ends[k];out[s]=total
+        a,va=strip(2*k+1,p);b,vb=strip(2*k+2,p)
+        unit=unit*a*pow(b,-1,mod)%mod;v+=va-vb
+        assert v>=0
+    direct=sum(pow(comb(2*k,k),3,mod)*pow(64,-k,mod) for k in range((p+1)//2))%mod
+    assert out[1]==direct
+    result=[]
+    for s in range(1,max_s+1):
+        row={'p':p,'s':s,'precision':e,'T':out[s],'valuation_T':val(out[s],p,e)}
+        if s>=2:
+            defect=(out[s]-p*p*out[s-2])%mod
+            row.update(defect=defect,valuation_defect=val(defect,p,e),target=3*s-1)
+            row['proved_bound']=3*s-1-int(p==3)
+            assert row['valuation_defect']['value']>=row['proved_bound']
+        result.append(row)
+    return result
+
+if __name__=='__main__':
+    rows=[]
+    for p,s in [(3,10),(7,6),(11,5),(19,4),(23,4),(31,3),(43,3),(47,3)]:
+        chunk=levels(p,s);rows.extend(chunk)
+        print(json.dumps({'p':p,'T_values':[r['valuation_T']['value'] for r in chunk],
+                          'defect_values':[r['valuation_defect']['value'] for r in chunk if r['s']>=2]}),flush=True)
+    Path(__file__).with_suffix('.json').write_text(json.dumps({
+        'scope':'Finite checks, not a proof of untested cases.',
+        'recurrence_pairs':sum(r['s']>=2 for r in rows),
+        'all_passed':True,'records':rows},indent=2)+'\n')
+
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+\bibitem{Swisher}
+H. Swisher, \emph{On the supercongruence conjectures of van Hamme},
+Research in the Mathematical Sciences \textbf{2} (2015), 18;
+\href{https://doi.org/10.1186/s40687-015-0037-6}{doi:10.1186/s40687-015-0037-6};
+\href{https://arxiv.org/abs/1504.01028}{arXiv:1504.01028}, Table~2, (H.3).
+
+\bibitem{Guo} V.~J.~W.~Guo, \emph{Dwork-type $q$-congruences through
+the $q$-Lucas theorem}, Revista de la Real Academia de Ciencias Exactas,
+F\'isicas y Naturales. Serie A. Matem\'aticas \textbf{119} (2025), 97;
+\href{https://doi.org/10.1007/s13398-025-01762-9}{doi:10.1007/s13398-025-01762-9};
+\href{https://arxiv.org/abs/2310.15207}{arXiv:2310.15207}, equations (1.9)--(1.10).
+
+\bibitem{Beukers}
+F. Beukers, \emph{Supercongruences using modular forms},
+\href{https://arxiv.org/abs/2403.03301v3}{arXiv:2403.03301v3},
+especially the modular trace argument and Appendix~C, Section~9.1.
+
+\bibitem{BV3} F.~Beukers and M.~Vlasenko, \emph{Dwork crystals III:
+from excellent Frobenius lifts towards supercongruences},
+\href{https://arxiv.org/abs/2105.14841}{arXiv:2105.14841}.
+
+\bibitem{Katz}
+N. M. Katz, \emph{$p$-adic properties of modular schemes and modular forms},
+in Modular Functions of One Variable III, Lecture Notes in Mathematics
+\textbf{350} (1973), 69--190;
+\href{https://web.math.princeton.edu/~nmk/old/padicpropMFMS.pdf}{author's scan}.
+See Proposition~2.7.1, Sections~3.1--3.4, and Appendix~A2, in particular
+equations (A2.2.1) and (A2.2.7), printed pp.~175--177.
+
+\bibitem{BM}
+P. Berthelot and W. Messing, \emph{Th\'eorie de Dieudonn\'e cristalline I},
+Ast\'erisque \textbf{63} (1979), 17--37;
+\href{https://numdam.org/item/AST_1979__63__17_0.pdf}{original text}.
+See Section~2.1 for connections and lift comparison, Theorem~2 and the
+Frobenius--Verschiebung constructions in Section~2, and Section~3,
+equation~(3.1), for the abelian-scheme cohomology and Hodge filtration.
+
+\bibitem{Shirai}
+R. Shirai, \emph{$q$-deformation with $(\varphi,\Gamma)$ structure of the
+de Rham cohomology of the Legendre family of elliptic curves},
+\href{https://arxiv.org/abs/2006.12310}{arXiv:2006.12310}.
+The introduction records the Legendre basis, crystalline comparison,
+cup product, and the sign $(-1)^{(p-1)/2}$ in the unit-root normalization;
+Definition~3.1 records Frobenius--Hodge divisibility.
+
+\bibitem{Stacks}
+The Stacks Project Authors, \emph{The Stacks Project},
+\href{https://stacks.math.columbia.edu/tag/07JH}{Proposition~60.17.4 (07JH)},
+crystalline Taylor comparison;
+\href{https://stacks.math.columbia.edu/tag/07MZ}{Remark~60.24.14 (07MZ)},
+integral completed crystalline--de Rham comparison; and
+\href{https://stacks.math.columbia.edu/tag/07N5}{Theorem~60.26.4 (07N5)},
+the canonical integral Frobenius map. Accessed 10 November 2026.
+
+\bibitem{Ligozat}
+G. Ligozat, \emph{Courbes modulaires de genre 1},
+M\'emoires de la Soci\'et\'e Math\'ematique de France \textbf{43} (1975),
+5--80, Proposition~3.2.8;
+\href{https://www.numdam.org/article/MSMF_1975__43__5_0.pdf}{original text}.
+
+\bibitem{DLMF}
+NIST Digital Library of Mathematical Functions,
+\href{https://dlmf.nist.gov/20.7}{Section~20.7}, theta identities and
+transformations. Accessed 10 November 2026.
+\end{thebibliography}
+\end{document}
