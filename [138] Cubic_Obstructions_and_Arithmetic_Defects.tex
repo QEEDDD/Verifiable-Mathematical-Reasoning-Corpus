@@ -1,0 +1,1186 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=26mm,headheight=15pt]{geometry}
+\usepackage{microtype}
+\usepackage{booktabs,tabularx,array,longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={Cubic Obstructions to Zero-Sector Reduction and Arithmetic Defect Formulas},pdfauthor={Research draft prepared for Keio},pdfsubject={Exact proofs, counterexamples, and explicit priority audit}}
+\definecolor{ink}{HTML}{213C50}
+\definecolor{muted}{HTML}{52616B}
+\definecolor{rulegray}{HTML}{C6CDD2}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{muted}Cubic obstructions and arithmetic defects}
+\fancyhead[R]{\small\sffamily\color{muted}Research note}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{3pt}
+\setlist{itemsep=3pt,topsep=5pt}
+\widowpenalty=10000
+\clubpenalty=10000
+\raggedbottom
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\Disc}{Disc}
+\DeclareMathOperator{\rad}{rad}
+\newcommand{\N}{\mathbb N}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Z}{\mathbb Z}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{rulegray},framesep=6pt,aboveskip=10pt,belowskip=10pt}
+\title{\LARGE\bfseries\color{ink}Cubic Obstructions to Zero-Sector Reduction\\[5pt]
+\Large and Arithmetic Defect Formulas}
+\author{\normalsize Research draft prepared for Keio}
+\date{\normalsize 7 November 2026 (UTC)}
+\begin{document}
+\maketitle
+\begin{abstract}
+We give an exact negative answer to Question~6.1 of Cardon, Forg\'acs,
+Piotrowski, Sorensen and White (2018).  For
+$T_{\alpha,\beta}(z^k)=e^{-\alpha k^\beta}z^k$, the original proposed
+sufficiency of $\beta\ge2$ fails already at $\beta=3$ and
+$\alpha=\log(100/99)$: the image of $(z-1)^3$ has a strictly negative
+cubic discriminant.  A general calculation gives an explicit
+third-finite-difference obstruction for diagonal exponential semigroups,
+and consequently a quadratic-generator rigidity theorem.  Separately,
+an odd $p$-adic logarithm expansion proves the Wolstenholme criterion
+printed in Me\v{s}trovi\'c's 2015 Remark~1.1, including all small primes.
+We identify why this arithmetic conclusion is already an elementary
+consequence of earlier established congruences.  Appendices prove the
+unchanged binomial power-sum assertion in his 2014 Conjecture~19, derive
+an exact local valuation refinement, and give a counterexample to the
+first assertion of Conjecture~11.  All mathematical proofs are
+unconditional.  Historical priority is not certified, and no result is
+claimed to satisfy all six novelty gates specified in the research
+brief.  No proof of RH, BSD, abc, or infinitude of Wieferich or
+Wolstenholme primes is obtained.
+\end{abstract}
+
+\begin{center}
+\begin{minipage}{0.92\textwidth}
+\small\textbf{Reading this draft.}
+``Answer to a printed assertion'' describes a proved mathematical
+conclusion.  It does not, by itself, assert that the assertion was still
+open on the date of this draft or that the proof is historically new.
+Section~\ref{sec:audit} records these distinctions explicitly.  The
+single \texttt{.tex} source contains all proofs, references, and an
+exact-arithmetic verification program; no external figures, bibliography
+files, or source fragments are required to compile it.
+\end{minipage}
+\end{center}
+\vspace{4pt}
+\noindent\textbf{Keywords.} Zero-sector reduction; multiplier sequences;
+cubic discriminant; finite differences; Wolstenholme primes;
+harmonic congruences; power sums.
+
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Targets, claims, and conventions}
+\label{sec:targets}
+
+The principal target is the parameter criterion proposed in
+\cite[Question~6.1]{CardonEtAl2018}.  Our counterexample uses the original
+diagonal operator and an admissible real polynomial, without replacing
+the target by a newly defined invariant.  The quantitative semigroup
+problem studied afterward is auxiliary: its solution explains the
+counterexample but is not counted as an additional pre-existing named
+problem.
+
+The arithmetic targets are identified by their original numbered
+locations.  The following inventory distinguishes the conclusions from
+their research-status assessment.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}L{0.30\textwidth}Y@{}}
+\toprule
+Original location & Exact conclusion in this draft\\
+\midrule
+Cardon et al. (2018), Question 6.1 & Negative answer to the proposed
+``$\beta\ge2$'' sufficiency, with a rational cubic certificate.\\[4pt]
+Me\v{s}trovi\'c (2015), Remark 1.1 & The displayed harmonic congruence is
+equivalent to the Wolstenholme condition.  This follows from earlier
+arithmetic and is not claimed as a new method.\\[4pt]
+Me\v{s}trovi\'c (2014), Conjecture 19 & The stated congruence holds for
+every required $k$ and even $n$; an exact local valuation is also proved.\\[4pt]
+Me\v{s}trovi\'c (2014), Conjecture 11 & The first nonexistence assertion
+is false at $n=5$.  The second assertion is not resolved here.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Throughout, $v_p$ denotes the usual valuation on $\mathbb Q$, with
+$v_p(0)=+\infty$.  A rational congruence $u\equiv v\pmod{p^r}$ means
+$v_p(u-v)\ge r$.  When denominators are units at $p$, this is the usual
+congruence in $\mathbb Z_{(p)}$.  We write
+$\Delta g(m)=g(m+1)-g(m)$.  Zeros are counted with multiplicity;
+repeated zeros are allowed in all polynomial tests below.
+\section{A negative answer to the power-exponent question of Cardon et al.}
+\label{sec:cardon-counterexample}
+
+\subsection{The original problem and its quantifiers}
+
+Following Cardon, Forg\'acs, Piotrowski, Sorensen and White
+\cite{CardonEtAl2018}, set
+\[
+ S(\theta)=\{0\}\cup
+ \{z\in\mathbb C\setminus\{0\}:|\arg z|\leq\theta\},
+ \qquad 0\leq\theta<\frac{\pi}{2}.
+\]
+These are sectors about the nonnegative real axis.  Writing
+$Z(f)$ for the multiset of zeros of a nonzero polynomial $f$, the
+sector-reduction property is
+\begin{equation}\label{eq:sector-quantifiers}
+ \begin{split}
+ &\text{for every }\theta\in(0,\pi/2)
+ \text{ there exists }\gamma\in[0,\theta)\text{ such that}\\
+ &\qquad Z(f)\subseteq S(\theta)
+ \quad\Longrightarrow\quad Z(Tf)\subseteq S(\gamma)
+ \quad\text{for every nonzero }f\in\mathbb R[z].
+ \end{split}
+\end{equation}
+All operators considered below have strictly positive diagonal entries,
+so $Tf$ is nonzero whenever $f$ is nonzero.
+
+Question~6.1 of \cite{CardonEtAl2018} asks whether, for a positive
+parameter $\alpha$, the operator (writing $\beta$ for the exponent
+called $p$ in the original question)
+\begin{equation}\label{eq:cardon-original-operator}
+ T_{\alpha,\beta}[z^k]=\exp(-\alpha k^\beta)z^k,
+ \qquad k=0,1,2,\ldots,
+\end{equation}
+is zero-sector reducing if and only if $\beta\geq2$.
+The question appears on page~489 of the published paper and page~10
+of arXiv:1802.02641v1.  In particular, its proposed sufficient direction
+would make \eqref{eq:sector-quantifiers} hold for every
+$\alpha>0$ and every $\beta\geq2$.  The next theorem disproves this
+direction with the original operator and the original sector convention.
+
+\begin{theorem}[An exact cubic counterexample]
+\label{thm:cardon-negative}
+For every
+\[
+ 0<\alpha\leq\log\frac{100}{99},
+\]
+the polynomial $T_{\alpha,3}[(z-1)^3]$ has two nonreal zeros.
+Consequently $T_{\alpha,3}$ is not zero-sector reducing, and
+Question~6.1 of \cite{CardonEtAl2018} has a negative answer.
+\end{theorem}
+
+\begin{proof}
+Put $q=e^{-\alpha}$, so $99/100\leq q<1$.  The image of the
+polynomial with a triple positive root is
+\[
+ P_q(z)=q^{27}z^3-3q^8z^2+3qz-1.
+\]
+For $az^3+bz^2+cz+d$, the discriminant is
+\[
+ b^2c^2-4ac^3-4b^3d-27a^2d^2+18abcd.
+\]
+Substitution and factorization give the exact identity
+\begin{equation}\label{eq:cardon-exact-disc}
+ \operatorname{Disc}(P_q)
+ =-27q^{18}(1-q^6)^2
+   \bigl(q^{24}+2q^{18}+3q^{12}-2q^6-3\bigr).
+\end{equation}
+For completeness, putting $u=q^6$ reduces the factorization to
+\[
+ 3-4u-4u^2+6u^3-u^6
+ =-(u-1)^2(u^4+2u^3+3u^2-2u-3).
+\]
+Bernoulli's inequality gives $q^r\geq1-r/100$ for each
+positive integer $r$, while $q^6\leq1$.  Therefore
+\begin{align*}
+ q^{24}+2q^{18}+3q^{12}-2q^6-3
+ &\geq
+ \left(1-\frac{24}{100}\right)
+ +2\left(1-\frac{18}{100}\right)
+ +3\left(1-\frac{12}{100}\right)-2-3\\
+ &=\frac1{25}>0.
+\end{align*}
+Since $0<q<1$, equation~\eqref{eq:cardon-exact-disc} is strictly
+negative.  A real cubic with negative discriminant has one real
+zero and one nonreal conjugate pair.
+
+Let $\zeta$ be one of the nonreal zeros.  The input $(z-1)^3$
+has all its zeros in $S(\theta)$ for every $\theta>0$.
+Choose
+\[
+ 0<\theta<\min\{|\arg\zeta|,\pi/2\}.
+\]
+Then $\zeta\notin S(\theta)$, and hence it cannot belong to any
+$S(\gamma)$ with $0\leq\gamma<\theta$.  This contradicts
+\eqref{eq:sector-quantifiers}.  The argument uses positive
+half-angles and is independent of the convention at $\theta=0$.
+\end{proof}
+
+\begin{remark}[A rational certificate]
+At the particular value $\alpha=\log(100/99)$, every coefficient
+of $P_q$ is rational.  The proof consists of a rational polynomial
+identity and an explicit rational strict inequality.  No numerical
+root approximation or finite-height exclusion enters the argument.
+\end{remark}
+
+\subsection{A quantitative third-difference obstruction}
+
+Let $g:\mathbb N_0\to\mathbb R$ be any real sequence, and set
+\begin{equation}\label{eq:diagonal-flow}
+ T_t^g[z^k]=e^{-t g(k)}z^k,\qquad t\ge0.
+\end{equation}
+For a fixed $m\ge0$, normalize its four relevant values by
+\[
+ c_m=\min_{0\le i\le3}g(m+i),\qquad
+ h_i=g(m+i)-c_m,\qquad
+ M=\max_{0\le i\le3}h_i.
+\]
+Thus $0\le h_i\le M$.  Subtracting $c_m$ multiplies the cubic
+factor of the transformed polynomial by a positive scalar and does
+not change its zeros.  Its third difference is unchanged:
+\[
+ d=\Delta^3g(m)=h_3-3h_2+3h_1-h_0.
+\]
+
+\begin{lemma}[Quantitative cubic obstruction]
+\label{lem:quantitative-cubic}
+If $d\ne0$, then $M>0$, and
+$T_t^g[z^m(z-1)^3]$ has two nonreal zeros for every
+\begin{equation}\label{eq:explicit-time}
+ 0<t<\frac{d^2}{192M^3}.
+\end{equation}
+More precisely, the normalized cubic
+\[
+ P_t(z)=e^{-t h_3}z^3-3e^{-t h_2}z^2+3e^{-t h_1}z-e^{-t h_0}
+\]
+satisfies, for every $t\ge0$,
+\begin{equation}\label{eq:quantitative-disc}
+ \Disc(P_t)\le -27d^2t^2+5184M^3t^3.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The exact discriminant is
+\begin{align}
+ D(t)={}&81e^{-t(2h_1+2h_2)}
+ -108e^{-t(3h_1+h_3)}
+ -108e^{-t(h_0+3h_2)}\notag\\
+ &-27e^{-t(2h_0+2h_3)}
+ +162e^{-t(h_0+h_1+h_2+h_3)}.\label{eq:five-weights}
+\end{align}
+Expanding through second order gives the polynomial identities
+\[
+ D(0)=D'(0)=0,\qquad D''(0)=-54d^2.
+\]
+For instance, the second identity of nonzero degree is equivalent to
+\begin{align*}
+ &81(2h_1+2h_2)^2-108(3h_1+h_3)^2-108(h_0+3h_2)^2\\
+ &\qquad -27(2h_0+2h_3)^2
+ +162(h_0+h_1+h_2+h_3)^2=-54d^2.
+\end{align*}
+Every exponential rate in \eqref{eq:five-weights} belongs to $[0,4M]$,
+and the sum of the absolute numerical weights is
+$81+108+108+27+162=486$.  It follows that
+\[
+ |D^{(3)}(s)|\le486(4M)^3=31104M^3\qquad(s\ge0).
+\]
+Taylor's theorem with its third-order remainder therefore gives
+\[
+ \bigl|D(t)+27d^2t^2\bigr|\le5184M^3t^3.
+\]
+This proves \eqref{eq:quantitative-disc}; the right side is strictly
+negative under \eqref{eq:explicit-time}.  Finally,
+\[
+ T_t^g[z^m(z-1)^3]=e^{-t c_m}z^mP_t(z),
+\]
+so the nonreal cubic zeros are zeros of the original transformed
+polynomial.  Every constant in the bound is explicit.
+\end{proof}
+
+\begin{corollary}[Every superquadratic power fails near zero]
+\label{cor:superquadratic-power}
+For every real $\beta>2$, let
+\[
+ d_\beta=3^\beta-3\cdot2^\beta+3.
+\]
+Then $d_\beta>0$, and $T_{\alpha,\beta}[(z-1)^3]$ has two nonreal
+zeros whenever
+\[
+ 0<\alpha<\frac{d_\beta^2}{192\,3^{3\beta}}.
+\]
+\end{corollary}
+\begin{proof}
+The repeated finite-difference formula gives
+\[
+ d_\beta=\beta(\beta-1)(\beta-2)
+ \int_{[0,1]^3}(u+v+w)^{\beta-3}\,du\,dv\,dw>0.
+\]
+For $2<\beta<3$, first apply the formula to $(\varepsilon+x)^\beta$
+and let $\varepsilon\downarrow0$.  The integrand is locally integrable
+at the origin; monotone convergence proves the identity.  For
+$\beta\ge3$, the formula applies directly.  The lemma with $m=0$,
+$g(k)=k^\beta$, and $M=3^\beta$ now proves the assertion.
+\end{proof}
+
+\begin{proposition}[The size of the emerging imaginary parts]
+\label{prop:splitting}
+Under the hypotheses of Lemma~\ref{lem:quantitative-cubic}, the two
+nonreal zeros have imaginary parts of magnitude
+\[
+ \frac{\sqrt3}{2}|d|^{1/3}t^{1/3}+O(t^{2/3})
+ \qquad(t\downarrow0).
+\]
+Their arguments have the same leading magnitude.
+\end{proposition}
+\begin{proof}
+Put $t=u^3$ and $z=1+uw$.  The expression
+\[
+ Q_u(w)=u^{-3}P_{u^3}(1+uw)
+\]
+extends analytically to $u=0$, because $P_0(z)=(z-1)^3$.
+Its value there is $Q_0(w)=w^3-d$.  Since $d\ne0$, these three
+roots are simple, so the analytic implicit-function theorem gives
+$w_j(u)=\omega_j+O(u)$, where $\omega_j^3=d$.  Thus
+$z_j(t)=1+t^{1/3}\omega_j+O(t^{2/3})$.  The two nonreal cube roots
+of the nonzero real number $d$ have imaginary magnitude
+$(\sqrt3/2)|d|^{1/3}$.  Finally,
+$\arg(1+\eta)=\operatorname{Im}\eta+O(|\eta|^2)$ near $\eta=0$.
+\end{proof}
+
+The exact rational example above is stronger than the conservative
+general time bound in this particular case.  Neither result asserts
+failure for every positive time when $\beta>2$.  The assertion is
+failure for all sufficiently small positive times, plus the separately
+certified value $\alpha=\log(100/99)$ at $\beta=3$.
+
+\subsection{Rigidity of diagonal semigroups}
+
+\begin{theorem}[Quadratic rigidity]
+\label{thm:diagonal-rigidity}
+Let $g:\mathbb N_0\to\mathbb R$.  The following are equivalent.
+\begin{enumerate}
+\item For every $t\geq0$, $T_t^g$ preserves polynomials whose
+zeros all lie in $[0,\infty)$.
+\item There exists a sequence $t_j>0$, $t_j\to0$, such that
+each $T_{t_j}^g$ preserves polynomials whose zeros all lie in
+$[0,\infty)$.
+\item There are real constants $A,B,C$, with $A\geq0$, such that
+\[
+ g(k)=Ak^2+Bk+C\qquad(k\in\mathbb N_0).
+\]
+\end{enumerate}
+Furthermore, $T_t^g$ is zero-sector reducing for every $t>0$
+if and only if $g(k)=Ak^2+Bk+C$ with $A>0$.
+\end{theorem}
+
+\begin{proof}
+The first assertion implies the second.  Suppose the second holds.
+If $\Delta^3g(m)\ne0$ for some $m$, then
+Lemma~\ref{lem:quantitative-cubic} produces nonreal zeros for
+$T_{t_j}^g[z^m(z-1)^3]$ whenever $j$ is large enough.
+This is impossible.  Thus $\Delta^3g(m)=0$ for every $m\geq0$,
+and successive summation of finite differences gives
+\[
+ g(k)=g(0)+k\Delta g(0)+\binom{k}{2}\Delta^2g(0).
+\]
+This is a quadratic polynomial $Ak^2+Bk+C$ on $\mathbb N_0$.
+
+The image of $(z-1)^2$ has discriminant
+\[
+ 4e^{-2tg(1)}\left(1-e^{-t\Delta^2g(0)}\right)
+ =4e^{-2tg(1)}(1-e^{-2At}).
+\]
+Nonnegativity for even one $t_j>0$ forces $A\geq0$.
+
+Conversely, the multiplier $e^{-At k^2}$ preserves nonnegative
+real-rootedness for $A\geq0$; this is the classical Gaussian
+multiplier property, also supplied by
+\cite[Theorem~2.5]{CardonEtAl2018} at $\theta=0$.
+Multiplication by $e^{-tC}$ and substitution $z\mapsto e^{-tB}z$
+preserve nonnegative real-rootedness, which proves the first assertion.
+
+If every $T_t^g$, $t>0$, is zero-sector reducing, it also preserves
+$S(0)$.  Indeed, apply sector reduction to every arbitrarily small
+positive $\theta$ and use $\bigcap_{\theta>0}S(\theta)=S(0)$.
+The established equivalence therefore applies.  If $A=0$,
+the operator is merely a nonzero scalar and a positive dilation;
+the angles of the roots of $z^2-2(\cos\theta)z+1$ remain
+$\pm\theta$, so strict sector reduction fails.
+
+If $A>0$, \cite[Theorem~2.5]{CardonEtAl2018} supplies the uniform
+half-angle
+\[
+ \gamma(t,\theta)
+ =\arccos\bigl(\min\{1,e^{At}\cos\theta\}\bigr)<\theta,
+ \qquad 0<\theta<\pi/2.
+\]
+The additional positive dilation and scalar do not alter root
+arguments.  This proves strict sector reduction for every $t>0$.
+\end{proof}
+
+
+\begin{remark}[The classification is restricted to semigroups]
+Theorem~\ref{thm:diagonal-rigidity} classifies the stated exponential
+families under the common small-time preservation hypothesis.  It is
+not a characterization of all individual zero-sector reducing
+operators, and therefore is not an answer to the broader
+Question~6.2 of \cite{CardonEtAl2018}.
+\end{remark}
+
+\paragraph{Methodological provenance.}
+Repeated-root tests and discriminant geometry have a substantial
+history in multiplier-sequence theory; see, for example,
+Passare--Rojas--Shapiro \cite{PassareRojasShapiro2011}.  We do not claim
+that using a discriminant is a new principle.  The actual calculations
+supplied here are the rational sign certificate, the explicit square
+$-27(\Delta^3g(m))^2$ in the Taylor coefficient, its uniform remainder
+bound, and the consequences with the quantifiers displayed above.
+Their historical priority remains unverified.
+\section{A printed Wolstenholme criterion and its novelty obstruction}
+
+For a prime $p$, put
+\[
+ C_p=\binom{2p-1}{p-1},\qquad
+ R_j=R_j(p)=\sum_{a=1}^{p-1}a^{-j}.
+\]
+Rational congruences modulo $p^r$ mean that the difference has $p$-adic
+valuation at least $r$.  When all denominators are prime to $p$, this is the
+usual congruence in $\mathbb Z_{(p)}$.
+
+Romeo Me\v{s}trovi\'c, \emph{Congruences for Wolstenholme primes},
+Czechoslovak Mathematical Journal \textbf{65} (2015), 237--253,
+Remark~1.1 on p.~240 \cite{Mestrovic2015}, poses the converse question whether a prime satisfying
+\begin{equation}\label{eq:printed-mestrovic}
+ C_p\equiv 1+2pR_1+\frac23p^3R_3\pmod{p^7}
+\end{equation}
+must be a Wolstenholme prime.  The forward implication for Wolstenholme
+primes is Corollary~1.1 of the same paper.  The conjecture also occurs as
+Remark~1 in arXiv:1108.4178v1 (2011).
+
+\paragraph{The exact conclusion.}
+For every prime $p$, \eqref{eq:printed-mestrovic} holds if and only if
+$p$ is a Wolstenholme prime, where the latter means
+$C_p\equiv1\pmod{p^4}$.  In fact, for every prime $p\ge11$,
+\begin{equation}\label{eq:square-defect}
+ C_p-1-2pR_1-\frac23p^3R_3
+ \equiv 2p^2R_1^2\pmod{p^7}.
+\end{equation}
+
+\paragraph{Elementary harmonic valuations.}
+If $1\le j<p-1$, then $R_j\equiv0\pmod p$: inversion permutes
+$\mathbb F_p^\times$, and the sum of $j$th powers over that group is zero.
+For odd $j$ with $j+1<p-1$, reflection gives
+\[
+ R_j=\sum_{a=1}^{p-1}(p-a)^{-j}
+ \equiv -R_j-jpR_{j+1}\pmod{p^2}.
+\]
+Thus $R_j\equiv0\pmod{p^2}$ for these odd $j$.
+In particular, for $p\ge11$,
+\[
+ v_p(R_1),v_p(R_3),v_p(R_5)\ge2.
+\]
+
+\paragraph{Proof of the square defect.}
+Define
+\[
+ F_p(z)=\prod_{a=1}^{p-1}(1+z/a).
+\]
+For odd $p$, $F_p(p)=C_p$ and
+$F_p(-p)=\prod_{a=1}^{p-1}(a-p)/a=1$ exactly.
+The $p$-adic logarithm, which is convergent for every factor under
+consideration, therefore yields
+\begin{equation}\label{eq:odd-log}
+ \log C_p
+ =\log F_p(p)-\log F_p(-p)
+ =2\sum_{\substack{j\ge1\\j\text{ odd}}}\frac{p^j}{j}R_j.
+\end{equation}
+For $p\ge11$, the $j=5$ summand has valuation at least $7$.
+For $j\ge7$, $j-v_p(j)\ge7$, so every remaining term belongs to
+$p^7\mathbb Z_p$.  Indeed, the only borderline value $j=7$ has
+$v_p(7)=0$, and for $j\ge8$ a positive $v_p(j)$ implies $j\ge11$ and
+$v_p(j)\le j-7$.  Consequently
+\[
+ \log C_p\equiv L:=2pR_1+\frac23p^3R_3\pmod{p^7}.
+\]
+Here $v_p(L)\ge3$.  In the exponential series all terms of degree
+$r\ge3$ have valuation at least $3r-v_p(r!)\ge7$ for $p\ge11$.
+For example, $v_p(r!)\le(r-1)/(p-1)$ gives
+$3r-v_p(r!)\ge3r-(r-1)/10>7$ for $r\ge3$.
+Thus
+\[
+ C_p\equiv1+L+\frac12L^2\pmod{p^7}.
+\]
+The product of $2pR_1$ and $(2/3)p^3R_3$ has valuation at least $8$,
+and the square of the latter has valuation at least $10$.  This proves
+\eqref{eq:square-defect}.
+
+Since $v_p(R_1)\ge2$,
+\[
+ 2p^2R_1^2\equiv0\pmod{p^7}
+ \quad\Longleftrightarrow\quad v_p(R_1)\ge3.
+\]
+The same logarithmic expansion reduced modulo $p^4$ gives
+$C_p\equiv1+2pR_1\pmod{p^4}$, so this is precisely the Wolstenholme
+condition.  This proves the result for $p\ge11$.
+
+For the remaining primes, the exact defects
+$\Delta_p=C_p-1-2pR_1-(2/3)p^3R_3$ are
+\[
+\begin{array}{c|c|c|c}
+p& C_p&\Delta_p&v_p(\Delta_p)\\\hline
+2&3&-22/3&1\\
+3&10&-81/4&4\\
+5&126&15625/2592&6\\
+7&1716&50706719/36000&6
+\end{array}
+\]
+None satisfies \eqref{eq:printed-mestrovic}; none is Wolstenholme.
+The all-prime assertion follows.
+
+\paragraph{Why this is not a G5 success.}
+Me\v{s}trovi\'c, \emph{On the mod $p^7$ determination of
+$\binom{2p-1}{p-1}$}, Rocky Mountain Journal of Mathematics
+\textbf{44} (2014), 633--648,
+DOI 10.1216/RMJ-2014-44-2-633, Theorem~1.1 \cite{Mestrovic2014p7}
+(arXiv:1108.1174v1), already proves
+\begin{equation}\label{eq:known-mestrovic}
+ C_p\equiv1-2pR_1-2p^2R_2+2p^2R_1^2\pmod{p^7}
+ \qquad(p\ge11).
+\end{equation}
+Reflection, without a Wolstenholme assumption, gives
+\[
+ 2R_1+pR_2+p^2R_3+p^3R_4\equiv0\pmod{p^6},
+ \qquad 2R_3+3pR_4\equiv0\pmod{p^4}.
+\]
+To justify the first formula, expand $(p-a)^{-1}$ through degree $5$;
+the omitted $p^4R_5$ and $p^5R_6$ terms belong to $p^6\mathbb Z_p$.
+For the second formula expand $(p-a)^{-3}$; the omitted
+$6p^2R_5$ and $10p^3R_6$ terms belong to $p^4\mathbb Z_p$.
+Eliminating $R_4$ gives
+\[
+ 2R_1+pR_2+\tfrac13p^2R_3\equiv0\pmod{p^6}.
+\]
+Substituting this in \eqref{eq:known-mestrovic} immediately gives
+\eqref{eq:square-defect}.  The 2014 paper's Remark~1.6 already uses
+the same square $2p^2R_1^2$ to prove a neighboring characterization.
+The generic reflection relation also occurs in the proof of Corollary~1.1
+of the 2015 paper.  Therefore a new proof of the printed criterion
+cannot honestly be advertised as a new noncancellation or height estimate.
+An explicit later resolution was not located in the targeted search;
+that absence is not a proof of priority.
+
+\section{A realizability obstruction to transferring tower congruences}
+
+Fix an integer $k\ge1$. We call an integer sequence $(a_n)_{n\ge1}$
+$k$-congruent if
+\[
+ a_{mp^r}\equiv a_{mp^{r-1}}\pmod{p^{kr}}
+ \qquad(p\text{ prime},\ r\ge1,\ m\ge1,\ p\nmid m).
+\]
+The following characterization is a direct M\"obius-inversion argument,
+of the same type as classical Gauss--Dold congruences. It is included as
+a logical obstruction, not as a new solution of a named problem.
+
+\begin{proposition}[M\"obius characterization]
+A sequence $(a_n)$ is $k$-congruent if and only if there is an integer
+sequence $(b_n)$ such that
+\[
+ a_n=\sum_{d\mid n}d^k b_d\qquad(n\ge1).
+\]
+In that case $b_n=n^{-k}\sum_{d\mid n}\mu(n/d)a_d$, so the
+sequence $(b_n)$ is unique.
+\end{proposition}
+\begin{proof}
+If the divisor representation holds and $p\nmid m$, then
+\[
+ a_{mp^r}-a_{mp^{r-1}}
+ =p^{kr}\sum_{d\mid m}d^k b_{dp^r},
+\]
+which proves the congruence. Conversely, define
+$c_n=\sum_{d\mid n}\mu(n/d)a_d$. For $p^r\Vert n$, write
+$n=p^r m$ with $p\nmid m$. Terms with $p$-exponent less than $r-1$
+have zero M\"obius weight, and the remaining terms give
+\[
+ c_n=\sum_{d\mid m}\mu(m/d)
+       (a_{dp^r}-a_{dp^{r-1}}).
+\]
+Every summand is divisible by $p^{kr}$. This holds for every
+$p^r\Vert n$, so $n^k\mid c_n$. Set $b_n=c_n/n^k$ and apply
+M\"obius inversion.
+\end{proof}
+
+\begin{theorem}[Arbitrary exceptional-prime sets]
+Let $E$ be any subset of the prime numbers. For every $k\ge1$ there is
+a positive, multiplicative integer sequence $(a_n)$, with $a_1=1$,
+such that
+\begin{enumerate}
+\item $a_n$ is $k$-congruent;
+\item for every prime $p$ and every $r\ge1$,
+\[
+ v_p(a_{p^r}-a_{p^{r-1}})
+ =kr+\boldsymbol{1}_{E}(p);
+\]
+\item for all $n\ge1$, $a_n\le n^{k+2}$.
+\end{enumerate}
+Consequently, positivity, multiplicativity, polynomial growth, and
+uniform tower supercongruences do not, by themselves, imply that the
+primes with one additional digit of congruence precision are infinite,
+finite, nonempty, or of any prescribed density.
+\end{theorem}
+\begin{proof}
+Put $c_p=p$ if $p\in E$ and $c_p=1$ otherwise. Define a multiplicative
+integer sequence $b$ by $b_1=1$ and $b_{p^r}=c_p$ for every $r\ge1$.
+Set $a_n=\sum_{d\mid n}d^k b_d$. This is a positive multiplicative
+integer sequence, as the Dirichlet convolution of two multiplicative
+functions. The proposition proves all the tower congruences, and
+\[
+ a_{p^r}=1+c_p\sum_{j=1}^r p^{kj},
+ \qquad a_{p^r}-a_{p^{r-1}}=c_p p^{kr},
+\]
+proves the exact valuation statement.
+For every $d$, $b_d\le\operatorname{rad}(d)\le d$; hence
+\[
+ a_n\le\sum_{d\mid n}d^{k+1}
+       \le n^{k+1}\tau(n)\le n^{k+2}.
+\]
+The final logical conclusion follows because $E$ was arbitrary.
+\end{proof}
+
+\begin{remark}[Scope]
+The sequence constructed in this theorem depends on $E$ and is not
+asserted to come from a fixed hypergeometric motive, a fixed Laurent
+polynomial, or the actual Fermat or Wolstenholme quotients. The theorem
+does not prove independence of any established arithmetic conjecture
+from a formal axiom system. Its exact conclusion is that an argument
+using only the four displayed properties cannot force a horizontal
+prime-distribution conclusion. A successful arithmetic transfer must
+use additional structure of its particular sequence.
+\end{remark}
+
+\section{What these results do and do not transfer to}
+\label{sec:transfer-scope}
+
+\subsection{Zero flows and the Riemann hypothesis}
+
+The real-zero question has a genuine conceptual connection to heat
+deformations.  In the standard de Bruijn--Newman framework, the
+Riemann hypothesis is equivalent to $\Lambda\le0$.
+Rodgers and Tao proved $\Lambda\ge0$ \cite{RodgersTao2020}.
+The obstruction in Section~\ref{sec:cardon-counterexample} concerns
+arbitrary diagonal semigroups acting on real polynomials.  It provides
+no upper bound on $\Lambda$, no uniform estimate for the specific
+theta kernel defining the Riemann $\Xi$-function, and no proof that
+its zeros are real.  Its useful implication for research design is
+precise: replacing a quadratic multiplier exponent by a
+superquadratic exponent cannot be justified as a universal
+small-time improvement in sector reduction.
+
+\subsection{Exceptional primes and the direction of the abc implication}
+
+For base $2$, a Wieferich prime is an odd prime satisfying
+$2^{p-1}\equiv1\pmod{p^2}$.  A Wolstenholme prime satisfies
+$C_p\equiv1\pmod{p^4}$.  The criterion proved above is a statement
+about each prime individually.  It does not prove that primes
+satisfying either exceptional condition occur infinitely often.
+The construction in the preceding section isolates the logical gap
+between precision at all powers of a fixed prime and distribution
+across different primes.
+
+Silverman's theorem obtains infinitude of \emph{non-Wieferich}
+primes from the abc conjecture \cite{Silverman1988}.  The negation
+in that conclusion matters: it is not a theorem asserting infinitely
+many Wieferich primes.  No argument here proves abc, supplies the
+required height/radical bound, or removes the hypothesis of that
+conditional implication.  Similarly, proving the square-defect
+criterion does not produce any new prime with $v_p(R_1)\ge3$.
+
+\subsection{BSD}
+
+The Birch and Swinnerton-Dyer conjecture concerns the agreement of
+the arithmetic rank of an elliptic curve with the order of vanishing
+of its $L$-function at $s=1$, together with a leading-coefficient
+formula in its full form; see the official problem description
+\cite{WilesBSD}.  No rank comparison, leading-coefficient formula,
+or finiteness theorem for a Tate--Shafarevich group follows from the
+polynomial and harmonic calculations in this draft.  A transfer to
+BSD would require such additional arithmetic input, which is absent.
+
+\section{Corpus provenance and the six-gate audit}
+\label{sec:audit}
+
+\subsection{What was inspected}
+
+The source inventory was pinned to the repository
+\emph{Verifiable Mathematical Reasoning Corpus} \cite{VMRC}, commit
+\begin{center}
+\small\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}.
+\end{center}
+The commit was dated 6 November 2026, 16:24:52 UTC.  The live
+inventory contained 130 \texttt{.tex} files.  Of these, 128 matched
+an existing local snapshot by Git blob SHA-1, and the two additional
+files, numbered 129 and 130, were retrieved separately.  This checks
+the identity of the working corpus; it is not a verification of all
+its mathematical claims.
+
+The reading was targeted at mechanisms relevant to the requested
+problems, including the following documents and themes.
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}L{0.17\textwidth}L{0.38\textwidth}Y@{}}
+\toprule
+Corpus item & Theme examined & Role in this draft\\
+\midrule
+013 & Profinite recognition, Mahler equations, Witt-type escape &
+Distinguish finite certificates from a theorem controlling every
+remaining obstruction.\\[4pt]
+043 & Local certificates, stability, and concavity &
+Compare the local valuation method and check that the power-sum
+target in Appendix~\ref{app:powers} is not the different
+block-reduction assertion discussed there.\\[4pt]
+053 & Restriction classes and Baker's $L(1,\chi)$ question &
+Identify the need for a genuine nonvanishing term, rather than a
+formal equivalence alone.\\[4pt]
+112 & Period obstructions for weighted binary expansions &
+Separate a prime's lifting valuation from an infinitude claim
+over primes.\\[4pt]
+126 & Real collisions in the Gaussian heat flow &
+Motivate an adversarial preservation test at a repeated real zero.\\[4pt]
+129--130 & Certified prime lifting; sparse modular squaring &
+Use exact finite arithmetic as a certificate without extrapolating
+it to an infinite distribution theorem.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+No unverified theorem from the corpus is used as a premise of the
+proofs above.  The structural synthesis is methodological: retain
+an exact defect, prove that its first surviving term cannot cancel,
+and distinguish the resulting local assertion from a global prime
+or zero-distribution statement.  This is a description of the
+reasoning workflow, not a claim to have invented a historically
+new general principle.
+
+\subsection{Gate-by-gate judgment}
+
+The research brief requires all six gates simultaneously.  The
+following judgment is deliberately stricter than merely checking a
+proof for algebraic correctness.
+
+\begin{longtable}{@{}L{0.09\textwidth}L{0.24\textwidth}L{0.61\textwidth}@{}}
+\toprule
+Gate & Requirement & Judgment\\
+\midrule
+\endfirsthead
+\toprule Gate & Requirement & Judgment\\\midrule
+\endhead
+G1 & Pre-existing named target & The cited numbered questions and
+conjectures predate this draft.  The auxiliary semigroup
+classification and local valuation refinements are not counted as
+additional named-problem solutions.\\[5pt]
+G2 & Original statement unchanged & The Cardon operator, its
+parameters, and its sectors are retained.  The harmonic and
+power-sum congruences retain the original constants and moduli.
+Conjecture 11 is refuted only in its first assertion.\\[5pt]
+G3 & Actually still unresolved & The original publications label
+the targets as open questions or conjectures.  This does not certify
+their status in November 2026.  For the Wolstenholme criterion,
+earlier established arithmetic already yields the result by an
+elementary substitution.\\[5pt]
+G4 & Unconditional complete proof & The displayed counterexamples,
+the general cubic obstruction, the stated semigroup classification,
+the harmonic equivalence, and the power-sum theorem have proofs
+covering all their quantifiers.  No numerical experiment is used
+in place of a universal proof.\\[5pt]
+G5 & Substantive new mechanism & An actual negative discriminant
+bound and exact local valuation are proved.  However, their
+historical methodological novelty is not established.  Repeated-root
+discriminant tests are classical, and the Wolstenholme conclusion is
+a consequence of known congruences.  No G5 pass is asserted.\\[5pt]
+G6 & No earlier duplicate resolution & Targeted searches inspected
+the original papers, later indexed references, and related
+multiplier-sequence literature.  No exhaustive nonduplication
+certificate is available.  Search absence is not used to assert
+priority.\\
+\bottomrule
+\end{longtable}
+
+\noindent\textbf{Overall status.}
+There are complete mathematical answers to the printed assertions
+specified in this draft.  There are \emph{zero results certified here
+to satisfy all of G1--G6}.  In particular, this draft must not be
+cited as a verified historically first solution of a major open
+problem or as a proof of any of the five headline conjectures in
+the research brief.
+
+\subsection{Checks performed and their limits}
+
+The discriminant factorization and its general second-order Taylor
+coefficient were checked symbolically.  The rational sign certificate
+was checked using exact arithmetic.  Additional modular checks
+covered every prime $11\le p<1000$ and $p=16843$, including a
+Wolstenholme case; the four smaller primes were evaluated as exact
+fractions.  The telescoping identity and its valuation refinement
+were checked over finite grids.  These checks supplement the
+proofs and help detect transcription errors.  They neither establish
+historical priority nor turn a statement about finitely many primes
+into an infinitude theorem.
+
+\appendix
+\section{The unchanged power-sum Conjecture 19}
+\label{app:powers}
+
+Write $S_j(n)=\sum_{a=1}^{n-1}a^j$, including $S_0(n)=n-1$.
+Me\v{s}trovi\'c, \emph{On a Congruence Modulo $n^3$ Involving Two
+Consecutive Sums of Powers}, Journal of Integer Sequences
+\textbf{17} (2014), Article 14.8.4, Conjecture~19 \cite{Mestrovic2014sums}, states that
+\begin{equation}\label{eq:conj19}
+ \sum_{i=0}^{k}\bigl(1+n(k+1-i)\bigr)
+ \binom{2k+2}{2i}S_{2i}(n)\equiv-1\pmod{n^3}
+\end{equation}
+for every $k\ge1$ and every even positive integer $n$.
+The preprint version arXiv:1211.4570v1 (2012) labels this
+Conjecture~2.17.  The following is a complete elementary proof of the
+unchanged assertion, but no historical priority or G5 success is claimed.
+
+Put $m=2k+2\ge4$, and denote the sum on the left by $T_m(n)$.
+The binomial formula gives
+\[
+ \sum_{\substack{0\le j\le m-2\\ j\text{ even}}}
+ \binom mj a^j
+ =\frac{(a+1)^m+(a-1)^m}{2}-a^m,
+\]
+and
+\[
+ \sum_{\substack{0\le j\le m-2\\j\text{ even}}}
+ (m-j)\binom mj a^j
+ =\frac m2\bigl((a+1)^{m-1}-(a-1)^{m-1}\bigr).
+\]
+Summation over $a=1,\ldots,n-1$ telescopes, yielding the exact identity
+\begin{equation}\label{eq:telescoping-conj19}
+ 4\bigl(T_m(n)+1\bigr)
+ =(m+2)n^m-2(n-1)^m+mn(n-1)^{m-1}-mn+2.
+\end{equation}
+Expanding the right side, the coefficients of $n^0,n^1,n^2$ vanish.
+For $3\le j<m$, the coefficient of $n^j$ is
+$(-1)^j(j-2)\binom mj$; the coefficient of $n^m$ is $2m$.
+Hence
+\begin{equation}\label{eq:telescoping-coeff}
+ \frac{4(T_m(n)+1)}{n^3}
+ =\sum_{j=3}^{m-1}(-1)^j(j-2)\binom mj n^{j-3}
+   +2m n^{m-3}.
+\end{equation}
+If $m=2r$, then
+\[
+ \binom m3=\frac{2r(2r-1)(r-1)}3\equiv0\pmod4,
+\]
+because $r(r-1)$ is even and division by the odd number $3$ cannot
+remove a factor of $4$.  Thus the $j=3$ term of
+\eqref{eq:telescoping-coeff} is divisible by $4$.
+The $j=4$ term, when present, is $2\binom m4 n$, divisible by $4$
+for even $n$.  Every $j\ge5$ term is divisible by $4$ because
+$n^{j-3}$ is, and the final term is divisible by $4$ since $m$ is even.
+The right side of \eqref{eq:telescoping-coeff} is therefore divisible
+by $4$.  Consequently $(T_m(n)+1)/n^3$ is an integer, proving
+\eqref{eq:conj19} for all the required $k$ and $n$.
+
+This argument closes the displayed assertion as mathematics.  It uses
+an exact telescoping identity followed by elementary coefficient
+divisibility, precisely the kind of result excluded by the stated strict
+G5 requirement if a new noncancellation/height/zero estimate is required.
+Targeted web searches for Conjecture~19 and Conjecture~2.17 did not locate
+a later explicit proof; this limited negative finding is not evidence
+strong enough to assert G3 or G6.
+
+\paragraph{An exact local valuation strengthening.}
+The same expansion proves a more precise noncancellation statement.
+Let $\ell$ be a prime dividing $n$.  If $\ell$ is odd, or if
+$\ell=2$ and $4\mid n$, then
+\begin{equation}\label{eq:exact-local-T}
+ v_\ell\bigl(T_m(n)+1\bigr)
+ =3v_\ell(n)+v_\ell\binom m3-v_\ell(4).
+\end{equation}
+This statement is proved here as mathematics; its historical novelty has
+not been established.
+
+For $3\le j<m$, the ratio of the absolute value of the degree-$j$
+coefficient in \eqref{eq:telescoping-coeff} to the degree-$3$ coefficient
+is
+\[
+ \frac{(j-2)\binom mj}{\binom m3}
+ =\frac{6}{j(j-1)}\binom{m-3}{j-3}.
+\]
+Put $a=v_\ell(n)\ge1$.
+For every $j\ge4$, the valuation of the $j$th term relative to the
+cubic term is at least
+\[
+ (j-3)a+v_\ell(6)-v_\ell(j(j-1)).
+\]
+This is positive for odd $\ell$: when $\ell=3$ use
+$v_3(j(j-1))\le j-3$, and when $\ell\ge5$ use
+$v_\ell(j(j-1))\le j-4$.
+For $\ell=2$ and $a\ge2$, it is at least
+$2(j-3)+1-(j-2)=j-3\ge1$.
+These elementary bounds follow because at most one of the two consecutive
+integers $j,j-1$ is divisible by $\ell$, with the cases $j=4,5$
+checked directly and the remaining cases bounded by $\log_\ell j$.
+
+The final term in \eqref{eq:telescoping-coeff} has ratio
+\[
+ \frac{2m}{\binom m3}n^{m-3}
+ =\frac{12}{(m-1)(m-2)}n^{m-3}.
+\]
+For $m=4$ this is $2n$, of positive valuation for every $\ell\mid n$.
+For even $m\ge6$, at most one of $m-1,m-2$ is divisible by $\ell$,
+and
+$v_\ell((m-1)(m-2))\le\lfloor\log_2(m-1)\rfloor\le m-4$.
+The final term therefore also has strictly larger valuation than the
+cubic term.  The latter is the unique term of least valuation, proving
+\eqref{eq:exact-local-T}.
+
+In particular, for $4\mid n$,
+\[
+ v_2(T_m(n)+1)
+ =3v_2(n)+v_2(m)+v_2(m-2)-3.
+\]
+Thus the bound modulo $n^3$ is sharp in its $2$-part whenever
+$m\equiv4$ or $6\pmod8$ and $4\mid n$.
+
+\section{A counterexample to the first part of Conjecture 11}
+
+The same 2014 paper, Conjecture~11 \cite{Mestrovic2014sums} (arXiv:1211.4570v1,
+Conjecture~2.9), asserts that each of
+\[
+ S_n(n)\equiv\frac{n^3}{2}B_{n-1}\pmod{n^5},\qquad
+ S_{n-1}(n)\equiv nB_{n-1}\pmod{n^4}
+\]
+is satisfied by no integer $n\ge2$.
+Here $B_4=-1/30$, and at $n=5$ the first asserted nonexistence fails:
+\[
+ S_5(5)=1+32+243+1024=1300,\qquad
+ \frac{5^3}{2}B_4=-\frac{25}{12},\qquad
+ 1300+\frac{25}{12}=\frac{5^6}{12}.
+\]
+The denominator $12$ is a unit modulo $5^5$, so this is an exact
+counterexample to the first universal claim, with the original
+statement and constants unchanged.
+
+In fact the first congruence holds for every prime $p\ge5$.
+For $p\ge7$, Faulhaber's formula writes
+\[
+ S_p(p)=\sum_{j=1}^{p+1}\frac1j\binom p{j-1}p^jB_{p+1-j}.
+\]
+The $j=2$ term is $p^3B_{p-1}/2$.  The $j=1$ term is zero.  The $j=3$ term is also zero because $B_{p-2}=0$.
+For $4\le j\le p-1$ with a nonzero Bernoulli factor, $j$ is even;
+$\binom p{j-1}$ is divisible by $p$, while $j$ and the denominator
+of $B_{p+1-j}$ are prime to $p$; the latter assertion follows from the
+von Staudt--Clausen denominator theorem, since the nonzero even index
+lies strictly between $0$ and $p-1$.  These terms are divisible by $p^5$.
+The $j=p$ term involves $B_1$ and has valuation $p\ge7$; the final
+$j=p+1$ term has valuation $p+1$.  This proves the assertion for
+$p\ge7$, and the displayed calculation proves the remaining $p=5$.
+
+This is a correction to a printed statement, not a claim that a
+substantial previously open problem has been solved.  The mechanism is
+the classical Faulhaber formula; it does not meet the user's G5 novelty
+condition.  The current prior-art search is insufficient to assert that
+this printed error has never previously been noticed.
+
+
+\section{Reproducible exact checks}
+\label{app:checks}
+
+Compile this source twice with \texttt{pdflatex}; no shell escape,
+external bibliography, images, or included source files are needed.
+The following optional verification program uses Python~3 and SymPy.
+Save the listing as \texttt{verify.py} and run \texttt{python3 verify.py}.
+It performs symbolic identity checks and exact integer/rational
+diagnostics; it is not needed for the mathematical proofs.
+
+\begin{lstlisting}
+from fractions import Fraction as F
+from math import comb, isqrt
+from pathlib import Path
+import json
+import sympy as s
+
+q = s.symbols('q')
+z = s.symbols('z')
+P = q**27*z**3 - 3*q**8*z**2 + 3*q*z - 1
+disc = s.discriminant(P, z)
+factor = -27*q**18*(1-q**6)**2*(q**24+2*q**18+3*q**12-2*q**6-3)
+assert s.expand(disc-factor) == 0
+q0 = s.Rational(99, 100)
+bracket = q0**24+2*q0**18+3*q0**12-2*q0**6-3
+assert bracket >= s.Rational(1, 25)
+assert factor.subs(q, q0) < 0
+
+h0, h1, h2, h3 = s.symbols('h0 h1 h2 h3')
+weights = [81, -108, -108, -27, 162]
+rates = [2*h1+2*h2, 3*h1+h3, h0+3*h2,
+         2*h0+2*h3, h0+h1+h2+h3]
+delta = h3-3*h2+3*h1-h0
+assert sum(weights) == 0
+assert s.expand(sum(c*r for c,r in zip(weights,rates))) == 0
+assert s.expand(sum(c*r*r for c,r in zip(weights,rates))/2+27*delta**2) == 0
+assert sum(map(abs, weights))*4**3//6 == 5184
+
+def prime(n):
+    return n >= 2 and all(n % d for d in range(2,isqrt(n)+1))
+
+def vp(n,p):
+    if isinstance(n,F):
+        return vp(n.numerator,p)-vp(n.denominator,p)
+    if n == 0:
+        return float('inf')
+    v=0
+    while n % p == 0:
+        n//=p
+        v+=1
+    return v
+
+prime_cases = [p for p in range(11,1000) if prime(p)]+[16843]
+for p in prime_cases:
+    mod=p**7
+    inv=[pow(k,-1,mod) for k in range(1,p)]
+    r1=sum(inv)%mod
+    r3=sum(pow(a,3,mod) for a in inv)%mod
+    C=comb(2*p-1,p-1)%mod
+    residual=(C-1-2*p*r1-2*pow(3,-1,mod)*p**3*r3)%mod
+    assert (residual-2*p*p*r1*r1)%mod == 0
+    assert (residual == 0) == (C%p**4 == 1)
+    if p == 16843:
+        assert residual == 0
+
+small_expected={2:F(-22,3),3:F(-81,4),5:F(15625,2592),7:F(50706719,36000)}
+small_records=[]
+for p,expected in small_expected.items():
+    r1=sum((F(1,k) for k in range(1,p)),F(0))
+    r3=sum((F(1,k**3) for k in range(1,p)),F(0))
+    defect=comb(2*p-1,p-1)-1-2*p*r1-F(2,3)*p**3*r3
+    assert defect == expected
+    assert vp(defect,p)<7
+    assert (comb(2*p-1,p-1)-1)%p**4 != 0
+    small_records.append({'p':p,'defect':str(defect),'valuation':vp(defect,p)})
+
+telescoping_cases=0
+valuation_cases=0
+for m in range(4,34,2):
+    for n in range(2,42):
+        T=sum((1+n*(m-j)//2)*comb(m,j)*sum(a**j for a in range(1,n))
+              for j in range(0,m,2))
+        rhs=(m+2)*n**m-2*(n-1)**m+m*n*(n-1)**(m-1)-m*n+2
+        assert 4*(T+1) == rhs
+        telescoping_cases+=1
+        if n%2 == 0:
+            assert (T+1)%n**3 == 0
+        for ell in range(2,n+1):
+            if prime(ell) and n%ell == 0 and (ell%2 or n%4 == 0):
+                assert vp(T+1,ell) == 3*vp(n,ell)+vp(comb(m,3),ell)-vp(4,ell)
+                valuation_cases+=1
+
+assert F(sum(a**5 for a in range(1,5)))-F(5**3,2)*F(-1,30) == F(5**6,12)
+report={
+ 'symbolic_discriminant_identity':True,
+ 'symbolic_general_Taylor_coefficients':True,
+ 'exact_q_99_100_certificate':True,
+ 'harmonic_prime_cases':len(prime_cases),
+ 'included_Wolstenholme_prime':16843,
+ 'small_prime_cases':small_records,
+ 'exact_telescoping_cases':telescoping_cases,
+ 'exact_local_valuation_cases':valuation_cases,
+ 'printed_nonexistence_counterexample':5,
+ 'scope':'Diagnostics supplement the universal proofs; no finite test establishes historical novelty or prime infinitude.'}
+Path('verification_results.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps(report,indent=2))
+\end{lstlisting}
+
+The verified run reported 165 harmonic prime cases, 600 telescoping
+cases, and 765 local valuation cases, together with the four exact
+small-prime defects.  A failed assertion indicates a reproducibility
+or transcription problem that should be investigated before using
+the corresponding formula.
+
+\begingroup
+\raggedright
+\begin{thebibliography}{99}
+\bibitem{CardonEtAl2018}
+D. A. Cardon, T. Forg\'acs, A. Piotrowski, E. Sorensen, and J. C. White,
+\emph{On zero-sector reducing operators},
+J. Math. Anal. Appl. \textbf{468} (2018), no. 1, 480--490.
+\href{https://doi.org/10.1016/j.jmaa.2018.08.025}{doi:10.1016/j.jmaa.2018.08.025}.
+Preprint: \url{https://arxiv.org/abs/1802.02641}.
+
+\bibitem{PassareRojasShapiro2011}
+M. Passare, J. M. Rojas, and B. Shapiro,
+\emph{New multiplier sequences via discriminant amoebae},
+Moscow Math. J. \textbf{11} (2011), no. 3, 547--560.
+\url{https://www.mathnet.ru/eng/mmj432}.
+Preprint: \url{https://arxiv.org/abs/1001.4076}.
+
+\bibitem{Mestrovic2015}
+R. Me\v{s}trovi\'c, \emph{Congruences for Wolstenholme primes},
+Czechoslovak Math. J. \textbf{65} (2015), no. 1, 237--253.
+\url{https://dml.cz/dmlcz/144224}.
+Preprint: \url{https://arxiv.org/abs/1108.4178}.
+
+\bibitem{Mestrovic2014p7}
+R. Me\v{s}trovi\'c,
+\emph{On the mod $p^7$ determination of $\binom{2p-1}{p-1}$},
+Rocky Mountain J. Math. \textbf{44} (2014), no. 2, 633--648.
+\href{https://doi.org/10.1216/RMJ-2014-44-2-633}{doi:10.1216/RMJ-2014-44-2-633}.
+Preprint: \url{https://arxiv.org/abs/1108.1174}.
+
+\bibitem{Mestrovic2014sums}
+R. Me\v{s}trovi\'c,
+\emph{On a congruence modulo $n^3$ involving two consecutive sums of powers},
+J. Integer Sequences \textbf{17} (2014), Article 14.8.4.
+\url{https://cs.uwaterloo.ca/journals/JIS/VOL17/Mestrovic/mes4.html}.
+Preprint: \url{https://arxiv.org/abs/1211.4570}.
+
+\bibitem{RodgersTao2020}
+B. Rodgers and T. Tao,
+\emph{The de Bruijn--Newman constant is non-negative},
+Forum Math. Pi \textbf{8} (2020), e6.
+\href{https://doi.org/10.1017/fmp.2020.6}{doi:10.1017/fmp.2020.6}.
+Preprint: \url{https://arxiv.org/abs/1801.05914}.
+
+\bibitem{Silverman1988}
+J. H. Silverman,
+\emph{Wieferich's criterion and the abc-conjecture},
+J. Number Theory \textbf{30} (1988), no. 2, 226--237.
+\href{https://doi.org/10.1016/0022-314X(88)90019-4}{doi:10.1016/0022-314X(88)90019-4}.
+
+\bibitem{WilesBSD}
+A. Wiles, \emph{The Birch and Swinnerton-Dyer conjecture},
+official Millennium Prize problem description, Clay Mathematics Institute.
+\url{https://www.claymath.org/wp-content/uploads/2022/02/MPPc.pdf}.
+Problem page, accessed 7 November 2026:
+\url{https://www.claymath.org/millennium/birch-and-swinnerton-dyer-conjecture/}.
+
+\bibitem{VMRC}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus},
+repository snapshot at commit
+\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034},
+6 November 2026.  Research drafts; no blanket verification of their
+claims is assumed in this note.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c30d40119134a59eda6fa5cc6331f27c8e67d034}.
+\end{thebibliography}
+\endgroup
+\end{document}

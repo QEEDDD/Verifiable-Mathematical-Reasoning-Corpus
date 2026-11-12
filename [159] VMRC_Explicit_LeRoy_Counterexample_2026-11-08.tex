@@ -1,0 +1,1313 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs,array,longtable,xcolor}
+\usepackage{listings}
+\definecolor{navy}{RGB}{27,54,86}
+\definecolor{pale}{RGB}{246,248,250}
+\usepackage[colorlinks=true,linkcolor=navy,citecolor=navy,urlcolor=navy]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Explicit counterexamples to Simon's Le Roy conjecture}
+\fancyhead[R]{\small Research manuscript}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}
+\newcommand{\C}{\mathbb C}
+\newcommand{\E}{\mathbb E}
+\newcommand{\ii}{\mathrm i}
+\newcommand{\dd}{\,\mathrm d}
+\DeclareMathOperator{\Rea}{Re}
+\DeclareMathOperator{\Beta}{Beta}
+\newcommand{\bL}{b_{\mathrm L}}
+\newcommand{\bU}{b_{\mathrm U}}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+ breaklines=true,columns=fullflexible,keepspaces=true,
+ showstringspaces=false,frame=single,rulecolor=\color{black!15},
+ backgroundcolor=\color{pale},aboveskip=9pt,belowskip=9pt,
+ xleftmargin=3pt,xrightmargin=3pt}
+\title{Explicit rational counterexamples to\\Simon’s Le Roy conjecture\\[6pt]
+\large A beta-product density and a certified complete-monotonicity boundary}
+\author{Keio Research Notes\thanks{AI-assisted mathematical research manuscript.
+Analytical arguments and executable certificates were checked internally;
+this is not external peer review or a claim of historical priority.}}
+\date{8 November 2026}
+\hypersetup{pdftitle={Explicit rational counterexamples to Simon's Le Roy conjecture},
+pdfauthor={Keio Research Notes},pdfsubject={A beta-product proof and certified positivity boundary}}
+\begin{filecontents*}[overwrite]{leroy_explicit_certificate.py}
+"""Exact Bernstein certificate for explicit Le Roy counterexamples.
+
+Only three reciprocal-gamma evaluations per parameter enclosure use Arb.
+Everything after the checked rational enclosures is exact fmpq arithmetic.
+Requires python-flint. No floating-point value is used to decide a sign.
+"""
+import json
+import math
+from pathlib import Path
+import flint
+from flint import arb, fmpq as Q, ctx
+
+ctx.prec = 384
+N = 90
+DIGITS = 80
+DEN = 10 ** DIGITS
+BL = Q(428292245841, 10**12)
+BU = Q(428292245842, 10**12)
+records = []
+
+
+def rational_enclosure(v):
+    a = (v.lower() * DEN).floor().unique_fmpz()
+    b = (v.upper() * DEN).floor().unique_fmpz()
+    assert a is not None and b is not None
+    lo, hi = Q(int(a)-1, DEN), Q(int(b)+2, DEN)
+    assert arb(lo) < v and v < arb(hi)
+    return lo, hi
+
+
+def coefficients(bl, bu):
+    bb = arb(bl).union(arb(bu))
+    lo, hi = [], []
+    seeds = []
+    for r in range(3):
+        v = (bb - arb(Q(r+1, 3))).rgamma()**2 / math.factorial(r)
+        l, u = rational_enclosure(v)
+        assert l > 0
+        lo.append(l)
+        hi.append(u)
+        seeds.append([str(l), str(u)])
+    for n in range(N):
+        den = 9*(n+1)*(n+2)*(n+3)
+        lo.append(lo[n]*(n+4-3*bu)**2/den)
+        hi.append(hi[n]*(n+4-3*bl)**2/den)
+    return lo, hi, seeds
+
+
+def falling(n, d):
+    return math.factorial(n)//math.factorial(n-d)
+
+
+def tail_bound(hi, d):
+    # For n>=90 and 1/3<beta<1/2, the three-step term ratio,
+    # even after d<=2 derivatives, is at most the expression below.
+    assert 0 <= d <= 2
+    r = Q(64*(N+3)**2, 9*(N+1)*N*(N-1))
+    assert r < Q(1, 10)
+    return sum(hi[n]*falling(n, d)*4**(n-d)
+               for n in range(N, N+3))*Q(10, 9)
+
+
+def lower_polynomial(lo, hi, d=0):
+    p = [((-1)**n)*(lo[n] if n % 2 == 0 else hi[n])*falling(n, d)
+         for n in range(d, N)]
+    e = tail_bound(hi, d)
+    p[0] -= e
+    return p, e
+
+
+def bernstein_on_interval(p, a, b):
+    # p(a+(b-a)t)=sum a_k t^k=sum b_j binom(m,j)t^j(1-t)^(m-j).
+    m = len(p)-1
+    aa = [a**i for i in range(m+1)]
+    width = b-a
+    power = [sum(p[k]*math.comb(k,j)*aa[k-j]
+                 for k in range(j,m+1))*width**j for j in range(m+1)]
+    return [sum(power[k]*Q(math.comb(j,k),math.comb(m,k))
+                for k in range(j+1)) for j in range(m+1)]
+
+
+def split_bernstein(b):
+    row = b[:]
+    left, right = [row[0]], [row[-1]]
+    while len(row)>1:
+        row = [(row[i]+row[i+1])/2 for i in range(len(row)-1)]
+        left.append(row[0])
+        right.append(row[-1])
+    return left, list(reversed(right))
+
+
+def certify_positive(p, a, b, target, name):
+    initial = bernstein_on_interval(p, a, b)
+    stack = [(a,b,initial,0)]
+    leaves = []
+    minimum = None
+    while stack:
+        a0,b0,bb,depth = stack.pop()
+        lb = min(bb)
+        if lb > target:
+            leaves.append([str(a0),str(b0),depth])
+            minimum = lb if minimum is None else min(minimum,lb)
+            continue
+        assert depth < 32, (name, str(a0), str(b0), str(lb))
+        left,right = split_bernstein(bb)
+        mid = (a0+b0)/2
+        stack.append((mid,b0,right,depth+1))
+        stack.append((a0,mid,left,depth+1))
+    # Explicit check that the certified closed intervals cover [a,b].
+    assert Q(leaves[0][0]) == a and Q(leaves[-1][1]) == b
+    assert all(leaves[i][1] == leaves[i+1][0] for i in range(len(leaves)-1))
+    print(name, ':', len(leaves), 'leaves; max depth', max(t[2] for t in leaves),
+          '; exact lower bound exceeds', target, flush=True)
+    records.append({'name':name,'interval':[str(a),str(b)],'target':str(target),
+                    'leaves':leaves,'minimum_coefficient':str(minimum)})
+
+
+def eval_poly(p, x):
+    ans = Q(0)
+    for a in reversed(p):
+        ans = ans*x+a
+    return ans
+
+
+def main():
+    print('python-flint',flint.__version__,'; Arb precision',ctx.prec,flush=True)
+    cases = [
+        ('beta_3_over_7',Q(3,7),Q(3,7),Q(1,20000)),
+        ('beta_upper',BU,BU,Q(1,10**13)),
+    ]
+    seed_records=[]
+    for name,bl,bu,target in cases:
+        lo,hi,seeds=coefficients(bl,bu)
+        p,e=lower_polynomial(lo,hi)
+        assert e < Q(1,10**20)
+        certify_positive(p,Q(0),Q(4),target,name)
+        assert bl*bl+2*bl-1>0  # positive beta-mixture tail for z>=2
+        seed_records.append({'name':name,'beta':[str(bl),str(bu)],'seeds':seeds,
+                             'tail_bound':str(e)})
+
+    lo,hi,seeds=coefficients(BL,BL)
+    # Upper polynomial, with an absolute uniform remainder bound.
+    p=[((-1)**n)*(hi[n] if n%2==0 else lo[n]) for n in range(N)]
+    p[0]+=tail_bound(hi,0)
+    x=Q(511574841194,10**12)
+    upper=eval_poly(p,x)
+    assert upper < -Q(1,10**13)
+    print('beta_lower: g_beta(x) < -1/10^13 at x =',x,flush=True)
+    seed_records.append({'name':'beta_lower','beta':[str(BL),str(BL)],'seeds':seeds,
+                         'negative_x':str(x),'upper_bound':str(upper)})
+
+    # Uniform parameter-box certificates isolate the only possible contact.
+    lo,hi,seeds=coefficients(BL,BU)
+    p,e=lower_polynomial(lo,hi)
+    certify_positive(p,Q(0),Q(1,2),Q(1,10**6),'parameter_box_left')
+    certify_positive(p,Q(53,100),Q(4),Q(1,10**6),'parameter_box_right')
+    p2,e2=lower_polynomial(lo,hi,2)
+    assert e2 < Q(1,10**16)
+    certify_positive(p2,Q(1,2),Q(53,100),Q(1,20),'parameter_box_second_derivative')
+    seed_records.append({'name':'parameter_box','beta':[str(BL),str(BU)],'seeds':seeds,
+                         'tail_bound':str(e),'second_derivative_tail':str(e2)})
+
+    assert 21**5 < 2**22
+    assert 21**7 < 2**31
+    assert BU < Q(3,7) < Q(13,30)
+    print('ALL CERTIFICATES PASSED',flush=True)
+    result={'precision_bits':ctx.prec,'N':N,'gamma_decimal_digits':DIGITS,
+            'parameters':seed_records,'certificates':records}
+    out=Path(__file__).with_suffix('.json')
+    out.write_text(json.dumps(result,indent=2)+'\n')
+    print('Certificate record:',out,flush=True)
+
+
+if __name__=='__main__':
+    main()
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{leroy_independent_certificate.py}
+"""Independent compact positivity certificate for beta=3/7.
+
+The certified raw density is
+ g(x) = sum_{n>=0} (-x)^n/(n! Gamma(3/7-(n+1)/3)^2).
+The normalized inverse Mellin density is Gamma(3/7)^2*g(x).
+
+Requires python-flint. All interval inputs and comparison thresholds are
+exact rational numbers. The proof of the tail estimate and the interval
+coverage argument is in the accompanying manuscript.
+"""
+from flint import arb, arb_poly, fmpq, ctx
+import flint
+
+
+def main():
+    ctx.prec = 256
+    beta = fmpq(3, 7)
+    N = 90
+    # Three initial Gamma values, followed by exact rational recurrences.
+    coeff = [arb(0) for _ in range(N + 3)]
+    coeff[0] = arb(beta - fmpq(1, 3)).rgamma() ** 2
+    coeff[1] = -(arb(beta - fmpq(2, 3)).rgamma() ** 2)
+    coeff[2] = arb(beta - 1).rgamma() ** 2 / 2
+    for n in range(N):
+        coeff[n + 3] = -coeff[n] * arb(
+            (n + 4 - 3 * beta) ** 2 / (9 * (n + 1) * (n + 2) * (n + 3))
+        )
+    P = arb_poly(coeff[:N])
+    R = fmpq(2, 25)
+    # At x <= 4 and n >= N, the positive absolute term ratio is <= R.
+    assert fmpq(64 * (N + 3), 9 * (N + 1) * (N + 2)) < R
+    global_target = fmpq(1, 20000)
+    records = [
+        (0, 2048, fmpq(9, 100000), fmpq(1, 7)),
+        (1, 64, fmpq(9, 1000), fmpq(1, 2)),
+        (2, 64, fmpq(3, 50), fmpq(3)),
+        (3, 512, fmpq(1, 20), fmpq(29)),
+    ]
+    print('python-flint:', flint.__version__)
+    print('precision:', ctx.prec, 'bits; truncation:', N, 'terms')
+    for left, pieces, grid_lower, derivative_upper in records:
+        X = left + 1
+        seeds = [abs(coeff[n]) * X ** n for n in range(N, N + 3)]
+        tail = sum(seeds, arb(0)) / arb(1 - R)
+        # For n=N,N+1,N+2 and k>=0, (n+3k)t_(n+3k)
+        # <= (n+3k)t_n R^k. Summing gives the derivative tail below.
+        derivative_tail = sum((
+            seeds[j] * arb(fmpq(N + j, 1) / (1 - R) + 3 * R / (1 - R) ** 2) / X
+            for j in range(3)
+        ), arb(0))
+        derivative_bound = sum((
+            n * abs(coeff[n]) * X ** (n - 1) for n in range(1, N)
+        ), arb(0)) + derivative_tail
+        assert derivative_bound < arb(derivative_upper)
+        minimum = None
+        minimizer = None
+        for j in range(pieces + 1):
+            x = fmpq(left, 1) + fmpq(j, pieces)
+            lower = P(arb(x)) - tail
+            assert lower > arb(grid_lower), (left, x, lower)
+            if minimum is None or float(lower.mid()) < float(minimum.mid()):
+                minimum, minimizer = lower, x
+        # Every x in [left,left+1] lies within 1/(2*pieces) of a grid point.
+        rigorous_margin = grid_lower - derivative_upper / (2 * pieces)
+        assert rigorous_margin > global_target
+        print('interval:', (left, X), '; grid points:', pieces + 1)
+        print('  derivative majorant:', derivative_bound)
+        print('  asserted derivative upper bound:', derivative_upper)
+        print('  uniform absolute tail:', tail)
+        print('  smallest midpoint-selected grid lower ball:', minimum, 'at', minimizer)
+        print('  every grid value strictly greater than:', grid_lower)
+        print('  certified whole-interval lower bound:', rigorous_margin)
+    print('CERTIFIED: g(x) > 1/20000 for every real x in [0,4].')
+    print('Hence q_(3/7)(x) > Gamma(3/7)^2/20000 on [0,4].')
+
+
+if __name__ == '__main__':
+    main()
+\end{filecontents*}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+For the Le Roy function
+\(F_{\alpha,\beta}^{(\gamma)}(z)=\sum_{n\ge0}z^n/\Gamma(\beta+\alpha n)^\gamma\),
+we give a completely specified counterexample to Simon's proposed
+equivalence between complete monotonicity and logarithmic infinite
+divisibility. The function \(F_{1/3,3/7}^{(2)}(-x)\) is completely
+monotone, whereas its unique representing probability law is not
+logarithmically infinitely divisible. A beta-product integral proves
+positivity of the density for \(x^3\ge54\); an exact rational
+Bernstein certificate, with three rigorously enclosed gamma constants,
+proves positivity on \([0,4]\). The failure of the proposed necessary
+condition reduces to \(21^7<2^{31}\).
+We also enclose the complete-monotonicity threshold at
+\((\alpha,\gamma)=(1/3,2)\) in the interval
+\((0.428292245841,0.428292245842)\), prove that its density has
+exactly one zero, of order two, obtain an explicit interval of
+counterexamples, and prove a \(3/2\)-power law for the negative mass
+born below the boundary. All certificates are included in the single source
+file. The qualitative refutation was already present in corpus item
+[116]; the contributions here are an explicit independent proof,
+a rigorous threshold enclosure, and uniqueness of the critical contact.
+\end{abstract}
+
+\section{The external conjecture and the precise result}
+
+A smooth function \(f:(0,\infty)\to\R\) is completely monotone
+(CM) when \((-1)^n f^{(n)}(x)\ge0\) for every integer \(n\ge0\)
+and every \(x>0\). A positive random variable is logarithmically
+infinitely divisible (log-ID) when its logarithm has an infinitely
+divisible distribution on \(\R\).
+
+Simon \cite[Section 3]{Simon} proposed the following equivalence for
+all positive \(\alpha,\beta,\gamma\):
+\begin{equation}\label{eq:external}
+ F_{\alpha,\beta}^{(\gamma)}(-x)\text{ is CM}
+ \quad\Longleftrightarrow\quad
+ z+\gamma(z^{\beta-\alpha}-z^\beta)\le1
+ \quad(0<z<1).
+\end{equation}
+The scalar condition gives a nonnegative Levy kernel and is sufficient.
+Its claimed necessity is the part refuted here. The same paper explains
+the equivalent formulation in terms of log-ID of the representing law.
+
+Throughout this manuscript, \(\alpha=1/3\) and \(\gamma=2\). Put
+\begin{equation}\label{eq:global-series}
+ g_\beta(x)=\sum_{n=0}^{\infty}
+ \frac{(-x)^n}{n!\,\Gamma(\beta-(n+1)/3)^2},\qquad
+ q_\beta(x)=\Gamma(\beta)^2 g_\beta(x).
+\end{equation}
+We prove below that \(q_\beta\) is an integrable signed density of
+mass one, with the desired Mellin transform. The series is entire in
+\(x\); no positivity is assumed in its definition.
+
+\begin{theorem}[A small rational counterexample]\label{thm:explicit}
+There exists a positive random variable \(X\), with a strictly positive
+density on \((0,\infty)\), such that
+\[
+ \E X^s=\frac{\Gamma(1+s)\Gamma(3/7)^2}
+ {\Gamma(3/7+s/3)^2}\quad(\Rea s>-1),
+ \qquad
+ \E e^{wX}=\Gamma(3/7)^2F_{1/3,3/7}^{(2)}(w)
+ \quad(w\in\C).
+\]
+Consequently \(F_{1/3,3/7}^{(2)}(-x)\) is CM. However, \(\log X\)
+is not infinitely divisible, and the right-hand side of
+\eqref{eq:external} fails at \(z=1/64\).
+\end{theorem}
+
+Define the exact rational numbers
+\begin{equation}\label{eq:box}
+ \bL=\frac{428292245841}{10^{12}},\qquad
+ \bU=\frac{428292245842}{10^{12}}.
+\end{equation}
+
+\begin{theorem}[Boundary enclosure and a unique double contact]
+\label{thm:boundary}
+There is a unique number \(\beta_*\in(\bL,\bU)\) for which
+\[
+ F_{1/3,\beta}^{(2)}(-x)\text{ is CM}
+ \quad\Longleftrightarrow\quad\beta\ge\beta_*,
+ \qquad \beta>0.
+\]
+The critical density \(q_{\beta_*}\) has exactly one zero on
+\([0,\infty)\). This zero \(x_*\) belongs to \((1/2,53/100)\),
+and
+\[
+ q_{\beta_*}(x_*)=q'_{\beta_*}(x_*)=0,
+ \qquad q''_{\beta_*}(x_*)>\frac{\Gamma(\beta_*)^2}{20}.
+\]
+In particular, its order is exactly two. The equations
+\(g_\beta(x)=\partial_xg_\beta(x)=0\) have exactly one solution
+in \([\bL,\bU]\times[1/2,53/100]\).
+For every \(\beta\in[\bU,13/30]\), the function is CM and its
+representing law is not log-ID.
+\end{theorem}
+
+\paragraph{What is new relative to the supplied papers.}
+Corpus item [116] \cite{Corpus116} already proves a qualitative
+strict separation for all \(\gamma>1\), \(0<\alpha<1/\gamma\),
+without specifying a rational counterexample. The preceding equivalence
+paper \cite{Bridges} gives, among other results, the lower bound
+\(\beta_*>\bL\). This manuscript does not count the same external
+conjecture twice. Its additional content is a short explicit rational
+triple, an independent beta-product proof of its global positivity,
+the matching upper bound \(\beta_*<\bU\), and the uniqueness and
+quadratic nature of the boundary contact. Neither the qualitative
+strict-gap theorem nor unproved uniform saddle estimates are used in
+the proof below.
+
+\paragraph{Proof architecture.}
+An exact beta-product identity handles the infinite interval. On the
+remaining compact interval, the entire density series has a rational
+three-step recurrence after three gamma constants are enclosed. We
+bound the infinite tail and convert a finite lower polynomial into
+Bernstein form. All coefficient sign decisions are exact rational
+comparisons. This supplies the positive probability density; failure
+of log-ID then follows from a separate integer inequality.
+
+% Analytical fragment only.  Labels use the prefix mix:.
+% Required bibliography keys: Simon, DLMF.
+% The finite positivity certificate is supplied by the computational section.
+
+\section{An explicit signed beta mixture and its positivity}
+\label{mix:section}
+
+Throughout this section, \(\beta>0\), and we write
+\[
+ F_\beta(w)=F^{(2)}_{1/3,\beta}(w)
+       =\sum_{n=0}^{\infty}\frac{w^n}{\Gamma(\beta+n/3)^2},
+ \qquad
+ \mathcal F_\beta(w)=\Gamma(\beta)^2F_\beta(w).
+\]
+The normalization is \(\mathcal F_\beta(0)=1\).  The construction
+below is valid before positivity has been established: its output
+is initially a finite signed density.  In particular, no existence
+of a random variable having the desired Mellin transform is assumed.
+
+\begin{lemma}[A signed density from two beta variables]
+\label{mix:signed-density}
+Let \(B_1,B_2,G\) be independent, with
+\[
+ B_1\sim\operatorname{Beta}\!\left(\frac13,\beta+\frac23\right),
+ \qquad
+ B_2\sim\operatorname{Beta}\!\left(\frac23,\beta+\frac13\right),
+ \qquad G\sim\operatorname{Exp}(1),
+\]
+and put \(B=B_1B_2\).  Define
+\[
+ P_\beta(y)=y^2+(2\beta-3)y+(\beta-1)^2
+\]
+and, for \(z>0\),
+\begin{equation}\label{mix:Z-density}
+ h_\beta(z)=\frac1{\beta^2}\,
+   \mathbb E\!\left[B^{-1}e^{-z/B}P_\beta(z/B)\right].
+\end{equation}
+This is a smooth finite signed density of total mass one.  Its Mellin
+integral is absolutely convergent for \(\Re s>-1/3\), and equals
+\begin{align}
+ \int_0^\infty z^s h_\beta(z)\,dz
+ &=\frac{\Gamma(\beta)^2
+       \Gamma(s+\frac13)\Gamma(s+\frac23)\Gamma(s+1)}
+       {\Gamma(\frac13)\Gamma(\frac23)\Gamma(s+\beta)^2}
+ \label{mix:Z-mellin}\\
+ &=27^{-s}\frac{\Gamma(1+3s)\Gamma(\beta)^2}
+                          {\Gamma(\beta+s)^2}.
+ \nonumber
+\end{align}
+Consequently the change of variables \(z=x^3/27\) gives a smooth
+signed density on \((0,\infty)\),
+\begin{equation}\label{mix:X-density}
+ q_\beta(x)=\frac{x^2}{9}\,h_\beta(x^3/27),
+\end{equation}
+whose absolutely convergent Mellin transform is
+\begin{equation}\label{mix:X-mellin}
+ M_\beta(s):=\int_0^\infty x^s q_\beta(x)\,dx
+       =\frac{\Gamma(1+s)\Gamma(\beta)^2}
+                    {\Gamma(\beta+s/3)^2},
+       \qquad \Re s>-1.
+\end{equation}
+The reciprocals of Gamma functions in these formulas are understood
+as entire functions, so zeros of a denominator cause no ambiguity.
+\end{lemma}
+
+\begin{proof}
+For \(\sigma>-1/3\), the beta integrals give
+\begin{equation}\label{mix:beta-product-mellin}
+ \mathbb E B^s
+ =\frac{\Gamma(s+\frac13)\Gamma(s+\frac23)
+             \Gamma(\beta+1)^2}
+       {\Gamma(\frac13)\Gamma(\frac23)
+             \Gamma(s+\beta+1)^2},
+       \qquad \Re s=\sigma.
+\end{equation}
+In particular, \(\mathbb E B^\sigma<\infty\).  Substituting
+\(z=By\) and applying Tonelli to absolute values yields
+\[
+ \int_0^\infty z^\sigma|h_\beta(z)|\,dz
+ \le\frac{\mathbb E B^\sigma}{\beta^2}
+       \int_0^\infty y^\sigma e^{-y}|P_\beta(y)|\,dy<\infty.
+\]
+This justifies Fubini also for complex \(s\) in the stated half-plane.
+The elementary Gamma integral is
+\begin{align*}
+ \int_0^\infty y^s e^{-y}P_\beta(y)\,dy
+ &=\Gamma(s+1)\bigl((s+1)(s+2)
+                +(2\beta-3)(s+1)+(\beta-1)^2\bigr)\\
+ &=\Gamma(s+1)(s+\beta)^2.
+\end{align*}
+Combining this with \eqref{mix:beta-product-mellin} and
+\(\Gamma(\beta+1)=\beta\Gamma(\beta)\) proves the first equality
+in \eqref{mix:Z-mellin}.  Gauss's multiplication formula with
+multiplier three, \cite[\S5.5(iii), Eq.~5.5.6]{DLMF}, gives the
+second equality.  At \(s=0\) the integral is one.  Smoothness on
+every compact subinterval of \((0,\infty)\) follows by differentiating
+under the expectation: the exponential suppresses every negative
+power of \(B\) when \(z\) stays bounded away from zero.
+
+Finally, \(dz/dx=x^2/9\), and
+\[
+ \int_0^\infty x^s q_\beta(x)\,dx
+ =27^{s/3}\int_0^\infty z^{s/3}h_\beta(z)\,dz.
+\]
+The factors \(27^{s/3}\) and \(27^{-s/3}\) cancel exactly, giving
+\eqref{mix:X-mellin} and its absolute convergence for \(\Re s>-1\).
+\end{proof}
+
+The signed-density formula can also be expressed by a differential
+operator acting on an ordinary positive density.  Indeed, \(W=BG\)
+has density
+\[
+ f_W(z)=\mathbb E[B^{-1}e^{-z/B}].
+\]
+For \(L_\beta=-z\,d/dz+\beta-1\), differentiation under this
+expectation gives
+\begin{equation}\label{mix:differential-mixture}
+              h_\beta=\beta^{-2}L_\beta^2f_W.
+\end{equation}
+The preceding proof establishes the Mellin identity directly, so
+\eqref{mix:differential-mixture} does not require any unproved
+integration-by-parts boundary conditions.
+
+\begin{lemma}[Entire transform and the positivity criterion]
+\label{mix:entire-transform}
+For every \(a>0\),
+\[
+              \int_0^\infty e^{ax}|q_\beta(x)|\,dx<\infty.
+\]
+Consequently, for every \(w\in\mathbb C\),
+\begin{equation}\label{mix:mgf}
+ \int_0^\infty e^{wx}q_\beta(x)\,dx
+       =\Gamma(\beta)^2\sum_{n=0}^{\infty}
+              \frac{w^n}{\Gamma(\beta+n/3)^2}
+       =\mathcal F_\beta(w).
+\end{equation}
+In particular,
+\begin{equation}\label{mix:cm-criterion}
+ F_\beta(-\lambda)\text{ is completely monotone for }\lambda>0
+ \quad\Longleftrightarrow\quad
+ q_\beta(x)\ge0\text{ for every }x>0.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For \(y\ge0\), the function
+\(y|P_\beta(y)|e^{-y/2}\) is bounded.  Since \(y=z/B\ge z\),
+\eqref{mix:Z-density} therefore gives, for \(z\ge1\),
+\[
+        |h_\beta(z)|\le C_\beta z^{-1}e^{-z/2}.
+\]
+Thus \(|q_\beta(x)|\le C'_\beta x^{-1}e^{-x^3/54}\) for
+\(x\ge3\).  Near zero, absolute integrability already follows
+from Lemma~\ref{mix:signed-density}.  This proves all the asserted
+absolute exponential moments.  Expanding the exponential and using
+\eqref{mix:X-mellin} at nonnegative integers now proves
+\eqref{mix:mgf} by absolute convergence.
+
+If \(q_\beta\ge0\), its mass is one and
+\eqref{mix:mgf} is a probability Laplace transform.  Conversely,
+complete monotonicity and \(\mathcal F_\beta(0)=1\) give a probability
+measure on \([0,\infty)\) by Bernstein's theorem.  Its Laplace
+transform equals that of the finite signed measure
+\(q_\beta(x)\,dx\).  Uniqueness of finite-measure Laplace transforms
+identifies the two measures.  Continuity of \(q_\beta\) then gives
+pointwise nonnegativity.  This also proves uniqueness of the
+representing probability law without invoking a moment-indeterminacy
+argument.
+\end{proof}
+
+\begin{lemma}[The density series, justified by a finite contour shift]
+\label{mix:series-ode}
+For every \(\beta>0\), the signed density extends to an entire
+function of \(x\), with the convergent series
+\begin{equation}\label{mix:density-series}
+ q_\beta(x)=\Gamma(\beta)^2 g_\beta(x),
+ \qquad
+ g_\beta(x)=\sum_{n=0}^{\infty}
+      \frac{(-x)^n}{n!\,\Gamma(\beta-(n+1)/3)^2}.
+\end{equation}
+It satisfies the regular differential equation
+\begin{equation}\label{mix:ode}
+ 9q_\beta'''(x)+x^2q_\beta''(x)
+        +(9-6\beta)xq_\beta'(x)+(4-3\beta)^2q_\beta(x)=0.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Stirling's estimate on vertical strips, \cite[\S5.11]{DLMF}, gives
+\[
+ M_\beta(c+it)
+ =O\!\left((1+|t|)^{c/3+3/2-2\beta}e^{-\pi|t|/6}\right),
+ \qquad |t|\longrightarrow\infty,
+\]
+uniformly for \(c\) in any fixed bounded real interval.  Mellin
+inversion consequently holds absolutely on the line \(c=0\):
+\[
+ q_\beta(x)=\frac1{2\pi i}\int_{-i\infty}^{i\infty}
+                  M_\beta(s)x^{-s-1}\,ds.
+\]
+Move this contour only as far as \(\Re s=-9/2\).  The horizontal
+integrals tend to zero by the displayed estimate.  The only possible
+poles crossed are \(-1,-2,-3,-4\), and their residues give
+\[
+ q_\beta(x)=\Gamma(\beta)^2
+    \sum_{n=0}^{3}\frac{(-x)^n}{n!\,\Gamma(\beta-(n+1)/3)^2}
+       +R_\beta(x).
+\]
+A reciprocal-Gamma zero can cancel a pole, in which case the same
+residue formula simply gives zero.  Differentiating the remaining
+absolutely convergent integral shows
+\[
+ R_\beta^{(k)}(x)=O(x^{7/2-k}),
+           \qquad 0\le k\le3,\quad x\downarrow0.
+\]
+Hence \(q_\beta\) has a \(C^3\) extension to zero and, for
+\(k=0,1,2\),
+\begin{equation}\label{mix:initial-values}
+ q_\beta^{(k)}(0)=
+       \frac{\Gamma(\beta)^2(-1)^k}
+                    {\Gamma(\beta-(k+1)/3)^2}.
+\end{equation}
+
+Gamma's recurrence gives the meromorphic identity
+\[
+ (s+3\beta-3)^2M_\beta(s)
+       =9s(s-1)(s-2)M_\beta(s-3).
+\]
+For \(\Re s>2\), the Mellin transform of the left side of
+\eqref{mix:ode}, evaluated by integration by parts, is therefore
+\[
+ -9s(s-1)(s-2)M_\beta(s-3)
+            +(s+3\beta-3)^2M_\beta(s)=0.
+\]
+All the boundary terms vanish.  At zero this follows from the
+\(C^3\) extension, and at infinity it follows either from the beta
+mixture or from differentiated Mellin inversion on arbitrarily large
+positive abscissae.  Mellin-transform uniqueness proves
+\eqref{mix:ode} on \((0,\infty)\), and continuity extends it to zero.
+
+The coefficients
+\[
+ a_n=\frac{\Gamma(\beta)^2(-1)^n}
+                  {n!\,\Gamma(\beta-(n+1)/3)^2}
+\]
+satisfy, including when a coefficient vanishes,
+\begin{equation}\label{mix:coefficient-recurrence}
+ a_{n+3}=-\frac{(n+4-3\beta)^2}
+                    {9(n+1)(n+2)(n+3)}\,a_n.
+\end{equation}
+Each of the three residue-class series is entire by the ratio test.
+Their sum satisfies \eqref{mix:ode} and the three initial conditions
+\eqref{mix:initial-values}.  The leading coefficient of
+\eqref{mix:ode} is the nonzero constant nine.  Uniqueness for this
+ordinary initial-value problem identifies its entire series solution
+with \(q_\beta\) for all \(x\ge0\).  Thus the proof uses one finite
+contour shift and does not close a Mellin contour through infinitely
+many poles.
+\end{proof}
+
+\begin{corollary}[Every nonnegative contact is quadratic]
+\label{mix:quadratic-contact}
+If \(q_\beta\ge0\) on \((0,\infty)\) and
+\(q_\beta(x_0)=0\) at \(x_0>0\), then
+\[
+                q_\beta'(x_0)=0,
+                \qquad q_\beta''(x_0)>0.
+\]
+\end{corollary}
+
+\begin{proof}
+Nonnegativity gives \(q_\beta'(x_0)=0\) and
+\(q_\beta''(x_0)\ge0\).  If the second derivative were zero,
+uniqueness for the regular third-order equation \eqref{mix:ode}
+would give \(q_\beta\equiv0\), contrary to its total mass one.
+\end{proof}
+
+\begin{lemma}[An elementary positive tail]
+\label{mix:positive-tail}
+For every \(\beta\ge\sqrt2-1\),
+\[
+                   q_\beta(x)>0
+          \qquad\text{whenever }x\ge\sqrt[3]{54}.
+\]
+In particular this holds for every \(\beta\ge5/12\).  At the
+principal rational parameter \(\beta=3/7\),
+\[
+ P_{3/7}(y)=y^2-\frac{15}{7}y+\frac{16}{49},
+ \qquad P_{3/7}(2)=\frac2{49}>0.
+\]
+\end{lemma}
+
+\begin{proof}
+For \(y\ge2\),
+\[
+ P_\beta(2)=\beta^2+2\beta-1\ge0,
+ \qquad P_\beta'(y)=2y+2\beta-3\ge1+2\beta>0.
+\]
+Since \(0<B<1\) almost surely, \(z\ge2\) implies \(z/B>2\).
+The integrand in \eqref{mix:Z-density} is then strictly positive.
+Equation~\eqref{mix:X-density} completes the proof.  The rational
+sufficient bound follows also from
+\(P_{5/12}(2)=1/144>0\).
+\end{proof}
+
+\begin{lemma}[Transfer to all larger beta parameters]
+\label{mix:beta-transfer}
+Suppose \(q_\beta\ge0\), and let \(\beta'>\beta\).  Take independent
+\[
+ U_1,U_2\sim\operatorname{Beta}(\beta,\beta'-\beta),
+ \qquad R=(U_1U_2)^{1/3},
+\]
+independent also of a random variable \(X_\beta\) with density
+\(q_\beta\).  Then
+\begin{equation}\label{mix:transfer-law}
+                    X_{\beta'}\overset d=X_\beta R
+\end{equation}
+has density \(q_{\beta'}\).  In particular \(F_{\beta'}(-\lambda)\)
+is completely monotone.  If \(q_\beta\) is strictly positive on a
+terminal interval of the positive half-line, then \(q_{\beta'}\)
+is strictly positive at every positive point.
+\end{lemma}
+
+\begin{proof}
+The ordinary beta integral gives
+\[
+ \mathbb E R^s=
+    \left(\frac{\Gamma(\beta')\Gamma(\beta+s/3)}
+                {\Gamma(\beta)\Gamma(\beta'+s/3)}\right)^2,
+                \qquad \Re s>-3\beta.
+\]
+Multiplication by \(M_\beta(s)\) yields \(M_{\beta'}(s)\).
+Taking \(s=it\), uniqueness of Fourier transforms after the change
+of variables \(x=e^y\) identifies the product law with the finite
+signed measure \(q_{\beta'}(x)\,dx\); hence the latter is positive.
+Equivalently, its continuous density is
+\[
+                q_{\beta'}(x)
+                    =\mathbb E[R^{-1}q_\beta(x/R)].
+\]
+The law of \(R\) has support \((0,1)\).  For every fixed \(x>0\),
+the event that \(x/R\) lies in the positive terminal interval has
+positive probability.  The last formula is therefore strictly
+positive.  Complete monotonicity follows from
+Lemma~\ref{mix:entire-transform}.
+\end{proof}
+
+\begin{lemma}[An exact obstruction to logarithmic infinite divisibility]
+\label{mix:not-id}
+If \(0<\beta\le13/30\) and \(q_\beta\ge0\), a random variable
+\(X_\beta\) with density \(q_\beta\) is not logarithmically
+infinitely divisible.
+\end{lemma}
+
+\begin{proof}
+The Gamma logarithm formula used in \cite[Section~2]{Simon} gives
+\[
+ \log M_\beta(it)=ic_\beta t
+       +\int_0^\infty
+          (e^{-itr}-1+itr)\frac{\phi_\beta(r)}{r}\,dr,
+\]
+where \(c_\beta=\psi(1)-\frac23\psi(\beta)\) and
+\begin{equation}\label{mix:levy-kernel}
+ \phi_\beta(r)=\frac{e^{-r}}{1-e^{-r}}
+                   -2\frac{e^{-3\beta r}}{1-e^{-3r}}.
+\end{equation}
+The integral is absolutely convergent after compensation, and
+\(\int_0^\infty r|\phi_\beta(r)|\,dr<\infty\).
+If \(\log X_\beta\) were infinitely divisible, its L\'evy measure
+would have to be nonnegative, forcing \(\phi_\beta\ge0\).
+For completeness, this necessity follows directly from uniqueness:
+the negative second derivative of the displayed exponent is the
+Fourier transform of the finite signed measure supported at \(-r\)
+with mass element \(r\phi_\beta(r)\,dr\).  On the other hand, the
+negative second derivative of an infinitely divisible exponent with
+finite variance is the Fourier transform of its nonnegative
+variance measure, including any Gaussian mass at zero.  Fourier
+uniqueness thus forces \(r\phi_\beta(r)\,dr\) to be nonnegative.
+The required finite variance of \(\log X_\beta\) follows from
+\eqref{mix:X-mellin} at small positive and negative real arguments.
+
+Put \(u=e^{-r}\).  Nonnegativity in
+\eqref{mix:levy-kernel} is equivalent to
+\begin{equation}\label{mix:scalar-id-condition}
+                 2u^{3\beta-1}\le1+u+u^2,
+                         \qquad 0<u<1.
+\end{equation}
+At \(u=1/4\) and \(\beta\le13/30\), the left side is at least
+\(2^{2/5}\), whereas the right side is \(21/16\).  The strict
+reverse inequality is certified by the exact integer comparison
+\[
+           2^{22}=4\,194\,304
+                      >4\,084\,101=21^5.
+\]
+Consequently \(\phi_\beta(\log4)<0\), proving the assertion.
+At \(\beta=3/7\) one can alternatively use the particularly simple
+comparison
+\[
+          21^7=1\,801\,088\,541
+                     <2\,147\,483\,648=2^{31}.
+\]
+\end{proof}
+
+\begin{corollary}[An explicit interval of counterexamples]
+\label{mix:explicit-family}
+For every
+\[
+                     \frac37\le\beta\le\frac{13}{30},
+\]
+the function \(F^{(2)}_{1/3,\beta}(-\lambda)\) is completely
+monotone on \((0,\infty)\), and its normalized representing law
+has a strictly positive density and is not logarithmically infinitely
+divisible.  Complete monotonicity in fact holds for every
+\(\beta\ge3/7\).
+\end{corollary}
+
+\begin{proof}
+The finite certificate accompanying this proof establishes
+\begin{equation}\label{mix:compact-certificate}
+                  g_{3/7}(x)>\frac1{20000}
+                           \qquad(0\le x\le4).
+\end{equation}
+It uses the degree-89 truncation of \eqref{mix:density-series},
+a rigorous three-step recurrence remainder, and four rational
+Bernstein subintervals.  The certificate and its independent
+verification are supplied in the computational section; the
+analytical identity needed by that certificate is proved in
+Lemma~\ref{mix:series-ode}.
+Since \(\sqrt[3]{54}<4\), \eqref{mix:compact-certificate} and
+Lemma~\ref{mix:positive-tail} cover the whole positive half-line.
+Lemmas~\ref{mix:entire-transform} and \ref{mix:beta-transfer} prove
+complete monotonicity and strict density positivity for every larger
+parameter.  Lemma~\ref{mix:not-id} gives the stated interval on which
+logarithmic infinite divisibility fails.
+\end{proof}
+
+
+\section{Finite certificates for an infinite interval problem}
+\label{sec:certificate}
+
+This section supplies the compact-interval input to the analytical
+construction. It also proves the lower boundary obstruction and the
+uniform estimates used to isolate its contact point. The computations
+are proofs by interval enclosure and exact polynomial inequalities,
+rather than tests of sampled approximate values.
+
+\subsection{Three gamma constants and a rational recurrence}
+
+Write \(g_\beta(x)=\sum_{n\ge0}(-1)^n a_n(\beta)x^n\), where
+\[
+ a_n(\beta)=\frac1{n!\Gamma(\beta-(n+1)/3)^2}\ge0.
+\]
+The gamma recurrence gives, exactly,
+\begin{equation}\label{eq:coefficient-rec}
+ a_{n+3}(\beta)=a_n(\beta)
+ \frac{(n+4-3\beta)^2}{9(n+1)(n+2)(n+3)}.
+\end{equation}
+All coefficients are therefore determined by \(a_0,a_1,a_2\).
+For \(\beta\in[\ell,u]\subset(1/3,1/2)\), the positive multiplier
+in \eqref{eq:coefficient-rec} decreases as \(\beta\) increases.
+If \(A_n^-\le a_n(\beta)\le A_n^+\) throughout that parameter
+interval, valid next enclosures are
+\[
+ A_{n+3}^-=A_n^-\frac{(n+4-3u)^2}{9(n+1)(n+2)(n+3)},\quad
+ A_{n+3}^+=A_n^+\frac{(n+4-3\ell)^2}{9(n+1)(n+2)(n+3)}.
+\]
+The program first encloses the three reciprocal-gamma squares with
+384-bit Arb arithmetic \cite{Johansson}, then explicitly verifies
+strict rational lower and upper bounds with denominator \(10^{80}\).
+All subsequent operations use exact rational numbers.
+
+\subsection{A uniform remainder bound, including derivatives}
+
+Take \(N=90\). For \(d\in\{0,1,2\}\) define
+\(T_n^{(d)}=a_n(\beta)n^{\underline d}4^{n-d}\), with
+\(n^{\underline d}=n!/(n-d)!\). For \(n\ge90\),
+\begin{align}
+ \frac{T_{n+3}^{(d)}}{T_n^{(d)}}
+ &=\frac{64(n+4-3\beta)^2}
+ {9(n+1-d)(n+2-d)(n+3-d)}\notag\\
+ &\le\frac{64(n+3)^2}{9(n-1)n(n+1)}
+ \le\frac{64\cdot93^2}{9\cdot89\cdot90\cdot91}
+ <\frac1{10}.\label{eq:tail-ratio}
+\end{align}
+The rational function in the middle is decreasing for \(n\ge90\);
+this follows, for example, from its logarithmic derivative
+\(2/(n+3)-1/(n-1)-1/n-1/(n+1)<0\).
+Summing the three residue classes modulo three gives
+\begin{equation}\label{eq:tail-cert}
+ \sup_{0\le x\le4}\left|
+ g_\beta^{(d)}(x)-\sum_{n=d}^{89}(-1)^n
+ a_n(\beta)n^{\underline d}x^{n-d}\right|
+ \le E_d:=\frac{10}{9}
+ \sum_{n=90}^{92}A_n^+n^{\underline d}4^{n-d}.
+\end{equation}
+Every displayed application satisfies \(E_0<10^{-20}\); the
+parameter-box second derivative satisfies \(E_2<10^{-16}\).
+These comparisons are themselves checked with exact rational arithmetic.
+
+A rational lower polynomial for \(g_\beta^{(d)}\) is obtained by
+using \(A_n^-\) for even \(n\), \(A_n^+\) for odd \(n\), and
+subtracting \(E_d\) from the constant coefficient. An upper polynomial
+uses the opposite endpoints and adds \(E_d\). Positivity of \(x\)
+is the only order property needed for these substitutions.
+
+\subsection{Bernstein positivity and a verifiable cover}
+
+Let \(P\) be one of the rational lower polynomials, of degree at most
+\(m\), and let \([a,b]\) be a rational interval. After substitution,
+\[
+ P(a+(b-a)t)=\sum_{k=0}^{m}v_kt^k
+ =\sum_{j=0}^{m}B_j\binom mj t^j(1-t)^{m-j},
+ \quad
+ B_j=\sum_{k=0}^{j}v_k\frac{\binom jk}{\binom mk}.
+\]
+The Bernstein basis functions are nonnegative and sum to one on
+\([0,1]\). Hence \(B_j>c\) for every \(j\) proves \(P>c\)
+throughout \([a,b]\). If this test fails, de Casteljau subdivision
+at the midpoint gives the exact Bernstein coefficients on the two
+halves. The verifier checks that the final closed intervals cover the
+whole requested interval without gaps.
+
+\begin{proposition}[Certified compact bounds]\label{prop:certified}
+The following strict inequalities hold:
+\begin{align}
+ g_{3/7}(x)&>\frac1{20000} &&(0\le x\le4),\label{eq:cert-main}\\
+ g_{\bU}(x)&>10^{-13} &&(0\le x\le4),\label{eq:cert-upper}\\
+ g_{\bL}\!\left(\frac{511574841194}{10^{12}}\right)
+ &<-10^{-13},\label{eq:cert-lower}\\
+ g_\beta(x)&>10^{-6}
+ &&\left(\beta\in[\bL,\bU],\quad
+ x\in[0,1/2]\cup[53/100,4]\right),\label{eq:cert-outside}\\
+ g_\beta''(x)&>\frac1{20}
+ &&\left(\beta\in[\bL,\bU],\quad
+ x\in[1/2,53/100]\right).\label{eq:cert-convex}
+\end{align}
+\end{proposition}
+
+\begin{proof}
+Apply the preceding rational enclosures, \eqref{eq:tail-cert}, and
+Bernstein coefficient test. The complete executable verifier appears
+in Appendix~\ref{app:code}; the exact inputs are the displayed rational
+numbers. Its successful output is summarized in Table~\ref{tab:cert}.
+For \eqref{eq:cert-lower}, evaluate the upper polynomial at the stated
+rational point. There is no floating-point sign decision in this step.
+\end{proof}
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Parameter or box & Interval & Certified lower bound & Pieces\\
+\midrule
+\(\beta=3/7\) & \([0,4]\) & \(g>1/20000\) & 4\\
+\(\beta=\bU\) & \([0,4]\) & \(g>10^{-13}\) & 18\\
+\(\beta\in[\bL,\bU]\) & \([0,1/2]\) & \(g>10^{-6}\) & 1\\
+\(\beta\in[\bL,\bU]\) & \([53/100,4]\) & \(g>10^{-6}\) & 1\\
+\(\beta\in[\bL,\bU]\) & \([1/2,53/100]\) & \(g''>1/20\) & 1\\
+\bottomrule
+\end{tabular}
+\caption{Exact rational Bernstein certificates after gamma enclosures.
+The degree is 89 for \(g\), and 87 for \(g''\).}
+\label{tab:cert}
+\end{table}
+
+For the small rational counterexample, the four pieces are simply
+\([0,1/2]\), \([1/2,1]\), \([1,2]\), and \([2,4]\).
+For \(\beta=\bU\), the partition endpoints, in increasing order, are
+\begin{gather*}
+0,\ \tfrac12,\ \tfrac{65}{128},\ \tfrac{261}{512},\
+\tfrac{523}{1024},\ \tfrac{1047}{2048},\ \tfrac{2095}{4096},\
+\tfrac{8381}{16384},\ \tfrac{16763}{32768},\ \tfrac{4191}{8192},\\
+\tfrac{131}{256},\ \tfrac{33}{64},\ \tfrac{17}{32},\
+\tfrac9{16},\ \tfrac58,\ \tfrac34,\ 1,\ 2,\ 4.
+\end{gather*}
+Thus the near-zero minimum is covered by a finite interval proof; the
+argument does not infer global positivity from the decimal value of
+a numerical minimizer.
+
+\subsection{An independent compact-interval check}
+
+For \(\beta=3/7\), the same conclusion was checked independently by
+a grid with a rigorous derivative bound and a rigorous infinite-tail
+bound. On a unit interval subdivided into \(K\) parts, assume every
+grid point has \(g>L\) and the whole interval has \(|g'|<M\).
+Every real point is within \(1/(2K)\) of a grid point, so the mean
+value theorem gives \(g>L-M/(2K)\). A rigorous derivative majorant
+on \([0,X]\), for \(X\in\{1,2,3,4\}\), is
+\[
+ \sum_{n=1}^{89}n a_nX^{n-1}
+ +\frac1X\sum_{n=90}^{92}a_nX^n
+ \left(\frac{n}{1-R}+\frac{3R}{(1-R)^2}\right),
+ \qquad R=\frac2{25}.
+\]
+Indeed, the undifferentiated three-step ratio is at most
+\(64\cdot93/(9\cdot91\cdot92)<R\), and
+\(\sum_{k\ge0}(n+3k)R^k=n/(1-R)+3R/(1-R)^2\).
+The finite sums and gamma constants are enclosed using Arb. The
+verified values are
+\begin{center}\small
+\begin{tabular}{@{}lllll@{}}
+\toprule
+Interval & \(K\) & \(L\) & \(M\) & \(L-M/(2K)\)\\
+\midrule
+\([0,1]\)&2048&\(9/100000\)&\(1/7\)&\(4939/89600000\)\\
+\([1,2]\)&64&\(9/1000\)&\(1/2\)&\(163/32000\)\\
+\([2,3]\)&64&\(3/50\)&\(3\)&\(117/3200\)\\
+\([3,4]\)&512&\(1/20\)&\(29\)&\(111/5120\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+All four rational lower bounds exceed \(1/20000\). There are 2692
+grid evaluations, including repeated endpoints. This independent
+method is included in Appendix~\ref{app:independent}. The Bernstein
+certificate already suffices for the theorem.
+
+\section{The boundary and its unique quadratic contact}
+\label{sec:boundary}
+
+We now prove Theorem~\ref{thm:boundary} without assuming the
+qualitative strict-gap theorem from the corpus. The signed-density
+construction and Laplace-transform uniqueness give
+\begin{equation}\label{eq:CM-positive}
+ F_{1/3,\beta}^{(2)}(-x)\text{ is CM}
+ \quad\Longleftrightarrow\quad q_\beta(x)\ge0
+ \text{ for every }x>0.
+\end{equation}
+Indeed, a nonnegative signed density of mass one is a probability
+density. Conversely, the Bernstein representing positive measure and
+\(q_\beta(x)\dd x\) would have the same Laplace transform and hence
+are equal. If \(q_\beta\) is negative at a point, continuity excludes
+such a positive measure.
+
+The function \((\beta,x)\mapsto q_\beta(x)\) is jointly continuous
+on compact subsets of \((0,\infty)\times[0,\infty)\). Indeed, the
+three initial reciprocal-gamma coefficients are continuous in
+\(\beta\), and the recurrence has ratio \(O(1/n)\) uniformly on
+bounded parameter intervals. The three residue-class series thus
+converge uniformly on compact sets. This supplies the compact
+continuity used below, including at \(x=0\).
+
+The beta-factor transfer proved above makes the CM set an upper set in
+\(\beta>0\). It is nonempty by \eqref{eq:cert-upper} and the
+positive tail; it does not contain \(\bL\) by
+\eqref{eq:cert-lower}. Let \(\beta_*\) be its infimum. It follows
+that \(\beta_*\in[\bL,\bU]\), and pointwise continuity of
+\(q_\beta\) in \(\beta\) shows \(q_{\beta_*}\ge0\).
+Thus \(\beta_*\) itself is in the CM set.
+
+The lower inequality is strict because \(q_{\bL}\) is negative at
+the certified point. For the upper inequality, \(q_{\bU}\) has a
+positive minimum on \([0,4]\) by \eqref{eq:cert-upper}. Compact
+continuity preserves positivity when \(\beta\) decreases slightly.
+The tail remains positive uniformly for all these parameters: they
+can be kept above \(5/12\), and
+\[
+ (5/12)^2+2(5/12)-1=1/144>0.
+\]
+The beta-mixture tail criterion therefore applies on \(x^3\ge54\),
+which overlaps \([0,4]\). A parameter strictly below \(\bU\)
+is CM, proving \(\beta_*<\bU\).
+
+If \(q_{\beta_*}\) were positive throughout \([0,4]\), the same
+compact-continuity and positive-tail argument would yield a CM
+parameter below \(\beta_*\), a contradiction. Hence it has a zero.
+The uniform bound \eqref{eq:cert-outside} and the positive tail place
+every zero in \((1/2,53/100)\). On that interval,
+\eqref{eq:cert-convex} makes \(g_{\beta_*}\) strictly convex. A
+nonnegative strictly convex function has at most one zero. At the
+zero, its derivative vanishes and its second derivative exceeds
+\(1/20\), proving the asserted order and inequality for \(q''\).
+
+To prove uniqueness of the pair solving \(g=\partial_xg=0\) in
+the displayed rectangle, suppose such a pair \((\beta,x)\) exists.
+Strict convexity makes \(x\) the unique minimum on the contact
+interval; the outside and tail bounds then give \(q_\beta\ge0\)
+everywhere. Thus \(\beta\ge\beta_*\). If \(\beta>\beta_*\),
+beta-factor transfer from \(\beta_*\) makes the new density strictly
+positive: the scaling factor has a density positive on \((0,1)\),
+and the original density vanishes at only one point. This contradicts
+\(g_\beta(x)=0\). Consequently \(\beta=\beta_*\) and
+\(x=x_*\).
+
+Finally, \(\beta\ge\bU\) implies CM by beta-factor transfer,
+whereas \(\beta\le13/30\) violates the scalar log-ID condition
+at \(z=1/64\). This proves the explicit interval of counterexamples.
+
+% Analytical corollary of the certified unique critical contact.
+% Labels use contact:.  Depends on mix:X-mellin and mix:density-series.
+
+\subsection{The birth of the unique negative interval}
+\label{contact:section}
+
+\begin{theorem}[A transverse quadratic contact]
+\label{contact:law}
+Let \((\beta_*,x_*)\) be the unique critical pair certified above,
+and put
+\[
+ a=\frac12\partial_x^2q_{\beta_*}(x_*)>0,
+ \qquad b=\left.\partial_\beta q_\beta(x_*)\right|_{\beta=\beta_*}.
+\]
+Then \(b>0\).  For every sufficiently small \(\varepsilon>0\),
+the density \(q_{\beta_*-\varepsilon}\) is negative on exactly one
+interval \((x_-(\varepsilon),x_+(\varepsilon))\), where
+\begin{equation}\label{contact:roots}
+ x_\pm(\varepsilon)
+      =x_*\pm\sqrt{b/a}\,\varepsilon^{1/2}+O(\varepsilon).
+\end{equation}
+Its total negative mass satisfies
+\begin{equation}\label{contact:negative-mass}
+ \int_0^\infty\max\{-q_{\beta_*-\varepsilon}(x),0\}\,dx
+       =\frac{4b^{3/2}}{3\sqrt a}\,\varepsilon^{3/2}
+                                  +o(\varepsilon^{3/2}).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Differentiating \eqref{mix:X-mellin}, using the digamma integral,
+and applying Mellin inversion gives
+\begin{equation}\label{contact:parameter-generator}
+ \partial_\beta q_\beta(x)
+  =2\int_0^\infty\frac{e^{-\beta t}}{1-e^{-t}}
+      \bigl[e^{t/3}q_\beta(xe^{t/3})-q_\beta(x)\bigr]\,dt.
+\end{equation}
+Here \(\beta\) may range over a compact neighborhood of
+\(\beta_*\).  To justify the calculation, on \(s=i\tau\) the
+identity being inverted is
+\[
+ \partial_\beta M_\beta(s)
+  =2M_\beta(s)\int_0^\infty
+       \frac{e^{-\beta t}(e^{-st/3}-1)}{1-e^{-t}}\,dt.
+\]
+The bound \(|e^{-i\tau t/3}-1|\le\min\{2,|\tau|t/3\}\),
+together with the uniform exponential decay of \(M_\beta(i\tau)\),
+justifies Fubini and differentiation under inversion.  The resulting
+real-space integral is also absolutely convergent: its bracket is
+\(O(t)\) at zero, while the beta-mixture tail estimate and
+\(e^{-\beta t}\) control infinity.  At the critical zero, the
+subtracted term vanishes and \(q_{\beta_*}(xe^{t/3})>0\) for
+\(x=x_*\) and every \(t>0\).  Thus \eqref{contact:parameter-generator}
+proves \(b>0\).
+
+The density is jointly real analytic in \((\beta,x)\) near
+\((\beta_*,x_*)\), as follows from \eqref{mix:density-series} and
+its locally uniformly convergent coefficient recurrence.  Hence
+\[
+ q_{\beta_*-\varepsilon}(x_*+h)
+    =ah^2-b\varepsilon
+         +O\bigl(|h|^3+\varepsilon|h|+\varepsilon^2\bigr).
+\]
+Set \(\delta=\sqrt\varepsilon\) and \(h=\delta y\).
+The quotient
+\(\delta^{-2}q_{\beta_*-\delta^2}(x_*+\delta y)\)
+extends analytically to \(\delta=0\), with value \(ay^2-b\).
+The implicit function theorem at its two simple zeros
+\(y=\pm\sqrt{b/a}\) proves \eqref{contact:roots}.
+The certified positivity outside \((1/2,53/100)\), together with
+the certified strict convexity inside this interval for all parameters
+in the enclosing beta box, shows that these are the only two zeros
+and that their intervening interval is the whole negative set.
+Finally, the same rescaling and the Taylor estimate give
+\[
+ \varepsilon^{-3/2}
+    \int_0^\infty\max\{-q_{\beta_*-\varepsilon}(x),0\}\,dx
+       \longrightarrow
+       \int_{-\sqrt{b/a}}^{\sqrt{b/a}}(b-ay^2)\,dy
+       =\frac{4b^{3/2}}{3\sqrt a},
+\]
+which proves \eqref{contact:negative-mass}.
+\end{proof}
+
+\section{Scope of the conclusion}
+
+The literal universal equivalence in \eqref{eq:external} is false;
+one rational triple already suffices to establish that statement.
+The interval of examples is a strengthening of the same resolution,
+not a list of separate conjectures. The full positive-parameter
+classification of \(F_{\alpha,\beta}^{(\gamma)}\) is not supplied by
+this result. At \((\alpha,\gamma)=(1/3,2)\), however, the boundary
+is uniquely specified by the double-contact equations in a rigorously
+isolated rectangle, with a parameter enclosure of width \(10^{-12}\).
+
+The method replaces an unbounded positivity check by two complementary
+finite objects: a quadratic polynomial that controls the whole tail,
+and a rational Bernstein certificate on a compact interval. Its
+mathematical dependency on special-function numerics is restricted
+to rigorous enclosures of three gamma constants for each fixed
+parameter or parameter interval. The supplied source reproduces the
+certificate, including the uniform boundary estimates. No external
+peer-review or formal proof-assistant validation is asserted.
+
+
+\begin{thebibliography}{9}\raggedright
+
+\bibitem{Simon}
+T. Simon, \emph{Remark on a Mittag--Leffler function of Le Roy type},
+Integral Transforms and Special Functions \textbf{33}(2) (2022),
+108--114. \href{https://doi.org/10.1080/10652469.2021.1913138}
+{doi:10.1080/10652469.2021.1913138}.
+Author version: \url{https://arxiv.org/abs/2012.11018}, v2,
+25 March 2021; the conjecture is in Section 3.
+
+\bibitem{DLMF}
+NIST Digital Library of Mathematical Functions, Chapter 5,
+\S5.5(iii), Eq.~5.5.6 (multiplication formula), and \S5.11
+(asymptotic expansions of the gamma function).
+\url{https://dlmf.nist.gov/5.5}; \url{https://dlmf.nist.gov/5.11}.
+
+\bibitem{Johansson}
+F. Johansson, \emph{Arb: efficient arbitrary-precision midpoint-radius
+interval arithmetic}, IEEE Transactions on Computers \textbf{66}(8)
+(2017), 1281--1292.
+\href{https://doi.org/10.1109/TC.2017.2690633}
+{doi:10.1109/TC.2017.2690633}.
+\url{https://arxiv.org/abs/1611.02831}.
+
+\bibitem{Corpus116}
+Keio Research Notes, \emph{Complete monotonicity beyond logarithmic
+infinite divisibility: a counterexample theorem for Le Roy functions},
+3 November 2026. Unrefereed research manuscript [116] in the
+Verifiable Mathematical Reasoning Corpus,
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus},
+snapshot \texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}.
+
+\bibitem{Bridges}
+Keio Research Notes, \emph{Equivalence Bridges from the 130-Manuscript
+Corpus: explicit independence, arithmetic obstructions, and a
+positivity boundary}, 8 November 2026. Preceding research synthesis,
+34 pages; the Le Roy section supplies the earlier one-sided bound
+\(\beta_c(1/3,2)>0.428292245841\).
+
+\end{thebibliography}
+
+\clearpage
+\appendix
+\section{Complete exact-rational certificate}
+\label{app:code}
+
+The single \texttt{.tex} source contains both verification programs
+in \texttt{filecontents*} environments. Compiling it writes the
+programs alongside the compilation output. They require Python 3
+and \texttt{python-flint}; the recorded runs used
+\texttt{python-flint 0.9.0}. Run
+\begin{lstlisting}[language={}]
+python3 leroy_explicit_certificate.py
+python3 leroy_independent_certificate.py
+\end{lstlisting}
+The first program checks every inequality in
+Proposition~\ref{prop:certified} and writes a JSON record containing
+the exact rational gamma enclosures, tail bounds, and covering
+intervals. It uses Arb only to obtain and verify the initial rational
+enclosures. All polynomial bounds and subdivisions use exact rational
+arithmetic. The successful run and an independently executed copy
+produced identical JSON records. The audited primary program has
+SHA256
+\begin{center}\ttfamily\footnotesize
+2af3eca6a5979ef1df0188b32f1425a2a0a0813d9ec407ed80c111cf370e2d60.
+\end{center}
+The following is the complete primary program.
+
+\lstinputlisting{leroy_explicit_certificate.py}
+
+\subsection*{Recorded successful output}
+\begin{lstlisting}[language={}]
+python-flint 0.9.0 ; Arb precision 384
+beta_3_over_7 : 4 leaves; max depth 3 ; exact lower bound exceeds 1/20000
+beta_upper : 18 leaves; max depth 17 ; exact lower bound exceeds 1/10000000000000
+beta_lower: g_beta(x) < -1/10^13 at x = 255787420597/500000000000
+parameter_box_left : 1 leaves; max depth 0 ; exact lower bound exceeds 1/1000000
+parameter_box_right : 1 leaves; max depth 0 ; exact lower bound exceeds 1/1000000
+parameter_box_second_derivative : 1 leaves; max depth 0 ; exact lower bound exceeds 1/20
+ALL CERTIFICATES PASSED
+\end{lstlisting}
+
+\clearpage
+\section{Independent derivative-and-grid certificate}
+\label{app:independent}
+
+This second program verifies only the compact positivity assertion
+for \(\beta=3/7\), using a different method. Every sign comparison
+and error estimate is a rigorous Arb interval comparison with exact
+rational inputs. Floating-point conversion appears only when
+selecting a diagnostic grid point to print; it has no role in a proof
+decision. The interval-cover argument and all thresholds are proved
+in Section~\ref{sec:certificate}.
+
+\lstinputlisting{leroy_independent_certificate.py}
+
+\end{document}

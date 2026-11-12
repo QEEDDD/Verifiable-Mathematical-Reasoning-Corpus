@@ -1,0 +1,899 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm]{geometry}
+\usepackage{microtype,booktabs,enumitem,xcolor,listings,xurl,hyperref,fancyhdr}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black,pdftitle={Partial Results on Sun's A179524 Divisibility Conjecture}}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Sun's A179524 divisibility conjecture}
+\fancyhead[R]{Partial results}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\CT}{\operatorname{CT}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\vp}{v_p}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,keywordstyle=\color{blue!55!black},commentstyle=\color{gray!80!black},stringstyle=\color{gray!80!black},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{gray!40},aboveskip=10pt,belowskip=10pt}
+\title{\textbf{Partial Results on Sun's A179524\\Divisibility Conjecture}\\[5pt]\large A quadratic invariant, prime-square transfer, and complex multiplication}
+\author{Research note prepared with ChatGPT for Keio}
+\date{7 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Let \(a_n=\sum_k(-4)^k\binom nk^2\binom{n-k}k^2\) and
+\(S(n)=\sum_{j=0}^{n-1}(20j+17)a_j\). Sun conjectured in 2010 that
+\(n\mid S(n)\) for every positive integer \(n\). We do not prove that full
+weighted assertion. We do prove the complete inert unweighted branch,
+namely that the sum of the first $p$ terms is zero modulo $p^2$ for
+$p\equiv11,13,17,19\pmod{20}$, using a quadratic differential invariant.
+We also prove \(\rad(n)\mid S(n)\) and the exact identity
+\(v_2(S(n))=v_2(n)\) for every \(n\). A first-order digit expansion gives
+\(S(p^2m)\equiv U(m)S(p^2)\pmod {p^2}\), where
+\(U(m)=\sum_{j<m}a_j\), for every odd prime \(p\) and every positive \(m\).
+Using a CM elliptic curve of discriminant \(-20\), we prove
+\(p^2\mid S(p^2m)\) whenever \(p\equiv11,13,17,19\pmod {20}\).
+We also give a symbolic proof for \(p=3\). Exact computation supplies the
+same all-cofactor conclusion for every odd prime \(p\le67\).
+Consequently the full conjecture holds on an explicit set of integers
+of natural density at least \(0.9481679114\). This density measures a
+proved domain, not the proportion of the mathematical difficulty resolved.
+The remaining higher odd prime powers, experimental strengthening, and
+limits of the priority investigation are stated explicitly.
+\end{abstract}
+
+\section{The unchanged question and the proved domain}
+
+Use the convention that a binomial coefficient with an inadmissible lower
+index is zero. Define
+\begin{equation}\label{def}
+ \begin{aligned}
+ M(n,k)&=\binom nk\binom{n-k}k,\qquad
+ a_n=\sum_{0\le2k\le n}(-4)^k M(n,k)^2,\\
+ S(n)&=\sum_{j<n}(20j+17)a_j .
+ \end{aligned}
+\end{equation}
+For \(0\le2k\le n\), the factorial expression is
+\(M(n,k)=n!/[k!^2(n-2k)!]\).
+The initial values are \(1,1,-15,-143,1,12801,100401,-555855\).
+The unchanged assertion is
+\begin{equation}\label{target}
+                     n\mid S(n)\qquad(n\ge1).
+\end{equation}
+This is Conjecture 5.8(ii), printed p.~33, of Sun's 2010 preprint
+\cite{Sun2010}, with \(a_n=W_n(1,-4)\). The OEIS record
+A179524 attributes it to 1 July 2010 \cite{OEIS}. The latest version of
+arXiv:1006.2776 was withdrawn to merge material into other papers; the
+numbered source cited here is explicitly version 11.
+
+For an integer \(N\ne0\), \(v_p(N)\) denotes its \(p\)-adic valuation.
+Let \(\mathcal P_0\) be the eighteen odd primes at most \(67\), and put
+\[
+ \mathcal P_*=\mathcal P_0\cup
+ \{p\text{ prime}:p\equiv11,13,17,19\pmod {20}\}.
+\]
+Define \(e_p=2\) for \(p\in\mathcal P_*\) and \(e_p=1\) for other odd primes.
+
+\begin{theorem}[Combined partial result]\label{main}
+For every positive integer \(n\),
+\begin{equation}\label{divisor}
+ v_2(S(n))=v_2(n),\qquad
+ 2^{v_2(n)}\prod_{\substack{p\mid n\\p\ {\rm odd}}}
+ p^{\min(v_p(n),e_p)}\ \mid\ S(n).
+\end{equation}
+In particular, \eqref{target} holds if \(v_p(n)\le e_p\) for every odd
+prime \(p\). There is no restriction on the exponent of \(2\).
+\end{theorem}
+
+The prime cases in this theorem use Sun's established Ramanujan-type
+supercongruence \cite{SunRefinement}. The inert-prime-square cases use
+standard CM reduction and the Hasse invariant. The finite set
+\(\mathcal P_0\) uses the exact certificate in Appendix~A, together with
+an all-cofactor transfer theorem. No computational bound is imposed on
+the cofactor \(m\) in any of these conclusions.
+
+\begin{corollary}[An explicit density lower bound]\label{density}
+The conjecture holds on a set of natural density at least
+\[
+ \frac8{\pi^2}\prod_{\substack{3\le p\le67\\p\ {\rm prime}}}
+ \frac{1-p^{-3}}{1-p^{-2}}
+ =
+ \frac8{\pi^2}\prod_{\substack{3\le p\le67\\p\ {\rm prime}}}
+ \frac{p^2+p+1}{p(p+1)}
+ =0.94816791146370398749\ldots .
+\]
+\end{corollary}
+\begin{proof}
+Take the smaller set defined by \(v_p(n)\le2\) for odd \(p\le67\)
+and \(v_p(n)\le1\) for \(p>67\), with arbitrary \(v_2(n)\).
+The Euler product for these valuation restrictions is the displayed
+expression. Its existence follows by first imposing finitely many local
+conditions, using the Chinese remainder theorem, and bounding the omitted
+tail by \(\sum_{p>y}p^{-2}\). The additional inert-prime cases can only
+enlarge the proved set.
+\end{proof}
+
+\section{Prime divisibility and Lucas propagation}
+
+We first record two integer identities:
+\begin{align}
+ \binom jm^2
+ &=\sum_{i=0}^m\binom mi\binom{m+i}i\binom j{m+i},
+ \label{product}\\
+ \sum_{j<n}(20j+17)\binom jt
+ &=(20t+17)\binom n{t+1}
+       +20(t+1)\binom n{t+2}. \label{hockey}
+\end{align}
+The first counts ordered pairs of \(m\)-subsets by their union size.
+The second follows from the hockey-stick identity and
+\(j\binom jt=t\binom jt+(t+1)\binom j{t+1}\).
+
+\begin{lemma}[Ramanujan reduction]\label{primelemma}
+For an odd prime \(p\), \(h=(p-1)/2\), and \(d=\lfloor p/4\rfloor\),
+\begin{equation}\label{ramred}
+ S(p)\equiv-(-1)^h\sum_{j=0}^{d}
+       (20j+3)\frac{(4j)!}{j!^4(-1024)^j}\pmod p .
+\end{equation}
+\end{lemma}
+\begin{proof}
+For \(0\le k\le h\), the polynomial \(F_k(X)=\binom X{2k}^2\)
+is defined over \(\F_p\) and satisfies
+\(F_k(2k-1-X)=F_k(X)\). Thus
+\[
+ \sum_{r\in\F_p}(20r+17)F_k(r)
+ =(20k+7)\sum_{r\in\F_p}F_k(r).
+\]
+Apply \eqref{product} and sum over \(0\le r<p\). Modulo \(p\), the
+only surviving binomial \(\binom p{2k+i+1}\) has \(2k+i=p-1\).
+Since \(i=p-1-2k\) is even, its coefficient reduces to
+\(\binom{2k}{p-1-2k}\). Therefore
+\[
+ S(p)\equiv\sum_{k=\lceil h/2\rceil}^{h}
+ (20k+7)(-4)^k\binom{2k}k^2\binom{2k}{2h-2k}\pmod p .
+\]
+Put \(k=h-j\). The needed congruences are
+\[
+ 20k+7\equiv-(20j+3),\quad
+ (-4)^{h-j}\equiv(-1)^h(-4)^{-j},
+\]
+\[
+ \binom{p-1-2j}{h-j}^{\!2}
+ \equiv\binom{h+j}{2j}^{\!2}
+ \equiv\frac{\binom{2j}j^2}{256^j},\qquad
+ \binom{p-1-2j}{2j}\equiv\binom{4j}{2j}.
+\]
+For the middle identity use
+\(\binom{j-1/2}{2j}=(-1)^j\binom{2j}j/16^j\).
+All denominators are units modulo \(p\). These formulas give
+\eqref{ramred}.
+\end{proof}
+
+Sun's Theorem 1.2 \cite{SunRefinement} states, for \(p>3\),
+\[
+ \sum_{j=0}^{h}(20j+3)\frac{(4j)!}{j!^4(-1024)^j}
+ \equiv(-1)^h p\bigl(2^{p-1}+2-(2^{p-1}-1)^2\bigr)\pmod {p^4}.
+\]
+For \(d<j\le h\), the numerator \((4j)!\) is divisible by \(p\)
+and \(j!\) is not. Hence Lemma~\ref{primelemma} gives \(p\mid S(p)\).
+The remaining primes satisfy \(S(2)=54\) and \(S(3)=-801\).
+
+\begin{lemma}[Digit congruence]\label{lucas}
+For every odd prime \(p\), \(u\ge0\), and \(0\le r<p\),
+\[
+                 a_{pu+r}\equiv a_u a_r\pmod p.
+\]
+\end{lemma}
+\begin{proof}
+Write the inner index as \(k=pv+s\), \(0\le s<p\).
+Multinomial Lucas makes \(M(pu+r,pv+s)\) vanish modulo \(p\)
+unless \(2s\le r\). In the latter case
+\[
+ M(pu+r,pv+s)\equiv M(u,v)M(r,s)\pmod p.
+\]
+The high-digit range is exactly \(0\le2v\le u\).
+Also \((-4)^{pv+s}\equiv(-4)^{v+s}\pmod p\).
+Summing the factored terms proves the claim.
+\end{proof}
+
+For every \(m\ge1\), it follows that
+\begin{equation}\label{primeprop}
+ S(pm)\equiv S(p)\sum_{u<m}a_u\equiv0\pmod p.
+\end{equation}
+The case \(p=2\) follows directly from \(a_u\equiv1\pmod2\).
+Consequently \(\rad(n)\mid S(n)\) for every \(n\).
+This argument alone does not increase the prime-power exponent.
+
+\section{The entire 2-part, with exact valuation}
+
+\begin{theorem}\label{twoadic}
+For every \(n\ge1\), \(S(n)/n\) is an odd \(2\)-adic integer.
+Thus \(S(n)\ne0\) and \(v_2(S(n))=v_2(n)\).
+\end{theorem}
+\begin{proof}
+Rewrite \(M(j,k)=\binom j{2k}\binom{2k}k\).
+For a fixed \(k\ge1\), use \eqref{product} with \(m=2k\), followed
+by \eqref{hockey}, and divide by \(n\). Its contribution is an integer
+linear combination of
+\[
+ (-4)^k\binom{2k}k^2
+ \left(
+ \frac{20t+17}{t+1}\binom{n-1}t+
+ \frac{20(t+1)}{t+2}\binom{n-1}{t+1}
+ \right),\qquad 2k\le t\le4k.
+\]
+The prefactor has \(2\)-adic valuation at least \(2k+2\), because
+\(\binom{2k}k=2\binom{2k-1}{k-1}\).
+Both displayed denominators are at most \(4k+2<2^{2k+2}\).
+Every such term therefore has valuation at least one.
+All sums are finite. The \(k=0\) contribution is
+\[
+                  \frac1n\sum_{j<n}(20j+17)=10n+7,
+\]
+which is odd. This proves the assertion, including \(n=1\).
+\end{proof}
+
+\section{A prime-square transfer valid for every cofactor}
+
+Put \(f(n,k)=(-4)^kM(n,k)^2\), and define
+\[
+ L_n=\sum_k kf(n,k),\qquad
+ U(N)=\sum_{n<N}a_n,\quad T(N)=\sum_{n<N}n a_n,\quad
+ V(N)=\sum_{n<N}L_n.
+\]
+Thus \(S(N)=20T(N)+17U(N)\).
+For an odd prime \(p\), let
+\[
+ \begin{aligned}
+ Q_p&=\frac{(-4)^{p-1}-1}{p},\\
+ A_r&=\sum_s f(r,s)(H_r-H_{r-2s}),\qquad
+ B_r=\sum_s f(r,s)(H_{r-2s}-H_s)\quad(0\le r<p),
+ \end{aligned}
+\]
+where \(H_0=0\), \(H_j=\sum_{i=1}^j1/i\), and only admissible \(s\)
+are included. These harmonic numbers are \(p\)-integral.
+
+\begin{lemma}[First-order digit expansion]\label{firstorder}
+For every \(q\ge0\) and \(0\le r<p\),
+\begin{equation}\label{digit2}
+ a_{pq+r}\equiv a_q a_r+
+ p\{2q a_q A_r+L_q(Q_p a_r+4B_r)\}\pmod {p^2}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let \(E_p(N)=\prod_{1\le i\le N,\ p\nmid i}i\).
+The exact factorization
+\(N!=p^{\lfloor N/p\rfloor}\lfloor N/p\rfloor!E_p(N)\), together with
+\(\sum_{i=1}^{p-1}i^{-1}=0\) in \(\F_p\), gives
+\[
+ E_p(pq+r)\equiv((p-1)!)^q r!(1+pqH_r)\pmod {p^2}.
+\]
+Write \(k=pj+s\). If \(2s>r\), Lucas gives \(p\mid M(pq+r,k)\),
+so its square vanishes modulo \(p^2\).
+Otherwise the factorial factorization gives
+\[
+ M(pq+r,pj+s)\equiv M(q,j)M(r,s)
+ [1+p\{qH_r-2jH_s-(q-2j)H_{r-2s}\}]\pmod {p^2}.
+\]
+Only \(E_p\)-factors and small factorials are inverted.
+The integer \(M(q,j)\) is retained exactly, so higher carries cause
+no problem. Finally
+\[
+ (-4)^{pj+s}\equiv(-4)^{j+s}(1+pjQ_p)\pmod {p^2}.
+\]
+Square the multinomial congruence, multiply, and sum over \(j,s\).
+\end{proof}
+
+\begin{theorem}[Prime-square transfer]\label{transfer}
+For every odd prime \(p\) and every positive integer \(m\),
+\begin{equation}\label{transferformula}
+                    S(p^2m)\equiv U(m)S(p^2)\pmod {p^2}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Write \(w_r=20r+17\), \(U_p=U(p)\), \(T_p=T(p)\), and \(V_p=V(p)\).
+Summing \eqref{digit2} with weight \(20(pq+r)+17\) gives
+\begin{equation}\label{block}
+ S(pM)\equiv S(p)U(M)+pC_pT(M)+pD_pV(M)\pmod {p^2},
+\end{equation}
+where
+\[
+ C_p=20U_p+2\sum_{r<p}w_rA_r,\qquad
+ D_p=4\sum_{r<p}w_rB_r .
+\]
+The omitted term is exactly \(pQ_p S(p)V(M)\); it vanishes because
+\(p\mid S(p)\), proved in Section 2.
+Lucas also gives \(L_{pu+r}\equiv a_uL_r\pmod p\), since the index
+\(pv+s\) reduces to \(s\). Hence
+\[
+ U(pm)\equiv U_pU(m),\quad T(pm)\equiv T_pU(m),\quad
+ V(pm)\equiv V_pU(m)\pmod p.
+\]
+Substitute \(M=pm\) into \eqref{block}. Its three coefficients
+\(S(p),pC_p,pD_p\) are divisible by \(p\), so these substitutions
+are valid modulo \(p^2\). The result is
+\[
+ S(p^2m)\equiv U(m)[S(p)U_p+pC_pT_p+pD_pV_p].
+\]
+The bracket is \(S(p^2)\) modulo \(p^2\) by \eqref{block} with \(M=p\).
+\end{proof}
+
+\begin{remark}[What a finite base verifies]
+For a fixed prime \(p\), an exact verification of \(p^2\mid S(p^2)\)
+now proves \(p^2\mid S(p^2m)\) for \emph{every} \(m\).
+It is a proof for an unbounded cofactor, but not a verification over
+all primes. The theorem also gives no \(p^3\) conclusion.
+\end{remark}
+
+\section{An infinite prime-square family from complex multiplication}
+
+\begin{theorem}\label{inert}
+If \(p\equiv11,13,17,19\pmod {20}\) is prime, then
+\[
+                     p^2\mid S(p^2m)\qquad(m\ge1).
+\]
+\end{theorem}
+\begin{proof}
+For an indeterminate \(c\), define
+\[
+ W_r(c)=\sum_k c^kM(r,k)^2,\qquad
+ \mathcal U_p(c)=\sum_{r<p}W_r(c).
+\]
+Set \(h=(p-1)/2\) and \(d=\lfloor p/4\rfloor\).
+The binomial-square summation in Section 2, followed by \(k=h-j\),
+gives the polynomial identity
+\begin{equation}\label{Upoly}
+ \mathcal U_p(c)\equiv
+ c^h\sum_{j=0}^{d}\frac{(4j)!}{j!^4(256c)^j}\pmod p.
+\end{equation}
+All apparent negative powers cancel. The finite Legendre identity
+\[
+ P_d(t)^2=\sum_{j=0}^d\binom dj\binom{d+j}j\binom{2j}j
+                   \left(\frac{t^2-1}{4}\right)^j
+\]
+and \(\{-d,d+1\}=\{1/4,3/4\}\) in \(\F_p\) imply
+\begin{equation}\label{square}
+ \mathcal U_p(c)\equiv c^hP_d(t)^2,\qquad t^2=1-\frac1c.
+\end{equation}
+This is an identity in the parameter, not merely an equality at a
+particular numerical value.
+
+Take \(t_0=\sqrt5/2\), corresponding to \(c=-4\), and consider
+\[
+ E_{t_0}:\quad y^2=x\left(x^2+2x+\frac{1-t_0}{2}\right).
+\]
+Its invariants are
+\[
+ \Delta=8(t_0-1)^2(t_0+1),\qquad
+ j(E_{t_0})=
+ \frac{64(3t_0+5)^3}{(t_0-1)^2(t_0+1)}
+ =632000+282880\sqrt5.
+\]
+Duke \cite{Duke} identifies this value as \(j(i\sqrt5)\); hence the
+curve has complex multiplication of discriminant \(-20\).
+The other sign of \(t_0\) gives the conjugate CM value.
+The coefficients are integral away from \(2\), and
+\((t_0-1)(t_0+1)=1/4\), so the model has good reduction at every
+prime above an odd rational prime.
+
+The stated residue classes are exactly
+\(\left(\frac{-5}{p}\right)=-1\). Deuring's reduction theorem therefore
+makes this reduction supersingular; see \cite{EOY}.
+This holds over \(\overline{\F}_p\), including when \(t_0\notin\F_p\).
+
+For completeness, the Hasse coefficient can be read off directly.
+Let \(b=(1-t)/2\). The coefficient of \(x^{p-1}\) in
+\([x(x^2+2x+b)]^h\) is
+\[
+ \sum_{k=0}^{d}\frac{h!}{k!^2(h-2k)!}\,2^{h-2k}b^k
+ =
+ 2^h\sum_{k=0}^{d}
+ \frac{(-h/2)_k((1-h)/2)_k}{k!^2}b^k
+ \equiv2^hP_d(t)\pmod p.
+\]
+Here \((z)_k\) is the rising factorial.
+The standard Hasse-invariant criterion \cite[Theorem V.4.1(a)]{Silverman}
+therefore gives \(P_d(t_0)=0\). Equation \eqref{square} yields
+\begin{equation}\label{Uzero} U_p=\mathcal U_p(-4)\equiv0\pmod p.\end{equation}
+
+There are two elementary ways to obtain the other moments.
+The reflection used in Section 2 also gives, for each \(k\),
+\[
+ \sum_{r<p}r\binom r{2k}^2
+ \equiv\left(k-\frac12\right)\sum_{r<p}\binom r{2k}^2\pmod p.
+\]
+Thus \(T_p\equiv V_p-U_p/2\pmod p\).
+Since \(20T_p+17U_p=S(p)\equiv0\pmod p\) and \(p\ne2,5\),
+\eqref{Uzero} implies \(T_p=V_p=0\) in \(\F_p\).
+Alternatively, differentiate \eqref{square}: the square factor gives
+\(\mathcal U_p'(-4)=0\) because \(t_0\ne0\); then
+\(V_p=-4\mathcal U_p'(-4)=0\).
+
+Finally the bracket in the proof of Theorem~\ref{transfer} vanishes
+modulo \(p^2\): \(p\mid S(p)\) and \(U_p,T_p,V_p\) all vanish modulo \(p\).
+This proves the theorem for every cofactor \(m\).
+\end{proof}
+
+\section{A complete unweighted branch: a quadratic invariant}\label{zeroliftsec}
+
+The following statement is separate from the weighted all-\(n\) target.
+It supplies a full proof of the zero branch of Sun's Conjecture 5.8(i)
+\cite{Sun2010}, recorded as \texttt{OeisA179524.conjecture3} in
+\cite{Formal}. Its historical priority is not asserted.
+
+\begin{theorem}[Automatic lift away from singular parameters]\label{zerolift}
+Let \(p\) be an odd prime and set
+\(Y_p(c)=\sum_{r=0}^{p-1}W_r(c)\). If \(c_0\in\Z_p\),
+\(c_0(c_0-1)\in\Z_p^\times\), and \(Y_p(c_0)\equiv0\pmod p\), then
+\[
+                         Y_p(c_0)\equiv0\pmod {p^2}.
+\]
+\end{theorem}
+
+The binomial reductions used below are established ingredients:
+Sun \cite[Theorem 1.1]{SunApery} relates this sum to a sum of Ap\'ery
+polynomials, and Guo--Zeng \cite[Theorem 1.3]{GuoZeng} give the
+binomial reduction used here. We include its direct proof to make the
+subsequent differential argument checkable without additional files.
+The finite-invariant lifting strategy itself has a direct antecedent in
+Babanskyy \cite[Lemmas 2.1--2.2]{Babanskyy}: a quadratic differential
+invariant, explicit treatment of exceptional degree-\(p\) coefficients,
+and a double-root argument yield a lift from modulo \(p\) to modulo
+\(p^2\). Here that strategy is adapted to the dual polynomial below.
+The proof is given directly; the invariant principle is not claimed
+as a new invention.
+
+\begin{lemma}\label{vandermonde}
+For an even integer \(m\) with \(0\le m\le p-1\),
+\[
+ \sum_{r=m}^{p-1}\binom rm^2
+                \equiv\binom{p+m}{2m+1}\pmod {p^2}.
+\]
+\end{lemma}
+\begin{proof}
+For \(m\le r<p\), all denominators in \(H_r-H_{r-m}\) are \(p\)-adic
+units, and
+\[
+ \binom{p+m-1-r}{m}\equiv
+ \binom rm[1-p(H_r-H_{r-m})]\pmod {p^2}.
+\]
+The sign is positive because \(m\) is even.
+The involution \(r\mapsto p+m-1-r\) permutes \(m,\ldots,p-1\),
+preserves \(\binom rm^2\) modulo \(p\), and reverses
+\(H_r-H_{r-m}\) modulo \(p\). The last fact follows from
+\(H_{p-1-u}\equiv H_u\pmod p\). Thus the sum of the first-order
+corrections is zero modulo \(p\).
+Vandermonde's identity gives
+\[
+ \sum_{r=m}^{p-1}\binom rm\binom{p+m-1-r}{m}
+                  =\binom{p+m}{2m+1},
+\]
+proving the claim, including \(m=0\) and \(m=p-1\).
+\end{proof}
+
+\begin{lemma}[Dual polynomial and differential equation]\label{dual}
+Put \(h=(p-1)/2\) and
+\[
+ Z_p(c)=\sum_{s=0}^{h}v_s c^s,\qquad
+ v_s=p\frac{(2s)!^4}{s!^4(4s+1)!}.
+\]
+Then \(v_s\in\Z_p\), \(Y_p\equiv Z_p\pmod {p^2}\) coefficientwise,
+and, with \(\theta=c\,d/dc\),
+\begin{equation}\label{ode}
+ \mathcal L Y_p\equiv0\pmod {p^2},\qquad
+ \mathcal L=\theta(4\theta-1)(4\theta+1)-2c(2\theta+1)^3 .
+\end{equation}
+\end{lemma}
+\begin{proof}
+The denominator \((4s+1)!\) contains at most one factor \(p\),
+since \(4s+1\le2p-1\); it is canceled by the displayed factor \(p\).
+Lemma~\ref{vandermonde} makes the coefficient of \(c^s\) in \(Y_p\)
+congruent to
+\[
+ \binom{2s}s^2\binom{p+2s}{4s+1}
+ =
+ p\binom{2s}s^2
+       \frac{\prod_{j=1}^{2s}(p^2-j^2)}{(4s+1)!}.
+\]
+The product is \((2s)!^2\) modulo \(p^2\), since \(2s\) is even.
+Before division the error has valuation at least three; the factorial
+denominator loses at most one. Hence the error is still zero modulo
+\(p^2\), proving the coefficientwise congruence.
+
+The exact coefficient relation is
+\[
+ s(4s-1)(4s+1)v_s=2(2s-1)^3v_{s-1}\qquad(1\le s\le h).
+\]
+Consequently the entire truncation residual is
+\[
+             \mathcal L Z_p=-2p^3v_h c^{h+1}.
+\]
+It vanishes modulo \(p^3\). Applying the integer differential operator
+to \(Y_p-Z_p\) proves \eqref{ode}. No coefficient \(s\) or \(4s\pm1\)
+has been inverted modulo \(p\).
+\end{proof}
+
+\begin{lemma}[Quadratic differential invariant]\label{invariant}
+For a polynomial \(Y\), define
+\[
+ \mathcal J[Y]=16c^2(c-1)(Y'^2-2YY'')
+              -16c(3c-2)YY'-(4c+1)Y^2.
+\]
+Then
+\[
+             \frac{d}{dc}\mathcal J[Y]=2Y\,\frac{\mathcal LY}{c}.
+\]
+In particular, \(\mathcal J[Y_p]\equiv0\pmod {p^2}\) coefficientwise.
+\end{lemma}
+\begin{proof}
+The differential identity follows by expanding
+\[
+ \frac{\mathcal LY}{c}
+ =16c^2(1-c)Y'''+(48c-72c^2)Y''
+                  +(15-52c)Y'-2Y.
+\]
+The right side is polynomial. Thus \(\mathcal J[Y_p]'\) is zero
+modulo \(p^2\). A zero derivative alone would not suffice, because a
+degree-\(p\) term could survive. We check that term explicitly.
+
+Since \(\deg Y_p=h\), the degree of \(\mathcal J[Y_p]\) is at most
+\(2h+1=p\). Its constant coefficient is \(-Y_p(0)^2=-p^2\).
+If \(K\) is the leading coefficient of \(Y_p\), its degree-\(p\)
+coefficient is
+\[
+ [16(h^2-2h(h-1))-48h-4]K^2
+                   =-4(2h+1)^2K^2=-4p^2K^2.
+\]
+Both endpoints vanish modulo \(p^2\). For every intermediate index
+\(1\le j\le p-1\), the derivative gives \(j\, [c^j]\mathcal J[Y_p]=0\)
+modulo \(p^2\), and \(j\) is a unit. All coefficients therefore vanish.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{zerolift}]
+Equation \eqref{square} gives
+\[
+ Y_p(c)\equiv c^hP_d(t)^2\pmod p,\qquad
+ d=\lfloor p/4\rfloor,\quad t^2=1-1/c.
+\]
+Choose \(t_0\) over the algebraic closure of the residue field with
+\(t_0^2=1-1/c_0\).
+The assumptions make \(t_0\ne0\), \(t_0^2\ne1\), and \(P_d(t_0)=0\).
+Such a Legendre root is simple. Indeed, if its multiplicity were
+\(m\ge2\), the lowest-degree term of
+\[
+        (1-t^2)P_d''-2tP_d'+d(d+1)P_d=0
+\]
+would have a nonzero coefficient proportional to
+\((1-t_0^2)m(m-1)\), since \(m\le d<p\).
+The degree-zero case has no roots and is vacuous.
+
+Because \(dt/dc=1/(2tc^2)\), differentiating the polynomial congruence
+gives
+\[
+ Y_p'(c_0)\equiv0,\qquad
+ Y_p''(c_0)\equiv
+ 2c_0^hP_d'(t_0)^2(2t_0c_0^2)^{-2}\ne0\pmod p.
+\]
+The expression is in the base residue field, as is the left side;
+the field extension is used only to describe the root.
+
+Evaluate the invariant at \(c_0\). Both \(Y_p(c_0)\) and
+\(Y_p'(c_0)\) are divisible by \(p\), so every term except the
+\(Y_pY_p''\) term vanishes modulo \(p^2\). We obtain
+\[
+       32c_0^2(c_0-1)Y_p(c_0)Y_p''(c_0)\equiv0\pmod {p^2}.
+\]
+Its coefficient multiplying \(Y_p(c_0)\) is a \(p\)-adic unit.
+This forces \(Y_p(c_0)\equiv0\pmod {p^2}\).
+\end{proof}
+
+\begin{corollary}[Sun's inert unweighted branch]\label{unweighted}
+For every prime \(p\equiv11,13,17,19\pmod {20}\),
+\[
+                 \sum_{r=0}^{p-1}a_r\equiv0\pmod {p^2}.
+\]
+\end{corollary}
+\begin{proof}
+The CM argument in Theorem~\ref{inert} gives \(Y_p(-4)=0\pmod p\).
+Here \(c_0=-4\) satisfies \(c_0(c_0-1)=20\), a unit at all the
+specified primes. Apply Theorem~\ref{zerolift}.
+\end{proof}
+
+The corollary closes all quantifiers of this particular unweighted
+branch. It neither proves the split-prime evaluation branches of
+Sun's Conjecture 5.8(i), nor the weighted all-\(n\) statement
+\eqref{target} in Conjecture 5.8(ii).
+
+
+\section{A direct symbolic proof modulo 9}
+
+\begin{proposition}\label{nine}
+For every \(m\ge1\), \(9\mid S(9m)\).
+\end{proposition}
+\begin{proof}
+The digit expansion \eqref{digit2} at \(p=3\), or a direct factorial
+expansion, gives for every \(q\ge0\)
+\begin{equation}\label{ternary}
+ a_{3q}\equiv a_q+6L_q,\qquad
+ a_{3q+1}\equiv a_q,\qquad
+ a_{3q+2}\equiv-15a_q+3L_q\pmod9.
+\end{equation}
+Here is an explicit check of the coefficients. The only low-digit
+pairs with \(2s\le r\) and their corresponding weights are
+\[
+ (r,s)=(0,0),(1,0),(2,0),(2,1),\qquad f(r,s)=1,1,1,-16.
+\]
+Use \(H_0=0,H_1=1,H_2=3/2\), together with
+\[
+ (-4)^{3j+s}\equiv(-4)^{j+s}(1+6j)\pmod9.
+\]
+The correction divided by \(3\) is
+\[
+ 2q(H_r-H_{r-2s})+4j(H_{r-2s}-H_s)+2j .
+\]
+Its \(q\)-coefficient is zero modulo \(3\) in all four cases, and its
+\(j\)-coefficients are \(2,0,2,1\), respectively.
+All low-carry terms vanish modulo \(9\); higher carries remain in
+\(M(q,j)\). This proves \eqref{ternary} for arbitrary \(q\).
+
+Consequently
+\[
+ \sum_{r=0}^2(20(3q+r)+17)a_{3q+r}
+ \equiv3(q a_q+L_q)\pmod9.
+\]
+Modulo \(3\), Lucas gives \(a_{3u+r}\equiv a_u a_r\) and
+\(L_{3u+r}\equiv a_u L_r\). Since
+\[
+ (a_0,a_1,a_2)\equiv(1,1,0),\qquad
+ (L_0,L_1,L_2)\equiv(0,0,2)\pmod3,
+\]
+we have
+\[
+ \sum_{r=0}^2((3u+r)a_{3u+r}+L_{3u+r})
+ \equiv a_u\sum_{r=0}^2(r a_r+L_r)=0\pmod3.
+\]
+Sum the preceding modulo-\(9\) block over \(q<3m\), and group the
+right side into these three-term blocks.
+\end{proof}
+
+\section{Exact computation and an equivalent unsolved condition}
+
+Appendix A evaluates the original sums using integer arithmetic.
+For fixed \(n\), its summands satisfy
+\begin{equation}\label{termrec}
+ f(n,0)=1,\qquad
+ f(n,k+1)=
+ \frac{-4(n-2k)^2(n-2k-1)^2}{(k+1)^4}f(n,k).
+\end{equation}
+Every division is checked to be exact. The run verified
+\(n\mid S(n)\) for \(1\le n\le5000\), with no counterexample.
+In particular \(p^2\mid S(p^2)\) was verified for
+\[
+ \mathcal P_0=\{3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67\}.
+\]
+Theorem~\ref{transfer} converts these eighteen exact base checks into
+\(p^2\mid S(p^2m)\) for all \(m\), proving the finite-prime part of
+Theorem~\ref{main}. This completes that theorem and its density corollary.
+
+Define the Newton coefficients
+\[
+ b_\ell=\sum_{j=0}^{\ell}(-1)^{\ell-j}\binom{\ell}j a_j,\qquad b_{-1}=0.
+\]
+Binomial inversion and \eqref{hockey} give the exact formula
+\begin{equation}\label{newton}
+ \frac{S(n)}n=\sum_{\ell<n}\binom{n-1}{\ell}
+ \frac{(20\ell+17)b_\ell+20\ell b_{\ell-1}}{\ell+1}.
+\end{equation}
+Since the binomial transform and its inverse have integer coefficients,
+the full conjecture is equivalent to
+\begin{equation}\label{equivalent}
+                \ell+1\mid3b_\ell+20b_{\ell-1}\quad(\ell\ge0).
+\end{equation}
+This is a reformulation, not a proof of the missing cases.
+A useful constant-term model is
+\[
+ P=(1+x+y)\left(1+\frac zx-\frac4{yz}\right),\quad Q=P-1,
+ \qquad a_n=\CT P^n,\quad b_n=\CT Q^n.
+\]
+Matching the three exponents proves these identities directly.
+
+The same exact run found no failures of the following \emph{unproved}
+stronger congruences:
+\begin{align}
+ S(p^2m)&\stackrel{?}{\equiv}p^2S(m)
+       \pmod {p^{v_p(m)+3}}\quad(p\text{ odd}),\label{empdouble}\\
+ S(pm)&\stackrel{?}{\equiv}pS(m)
+       \pmod {p^{v_p(m)+2}}\quad(p\equiv1\pmod4).\label{empsplit}
+\end{align}
+There were \(989\) tested pairs in \eqref{empdouble}, with \(p^2m\le5000\),
+and \(3787\) in \eqref{empsplit}, with \(pm\le5000\).
+If \eqref{empdouble} were proved for all its parameters, induction in
+steps of two, starting from \eqref{primeprop}, would settle every odd
+prime power and hence the entire conjecture. We have not proved it.
+The valid transfer \eqref{transferformula}, whose modulus is only \(p^2\),
+must not be substituted for \eqref{empdouble}.
+
+\section{Status, provenance, and limits}
+
+The exact unchanged target is currently recorded as
+\texttt{OeisA179524.conjecture4}, with \texttt{category research open}
+and an unfilled proof, in the inspected formal-conjectures source
+\cite{Formal}. The inspected path history first adds the file on
+20 August 2026, not 6 November. The historical mathematical source is
+already the 2010 conjecture, irrespective of later lists.
+
+Although the OEIS Open paper \cite{OEISOpen} does not mention the
+sequence by its identifier, its released benchmark does include it.
+The isolated target \texttt{oeis\_a179524\_sun\_conjecture\_2} conjoins
+\eqref{target} with the separate prime-square refinement
+\[
+ S(p)\stackrel{?}{\equiv}
+ p\left(7+10\left(\frac{-1}{p}\right)\right)\pmod {p^2}.
+\]
+The three inspected full-benchmark submissions did not supply accepted
+proofs of that conjunction. Omission from the paper's prose is therefore
+not evidence of omission from the benchmark.
+
+The full repeated-odd-prime-power problem remains unresolved in this
+note. In particular, no general \(p^3\) divisibility is asserted, even
+for the inert primes in Theorem~\ref{inert}. The additional small-prime
+square checks do not cover arbitrarily large split-prime squares.
+The separate inert unweighted branch is proved in
+Section~\ref{zeroliftsec}; it must not be identified with the original
+weighted target.
+
+Independent derivations checked the digit expansions, high-carry cases,
+the CM identification, all-cofactor arguments, and the quadratic
+invariant including its exceptional degree-\(p\) coefficient. This is mathematical
+review within the research workflow, not external peer review or Lean
+formalization. The finite calculations are reproducible in Appendix A.
+No claim is made that the partial results, their proof mechanisms, or
+their combination are historically first. The known ingredients are
+attributed above. The original full-success requirements are not all
+met: the full all-\(n\) quantifier is not closed, and nonduplication has
+not been established by a comprehensive priority review.
+
+\appendix
+\section{Complete exact verification program}
+
+The following standard-library-only Python 3.11-or-later program is contained in this
+single \texttt{.tex} source. It computes the original \(a_n\) and \(S(n)\),
+not a guessed holonomic recurrence. Its exact base calculations support
+the finite-prime corollary; the experimental higher lifts remain
+experimental. The recorded output was: no divisibility failures through
+\(5000\), no failures in \(989\) double-step tests, and no failures in
+\(3787\) split-prime tests.
+
+\begin{lstlisting}
+from math import isqrt
+from pathlib import Path
+import time, json, hashlib, sys
+sys.set_int_max_str_digits(0)
+N=5000
+start=time.monotonic()
+a=[]; S=[0]
+for n in range(N):
+    term=1; an=1
+    for k in range(n//2):
+        numerator=-4*term*(n-2*k)**2*(n-2*k-1)**2
+        denominator=(k+1)**4
+        term,rem=divmod(numerator,denominator)
+        assert rem==0
+        an+=term
+    a.append(an)
+    S.append(S[-1]+(20*n+17)*an)
+    assert S[-1]%(n+1)==0, ('counterexample',n+1)
+    if (n+1)%1000==0: print('Exact original sums checked through',n+1,'elapsed',round(time.monotonic()-start,2),flush=True)
+
+def prime(p): return p>=2 and all(p%d for d in range(2,isqrt(p)+1))
+def valuation(n,p):
+    v=0
+    while n%p==0: v+=1; n//=p
+    return v
+
+double=[]; split=[]; double_count=split_count=0
+for p in range(3,N+1,2):
+    if not prime(p): continue
+    for m in range(1,N//(p*p)+1):
+        mod=p**(valuation(m,p)+3)
+        double_count+=1
+        if (S[p*p*m]-p*p*S[m])%mod: double.append((p,m,mod))
+    if p%4==1:
+        for m in range(1,N//p+1):
+            mod=p**(valuation(m,p)+2)
+            split_count+=1
+            if (S[p*m]-p*S[m])%mod: split.append((p,m,mod))
+
+result={'n_max':N,'original_divisibility_failures':[],
+        'double_lift_count':double_count,'double_lift_failures':double,
+        'split_lift_count':split_count,'split_lift_failures':split,
+        'elapsed_seconds':round(time.monotonic()-start,3),
+        'a_sha256':hashlib.sha256(('\n'.join(map(str,a))+'\n').encode()).hexdigest()}
+print(json.dumps(result,indent=2),flush=True)
+Path(__file__).with_name('exact_lift_test_results.json').write_text(json.dumps(result,indent=2)+'\n')
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+\raggedright
+\bibitem{Sun2010}
+Z.-W. Sun, \emph{On Ap\'ery numbers and generalized central trinomial
+coefficients}, arXiv:1006.2776v11, 19 August 2010.
+Definition of \(W_n(b,c)\), p.~29; Conjecture 5.8(i)--(ii), pp.~32--33.
+\url{https://arxiv.org/abs/1006.2776v11}.
+
+\bibitem{OEIS}
+Z.-W. Sun, \emph{A179524}, The On-Line Encyclopedia of Integer Sequences,
+entry dated 17 July 2010, conjecture attributed to 1 July 2010;
+accessed 7 November 2026.
+\url{https://oeis.org/A179524}.
+
+\bibitem{SunRefinement}
+Z.-W. Sun, \emph{A refinement of a congruence result by van Hamme and
+Mortenson}, Illinois Journal of Mathematics \textbf{56} (2012), no.~3,
+967--979. Theorem 1.2.
+\url{https://arxiv.org/abs/1011.1902v6}.
+
+\bibitem{Duke}
+W. Duke, \emph{Modular functions and the uniform distribution of CM
+points}, Mathematische Annalen \textbf{334} (2006), 241--252.
+The first page gives \(j(i\sqrt5)=632000+282880\sqrt5\).
+\url{https://math.ucla.edu/~wdduke/preprints/modud.pdf}.
+
+\bibitem{EOY}
+N. Elkies, K. Ono and T. Yang, \emph{Reduction of CM elliptic curves and
+modular function congruences}, International Mathematics Research
+Notices (2005), no.~44, 2695--2707.
+The introduction recalls Deuring's nonsplit-prime reduction theorem.
+\url{https://people.math.wisc.edu/~tonghaiyang/deuring.pdf}.
+
+\bibitem{Silverman}
+J. H. Silverman, \emph{The Arithmetic of Elliptic Curves}, second edition,
+Graduate Texts in Mathematics 106, Springer, 2009.
+Theorem V.4.1(a), p.~148.
+
+\newpage
+\bibitem{Formal}
+Google DeepMind and contributors, \emph{formal-conjectures},
+\texttt{FormalConjectures/OEIS/179524.lean}, inspected 7 November 2026.
+Initial path commit \texttt{1bb238f2be65a7d796fb29a15f1c89f764062515},
+20 August 2026.
+\url{https://github.com/google-deepmind/formal-conjectures/blob/main/FormalConjectures/OEIS/179524.lean}.
+
+\bibitem{OEISOpen}
+T. Adamczewski, \emph{OEIS Open: How many conjectures can language
+models turn into theorems?}, arXiv:2608.11941v2, 13 August 2026.
+\url{https://arxiv.org/abs/2608.11941v2}.
+Released exact target:
+\url{https://github.com/epoch-research/LeanOpenProblems/blob/main/apn/data/oeis/Isolated/oeis_a179524_sun_conjecture_2.lean}.
+
+\bibitem{SunApery}
+Z.-W. Sun, \emph{On sums of Ap\'ery polynomials and related congruences},
+Journal of Number Theory \textbf{132} (2012), 2673--2699.
+Theorem 1.1 and Remark 1.1.
+\url{https://arxiv.org/abs/1101.1946v4}.
+
+\bibitem{GuoZeng}
+V. J. W. Guo and J. Zeng, \emph{Proof of some conjectures of Z.-W. Sun
+on congruences for Ap\'ery polynomials}, Journal of Number Theory
+\textbf{132} (2012), 1731--1740; arXiv:1101.0983.
+Theorem 1.3.
+\url{https://arxiv.org/abs/1101.0983}.
+
+\bibitem{Babanskyy}
+O. Babanskyy, \emph{Sun's supercongruence for two Ap\'ery-like binomial
+sums at discriminant \(-20\)}, public manuscript, 2026.
+Section 2, Lemmas 2.1--2.2, pp.~2--3.
+Pinned repository commit
+\texttt{4caad01fa469c86a1a95b930293354d843b79d64};
+the inspected repository history dates from 3 October 2026.
+\url{https://github.com/aconsciousfractal/Sun-3-7-Supercongruence/blob/4caad01fa469c86a1a95b930293354d843b79d64/paper/Sun_3_7_Supercongruence.pdf}.
+
+\end{thebibliography}
+\end{document}
+

@@ -1,0 +1,890 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+\definecolor{codebg}{HTML}{F7F8FA}
+\lstset{basicstyle=\ttfamily\footnotesize,backgroundcolor=\color{codebg},
+  frame=single,rulecolor=\color{black!15},breaklines=true,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,numbers=left,numberstyle=\tiny\color{black!50},
+  xleftmargin=12pt,framesep=4pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily Harmonic branching mass and Mills-type prime-representing functions}
+\fancyhead[R]{\small\sffamily KEIO}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\PP}{\mathcal{P}}
+\newcommand{\W}{\mathcal{W}}
+\newcommand{\fl}[1]{\lfloor #1\rfloor}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\meas}{\operatorname{meas}}
+\newcommand{\Ch}{\operatorname{Ch}}
+\newcommand{\VK}{\mathrm{VK}}
+
+\title{\bfseries Harmonic Branching Mass and Mills-Type\\ Prime-Representing Functions below the Exponent $20/11$\\[6pt]
+\large\normalfont A mass--compactness principle for prime trees and the exponent problem\\ of Mills, Kuipers, Niven and Wright}
+\author{KEIO\\[2pt]\small research development and manuscript preparation with Claude (Anthropic)}
+\date{8 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For a real number $c>1$ let $\W(c)$ be the set of $A>1$ such that $\fl{A^{c^n}}$ is prime for every $n\ge 1$.
+Mills proved $\W(3)\neq\emptyset$ in 1947, and the admissible exponents have since been extended by
+Kuipers, Niven, Wright, Matomäki ($c\ge 2$), Islam ($c\ge 1.946$) and Järviniemi ($c\ge 20/11$).
+The published arguments are \emph{local}: each new prime is selected inside the single short interval
+prescribed by the previous prime, so they require power-saving bounds for the exceptional set of
+short intervals that are poor in primes.
+We formulate a \emph{harmonic branching problem} for trees of nested prime intervals and prove a
+\emph{mass--compactness principle}: if, at every level, the harmonic mass $\sum 1/x$ carried by
+defective nodes is at most half of the guaranteed lower bound for the harmonic mass of that level, then the
+tree has an infinite branch. The principle only asks the exceptional set to beat the accumulated logarithmic losses,
+which grow like $\exp(O(n^2))$, while the exceptional sets coming from zero-density estimates shrink
+doubly exponentially along the tree. Combining it with a Selberg-type mean-square estimate with
+Vinogradov--Korobov savings we prove, unconditionally, that $\W(c)$ is uncountable, unbounded,
+Lebesgue-null and nowhere dense for every $c>6/5$ using only the zero-density estimates of Ingham and
+Huxley, and for every $c>15/13$ using in addition the zero-density estimate of Guth and Maynard.
+Under the density hypothesis the same holds for every $c>1$. The results hold for bounded variable
+exponent sequences as well. The threshold $15/13$ is exactly $1/(1-\theta)$ with $\theta=2/15$ the
+current almost-all exponent for the prime number theorem in short intervals.
+We also record an explicit chain of $22$ proven primes for the exponent $5/4$ (up to $326$ digits).
+The full conjectural range $1<c\le 15/13$ remains open unconditionally.
+\end{abstract}
+
+\noindent\textbf{Keywords:} Mills' constant; prime-representing functions; primes in almost all short intervals;
+zero-density estimates; König's lemma; harmonic mass.\\
+\noindent\textbf{MSC 2020:} 11N05, 11A41, 11M26.
+
+\tableofcontents
+
+\section{Introduction}
+
+\subsection{The exponent problem}
+Mills \cite{Mil47} showed that there is a real number $A$ such that $\fl{A^{3^n}}$ is prime for every
+$n\ge1$. The exponent $3$ comes from Ingham's theorem that $[x,x+x^{5/8+\eps}]$ contains primes for large $x$.
+For $c>1$ and, more generally, for a sequence $\mathbf c=(c_k)_{k\ge1}$ of reals $c_k>1$ with
+$C_n=c_1c_2\cdots c_n$, put
+\begin{gather*}
+ \W(c)=\{A>1:\ \fl{A^{c^n}}\ \text{is prime for all } n\ge1\},\\
+ \W(\mathbf c)=\{A>1:\ \fl{A^{C_n}}\ \text{is prime for all } n\ge1\}.
+\end{gather*}
+The question for which $c$ the set $\W(c)$ is nonempty has a long history, summarised in
+\cref{tab:history}. Kuipers \cite{Kui50} treated integers $c\ge 3$, Niven \cite{Niv51} real $c>8/3$ and
+Wright \cite{Wri54} $c\ge 925/348$; the theorem of Baker, Harman and Pintz on primes in intervals
+$[x,x+x^{0.525}]$ gives $c\ge 2.106$; Matomäki \cite{Mat10} reached $c\ge2$ by working with almost all short
+intervals; Islam \cite{Isl15} reached $c\ge 1.946$ and Järviniemi \cite{Jar22} reached $c\ge 20/11$.
+Saito \cite{Sai21} proved that $\W(\mathbf c)$ has Hausdorff dimension $1$ for bounded sequences with
+$c_k\ge2$. All exponents $c>1$ are expected to be admissible, since Cramér's model predicts primes in
+every interval $[x,x+(\log x)^{3}]$.
+
+\begin{table}[ht]
+\centering\small
+\caption{Admissible exponents for Mills-type prime-representing functions $\fl{A^{c^n}}$.}
+\label{tab:history}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Source & admissible $c$ & input \\
+\midrule
+Mills 1947 \cite{Mil47} & $c=3$ & Ingham: primes in $[x,x+x^{5/8}]$\\
+Kuipers 1950 \cite{Kui50} & integers $c\ge3$ & same\\
+Niven 1951 \cite{Niv51} & $c>8/3$ & same\\
+Wright 1954 \cite{Wri54} & $c\ge 925/348\approx2.658$ & general representing functions\\
+via Baker--Harman--Pintz 2001 \cite{BHP01} & $c\ge 2.106$ & primes in $[x,x+x^{0.525}]$\\
+Matomäki 2010 \cite{Mat10} & $c\ge 2$ & large gaps are rare \cite{Mat07}\\
+Islam 2015 \cite{Isl15} & $c\ge 1.946$ & refined exceptional sets\\
+Järviniemi 2022 \cite{Jar22} & $c\ge 20/11\approx1.818$ & sum of gaps $\ge x^{0.45}$ is $O(x^{0.63+\eps})$\\
+\midrule
+this paper, \cref{thm:main} & $c>6/5$ & Ingham--Huxley density, VK zero-free region\\
+this paper, \cref{thm:main-GM} & $c>15/13\approx1.1538$ & adds Guth--Maynard density \cite{GM24}\\
+this paper, \cref{thm:DH} & $c>1$ & density hypothesis\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Main results}
+
+\begin{theorem}[unconditional, classical inputs]\label{thm:main}
+Let $\mathbf c=(c_k)_{k\ge1}$ satisfy $6/5<\inf_k c_k\le\sup_k c_k<\infty$. Then $\W(\mathbf c)$ is uncountable,
+unbounded, of Lebesgue measure zero and nowhere dense. In particular, for every real $c>6/5$ there are
+uncountably many $A>1$ such that $\fl{A^{c^n}}$ is prime for every $n\ge1$.
+\end{theorem}
+
+\begin{theorem}[unconditional, with the Guth--Maynard estimate]\label{thm:main-GM}
+The conclusion of \cref{thm:main} holds for every sequence with $15/13<\inf_k c_k\le\sup_k c_k<\infty$.
+In particular $\W(c)\neq\emptyset$ for every $c>15/13$.
+\end{theorem}
+
+\begin{theorem}[conditional]\label{thm:DH}
+Assume the density hypothesis $N(\sigma,T)\ll_\eps T^{2(1-\sigma)+\eps}$ for $1/2\le\sigma\le1$.
+Then the conclusion of \cref{thm:main} holds for every sequence with $1<\inf_k c_k\le\sup_k c_k<\infty$.
+\end{theorem}
+
+The exponents $6/5$ and $15/13$ are $1/(1-\theta_*)$ with $\theta_*=1/6$ (Huxley) and $\theta_*=2/15$
+(Guth--Maynard), the known exponents for the prime number theorem in almost all short intervals
+\cite{Hux72,GM24,expdb}. In the range $15/13<c<20/11$ the theorems are new; for $c\ge 20/11$ they
+reprove known statements by a different method.
+
+\subsection{The new principle}
+Every proof in \cref{tab:history} is local. Given $p_n$, the next prime $p_{n+1}$ must be chosen in
+$J(p_n)=[p_n^{c},(p_n+1)^c-1)$, an interval of length $\asymp X^{\theta}$ at height $X=p_n^c$, with
+$\theta=1-1/c$. One needs a prime $p_{n+1}\in J(p_n)$ whose own interval $J(p_{n+1})$ is again rich in primes.
+Since $J(p_n)$ contains only about $X^\theta/\log X$ primes, the exceptional set of bad intervals in the
+whole dyadic range must be smaller than $X^{\theta}$ in count, i.e.\ one needs a \emph{power saving}.
+This is what limits the method to $c\ge 20/11$ at present.
+
+We replace the local selection by a \emph{global} count. We start from \emph{all} primes in a dyadic
+interval $[P,2P]$, keep the whole tree of admissible continuations, and measure each level by the
+harmonic mass $\sum_x 1/x$. Good nodes multiply their mass by about $1/\log x$; bad nodes are discarded.
+The accumulated loss after $n$ levels is $\exp(O(n^2+n\log\log P))$, whereas the harmonic mass of
+\emph{all} bad integers at level $n$ is $\exp(-\kappa(\log Y_n)^{1/3-o(1)})$ with $\log Y_n\asymp c^{n}\log P$,
+which is doubly exponentially small in $n$. König's lemma then turns ``every level is nonempty'' into an
+infinite branch. No single node is ever required to have a good child. The abstract form of this is the
+mass--compactness principle, \cref{thm:mass}, which answers the harmonic branching problem, \cref{prob:H}.
+The logical structure of the paper is therefore: a new problem (\cref{prob:H}), a new method solving it
+(\cref{thm:mass,cor:split}), and its application, through the estimates of \cref{sec:aa}, to the classical
+exponent problem (\cref{sec:proof}).
+
+\subsection{Status of the claims}
+\Cref{thm:main,thm:main-GM} are unconditional. They rely on published zero-density estimates
+(Ingham \cite{Ing40}, Huxley \cite{Hux72}, Guth--Maynard \cite{GM24}, published in 2026), on the Vinogradov--Korobov zero-free
+region \cite{Ivi85,For02} and on the explicit formula \cite{Dav00}; everything else is proved here.
+\Cref{thm:DH} is conditional. The problem of admissibility for all $c\in(1,15/13]$ is \emph{not}
+solved unconditionally; see \cref{sec:audit} for an itemised audit. The numerical data of
+\cref{sec:numerics} are an illustration and are not used in any proof; \cref{app:proth} records a stopped
+side computation.
+
+\section{The harmonic branching problem and the mass--compactness principle}\label{sec:mass}
+
+\begin{definition}[branching system]\label{def:branching}
+A \emph{branching system} consists of a finite nonempty set $V_1\subset\Z_{\ge2}$ (the roots), for each
+level $n\ge1$ a map $x\mapsto\Ch_n(x)$ assigning to every integer $x\ge2$ a finite set
+$\Ch_n(x)\subset\Z_{\ge2}$ of children such that $\Ch_n(x)\cap\Ch_n(x')=\emptyset$ for $x\neq x'$, and for
+each level a set $G_n\subset\Z_{\ge2}$ of \emph{good} integers. The levels are defined recursively by
+\[
+ V_{n+1}=\bigcup_{x\in V_n\cap G_n}\Ch_n(x).
+\]
+The weight of a finite set $S$ is $w(S)=\sum_{x\in S}1/x$.
+\end{definition}
+
+\begin{problem}[harmonic branching problem]\label{prob:H}
+Find verifiable conditions on the \emph{local branching factors}
+$\lambda_n=\inf_{x\in V_n\cap G_n} w(\Ch_n(x))\,x$ and on the \emph{defect masses}
+$\beta_n\ge w(V_n\setminus G_n)$ which guarantee an infinite branch $x_1\in V_1$, $x_{k+1}\in\Ch_k(x_k)$,
+$x_k\in G_k$ for all $k\ge1$, without any information on which individual nodes are good.
+\end{problem}
+
+\begin{theorem}[mass--compactness principle]\label{thm:mass}
+Consider a branching system and positive numbers $\lambda_n$, nonnegative numbers $\beta_n$ such that
+for every $n\ge1$:
+\begin{enumerate}[label=\textup{(\roman*)}]
+ \item $w(\Ch_n(x))\ge\lambda_n/x$ for every $x\in V_n\cap G_n$;
+ \item $w(V_n\setminus G_n)\le\beta_n$;
+ \item $\displaystyle \beta_n\le\frac12\,w(V_1)\prod_{k=1}^{n-1}\frac{\lambda_k}{2}$.
+\end{enumerate}
+Then $w(V_n)\ge w(V_1)\prod_{k<n}(\lambda_k/2)>0$ for every $n$, and there is an infinite branch
+$(x_k)_{k\ge1}$ with $x_1\in V_1$, $x_{k+1}\in\Ch_k(x_k)$ and $x_k\in G_k$ for all $k$.
+\end{theorem}
+
+\begin{proof}
+Put $H_n=w(V_n)$ and $M_n=w(V_1)\prod_{k<n}(\lambda_k/2)$. We show $H_n\ge M_n$ by induction; $H_1=M_1$.
+If $H_n\ge M_n$, then (ii) and (iii) give $w(V_n\cap G_n)\ge H_n-\beta_n\ge H_n-M_n/2\ge H_n/2$.
+Since the sets $\Ch_n(x)$ are pairwise disjoint, (i) yields
+\[
+ H_{n+1}=\sum_{x\in V_n\cap G_n}w(\Ch_n(x))\ge\lambda_n\,w(V_n\cap G_n)\ge \frac{\lambda_n}{2}H_n\ge M_{n+1}.
+\]
+Hence every $V_n$ is nonempty. Each $V_n$ is finite, because $V_1$ and all $\Ch_n(x)$ are finite.
+Every $y\in V_{n+1}$ has exactly one parent $x\in V_n\cap G_n$ with $y\in\Ch_n(x)$, by disjointness.
+Thus the $V_n$ form a locally finite forest with finitely many roots and with nodes at every depth.
+By König's lemma (applied after adjoining a common root) there is an infinite path
+$x_1,x_2,\dots$ with $x_{k+1}\in\Ch_k(x_k)$; a node of $V_k$ has children only if it lies in $G_k$,
+so $x_k\in G_k$ for all $k$.
+\end{proof}
+
+\begin{remark}[why the principle is global]
+Condition (iii) compares the defect mass at level $n$ with the \emph{accumulated} mass of the whole level.
+It is irrelevant whether the bad nodes are concentrated below a particular node; this is the point
+where local arguments need power savings and \cref{thm:mass} does not.
+\end{remark}
+
+\begin{corollary}[binary splitting]\label{cor:split}
+Consider a branching system with numbers $\lambda_n,\beta_n$ satisfying \textup{(i)} and \textup{(ii)} of
+\cref{thm:mass}, and put $m_n=\frac13\,w(V_1)\prod_{k=1}^{n-1}(\lambda_k/6)$. Assume that for every $n\ge1$
+\[
+ \text{(iii$'$)}\qquad \beta_n\le\tfrac12\,m_n\qquad\text{and}\qquad \max_{x\in V_n}\frac1x\le m_n .
+\]
+Then there are uncountably many infinite branches $x_1\in V_1$, $x_{k+1}\in\Ch_k(x_k)$, $x_k\in G_k$, and any two
+of them differ at some level.
+\end{corollary}
+
+\begin{proof}
+A finite set $S$ of integers with $\max_{x\in S}1/x\le w(S)/3$ can be split into two disjoint parts of weight
+at least $w(S)/3$ each: order $S$ and cut after the shortest initial segment of weight $\ge w(S)/3$; that
+segment has weight at most $2w(S)/3$. For $s=(s_1,s_2,\dots)\in\{0,1\}^{\N}$ put $U_1^s=V_1$, let $V_n^s$ be the part of
+$U_n^s$ selected by $s_n$, and $U_{n+1}^s=\bigcup_{x\in V_n^s\cap G_n}\Ch_n(x)$. Clearly $U_n^s,V_n^s\subset V_n$.
+We show $w(U_n^s)\ge3m_n$ and $w(V_n^s)\ge m_n$ by induction. For $n=1$, $w(U_1^s)=w(V_1)=3m_1$, the split is
+possible because $\max 1/x\le m_1$, and $w(V_1^s)\ge m_1$. If $w(V_n^s)\ge m_n$, then by (ii) and (iii$'$)
+$w(V_n^s\cap G_n)\ge m_n-\beta_n\ge m_n/2$, so by (i) and disjointness
+$w(U_{n+1}^s)\ge\lambda_n m_n/2=3m_{n+1}$; the split is possible because $\max_{x\in V_{n+1}}1/x\le m_{n+1}$, and
+$w(V_{n+1}^s)\ge m_{n+1}$. Hence every level of the tree of $s$ is nonempty, and König's lemma gives an infinite
+branch $b(s)$ in it. If $s\ne s'$ first differ at index $n$, the $n$-th nodes of $b(s)$ and $b(s')$ lie in the
+two disjoint parts of $U_n^s=U_n^{s'}$, so $b(s)\neq b(s')$.
+\end{proof}
+
+\section{Nested prime intervals}\label{sec:nested}
+
+For $c>1$ and an integer $x\ge2$ put
+\[
+ J_c(x)=\bigl[x^c,\,(x+1)^c-1\bigr),\qquad \PP_c(x)=\PP\cap J_c(x),
+\]
+where $\PP$ is the set of primes. The intervals $J_c(x)$, $x\ge2$, are pairwise disjoint.
+
+\begin{lemma}[nesting]\label{lem:nest}
+Let $\mathbf c=(c_k)$ with $c_k>1$, and let $(p_n)_{n\ge1}$ be integers $p_n\ge2$ with
+$p_{n+1}\in J_{c_{n+1}}(p_n)$ for all $n\ge1$. Then $A=\lim_{n\to\infty}p_n^{1/C_n}$ exists, $A>1$, and
+$\fl{A^{C_n}}=p_n$ for every $n\ge1$.
+\end{lemma}
+
+\begin{proof}
+Let $a_n=p_n^{1/C_n}$ and $b_n=(p_n+1)^{1/C_n}$. From $p_{n+1}\ge p_n^{c_{n+1}}$ we get $a_{n+1}\ge a_n$, and
+from $p_{n+1}+1<(p_n+1)^{c_{n+1}}$ we get $b_{n+1}<b_n$. Hence $a_n\le A\le b_{n+1}<b_n$ for every $n$,
+that is $p_n\le A^{C_n}<p_n+1$. Finally $A\ge a_1=p_1^{1/c_1}>1$.
+\end{proof}
+
+\begin{lemma}[interval length]\label{lem:length}
+For $c>1$ and $x\ge2$ one has $c\,x^{c-1}-1\le |J_c(x)|\le c\,(x+1)^{c-1}$.
+\end{lemma}
+
+\begin{proof}
+By the mean value theorem $(x+1)^c-x^c=c\,\xi^{c-1}$ with $x<\xi<x+1$, and $|J_c(x)|=(x+1)^c-x^c-1$.
+\end{proof}
+
+\section{Primes in almost all short intervals with Vinogradov--Korobov savings}\label{sec:aa}
+
+Let $N(\sigma,T)$ denote the number of zeros $\rho=\beta+i\gamma$ of $\zeta(s)$ with $\beta\ge\sigma$ and
+$|\gamma|\le T$. Write $\mathcal L(X)=(\log X)^{1/3}(\log\log X)^{-1/3}$.
+
+\begin{hypothesis}[$\mathrm Z(\theta_1)$]\label{hyp:Z}
+Let $0<\theta_1<1$. There are $\sigma_1\in[1/2,1)$, $\delta_0>0$ and $B\ge0$ such that, with
+$a_*=2/(1-\theta_1)-\delta_0$,
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item for every $\eps>0$: $N(\sigma,T)\ll_\eps T^{a_*(1-\sigma)+\eps}$ uniformly for $1/2\le\sigma\le\sigma_1$, $T\ge2$;
+\item $N(\sigma,T)\ll T^{a_*(1-\sigma)}(\log T)^B$ uniformly for $\sigma_1\le\sigma\le1$, $T\ge2$.
+\end{enumerate}
+\end{hypothesis}
+
+We use the following classical facts.
+\begin{itemize}[leftmargin=1.5em]
+\item[(F1)] Explicit formula \cite[Ch.~17]{Dav00}: for $x\ge2$ and $T\ge2$,
+$\psi(x)=x-\sum_{|\gamma|<T}x^\rho/\rho+O\bigl(x(\log xT)^2/T+\log x\bigr)$.
+\item[(F2)] Zero counting \cite[Ch.~15]{Dav00}: $N(t+1)-N(t)\ll\log(|t|+2)$ for the number $N(t)$ of zeros with $0<\gamma\le t$.
+\item[(F3)] Vinogradov--Korobov \cite[Thm.~6.1]{Ivi85}, \cite{For02}: there is $c_0>0$ such that $\zeta(\sigma+it)\neq0$ for
+$\sigma\ge1-c_0(\log|t|)^{-2/3}(\log\log|t|)^{-1/3}$, $|t|\ge3$.
+\item[(F4)] Ingham \cite{Ing40}, \cite[Ch.~11]{Ivi85}: $N(\sigma,T)\ll T^{3(1-\sigma)/(2-\sigma)}(\log T)^5$ for $1/2\le\sigma\le1$.
+\item[(F5)] Huxley \cite{Hux72}, \cite[Ch.~11]{Ivi85}: $N(\sigma,T)\ll T^{3(1-\sigma)/(3\sigma-1)}(\log T)^{44}$ for $3/4\le\sigma\le1$.
+\item[(F6)] Guth--Maynard \cite{GM24}, in the form recorded in \cite[``Guth--Maynard bound'']{expdb}: for each fixed $\sigma\in[7/10,8/10]$
+and every $\eps>0$, $N(\sigma,T)\ll_{\sigma,\eps} T^{15(1-\sigma)/(3+5\sigma)+\eps}$.
+\end{itemize}
+
+\begin{lemma}[verification of $\mathrm Z(\theta_1)$]\label{lem:Z}
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $\mathrm Z(\theta_1)$ holds for every $\theta_1>1/6$, using \textup{(F4)} and \textup{(F5)} only.
+\item $\mathrm Z(\theta_1)$ holds for every $\theta_1>2/15$, using \textup{(F4)}, \textup{(F5)} and \textup{(F6)}.
+\item Under the density hypothesis, $\mathrm Z(\theta_1)$ holds for every $\theta_1>0$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) On $[1/2,3/4]$ the exponent $3/(2-\sigma)$ of (F4) is at most $12/5$, and on $[3/4,1]$ the exponent
+$3/(3\sigma-1)$ of (F5) is at most $12/5$. Hence $N(\sigma,T)\ll T^{12(1-\sigma)/5}(\log T)^{44}$ on $[1/2,1]$.
+If $\theta_1>1/6$ then $12/5<2/(1-\theta_1)$; take $\sigma_1=1/2$ and $\delta_0=2/(1-\theta_1)-12/5$ in (b).
+
+(ii) Let $\theta_1>2/15$, so that $30/13<2/(1-\theta_1)$. On $[1/2,7/10]$, (F4) gives exponent
+$3/(2-\sigma)\le30/13$ with a logarithmic factor; on $[7/10,4/5]$, (F6) gives $15/(3+5\sigma)\le30/13$ with a
+factor $T^\eps$; on $[4/5,1]$, (F5) gives $3/(3\sigma-1)\le 15/7<30/13$ with a logarithmic factor. Take
+$\sigma_1=4/5$ and $\delta_0=\tfrac12\bigl(2/(1-\theta_1)-30/13\bigr)$, so that $a_*=30/13+\delta_0$. Then (b) holds on
+$[4/5,1]$ directly from (F5) with $B=44$, because $15/7<a_*$; on $[1/2,7/10]$ the logarithmic factor in (F4) is
+$\ll_\eps T^\eps$, which gives (a) there. For (a) on $[7/10,4/5]$, where (F6) is a pointwise statement, use that $N(\sigma,T)$ is nonincreasing in
+$\sigma$: for a mesh $7/10=s_0<s_1<\dots<s_r=4/5$ with $s_{j+1}-s_j\le\delta_0/20$ and $\sigma\in[s_j,s_{j+1}]$,
+$N(\sigma,T)\le N(s_j,T)\ll T^{\frac{30}{13}(1-s_j)+\eps}\le T^{\frac{30}{13}(1-\sigma)+\frac{30}{13}\cdot\frac{\delta_0}{20}+\eps}$, and the extra
+exponent is absorbed into $\delta_0(1-\sigma)$ because $1-\sigma\ge1/5$ and $\frac{30}{13}\cdot\frac1{20}<\frac15$.
+
+(iii) Let $\theta_1>0$. The density hypothesis gives (a) with exponent $2<2/(1-\theta_1)$ on $[1/2,1]$. For (b)
+choose $\sigma_1<1$ with $3/(3\sigma_1-1)<2/(1-\theta_1)$, which is possible because $3/(3\sigma-1)\to3/2$ as
+$\sigma\to1$, and use (F5) on $[\sigma_1,1]$. Take $\delta_0$ smaller than both gaps. If the density hypothesis is
+only available pointwise in $\sigma$, the mesh argument of (ii) gives the required uniformity.
+\end{proof}
+
+\begin{proposition}[mean square with VK savings; classical, cf.\ \cite{SV77,Zac98,BP00,GT25}]\label{prop:ms}
+Assume $\mathrm Z(\theta_1)$ and let $\theta_1\le\theta_2<1$. There are $\kappa>0$ and $X_0$ such that for
+$X\ge X_0$ and $X^{\theta_1}\le h\le X^{\theta_2}$,
+\[
+ \int_X^{2X}\bigl|\psi(u+h)-\psi(u)-h\bigr|^2\,du\le h^2X\exp\bigl(-\kappa\,\mathcal L(X)\bigr).
+\]
+\end{proposition}
+
+\begin{proof}
+Let $T=X^{1-\theta_1}\exp(2\sqrt{\log X})$; then $2\le T\le X$ for large $X$. By (F1), for $u\in[X,2X]$,
+\begin{gather*}
+ \psi(u+h)-\psi(u)-h=-S(u)+O\Bigl(\frac{X\log^2X}{T}+\log X\Bigr),\\
+ S(u)=\sum_{|\gamma|<T}\frac{(u+h)^\rho-u^\rho}{\rho}=\int_u^{u+h}F(v)\,dv,
+\end{gather*}
+with $F(v)=\sum_{|\gamma|<T}v^{\rho-1}$. The error term is at most $h\exp(-\sqrt{\log X})$ for large $X$, since
+$X\log^2X/T=X^{\theta_1}\log^2X\,e^{-2\sqrt{\log X}}$ and $h\ge X^{\theta_1}$.
+
+By Cauchy--Schwarz, $|S(u)|^2\le h\int_u^{u+h}|F(v)|^2dv$, and integrating over $u\in[X,2X]$ (each $v$ lies
+in at most $h$ units of $u$-measure),
+\[
+ \int_X^{2X}|S(u)|^2du\le h^2\int_X^{3X}|F(v)|^2dv=h^2\sum_{\rho,\rho'}\int_X^{3X}v^{\rho+\overline{\rho'}-2}dv .
+\]
+For $\rho=\beta+i\gamma$ and $\rho'=\beta'+i\gamma'$ the inner integral is at most $2X^{\beta+\beta'-1}$ in
+absolute value, and also at most $6X^{\beta+\beta'-1}/|\gamma-\gamma'|$ by integrating the oscillating factor.
+Hence it is $\le12X^{\beta+\beta'-1}/(1+|\gamma-\gamma'|)$. With $X^{\beta+\beta'}\le(X^{2\beta}+X^{2\beta'})/2$
+and symmetry,
+\[
+ \int_X^{3X}|F|^2\le 12\sum_{|\gamma|<T}X^{2\beta-1}\sum_{|\gamma'|<T}\frac1{1+|\gamma-\gamma'|}
+ \ll(\log T)^2\sum_{|\gamma|<T}X^{2\beta-1},
+\]
+by (F2). Consequently
+\[
+ \int_X^{2X}|\psi(u+h)-\psi(u)-h|^2du\ll h^2X\Bigl((\log X)^2\Sigma+e^{-2\sqrt{\log X}}\Bigr),
+ \qquad \Sigma=\sum_{|\gamma|<T}X^{2\beta-2}.
+\]
+Zeros with $\beta<1/2$ contribute at most $N(T)X^{-1}\ll T\log T/X\le X^{-\theta_1/2}$ to $\Sigma$.
+For $\beta\ge1/2$, partial summation gives
+\[
+ \sum_{\beta\ge1/2}X^{2\beta-2}=X^{-1}N(\tfrac12,T)+2\log X\int_{1/2}^1X^{2\sigma-2}N(\sigma,T)\,d\sigma .
+\]
+By (F3), $N(\sigma,T)=0$ for $\sigma>1-\eta$ with $\eta=c_0(\log T)^{-2/3}(\log\log T)^{-1/3}$.
+Write $a_*(1-\theta_1)=2-\delta_1$ with $\delta_1=\delta_0(1-\theta_1)>0$. Then
+$T^{a_*(1-\sigma)}X^{2\sigma-2}=\exp\bigl(-(1-\sigma)[\delta_1\log X-2a_*\sqrt{\log X}]\bigr)
+\le\exp(-(1-\sigma)\tfrac{\delta_1}{2}\log X)$ for large $X$.
+On $[\sigma_1,1-\eta]$ hypothesis (b) bounds the integrand by $(\log X)^B\exp(-\tfrac{\delta_1}{2}\eta\log X)$.
+On $[1/2,\sigma_1]$ hypothesis (a), with $\eps=(1-\sigma_1)\delta_1/4$, bounds it by $X^{-(1-\sigma_1)\delta_1/4}$.
+Since $\log T\asymp\log X$, we have $\eta\log X\gg\mathcal L(X)$, and therefore
+$\Sigma\ll(\log X)^{B+1}\exp(-c'\mathcal L(X))$ for some $c'>0$. The proposition follows with any
+$\kappa<c'$.
+\end{proof}
+
+\begin{definition}[good and bad integers]\label{def:good}
+Let $c>1$ and $\eps\in(0,1/2]$. An integer $x\ge2$ is \emph{$(c,\eps)$-good} if
+\[
+ \#\PP_c(x)\ge(1-\eps)\,\frac{|J_c(x)|}{\log\bigl((x+1)^c\bigr)},
+\]
+and \emph{$(c,\eps)$-bad} otherwise.
+\end{definition}
+
+\begin{corollary}[bad integers are sparse]\label{cor:bad}
+Let $1<c_-\le c_+<\infty$, $\eps\in(0,1/2]$, and assume $\mathrm Z(\theta_1)$ for some
+$\theta_1<1-1/c_-$. There are $\kappa'>0$ and $Y_0$ such that for $Y\ge Y_0$ and every $c\in[c_-,c_+]$,
+\[
+ \#\{x\in[Y,2Y):\ x\ \text{is }(c,\eps)\text{-bad}\}\le Y\exp\bigl(-\kappa'\mathcal L(Y)\bigr).
+\]
+\end{corollary}
+
+\begin{proof}
+Put $\theta=1-1/c\in[1-1/c_-,1-1/c_+]$ and $K=\lceil100c_+/\eps\rceil$. Split $[Y,2Y)$ into $K$ blocks
+$[y_i,y_{i+1})$ with $y_i=Y(1+i/K)$. For $x$ in block $i$, \cref{lem:length} gives
+$c\,y_i^{c-1}-1\le|J_c(x)|\le c\,y_i^{c-1}(1+2/K)^{c-1}$ for $Y$ large, hence
+$c\,y_i^{c-1}\ge(1-\eps/50)|J_c(x)|$. Put $h_i=(1-\eps/4)(c\,y_i^{c-1}-1)$, so that
+$(1-0.3\eps)|J_c(x)|\le h_i\le(1-\eps/4)|J_c(x)|$ for large $Y$; the upper bound holds because
+$c\,y_i^{c-1}-1\le c\,x^{c-1}-1\le|J_c(x)|$.
+
+Let $x$ be bad and $u\in U(x)=[x^c,x^c+\tfrac\eps4|J_c(x)|]$. Then $(u,u+h_i]\subset[x^c,(x+1)^c-1]$, so the primes in
+$(u,u+h_i]$ are those of $\PP_c(x)$ plus possibly the endpoint $(x+1)^c-1$. Prime powers $p^k$ with
+$k\ge2$ in an interval of length $h_i$ at height $\asymp Y^c$ number $O(Y^{c/2-1}+\log Y)$. Hence
+\[
+ \psi(u+h_i)-\psi(u)\le\log\bigl((x+1)^c\bigr)\bigl(\#\PP_c(x)+1\bigr)+O\bigl((Y^{c/2-1}+\log Y)\log Y\bigr)
+ \le(1-\eps)|J_c(x)|+o(\eps h_i),
+\]
+and therefore $\psi(u+h_i)-\psi(u)-h_i\le-0.7\eps|J_c(x)|+o(\eps h_i)\le-\tfrac{\eps}{2}h_i$.
+The sets $U(x)$ are pairwise disjoint and have measure $\tfrac\eps4|J_c(x)|\ge\tfrac\eps4h_i$; they lie in
+$[Y^c,(2Y+1)^c]$, which is covered by at most $2c_++2$ dyadic intervals $[X,2X]$ with $Y^c\le X\le3^{c_+}Y^c$.
+For each of them $X^{\theta_1}\le h_i\le X^{\theta_2}$ with $\theta_2=1-1/(2c_+)$, which exceeds every $\theta\le1-1/c_+$, once $Y$ is large; \cref{prop:ms} is applied with this fixed pair $(\theta_1,\theta_2)$.
+By Chebyshev's inequality and \cref{prop:ms}, the measure of
+$\{u\in[X,2X]:|\psi(u+h_i)-\psi(u)-h_i|\ge\tfrac\eps2h_i\}$ is at most $4\eps^{-2}X\exp(-\kappa\mathcal L(X))$.
+Hence the number of bad $x$ in block $i$ is
+\[
+ \le\frac{4}{\eps h_i}\,(2c_++2)\,4\eps^{-2}\,3^{c_+}Y^c\exp(-\kappa\mathcal L(Y^c))
+ \ll_{c_+,\eps}Y\exp(-\kappa\mathcal L(Y^c)),
+\]
+because $h_i\gg Y^{c-1}$. Summing over the $K$ blocks and using $\mathcal L(Y^c)\ge\mathcal L(Y)$ for large $Y$
+gives the claim for any $\kappa'<\kappa$ and large $Y$.
+\end{proof}
+
+\section{Proof of the main theorems}\label{sec:proof}
+
+Let $\mathbf c=(c_k)$ with $c_-=\inf c_k$ and $c_+=\sup c_k$, and let $\theta_*\in\{1/6,\,2/15,\,0\}$ be the
+threshold corresponding to \cref{thm:main}, \cref{thm:main-GM} and \cref{thm:DH}, so that the assumption is
+$c_->1/(1-\theta_*)$, i.e.\ $1-1/c_->\theta_*$. Fix $\theta_1$ with $\theta_*<\theta_1<1-1/c_-$; by \cref{lem:Z},
+$\mathrm Z(\theta_1)$ holds (unconditionally in the first two cases). Fix $\eps=1/4$.
+
+\paragraph{The branching system.}
+Let $P$ be large. Put $V_1=\PP\cap[P,2P]$, $\Ch_n(x)=\PP_{c_{n+1}}(x)$ and
+$G_n=\{x:\ x\text{ is }(c_{n+1},\eps)\text{-good}\}$. The child sets of one level are disjoint because the
+intervals $J_{c_{n+1}}(x)$ are. Put $D_n=c_2c_3\cdots c_n$ ($D_1=1$), $M_1=2P$ and $M_{n+1}=(M_n+1)^{c_{n+1}}$.
+By induction $V_n\subset[P^{D_n},M_n]$. Writing $\log M_n=D_na_n$ and using $\log(M_n+1)\le\log M_n+1/M_n$ we get
+$a_{n+1}\le a_n+1/M_n\le a_n+P^{-D_n}$; since $D_n\ge c_-^{\,n-1}\ge1+(n-1)(c_--1)$, this gives
+$a_n\le\log(2P)+2/P\le\log(3P)$ for large $P$. Hence
+\[
+ V_n\subset R_n=\bigl[P^{D_n},(3P)^{D_n}\bigr].
+\]
+
+\paragraph{Local branching factor.}
+Let $x\in V_n\cap G_n$ and $c=c_{n+1}$. Every child $y$ satisfies $y<(x+1)^c$, and by goodness and
+\cref{lem:length},
+\[
+ w(\Ch_n(x))\ge\frac{\#\PP_c(x)}{(x+1)^c}\ge\frac{(1-\eps)(c\,x^{c-1}-1)}{c\log(x+1)\,(x+1)^c}
+ \ge\frac{1-2\eps}{x\log(x+1)}\ge\frac{\lambda_n}{x},
+ \qquad \lambda_n=\frac{1}{2D_n\log(4P)},
+\]
+for $P$ large, since $\log(x+1)\le D_n\log(4P)$ on $R_n$.
+
+\paragraph{Defect mass.}
+By \cref{cor:bad}, applied to dyadic blocks $[Y,2Y)$ covering $R_n$ (at most $2D_n+2$ of them, all with
+$Y\ge P^{D_n}$),
+\[
+ w(V_n\setminus G_n)\le\sum_{\text{blocks}}\frac1Y\,Y e^{-\kappa'\mathcal L(Y)}
+ \le(2D_n+2)\exp\bigl(-\kappa'\mathcal L(P^{D_n})\bigr)=:\beta_n .
+\]
+
+\paragraph{Initial mass.}
+By the prime number theorem, $w(V_1)\ge(\pi(2P)-\pi(P))/(2P)\ge1/(4\log P)$ for large $P$.
+
+\paragraph{Verification of (iii$'$).}
+We have $c_-^{\,n-1}\le D_n\le c_+^{\,n-1}$. Write $m=n-1$ and $\ell=\log P$. Then, with $m_n$ as in
+\cref{cor:split},
+\begin{gather*}
+ \tfrac12 m_n=\tfrac16w(V_1)\prod_{k<n}\frac{\lambda_k}{6}\ge\frac{1}{24\ell}\,\bigl(12\log 4P\bigr)^{-m}\,c_+^{-m(m-1)/2},\\
+ \beta_n\le(2c_+^{m}+2)\exp\Bigl(-\kappa'\frac{(c_-^{m}\ell)^{1/3}}{(\log(c_+^m\ell))^{1/3}}\Bigr).
+\end{gather*}
+Taking logarithms, it suffices that
+\begin{multline*}
+ \kappa'\frac{c_-^{m/3}\ell^{1/3}}{(m\log c_++\log\ell)^{1/3}}\\
+ \ge\log(2c_+^m+2)+\log(24\ell)+m\log(12\log4P)+\tfrac{m(m-1)}2\log c_+
+\end{multline*}
+for all $m\ge0$. The right side is $\le C(1+m^2)(1+\log\ell)$ with $C=C(c_+)$, and the left side is
+$\ge\kappa' c_-^{m/3}\ell^{1/3}(m+1)^{-1/3}(\log c_++\log\ell)^{-1/3}$. Since
+$\mu=\inf_{m\ge0}c_-^{m/3}(m+1)^{-7/3}>0$, the inequality holds for all $m$ as soon as
+$\kappa'\mu\,\ell^{1/3}\ge 2C(1+\log\ell)(\log c_++\log\ell)^{1/3}$, which is true for large $\ell$.
+The second condition in (iii$'$) holds because $\max_{x\in V_n}1/x\le P^{-D_n}\le P^{-c_-^{m}}=e^{-c_-^m\ell}$,
+whereas $m_n\ge e^{-C'(1+m^2)(1+\log\ell)}$; for large $\ell$ the first is smaller for every $m\ge0$.
+
+\paragraph{Conclusion.}
+\Cref{cor:split} gives uncountably many infinite branches $(p_n)$ with $p_{n+1}\in J_{c_{n+1}}(p_n)$, any two
+of which differ at some level. By \cref{lem:nest} each branch yields $A\in\W(\mathbf c)$ with
+$\fl{A^{C_n}}=p_n$, so distinct branches yield distinct $A$. Thus $\W(\mathbf c)$ is uncountable. Since
+$A^{c_1}\in[P,2P+1)$ and $P$ can be taken arbitrarily large, $\W(\mathbf c)$ is unbounded.
+
+\begin{remark}[size of the constants]
+The constants $A$ produced here are large: $A^{c_1}\ge P$ with $P$ beyond the range where the estimates of
+\cref{sec:aa} take effect. This is unavoidable for small $c$ in general: for $A<2$ the number $\fl{A^{c}}$ is tiny
+and small cases can fail; for instance the comment to OEIS A243358 \cite{OEIS243358} records that for $A<2$ and
+$c<1.2209864\ldots$ the sequence $\fl{A^{c^n}}$ must contain composite terms. No such restriction applies to large $A$.
+The threshold $P_0$ is effective in principle (all analytic inputs have effective constants), but the
+constant $A$ itself is obtained through König's lemma; unlike Mills' greedy construction, the proof gives no
+algorithm with a known running time for computing an element of $\W(\mathbf c)$.
+\end{remark}
+
+\paragraph{Measure and category.}
+Let $1<a<b$ and $W_n=\{A\in[a,b]:\ \fl{A^{C_k}}\in\PP\ (k\le n)\}$. Each $A\in W_n$ lies in an interval
+$[p^{1/C_n},(p+1)^{1/C_n})$ with $p\in\PP$, $a^{C_n}\le p+1$, $p\le b^{C_n}$, whose length is
+$\le p^{1/C_n}/(C_np)\le b/(C_np)$. Hence, by Mertens' theorem,
+\[
+ \meas W_n\le\frac{b}{C_n}\sum_{a^{C_n}-1\le p\le b^{C_n}}\frac1p\le\frac{b}{C_n}\Bigl(\log\frac{\log b}{\log a}+o(1)\Bigr)\longrightarrow0 .
+\]
+The closure of $W_n$ consists of $W_n$ and finitely many endpoints, so
+$\overline{\W(\mathbf c)\cap[a,b]}\subset\bigcap_n\overline{W_n}$ has measure zero. A closed null set has empty
+interior; hence $\W(\mathbf c)$ is Lebesgue-null and nowhere dense. This proves
+\cref{thm:main,thm:main-GM,thm:DH}. \qed
+
+\subsection{The weakest input: a transference theorem}
+The proof above uses \cref{prop:ms} only through \cref{cor:bad}, and it needs far less than the
+Vinogradov--Korobov saving. The next theorem isolates what is actually required: a lower bound of the right
+order of magnitude (not an asymptotic) in almost all of the intervals $J_c(x)$, with an exceptional density
+that beats every fixed power of $\log$ by a quasi-polynomial factor.
+
+\begin{theorem}[transference]\label{thm:transfer}
+Let $1<c_-\le c_+<\infty$ and $\delta\in(0,1]$. Suppose there are $C>\log c_+/(2(\log c_-)^2)$ and $Y_0$ such that
+for all $Y\ge Y_0$ and all $c\in[c_-,c_+]$
+\[
+ \text{(S)}\qquad \#\Bigl\{x\in[Y,2Y):\ \#\PP_c(x)<\delta\,\frac{|J_c(x)|}{\log((x+1)^c)}\Bigr\}\le Y\exp\bigl(-C(\log\log Y)^2\bigr).
+\]
+Then for every sequence $\mathbf c$ with values in $[c_-,c_+]$ the set $\W(\mathbf c)$ is uncountable, unbounded,
+Lebesgue-null and nowhere dense.
+\end{theorem}
+
+\begin{proof}
+Run the construction of this section with $G_n$ the set of integers satisfying the inequality opposite to (S)
+for $c=c_{n+1}$. The local branching factor becomes $\lambda_n=\delta/(2D_n\log 4P)$, and the defect mass is
+$\beta_n\le(2D_n+2)\exp(-C(\log D_n+\log\ell)^2)$ with $\ell=\log P$. With $m=n-1$ and $\log D_n\ge m\log c_-$,
+condition (iii$'$) of \cref{cor:split} follows from
+\[
+ \bigl[C\log^2c_--\tfrac12\log c_+\bigr]m^2+\bigl[2C\log c_-\log\ell-\log c_+-\log(24\ell/\delta)\bigr]m
+ +\bigl[C\log^2\ell-2-\log(24\ell)\bigr]\ge0,
+\]
+which holds for all $m\ge0$ once $\ell$ is large, because each bracket is then nonnegative. The weight
+condition in (iii$'$) and the remaining steps are as before.
+\end{proof}
+
+\begin{corollary}\label{cor:transfer}
+\Cref{cor:bad} gives (S) with $\delta=\tfrac12$ and the much stronger bound $Y\exp(-\kappa'\mathcal L(Y))$ whenever
+$c_->A^*/2$, where $A^*$ is a uniform zero-density exponent available with logarithmic losses near $\sigma=1$
+(\cref{lem:Z}). This recovers \cref{thm:main,thm:main-GM,thm:DH}. Any future proof of (S) for some
+$\theta=1-1/c$ below $2/15$, for instance a quantitative form of a sieve lower bound for primes in almost all
+short intervals, would immediately extend the theorems to that $c$.
+\end{corollary}
+
+\begin{remark}[how far towards $c=1$]\label{rem:towards1}
+For constant $c$ the condition on $C$ reads $C>1/(2\log c)$, and the exceptional density needed is
+$\exp(-C(\log\log Y)^2)=(\log Y)^{-C\log\log Y}$: super-polylogarithmic, but far weaker than the
+Vinogradov--Korobov saving. As $c\downarrow1$ the constant $C$ grows like $1/(2(c-1))$, but the saving stays of
+quasi-polylogarithmic type; what becomes hard is the interval length $X^{1-1/c}$. The obstruction to $c\to1$ is therefore entirely the lack of almost-all prime
+information for intervals $[x,x+x^\theta]$ with small $\theta$: lower bounds of the right order are known in almost
+all such intervals only for $\theta>1/22$ \cite{Li25b}, and asymptotics only for $\theta>2/15$. Reaching every
+$c>1$ by this method requires (S) for every $\theta>0$, which follows from the density hypothesis and is
+otherwise open.
+\end{remark}
+
+\section{Local versus global: where the exponent comes from}\label{sec:compare}
+
+\begin{table}[ht]
+\centering\small
+\caption{What each method needs from the exceptional set $E(y)$ of integers $x\in[y,2y)$ whose interval
+$J_c(x)$ (length $\asymp y^{c-1}=(y^c)^{\theta}$, $\theta=1-1/c$) is poor in primes.}
+\label{tab:compare}
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Method & requirement & present range\\
+\midrule
+local selection \cite{Mat10,Jar22} & $\#E(y)\le y^{\theta-\delta}$, i.e.\ fewer bad integers than primes in one interval $J_c(p)$, $p\asymp y^{1/c}$ & $c\ge20/11$\\
+global mass (\cref{thm:mass}) & $\#E(y)\le y\exp(-C(\log\log y)^2)$ for a suitable $C$; VK savings suffice & $c>15/13$\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The local method must find a good child inside one interval $J_c(p_n)$; if $p_{n+1}\asymp y$, this interval
+contains about $y^{\theta}/\log y$ primes, while the bad integers are counted in the whole range $[y,2y)$.
+It therefore needs a power saving of size $y^{1-\theta}=y^{1/c}$ in the exceptional set. Results of this
+type come from large-value estimates for Dirichlet polynomials and from sieve methods; with the
+bound of Järviniemi \cite{Jar22} they reach $\theta=0.45$, i.e.\ $c=20/11$.
+
+The global method compares the bad mass with the mass of the whole level, which is only
+$\exp(O(n^2+n\log\log P))$ smaller than the initial mass. The bad mass at level $n$ is
+$\exp(-\kappa(\log Y_n)^{1/3-o(1)})$ with $\log Y_n\ge c_-^{n-1}\log P$. Any saving of the form
+$\exp(-(\log Y)^{\delta})$ with fixed $\delta>0$ would suffice; polylogarithmic savings would not, because the accumulated loss
+$\prod_{k<n}\log Y_k$ grows faster than every fixed power of $\log Y_n$ (for constant exponent $c$ it equals
+$(\log Y_n)^{(1/2+o(1))\log\log Y_n/\log c}$ as $n\to\infty$). This explains the thresholds:
+\[
+ c>\frac{1}{1-\theta_{\mathrm{PNT}\text{-}\mathrm{AA}}},\qquad \theta_{\mathrm{PNT}\text{-}\mathrm{AA}}=\tfrac16\ \text{(Huxley)},\ \tfrac2{15}\ \text{(Guth--Maynard)},\ 0\ \text{(density hypothesis)}.
+\]
+Equivalently, writing $A^*=\sup_{1/2\le\sigma\le1}A(\sigma)$ for the best uniform zero-density exponent,
+the zero-density route gives exactly
+\[
+ \W(c)\neq\emptyset\qquad\text{for every } c>A^*/2 ,
+\]
+since $1/(1-(1-2/A^*))=A^*/2$: $A^*=12/5$ gives $6/5$, $A^*=30/13$ gives $15/13$, and $A^*=2$ (the density
+hypothesis) gives every $c>1$. \Cref{thm:transfer} below isolates the weakest input the method needs.
+Below $c=15/13$ the only available almost-all results for intervals $[x,x+x^\theta]$, $\theta\le2/15$, are sieve
+lower bounds, down to $\theta>1/22$ \cite{Li24,Li25b}. Their exceptional sets have not, to our knowledge, been
+quantified beyond $o(X)$. If they satisfy hypothesis (S) of \cref{thm:transfer}, the method gives every
+$c>22/21\approx1.0476$, but not $c\to1$: for $1-1/c\le1/22$ not even the existence of a prime in almost all
+intervals $[x,x+x^{1-1/c}]$ is known.
+
+\begin{remark}[relation to Mills' constant]
+The theorems concern existence and do not identify any specific constant. In particular they say nothing
+about the least element of $\W(3)$ (Mills' constant), whose irrationality was proved by Saito
+\cite{Sai25} and whose transcendence is open \cite{Sai25b}.
+\end{remark}
+
+\section{A certified chain for the exponent 5/4}\label{sec:numerics}
+
+The exponent $c=5/4$ lies in the new range $(15/13,20/11)$; it is covered by \cref{thm:main} since $5/4>6/5$.
+For $c=5/4$ the interval condition is purely integral:
+\[
+ m\in J_{5/4}(x)\iff m^4\ge x^5\ \text{and}\ (m+1)^4<(x+1)^5 .
+\]
+Starting from $p_1=1009$ and taking each time the least prime of $J_{5/4}(p_n)$ gives
+$22$ primes $p_1,\dots,p_{22}$, each proven prime by \texttt{isprime} in PARI/GP~2.15 \cite{PARI}, with all
+nesting conditions checked in exact integer arithmetic (\cref{lst:gp}). The first terms are
+\[
+ 1009,\ 5689,\ 49409,\ 736657,\ 21581503,\ 1470964273,\ 288073066607,\ 211046580457399,\ \dots
+\]
+and the digit counts are $4,4,5,6,8,10,12,15,18,23,28,35,44,55,69,86,107,134,167,209,261,326$.
+The offsets $p_{n+1}-\lceil p_n^{5/4}\rceil$ never exceed $954$, while $|J_{5/4}(p_n)|\approx1.25\,p_n^{1/4}$;
+for instance $|J_{5/4}(p_{21})|\approx 10^{65}$. Any $A$ with $\fl{A^{(5/4)^n}}=p_n$ for $n\le22$ satisfies
+\[
+ A=253.06488747154176508840743158311366901154901154046745858478949072882087\ldots
+\]
+(to the precision fixed by $p_{22}$). This finite computation illustrates the nested-interval mechanism; it is
+not a proof that this greedy sequence continues forever, and \cref{thm:main} does not assert that.
+
+\appendix
+\section{A stopped side computation: Proth candidates with 30{,}103 digits}\label{app:proth}
+
+Independently of the theorems, we searched for a prime larger than the $18{,}886$-digit Pocklington prime of the
+author's earlier computations, in the form $N_k=k\cdot2^{100000}+1$ with odd $k\le2\cdot10^6$, where Proth's theorem
+certifies primality by a single congruence $a^{(N_k-1)/2}\equiv-1\pmod{N_k}$. Sieving by all primes up to $10^{10}$
+(\cref{lst:sieve}) left $48{,}707$ candidates. The test of \cref{lst:c} reduces modulo $k2^{n}+1$ without division
+(writing $t=H2^{n}+L$ and $Q=\lfloor H/k\rfloor$, one has $t\equiv t-Q N_k$) and was validated against
+\texttt{gmpy2} on smaller exponents. Each test took about $17$\,s on one core.
+
+The run was stopped by the time limit of the computing environment after $1{,}639$ candidates
+($k\le68{,}751$), all composite; no prime was found. Heuristically a sieved candidate is prime with probability
+about $e^{\gamma}\log(10^{10})/\log N_k\approx5.9\cdot10^{-4}$, so the expected number of tests before the first
+prime is about $1{,}700$, and the observed outcome has probability about $e^{-0.97}\approx0.38$. The logs of the
+tested candidates and the list of the $47{,}068$ untested ones are distributed with the source files, so that the
+search can be resumed without repetition. No claim is made on the basis of this computation.
+
+\section{Audit against the author's success criteria}\label{sec:audit}
+
+The criteria below were fixed in advance by the author. Each verdict is stated as strictly as we can.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}lXl@{}}
+\toprule
+Criterion & Assessment & Verdict\\
+\midrule
+G1 prior named problem & The exponent problem for Mills-type prime-representing functions, posed implicitly by Mills (1947) and
+studied explicitly by Kuipers, Niven, Wright, Matomäki, Islam and Järviniemi; the statement
+``$\exists A$: $\fl{A^{c^n}}$ prime $\forall n$'' predates this work. & met\\
+G2 problem unchanged & For each fixed $c$ we prove the original statement, without modified constants or reformulation. & met\\
+G3 actually open & For $c<20/11$ no proof was available in the literature we could find
+(\cite{Jar22} and the exponent database \cite{expdb} list $20/11$ and $2/15$ as current records). & met for $c\in(15/13,20/11)$\\
+G4 unconditional and complete & \Cref{thm:main,thm:main-GM}: complete unconditional proofs, all quantifiers closed, for every
+$c>6/5$, resp.\ $c>15/13$. The full conjecture (all $c>1$) is proved only under the density hypothesis. &
+met on $(15/13,\infty)$; \textbf{not} met on $(1,15/13]$\\
+G5 not a restatement & The operative new ingredient is a quantitative non-vanishing estimate for the harmonic branching mass
+(\cref{thm:mass}) combined with VK-saving exceptional-set bounds; no identity or change of variables carries the proof. & met\\
+G6 no prior identical solution & We found no earlier global (mass--compactness) argument for prime-representing functions and no result
+below $20/11$; absence in our search does not prove priority. & no counterexample found\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent In plain terms: the paper resolves the Mills exponent problem on the new range $15/13<c<20/11$, shows
+(\cref{thm:transfer}, \cref{rem:towards1}) exactly which almost-all input would be needed to go further, and
+does not resolve the problem for $1<c\le15/13$. With present knowledge no almost-all method can go below
+$c=22/21$.
+
+\section{Verification code}\label{app:code}
+
+\begin{lstlisting}[language={},caption={PARI/GP script for the chain of \cref{sec:numerics}.},label={lst:gp}]
+\\ Greedy chain for c = 5/4.  J(x) = { m : m^4 >= x^5 and (m+1)^4 < (x+1)^5 }.
+\\ Each term is proven prime by isprime() (PARI/GP primality proof).
+default(parisize, 10^8);
+{
+p = 1009; L = List([p]);
+for (n = 1, 21,
+  lo = sqrtnint(p^5, 4); if (lo^4 < p^5, lo++);
+  m = nextprime(lo);
+  if (!((m+1)^4 < (p+1)^5), error("stuck at n=", n));
+  if (!isprime(m), error("not proven prime"));
+  listput(L, m); p = m);
+}
+{
+for (i = 1, #L,
+  q = L[i];
+  if (i == 1, off = 0, a = L[i-1]; r = sqrtnint(a^5, 4); if (r^4 < a^5, r++); off = q - r);
+  printf("%d  digits=%d  offset=%d\n", i, #digits(q), off));
+}
+{
+ok = 1;
+for (i = 1, #L-1, a = L[i]; b = L[i+1]; if (!(b^4 >= a^5 && (b+1)^4 < (a+1)^5), ok = 0));
+print("nesting ok: ", ok);
+}
+write("chain54.txt", Vec(L));
+\p 400
+{
+N = #L; A = exp(log(L[N] + 1/2) * (4/5)^N);
+print("A approx = ", A);
+bad = 0; for (i = 1, N, if (floor(A^((5/4)^i)) != L[i], bad++));
+print("floor mismatches: ", bad);
+}
+quit;
+\end{lstlisting}
+
+\begin{lstlisting}[language=Python,caption={Independent Proth certificate check (Python 3 with gmpy2), for use if the search is resumed.},label={lst:py}]
+#!/usr/bin/env python3
+"""Independent check of a Proth certificate N = k*2^n + 1 (k odd, k < 2^n).
+
+Proth's theorem: if a^((N-1)/2) == -1 (mod N) for some integer a, then N is prime.
+Usage: python3 verify_proth.py k n a
+"""
+import sys, hashlib, time
+import gmpy2
+from gmpy2 import mpz
+
+def main():
+    k, n, a = (int(x) for x in sys.argv[1:4])
+    assert k % 2 == 1 and k > 0, "k must be odd and positive"
+    assert k < 2**n, "Proth's theorem needs k < 2^n"
+    N = mpz(k) * (mpz(1) << n) + 1
+    t0 = time.time()
+    r = gmpy2.powmod(a, (N - 1) // 2, N)
+    dt = time.time() - t0
+    digits = len(str(N))
+    print(f"N = {k}*2^{n}+1 has {digits} decimal digits and {N.bit_length()} bits")
+    print(f"Jacobi({a}, N) = {gmpy2.jacobi(a, N)}")
+    print(f"a^((N-1)/2) mod N == N-1 : {r == N - 1}   ({dt:.1f} s)")
+    print("SHA-256 of decimal expansion:", hashlib.sha256(str(N).encode()).hexdigest())
+    if r == N - 1:
+        print("PROVEN PRIME by Proth's theorem.")
+    else:
+        print("certificate FAILED")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption={Search program used to find the Proth prime (GMP; reduction modulo $k2^n+1$ without division).},label={lst:c}]
+// Proth test for N = k*2^n+1 with fast reduction. Usage: proth n listfile slice nslices outfile [maxsteps]
+#include <gmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+static void redmod(mpz_t t, const mpz_t N, unsigned long k, unsigned long n, mpz_t Q, mpz_t u){
+  mpz_tdiv_q_2exp(Q, t, n);
+  mpz_tdiv_q_ui(Q, Q, k);
+  mpz_mul_ui(u, Q, k);
+  mpz_mul_2exp(u, u, n);
+  mpz_add(u, u, Q);
+  mpz_sub(t, t, u);
+  while (mpz_sgn(t) < 0) mpz_add(t, t, N);
+  while (mpz_cmp(t, N) >= 0) mpz_sub(t, t, N);
+}
+// returns 1 if a^((N-1)/2) == -1, 0 if == +1 (inconclusive), -1 otherwise (composite)
+static int proth_test(unsigned long k, unsigned long n, unsigned long a, long maxsteps){
+  mpz_t N,x,t,Q,u; mpz_inits(N,x,t,Q,u,NULL);
+  mpz_set_ui(N,k); mpz_mul_2exp(N,N,n); mpz_add_ui(N,N,1);
+  mpz_set_ui(x,a); mpz_powm_ui(x,x,k,N);        // x = a^k mod N
+  long steps = (maxsteps>0 && maxsteps < (long)n-1) ? maxsteps : (long)n-1;
+  for (long i=0;i<steps;i++){ mpz_mul(t,x,x); redmod(t,N,k,n,Q,u); mpz_swap(x,t); }
+  int res;
+  if (maxsteps>0 && steps < (long)n-1) { res = 2; gmp_printf("%Zx\n", x); }
+  else { mpz_add_ui(t,x,1); if (mpz_cmp(t,N)==0) res=1; else if (mpz_cmp_ui(x,1)==0) res=0; else res=-1; }
+  mpz_clears(N,x,t,Q,u,NULL);
+  return res;
+}
+static unsigned long pick_base(unsigned long k, unsigned long n){
+  mpz_t N; mpz_init(N); mpz_set_ui(N,k); mpz_mul_2exp(N,N,n); mpz_add_ui(N,N,1);
+  unsigned long ps[]={3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97};
+  unsigned long a=0;
+  for (int i=0;i<24;i++){ if (mpz_ui_kronecker(ps[i],N)==-1){ a=ps[i]; break; } }
+  mpz_clear(N); return a;
+}
+int main(int argc,char**argv){
+  unsigned long n=strtoul(argv[1],0,10);
+  FILE*f=fopen(argv[2],"r"); int slice=atoi(argv[3]), ns=atoi(argv[4]);
+  FILE*o=fopen(argv[5],"a"); long maxsteps = argc>6? atol(argv[6]) : 0;
+  unsigned long k; long idx=0;
+  while (fscanf(f,"%lu",&k)==1){
+    if ((idx++ % ns)!=slice) continue;
+    unsigned long a=pick_base(k,n);
+    if (!a){ fprintf(o,"k=%lu nobase\n",k); fflush(o); continue; }
+    time_t t0=time(0);
+    int r=proth_test(k,n,a,maxsteps);
+    fprintf(o,"k=%lu a=%lu res=%d secs=%ld\n",k,a,r,(long)(time(0)-t0)); fflush(o);
+    if (r==1){ fprintf(o,"PRIME k=%lu n=%lu base=%lu\n",k,n,a); fflush(o); break; }
+    if (maxsteps>0) break;
+  }
+  return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption={Sieve used to select the Proth candidates.},label={lst:sieve}]
+// Sieve odd k in [1,K] for N=k*2^n+1 against primes l in [3,B]. Output surviving k.
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+static uint64_t mulmod(uint64_t a,uint64_t b,uint64_t m){return (unsigned __int128)a*b%m;}
+static uint64_t powmod(uint64_t a,uint64_t e,uint64_t m){uint64_t r=1%m;a%=m;while(e){if(e&1)r=mulmod(r,a,m);a=mulmod(a,a,m);e>>=1;}return r;}
+static int64_t inv(int64_t a,int64_t m){int64_t g=m,x=0,x1=1,a1=a;while(a1){int64_t q=g/a1,t=g-q*a1;g=a1;a1=t;t=x-q*x1;x=x1;x1=t;}if(x<0)x+=m;return x;}
+int main(int argc,char**argv){
+  uint64_t n=strtoull(argv[1],0,10), K=strtoull(argv[2],0,10), B=strtoull(argv[3],0,10);
+  uint8_t *alive=malloc(K+1); memset(alive,1,K+1);
+  for(uint64_t k=0;k<=K;k+=2) alive[k]=0; // even k
+  // segmented sieve of Eratosthenes for primes up to B
+  uint64_t sq=(uint64_t)sqrt((double)B)+1;
+  uint8_t *small=calloc(sq+1,1); uint64_t *sp=malloc(sizeof(uint64_t)*sq); size_t ns=0;
+  for(uint64_t i=2;i<=sq;i++){ if(!small[i]){ sp[ns++]=i; for(uint64_t j=i*i;j<=sq;j+=i) small[j]=1; } }
+  const uint64_t SEG=1<<24; uint8_t *seg=malloc(SEG);
+  uint64_t cnt=0;
+  for(uint64_t lo=3; lo<=B; lo+=SEG){
+    uint64_t hi=lo+SEG-1; if(hi>B) hi=B;
+    memset(seg,0,SEG);
+    for(size_t t=0;t<ns;t++){ uint64_t p=sp[t]; if(p*p>hi) break; uint64_t s=((lo+p-1)/p)*p; if(s<p*p) s=p*p; for(uint64_t j=s;j<=hi;j+=p) seg[j-lo]=1; }
+    for(uint64_t l=lo;l<=hi;l++){ if(seg[l-lo]) continue; if(l==2) continue;
+      // N = k*2^n+1 = 0 mod l  <=> k = -inv(2^n) mod l
+      uint64_t t2=powmod(2,n,l); uint64_t r=(l-(uint64_t)inv((int64_t)t2,(int64_t)l))%l;
+      for(uint64_t k=r;k<=K;k+=l){ if(k==0) continue; alive[k]=0; }
+      cnt++;
+    }
+  }
+  uint64_t surv=0; for(uint64_t k=1;k<=K;k++) if(alive[k]){ printf("%llu\n",(unsigned long long)k); surv++; }
+  fprintf(stderr,"primes sieved %llu survivors %llu\n",(unsigned long long)cnt,(unsigned long long)surv);
+  return 0;
+}
+\end{lstlisting}
+
+\begin{thebibliography}{99}\small
+\bibitem{BHP01} R.~C. Baker, G.~Harman, J.~Pintz, The difference between consecutive primes, II, \emph{Proc. London Math. Soc.} (3) 83 (2001), 532--562.
+\bibitem{Dav00} H.~Davenport, \emph{Multiplicative Number Theory}, 3rd ed., revised by H.~L. Montgomery, Graduate Texts in Math. 74, Springer, 2000.
+\bibitem{For02} K.~Ford, Vinogradov's integral and bounds for the Riemann zeta function, \emph{Proc. London Math. Soc.} (3) 85 (2002), 565--633.
+\bibitem{GM24} L.~Guth, J.~Maynard, New large value estimates for Dirichlet polynomials, \emph{Ann. of Math.} (2) 203 (2026), 623--675; arXiv:2405.20552.
+\bibitem{Hux72} M.~N. Huxley, On the difference between consecutive primes, \emph{Invent. Math.} 15 (1972), 164--170.
+\bibitem{Ing40} A.~E. Ingham, On the estimation of $N(\sigma,T)$, \emph{Quart. J. Math. Oxford} 11 (1940), 201--202.
+\bibitem{Isl15} A.~Islam, \emph{Multiplicative properties of integers in short intervals}, PhD thesis, Royal Holloway, University of London, 2015.
+\bibitem{Ivi85} A.~Ivi\'c, \emph{The Riemann Zeta-Function}, Wiley, 1985.
+\bibitem{Jar22} O.~Järviniemi, On large differences between consecutive primes, preprint, arXiv:2212.10965 (2022).
+\bibitem{Kui50} L.~Kuipers, Prime-representing functions, \emph{Nederl. Akad. Wetensch. Proc.} 53 (1950), 309--310 $=$ \emph{Indag. Math.} 12 (1950), 57--58.
+\bibitem{Li24} R.~Li, Primes in almost all short intervals, preprint, arXiv:2407.05651 (2024).
+\bibitem{Li25b} R.~Li, Primes in almost all short intervals II (2025); exponent $1/22$ as recorded in \cite{expdb}.
+\bibitem{SV77} B.~Saffari, R.~C. Vaughan, On the fractional parts of $x/n$ and related sequences II, \emph{Ann. Inst. Fourier} 27 (1977), 1--30.
+\bibitem{Zac98} A.~Zaccagnini, Primes in almost all short intervals, \emph{Acta Arith.} 84 (1998), 225--244.
+\bibitem{BP00} D.~Bazzanella, A.~Perelli, The exceptional set for the number of primes in short intervals, \emph{J. Number Theory} 80 (2000), 109--124.
+\bibitem{GT25} A.~Gafni, T.~Tao, On the number of exceptional intervals to the prime number theorem in short intervals, preprint, arXiv:2505.24017 (2025).
+\bibitem{Mat07} K.~Matomäki, Large differences between consecutive primes, \emph{Q. J. Math.} 58 (2007), 489--518.
+\bibitem{Mat10} K.~Matomäki, Prime-representing functions, \emph{Acta Math. Hungar.} 128 (2010), 307--314.
+\bibitem{Mil47} W.~H. Mills, A prime-representing function, \emph{Bull. Amer. Math. Soc.} 53 (1947), 604.
+\bibitem{Niv51} I.~Niven, Functions which represent prime numbers, \emph{Proc. Amer. Math. Soc.} 2 (1951), 753--755.
+\bibitem{OEIS243358} OEIS Foundation, Sequence A243358 (A.~V. Kulsha, D.~J. Broadhurst), \emph{The On-Line Encyclopedia of Integer Sequences}, \url{https://oeis.org/A243358}.
+\bibitem{PARI} The PARI~Group, \emph{PARI/GP version 2.15.4}, Univ. Bordeaux, 2023, \url{https://pari.math.u-bordeaux.fr/}.
+\bibitem{Sai21} K.~Saito, Prime-representing functions and Hausdorff dimension, \emph{Acta Math. Hungar.} (2021); arXiv:2102.04038.
+\bibitem{Sai25} K.~Saito, Mills' constant is irrational, \emph{Mathematika} 71 (2025), e70027; arXiv:2404.19461.
+\bibitem{Sai25b} K.~Saito, Transcendency of variants of Mills' constant, preprint, arXiv:2508.16068 (2025).
+\bibitem{expdb} T.~Tao, T.~Trudgian, A.~Yang et al., \emph{Analytic Number Theory Exponent Database}, \url{https://github.com/teorth/expdb} (accessed 8 November 2026), chapters ``Zero density theorems'' and ``Distribution of primes: short ranges''.
+\bibitem{Wri54} E.~M. Wright, A class of representing functions, \emph{J. London Math. Soc.} 29 (1954), 63--71.
+\end{thebibliography}
+
+\end{document}

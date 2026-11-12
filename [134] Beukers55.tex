@@ -1,0 +1,3798 @@
+% Single-source research edition. Compile with pdfLaTeX twice, or latexmk -pdf.
+\documentclass[11pt,letterpaper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=1in,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage{xcolor,listings,booktabs,array,longtable,enumitem,fancyhdr}
+\usepackage{hyperref}
+\definecolor{deepblue}{RGB}{28,58,96}
+\definecolor{softgray}{RGB}{245,247,249}
+\definecolor{codegray}{RGB}{45,52,60}
+\hypersetup{colorlinks=true,linkcolor=deepblue,citecolor=deepblue,urlcolor=deepblue,
+ pdftitle={Beukers--Delaygue Supercongruences, Apery Truncations, and the Level-54 Attractor, Complete Edition},
+ pdfauthor={Research edition prepared for Keio},bookmarksnumbered=true,bookmarksopen=false}
+\pagestyle{fancy}\fancyhf{}
+\newcommand{\runningpaper}{Hypergeometric supercongruences}
+\lhead{\small\itshape\runningpaper}
+\rhead{\small\scshape Research edition}\cfoot{\thepage}
+\setlength{\emergencystretch}{1.3em}
+\setcounter{tocdepth}{1}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,
+ keepspaces=true,breaklines=true,showstringspaces=false,frame=single,
+ rulecolor=\color{black!25},keywordstyle=\color{blue!50!black},
+ commentstyle=\color{black!60},aboveskip=8pt,belowskip=8pt}
+\lstdefinestyle{python}{language=Python,basicstyle=\ttfamily\scriptsize,
+ keywordstyle=\color{deepblue}\bfseries,commentstyle=\color{green!40!black},
+ stringstyle=\color{purple!70!black},frame=single,rulecolor=\color{black!25},
+ backgroundcolor=\color{softgray},breaklines=true,showstringspaces=false,
+ columns=fullflexible,keepspaces=true}
+\newcommand{\paperanchors}[1]{%
+ \renewcommand{\theHsection}{#1.\arabic{section}}%
+ \renewcommand{\theHsubsection}{\theHsection.\arabic{subsection}}%
+ \renewcommand{\theHequation}{#1.\arabic{equation}}%
+ \renewcommand{\theHtable}{#1.\arabic{table}}%
+ \renewcommand{\theHtheorem}{\theHsection.\arabic{theorem}}}
+\newcommand{\openpaper}[5]{%
+ \clearpage\renewcommand{\runningpaper}{#3}
+ \setcounter{section}{0}\setcounter{subsection}{0}
+ \setcounter{equation}{0}\setcounter{theorem}{0}\setcounter{table}{0}
+ \renewcommand{\thesection}{\arabic{section}}\paperanchors{#1}
+ \phantomsection\addcontentsline{toc}{part}{#1. #2}\label{paper:#1}
+ \thispagestyle{plain}
+ {\sffamily\small\color{deepblue} PART #1\par}\vspace{9pt}
+ {\raggedright\LARGE\bfseries #2\par}\vspace{5pt}
+ #5{\small #4\par}\vspace{9pt}\hrule\vspace{10pt}}
+\newcommand{\biblioanchor}{\phantomsection\addcontentsline{toc}{section}{References}}
+\newcommand{\resultheading}[2]{\par\medskip\noindent\textbf{#1}\hfill{\small #2}\par\nobreak\noindent}
+
+\begin{document}
+\thispagestyle{plain}
+\pdfbookmark[0]{Title and principal results}{edition}
+{\sffamily\small\color{deepblue} COMPLETE RESEARCH EDITION\par}
+\vspace{12pt}
+{\raggedright\Huge\bfseries Beukers--Delaygue Supercongruences, Ap\'ery Truncations, and the Level-54 Attractor\par}
+\vspace{12pt}
+{\large Prepared for Keio\par}
+\smallskip
+{\small 12 November 2026\par}
+\vspace{12pt}\hrule\vspace{14pt}
+\noindent\textbf{Abstract.}
+We study the precision of truncated hypergeometric periods under Frobenius.
+For powers of the central binomial coefficients, finite reflection followed
+by an integral lift of the digit operator proves the fixed-precision and
+all-level statements of Beukers and Delaygue. An elliptic crystal gives a
+two-step congruence for Ap\'ery truncations on smooth supersingular disks.
+At the level-54 attractor of AESZ4 we construct a tetrahedral projector,
+identify its two-dimensional image with the weight-four modular factor,
+and interpolate the factorial blocks to recover the truncated period modulo $p^3$.
+The resulting argument applies at every good prime, including primes for
+which the modular coefficient is divisible by $p$.
+
+\medskip
+\noindent\textbf{Principal results and their hypotheses}
+\smallskip
+
+\resultheading{Reflection and all lengths}{Parts I--II, pp.~\pageref{paper:I}, \pageref{paper:II}}
+For odd $p$, $d\ge2$, $\epsilon=\pm1$, and $F_p(\epsilon)\in\mathbb Z_p^\times$,
+the exponent is $2s$ for every length $mp^s$ with $m,s\ge1$
+(Part~II, Theorem~\ref{II:bdx:main}).
+\resultheading{Supersingular Ap\'ery disks}{Part I, p.~\pageref{I:thm:aperydisks}}
+For $p>3$, $p^2\mid N$, and the smoothness and supersingularity
+conditions of Theorem~\ref{I:thm:aperydisks}, the two-step defect is
+divisible by $p^{3v_p(N)-1}$.
+\resultheading{The AESZ4 special value}{Parts III--IV, pp.~\pageref{paper:III}, \pageref{paper:IV}}
+Part~III determines the cutoff residual and the generic residual monodromy.
+Part~IV, Theorem~\ref{IV:thm:main}, gives $S_p\equiv a_p\pmod{p^3}$ for
+$p\ge5$ at $t=-1/8$. The printed quantifier $p\ne3$ includes $p=2$,
+where $S_2=161/162$ and $a_2=2$.
+\par
+\medskip
+\noindent Section, equation and appendix numbers are local to each part.
+All four parts share a bibliography. The new arguments in this research
+manuscript await independent external review.
+\clearpage
+\tableofcontents
+% Source: Beukers_Delaygue_and_Supersingular_Apery.tex
+\begingroup
+\newcommand{\Zp}{\mathbb Z_p}
+\newcommand{\Fp}{F_p}
+\newcommand{\eps}{\epsilon}
+\newcommand{\al}{\alpha}
+\newcommand{\ord}{\operatorname{ord}}
+\openpaper{I}{Reflection Operators and Supersingular Ap\'ery Supercongruences}{Reflection operators and supersingular Ap\'ery truncations}{9 November 2026}{{\small Research manuscript prepared for Keio\par}\smallskip }
+
+
+
+
+\begin{abstract}
+For the truncations $F_L(\epsilon)=\sum_{n<L}((1/2)_n/n!)^d\epsilon^n$,
+we prove the full mathematical statement of Beukers--Delaygue's
+Conjecture~1.2 by a finite reflection calculation. Retaining this
+reflection in an integral analytic digit operator gives the stronger,
+all-length estimate
+\[
+ F_{mp^s}(\epsilon)-f_p(\epsilon)F_{mp^{s-1}}(\epsilon)
+ \in p^{\min(2s,s+d-1)}\mathbb Z_p
+\]
+for every odd prime $p$, $d\ge2$, $\epsilon=\pm1$ with
+$F_p(\epsilon)$ a unit, and $m,s\ge1$.
+It proves the precision predicted by their Conjecture~1.5 throughout
+$s\le d-1$, and Part~II, Theorem~\ref{II:bdx:main}, extends it to every higher level.
+Separately, for the Ap\'ery polynomials $P_N(t)$, an integral modular
+trace and an explicit elliptic crystal yield
+\[
+ P_N(t_0)-p^2P_{N/p^2}(t_0)
+ \in p^{3v_p(N)-1}\mathbb Z_p.
+\]
+This holds for every $p^2\mid N$ on each smooth supersingular residue
+disk specified in Theorem~\ref{I:thm:aperydisks}, for $p>3$.
+The latter theorem includes the two rational CM values $t_0=\pm1$
+under their respective inert-prime conditions and also non-CM lifts.
+Complete proofs and exact finite verification programs are included.
+\end{abstract}
+
+\noindent\fbox{\begin{minipage}{0.94\textwidth}
+\textbf{Scope and research status.}
+Conjecture~1.2 of \cite{I:BD} is proved in its full stated range.
+Conjecture~1.5 is proved here for $1\le s\le d-1$;
+for $s\ge d$ the argument in this part gives $s+d-1$. The lift in Part~II gives $2s$ throughout. The Ap\'ery theorem has the explicit smoothness and
+supersingularity hypotheses of Theorem~\ref{I:thm:aperydisks}.
+The arguments have received internal independent checks; no completed
+external peer review or claim of literature priority is asserted.
+No unpublished BV3 or Swisher manuscript is assumed.
+\end{minipage}}
+
+\medskip
+\noindent\textbf{Reading guide.}
+Sections~1--4 prove the fixed-modulus reflection theorem.
+Section~\ref{I:sec:transfer} supplies the stronger analytic operator and
+its all-length precision bound. Section~\ref{I:sec:apery} gives the
+independent Ap\'ery trace, integral jet comparison and supersingular
+specialization. The appendices contain supplementary exact checks;
+none is used as a substitute for a proof.
+
+\clearpage
+
+\section{Statements and relation to the published conjecture}
+
+Throughout, $p$ is an odd prime and $d$ is an integer with $d\ge2$.
+Set
+\[
+ \al_k=\frac{(1/2)_k}{k!}=\frac{\binom{2k}{k}}{4^k},\qquad
+ F_L(z)=\sum_{k=0}^{L-1}\al_k^d z^k\quad(L\ge1).
+\]
+In particular, $F_1(z)=1$.  All coefficients belong to $\Zp$, since
+their displayed denominators are powers of $4$.
+Write
+\begin{equation}\label{I:eq:sign}
+ N=\frac{p-1}{2},\qquad
+ \chi=\chi_{p,d}(\eps)=(-1)^{dN}\eps^N,
+ \qquad \eps\in\{1,-1\}.
+\end{equation}
+
+\begin{theorem}[Block congruence]\label{I:thm:block}
+If $\chi=1$, then for every integer $m\ge1$,
+\begin{equation}\label{I:eq:block}
+ F_{mp}(\eps)\equiv F_p(\eps)F_m(\eps)\pmod{p^2\Zp}.
+\end{equation}
+No unit assumption on $F_p(\eps)$ is required for this statement.
+\end{theorem}
+
+The sign condition holds for both values of $\eps$ if
+$p\equiv1\pmod4$.  If $p\equiv3\pmod4$, it holds exactly when
+$\eps=(-1)^d$.
+
+\begin{theorem}[The Beukers--Delaygue unit-root congruence]\label{I:thm:unitroot}
+Suppose $F_p(\eps)\in\Zp^\times$.  The Dwork limit
+\begin{equation}\label{I:eq:limit}
+ f_p(\eps)=\lim_{s\longrightarrow\infty}
+       \frac{F_{p^s}(\eps)}{F_{p^{s-1}}(\eps)}
+\end{equation}
+exists, and
+\begin{equation}\label{I:eq:unitroot}
+ F_p(\eps)\equiv f_p(\eps)\pmod{p^2\Zp}.
+\end{equation}
+\end{theorem}
+
+The existence of \eqref{I:eq:limit} is the published Dwork input recorded
+in the introduction of \cite{I:BD}; it is not a new assertion of this
+note.  The congruence \eqref{I:eq:unitroot} is exactly their
+Conjecture~1.2.  Their Theorem~1.1 proves it at
+$\eps_p=(-1)^{d(p-1)/2}$, and their Corollary~2.4 excludes the opposite
+sign from the unit case when $p\equiv3\pmod4$.
+They identify $p\equiv1\pmod4$, $\eps=-1$ as the remaining case.
+The reflection calculation below applies to that case as well.
+
+\section{Elementary congruences}
+
+The calculations in this section also give self-contained proofs of the
+elementary inputs appearing as Lemmas~2.1--2.5 of \cite{I:BD}.
+
+\begin{lemma}[Babbage congruence]\label{I:lem:babbage}
+For integers $A\ge B\ge0$,
+\[
+ \binom{pA}{pB}\equiv\binom AB\pmod{p^2}.
+\]
+\end{lemma}
+\begin{proof}
+The boundary cases are immediate.  In the product for
+$\binom{pA}{pB}$, separate the factors indexed by multiples of $p$:
+\[
+ \binom{pA}{pB}
+ =\binom AB
+   \prod_{\substack{1\le j\le p(A-B)\\p\nmid j}}
+                 \left(1+\frac{pB}{j}\right).
+\]
+The second factor is congruent modulo $p^2$ to
+$1+pB\sum_{1\le j\le p(A-B),\,p\nmid j}j^{-1}$.
+Each complete block contributes $\sum_{a=1}^{p-1}a^{-1}=0$ in
+$\mathbb F_p$: inversion permutes the nonzero residues, whose sum is
+zero for odd $p$.  The product is therefore $1$ modulo $p^2$.
+\end{proof}
+
+Put
+\begin{equation}\label{I:eq:hgamma}
+ h_t=\sum_{j=1}^{2t}\frac{(-1)^{j-1}}j\quad(0\le t\le N),
+ \qquad \gamma=\frac{4^{p-1}-1}{p}\in\mathbb Z.
+\end{equation}
+The empty sum defining $h_0$ is zero.
+
+\begin{lemma}[Alternating harmonic sum]\label{I:lem:eisenstein}
+One has
+\[
+ \sum_{j=1}^{p-1}\frac{(-1)^{j-1}}j\equiv\gamma\pmod p.
+\]
+\end{lemma}
+\begin{proof}
+The identity
+\[
+ \frac{2^p-2}{p}
+ =\sum_{j=1}^{p-1}\frac1j\binom{p-1}{j-1}
+\]
+and $\binom{p-1}{j-1}\equiv(-1)^{j-1}\pmod p$ show that the left
+side of the desired congruence equals $(2^p-2)/p$ modulo $p$.
+If $q=(2^{p-1}-1)/p$, then
+$\gamma=q(2^{p-1}+1)\equiv2q=(2^p-2)/p\pmod p$.
+\end{proof}
+
+\begin{lemma}[Two reflections]\label{I:lem:reflections}
+For $0\le t\le N$,
+\begin{align}
+ \al_{N-t}&\equiv(-1)^N\al_t\pmod p,\label{I:eq:alphareflect}\\
+ h_{N-t}&\equiv\gamma-h_t\pmod p.\label{I:eq:hreflect}
+\end{align}
+Consequently, for $w_t=\al_t^d\eps^t$,
+\begin{equation}\label{I:eq:wreflect}
+ w_{N-t}\equiv\chi w_t\pmod p.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Since $1/2\equiv-N\pmod p$ and $t!$ is a unit,
+\[
+ \al_t\equiv\frac{(-N)_t}{t!}
+            =(-1)^t\binom Nt\pmod p.
+\]
+Binomial symmetry proves \eqref{I:eq:alphareflect}.
+For \eqref{I:eq:hreflect}, subtract from the complete alternating sum
+the final $2t$ terms.  Under $j=p-k$, those terms satisfy
+\[
+ \frac{(-1)^{j-1}}j
+ =\frac{(-1)^{p-k-1}}{p-k}
+ \equiv\frac{(-1)^{k-1}}k\pmod p.
+\]
+Their sum is therefore $h_t$ modulo $p$, and
+Lemma~\ref{I:lem:eisenstein} supplies the complete sum.
+Finally $\eps^{N-t}=\eps^N\eps^t$, giving \eqref{I:eq:wreflect}.
+\end{proof}
+
+\begin{lemma}[Uniform digit expansion]\label{I:lem:digits}
+Let $a\ge0$ and $0\le t<p$ be integers.  If $t>N$, then
+$\al_{pa+t}\in p\Zp$.  If $t\le N$, then
+\begin{equation}\label{I:eq:digits}
+ \al_{pa+t}\equiv
+ \al_a\al_t\bigl(1+pa(2h_t-\gamma)\bigr)\pmod{p^2\Zp}.
+\end{equation}
+There is no upper bound on $a$ in this assertion.
+\end{lemma}
+\begin{proof}
+The exact identity
+\begin{equation}\label{I:eq:binomproduct}
+ \binom{2pa+2t}{pa+t}
+ =\binom{2pa}{pa}
+   \frac{\prod_{j=1}^{2t}(2pa+j)}{\prod_{j=1}^t(pa+j)^2}
+\end{equation}
+has unit denominator in its second factor.  If $t>N$, its numerator
+contains the factor $2pa+p$, proving the divisibility assertion.
+If $t\le N$, all displayed $j$ are prime to $p$, and the second factor
+is
+\[
+ \binom{2t}{t}
+ \left(1+2pa\left(\sum_{j=1}^{2t}\frac1j
+                         -\sum_{j=1}^{t}\frac1j\right)\right)
+ \equiv\binom{2t}{t}(1+2pa h_t)\pmod{p^2}.
+\]
+Apply Lemma~\ref{I:lem:babbage} to the first binomial coefficient in
+\eqref{I:eq:binomproduct}.  After division by $4^{pa+t}$, the remaining
+normalization factor is
+\[
+ 4^{a(1-p)}=(1+p\gamma)^{-a}\equiv1-pa\gamma\pmod{p^2}.
+\]
+Multiplying these expressions proves \eqref{I:eq:digits}.
+\end{proof}
+
+\section{Cancellation and the block theorem}
+
+\begin{lemma}[Cancellation of the block correction]\label{I:lem:cancel}
+If $\chi=1$, then
+\begin{equation}\label{I:eq:cancel}
+ \sum_{t=0}^N(2h_t-\gamma)\al_t^d\eps^t\equiv0\pmod p.
+\end{equation}
+If $F_p(\eps)$ is a $p$-adic unit, then necessarily $\chi=1$.
+\end{lemma}
+\begin{proof}
+Let $S=\sum_{t=0}^Nh_tw_t$ and $A=\sum_{t=0}^Nw_t$.
+When $\chi=1$, reflection and Lemma~\ref{I:lem:reflections} give
+\[
+ S=\sum_{t=0}^Nh_{N-t}w_{N-t}
+   \equiv\sum_{t=0}^N(\gamma-h_t)w_t
+   =\gamma A-S\pmod p.
+\]
+Thus $2S-\gamma A\equiv0$, which is \eqref{I:eq:cancel}.
+For the second assertion, Lemma~\ref{I:lem:digits} with $a=0$ implies
+\begin{equation}\label{I:eq:half}
+ F_p(\eps)\equiv A\pmod{p^2},
+\end{equation}
+because $d\ge2$.  If $\chi=-1$, reflection gives $A\equiv-A\pmod p$.
+Since $p$ is odd, this would imply $F_p(\eps)\equiv0\pmod p$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{I:thm:block}]
+Write every summation index uniquely as $pa+t$, with $0\le a<m$ and
+$0\le t<p$.  By Lemma~\ref{I:lem:digits}, the terms with $t>N$ vanish
+modulo $p^2$ after taking the $d$th power.  The remaining terms satisfy
+\[
+ \al_{pa+t}^d\eps^{pa+t}
+ \equiv\al_a^d\eps^a\al_t^d\eps^t
+       \bigl(1+pda(2h_t-\gamma)\bigr)\pmod{p^2},
+\]
+where $\eps^{pa}=\eps^a$ because $p$ is odd.  Summing yields
+\begin{align*}
+ F_{mp}(\eps)
+ &\equiv F_m(\eps)\sum_{t=0}^N\al_t^d\eps^t\\
+ &\quad+pd\left(\sum_{a=0}^{m-1}a\al_a^d\eps^a\right)
+          \left(\sum_{t=0}^N(2h_t-\gamma)\al_t^d\eps^t\right)
+          \pmod{p^2}.
+\end{align*}
+The second line vanishes by Lemma~\ref{I:lem:cancel}, and the first
+line is $F_m(\eps)F_p(\eps)$ by \eqref{I:eq:half}.
+\end{proof}
+
+\begin{corollary}\label{I:cor:levels}
+If $\chi=1$, then for every $s\ge1$,
+\[
+ F_{p^s}(\eps)\equiv F_p(\eps)F_{p^{s-1}}(\eps)
+              \equiv F_p(\eps)^s\pmod{p^2}.
+\]
+\end{corollary}
+\begin{proof}
+Use $m=p^{s-1}$ in Theorem~\ref{I:thm:block} and then induct on $s$.
+\end{proof}
+
+\section{Passage to the unit-root limit}
+
+\begin{proof}[Proof of Theorem~\ref{I:thm:unitroot}]
+By Lemma~\ref{I:lem:cancel}, the unit assumption implies $\chi=1$.
+Corollary~\ref{I:cor:levels} shows that every $F_{p^s}(\eps)$ is a unit
+and that, for $s\ge1$,
+\begin{equation}\label{I:eq:quotients}
+ R_s:=\frac{F_{p^s}(\eps)}{F_{p^{s-1}}(\eps)}
+             \equiv F_p(\eps)\pmod{p^2}.
+\end{equation}
+The Dwork congruences as stated in \cite[Introduction, equation (1)]{I:BD}
+give $R_{s+1}\equiv R_s\pmod{p^s}$; here $\eps^p=\eps$.
+Hence the sequence $(R_s)$ converges in $\Zp$ to the value denoted by
+$f_p(\eps)$ in \eqref{I:eq:limit}.
+Since $p^2\Zp$ is closed, taking the limit in \eqref{I:eq:quotients}
+proves \eqref{I:eq:unitroot}.
+\end{proof}
+
+\begin{remark}[What changes in the published proof]
+The block expansion and the paired harmonic-sum calculation are the
+method of \cite[Section 2]{I:BD}.  The additional observation is to retain
+the joint factor $\chi=(-1)^{dN}\eps^N$ in the reflection, instead of
+specializing in advance to $\eps=\eps_p$.
+For $p\equiv1\pmod4$, the integer $N$ is even, so this factor is $1$
+also at $\eps=-1$.  Thus the same cancellation completes the missing
+sign without any new modular, crystalline, or unpublished input.
+\end{remark}
+
+\begin{remark}[Fixed precision versus growing precision]
+The conclusion for every level in Corollary~\ref{I:cor:levels} has the
+fixed modulus $p^2$.  It does not supply
+$F_{p^s}(\eps)-f_p(\eps)F_{p^{s-1}}(\eps)\in p^{2s}\Zp$.
+The latter assertion is Conjecture~1.5 of \cite{I:BD}.
+Section~\ref{I:sec:transfer} proves it for $s\le d-1$ and obtains
+the weaker exponent $s+d-1$ for $s\ge d$.
+We do not identify $f_p(\eps)$ with a particular modular-form
+coefficient or an explicitly specified motivic Euler factor.
+\end{remark}
+
+For a concrete instance of the added sign, take $p=5$, $d=2$, and
+$\eps=-1$.  Direct rational arithmetic gives
+\[
+ F_5(-1)=1-\frac14+\frac9{64}-\frac{25}{256}
+                 +\frac{1225}{16384}
+          =\frac{14217}{16384}\equiv13\pmod{25}.
+\]
+This is a unit, so $f_5(-1)\equiv13\pmod{25}$ by
+Theorem~\ref{I:thm:unitroot}.  The block theorem also gives
+$F_{25}(-1)\equiv13^2\equiv19\pmod{25}$.
+
+
+\section{A precision bound for every level and every length}
+\label{I:sec:transfer}
+
+The reflection can also be retained in an integral analytic operator.
+Keeping track of its even and odd parts yields a stronger result than
+the fixed-modulus congruence.
+Put
+\[
+ \nu_d(s)=\min(2s,s+d-1)=s+\min(s,d-1).
+\]
+
+\begin{theorem}[All-length precision bound]\label{I:thm:alllength}
+Let $p$ be any odd prime, $d\ge2$, and $\eps\in\{1,-1\}$.
+Suppose $F_p(\eps)\in\Zp^\times$, and let $f_p(\eps)$ be the limit
+in \eqref{I:eq:limit}.  For all integers $m,s\ge1$,
+\begin{equation}\label{I:eq:alllength}
+ F_{mp^s}(\eps)-f_p(\eps)F_{mp^{s-1}}(\eps)
+                  \in p^{\nu_d(s)}\Zp.
+\end{equation}
+No unit assumption on $F_m(\eps)$ is needed.
+Equivalently, if $K\ge1$ and $k=v_p(K)\ge1$, then
+\begin{equation}\label{I:eq:cutoffvaluation}
+ F_K(\eps)-f_p(\eps)F_{K/p}(\eps)
+                  \in p^{k+\min(k,d-1)}\Zp.
+\end{equation}
+\end{theorem}
+
+\begin{corollary}[A range of the growing-precision conjecture]
+\label{I:cor:bd15range}
+Under these assumptions, for every $1\le s\le d-1$,
+\[
+ F_{p^s}(\eps)\equiv f_p(\eps)F_{p^{s-1}}(\eps)
+                                     \pmod{p^{2s}}.
+\]
+Thus the $s$th assertion of Beukers--Delaygue's Conjecture~1.5 is
+proved for all $d\ge s+1$.  At levels $s\ge d$,
+Theorem~\ref{I:thm:alllength} instead supplies the modulus $p^{s+d-1}$.
+\end{corollary}
+
+The proof below is elementary.  In particular, the exact reflection of
+the interpolating functions is proved from finite products; no property
+of the $p$-adic gamma function is required.
+
+\subsection{Integral analytic interpolation of digit blocks}
+
+Let $\mathcal A=\Zp\langle a\rangle$ be the algebra of restricted power
+series $\sum_{j\ge0}b_ja^j$, where $b_j\in\Zp$ and $b_j\to0$.
+We use its Gauss norm.  Divisibility in $\mathcal A$ always means
+divisibility of every power-series coefficient.  Integral affine
+substitution, evaluation at a point of $\Zp$, and finite integral sums
+are bounded operations on this algebra.
+
+\begin{lemma}[Analytic digit functions]\label{I:lem:analyticdigits}
+There are functions $g_t\in\mathcal A$, $0\le t<p$, such that for
+every nonnegative integer $a$,
+\begin{equation}\label{I:eq:exactdigits}
+ g_t(a)=\frac{\al_{pa+t}}{\al_a}.
+\end{equation}
+For $0\le t\le N$, there is $b_t\in\Zp$ with
+\begin{equation}\label{I:eq:affinegt}
+ g_t(a)\equiv\al_t(1+pb_ta)\pmod{p^2\mathcal A}.
+\end{equation}
+For $N<t<p$, one has $g_t\in p\mathcal A$.
+All these statements hold also for $p=3$.
+\end{lemma}
+\begin{proof}
+First interpolate $g_0(a)=\al_{pa}/\al_a$.
+For nonnegative integer $a$, cancellation of the numerator and
+denominator factors divisible by $p$ gives
+\[
+ \frac{g_0(a+1)}{g_0(a)}=R(a),\qquad
+ R(a)=C\,
+ \frac{\displaystyle\prod_{\substack{0\le t<p\\t\ne N}}
+                 (1+pa/(t+1/2))}
+      {\displaystyle\prod_{i=1}^{p-1}(1+pa/i)},
+ \qquad
+ C=\frac{\displaystyle\prod_{\substack{0\le t<p\\t\ne N}}(t+1/2)}
+          {\displaystyle\prod_{i=1}^{p-1}i}.
+\]
+Both constant-factor lists reduce to $\mathbb F_p^\times$, so
+$C\in1+p\Zp$.  For $j\ge1$ put
+\[
+ s_j=\sum_{\substack{0\le t<p\\t\ne N}}(t+1/2)^{-j}
+                  -\sum_{i=1}^{p-1}i^{-j}\in p\Zp.
+\]
+The logarithm, defined by its convergent power series on $1+p\mathcal A$,
+is
+\begin{equation}\label{I:eq:logR}
+ \log R(a)=\log C+
+       \sum_{j\ge1}\frac{(-1)^{j-1}p^js_j}{j}a^j.
+\end{equation}
+The polynomial $P_j(a)=\sum_{u=0}^{a-1}u^j$, initially defined on
+nonnegative integers, has the expression
+\[
+ P_j(a)=\sum_{v=0}^j
+ \left\{\begin{matrix}j\\v\end{matrix}\right\}
+ \frac{a(a-1)\cdots(a-v)}{v+1}.
+\]
+Here the braces denote Stirling numbers of the second kind.  Consequently
+every power-basis coefficient of $P_j$ has valuation at least
+$-\lfloor\log_p(j+1)\rfloor$.
+Define
+\begin{equation}\label{I:eq:logg}
+ L(a)=a\log C+
+       \sum_{j\ge1}\frac{(-1)^{j-1}p^js_j}{j}P_j(a).
+\end{equation}
+The coefficients contributed by its $j$th summand have valuation at
+least
+\begin{equation}\label{I:eq:coefficientbound}
+ j+1-v_p(j)-\lfloor\log_p(j+1)\rfloor\ge2,
+\end{equation}
+and this lower bound tends to infinity.  For completeness, the inequality
+is immediate for $j=1,2,3$.  For $j\ge4$ use
+$p\ge3$ and $3^{j-1}\ge j(j+1)$; the latter holds at $j=4$ and follows
+thereafter by induction.
+Thus \eqref{I:eq:logg} converges in $\mathcal A$,
+$L\in p\mathcal A$, and $L-a\log C\in p^2\mathcal A$.
+
+Since $p$ is odd, the exponential converges on $p\mathcal A$.  Set
+$g_0=\exp L$.  The identities $P_j(a+1)-P_j(a)=a^j$ give
+$g_0(a+1)=R(a)g_0(a)$ and $g_0(0)=1$.  These identify its nonnegative
+integer values with $\al_{pa}/\al_a$.  Moreover,
+$g_0(a)\equiv1+a\log C\pmod{p^2\mathcal A}$.
+For the remaining digits set
+\begin{equation}\label{I:eq:gtproduct}
+ g_t(a)=g_0(a)4^{-t}
+       \frac{\prod_{j=1}^{2t}(2pa+j)}
+            {\prod_{j=1}^t(pa+j)^2}.
+\end{equation}
+All denominator constants are units, so this expression lies in
+$\mathcal A$.  The exact binomial product \eqref{I:eq:binomproduct}
+proves \eqref{I:eq:exactdigits}.  If $t\le N$, expansion of the unit
+factors proves \eqref{I:eq:affinegt}, with constant term $\al_t$.
+If $t>N$, the numerator has the factor $p(2a+1)$, proving
+$g_t\in p\mathcal A$.
+\end{proof}
+
+\subsection{An exact reflection from finite products}
+
+\begin{lemma}[Exact analytic reflection]\label{I:lem:exactreflection}
+Let $r(a)=-a-1/2$.  For every $0\le t\le N$,
+\begin{equation}\label{I:eq:exactreflection}
+ g_{N-t}(r(a))=(-1)^N g_t(a)
+                                      \qquad\text{in }\mathcal A.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $N_j=(p^j-1)/2$.  For each fixed nonnegative integer $n$ and all
+sufficiently large $j$, a finite product gives
+\[
+ \frac{\al_{N_j-n}}{\al_{N_j}}
+       =\prod_{k=0}^{n-1}\frac{N_j-k}{N_j-k-1/2}
+       \longrightarrow\prod_{k=0}^{n-1}\frac{k+1/2}{k+1}
+       =\al_n.
+\]
+The convergence follows from $N_j\to-1/2$ in $\Zp$; every limiting
+denominator is nonzero in $\mathbb Q_p$.
+Also, since $N_j=pN_{j-1}+N$,
+\[
+ \frac{\al_{N_j}}{\al_{N_{j-1}}}
+     =g_N(N_{j-1})\longrightarrow C_*:=g_N(-1/2).
+\]
+Fix a nonnegative integer $a$ and $0\le t\le N$, and set
+$n=pa+t$, $a_j=N_{j-1}-a$.  For large $j$,
+$pa_j+(N-t)=N_j-n$.  Applying the two finite-product limits above
+to the numerator and denominator of
+$g_{N-t}(a_j)=\al_{N_j-n}/\al_{N_{j-1}-a}$ yields
+\[
+ g_{N-t}(r(a))=C_*\frac{\al_n}{\al_a}=C_*g_t(a).
+\]
+Continuity extends this equality from nonnegative integers to $\Zp$.
+It is also an identity of restricted power series: a nonzero convergent
+power series cannot vanish at all $p^j$, which approach zero.
+Applying the identity twice gives $C_*^2=1$, using $g_0(0)=1$.
+By \eqref{I:eq:affinegt} and \eqref{I:eq:alphareflect},
+$C_*\equiv\al_N\equiv(-1)^N\pmod p$.
+The two roots $1,-1$ are distinct modulo odd $p$, so
+$C_*=(-1)^N$.
+\end{proof}
+
+\subsection{Digit operators and their two reflection components}
+
+Define bounded integral operators on $\mathcal A$ by
+\begin{align}
+ (Sf)(a)&=\sum_{t=0}^{p-1}\eps^t g_t(a)^d f(pa+t),
+                                                      \label{I:eq:fulloperator}\\
+ (T_0f)(a)&=\sum_{t=0}^{N}\eps^t g_t(a)^d f(pa+t).
+                                                      \label{I:eq:loweroperator}
+\end{align}
+By Lemma~\ref{I:lem:analyticdigits},
+\begin{equation}\label{I:eq:perturbation}
+ S=T_0+p^dK
+\end{equation}
+for a bounded integral operator $K$.
+Let $\mathcal Rf=f\circ r$.  Throughout the remainder of the proof,
+the ordinary hypothesis and Lemma~\ref{I:lem:cancel} give $\chi=1$.
+Equation \eqref{I:eq:exactreflection}, together with
+$r(pa+t)=pr(a)+(N-t)$, then gives
+\begin{equation}\label{I:eq:commutation}
+ T_0\mathcal R=\mathcal RT_0.
+\end{equation}
+
+\begin{lemma}[Operator divisibilities]\label{I:lem:operatorblocks}
+Set $c=-1/4$, the fixed point of $r$, and $\ell(f)=f(c)$.
+Decompose
+\[
+ \mathcal A=\Zp\cdot1\ \oplus\ E\ \oplus\ O,
+\]
+where $E=\{f:\mathcal Rf=f,\ \ell(f)=0\}$ and
+$O=\{f:\mathcal Rf=-f\}$.
+In this decomposition the block valuations of $S$ are at least
+\begin{equation}\label{I:eq:blockmatrix}
+ \begin{pmatrix}
+ 0&0&d\\
+ 2&2&d\\
+ d&d&1
+ \end{pmatrix}.
+\end{equation}
+An entry $b$ means that the corresponding component map has image
+divisible by $p^b$.  The scalar entry $\ell(S1)$ is a unit.
+\end{lemma}
+\begin{proof}
+The projections $(1\pm\mathcal R)/2$ are bounded and integral.
+Every odd function vanishes at $c$, so this is indeed a bounded direct
+sum decomposition.
+For arbitrary $f\in\mathcal A$, the congruence
+\[
+ f(pa+t)\equiv f(t)+pa f'(t)\pmod{p^2\mathcal A}
+\]
+and \eqref{I:eq:affinegt} show that $T_0f$ is affine modulo $p^2$.
+If $f$ is even, \eqref{I:eq:commutation} makes $T_0f$ even.  An affine
+polynomial $A+Ba$ fixed by $a\mapsto-a-1/2$ modulo $p^2$ has
+$B\in p^2\Zp$.  Thus its nonconstant even component is divisible by
+$p^2$.  If $f$ is odd, $T_0f$ is odd and is constant modulo $p$;
+that constant must be zero, so $T_0f\in pO$.
+These observations give \eqref{I:eq:blockmatrix} for $T_0$, with zero
+off-diagonal reflection components.  Equation \eqref{I:eq:perturbation}
+gives the displayed matrix for $S$, since $d\ge2$.
+Finally $S1$ is constant modulo $p$ with value
+$\sum_{t=0}^N\al_t^d\eps^t\equiv F_p(\eps)$, proving the unit assertion.
+\end{proof}
+
+\subsection{Normalized iteration and its precision}
+
+\begin{lemma}[Iteration estimate]\label{I:lem:iteration}
+There is a unit $\lambda\in\Zp^\times$ such that, for all $s\ge1$,
+\begin{equation}\label{I:eq:functioncongruence}
+ S^s1-\lambda S^{s-1}1\in p^{\nu_d(s)}\mathcal A.
+\end{equation}
+\end{lemma}
+\begin{proof}
+On the set $\mathcal Q=1+p^2E+p^dO$ define
+\[
+ \mathcal N(h)=\frac{Sh}{\ell(Sh)}.
+\]
+The denominator is a unit by \eqref{I:eq:blockmatrix}, and the same
+matrix shows that $\mathcal N$ maps $\mathcal Q$ into itself.
+Let $h_0=1$, $h_s=\mathcal N(h_{s-1})$, and
+$Z_s=\ell(S^s1)$.  Induction gives $Z_s\in\Zp^\times$ and
+$h_s=S^s1/Z_s$.
+
+For $g,h\in\mathcal Q$ the exact identity
+\begin{equation}\label{I:eq:normalizeddifference}
+ \mathcal N(g)-\mathcal N(h)
+ =\frac{S(g-h)-\ell(S(g-h))\mathcal N(h)}{\ell(Sg)}
+\end{equation}
+shows the following.  If the even and odd parts of $g-h$ belong to
+$p^uE$ and $p^vO$, respectively, then the parts of the left side belong
+to
+\[
+ p^{\min(u+2,v+d)}E,
+ \qquad p^{\min(u+d,v+1)}O.
+\]
+Indeed, \eqref{I:eq:blockmatrix} gives these bounds for $S(g-h)$;
+the subtracted scalar has valuation at least $\min(u,v+d)$ and
+multiplies even and odd components divisible by $p^2$ and $p^d$.
+
+Put $\Delta_s=h_s-h_{s-1}$.  Starting with
+$\Delta_1\in p^2E+p^dO$, induction in
+\eqref{I:eq:normalizeddifference} gives
+\begin{equation}\label{I:eq:incrementbounds}
+ \Delta_s\in p^{u_s}E+p^{v_s}O,
+ \qquad
+ u_s=\min(2s,2d+s-2),\quad v_s=d+s-1.
+\end{equation}
+For example, the inductive lower bounds are
+$\min(u_{s-1}+2,v_{s-1}+d)=u_s$ and
+$\min(u_{s-1}+d,v_{s-1}+1)=v_s$ for $s\ge2$.
+Thus $h_s$ converges in $\mathcal A$ to $h_\infty\in\mathcal Q$.
+
+Set
+\[
+ z_s=\frac{Z_s}{Z_{s-1}}=\ell(Sh_{s-1}),
+ \qquad \lambda=\ell(Sh_\infty)\in\Zp^\times.
+\]
+The scalar row of \eqref{I:eq:blockmatrix} gains an additional $d$
+powers of $p$ on odd inputs.  Since
+$h_\infty-h_{s-1}=\sum_{j=s}^{\infty}\Delta_j$, it follows that
+\begin{equation}\label{I:eq:centeredratio}
+ \lambda-z_s\in p^{u_s}\Zp.
+\end{equation}
+Here $u_j$ is nondecreasing and
+$\min(u_j,v_j+d)=u_j$.
+Consequently,
+\[
+ S^s1-\lambda S^{s-1}1
+ =Z_{s-1}\bigl(z_s(h_s-h_{s-1})+(z_s-\lambda)h_{s-1}\bigr).
+\]
+Equations \eqref{I:eq:incrementbounds}--\eqref{I:eq:centeredratio}
+give valuation at least
+$\min(u_s,v_s)=\min(2s,s+d-1)=\nu_d(s)$ throughout this function.
+This proves \eqref{I:eq:functioncongruence}.
+\end{proof}
+
+\subsection{Evaluation at the original truncations}
+
+\begin{proof}[Proof of Theorem~\ref{I:thm:alllength}]
+For $m\ge1$ define the bounded integral functional
+\[
+ \mathcal L_m(f)=\sum_{a=0}^{m-1}\al_a^d\eps^a f(a).
+\]
+Exact digit expansion \eqref{I:eq:exactdigits} gives
+\begin{equation}\label{I:eq:prefixidentity}
+ \mathcal L_m(S^s1)=F_{mp^s}(\eps)\qquad(s\ge0).
+\end{equation}
+To verify this, an iterated digit sequence represents a unique
+$b$ with $0\le b<p^s$.  The product of its $g_t$ factors telescopes
+to $\al_{p^sa+b}/\al_a$.  Its sign, after multiplication by
+$\eps^a$, is $\eps^{p^sa+b}$, because $p$ is odd.
+Summing over $a$ and $b$ gives \eqref{I:eq:prefixidentity}.
+This identity uses rational equalities and does not require
+$\al_a$ or $F_m(\eps)$ to be a unit.
+
+For $m=1$, $F_{p^s}(\eps)=(S^s1)(0)=Z_sh_s(0)$.
+Every $h_s(0)$ is a unit since $h_s\in1+p^2E+p^dO$.
+Therefore \eqref{I:eq:functioncongruence}, evaluated at zero, implies
+\[
+ \frac{F_{p^s}(\eps)}{F_{p^{s-1}}(\eps)}
+       \equiv\lambda\pmod{p^{\nu_d(s)}}.
+\]
+Since $\nu_d(s)\to\infty$, the limit equals $\lambda$.
+It is precisely the limit $f_p(\eps)$ defined in
+\eqref{I:eq:limit}.  In particular, this operator argument also proves
+the convergence needed here.
+Applying $\mathcal L_m$ to \eqref{I:eq:functioncongruence} now proves
+\eqref{I:eq:alllength}, with the same $\lambda=f_p(\eps)$ for every $m$.
+Finally, write $K=mp^k$ with $p\nmid m$ to obtain
+\eqref{I:eq:cutoffvaluation}.
+\end{proof}
+
+\begin{remark}[The original evaluation point]
+Normalization took place at $c=-1/4$ only to separate reflection-even
+and reflection-odd functions.  The sums themselves are evaluated at
+$a=0$, as \eqref{I:eq:prefixidentity} shows.  In particular,
+\[
+ \frac{F_{p^s}(\eps)}{F_{p^{s-1}}(\eps)}
+     =z_s\frac{h_s(0)}{h_{s-1}(0)}.
+\]
+The second quotient differs from $1$ by an element of
+$p^{\nu_d(s)}\Zp$ by \eqref{I:eq:incrementbounds}, while
+$z_s-\lambda\in p^{u_s}\Zp$ by \eqref{I:eq:centeredratio}.
+Thus centering the normalization does not assert an unjustified
+identification of evaluations at $c$ and at zero.
+\end{remark}
+
+\begin{remark}[Scope of the higher precision]
+Under the unit hypothesis, the reflection estimate gives the precision of
+Conjecture~1.2 and the exponent $2s$ of Conjecture~1.5 for $1\le s\le d-1$.
+For $s\ge d$ it gives $s+d-1$. The lifted reflection of Part~II,
+Theorem~\ref{II:bdx:main}, gives $2s$ for these levels as well.
+\end{remark}
+
+
+\section{Ap\'ery truncations on supersingular residue disks}\label{I:sec:apery}
+
+In this section the notation $F$ refers to the Ap\'ery period. Put
+\[
+ A_n=\sum_{k=0}^n\binom nk^2\binom{n+k}k^2,\qquad
+ F(t)=\sum_{n\geq0}A_nt^n,\qquad P_K(t)=\sum_{0\leq n<K}A_nt^n.
+\]
+We prove a congruence for every integral point in each smooth
+supersingular residue disk of the Ap\'ery family. The proof first
+establishes an all-cutoff formal congruence, then identifies an explicit
+integral rank-two elliptic crystal, and finally specializes a transported
+rank-three jet identity. Its crystalline inputs are standard;
+the trace induction, differential residual, integral gauge and precision
+comparison are proved here. The statement is an all-level extension of
+first-level modular supercongruences, not a claim that the older Ap\'ery
+coefficient congruences were previously open.
+
+\subsection{The exact full-cutoff residual}
+
+Set
+\[
+ L=\theta^3-t(2\theta+1)(17\theta^2+17\theta+5)
+       +t^2(\theta+1)^3,\qquad\theta=t\frac d{dt}.
+\]
+The Ap\'ery recurrence gives the exact identity
+\begin{equation}\label{I:ap:residual}
+ LP_K=K^3t^K(-A_K+tA_{K-1}).
+\end{equation}
+Indeed the coefficients below $K$ vanish. At degree $K$ the recurrence
+would have supplied $K^3 A_K$, and at degree $K+1$ the remaining term is
+$K^3 A_{K-1}$. There are no later terms. This proves
+\eqref{I:ap:residual} over $\mathbb Z[t]$, not merely modulo a prime power.
+
+\subsection{An independent integral trace proof}
+
+The published modular parametrization in Beukers, arXiv:2403.03301v3,
+Appendix C, Section 9.5 \cite{III:Beukers2026}, is
+\[
+ t=\left(\frac{\eta_1\eta_6}{\eta_2\eta_3}\right)^{12},\qquad
+ \Theta=\frac{(\eta_2\eta_3)^7}{(\eta_1\eta_6)^5},\qquad F(t(q))=\Theta(q).
+\]
+Here $\eta_j=\eta(j\tau)$, $q=e^{2\pi i\tau}$, $t\in q+q^2\mathbb Z[[q]]$, $\Theta\in1+q\mathbb Z[[q]]$,
+and the group is $G=\Gamma_0(6)+\langle W_6\rangle$. On $X_0(6)$,
+the cusp orders, in denominator order $1,2,3,6$, are
+\[
+\begin{array}{c|rrrr}
+c&1&2&3&6\\\hline
+\operatorname{ord}_c t&1&-1&-1&1\\
+\operatorname{ord}_c\Theta&0&1&1&0\\
+\text{width}&6&3&2&1
+\end{array}
+\]
+The eta transformation formula gives $t\circ W_6=t$ and
+$\Theta|_2 W_6=-\Theta$. The two pole cusps are exchanged by $W_6$.
+Since $t:X_0(6)\to\mathbb P^1$ has degree two, it induces a degree-one
+function on $X(G)$.
+
+For $p>3$, the integral determinant-$p$ matrices with lower left entry
+divisible by six form the usual Hecke set. Every such matrix preserves
+the denominator class of a cusp modulo six. To see this prime by prime,
+reduce the matrix modulo $2$ or $3$: it is invertible and upper triangular,
+so it preserves whether the denominator is divisible by that prime.
+Cancelling a common factor can only remove a factor of $p$, which changes
+neither condition. Thus each of the two pole cusp classes is preserved.
+The Fricke normalizer preserves the Hecke set. Consequently the usual
+trace construction applies, with the same cusp width at the source and
+target of each branch.
+
+For a polynomial $P\in\mathbb Z[T]$, put
+\[
+ Q_P(q)=\frac{\Theta(q)P(t(q^p))}{\Theta(q^p)},\qquad
+ G_P(q)=\frac{\Theta(q^p)P(t(q))}{\Theta(q)}.
+\]
+With determinant-normalized weight-two slash operators, the sum of
+$p\Theta(\tau)P(t(\beta\tau))/(\Theta|_2\beta)(\tau)$ over the
+$p+1$ Hecke representatives equals
+\begin{equation}\label{I:ap:trace}
+ \operatorname{Tr}_p(P)=Q_P+p^3 U_pG_P.
+\end{equation}
+The finite $p$ representatives each contribute a factor $p^2$, and
+root-of-unity summation contributes the remaining $p$.
+
+The trace is $G$-invariant. It has no poles away from the pole orbit of
+$t$, since $\Theta$ has no zeros there and the Hecke correspondence
+preserves that orbit in both directions. At a pole cusp, one branch
+multiplies local orders by $p$ and the other $p$ branches divide them by
+$p$. The respective orders of $\Theta,t$ are $1,-1$. It follows that
+\begin{equation}\label{I:ap:tracepoly}
+ \operatorname{Tr}_p(P)=\Pi_P(t),\qquad
+ \Pi_P\in\mathbb Z[T],\qquad \deg\Pi_P\leq p\deg P+p-1.
+\end{equation}
+The coefficients are integral because \eqref{I:ap:trace} has an integral
+$q$-expansion and $t=q+O(q^2)$ has an integral inverse series.
+
+Let $\sigma_p(t)=t(q(t)^p)$ and $\rho_p=F(t)/F(\sigma_p(t))$.
+Then, for all $m,s\geq1$,
+\begin{equation}\label{I:ap:formal}
+ \rho_p(t)P_{mp^{s-1}}(\sigma_p(t))-P_{mp^s}(t)
+ \in p^{3s}\mathbb Z_p[[t]].
+\end{equation}
+Here is the complete induction. Apply \eqref{I:ap:trace} to
+$P=P_{mp^{s-1}}$. Its trace polynomial has degree $<mp^s$.
+By the preceding-level assertion,
+\[
+ G_P\equiv P_{mp^{s-2}}(t(q^p))\pmod{p^{3(s-1)}}.
+\]
+Thus $p^3U_pG_P\equiv p^3P_{mp^{s-2}}(t(q))\pmod{p^{3s}}$.
+For $s=1$ interpret the preceding polynomial as zero; the statement
+modulo $p^3$ is then automatic. Hence $Q_P$ is congruent modulo $p^{3s}$
+to a polynomial of degree $<mp^s$. But $Q_P-F(t)$ has order at least
+$mp^s$ in $t$. Comparing the initial $mp^s$ coefficients identifies that
+polynomial with $P_{mp^s}$ and proves \eqref{I:ap:formal}.
+
+\subsection{An explicit smooth elliptic cover and integral gauge}
+
+Set
+\[
+ D=(1+8h)(1+9h),\qquad W=1-72h^2,\qquad t=\frac hD.
+\]
+Consider the elliptic curve
+\begin{equation}\label{I:ap:elliptic}
+ E_h:\quad y^2=x^3+\frac{1+12h+24h^2}{4}x^2+h^3(1+9h)x.
+\end{equation}
+Its discriminant and $c_4$ are
+\[
+ \Delta=h^6(1+8h)^3(1+9h)^2,\qquad
+ c_4=(1+6h)(1+18h+84h^2+24h^3).
+\]
+Thus it is smooth over $\mathbb Z_p[h,1/(hD)]$ for every $p>3$.
+With $\omega=dx/(2y)$ and $\eta=x\omega$, elementary differential
+reduction gives
+\begin{equation}\label{I:ap:GM}
+ \nabla_h\binom\omega\eta=
+ \begin{pmatrix}
+ -6/(1+8h)&6/(hD)\\
+ -6h^2/(1+8h)&6/(1+8h)
+ \end{pmatrix}\binom\omega\eta.
+\end{equation}
+For example, substitute $f=x^3+ax^2+bx$ and reduce
+$-f_h dx/(4y^3)$ modulo exact differentials $d(R/y)$. This is an
+identity of relative de Rham cohomology, with denominators only those
+displayed. In particular $(\omega,\nabla_h\omega)$ is an integral basis:
+its determinant relative to $(\omega,\eta)$ is $6/(hD)$, a unit.
+
+The normalized vanishing-cycle period $\ell$ of $\omega$ at $h=0$
+has constant term one; the tangent lines at the node are $y=\pm x/2$.
+Equation \eqref{I:ap:GM} gives
+\[
+ \ell''+\frac{1+34h+216h^2}{hD}\ell'
+      +\frac{6(1+12h)}{hD}\ell=0.
+\]
+Hence $\ell=1-6h+42h^2-312h^3+\cdots$, the twisted Zagier F period.
+The published eta parametrization is
+\[
+ h(q)=\frac{\eta_6^5\eta_2}{\eta_1^5\eta_3},\qquad
+ \ell(h(q))=\frac{\eta_1^6\eta_6}{\eta_2^3\eta_3^2}.
+\]
+Logarithmic eta differentiation gives the useful exact identity
+\[
+ q\frac d{dq}\log h
+ =\frac{-5E_2(\tau)+2E_2(2\tau)-3E_2(3\tau)+30E_2(6\tau)}{24}
+ =\Theta=D\ell^2.
+\]
+The last equality can also be checked in the weight-two modular form
+space for $\Gamma_0(6)$ by its coefficients through $q^2$. The
+elliptic Wronskian and the multiplicative fiber of order six give
+$d\log q_E/dh=6/(hD\ell^2)$, while $\Delta\sim h^6$, $c_4\sim1$
+fix the leading constant. Consequently the Tate parameter of
+\eqref{I:ap:elliptic} is exactly $q_E=q^6$. Canonical quotient of the
+elliptic curve sends $q_E$ to $q_E^p$ and therefore sends $h(q)$ to
+$h(q^p)$. This identifies the elliptic canonical lift with the modular
+lift used in the scalar trace argument.
+The eta identity, or a direct comparison of differential equations and
+initial terms, gives
+\begin{equation}\label{I:ap:square}
+ F(t(h))=D(h)\ell(h)^2.
+\end{equation}
+
+No square root needs to be adjoined to construct the integral crystal.
+Use instead the quadratic twist
+\[
+ E_h^D:\quad Y^2=D(h)
+ \left(X^3+\frac{1+12h+24h^2}{4}X^2+h^3(1+9h)X\right),
+ \qquad \omega_*=\frac{D(h)dX}{2Y}.
+\]
+Its period is $a(h)=\sqrt D\,\ell(h)$, with the formal square root
+equal to one at $h=0$, and $a^2=F(t(h))$. As $D$ is a unit,
+$(\omega_*,\nabla_h\omega_*)$ remains an integral basis. Explicitly,
+the period equation simplifies to
+\begin{equation}\label{I:ap:ranktwo}
+ a''+\mathcal P a'+\mathcal Q a=0,\qquad
+ \mathcal P=\frac1h,\quad
+ \mathcal Q=-\frac{720h^2+169h+10}{4hD^2}.
+\end{equation}
+
+Fix $m\geq1$ with $(m,p)=1$, put $K_s=mp^s$, and set
+$f_s(h)=P_{K_s}(t(h))$. Let $\mathcal L$ be the monic symmetric
+square of \eqref{I:ap:ranktwo}. Since
+\[
+ 1-34t+t^2=\frac{W^2}{D^2},\qquad t'=\frac W{D^2},
+\]
+the exact residual \eqref{I:ap:residual} becomes
+\begin{equation}\label{I:ap:pullres}
+ \mathcal L f_s
+  =K_s^3\frac{W}{h^3D}\,t^{K_s}
+               (-A_{K_s}+tA_{K_s-1}).
+\end{equation}
+This is integral on the whole smooth $h$-chart. In particular, no
+inverse of $W$ is needed, despite the ramification of $h\mapsto t$.
+
+\subsection{The integral Frobenius--Taylor comparison}
+
+Write $A=\widehat{\mathbb Z_p[h,1/(hD)]}$. Let $\phi$ be any integral
+Frobenius lift of this ring. In the integral basis
+$(\omega_*,\nabla_h\omega_*)$, use the row convention
+\[
+ F_\phi(\phi^*\omega_i)=\sum_j(M_\phi)_{ij}\omega_j,
+ \qquad V_\phi=pM_\phi^{-1}.
+\]
+Crystalline Frobenius and Verschiebung for a smooth elliptic family imply
+that both $M_\phi,V_\phi$ are integral; their determinant is $p$ times
+a unit. More explicitly, the cup product of
+$(\omega_*,\nabla_h\omega_*)$ is $6/h$ up to the fixed sign convention,
+so compatibility of Frobenius with cup product gives
+\[
+ \det M_\phi=p\frac{h}{\phi(h)}.
+\]
+Thus the integrality of $V_\phi$ also follows directly from the adjugate
+of $M_\phi$. The integral comparison and Frobenius are those for the
+Dieudonn\'e crystal of the elliptic scheme's $p$-divisible group:
+Berthelot--Messing, \emph{Th\'eorie de Dieudonn\'e cristalline I} \cite{I:BM},
+Section 2, Theorem 2 and the constructions on printed pp.\ 24--25;
+Section 3, equation (3.1), identifies this crystal with relative
+degree-one cohomology and its Hodge filtration.
+The square-period jet matrix is
+\[
+ S=\begin{pmatrix}1&0&0\\0&2&0\\-2\mathcal Q&-2\mathcal P&2\end{pmatrix},
+ \qquad B_\phi=S\operatorname{Sym}^2(V_\phi)(S^\phi)^{-1}.
+\]
+Its determinant-changing matrices are integral units, since $p>3$.
+For $Y_s=(f_s,f_s',f_s'')^{\mathsf T}$ one has
+\begin{equation}\label{I:ap:jet}
+ Y_s-B_\phi Y_{s-1}^\phi\in p^{3s}A^3\qquad(s\geq1).
+\end{equation}
+
+Here is the proof, including the change-of-lift precision.
+On the ordinary localization $A_H$, the canonical lift $\sigma$ has
+$h(q)\mapsto h(q^p)$. The split Tate degeneration of
+\eqref{I:ap:elliptic}, and $D(0)=1$, normalize the Hodge coefficient as
+$c=p/\alpha$ with $\alpha=a(h)/a(h^\sigma)$. Horizontality then gives
+\[
+ M_\sigma=\begin{pmatrix}c&0\\c'/\sigma'&c/\sigma'\end{pmatrix},
+ \quad V_\sigma=\begin{pmatrix}\alpha&0\\\alpha'&\alpha\sigma'\end{pmatrix}.
+\]
+Therefore $B_\sigma$ is exactly the chain-rule matrix obtained by
+differentiating $a(h)^2/a(h^\sigma)^2$ twice. Its three columns are
+divisible by $1,p,p^2$, respectively. The scalar formal congruence
+\eqref{I:ap:formal}, together with its first two derivatives, gives
+\eqref{I:ap:jet} for $\sigma$ on the ordinary chart. To pass from the
+formal cusp identity to $A_H$, use the $q$-expansion principle modulo
+$p^e$: the mod-$p$ special fiber is integral, hence localization and
+expansion into the Laurent series field at $h=0$ are injective, and
+successive division by $p$ proves saturation at every precision.
+For the underlying ordinary canonical quotient and the normalized
+Tate differential, see Katz, \emph{$p$-adic properties of modular
+schemes and modular forms}, Sections 3.1--3.4 and Appendix A2,
+especially (A2.2.1) and (A2.2.7) \cite{I:Katz}. Its Proposition 2.7.1 gives the
+integral $q$-expansion principle. The equality $q_E=q^6$ above checks
+that these standard constructions have exactly the normalization
+used here.
+
+Now $\delta=\phi(h)-\sigma(h)$ is divisible by $p$. Let
+$T(\sigma,\phi)$ send a horizontal jet at $\phi(h)$ to its horizontal
+continuation at $\sigma(h)$. The crystalline change-of-lift identity,
+with the row convention for $M$, is
+\[
+ B_\phi=B_\sigma T(\sigma,\phi).
+\]
+This is the Taylor comparison of the same crystal at two lifts; see
+the explicit divided-power formula in Stacks Project,
+Proposition 60.17.4, Tag 07JH \cite{I:Stacks}.
+Horizontal Taylor transport is integral: its terms have the form
+$\delta^n/n!$ times iterated integral connection matrices, and
+$n-v_p(n!)\to\infty$. The residual \eqref{I:ap:pullres} shows that
+\[
+ T(\sigma,\phi)Y_{s-1}^\phi-Y_{s-1}^\sigma
+ \in p^{3(s-1)}\left(p^3A_H\oplus p^2A_H\oplus pA_H\right).
+\]
+Indeed, solve the homogeneous initial-value problem having the same
+three-jet at the starting point. The difference from $f_{s-1}$ has
+zero initial jet and forcing term in $p^{3(s-1)}A_H$. Successive
+integration starts the three coordinates at Taylor orders $3,2,1$.
+For $p>3$ and $n\geq k$, where $k=1,2,3$, one has
+$n-v_p(n!)\geq k$. Thus the three coordinate valuations are at least
+\[
+ 3(s-1)+3,\qquad3(s-1)+2,\qquad3(s-1)+1.
+\]
+Multiplication by the three columns of $B_\sigma$ raises all three
+error components to $p^{3s}$. The displayed change-of-lift identity
+therefore gives the desired congruence for $B_\phi$.
+This proves \eqref{I:ap:jet} on $A_H$. Both sides belong to $A^3$;
+the injection $A/p\hookrightarrow A_H/p$ makes the localization
+$p$-saturated, and yields \eqref{I:ap:jet} on $A$.
+
+The inputs from crystalline theory in this argument are its integral
+Frobenius and Verschiebung on a smooth elliptic family, horizontality,
+and the Taylor change-of-lift identity. The normalizations, the unit
+change of basis, and the extra three-digit precision are established
+explicitly above.
+
+\subsection{The supersingular congruence at every cutoff}
+
+The CM hypothesis is unnecessary on the supersingular side. The explicit
+level-six family supplies a stronger statement.
+
+\begin{theorem}[Supersingular Ap\'ery residue disks]\label{I:thm:aperydisks}
+Let $p>3$ and $t_0\in\mathbb Z_p$ satisfy
+\[
+ t_0(1-34t_0+t_0^2)\in\mathbb Z_p^\times.
+\]
+Choose a root $h_0$ of
+\[
+ 72t_0h^2+(17t_0-1)h+t_0=0
+\]
+in the ring $\mathcal O$ of an unramified extension of degree at most two.
+Assume the reduction of the explicit elliptic curve $E_{h_0}$ in
+\eqref{I:ap:elliptic} is supersingular. Then, for every positive integer
+$N$ divisible by $p^2$,
+\begin{equation}\label{I:ap:ssdisks}
+ P_N(t_0)-p^2P_{N/p^2}(t_0)
+       \in p^{3v_p(N)-1}\mathbb Z_p.
+\end{equation}
+\end{theorem}
+The integral Frobenius--Taylor identity \eqref{I:ap:jet} was proved in the
+preceding section. No CM condition on
+$t_0$ occurs in the argument below.
+
+\begin{proof}
+The discriminant of the displayed quadratic is $1-34t_0+t_0^2$, a unit.
+Its leading and constant coefficients are units, since $p>3$ and $t_0$
+is a unit. Thus its two roots are units in an unramified extension of
+degree at most two. The identity $D(h_0)=h_0/t_0$ makes $D(h_0)$ a unit
+as well. Consequently both the elliptic curve and its $D$-twist have
+good reduction.
+
+The untwisted family has a rational point of exact order six:
+\[
+ R=\left(h(1+9h),\frac{hD}{2}\right),\qquad
+ 2R=\left(h^2,\frac{h^2(1+8h)}2\right),\qquad 3R=(0,0).
+\]
+These formulas follow directly from the addition law. The assumptions
+that $hD$ is a unit and $p>3$ preserve the exact order after reduction.
+
+First suppose $h_0\in\mathbb Z_p$. Its supersingular reduction is
+defined over $\mathbb F_p$. The Frobenius trace is divisible by $p$ and
+has absolute value at most $2\sqrt p<p$ for $p>3$, hence it is zero.
+This holds for its quadratic twist as well. Choose
+\[
+ \phi(h)=h_0+(h-h_0)^p.
+\]
+It is an integral Frobenius lift fixing $h_0$. On the rank-two fiber,
+$M^2=-pI$, so on the jet module $B^2=p^2I$. The first row of $M$ is
+divisible by $p$ by the Hodge filtration, hence the first row of
+$V=pM^{-1}=-M$ is divisible by $p$, and that of $B$ by $p^2$.
+
+Next suppose $h_0$ has residue degree two. Write $\iota$ for the
+nontrivial automorphism of $\mathcal O/\mathbb Z_p$. Its two roots are
+$h_0,h_0^\iota$. We may choose an integral Frobenius lift that exchanges
+them exactly: divide $h^p$ by the monic quadratic minimal polynomial,
+let $r_p(h)$ be the remainder, let $r(h)$ be the affine map exchanging
+the roots, and put
+\[
+ \phi(h)=h^p-r_p(h)+r(h).
+\]
+The irreducibility of the quadratic modulo $p$ gives
+$r_p\equiv r\pmod p$, so this is indeed a Frobenius lift.
+
+The reduction of $E_{h_0}$ over $\mathbb F_{p^2}$ is supersingular.
+Its Frobenius trace is $cp$ with
+$c\in\{-2,-1,0,1,2\}$: supersingularity gives divisibility by $p$,
+and the Weil bound gives this range. Its rational point of order six
+implies
+\[
+ 6\mid\#E_{h_0}(\mathbb F_{p^2})=p^2+1-cp,
+ \qquad cp\equiv2\pmod6.
+\]
+As $p\equiv\pm1\pmod6$, the only possible value of $c$ in the stated
+range is $c=2$ when $p\equiv1\pmod6$, or $c=-2$ when
+$p\equiv-1\pmod6$. The $p^2$-Frobenius is therefore scalar $\pm p$.
+Indeed its characteristic polynomial is $(T\mp p)^2$. If an elliptic
+endomorphism is nonzero, it is an isogeny and cannot be nilpotent;
+therefore the relation $(\pi\mp[p])^2=0$ forces $\pi=\pm[p]$ exactly.
+A quadratic twist over $\mathbb F_{p^2}$ changes at most the sign, so
+the same scalar assertion holds for $E_{h_0}^D$.
+
+Let $M_0,M_1$ be the rank-two matrices at $h_0,h_0^\iota$ with compatible
+bases. Their two-step product is $\epsilon pI$ for $\epsilon=\pm1$.
+Hence $V_0=\epsilon M_1$ and $V_1=\epsilon M_0$. Since each $M_i$ has
+first row divisible by $p$, so does each $V_i$. Consequently the jet
+matrices satisfy
+\[
+ B_0B_1=p^2I,\qquad\text{the first row of }B_i\text{ belongs to }p^2\mathcal O^3.
+\]
+The changes from symmetric-square coordinates to jets cancel in the
+product. Their first row is $(1,0,0)$, so they preserve the indicated
+first-row divisibility.
+
+Write $N=mp^s$ with $(m,p)=1$ and $s\geq2$. The trace argument applies
+to every cutoff $mp^j$, and the residual identity is
+$L P_{mp^j}=(mp^j)^3 t^{mp^j}(-A_{mp^j}+tA_{mp^j-1})$.
+The proof of \eqref{I:ap:jet} therefore gives the same identity with
+$Y_j$ formed from $P_{mp^j}(t(h))$, with error in $p^{3j}$.
+Apply it twice at the two points (the same point in residue degree one).
+Taking the first coordinate gives
+\[
+ P_{mp^s}(t_0)-p^2P_{mp^{s-2}}(t_0)
+       \in p^{3s}\mathcal O+p^2p^{3(s-1)}\mathcal O
+       =p^{3s-1}\mathcal O.
+\]
+Both polynomials have values in $\mathbb Z_p$, and the extension is
+unramified. Intersecting with $\mathbb Z_p$ proves
+\eqref{I:ap:ssdisks}. The argument is unchanged for every lift of the
+same allowed residue class, so it covers entire supersingular residue
+disks.
+\end{proof}
+
+\paragraph{First level and valuation consequence.}
+The same first-row divisibility and the $s=1$ jet identity give
+\[
+ P_{mp}(t_0)\in p^2\mathbb Z_p\qquad(m\geq1).
+\]
+Combining this with \eqref{I:ap:ssdisks} shows that for every $p\mid N$,
+\[
+ v_p(P_N(t_0))\geq 2\left\lceil\frac{v_p(N)}2\right\rceil.
+\]
+In the usual prime-power notation, for all $m\geq1$ and $s\geq2$,
+\[
+ P_{mp^s}(t_0)-p^2P_{mp^{s-2}}(t_0)
+ \in p^{3(s+v_p(m))-1}\mathbb Z_p.
+\]
+The extra $3v_p(m)$ follows by writing $m=p^a m_0$ with $(m_0,p)=1$
+and applying the theorem at level $s+a$.
+The exponent cannot uniformly be increased from $3s-1$ to $3s$:
+the exact finite calculation at $p=7$, $t_0=1$, $m=1$, $s=2$ gives
+\[
+ P_{49}(1)-49\equiv 2\cdot7^5\pmod{7^6}.
+\]
+
+\subsection{The two rational CM specializations}
+
+For $t_0=-1$, take $h_0=-1/6$. Then $D(h_0)=1/6$ and the curve
+$E_{h_0}$ is isomorphic over $\mathbb Z[1/6]$ to $y^2=x^3+1$.
+If $p\equiv2\pmod3$, the map $x\mapsto x^3$ permutes $\mathbb F_p$,
+so the trace of Frobenius is zero. Thus the theorem gives
+\[
+ \sum_{k<mp^s}(-1)^kA_k-p^2\sum_{k<mp^{s-2}}(-1)^kA_k
+ \in p^{3(s+v_p(m))-1}\mathbb Z_p
+\]
+for every such $p>3$, $m\geq1$, $s\geq2$.
+
+For $t_0=1$, the cover points are
+\[
+ 72h^2+16h+1=0,\qquad h_\pm=\frac{-4\pm\sqrt{-2}}{36}.
+\]
+At either root, write $a_2=(1+12h+24h^2)/4$ and
+$b=h^3(1+9h)$. Direct reduction modulo the quadratic gives
+$a_2^2=8b$. Hence $E_h$ is the quadratic twist with parameter $-a_2/4$
+of
+\[
+ E_0:\quad y^2=x^3-4x^2+2x,\qquad\Delta(E_0)=512.
+\]
+Moreover $a_2=(1+10h)/6$ and $\operatorname{Norm}(a_2)=1/216$, so
+this twist parameter is a unit at every $p>3$.
+
+The quotient of $E_0$ by $(0,0)$ is the degree-two isogenous curve
+$y^2=x^3+8x^2+8x$, its $-2$ quadratic twist. Over
+$\mathbb Q(\sqrt{-2})$ this gives an endomorphism $J$ with differential
+multiplier $\sqrt{-2}$, and hence $J^2=[-2]$. Its Galois conjugate is
+$-J$. At a prime with $(-2/p)=-1$, Frobenius anticommutes with $J$;
+therefore it has trace zero and $E_0$ is supersingular. The unit twists
+remain supersingular. This proves
+\[
+ \sum_{k<mp^s}A_k-p^2\sum_{k<mp^{s-2}}A_k
+ \in p^{3(s+v_p(m))-1}\mathbb Z_p
+\]
+for all $p\equiv5,7\pmod8$, $m\geq1$, and $s\geq2$.
+The argument includes $p=5,7$: it uses the characteristic-zero explicit
+unit twist, so it does not incorrectly exclude primes at which the
+reduction of $j=8000$ becomes $0$ or $1728$.
+
+\subsection{A finite supersingularity check}
+
+The theorem's hypothesis can be tested directly from its displayed
+elliptic curve, without an unproved identification with a truncated
+Ap\'ery Hasse polynomial. Reduce $h_0$ to $\bar h$ in $\mathbb F_{p^2}$
+(or $\mathbb F_p$ when possible), and form
+\[
+ \mathcal H_p(\bar h)=
+ [X^{p-1}]\left(X^3+\frac{1+12\bar h+24\bar h^2}{4}X^2
+                  +\bar h^3(1+9\bar h)X\right)^{(p-1)/2}.
+\]
+The standard Cartier--Manin formula for a smooth elliptic curve says
+that it is supersingular exactly when $\mathcal H_p(\bar h)=0$.
+The extra $D$-twist multiplies this coefficient by the nonzero factor
+$D(\bar h)^{(p-1)/2}$ and does not change its vanishing.
+
+\subsection{Sources and scope}
+
+The modular parametrizations used above are given in Beukers,
+\emph{Supercongruences using modular forms}, arXiv:2403.03301v3,
+Appendix Sections 8.10 and 9.5 \cite{III:Beukers2026}. Its Corollary 1.20 is a first-level
+ordinary Ap\'ery sum congruence. Sun--Ye, arXiv:2408.09776v4, Theorem 1.29
+and Section 9 prove the first-level ordinary alternating congruence
+and the two CM-value identities \cite{I:SunYe}. Bloch--Vanhove, arXiv:1309.5865,
+Section 4 gives the equivalent sunset elliptic pencil \cite{I:BlochVanhove}.
+The present supersingular result covers all positive cutoffs divisible
+by $p^2$ throughout the stated smooth supersingular disks. It excludes
+$p=2,3$, $t_0\equiv0$, and the two branch values modulo $p$; no assertion
+about these excluded loci is made here.
+
+
+\paragraph{Precise limits of the statements.}
+The supersingular theorem is relative to the open set
+$t_0(1-34t_0+t_0^2)\in\mathbb Z_p^\times$ and the explicit elliptic
+supersingularity condition. It makes no assertion at $p=3$ or at the
+excluded singular reductions. The two rational specializations are
+corollaries of the whole-disk theorem, rather than the only parameter
+values covered. The modulus $3s-1$ cannot uniformly be replaced by
+$3s$, as the displayed exact $p=7$ example shows.
+
+\appendix\paperanchors{I.app}
+
+\section{Reproducible finite checks}
+
+These checks are supplementary diagnostics; no finite computation is
+used in the proof.  A block-check script tested every odd prime
+$p\le43$, every $2\le d\le2p+2$, both signs satisfying $\chi=1$, and
+$m=1,2,3$.  It found no failures in $2583$ instances of
+\eqref{I:eq:block}, including nonunit cases.
+An independently run check tested ordinary cases with
+$2\le d\le12$ and both signs for $p=3,5,7$ through level $s=3$, and
+for $p=11,13,17,19,29,37$ through level $s=2$.
+All $178$ level-recursion instances passed.
+
+The following complete Python 3 listing reproduces both counts and
+checks.  It computes central binomial coefficients by exact integer
+recurrence before reducing modulo $p^2$.  It requires no external
+package, data file, or approximation to the unit root.
+
+\begin{lstlisting}
+def primes(bound):
+    return [p for p in range(3, bound + 1, 2)
+            if all(p % j for j in range(3, int(p**0.5) + 1, 2))]
+
+def coefficients(length, modulus):
+    b, inv4, q, out = 1, pow(4, -1, modulus), 1, []
+    for k in range(length):
+        out.append((b % modulus) * q % modulus)
+        b = b * 2 * (2*k + 1) // (k + 1)
+        q = q * inv4 % modulus
+    return out
+
+def terms(a, d, eps, modulus):
+    return [pow(x, d, modulus) * (eps if k % 2 else 1) % modulus
+            for k, x in enumerate(a)]
+
+block_checks = 0
+for p in primes(43):
+    modulus, N = p*p, (p-1)//2
+    a = coefficients(3*p, modulus)
+    for d in range(2, 2*p + 3):
+        for eps in (-1, 1):
+            if (-1)**(d*N) * eps**N != 1:
+                continue
+            c = terms(a, d, eps, modulus)
+            fp = sum(c[:p]) % modulus
+            for m in (1, 2, 3):
+                assert (sum(c[:m*p]) - fp*sum(c[:m])) % modulus == 0
+                block_checks += 1
+
+level_checks = 0
+for p in (3, 5, 7, 11, 13, 17, 19, 29, 37):
+    modulus = p*p
+    max_level = 3 if p <= 7 else 2
+    a = coefficients(p**max_level, modulus)
+    for d in range(2, 13):
+        for eps in (-1, 1):
+            c = terms(a, d, eps, modulus)
+            values = [sum(c[:p**s]) % modulus
+                      for s in range(1, max_level + 1)]
+            if values[0] % p == 0:
+                continue
+            for s in range(1, len(values)):
+                assert (values[s] - values[0]*values[s-1]) % modulus == 0
+                level_checks += 1
+
+assert block_checks == 2583
+assert level_checks == 178
+print("Block checks:", block_checks, "; level checks:", level_checks)
+\end{lstlisting}
+
+
+\section{Diagnostics for the level-dependent bound}
+
+An exact modular calculation tested
+\[
+ F_{p^{s+1}}(\eps)F_{p^{s-1}}(\eps)-F_{p^s}(\eps)^2
+                   \equiv0\pmod{p^{\nu_d(s)}}
+\]
+in ordinary cases with $2\le d\le12$ and both signs.
+The tested primes and maximum values of $s$ were
+$(3,5),(5,4),(7,3),(11,2),(13,2),(17,2)$, respectively.
+All $256$ instances passed.  These finite checks are supplementary and
+are not used in any proof above.  They do not test optimality of the
+exponent.
+Using the \texttt{coefficients} and \texttt{terms} functions in the
+verification appendix, the additional check is reproduced by:
+\begin{lstlisting}
+checks = 0
+for p, maxs in ((3,5), (5,4), (7,3), (11,2), (13,2), (17,2)):
+    modulus = p**(2*maxs + 1)
+    a = coefficients(p**(maxs + 1), modulus)
+    for d in range(2, 13):
+        for eps in (-1, 1):
+            c = terms(a, d, eps, modulus)
+            f = [1] + [sum(c[:p**j]) % modulus
+                       for j in range(1, maxs + 2)]
+            if f[1] % p == 0:
+                continue
+            for s in range(1, maxs + 1):
+                exponent = min(2*s, s+d-1)
+                assert (f[s+1]*f[s-1] - f[s]**2) % p**exponent == 0
+                checks += 1
+assert checks == 256
+print("Level-dependent cross-difference checks:", checks)
+\end{lstlisting}
+
+
+\section{Exact checks on supersingular Ap\'ery disks}
+
+The following standalone Python~3 program selects the residue classes
+using the Cartier--Manin coefficient of the displayed elliptic curve
+over $\mathbb F_{p^2}$. It does not select them by assuming the Ap\'ery
+congruence being tested. It checks all the selected smooth residue
+classes for the listed primes through $43$, at lifts $t$ and $t+p$,
+and also higher levels at several lifts. All $94$ exact checks pass.
+The finite computation is a diagnostic for the theorem, not its proof.
+
+\begin{lstlisting}[basicstyle=\ttfamily\fontsize{7.7}{8.7}\selectfont]
+#!/usr/bin/env python3
+"""Exact diagnostics for the supersingular Apery-disk theorem.
+
+Supersingularity is tested on the displayed elliptic curve over F_(p^2),
+not inferred from the Apery truncation being tested. No floating point.
+"""
+from math import comb
+
+
+def add(x, y, p):
+    return ((x[0]+y[0]) % p, (x[1]+y[1]) % p)
+
+
+def scale(x, c, p):
+    return (x[0]*c % p, x[1]*c % p)
+
+
+def mul(x, y, p, d):
+    return ((x[0]*y[0]+d*x[1]*y[1]) % p,
+            (x[0]*y[1]+x[1]*y[0]) % p)
+
+
+def power(x, k, p, d):
+    ans = (1, 0)
+    while k:
+        if k & 1:
+            ans = mul(ans, x, p, d)
+        x = mul(x, x, p, d)
+        k >>= 1
+    return ans
+
+
+def ss_residues(p):
+    d = next(i for i in range(2, p) if pow(i, (p-1)//2, p) == p-1)
+    roots = []
+    for t in range(1, p):
+        disc = (1-34*t+t*t) % p
+        if not disc:
+            continue
+        if pow(disc, (p-1)//2, p) == 1:
+            root = (next(i for i in range(p) if i*i % p == disc), 0)
+        else:
+            ratio = disc * pow(d, -1, p) % p
+            root = (0, next(i for i in range(p) if i*i % p == ratio))
+        h = scale(add((1-17*t, 0), root, p), pow(144*t, -1, p), p)
+        h2 = mul(h, h, p, d)
+        a = scale(add(add((1, 0), scale(h, 12, p), p), scale(h2, 24, p), p),
+                  pow(4, -1, p), p)
+        b = mul(power(h, 3, p, d), add((1, 0), scale(h, 9, p), p), p, d)
+        m = (p-1)//2
+        hasse = (0, 0)
+        for j in range(m//2+1):
+            term = mul(power(a, m-2*j, p, d), power(b, j, p, d), p, d)
+            hasse = add(hasse, scale(term, comb(m, j)*comb(m-j, j), p), p)
+        if hasse == (0, 0):
+            roots.append(t)
+    return roots
+
+
+def apery_coefficients(length, modulus):
+    last, a = 0, 1
+    result = []
+    for n in range(length):
+        result.append(a % modulus)
+        numerator = (2*n+1)*(17*n*(n+1)+5)*a-n**3*last
+        denominator = (n+1)**3
+        assert numerator % denominator == 0
+        last, a = a, numerator//denominator
+    return result
+
+
+def evaluate(coefficients, t, modulus):
+    value = 0
+    for c in reversed(coefficients):
+        value = (value*t+c) % modulus
+    return value
+
+
+def valuation_residue(value, p, precision):
+    value %= p**precision
+    if value == 0:
+        return f">={precision}"
+    v = 0
+    while value % p == 0:
+        value //= p
+        v += 1
+    return v
+
+
+def main():
+    rows = []
+    precision = 10
+    for p in (5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43):
+        modulus = p**precision
+        coeffs = apery_coefficients(p*p, modulus)
+        residues = ss_residues(p)
+        for residue in residues:
+            for t in (residue, residue+p):
+                defect = evaluate(coeffs, t, modulus)-p*p
+                val = valuation_residue(defect, p, precision)
+                assert isinstance(val, str) or val >= 5
+                rows.append(dict(p=p, t=t, s=2, m=1, defect_valuation=val))
+        print(p, residues, flush=True)
+    for p, t, depth in ((5, 6, 4), (5, 11, 4), (5, 4, 4),
+                        (5, 9, 4), (7, 8, 3), (7, 15, 3),
+                        (11, 10, 3), (11, 21, 3)):
+        assert t % p in ss_residues(p)
+        precision = 3*depth+4
+        modulus = p**precision
+        coeffs = apery_coefficients(p**depth, modulus)
+        vals = {s:evaluate(coeffs[:p**s], t, modulus) for s in range(depth+1)}
+        for s in range(2, depth+1):
+            val = valuation_residue(vals[s]-p*p*vals[s-2], p, precision)
+            assert isinstance(val, str) or val >= 3*s-1
+            rows.append(dict(p=p, t=t, s=s, m=1, defect_valuation=val))
+    assert len(rows) == 94
+    print(f'{len(rows)} exact supersingular-disk checks passed')
+
+
+if __name__ == '__main__':
+    main()
+
+\end{lstlisting}
+
+
+
+
+\clearpage\endgroup
+
+% Source: Beukers_Delaygue_All_Levels_Lifted_Reflection.tex
+\begingroup
+
+\openpaper{II}{All-Level Beukers--Delaygue Supercongruences via Lifted Reflection}{All-level lifted reflection}{10 November 2026}{{\small Research manuscript prepared for Keio\par}\smallskip }
+
+
+
+\begin{abstract}
+Let $F_L(\epsilon)=\sum_{n<L}((1/2)_n/n!)^d\epsilon^n$, where
+$d\ge2$ and $\epsilon=\pm1$. For every odd prime $p$ for which
+$F_p(\epsilon)$ is a $p$-adic unit, we prove
+\[
+ F_{mp^s}(\epsilon)-f_p(\epsilon)F_{mp^{s-1}}(\epsilon)
+                  \in p^{2s}\mathbb Z_p
+ \qquad(m,s\ge1).
+\]
+Here $f_p(\epsilon)$ is the limiting quotient of successive prime-power
+truncations; the proof also constructs this limit. At $m=1$ this is
+the full statement of Beukers--Delaygue's Conjecture~1.5.
+The proof treats both ranges $s<d$ and $s\ge d$ without a restriction
+on the size of $p$. It identifies the carry contribution in the
+analytic digit operator as an exact weighted finite difference.
+A two-component integral lift then has rank at most one modulo $p^2$,
+which gives a two-digit gain at every normalized iteration.
+All analytic interpolation and operator identities are proved here;
+no unpublished supercongruence theorem is assumed.
+\end{abstract}
+
+\noindent\fbox{\begin{minipage}{0.94\textwidth}
+\textbf{Scope and research status.}
+The theorem covers every level of Conjecture~1.5 under its original
+unit hypothesis, including $p=3$. It also allows every positive
+truncation multiplier $m$, without assuming $F_m(\epsilon)$ is a unit.
+The proof has received internal independent checks. This manuscript
+does not claim completed external peer review or certified literature
+priority. The stronger special exponents and modular identifications
+in Conjectures~1.3 and~1.4 are separate statements.
+\end{minipage}}
+\medskip
+
+\section{Statement and proof strategy}
+\label{II:sec:bdx}
+
+Fix an odd prime $p$, an integer $d\ge2$, and $\epsilon\in\{1,-1\}$.
+Write
+\[
+ \alpha_n=\frac{(1/2)_n}{n!}=4^{-n}\binom{2n}{n},\qquad
+ F_L(\epsilon)=\sum_{n=0}^{L-1}\alpha_n^d\epsilon^n,
+ \qquad N=\frac{p-1}{2}.
+\]
+All coefficients belong to $\mathbb Z_p$. The following theorem proves
+the mathematical statement of Beukers--Delaygue's Conjecture~1.5 \cite{I:BD}, with
+the additional allowance of arbitrary truncation multipliers.
+
+\begin{theorem}[All levels and all lengths]\label{II:bdx:main}
+Assume $F_p(\epsilon)\in\mathbb Z_p^\times$.
+The limit
+\[
+ f_p(\epsilon)=\lim_{s\to\infty}
+       \frac{F_{p^s}(\epsilon)}{F_{p^{s-1}}(\epsilon)}
+\]
+exists in $\mathbb Z_p^\times$. For all integers $m,s\ge1$,
+\begin{equation}\label{II:bdx:alllength}
+ F_{mp^s}(\epsilon)-f_p(\epsilon)F_{mp^{s-1}}(\epsilon)
+                      \in p^{2s}\mathbb Z_p.
+\end{equation}
+There is no unit condition on $F_m(\epsilon)$.
+Equivalently, for every positive integer $K$ divisible by $p$,
+\begin{equation}\label{II:bdx:allcutoff}
+ F_K(\epsilon)-f_p(\epsilon)F_{K/p}(\epsilon)
+                      \in p^{2v_p(K)}\mathbb Z_p.
+\end{equation}
+The theorem includes $p=3$ and imposes no condition relating $p$ and $d$.
+\end{theorem}
+
+The proof replaces a direct parity estimate by an operator on a larger
+integral space. An exact finite-difference term records the failure of
+the full digit operator to commute with reflection. The larger space
+retains that term, and its operator contracts every normalized
+nonconstant component by $p^2$ at each iteration. No inverse of a
+finite-difference operator, and no assertion that its image is closed,
+is required.
+
+\section{Integral analytic digit functions}
+
+Let $\mathcal A=\mathbb Z_p\langle a\rangle$ be the algebra of restricted
+power series, with its Gauss norm. Divisibility in this algebra always
+means coefficientwise divisibility. Integral affine substitutions and
+evaluations at points of $\mathbb Z_p$ have norm at most one.
+
+\begin{lemma}\label{II:bdx:digits}
+There are functions $g_t\in\mathcal A$, $0\le t<p$, satisfying
+\[
+ g_t(a)=\frac{\alpha_{pa+t}}{\alpha_a}
+ \quad\hbox{for every nonnegative integer }a.
+\]
+For $0\le t\le N$, there is a $\beta_t\in\mathbb Z_p$ such that
+\[
+ g_t(a)\equiv\alpha_t(1+p\beta_t a)\pmod{p^2\mathcal A}.
+\]
+In particular its constant term is $\alpha_t$ and
+$g_t\equiv\alpha_t\pmod{p\mathcal A}$. For $N<t<p$,
+\begin{equation}\label{II:bdx:bt}
+ g_t(a)=p(a+1/2)b_t(a),\qquad b_t\in\mathcal A.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Cancellation of factors divisible by $p$ gives, initially at
+nonnegative integer $a$,
+\[
+ \frac{g_0(a+1)}{g_0(a)}
+ =C\frac{\prod_{0\le t<p,\ t\ne N}(1+pa/(t+1/2))}
+             {\prod_{i=1}^{p-1}(1+pa/i)},\qquad
+ C=\frac{\prod_{0\le t<p,\ t\ne N}(t+1/2)}{(p-1)!}.
+\]
+Both lists of constant unit factors reduce to
+$\mathbb F_p^\times$, so $C\in1+p\mathbb Z_p$ and, for $j\ge1$,
+\[
+ s_j=\sum_{0\le t<p,\ t\ne N}(t+1/2)^{-j}
+                         -\sum_{i=1}^{p-1}i^{-j}\in p\mathbb Z_p.
+\]
+Define the polynomial
+\[
+ P_j(a)=\sum_{v=0}^{j}
+    \left\{\begin{matrix}j\\v\end{matrix}\right\}
+     \frac{a(a-1)\cdots(a-v)}{v+1}.
+\]
+The braces are Stirling numbers of the second kind. Thus
+$P_j(a)=\sum_{u=0}^{a-1}u^j$ at nonnegative integers, and every coefficient
+of $P_j$ has valuation at least $-\lfloor\log_p(j+1)\rfloor$.
+The series
+\[
+ L(a)=a\log C+
+    \sum_{j\ge1}\frac{(-1)^{j-1}p^js_j}{j}P_j(a)
+\]
+converges in $\mathcal A$, since its $j$th nonconstant summand has
+coefficient valuations at least
+\[
+ j+1-v_p(j)-\lfloor\log_p(j+1)\rfloor\ge2,
+\]
+and these bounds tend to infinity. The inequality is immediate for
+$j=1,2,3$; for $j\ge4$ it follows from $p\ge3$ and
+$3^{j-1}\ge j(j+1)$. In particular
+$L\in p\mathcal A$ and $L-a\log C\in p^2\mathcal A$.
+Set $g_0=\exp L$. Its difference equation and value $g_0(0)=1$
+give the required integer values, and
+$g_0\equiv1+a\log C\pmod{p^2\mathcal A}$.
+
+For $1\le t<p$, set
+\[
+ g_t(a)=g_0(a)4^{-t}
+     \frac{\prod_{j=1}^{2t}(2pa+j)}{\prod_{j=1}^{t}(pa+j)^2}.
+\]
+All denominator constants are units. This product proves both the
+integer-value assertion and the affine congruence when $t\le N$.
+When $t>N$, its numerator contains the factor
+$2pa+p=2p(a+1/2)$; cancelling this factor gives
+\eqref{II:bdx:bt} in $\mathcal A$.
+\end{proof}
+
+\section{Both exact reflections}
+
+Let $r(a)=-a-1/2$ and $r_1(a)=-a-3/2$.
+
+\begin{lemma}\label{II:bdx:reflections}
+The digit functions satisfy the following exact identities in
+$\mathcal A$:
+\begin{align}
+ g_{N-t}(r(a))&=(-1)^N g_t(a)
+                  &&(0\le t\le N),\label{II:bdx:lowerreflection}\\
+ b_{p+N-t}(r_1(a))&=(-1)^{N+1}b_t(a)
+                  &&(N<t<p).\label{II:bdx:upperreflection}
+\end{align}
+\end{lemma}
+\begin{proof}
+Put $N_j=(p^j-1)/2$. For each fixed nonnegative integer $n$,
+\[
+ \frac{\alpha_{N_j-n}}{\alpha_{N_j}}
+   =\prod_{k=0}^{n-1}\frac{N_j-k}{N_j-k-1/2}
+                 \longrightarrow\alpha_n.
+\]
+Also
+\[
+ \frac{\alpha_{N_j}}{\alpha_{N_{j-1}}}
+      =g_N(N_{j-1})\longrightarrow C_*:=g_N(-1/2).
+\]
+For fixed $a\ge0$ and $0\le t\le N$, use
+$a_j=N_{j-1}-a$ and $n=pa+t$. The equality
+$pa_j+N-t=N_j-n$ and the preceding limits give
+\[
+ g_{N-t}(r(a))=C_*g_t(a).
+\]
+Continuity extends this equality to $\mathbb Z_p$, hence to an
+identity of restricted power series. Applying it twice gives
+$C_*^2=1$. Since $g_N\equiv\alpha_N\equiv(-1)^N\pmod p$,
+one has $C_*=(-1)^N$. This proves \eqref{II:bdx:lowerreflection}.
+
+For $N<t<p$, let $t^*=p+N-t$, which also lies strictly between $N$
+and $p$. Now use $a_j=N_{j-1}-a-1$, so that
+$pa_j+t^*=N_j-(pa+t)$. The same finite-product limits give
+\[
+ g_{t^*}(r_1(a))
+   =(-1)^N\frac{\alpha_{pa+t}}{\alpha_{a+1}}
+   =(-1)^N\frac{a+1}{a+1/2}g_t(a)
+ \qquad(a\ge0).
+\]
+Using \eqref{II:bdx:bt} on both sides cancels the displayed factor and
+gives \eqref{II:bdx:upperreflection}. This last identity is between
+elements of $\mathcal A$, so continuity proves it everywhere.
+\end{proof}
+
+Put $\chi=(-1)^{dN}\epsilon^N$. The ordinary assumption forces
+\begin{equation}\label{II:bdx:chi}
+ \chi=1.
+\end{equation}
+Indeed $\alpha_t\equiv(-1)^t\binom Nt\pmod p$ for $0\le t\le N$,
+so $\alpha_{N-t}\equiv(-1)^N\alpha_t\pmod p$.
+The other digits are divisible by $p$. Reflection of the lower-digit
+sum therefore gives $F_p(\epsilon)\equiv\chi F_p(\epsilon)\pmod p$.
+Since $p$ is odd and the sum is a unit, \eqref{II:bdx:chi} follows.
+
+\section{The finite-difference identity and exact symmetrization}
+
+Define bounded integral operators on $\mathcal A$ by
+\[
+ (Sf)(a)=\sum_{t=0}^{p-1}\epsilon^t g_t(a)^d f(pa+t),
+ \qquad (Rf)(a)=f(-a-1/2),
+\]
+and
+\begin{equation}\label{II:bdx:D}
+ (Df)(a)=a^d f(a)-\epsilon(a+1/2)^d f(a+1),
+ \qquad (Uf)(a)=g_0(a)^d f(pa).
+\end{equation}
+Let
+\[
+ (Bf)(a)=\sum_{t=N+1}^{p-1}\epsilon^t b_t(a)^d f(pa+t),
+ \qquad (E_-f)(a)=f(a-1).
+\]
+The upper-digit part of $S$ is consequently
+$H=p^d(a+1/2)^dB$; all these operators are bounded and integral.
+
+\begin{lemma}[Two exact operator identities]\label{II:bdx:identities}
+One has
+\begin{align}
+ SD&=p^dDU,\label{II:bdx:SD}\\
+ RSR-S&=\epsilon p^dDE_-B.\label{II:bdx:commutator}
+\end{align}
+Consequently, with
+\begin{equation}\label{II:bdx:TV}
+ T=\frac{S+RSR}{2},\qquad V=-\frac\epsilon2 E_-B,
+\end{equation}
+the operator $T$ commutes with $R$ and
+\begin{equation}\label{II:bdx:split}
+ S=T+p^dDV.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The summands of $SDf$ telescope by the recurrence
+$\alpha_{n+1}/\alpha_n=(n+1/2)/(n+1)$. The two surviving terms are
+\[
+ p^d a^d g_0(a)^d f(pa)
+ -\epsilon p^d(a+1/2)^d g_0(a+1)^d f(p(a+1)),
+\]
+which proves \eqref{II:bdx:SD}. This may first be checked at nonnegative
+integers; the displayed functions all belong to $\mathcal A$, so the
+identity holds there. No division by $a+1$ is needed in the final
+identity.
+
+The lower-digit operator commutes with $R$, by
+\eqref{II:bdx:lowerreflection}, \eqref{II:bdx:chi}, and
+$r(pa+t)=pr(a)+(N-t)$.
+For the upper digits, \eqref{II:bdx:upperreflection} and
+$pr_1(a)+(p+N-t)=r(pa+t)$ give
+\[
+ (Bf)(r_1(a))=\epsilon(-1)^d(BRf)(a).
+\]
+It follows that
+\[
+ (RHf)(a)=\epsilon p^d a^d(BRf)(a-1),
+ \qquad (HRf)(a)=p^d(a+1/2)^d(BRf)(a).
+\]
+Hence $RS-SR=\epsilon p^dDE_-BR$.
+Multiplication on the right by $R$, with $R^2=1$, proves
+\eqref{II:bdx:commutator}. The remaining assertions follow immediately.
+All divisions used in \eqref{II:bdx:TV} are by the unit $2$.
+\end{proof}
+
+The finite-difference operator has a useful interpretation. For
+\[
+ \mathcal L_m(f)=\sum_{a=0}^{m-1}\alpha_a^d\epsilon^a f(a),
+\]
+direct telescoping gives
+\[
+ \mathcal L_m(Df)=-m^d\alpha_m^d\epsilon^m f(m).
+\]
+In particular this boundary term is divisible by $p^{ds}$ when
+$m=p^s$. The proof below retains $Df$ in an integral state space
+instead of discarding it at any finite stage.
+
+\section{An integral lift with two-digit contraction}
+
+Let $\mathcal A^+=\{e\in\mathcal A:Re=e\}$, and set
+\[
+ \mathcal M=\mathcal A^+\oplus\mathcal A,\qquad
+ q(e,b)=e+Db.
+\]
+Equip this complete $\mathbb Z_p$-module with the maximum Gauss norm.
+Define
+\begin{equation}\label{II:bdx:lift}
+ \mathcal K(e,b)=\bigl(Te,\ p^dVe+p^dUb\bigr).
+\end{equation}
+It is a bounded integral endomorphism because $T$ preserves
+$\mathcal A^+$. Equations \eqref{II:bdx:SD} and \eqref{II:bdx:split} give
+the exact intertwining identity
+\begin{equation}\label{II:bdx:intertwine}
+ q\mathcal K=S q.
+\end{equation}
+
+Put $c=-1/4$, $v_0=(1,0)$, and $\ell(e,b)=e(c)$.
+Then $\ell(v_0)=1$, and $\mathcal M=\mathbb Z_pv_0\oplus\ker\ell$.
+The crucial improvement is
+\begin{equation}\label{II:bdx:rankone}
+ (1-v_0\ell)\mathcal K(\mathcal M)\subseteq p^2\ker\ell,
+ \qquad \ell(\mathcal K v_0)\in\mathbb Z_p^\times.
+\end{equation}
+To see the first assertion, Lemma~\ref{II:bdx:digits} and
+$f(pa+t)\equiv f(t)+pa f'(t)\pmod{p^2\mathcal A}$ show that $Sf$
+is affine modulo $p^2$ for every $f\in\mathcal A$; the upper digits
+vanish modulo $p^2$ because $d\ge2$.
+Since $R$ is an integral affine substitution, $RSRf$ is also affine
+modulo $p^2$. For $e\in\mathcal A^+$, $Te$ is even under $a\mapsto-a-1/2$.
+An affine even function modulo $p^2$ is constant modulo $p^2$,
+so $Te-Te(c)\in p^2\mathcal A^+$. The second component of
+\eqref{II:bdx:lift} is divisible by $p^d$, hence by $p^2$.
+Finally $\ell(\mathcal K v_0)\equiv F_p(\epsilon)\pmod p$,
+which proves the unit assertion.
+
+\begin{lemma}[Normalized iteration]\label{II:bdx:iteration}
+There is a unit $\lambda\in\mathbb Z_p^\times$ such that
+\begin{equation}\label{II:bdx:statecongruence}
+ \mathcal K^s v_0-\lambda\mathcal K^{s-1}v_0
+                    \in p^{2s}\mathcal M\qquad(s\ge1).
+\end{equation}
+\end{lemma}
+\begin{proof}
+On $\mathcal Q=v_0+p^2\ker\ell$ define
+$\mathcal N(x)=\mathcal Kx/\ell(\mathcal Kx)$.
+By \eqref{II:bdx:rankone}, the denominator is a unit and
+$\mathcal N(\mathcal Q)\subseteq\mathcal Q$.
+For $x,y\in\mathcal Q$ one has the exact identity
+\[
+ \mathcal N(x)-\mathcal N(y)
+ =\frac{\mathcal K(x-y)-\ell(\mathcal K(x-y))\mathcal N(y)}
+              {\ell(\mathcal Kx)}.
+\]
+If $x-y\in p^r\ker\ell$, then the numerator equals
+\[
+ (1-v_0\ell)\mathcal K(x-y)
+ -\ell(\mathcal K(x-y))(\mathcal N(y)-v_0),
+\]
+which belongs to $p^{r+2}\ker\ell$ by \eqref{II:bdx:rankone}.
+Thus normalized iteration gains two powers of $p$ at every step.
+
+Set $h_0=v_0$ and $h_s=\mathcal N(h_{s-1})$.
+Then $h_s-h_{s-1}\in p^{2s}\ker\ell$, so $h_s$ converges to
+$h_\infty\in\mathcal Q$. Write
+\[
+ Z_s=\ell(\mathcal K^s v_0),\quad
+ z_s=Z_s/Z_{s-1}=\ell(\mathcal K h_{s-1}),\quad
+ \lambda=\ell(\mathcal K h_\infty).
+\]
+Inductively $Z_s$ and $z_s$ are units and
+$h_s=\mathcal K^s v_0/Z_s$. Since
+$h_\infty-h_{s-1}\in p^{2s}\mathcal M$, one has
+$z_s-\lambda\in p^{2s}\mathbb Z_p$.
+The identity
+\[
+ \mathcal K^s v_0-\lambda\mathcal K^{s-1}v_0
+ =Z_{s-1}\bigl(z_s(h_s-h_{s-1})
+                       +(z_s-\lambda)h_{s-1}\bigr)
+\]
+now proves \eqref{II:bdx:statecongruence}.
+\end{proof}
+
+\section{Return to the original truncation lengths}
+
+Applying the bounded integral map $q$ to
+\eqref{II:bdx:statecongruence}, and using $q(v_0)=1$ and
+\eqref{II:bdx:intertwine}, gives the uniform function congruence
+\begin{equation}\label{II:bdx:functioncongruence}
+ S^s1-\lambda S^{s-1}1\in p^{2s}\mathcal A.
+\end{equation}
+The exact digit expansion gives, for every $m\ge1$ and $s\ge0$,
+\begin{equation}\label{II:bdx:prefix}
+ \mathcal L_m(S^s1)=F_{mp^s}(\epsilon).
+\end{equation}
+Indeed an iterated digit sequence represents a unique
+$0\le b<p^s$; the product of the $g_t$ factors telescopes to
+$\alpha_{p^sa+b}/\alpha_a$. Since $p$ is odd, the accompanying sign
+after multiplication by $\epsilon^a$ is $\epsilon^{p^sa+b}$.
+This is an exact rational identity and needs no unit assumption on
+$\alpha_a$ or $F_m(\epsilon)$.
+
+For $m=1$, $F_{p^s}(\epsilon)=(S^s1)(0)$.
+Since $h_s\in v_0+p^2\ker\ell$ and $q$ is integral,
+$q(h_s)(0)\in1+p^2\mathbb Z_p$. Hence these truncations are units,
+and \eqref{II:bdx:functioncongruence} implies
+\[
+ \frac{F_{p^s}(\epsilon)}{F_{p^{s-1}}(\epsilon)}
+                    \equiv\lambda\pmod{p^{2s}}.
+\]
+This proves existence of the stated limit and identifies it with
+$\lambda=f_p(\epsilon)$.
+Finally apply the bounded integral functional $\mathcal L_m$ to
+\eqref{II:bdx:functioncongruence} to obtain \eqref{II:bdx:alllength}.
+Writing $K=mp^{v_p(K)}$ with $p\nmid m$ yields
+\eqref{II:bdx:allcutoff} and completes the proof of
+Theorem~\ref{II:bdx:main}.
+
+\paragraph{Why the earlier parity estimate lost precision.}
+In the original function space the upper digits feed a reflection-odd
+component of size $p^d$, whose naive estimate subsequently gains only
+one digit per iteration. Identity \eqref{II:bdx:commutator} identifies
+this contribution as an exact $D$ term. The lifted space stores its
+primitive as the second coordinate; \eqref{II:bdx:SD} makes that coordinate
+gain $d\ge2$ digits at every iteration. The argument therefore removes
+the obstruction rather than assuming its value vanishes at the
+evaluation point $a=0$.
+
+
+\section{Consequences and precise scope}
+
+Taking $m=1$ in Theorem~\ref{II:bdx:main} gives the complete statement of
+Conjecture~1.5 of \cite{I:BD}. Taking $s=1$ gives Conjecture~1.2, since
+$F_1(\epsilon)=1$. In particular, the range $s\ge d$ left open by
+the earlier direct parity estimate is included in the same induction
+as the smaller levels.
+
+\begin{center}
+\begin{tabular}{@{}p{0.28\textwidth}p{0.62\textwidth}@{}}
+\toprule
+Parameter or condition & Range in this manuscript \\
+\midrule
+Prime & Every odd prime, including $3$ \\
+Number of parameters & Every integer $d\ge2$ \\
+Sign & $\epsilon\in\{1,-1\}$ \\
+Ordinary hypothesis & $F_p(\epsilon)\in\mathbb Z_p^\times$ \\
+Level & Every $s\ge1$, including $s\ge d$ \\
+Truncation multiplier & Every $m\ge1$; $F_m(\epsilon)$ may be a nonunit \\
+Proved exponent & $2s$, or $2v_p(K)$ for a cutoff $K$ divisible by $p$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The unit hypothesis is exactly the one in the original conjecture.
+The theorem makes no assertion for $p=2$, for other values of
+$\epsilon$, or for nonunit $F_p(\epsilon)$.
+Neither the larger special exponents in Conjecture~1.3 nor the
+modular-coefficient identifications in Conjecture~1.4 follow from
+Theorem~\ref{II:bdx:main} alone.
+
+The earlier direct parity bound
+$\min(2s,s+d-1)$ records the upper-digit contribution only by its size.
+The operator identity \eqref{II:bdx:SD} records additional exact structure:
+the primitive of every carry correction acquires $p^d$ at its next
+iteration. Keeping that primitive as a separate coordinate removes
+the artificial one-digit loss. This is an argument for every level,
+not a finite verification followed by extrapolation.
+
+\appendix\paperanchors{II.app}
+\section{Reproducible exact diagnostics}
+
+The proof does not depend on the following computations. They test
+the two necessary finite identities
+\[
+ F_{p^{s+1}}F_{p^{s-1}}-F_{p^s}^{2}\equiv0\pmod{p^{2s}}
+\]
+and
+\[
+ F_{mp^s}F_{p^{s-1}}-F_{p^s}F_{mp^{s-1}}
+                          \equiv0\pmod{p^{2s}},
+ \qquad m=2,3,4,
+\]
+with a common sign $\epsilon$ in every factor. We use the prime and
+maximum-level pairs
+\[
+ (p,s_{\max})=(3,8),\ (5,6),\ (7,4),\ (11,3),
+\]
+with $2\le d\le8$ and both signs whenever $F_p(\epsilon)$ is a unit.
+All $656$ checks pass.
+Of these checks, $236$ are in the previously uncovered range $s\ge d$.
+
+The program uses exact modular arithmetic. In updating $\alpha_n$ it
+separates powers of $p$ before inverting denominator units, so no
+division by a nonunit modulo $p^k$ is performed. The recorded valuations
+are lower bounds when a residue is zero at the working precision.
+
+\begin{lstlisting}
+from time import perf_counter
+
+def coeffs(p, maxn, prec):
+    mod=p**prec
+    u,v=1,0
+    out=[]
+    for n in range(maxn):
+        out.append(u*pow(p,v,mod)%mod if v<prec else 0)
+        a,b=2*n+1,2*n+2
+        while a%p==0:
+            a//=p;v+=1
+        while b%p==0:
+            b//=p;v-=1
+        u=u*a*pow(b,-1,mod)%mod
+        assert v>=0
+    return out
+
+def vp(n,p,prec):
+    if n==0:return prec
+    ans=0
+    while n%p==0:ans+=1;n//=p
+    return ans
+
+start=perf_counter()
+checks=0
+counts=[]
+for p,maxs in ((3,8),(5,6),(7,4),(11,3)):
+    prec=2*maxs+3
+    mod=p**prec
+    largest=max(p**(maxs+1),4*p**maxs)
+    a=coeffs(p,largest,prec)
+    for d in range(2,9):
+        for eps in (-1,1):
+            prefix=[0]
+            for n,x in enumerate(a):
+                prefix.append((prefix[-1]+pow(x,d,mod)*(eps if n%2 else 1))%mod)
+            if prefix[p]%p==0:continue
+            vals=[prefix[p**s] for s in range(maxs+2)]
+            min_excess=prec
+            for s in range(1,maxs+1):
+                defect=(vals[s+1]*vals[s-1]-vals[s]**2)%mod
+                assert defect%p**(2*s)==0,(p,d,eps,s,'cross',vp(defect,p,prec))
+                checks+=1
+                min_excess=min(min_excess,vp(defect,p,prec)-2*s)
+                for m in (2,3,4):
+                    defect=(prefix[m*p**s]*vals[s-1]-vals[s]*prefix[m*p**(s-1)])%mod
+                    assert defect%p**(2*s)==0,(p,d,eps,s,m,vp(defect,p,prec))
+                    checks+=1
+            counts.append((p,d,eps,maxs,min_excess))
+    print('prime',p,'done',flush=True)
+print('all exact checks passed:',checks)
+print('seconds:',round(perf_counter()-start,2))
+print('metadata (p,d,eps,maxs,min consecutive excess):',counts)
+
+assert checks == 656
+previously_uncovered = sum(4*max(0, maxs-d+1)
+                          for p,d,eps,maxs,excess in counts)
+assert previously_uncovered == 236
+print("Checks in the former s >= d gap:", previously_uncovered)
+
+\end{lstlisting}
+
+
+
+\clearpage\endgroup
+
+
+
+% Source: AESZ4_Level54_Attractor_Supercongruence_Dossier.tex
+\begingroup
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\C}{\mathbb C}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Zp}{\mathbb Z_p}
+\newcommand{\Qp}{\mathbb Q_p}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\Frob}{\operatorname{Frob}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\Sym}{\operatorname{Sym}}
+\newcommand{\Fil}{\operatorname{Fil}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\AESZ}{\mathrm{AESZ}}
+\newcommand{\PF}{\mathcal L}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\vp}{v_p}
+
+\openpaper{III}{The AESZ4 Attractor and Its Residual Monodromy}{The AESZ4 attractor and residual monodromy}{10 November 2026, revised for this edition}{{\small QEEDDD Verifiable-Mathematical-Reasoning-Corpus Project\par}\smallskip }
+\allowdisplaybreaks\setlist{nosep}
+
+\begin{abstract}
+For the fourth-order hypergeometric system AESZ4, we compute the exact
+Picard--Fuchs error of every truncation and classify the residual
+monodromy of the standard companion lattice at every auxiliary prime.
+The geometric action is irreducible modulo $\ell\ne3$. Modulo $3$
+it is a single regular unipotent block, with a unique invariant flag.
+A modular-polynomial calculation excludes a generic fiberwise
+$2$-isogeny between the two elliptic factors. We record the ordinary
+unit-root criterion that motivated the search for a rank-two summand,
+including the integral comparison that this criterion requires.
+Part~IV constructs the summand at the attractor and proves the
+special-value congruence for every $p\ge5$.
+\end{abstract}
+
+\section{The two Frobenius comparisons}
+
+Let $V_{z_*}$ denote the rank-four constituent of the third cohomology
+selected by the AESZ4 family. Its middle cohomology in the Hesse
+fiber-product model has dimension $40$. Two comparisons enter the
+proof of Beukers's congruence. The first identifies a rank-two
+summand of $V_{z_*}$, its holomorphic line, and its Frobenius
+polynomial $X^2-a_p X+p^3$. The second connects the action of
+Frobenius on this line to the finite hypergeometric sum modulo $p^3$.
+
+Theorem~\ref{III:thm:residual} below controls the differential equation
+at the cutoff. Theorem~\ref{III:thm:resmon} classifies the residual
+monodromy of the varying family. At $z_*=-1/5832$ there are additional
+symmetries of the special fiber. Part~IV, Appendix~\ref{IV:app:tetra},
+uses them to construct the required summand, and its
+Lemma~\ref{IV:lem:div} supplies the integral comparison.
+
+\section{The conjecture, the family, and normalizations}
+
+Define
+\[
+ F(t)={}_4F_3\!\left(
+ \begin{matrix}\frac13,\frac13,\frac23,\frac23\\1,1,1\end{matrix};t\right)
+ =\sum_{n\ge0}c_nt^n,
+ \qquad
+ c_n=\frac{(1/3)_n^2(2/3)_n^2}{(n!)^4}.
+\]
+For an integer $N\ge1$ write
+\[
+ P_N(t)=\sum_{n=0}^{N-1}c_nt^n.
+\]
+Because
+\[
+ \binom{-1/3}{k}^2\binom{-2/3}{k}^2
+ =\frac{(1/3)_k^2(2/3)_k^2}{(k!)^4},
+\]
+Beukers's sum is exactly $P_p(-1/8)$.
+
+\begin{conjecture}[Good-prime form of Beukers, Conjecture 1.28]\label{III:conj:beukers}
+For every odd prime $p\neq3$,
+\[
+ P_p\!\left(-\frac18\right)\equiv a_p\pmod{p^3},
+\]
+where $a_p$ is the coefficient of $q^p$ in the rational newform
+\[
+ f_{54}(q)=q+2q^2+4q^4+3q^5+29q^7+8q^8+\cdots
+\]
+of weight $4$ and level $54$, LMFDB label $54.4.a.c$.
+\end{conjecture}
+
+
+The printed statement in \cite[Conjecture~1.28]{III:Beukers2026} has
+$p\ne3$. At $p=2$ the sum is $161/162$, whereas $a_2=2$.
+Their difference has $2$-adic valuation $-1$. The good-prime statement
+above is proved in Part~IV, Theorem~\ref{IV:thm:main}.
+
+The hypergeometric coordinate is related to the mirror-bicubic coordinate $z$ by
+\[
+ t=729z.
+\]
+Thus the attractor point
+\[
+ z_*=-\frac1{5832}
+\]
+corresponds to
+\[
+ t_*=-\frac18.
+\]
+The modular decomposition of the rank-four constituent uses the weight-$4$ form $54.4.a.c$ and the weight-$2$ form
+$54.2.a.a$.
+
+
+\section{Excellent lifts and specialization}
+
+Coefficientwise congruences of Dwork type motivated the original
+ordinary approach \cite{III:BV3,III:CompleteEdition}. For example, the
+formal descent one might seek for the Hadamard square of the cubic
+simplicial period has the shape
+\[
+ \frac{P_{mp^s}(t)}{F(t)}\equiv
+ \frac{P_{mp^{s-1}}(\sigma(t))}{F(\sigma(t))}
+ \pmod{p^{2s}} .
+\]
+Here $m,s\ge1$ and $\sigma$ denotes a prospective excellent
+Frobenius lift. Using such an identity at $t_*$ would require an
+analytic ring admitting that specialization, a comparison of $t_*$
+with $\sigma(t_*)$, and an arithmetic interpretation of the
+multiplier. At $m=s=1$ the displayed exponent is two,
+whereas Beukers asks for three. Part~IV obtains the required
+precision directly from factorial blocks and the rational lift
+$z_*$ of the special fiber.
+
+\section{The exact order-four cutoff residual}
+
+Let $\theta=t\,d/dt$ and set
+\[
+ \PF=\theta^4-t\left(\theta+\frac13\right)^2
+                  \left(\theta+\frac23\right)^2.
+\]
+Then $\PF F=0$.
+
+\begin{theorem}[Exact cutoff residual]\label{III:thm:residual}
+For every $N\ge1$,
+\[
+ \boxed{\PF P_N(t)=-N^4c_Nt^N.}
+\]
+In particular, for $N=p^s$ the residual is divisible by $p^{4s}$ in every coefficient ring in which
+$c_Nt^N$ is integral.
+\end{theorem}
+
+\begin{proof}
+The coefficient recurrence for $F$ is
+\[
+ n^4c_n=\left(n-\frac23\right)^2
+        \left(n-\frac13\right)^2c_{n-1}\qquad(n\ge1).
+\]
+Applying $\PF$ to $P_N$ makes the coefficient of $t^n$ vanish for $0\le n<N$.
+The only uncancelled term is produced by the shifted part at $n=N$, and equals
+$-N^4c_Nt^N$.
+\end{proof}
+
+
+For $N=p^s$, the differential residual has four powers of $p$ before
+any comparison with a Frobenius solution. Estimating the error of
+such a comparison on the special fiber is a separate problem.
+
+\section{An ordinary unit-root criterion}
+
+In the rank-four Hodge structure at $z_*$ the decomposition has the
+form
+\[
+ V_{z_*,\mathrm B}=\Lambda\oplus\Lambda^\perp,\qquad
+ \Lambda_\C=V^{3,0}\oplus V^{0,3},\qquad
+ (\Lambda^\perp)_\C=V^{2,1}\oplus V^{1,2}.
+\]
+Here $\mathrm B$ denotes the rational Betti realization, and
+$V^{i,j}$ denotes its Hodge components. We first record what the
+unit-root calculation gives under an explicit integral hypothesis.
+
+\begin{definition}[Arithmetic splitting package]\label{III:def:package}
+Fix an ordinary good prime $p\ge5$ with $p\nmid a_p$. Assume the following data.
+\begin{enumerate}[label=(A\arabic*)]
+\item an integral rank-two Frobenius-stable direct summand $W_p$ of the rank-four crystalline module at
+$t_*$, containing the holomorphic period direction;
+\item Hodge weights $\{0,3\}$ on $W_p$;
+\item characteristic polynomial
+\[
+ \det(1-T\varphi\mid W_p)=1-a_pT+p^3T^2;
+\]
+
+\item an integral comparison of the truncated jet
+$Y_p=(P_p,P_p',P_p'',P_p''')^{\mathsf t}$ at $t_*$
+with the Frobenius unit eigenvalue $\alpha_p$ on $W_p$,
+with first-coordinate error $P_p(t_*)-\alpha_p\in p^3\Zp$.
+
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Conditional splitting-to-supercongruence bridge]\label{III:thm:conditional}
+
+Let $p\ge5$ and $p\nmid a_p$. If the hypotheses of
+Definition~\ref{III:def:package} hold, then
+\[
+ P_p(t_*)\equiv a_p\pmod{p^3}.
+\]
+\end{theorem}
+
+\begin{proof}
+Modulo $p$ the polynomial $X^2-a_p X+p^3$ has the simple nonzero
+root $a_p\bmod p$. Hensel's lemma gives its unit root $\alpha_p$,
+and $a_p-\alpha_p=p^3/\alpha_p\in p^3\Zp$. Adding the
+first-coordinate estimate in (A4) gives the assertion.
+\end{proof}
+
+\begin{remark}
+The estimate in (A4) is an independent integral hypothesis. The
+rational splitting and knowledge of its characteristic polynomial
+identify the unit root at ordinary primes. They supply no estimate of
+the truncation error. If $p\mid a_p$, the reduction of the polynomial
+is $X^2$ and there is no unit root. Part~IV uses Cayley--Hamilton on
+the holomorphic vector, so its result includes this case.
+\end{remark}
+
+\section{The exact arithmetic target}
+
+The decomposition of the rank-four constituent identified in Part~IV,
+Theorem~\ref{IV:thm:comparison}, is
+\begin{equation}\label{III:eq:global-split}
+ V_{z_*,\ell}^{\mathrm{ss}}
+ \simeq
+ \rho_{54.4.a.c,\ell}\oplus\rho_{54.2.a.a,\ell}(-1).
+\end{equation}
+Equivalently, at every good prime,
+\begin{equation}\label{III:eq:euler-factor}
+ \boxed{
+ P_{3,p}(T)=
+ (1-a_pT+p^3T^2)(1-pb_pT+p^3T^2).
+ }
+\end{equation}
+
+Here $P_{3,p}$ is the Euler polynomial of $V_{z_*,\ell}$. Period
+computations in \cite{III:BKSZ} identified the candidate modular
+forms. A rational Hodge splitting alone does not establish the
+Galois action on those summands.
+
+Two approaches to the semisimplified representation are relevant.
+One can construct a projector over $\Q$ and identify the
+representations on its image and complement. Alternatively,
+a proof of \eqref{III:eq:euler-factor} at all good primes would
+identify the semisimplification by Chebotarev and Brauer--Nesbitt.
+The latter comparison alone does not locate the holomorphic vector
+in a specified de Rham summand. The tetrahedral projector in
+Part~IV does locate this vector.
+
+\section{Residual monodromy at every auxiliary prime}
+
+The hypergeometric local system has standard companion matrices associated to
+\[
+ f(x)=(x^2+x+1)^2,
+ \qquad
+ g(x)=(x-1)^4.
+\]
+We use
+\[
+ A=\begin{pmatrix}
+0&0&0&-1\\1&0&0&-2\\0&1&0&-3\\0&0&1&-2
+\end{pmatrix},\qquad
+ B=\begin{pmatrix}
+0&0&0&-1\\1&0&0&4\\0&1&0&-6\\0&0&1&4
+\end{pmatrix}.
+\]
+Put $e_4^T=(0,0,0,1)$ and $v=(0,-2,1,-2)^T$.  Then
+\[
+ A-B=3ve_4^T.
+\]
+
+\begin{theorem}[Complete residual-monodromy classification]\label{III:thm:resmon}
+Let $\ell$ be a prime and let $V=\F_\ell^4$.
+\begin{enumerate}[label=(\alph*)]
+\item If $\ell\neq3$, the group generated by the reductions of $A$ and $B$ acts irreducibly on $V$.
+\item If $\ell=3$, then $A\equiv B$, the common matrix is regular unipotent with characteristic and
+minimal polynomial $(x-1)^4$, and its invariant subspaces are exactly the unique flag
+\[
+ 0\subset\ker(A-I)\subset\ker(A-I)^2\subset\ker(A-I)^3\subset V.
+\]
+In particular there is no residual direct-sum decomposition $V=V_2\oplus V_2'$ preserved by the
+geometric monodromy.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Consider the observability matrix
+\[
+ \mathcal O=\begin{pmatrix}
+ e_4^T\\e_4^TA\\e_4^TA^2\\e_4^TA^3
+ \end{pmatrix}
+ =\begin{pmatrix}
+0&0&0&1\\0&0&1&-2\\0&1&-2&1\\1&-2&1&2
+\end{pmatrix},
+\qquad \det\mathcal O=1.
+\]
+Also consider the cyclic matrix
+\[
+ \mathcal C=(v,Av,A^2v,A^3v),
+ \qquad \det\mathcal C=81.
+\]
+Let $W\subset V$ be invariant under both $A$ and $B$, and assume $\ell\neq3$.
+If $e_4^T$ vanishes on $W$, then it vanishes on $A^iW$ for $0\le i\le3$; invertibility of
+$\mathcal O$ gives $W=0$.  Otherwise choose $w\in W$ with $e_4^Tw\neq0$.  Since
+$(A-B)w=3(e_4^Tw)v$, one has $v\in W$.  The determinant $81$ is nonzero modulo $\ell$, so
+$v,Av,A^2v,A^3v$ span $V$ and $W=V$.
+
+For $\ell=3$, one has $A=B$ and $A$ is the companion matrix of $(x-1)^4$.  Hence
+$V$ is the cyclic $\F_3[x]$-module $\F_3[x]/(x-1)^4$.  Its submodules are the ideals
+$(x-1)^j$, which form the displayed unique flag.
+\end{proof}
+
+\begin{corollary}[Uniqueness of the residual route]\label{III:cor:normalizer}
+Suppose an integral arithmetic hypergeometric realization has geometric mod-$3$ monodromy generated by
+the reductions of $A$ and $B$.  Since geometric monodromy is normal in arithmetic monodromy, the
+arithmetic image normalizes it.  The unique flag in Theorem~\ref{III:thm:resmon}(b) is characteristic and is
+therefore preserved by the arithmetic image.
+
+
+For $\ell\neq3$, the standard companion lattice admits no rank-two
+sub-local system after reduction. For $\ell=3$ its geometric
+invariant subspaces form the stated flag.
+\end{corollary}
+
+This calculation completes the auxiliary-prime search on the specified
+lattice. Lifting the flag to characteristic zero would require
+additional information about extension classes. Specializing the family
+can introduce new endomorphisms, as occurs for the tetrahedral
+symmetries at $z_*$.
+
+\section{The fiber-product and isogeny routes}
+
+The Hadamard-square presentation suggests a fiber-product model built from the cubic elliptic family.
+This makes low-degree fiberwise isogenies tempting.  The simplest versions fail.
+
+\subsection{The Fricke-3 mismatch}
+In the standard Hesse coordinate $\alpha$, the Fricke involution is
+\[
+ \alpha\longmapsto1-\alpha,
+\]
+whereas the involution induced by the proposed attractor fiber product is
+\[
+ \alpha\longmapsto-\frac1{8\alpha}.
+\]
+These are not the same rational map.  Thus the splitting is not explained by the naive identification of
+the two elliptic factors through the standard Fricke $3$-isogeny.
+
+\subsection{An exact degree-2 obstruction}
+The Hesse $j$-function in this normalization is
+\[
+ j(\alpha)=\frac{27(1+8\alpha)^3}{\alpha(1-\alpha)^3}.
+\]
+Let $\Phi_2(X,Y)$ denote the classical level-$2$ modular polynomial.
+
+\begin{proposition}[No generic degree-$2$ fiberwise isogeny]\label{III:prop:phi2}
+The rational function
+\[
+ \Phi_2\!\left(j(\alpha),j\!\left(-\frac1{8\alpha}\right)\right)
+\]
+is nonzero.  More precisely, its numerator is
+\[
+\begin{split}
+-19683&(8\alpha^2+20\alpha-1)^4
+(64\alpha^4-112\alpha^3+60\alpha^2+14\alpha+1)\\
+&\times Q_{12}(\alpha),
+\end{split}
+\]
+where
+\[
+\begin{split}
+Q_{12}(\alpha)={}&262144\alpha^{12}+189726720\alpha^{11}+69710610432\alpha^{10}
+-232501817344\alpha^9\\
+&+254561642496\alpha^8-48116259072\alpha^7-43846988736\alpha^6
++6014532384\alpha^5\\
+&+3977525664\alpha^4+454105112\alpha^3+17019192\alpha^2-5790\alpha+1.
+\end{split}
+\]
+The denominator is $\alpha^3(\alpha-1)^9(8\alpha+1)^9$.
+\end{proposition}
+
+\begin{proof}
+Substitute the displayed $j$-functions into the classical polynomial
+\[
+\begin{split}
+\Phi_2(X,Y)={}&X^3+Y^3-X^2Y^2+1488XY(X+Y)-162000(X^2+Y^2)\\
+&+40773375XY+8748000000(X+Y)-157464000000000
+\end{split}
+\]
+and factor over $\Z[\alpha]$.  Appendix~\ref{III:app:code} reproduces the exact computation.
+\end{proof}
+
+The obstruction concerns a generic degree-$2$ isogeny of the two elliptic fibers.
+The correspondence in Part~IV acts simultaneously on the pencils and their common base.
+
+
+\section{Residual hypotheses in a Frobenius comparison}
+
+At a fixed fiber, a finite set of Frobenius traces can suffice after
+the determinant, the residual representation, and its possible
+deviations have been determined. A mod-$3$ flag for the generic
+monodromy does not give those data at $z_*$. A naive Livn\'e test
+based only on quadratic characters unramified outside $2,3$ therefore
+leaves an implication to prove. Theorem~\ref{IV:thm:comparison} in
+Part~IV instead compares the already constructed rank-two
+representations at the auxiliary prime $2$. Its residual image and the
+possible deviation fields specify the finite set of test primes.
+
+\section{A criterion using a Hodge projector}
+
+Let $e_{\mathrm H}\in\operatorname{End}_{\mathrm{HS}}(V_{z_*,\mathrm B})$
+denote the projector onto $V^{3,0}\oplus V^{0,3}$ along its
+orthogonal complement. Extending it by zero on the orthogonal
+complement of $V_{z_*,\mathrm B}$ defines a Hodge class in
+$H^6(X_{z_*}\times X_{z_*},\Q)(3)$.
+
+\begin{proposition}[Compatible realizations of a projector]\label{III:prop:absolute}
+Suppose $e_{\mathrm H}$ is realized by a motivated projector
+defined over $\Q$, or by a descended absolute-Hodge projector with
+compatible Galois and crystalline realizations. Then its rank-two
+image is stable in the $\ell$-adic realizations and under Frobenius
+in the good crystalline fibers. At an ordinary good prime, if these
+summands have the stated modular polynomial and the integral
+hypotheses of Definition~\ref{III:def:package} hold, then
+$P_p(t_*)\equiv a_p\pmod{p^3}$.
+\end{proposition}
+
+\begin{proof}
+Realization preserves the idempotent equation and its rank. Over
+$\Q$, the realization of the projector commutes with the Galois
+action and, at good primes, with Frobenius. The final assertion
+uses the integral comparison in (A4) and
+Theorem~\ref{III:thm:conditional}.
+\end{proof}
+
+This criterion records an alternative to finding a correspondence
+explicitly. Appendix~\ref{IV:app:tetra} gives an algebraic
+correspondence on the parabolic constituent.
+
+\section{The finite-field hypergeometric route}
+
+A direct proof of
+\[
+ P_{3,p}(T)=
+ (1-a_pT+p^3T^2)(1-pb_pT+p^3T^2)
+\]
+would bypass the global projector.  Hypergeometric motives admit trace descriptions through Gauss and
+Jacobi sums, and the special value $-1/8$ suggests cubic and quadratic transformations.  The search
+found finite-field Clausen and Kummer identities near this value, but not an identity that factors the
+entire degree-four Euler polynomial into the two specified modular quadratics.
+
+The exact statement needed is stronger than a single trace identity.  One must control enough power
+traces (or trace and determinant data on a rank-two summand) to identify the whole quartic factor at every
+good prime.
+
+\section{Exact numerical checks}
+
+The verification program in Appendix~\ref{III:app:code} computes the truncation in exact rational arithmetic
+and reduces it modulo $p^3$.  The first residues are
+\[
+\begin{array}{c|rrrrrrrrr}
+p&5&7&11&13&17&19&23&29&31\\ \hline
+P_p(-1/8)\bmod p^3&3&29&-57&20&-72&-106&174&-210&47.
+\end{array}
+\]
+For $p=5,7$, these equal the displayed coefficients $a_5=3$ and $a_7=29$ of $54.4.a.c$.
+The remaining entries are recorded as exact project checks; their identification with the corresponding
+LMFDB coefficients is not used as a proof.
+
+\section{Development of the arithmetic argument}
+
+
+\begin{enumerate}[leftmargin=*,label=\textup{(\roman*)}]
+\item The formal descent problem suggested isolating the special
+fiber as the source of the extra power of $p$.
+\item The Picard--Fuchs recurrence gave the exact residual
+$-N^4c_Nt^N$. The ordinary rank-two polynomial separated comparison
+with the truncated period from comparison with the Fourier coefficient.
+\item Numerical period and Frobenius data suggested the weight-four
+and twisted weight-two factors of \eqref{III:eq:euler-factor}.
+\item The Fricke involution and the degree-two modular polynomial
+eliminated two simple fiberwise explanations. The companion
+matrices then gave the generic residual classification at every
+auxiliary prime.
+\item The simultaneous transformations of the Hesse pencils at
+$z_*$ produced a rational projector. The four-prime comparison on the
+rank-two summands identified their modular factors. Interpolation of
+the shifted factorials in Part~IV completed the integral comparison
+for every good prime.
+\end{enumerate}
+
+\section{From the projector to the truncation}
+
+The two results in Part~IV can be used separately. Its
+Theorem~\ref{IV:thm:comparison} gives \eqref{III:eq:global-split}
+and \eqref{III:eq:euler-factor}. Its Lemma~\ref{IV:lem:div}
+identifies the first entry of $p^3\Phi^{-1}$ on the rational lift
+with $P_p(t_*)$ modulo $p^3$, and controls the integral lattice in
+which the characteristic polynomial acts. Together they give
+Theorem~\ref{IV:thm:main}. This route applies to ordinary and
+nonordinary good primes alike.
+
+\appendix\paperanchors{III.app}
+\section{Exact verifier}\label{III:app:code}
+
+The following program verifies the coefficient recurrence, the first truncation residues, the determinants
+used in Theorem~\ref{III:thm:resmon}, and the exact modular-polynomial factorization of
+Proposition~\ref{III:prop:phi2}.  It uses exact arithmetic throughout.
+
+\begin{lstlisting}[style=python]
+#!/usr/bin/env python3
+"""Exact checks for the AESZ4 level-54 attractor dossier.
+
+Standard-library checks are used where possible; SymPy is used only for exact
+symbolic polynomial factorization and matrix determinants.
+"""
+from __future__ import annotations
+
+import json
+from fractions import Fraction
+from math import factorial
+from pathlib import Path
+
+import sympy as sp
+
+OUT = Path(__file__).with_name("verification_output.json")
+
+
+def generalized_binomial(a: Fraction, k: int) -> Fraction:
+    result = Fraction(1)
+    for j in range(k):
+        result *= a - j
+    return result / factorial(k)
+
+
+def truncated_sum_mod(p: int) -> int:
+    modulus = p**3
+    total = Fraction(0)
+    for k in range(p):
+        total += (
+            generalized_binomial(Fraction(-1, 3), k) ** 2
+            * generalized_binomial(Fraction(-2, 3), k) ** 2
+            * Fraction(-1, 8) ** k
+        )
+    return (total.numerator * pow(total.denominator, -1, modulus)) % modulus
+
+
+def picard_fuchs_check(max_n: int = 12) -> bool:
+    # c_n=(1/3)_n^2(2/3)_n^2/(n!)^4 and
+    # n^4 c_n=(n-2/3)^2(n-1/3)^2 c_{n-1}.
+    c = [Fraction(1)]
+    for n in range(1, max_n + 1):
+        c.append(
+            c[-1]
+            * Fraction(3 * n - 2, 3) ** 2
+            * Fraction(3 * n - 1, 3) ** 2
+            / n**4
+        )
+    return all(
+        n**4 * c[n]
+        == Fraction(3 * n - 2, 3) ** 2
+        * Fraction(3 * n - 1, 3) ** 2
+        * c[n - 1]
+        for n in range(1, max_n + 1)
+    )
+
+
+def residual_monodromy_data() -> dict[str, object]:
+    A = sp.Matrix(
+        [
+            [0, 0, 0, -1],
+            [1, 0, 0, -2],
+            [0, 1, 0, -3],
+            [0, 0, 1, -2],
+        ]
+    )
+    B = sp.Matrix(
+        [
+            [0, 0, 0, -1],
+            [1, 0, 0, 4],
+            [0, 1, 0, -6],
+            [0, 0, 1, 4],
+        ]
+    )
+    e4 = sp.Matrix([[0, 0, 0, 1]])
+    v = sp.Matrix([0, -2, 1, -2])
+    observability = sp.Matrix.vstack(*[e4 * (A**i) for i in range(4)])
+    cyclic = sp.Matrix.hstack(*[(A**i) * v for i in range(4)])
+    assert A - B == 3 * v * e4
+    assert observability.det() == 1
+    assert cyclic.det() == 81
+    x = sp.symbols("x")
+    assert sp.factor(A.charpoly(x).as_expr()) == (x**2 + x + 1) ** 2
+    assert sp.factor(B.charpoly(x).as_expr()) == (x - 1) ** 4
+    return {
+        "A_minus_B": [[int(z) for z in row] for row in (A - B).tolist()],
+        "observability_det": int(observability.det()),
+        "cyclic_det": int(cyclic.det()),
+        "charpoly_A": str(sp.factor(A.charpoly(x).as_expr())),
+        "charpoly_B": str(sp.factor(B.charpoly(x).as_expr())),
+        "mod3_flag_dimensions": [1, 2, 3, 4],
+    }
+
+
+def phi2_factorization() -> dict[str, str]:
+    a, X, Y = sp.symbols("a X Y")
+    phi2 = (
+        X**3
+        + Y**3
+        - X**2 * Y**2
+        + 1488 * X * Y * (X + Y)
+        - 162000 * (X**2 + Y**2)
+        + 40773375 * X * Y
+        + 8748000000 * (X + Y)
+        - 157464000000000
+    )
+    j = lambda z: 27 * (1 + 8 * z) ** 3 / (z * (1 - z) ** 3)
+    expression = sp.factor(
+        sp.together(phi2.subs({X: j(a), Y: j(-sp.Rational(1, 8) / a)}))
+    )
+    numerator, denominator = sp.fraction(expression)
+    assert numerator != 0
+    return {
+        "numerator": str(sp.factor(numerator)),
+        "denominator": str(sp.factor(denominator)),
+    }
+
+
+def main() -> None:
+    residues = {str(p): truncated_sum_mod(p) for p in [5, 7, 11, 13, 17, 19, 23, 29, 31]}
+    expected_signed = {
+        "5": 3,
+        "7": 29,
+        "11": -57,
+        "13": 20,
+        "17": -72,
+        "19": -106,
+        "23": 174,
+        "29": -210,
+        "31": 47,
+    }
+    for p_string, signed in expected_signed.items():
+        p = int(p_string)
+        assert residues[p_string] == signed % (p**3)
+
+    report = {
+        "picard_fuchs_coefficient_recurrence": picard_fuchs_check(),
+        "truncated_sum_mod_p3": residues,
+        "signed_representatives": expected_signed,
+        "residual_monodromy": residual_monodromy_data(),
+        "phi2_substitution": phi2_factorization(),
+    }
+    OUT.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\section{Verification output}
+\begin{verbatim}
+Picard--Fuchs recurrence: PASS
+observability determinant: 1
+cyclic determinant: 81
+characteristic polynomial of A: (x^2+x+1)^2
+characteristic polynomial of B: (x-1)^4
+mod-3 invariant flag dimensions: 1,2,3,4
+truncated residues (signed):
+p=5: 3; p=7: 29; p=11: -57; p=13: 20; p=17: -72;
+p=19: -106; p=23: 174; p=29: -210; p=31: 47.
+Phi_2 substitution numerator: nonzero; exact factors given above.
+\end{verbatim}
+
+\section{Source and verification discipline}
+
+
+The verifier checks the cutoff recurrence, the companion matrices, the
+sample truncations, and the modular-polynomial calculation. The
+arithmetic decomposition uses the geometric projector and the
+Galois comparison in Part~IV. The verification range for the
+good-prime congruence is recorded separately in that part.
+
+
+
+
+\clearpage\endgroup
+
+% Source: Beukers_128_Good_Primes.tex and unique finite identities from AESZ4_Tetrahedral_Projector.tex.
+\begingroup
+\newcommand{\Q}{\mathbf Q}\newcommand{\Z}{\mathbf Z}
+\newcommand{\F}{\mathbf F}\newcommand{\A}{\mathcal A}
+\newcommand{\Tr}{\operatorname{Tr}}\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\PP}{\mathbf P}\newcommand{\HH}{\mathcal H}
+\newcommand{\Frob}{\operatorname{Frob}}
+\openpaper{IV}{The Level-54 Attractor Supercongruence for Every Good Prime}{The level-54 good-prime theorem}{12 November 2026}{}
+\begin{abstract}
+We obtain the congruence of Beukers at the level-54 attractor for every
+prime $p\ge5$, with no ordinarity hypothesis. Interpolating complete
+blocks in the shifted factorial period gives an overconvergent inverse
+Frobenius on the cyclic Picard--Fuchs frame. Its first coordinate is the
+truncated period modulo $p^3$. Its four rows have divisibilities
+$1,p,p^2,p^3$, and its determinant at a fixed fiber is $p^6$. These
+facts turn the characteristic polynomial of the rank-two component
+containing the holomorphic form into the required truncation
+congruence. We include the construction and modular identification of
+that component and an independent finite calculation. The prime $2$ in
+the printed formulation fails by direct evaluation.
+\end{abstract}
+
+\section{The good-prime congruence}
+Write $A_n=(3n)!/(n!)^3$, $c=-1/5832$, and $S_p=\sum_{n=0}^{p-1}A_n^2c^n$.
+Let $a_p$ be the coefficient of $q^p$ in the normalized newform
+$f$ labeled $54.4.\mathrm{a}.\mathrm{c}$. It has weight four, level
+54, trivial character, and begins $q+2q^2+4q^4+3q^5+\cdots$.
+\begin{theorem}\label{IV:thm:main}
+For every prime $p\ge5$,
+\[
+  \sum_{k=0}^{p-1}\binom{-1/3}{k}^{\!2}\binom{-2/3}{k}^{\!2}
+          \left(-\tfrac18\right)^k = S_p\equiv a_p\pmod{p^3}.
+\]
+\end{theorem}
+The equality follows from $(1/3)_k(2/3)_k/(k!)^2=A_k/27^k$.
+The theorem treats the good primes of Conjecture~1.28 of
+Beukers~\cite{III:Beukers2026}. Its printed quantifier $p\ne3$ includes $2$,
+where $S_2=161/162$, $a_2=2$, and $v_2(S_2-a_2)=-1$.
+
+Let $V_z$ be the four-dimensional summand of B\"onisch's Hesse
+fiber-product family \cite[\S5.1]{IV:bonisch}. Its ambient threefold has
+40-dimensional $H^3$. At $z=c$, Appendix~\ref{IV:app:tetra} constructs
+a rational rank-two projector whose image $W$ contains the
+holomorphic form $\Omega_c$. Appendix~\ref{IV:app:modular} identifies
+the trace and determinant of its Frobenius as $a_p,p^3$.
+We use the convention that twisting by $(-1)$ multiplies good-prime
+eigenvalues by $p$.
+
+The passage from $W$ to the truncation occupies
+Sections~\ref{IV:sec:shift}--\ref{IV:sec:fiber}. The matrix is built
+over the whole smooth parameter locus; only its final
+Cayley--Hamilton identity is imposed on the special fiber.
+\section{A Frobenius operator from the shifted coefficients}\label{IV:sec:shift}
+\subsection{Interpolation of the complete factorial blocks}
+Write $\theta=z\,d/dz$ and use the rising factorial $(x)_n=\prod_{i=0}^{n-1}(x+i)$.
+The differential equation in the factorial coordinate is
+\begin{equation}\label{IV:eq:pf-shift}
+ \theta^4 y=729z(\theta+\tfrac13)^2(\theta+\tfrac23)^2y .
+\end{equation}
+It is nonsingular on the base $\PP^1-\{0,1/729,\infty\}$.
+All local estimates that follow include $p=5$.
+Fix $p\ge5$ and put
+\[
+ P(T)=\prod_{\nu=1}^{p-1}(1+pT/\nu).
+\]
+Let $H(T)$ be the discrete primitive of $\log P(T)$, normalized by
+$H(0)=0$. To construct it explicitly, write
+\[
+ \log P(T)=\sum_{m\ge1}d_m T^m,\quad
+ d_m=(-1)^{m+1}\frac{p^m}{m}\sum_{\nu=1}^{p-1}\nu^{-m}.
+\]
+Replace each $T^m$ by
+$\sum_{j=0}^m \genfrac{\{}{\}}{0pt}{}{m}{j}T^{\underline{j+1}}/(j+1)$, where the
+braces are Stirling numbers of the second kind and the underline is
+the falling factorial. Translation by one minus the identity sends
+this polynomial to $T^m$. For $m=1,2$ the $d_m$ belong to
+$p^3\Z_p$ by Wolstenholme and the power sum in $\F_p$.
+For $m\ge3$ every coefficient of the replacement times $d_m$ has
+valuation at least $m-v_p(m)-\lfloor\log_p(m+1)\rfloor\ge3$.
+The lower bound grows linearly apart from logarithmic corrections and
+the degree is at most $m+1$. Thus $H\in p^3\Z_p\langle T\rangle$
+overconverges and has sufficiently small norm for exponentiation on
+a disk strictly larger than the unit disk. More explicitly, for degree
+$m+1$ each contribution to $H$ has valuation at least
+$m-v_p(m)-\lfloor\log_p(m+1)\rfloor$, and the low degrees have
+valuation at least three. Choosing a sufficiently small $\epsilon>0$
+makes the Gauss norm of $H$ on $|T|\le p^\epsilon$ strictly smaller
+than $p^{-1/(p-1)}$. This proves norm convergence of the exponential
+in the corresponding Tate algebra. Define
+\[
+ b_0(T)=\exp(2[H(3T)-3H(T)]),\qquad
+ b_k(T)=b_0(T)\left(\frac{(1+3pT)_{3k}}{(1+pT)_k^3}\right)^2
+ \quad (1\le k<p).
+\]
+In particular $b_0(0)=1$, $b_k(0)=((3k)!/(k!)^3)^2$ and
+$[T^d]b_k(T)\in p^{\min(d,3)}\Z_p$ for all $d\ge0$.
+In this estimate the numerator is left unnormalized even where one
+of its constants $1,\ldots,3k$ is divisible by $p$. All denominators
+have unit constant. The factors are overconvergent on a common strict
+neighborhood of the unit disk for any given $p$.
+
+For $a_j(u)=((1+3u)_{3j}/(1+u)_j^3)^2$, splitting off factors
+at multiples of $p$ gives the identity of germs at $u=0$
+\[
+ a_{pj+k}(pu)=a_j(u)\frac{b_k(j+u)}{b_0(u)} .
+\]
+Indeed the products of the nonmultiples of $p$ in the complete blocks
+are products of $P(h+3u)$ and $P(h+u)$, respectively. The constant
+$(p-1)!$ of each block cancels between numerator and denominator, and
+summing the logarithms yields the quotient $b_0(j+u)/b_0(u)$.
+The remaining $3k$ and $k$ factors yield $b_k(j+u)/b_0(j+u)$.
+This proof works even for the indices $j$ with $p$-adic denominators
+in their individual $u$-Taylor coefficients, since $a_j(u)$ has
+been canceled before the block interpolation.
+
+\subsection{The operator on the cyclic frame}
+Use the cyclic vector $\omega=\Omega_z$ of the Picard--Fuchs equation, let
+$\theta=z\,d/dz$, and $e_j=\theta^j\omega$, $0\le j\le3$.
+Define an operator from the module at $z$ into its pullback at $z^p$
+by putting $w=z^p$ and setting
+\begin{equation}\label{IV:eq:shift-operator}
+ C(e_j(z))=\left.\sum_{k=0}^{p-1} z^k
+          b_k(\theta_w)(k+p\theta_w)^j\omega(w)\right|_{w=z^p}
+ \qquad(0\le j\le3).
+\end{equation}
+Here $\theta$ inside the differential operator acts at the target
+argument before substitution. The differential equation eliminates
+$\theta^4\omega$ with coefficients in
+$\Z_p[z,(1-729z)^{-1}]$. Each additional differentiation in this frame increases pole order and
+numerator degree by at most a fixed constant, since the derivative of
+a rational entry is added to its product with the companion matrix
+of~\eqref{IV:eq:pf-shift}. Hence the preceding overconvergent series for each column
+converges over the weak completion, by taking a sufficiently small
+strict neighborhood of the good locus. The reductions do not lose
+$p$-adic integrality. A column written in the ordered target frame has
+its entries in $\Z_p,p\Z_p,p^2\Z_p,p^3\Z_p$,
+respectively, at any good integral point. To see this directly, the
+coefficient of $\theta_w^h$ in $b_k(\theta_w)(k+p\theta_w)^j$ has
+valuation at least $\min(h,3)$. For $h=0,1,2$ the indicated monomial is
+already a frame element, and for $h\ge3$ all terms after reduction are
+divisible by $p^3$. In particular row $i$ of the matrix, where the
+target frame element is $e_i(w)$, is divisible by $p^i$.
+At precision $p^3$ its entry in row zero and column zero is
+$\sum_{k=0}^{p-1}((3k)!/(k!)^3)^2 z^k$.
+
+Write $G(z,u)=z^u\sum_{n\ge0}a_n(u)z^n$ modulo $u^4$, using formal
+logarithms. Its four $u$-coefficients are a fundamental system of
+solutions of~\eqref{IV:eq:pf-shift}: the indicial term is $u^4z^u$ and
+the recurrence at each positive index is exactly the recurrence for
+$a_n(u)$. Their leading logarithmic terms $1,\log z,(\log z)^2/2$ and
+$(\log z)^3/6$ are linearly independent. Evaluating the target column against these four solution
+jets is exactly the coefficient identity
+\[
+  \sum_{k=0}^{p-1}z^k
+    [b_k(\theta)(k+p\theta)^jG(\,\cdot\,,u)](z^p)
+  =b_0(u)\,\theta^j G(z,pu).
+\]
+All computations in this identity are coefficientwise at $z=0$ with
+coefficients in $(\Q_p[u]/(u^4))[\log z]$. Running over the four solution jets gives an identity of fundamental
+matrices. The matrix acting on the jets on the right is constant
+in $z$, so differentiation proves horizontality, including the
+relation at derivative order four. Its determinant is $p^6$, since
+$u\mapsto pu$ acts by $1,p,p^2,p^3$ and multiplication by $b_0(u)$
+has unit diagonal. The indicial initial conditions normalize the
+$\theta$-Wronskian to one at $z=0$. Abel's identity applied to
+\eqref{IV:eq:pf-shift} then gives the Wronskian $(1-729z)^{-2}$.
+This gives $\det C=p^6(1-729z^p)^2/(1-729z)^2$ away from the deleted
+disks. In particular after Taylor transport at a rational fiber the
+determinant is $p^6$.
+\section{Normalizing the geometric Frobenius}\label{IV:sec:normalization}
+Write $\theta=z\,d/dz$ and $\lambda=729$. The algebraic connection of the
+Hesse family on $B=\PP^1\setminus\{0,\lambda^{-1},\infty\}$ is the
+rank-four hypergeometric connection used above. In particular the vector
+$e_0$ in its cyclic frame is the normalized holomorphic three-form
+$\Omega_z$. This normalization matters for the coefficient calculation.
+B\"onisch \cite[\S5.1]{IV:bonisch} constructs $\Omega_z$ by residues of the two
+cubic pencils, computes its period at $0$ as $\sum A_n^2z^n$, and
+identifies $\Omega_z,\theta\Omega_z,\theta^2\Omega_z,\theta^3\Omega_z$ as
+a cyclic frame. Its companion equation has no additional singular points.
+
+Fix $p\ge5$. The Hesse surfaces and their projective fiber product
+give a smooth projective family of threefolds over the smooth parameter
+locus after reduction. To see good reduction in families,
+one can first adjoin $\zeta_3$ and $z^{1/3}$ on this locus. The
+base points of each Hesse pencil are nine distinct points and its
+four singular fibers are triangles. The singular fibers of the two
+pencils are disjoint precisely away from $\lambda z=1$ (and the
+degenerate parameters $0,\infty$). Thus the total threefold in each
+fiber is smooth. The vertical restriction kernels and the cyclic
+average defining $V$ are functorial in these families and descend.
+In particular relative cohomology supplies $V$ with a geometric
+Frobenius $\Phi:\sigma^*V\to V$ for $\sigma(z)=z^p$. For clarity, the
+smooth projective overconvergence theorem applies to the ambient
+Gauss--Manin connection \cite[Corollary~6.4]{IV:lazda}. On a finite \'etale parameter cover splitting the components,
+the restriction maps to the ruled components commute with this
+Frobenius. Taking their kernel and cyclic invariants inside the
+category of overconvergent isocrystals, followed by descent, gives
+the same overconvergence for $V$. At a rational lift in a residue
+disk, Taylor transport identifies $\Phi$ with the Frobenius on the
+crystalline cohomology of that fiber in the de Rham realization.
+
+\begin{lemma}\label{IV:lem:normal}
+The horizontal map $C:V\longrightarrow\sigma^*V$ constructed from
+the coefficient blocks equals $p^3\Phi^{-1}$.
+\end{lemma}
+\begin{proof}
+The inverse of $C$ is a Frobenius intertwiner on a strict
+neighborhood, by the determinant formula and the construction above.
+Kedlaya's uniqueness theorem for hypergeometric intertwiners
+\cite[Lemma~2.3.6 and Remark~4.1.3]{IV:kedlaya} applies. In the
+coordinate $\lambda z$ the upper parameters are $1/3,1/3,2/3,2/3$
+and the lower parameters are $1,1,1,1$. No upper-minus-lower
+difference is integral. The singularities are distinct modulo $p$,
+the exponents are $p$-integral, and multiplication by $p$ permutes
+the upper classes and fixes the lower classes modulo $\Z$. The
+coordinate rescaling changes the Frobenius lift by the unit
+$\lambda^{1-p}\equiv1\bmod p$, which is allowed by the Taylor
+change-of-lift formula \cite[Remark~2.3.7]{IV:kedlaya}. Hence
+$C=\kappa\,p^3\Phi^{-1}$ for some $\kappa\in\Q_p^\times$.
+
+At any smooth rational Teichm\"uller parameter $\widehat z$, where
+$\widehat z^p=\widehat z$, the determinant of $C$ is $p^6$.
+The alternating perfect pairing of the polarized rank-four $V$ has
+similitude $p^3$ so $\det\Phi=p^6$. Thus $\kappa^4=1$.
+To determine which root it is, let
+\[
+ P(z)=\sum_{0\le k\le\lfloor(p-1)/3\rfloor} A_k^2 z^k\quad\text{in }\F_p[z].
+\]
+At a Teichm\"uller parameter the row estimates of the explicit matrix
+give $\Tr C\equiv P(z)\pmod p$. The same holds for $\Tr\Phi$.
+Here is the point-count justification over all smooth parameters.
+In the first Hesse pencil use the three coordinates proportional to
+$(X^3,Y^3,Z^3)$ and summing to one; in the second use the coordinates
+proportional to $(X^3,Y^3,z Z^3)$ and summing to one. Their respective
+products are $u$ and $z/u$. The degree-three quotient in each
+elliptic fiber and the same cyclic descent as in
+Appendix~\ref{IV:app:torus} identify the rank-four parabolic term
+throughout this locus. This description is defined over the base
+before choosing a cube root of $z$.
+The product-moment count there, with $z$ in place of $c$, gives
+$\Tr\Phi\equiv P(z)$. Self-duality pairs every eigenvalue
+$\alpha$ with $p^3/\alpha$, so $\Tr(p^3\Phi^{-1})=\Tr\Phi$.
+Finally $P(0)=1$ and $\deg P\le(p-1)/3<p-2$; at least one of the
+$p-2$ smooth nonzero residues has $P(z)\ne0$. Reduction there gives
+$\kappa\equiv1\bmod p$. As $p\nmid4$, this forces $\kappa=1$.
+\end{proof}
+
+\section{The rational lift and the third digit}\label{IV:sec:fiber}
+We require the value at the characteristic-zero parameter $c$, whose
+de Rham holomorphic vector lies in the geometric rank-two space $W$.
+We therefore compare the fibers at $c^p$ and $c$. Put
+$L=\log(c^{p-1})\in p\Z_p$. In the cyclic coordinates at $c$, Taylor
+transport from $c^p$ to $c$ sends the vector $\theta^j\Omega$ evaluated
+at $c^p$ to
+\[
+ \sum_{h\ge0}\frac{L^h}{h!}\,(\theta^{h+j}\Omega)(c).
+\]
+This follows by pairing against a horizontal section in the residue
+disk and expanding its scalar functions at $c$ in the coordinate
+$\log(z/c)$. The same formula follows directly by Taylor transport
+for the Gauss--Manin connection. The companion relation reduces
+every $\theta^n\Omega$ integrally in the cyclic lattice at $c$, since
+$1-\lambda c=9/8$ is a $p$-adic unit. The series converges, and
+$v_p(L^h/h!)\geq\min(h,3)$ for $p\ge5$. Denote the transported
+endomorphism of $V_c$ by $C_c$.
+
+\begin{lemma}\label{IV:lem:div}
+In the ordered basis $(e_0,e_1,e_2,e_3)$ at $c$, with $e_i=\theta^i\Omega$,
+put $\Lambda=\sum_i\Z_p e_i$. Then
+\[
+ C_c=\operatorname{diag}(1,p,p^2,p^3)\,U,\qquad
+ U\in\operatorname{GL}_4(\Z_p),\qquad
+ (C_c)_{00}\equiv S_p\pmod{p^3}.
+\]
+\end{lemma}
+\begin{proof}
+Before transport, the coefficient of $\theta^j\Omega$ in the
+unreduced series of each column is divisible by $p^{\min(j,3)}$.
+Multiplication by the Taylor series preserves this estimate: at total
+order $j+h$ the valuations add to at least $\min(j+h,3)$.
+All terms of order three or more are integral multiples of $p^3$
+after reduction by the companion equation. Orders zero, one and two
+are already basis vectors. This proves the four row divisibilities.
+For the first column the order-zero coefficient is exactly
+$\sum_{k<p}c^k b_k(0)=S_p$. Lower-order Taylor corrections involve
+$e_1$ and $e_2$ only. Thus reduction of the first coordinate changes
+$S_p$ by a multiple of $p^3$. By Lemma~\ref{IV:lem:normal}, $C_c$ is the
+geometric $p^3\Phi_c^{-1}$, and its determinant is $p^6$ at this
+fiber as well. Dividing row $i$ by $p^i$ gives an integral matrix
+of determinant one.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{IV:thm:main}]
+The averaging correspondence in Appendix~\ref{IV:app:tetra} is defined
+over $\Q$ on $V_c$ and has good reduction for $p\ge5$. Functorial
+crystalline comparison at the lift $c$ identifies its de Rham image
+with a Frobenius-stable rank-two space. Its holomorphic line contains
+$e_0$. The comparison in Appendix~\ref{IV:app:modular} gives the
+characteristic polynomial of $\Phi_c$ on this space as
+$X^2-a_pX+p^3$. The same polynomial holds for $C_c=p^3\Phi_c^{-1}$,
+since the two roots have product $p^3$. Cayley--Hamilton applied on
+this space gives the vector identity
+\[
+        C_c e_0+p^3 C_c^{-1}e_0=a_p e_0 .
+\]
+By Lemma~\ref{IV:lem:div}, $C_c^{-1}e_0=U^{-1}e_0\in\Lambda$.
+It follows that $C_c e_0\equiv a_p e_0\bmod p^3\Lambda$.
+Taking its first coordinate and using the same lemma proves the
+congruence. This argument works for all good primes, independently
+of the slopes of this rank-two factor: the integrality used here
+is in the explicit cyclic-coordinate lattice.
+\end{proof}
+
+\begin{corollary}\label{IV:cor:harmonic}
+Put $m=\lfloor(p-1)/3\rfloor$ and $q_p(c)=(c^{p-1}-1)/p$.
+With $H_j=\sum_{i=1}^{j}1/i$ and $H_0=0$, every good prime satisfies
+\[
+ \sum_{k=0}^{m} A_k^2 c^k
+       \bigl(q_p(c)+6(H_{3k}-H_k)\bigr)\equiv0\pmod p .
+\]
+\end{corollary}
+\begin{proof}
+Read row one of $C_c e_0\equiv a_p e_0\bmod p^3\Lambda$ at precision
+$p^2$. Its unreduced coefficient is the coefficient of $T$ in
+$\exp(LT)\sum_{k<p}c^k b_k(T)$. Reducing higher powers of $\theta$
+does not affect this coefficient modulo $p^2$. We have
+$L\equiv p q_p(c)\bmod p^2$ and $b_0'(0)=0$. For $3k<p$,
+logarithmic differentiation of the finite factorial quotient gives
+$b_k'(0)=6pA_k^2(H_{3k}-H_k)$. For $3k\ge p$ at least one squared
+factor $(p h+3pT)^2$ occurs in the numerator and the entire series
+is divisible by $p^2$. Dividing the row-one congruence by $p$
+proves the claim without any division by $S_p$.
+\end{proof}
+\section{Exact checks}\label{IV:sec:checks}
+The accompanying code tests the Frobenius matrix and the newform independently.
+The first tests the transported matrix at every smooth nonzero
+parameter in $\F_p$ for the 23 primes $5\le p\le97$ (1,009 fibers).
+It compares its trace modulo $p^3$ with an independent count of pairs
+of toric cubics. At $z=c$ it also tests the vanishing of its two
+off-diagonal first-column entries modulo $p^3$ in rows one and two;
+row three is divisible by $p^3$ by construction.
+
+The second computes the Fourier coefficients of $f$ without using
+the hypergeometric period. The 21 eta quotients used in
+\texttt{verify\_finite.py} give a basis for $S_4(\Gamma_0(54))$;
+the checks of their cusp orders, character and independence, and the
+Sturm bound 36, are made over $\Q$. Imposing $U_2=2$, $U_3=0$ and
+$T_5=3$ leaves a one-dimensional joint eigenspace, which is normalized
+by its leading coefficient. For the longer computation we expand twice
+this form modulo $2^{64}$ using Euler's pentagonal number theorem.
+The bound $|a_p|\le2p^{3/2}$ makes the signed lift unique in the
+tested range. The ratio of successive truncation terms is
+$-(3k-1)^2(3k-2)^2/(648k^4)$; clearing prefix denominators gives a
+division-free check modulo $p^3$. Terms with $3k\ge2p$ vanish at
+this precision.
+All 9,590 primes $5\le p\le100{,}000$ passed. For example,
+$a_{99991}=49{,}718{,}099$. In the separate computation modulo $p^4$,
+all 667 primes $5\le p\le5000$ had $v_p(S_p-a_p)=3$.
+Already $S_5\equiv128\bmod625$ and $a_5=3$ prove that the exponent
+three cannot be increased uniformly. Every prime up to $100{,}000$
+in this computation had $p\nmid a_p$; the proof of the theorem makes
+no assumption about the existence or distribution of nonordinary primes.
+
+\appendix\paperanchors{IV.app}
+\section{The tetrahedral projector}\label{IV:app:tetra}
+\subsection{The Hesse cover}
+We also write $z_*=c$.
+B\"onisch~\cite[\S5.1]{IV:bonisch} constructs an elliptic surface $S_z$ with
+equation $s_0XYZ=t_0(X^3+Y^3+zZ^3)$ and forms
+$S_1\times_{\PP^1}\epsilon^*S_z$, where $\epsilon$ interchanges
+$s_0$ and $t_0$. Set $s=s_0/(3t_0)$. Since $c=(-1/18)^3$,
+putting $Z_{\rm new}=(-1/18)Z_{\rm old}$ in the second cubic
+identifies this threefold over $\Q$ on the smooth locus with the product of
+\[
+ H_s:\ X^3+Y^3+Z^3=3sXYZ,\qquad H_{I(s)},\qquad I(s)=-2/s .
+\]
+Let $D=\{\infty,1,\zeta,\zeta^2,0,-2,-2\zeta,-2\zeta^2\}$, where
+$\zeta$ is a primitive third root of unity. On
+$j:\PP^1\setminus D\hookrightarrow\PP^1$ write $L=R^1\pi_*\Q_\ell$
+for the first Hesse local system, and set
+\begin{equation}\label{IV:eq:par}
+ U=H^1(\PP^1_{\overline{\Q}},j_*(L\otimes I^* L)).
+\end{equation}
+This is the nonvertical component $U_{z_*}$ in
+\cite[\S\S4.3, 5.1]{IV:bonisch}. Here are the details of that
+identification. In Leray for the threefold over $\PP^1$ the term
+$E_2^{1,2}$ has no incoming or outgoing differentials.
+Fiberwise K\"unneth expresses $R^2$ as the two elliptic $R^2$
+sheaves and $j_*(L\otimes I^*L)$, since at most one factor is
+singular over each point. Each elliptic $R^2$ maps onto the
+constant Tate line, with skyscraper kernel, and so has zero $H^1$.
+Furthermore $E_2^{2,1}=0$: here $R^1=j_*(L\oplus I^*L)$, and the
+dual elliptic systems have no global invariants. The Leray filtration
+therefore identifies $E_2^{1,2}$ with a subspace of $H^3$ annihilated
+by restriction to fibers. It lies in B\"onisch's eight-dimensional
+kernel of the vertical component restrictions. Equality follows by
+the dimension calculation for parabolic cohomology below. The
+Euler characteristic gives $\dim U=8$: the tensor has rank
+four, its invariant stalk at each puncture has dimension two, and its
+global invariants and dual invariants vanish. Indeed, the two
+irreducible elliptic local systems have different bad loci, hence are
+not geometrically isomorphic, even after dualizing. This also gives
+$H^0(\PP^1,j_*(L\otimes I^*L))=H^2(\PP^1,j_*(L\otimes I^*L))=0$.
+
+\subsection{Two simultaneous transformations}
+Consider
+\[
+ d(s)=\zeta s,\qquad m(s)=\frac{s+2}{s-1}.
+\]
+Then $I d=d^{-1} I$ and $I m=m I$. On projective triples let
+$D_0=\operatorname{diag}(\zeta^2,1,1)$ and
+$F=(\zeta^{ij})_{0\leq i,j\leq2}$.
+Lifts on the pair of elliptic curves are $(D_0,\bar D_0)$ for $d$ and
+$(F,\bar F)$ for $m$. For the latter this follows by expanding the cube
+sum and product of the three entries of $F(X,Y,Z)^{\mathsf t}$:
+they are $3(X^3+Y^3+Z^3+6XYZ)$ and $X^3+Y^3+Z^3-3XYZ$.
+Thus the new Hesse parameter is $m(s)$.
+These projectivities preserve the base locus of the pencil as a set, so
+also act on the resolved rational elliptic surfaces.
+On $\{\infty,1,\zeta,\zeta^2\}$ the two base maps act as a three-cycle
+and a double transposition. They generate $A_4$.
+
+There is a minor distinction between matrices on the pencil and their
+actions on the tensor. A word acting trivially on the base induces an
+automorphism of the generic elliptic curve, which is a translation
+followed by $[1]$ or $[-1]$, since its $j$-invariant is nonconstant.
+The sign on the second factor is the same: the second word is obtained
+from the first by conjugating $\zeta$ and evaluating at $I(s)$, and
+both signs are rational. Thus such a word acts trivially on
+$L\otimes I^*L$. We obtain an action of $A_4$ on $U$ and on its
+Betti and de Rham counterparts. Conjugation sends $d$ to $d^{-1}$.
+It also preserves the action of $m$: conjugation interchanges $F$ and
+$\bar F=FP$, where $P$ exchanges the last two coordinates. The
+involution $P$ acts by $-1$ on $H^1$; it fixes a point and is
+nontrivial on the generic fiber. The two signs cancel on the tensor.
+Consequently the two projectors
+\begin{equation}\label{IV:eq:avg}
+ e_C=\frac{1+d+d^2}{3},\qquad
+ e=\frac1{12}\sum_{h\in A_4}h
+\end{equation}
+commute with $G_\Q$. The averaging takes place on cohomology by
+algebraic correspondences; $e_Ce=ee_C=e$. B\"onisch identifies
+$V=e_CU$ with $V_{z_*}$, of Hodge numbers $(1,1,1,1)$.
+
+\subsection{The two ranks and their Hodge types}
+B\"onisch computes $\Tr(d\mid U)=\Tr(d^{-1}\mid U)=2$.
+For $m$ the only fixed base points are $1\pm\sqrt3$, both smooth.
+At either point $F^2=3P$ in homogeneous coordinates, and hence the
+square of the fiber action on $H^1$ is $-1$. The action has determinant
+$1$, since it is an elliptic automorphism of degree one. Its eigenvalues
+are $i,-i$, and its trace vanishes. The conjugate factor has trace
+zero as well. The two fixed points are simple. The Lefschetz formula
+for the equivariant constructible sheaf in~\eqref{IV:eq:par} now yields
+$\Tr(m\mid U)=0$, using the vanishing of $H^0$ and $H^2$.
+These are character traces for finite-order geometric symmetries.
+The identity, the three involutions and the two classes of four
+elements of order three give
+\[
+ \dim eU=\frac{8+3\cdot0+4\cdot2+4\cdot2}{12}=2.
+\]
+Write $W=eU$ and $K=(e_C-e)U$. The latter also has dimension two.
+The line of type $(3,0)$ in $U$ is fixed pointwise by $d$ by
+\cite[\S5.1]{IV:bonisch}. The entire $A_4$ preserves this Hodge line, so
+its action there factors through $A_4^{\rm ab}\simeq C_3$, generated
+by the class of $d$. Thus $W$ has types $(3,0),(0,3)$, and $K$ has
+types $(2,1),(1,2)$. The group acts by isometries of the natural
+alternating pairing (cup product on parabolic cohomology). The
+averages are self-adjoint, so the restrictions to $W$ and $K$ are
+nondegenerate and both determinants are $\Q_\ell(-3)$.
+\section{Frobenius and the torus count}\label{IV:app:torus}
+For $p\geq5$ the reduction is good. In Hesse coordinates the two
+sets of four singular fibers remain disjoint: the only possible finite
+overlap between $\mu_3$ and $-2\mu_3$ would imply $1=-8$.
+At these primes the projectors~\eqref{IV:eq:avg} have $p$-integral
+coefficients. Their rational crystalline realizations are weakly
+admissible and compatible with the good-prime traces on the
+$\ell$-adic realization. In particular
+\begin{equation}\label{IV:eq:slopes}
+ v_p(\Tr(\Frob_p\mid K))\geq1 .
+\end{equation}
+Indeed $K$ has Hodge slopes 1 and 2. The Newton polygon lies above
+the Hodge polygon, so each Frobenius eigenvalue has valuation at least
+one. Their product equals $p^3$. This observation also distinguishes
+the factors whenever only one of the two candidate traces is divisible
+by $p$.
+
+
+\subsection{Trace on the four-dimensional constituent}
+On the open Hesse pencil define
+\[
+ (x,y,z)=\frac{(X^3,Y^3,Z^3)}{3sXYZ}.
+\]
+Then $x+y+z=1$, $xyz=u=1/(27s^3)$. On the paired pencil the
+corresponding parameter is $v=c/u$. This is a degree-three isogeny
+after a choice of origin (equivalently, a finite map between the
+smooth genus-one compactifications inducing an isomorphism on
+rational first cohomology). Indeed the three preimages form an orbit
+of the order-three diagonal projectivity
+$(X,Y,Z)\mapsto (X,\zeta Y,\zeta^2Z)$ on the generic fiber.
+The target coordinates are unchanged by $s\mapsto\zeta s$ with its
+specified lift $D_0$, and the paired coordinates by its conjugate.
+Taking the invariants of this cyclic base cover consequently identifies
+$V$ with the parabolic cohomology in the $u$ coordinate of the
+product of the two elliptic local systems. One may check the descent
+on the open locus and then extend by invariant stalks. Finite
+pushforward and projection onto invariants commute with this
+extension in characteristic zero.
+
+Write $N(u)$ for the number of triples in $(\F_p^\times)^3$ whose
+sum is $1$ and product is $u$. The cubic compactification
+$x y(w-x-y)=u w^3$ adds three rational points at infinity. Its smooth
+trace and its nodal invariant-stalk trace at $u=1/27$ therefore both
+equal $t(u)=p-2-N(u)$ for $u\in\F_p^\times$. For the nodal cubic
+this follows either by normalization or by counting its smooth
+projective model with the two branches identified.
+There is no invariant stalk of the product at $0$ or $\infty$.
+To see this, a Weierstrass model for the first elliptic system is
+$Y^2+XY+uY=X^3$, obtained with $X=-u/x$ and $Y=-Xy$. Its invariants
+are $c_4=1-24u$ and $\Delta=u^3(1-27u)$. Thus at $u=0$ its
+monodromy is unipotent. At infinity the substitutions $h=1/u$,
+$X=h^{-2}X'$, $Y=h^{-3}Y'$ give minimal discriminant of order eight
+and $c_4$ of order three (Kodaira type $\mathrm{IV}^*$). Its tame
+inertia on first cohomology has eigenvalues $\zeta,\zeta^2$. In the
+paired system these roles are interchanged at the two points.
+At the two distinct nonzero nodes only one factor is singular.
+The trace formula, with no global invariants or dual invariants, gives
+\begin{align}
+ T_p:=\Tr(\Frob_p\mid V)
+   &=-\sum_{u\in\F_p^\times}t(u)t(c/u) \notag\\
+   &=p^3-5p^2+10p-8-M_p,\label{IV:eq:exacttrace}\\
+ M_p&=\sum_{u\in\F_p^\times}N(u)N(c/u).\notag
+\end{align}
+In obtaining~\eqref{IV:eq:exacttrace} we have used
+$\sum_uN(u)=p^2-3p+3$, by inclusion and exclusion for the three
+affine lines $x=0$, $y=0$ and $x+y=1$.
+
+\subsection{Extracting the truncated period}
+Here $M_p$ counts ordered pairs of triples. On six nonzero
+coordinates with the prescribed two sums, write $u_0$ for their total
+product. Modulo $p$ the indicator of $u_0=c$ is
+$-\sum_{j=1}^{p-1}(u_0/c)^j$. Put
+$B_j=\sum_{x+y+z=1,\,xyz\ne0}(xyz)^j$. Then
+\[
+ M_p\equiv-\sum_{j=1}^{p-1}c^{-j}B_j^2\pmod p.
+\]
+For $j=p-1$ we have $B_j\equiv3$. For $1\leq j\leq p-2$ put
+$k=p-1-j$. Expanding $x^jy^j(1-x-y)^j$ and summing over all $x,y$
+leaves only the monomial with added exponents $k,k$. It occurs exactly
+when $3k\leq p-1$, and has coefficient
+\[
+ \frac{(p-1-k)!}{(k!)^2(p-1-3k)!}\equiv A_k\pmod p .
+\]
+The two nonzero power sums each contribute $-1$. For the remaining
+$k$ the coefficient $A_k$ is zero modulo $p$. It follows that
+\begin{equation}\label{IV:eq:modp}
+ M_p\equiv -8-S_p\pmod p,\qquad T_p\equiv S_p\pmod p .
+\end{equation}
+In particular, with the identification of $W$ with $f$, equations
+\eqref{IV:eq:slopes}--\eqref{IV:eq:modp} give $S_p\equiv a_p\pmod p$
+at every good prime, including any nonordinary prime.
+
+\section{Modular identification}\label{IV:app:modular}
+Let $g$ denote the normalized newform $54.2.\mathrm{a}.\mathrm{a}$ with good-prime coefficients $b_p$.
+\begin{theorem}\label{IV:thm:comparison}
+For the rank-four constituent of the specified Hesse model, the
+semisimplifications satisfy
+\[
+ V_{c,\ell}^{\mathrm{ss}}\simeq
+ \rho_{f,\ell}\oplus\rho_{g,\ell}(-1).
+\]
+The good-prime Euler polynomial of $V$ is therefore
+$(1-a_pT+p^3T^2)(1-pb_pT+p^3T^2)$.
+\end{theorem}
+\begin{proof}
+Compare $W_2$ with $\rho_{f,2}$ and $K_2(1)$ with $\rho_{g,2}$.
+Each pair has the same determinant by the alternating pairing and
+the trivial nebentypus of the newforms. Their ramification is confined
+to $2,3$: the two sets of bad Hesse fibers are disjoint and tame
+over $\Z[1/6]$ after adjoining $\zeta$, the rational elliptic surfaces
+are smooth there, and the fiber product has good reduction.
+Compactness gives stable $\Z_2$-lattices even though the averaging
+operators were defined over $\Q_2$.
+
+The four polynomials can be determined by point counts over $\F_p$
+and $\F_{p^2}$. Write $t_q=\Tr(\Frob_q\mid V)$. The trace-count
+identity~\eqref{IV:eq:exacttrace} also applies over these extensions.
+The reciprocal quartic has coefficients $1,-t_p,(t_p^2-t_{p^2})/2,
+-p^3t_p,p^6$ in ascending degrees. The following exact counts are
+reproducible by the accompanying \texttt{verify\_four\_primes.py}.
+They agree with B\"onisch's computations in \cite[\S5.1]{IV:bonisch}.
+\[
+\begin{array}{r|rr|rr|rr}
+p&t_p&t_{p^2}&\Tr W&\Tr K&a_p& b_p\\ \hline
+5& 18&-266&3&15&3&3\\
+7& 22&-482&29&-7&29&-1\\
+13&-32&-5684&20&-52&20&-4\\
+19&-68&-14756&-106&38&-106&2
+\end{array}
+\]
+Here is why the indicated ordering of factors is forced.
+The two displayed reciprocal pairs have distinct traces and each
+has product $p^3$. A root of the quartic has just one reciprocal
+partner, so its two rank-two summands have to be those pairs.
+The minimum Hodge slope of $K$ is one. Crystalline comparison at
+the four good primes and the Newton--Hodge inequality therefore give
+$v_p(\lambda)\geq1$
+for both of its roots. Precisely one of the two candidate traces is
+divisible by $p$. The use of the same projected factor across
+realizations follows from the geometric action: the two projectors
+are rational combinations of automorphisms on the parabolic term.
+More explicitly, on the smooth projective fiber product one takes
+the alternating trace of an automorphism composed with Frobenius by
+intersection with the diagonal. Degrees $0,2,4,6$ are algebraic and
+degrees $1,5$ vanish. To obtain the primitive term in degree three
+one removes the ruled-fiber contribution, given by the reduced
+component spaces tensored with the elliptic $H^1(-1)$. This
+calculation is common to the crystalline and $\ell$-adic realizations.
+If Frobenius permutes automorphisms or components, take the trace
+of the entire averaged correspondence. The last two columns are the
+Fourier coefficients of the labeled newforms \cite[\S5.1]{IV:bonisch}.
+
+We specify the finite comparison criterion, since agreement of traces
+at an unspecified set of primes would not suffice. For each of the
+four representations, the residual characteristic polynomials at
+$5,7,13$ are $X^2+X+1,X^2+X+1,X^2+1$ respectively.
+Li, Long and Yang, Lemma~6.1 in \cite{IV:lly}, show that these data and
+the ramification bound determine a unique surjective residual
+representation up to conjugacy. Its field is the splitting field
+of $X^3+3X-2$, with quadratic subfield $\Q(\sqrt{-6})$.
+Their Theorem~6.1 and its field analysis in the proof of
+Theorem~6.2 now apply to each pair. In detail, a nonzero deviation
+between equal-determinant lifts would be detected at a Frobenius
+of order at least four in one of the deviation groups
+$S_4,S_4\times C_2,S_3\times C_2$.
+For the first two possibilities the three admissible quartic
+fields have defining polynomials
+\[
+ X^4-4X-3,\qquad X^4-8X+6,\qquad X^4-12X^2-16X+12 .
+\]
+The first two yield a four-cycle at $13$, the third at $19$.
+In the remaining case an independent quadratic character unramified
+outside $2,3$ is nontrivial at $5$ or $7$: among the squareclasses
+generated by $-1,2,3$ only $1,-6$ split at both primes. The residual
+Frobenius there has order three, giving an element of order six.
+The table has equal traces for each comparison at all four primes,
+eliminating these deviations. One may extend scalars to
+$\Q_2(i)$ to use precisely the coefficient ring of \cite{IV:lly};
+its residue field is still $\F_2$.
+
+This proves both comparisons at $\ell=2$, hence the asserted
+Euler polynomials at every $p\geq5$. The common Frobenius
+polynomials for $V$ across $\ell$, followed by Chebotarev and
+Brauer--Nesbitt, give the stated semisimplifications for all $\ell$.
+\end{proof}
+
+\section{Finite product identities for the two higher digits}\label{IV:app:digits}
+By Theorem~\ref{IV:thm:comparison} and \eqref{IV:eq:modp} the first digit is established for all
+good primes. The congruence modulo $p^3$ is equivalent, without an
+ordinarity hypothesis, to the scalar condition
+\begin{equation}\label{IV:eq:two}
+ \frac{M_p+8+S_p}{p}+b_p-10+5p\equiv0\pmod{p^2}.
+\end{equation}
+The left quotient is integral by \eqref{IV:eq:modp}. The equivalence
+follows by substituting $a_p=T_p-pb_p$ in \eqref{IV:eq:exacttrace}.
+
+\subsection{Jacobi sums and factorials}
+Let $p\geq5$, $c=-1/5832$, and $T_p=\Tr(\Frob_p\mid V_{z_*})=a_p+p b_p$.
+Set $m=\lfloor(p-1)/3\rfloor$, $n=\lfloor 2(p-1)/3\rfloor$, and, for $0\le k\le m$, put
+\[
+ \delta_k=\frac{pk}{p-1},\qquad
+ W_k=\frac{\prod_{j=1}^{3k}(j-3\delta_k)}
+              {\prod_{j=1}^{k}(j-\delta_k)^3}.
+\]
+All the denominators in $W_k$ are $p$-adic units. For $m< k\le n$ set
+$r_k=3k-(p-1)$. Define the following explicitly computable $p$-adic integer:
+\[
+ B_p=\frac1{1-p}\left(
+ \sum_{k=0}^{m} c^{p^2 k} W_k^2
+ +p^2\sum_{k=m+1}^{n} c^{k}
+                 \left(\frac{r_k!}{(k!)^3}\right)^{\!2}\right).
+\]
+\begin{proposition}\label{IV:prop:gamma-digits}
+The good-prime trace satisfies $T_p\equiv B_p\pmod {p^3}$. In particular,
+$B_p-S_p\in p\Z_p$, and the congruence $S_p\equiv a_p\pmod {p^3}$
+for a given $p$ is equivalent to
+\[
+ \frac{B_p-S_p}{p}\equiv b_p\pmod {p^2}.
+\]
+Write $H_j=\sum_{i=1}^j i^{-1}$, $H_0=0$, and $q_p(c)=(c^{p-1}-1)/p$.
+At precision $p^2$ one obtains the equivalent identity in $\F_p$
+\[
+ b_p=\sum_{k=0}^{m}A_k^2 c^k\left[1+k q_p(c)+6k(H_{3k}-H_k)\right].
+\]
+\end{proposition}
+\begin{proof}
+For $u\in\F_p^\times$ put
+\[
+ N_u=\#\{(x,y,w)\in(\F_p^\times)^3:x+y+w=1,\ xyw=u\},\quad h(u)=p-2-N_u.
+\]
+The toric trace formula gives $T_p=-\sum_{u\ne0}h(u)h(c/u)$.
+We have $\sum_{u\ne0}N_u=p^2-3p+3$, so $\sum_{u\ne0}h(u)=-1$.
+For a nontrivial multiplicative character $\chi$, its Mellin coefficient
+$\sum_u h(u)\chi(u)$ is $-J(\chi,\chi,\chi)$, by the defining equation for $N_u$.
+With $\omega$ the Teichm\"uller character, write
+$J_k=J(\omega^{-k},\omega^{-k},\omega^{-k})$ for $1\le k\le p-2$.
+Character orthogonality gives the exact identity
+\[
+ T_p=\frac1{1-p}\left(1+\sum_{k=1}^{p-2}\omega(c)^k J_k^2\right).
+\]
+For each $k\ge1$ write $3k=e(p-1)+r$ with $1\le r\le p-1$, and put
+$x=k/(p-1)$. The Gross--Koblitz formula (B.~H.~Gross and N.~Koblitz,
+\emph{Gauss sums and the $p$-adic $\Gamma$-function}, Ann. of Math.
+109 (1979), 569--581, Theorem~1.7)
+for the usual Gauss sum is $g(\omega^{-k})=-\pi^k\Gamma_p(x)$ with $\pi^{p-1}=-p$.
+The Gauss--Jacobi sum relation gives
+\[
+ J_k^2=p^{2e}\left(\frac{\Gamma_p(x)^3}{\Gamma_p(r/(p-1))}\right)^{\!2}.
+\]
+Indeed, for $r<p-1$ the unsquared Jacobi sum is $g(\omega^{-k})^3/g(\omega^{-r})$.
+For $r=p-1$ it is $-g(\omega^{-k})^3/p$, which gives the same squared expression since
+$\Gamma_p(1)=-1$. This convention includes both integral break points of $3k/(p-1)$.
+All terms with $e\ge2$ vanish modulo $p^3$.
+
+For $e=0$ write $x=-k+\delta_k$ and $3x=-3k+3\delta_k$. Morita's functional equation and $3k\le p-1$ give
+\[
+ \frac{\Gamma_p(x)^3}{\Gamma_p(3x)}=W_k\,\frac{\Gamma_p(\delta_k)^3}{\Gamma_p(3\delta_k)}.
+\]
+For $v\in p\Z_p$ one has $\Gamma_p(v)^3/\Gamma_p(3v)\equiv1\pmod{p^3}$.
+To see this, each block $\prod_{j=1}^{p-1}(j+hp)$ is congruent to $(p-1)!$ modulo $p^3$ for integers $h\ge0$:
+$H_{p-1}\equiv0\pmod{p^2}$ by Wolstenholme, and $\sum_{j=1}^{p-1}j^{-2}\equiv0\pmod p$.
+Thus $\Gamma_p(hp)\equiv\Gamma_p(p)^h\pmod{p^3}$ by Morita's product definition.
+The ratio at $v=hp$ equals $1$ modulo $p^3$, and continuity gives the assertion for all $v\in p\Z_p$.
+For $e=1$ the gamma ratio is needed only modulo $p$. Morita's function is constant modulo $p$ on each residue class modulo $p$ (this also follows by grouping its integral product into blocks).
+Since $x\equiv-k$ and $r/(p-1)\equiv-r\pmod p$, and since
+$\Gamma_p(-j)=1/j!$ for $0\le j\le p-1$, this ratio is $r!/(k!)^3$ modulo $p$.
+Finally $\omega(c)\equiv c^{p^2}\pmod{p^3}$. These calculations give $T_p\equiv B_p\pmod{p^3}$.
+
+For the second digit, $\delta_k\equiv-pk\pmod {p^2}$, and expansion of the finite products yields
+\[
+ W_k^2\equiv A_k^2\bigl[1+6pk(H_{3k}-H_k)\bigr]\pmod {p^2}.
+\]
+Also $c^{p^2 k}\equiv c^k(1+pk q_p(c))\pmod{p^2}$. The terms of $S_p$ with $k>m$ are in $p^2\Z_p$.
+Expanding $(1-p)^{-1}$ now gives the displayed identity for the obstruction modulo $p$. The two equivalences follow by substituting $T_p=a_p+p b_p$.
+\end{proof}
+
+\subsection{The elliptic trace as a second member of the same pencil}
+The curve with LMFDB label $54.\mathrm{a}3$ corresponds to $g$ and has
+minimal equation $y^2+xy=x^3-x^2+12x+8$. Its rational point $(1,4)$
+has order three \cite{IV:curve}. The substitutions $x=1+X$,
+$y=4+X+Y$ give
+\[
+ Y^2+3XY+9Y=X^3 .
+\]
+On replacing $(X,Y)$ by $(9X',27Y')$, one obtains
+$Y'^2+X'Y'+\tfrac13Y'=X'^3$. Thus the weight-two trace is precisely
+the trace $t(1/3)$ of the toric cubic in Appendix~\ref{IV:app:torus}. The
+coordinate changes have good reduction for $p\geq5$.
+
+In fact for each $u\in\F_p^\times$ Fourier inversion for a single
+copy of $N(u)$, with the coefficients $B_j$ above, gives
+\[
+ N(u)\equiv -3-\sum_{k=1}^m A_k u^k,\qquad
+ t(u)\equiv \sum_{k=0}^m A_k u^k\pmod p .
+\]
+Write $L_p=\sum_{k=0}^m A_k3^{-k}$ in $\F_p$.
+The second-digit identity is therefore the purely finite congruence
+\begin{equation}\label{IV:eq:pure}
+ \sum_{k=0}^m A_k^2c^k\bigl[1+k q_p(c)+6k(H_{3k}-H_k)\bigr]
+ = L_p\quad \text{in }\F_p .
+\end{equation}
+This includes all good primes, with no hypothesis on $a_p$.
+For the third digit one can even recover the integer $b_p$ from $L_p$:
+it is the unique integer $b$ satisfying
+\[
+ b\equiv L_p\pmod p,\qquad b\equiv p+1\pmod3,\qquad |b|\leq2\sqrt p .
+\]
+Indeed the rational point of order three injects under good
+reduction, giving the second residue condition. The Hasse bound
+gives the interval, and $3p>4\sqrt p$ ensures uniqueness.
+Consequently Proposition~\ref{IV:prop:gamma-digits} gives an all-prime
+criterion using only factorials and elementary arithmetic, independent
+of any tables of newforms. There is also a version which involves no reconstruction of an integer.
+Put $v=1/3$ and $R_k=r_k!/(k!)^3$ on the middle range.
+By inversion for the single trace $h(v)$ the Mellin formula reads
+\[
+ b_p=\frac{1}{1-p}\left(1+\sum_{k=1}^{p-2}\omega(v)^k J_k\right).
+\]
+In the notation of the preceding proof the unsquared Jacobi sum
+equals $(-p)^e\Gamma_p(x)^3/\Gamma_p(r/(p-1))$, including $r=p-1$.
+Reducing to modulus $p^2$ yields
+\[
+ (1-p)b_p\equiv \sum_{k=0}^{m}v^{pk}W_k
+                     -p\sum_{k=m+1}^{n}v^kR_k\pmod{p^2}.
+\]
+Together with Proposition~\ref{IV:prop:gamma-digits}, this proves
+that the good-prime conjecture is equivalent to the following single
+finite product identity for each $p\geq5$:
+\begin{equation}\label{IV:eq:fullpure}
+ \sum_{k=0}^{m}\big(c^{p^2k}W_k^2-pv^{pk}W_k\big)
+ +p^2\sum_{k=m+1}^{n}\big(c^kR_k^2+v^kR_k\big)
+ \equiv(1-p)S_p\pmod{p^3}.
+\end{equation}
+By Theorem~\ref{IV:thm:main} both \eqref{IV:eq:pure} and \eqref{IV:eq:fullpure} hold for every prime $p\ge5$.
+
+
+\subsection{Computational details for the finite identities}
+The index of $\Gamma_0(54)$ is 108, with 12 cusps, genus four and
+no elliptic points. Thus $\dim S_4(\Gamma_0(54))=21$ and the Sturm
+bound is 36. In the basis of eta quotients used in Section~\ref{IV:sec:checks},
+imposing $U_2=2$, $U_3=0$ and $T_5=3$ gives subspaces of dimensions
+$4,3,1$, respectively. At $p=4999$ the normalized eigenform gives
+$a_p=-560608$ and the independent truncation gives
+$S_p\equiv124924454391\pmod{p^3}$.
+The Jacobi-sum and elliptic-trace calculations were checked separately
+by point counts at all 93 primes $5\le p\le500$.
+
+
+\endgroup
+\renewcommand{\runningpaper}{References}
+\phantomsection\addcontentsline{toc}{part}{References}
+\begin{thebibliography}{99}
+\bibitem{I:BD}
+F.~Beukers and E.~Delaygue,
+\emph{Some supercongruences of arbitrary length},
+Indagationes Mathematicae \textbf{33} (2022), no.~5, 946--955.
+\href{https://doi.org/10.1016/j.indag.2022.04.002}{doi:10.1016/j.indag.2022.04.002}.
+Preprint: \href{https://arxiv.org/abs/1805.02467}{arXiv:1805.02467}. See Conjectures~1.2 and~1.5.
+
+\bibitem{I:BM}
+P.~Berthelot and W.~Messing,
+\emph{Th\'eorie de Dieudonn\'e cristalline I},
+Ast\'erisque \textbf{63} (1979), 17--37.
+\href{https://numdam.org/item/AST_1979__63__17_0/}{Numdam full text}.
+
+\bibitem{I:Katz}
+N.~M.~Katz, \emph{$p$-adic properties of modular schemes and modular forms},
+in Modular Functions of One Variable III,
+Lecture Notes in Mathematics \textbf{350}, Springer, 1973, pp.~69--190.
+\href{https://web.math.princeton.edu/~nmk/old/padicpropMFMS.pdf}{Author's full text}.
+
+\bibitem{I:Stacks}
+The Stacks Project Authors, \emph{The Stacks Project},
+Proposition~60.17.4 (Tag~07JH), Taylor comparison for crystals.
+\url{https://stacks.math.columbia.edu/tag/07JH}.
+
+\bibitem{I:SunYe}
+Z.-H.~Sun and D.~Ye, \emph{Supercongruences via Beukers' method},
+\href{https://arxiv.org/abs/2408.09776v4}{arXiv:2408.09776v4},
+19 September 2024. See Theorem~1.29 and Section~9.
+
+\bibitem{I:BlochVanhove}
+S.~Bloch and P.~Vanhove, \emph{The elliptic dilogarithm for the sunset graph},
+Journal of Number Theory \textbf{148} (2015), 328--364.
+\href{https://arxiv.org/abs/1309.5865}{arXiv:1309.5865}.
+
+\bibitem{III:Beukers2026}
+F. Beukers,
+\emph{Supercongruences using modular forms},
+Algebra Number Theory 20 (2026), 1727--1768;
+\url{https://arxiv.org/abs/2403.03301}. Numbering follows arXiv v3 (16 June 2025). See Corollary~1.20, Conjecture~1.28 and Appendix Sections~8.10 and~9.5.
+
+\bibitem{III:BV3}
+F. Beukers and M. Vlasenko,
+\emph{Dwork crystals III: from excellent Frobenius lifts towards supercongruences},
+Int. Math. Res. Not. IMRN (2023), 20433--20483;
+\url{https://arxiv.org/abs/2105.14841}.
+
+\bibitem{III:CompleteEdition}
+QEEDDD Verifiable-Mathematical-Reasoning-Corpus Project,
+\emph{Excellent Frobenius Lifts and Supercongruences: Complete Collected Edition},
+research manuscript, 2026.
+
+\bibitem{III:BKSZ}
+K. B\"onisch, A. Klemm, E. Scheidegger and D. Zagier,
+\emph{D-brane masses at special fibres of hypergeometric families of Calabi--Yau threefolds,
+modular forms, and periods},
+Commun. Math. Phys. (2024);
+\url{https://people.mpim-bonn.mpg.de/zagier/files/preprints/DbranesCYandMFs.pdf}.
+
+\bibitem{III:CandelasAttractor}
+P. Candelas, X. de la Ossa, M. Elmi and D. van Straten,
+\emph{A one parameter family of Calabi--Yau manifolds with attractor points of rank two},
+JHEP 10 (2020), 202;
+\url{https://arxiv.org/abs/1912.06146}.
+
+\bibitem{III:Fu}
+Y. Fu,
+\emph{$p$-adic rigidity and supercongruences at rank two attractors},
+preprint (2026), \url{https://arxiv.org/abs/2609.36045}.
+
+\bibitem{III:Katz}
+N. Katz,
+\emph{Exponential Sums and Differential Equations},
+Annals of Mathematics Studies 124, Princeton University Press, 1990.
+
+\bibitem{III:Deligne}
+P. Deligne,
+\emph{Hodge cycles on abelian varieties},
+in: Hodge Cycles, Motives, and Shimura Varieties,
+Lecture Notes in Mathematics 900, Springer, 1982.
+
+\bibitem{III:Andre}
+Y. Andr\'e,
+\emph{Pour une th\'eorie inconditionnelle des motifs},
+Publ. Math. IH\'ES 83 (1996), 5--49.
+
+\bibitem{III:Dummigan}
+N. Dummigan,
+\emph{Modularity of a certain rank-2 attractor Calabi--Yau threefold},
+preprint, revised 2026.
+
+\bibitem{III:LMFDB}
+The LMFDB Collaboration,
+\emph{The L-functions and Modular Forms Database},
+\url{https://www.lmfdb.org/}.
+
+\bibitem{IV:bonisch}
+K. B\"onisch, \emph{Modularity of special motives of
+rank four associated with Calabi--Yau threefolds}, doctoral
+dissertation, University of Bonn (2023), \S\S4.3 and 5.1.
+\url{https://d-nb.info/1375378988/34}.
+
+\bibitem{IV:lly}
+W.-C. W. Li, L. Long and Z. Yang, \emph{On
+Atkin--Swinnerton-Dyer congruence relations}, J. Number Theory
+113 (2005), 117--148. See Lemma~6.1, Theorem~6.1 and the comparison
+immediately preceding Theorem~6.2. \url{https://arxiv.org/abs/math/0311287}.
+
+\bibitem{IV:kedlaya}
+K. S. Kedlaya, \emph{Frobenius structures on
+hypergeometric equations}, arXiv:1912.13073. See Lemma~2.3.6,
+Remark~2.3.7, Proposition~3.1.11 and Remark~4.1.3.
+\url{https://arxiv.org/abs/1912.13073}.
+
+\bibitem{IV:lazda}
+C. Lazda, \emph{Incarnations of Berthelot's conjecture},
+J. Number Theory (2017), Corollary~6.4.
+\url{https://www.math.unipd.it/~lazda/resources/Papers/Berthelot.pdf}.
+
+\bibitem{IV:curve}
+The LMFDB Collaboration, elliptic curve $54.\mathrm{a}3$,
+Cremona label $54\mathrm{a}1$.
+\url{https://www.lmfdb.org/EllipticCurve/Q/54/a/3}.
+
+\bibitem{IV:lmfdb}
+The LMFDB Collaboration, modular forms
+\texttt{54.4.a.c} and \texttt{54.2.a.a}.
+\url{https://www.lmfdb.org/ModularForm/GL2/Q/holomorphic/54/}.
+\end{thebibliography}
+\end{document}

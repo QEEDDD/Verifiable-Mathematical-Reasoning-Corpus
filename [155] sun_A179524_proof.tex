@@ -1,0 +1,1158 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem*{maintheorem}{Main Theorem}
+\newtheorem*{conjecture*}{Conjecture (Z.-W. Sun, 2010)}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Zp}{\mathbb{Z}_p}
+\newcommand{\CT}{\operatorname{CT}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cL}{\mathfrak{L}}
+\newcommand{\bin}[2]{\binom{#1}{#2}}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,frame=single,
+  keepspaces=true,showstringspaces=false,upquote=true}
+
+\title[Sun's conjecture for $\sum(20k+17)W_k(1,-4)$]{Sun's divisibility conjecture for
+$\sum_{k<n}(20k+17)\,W_k(1,-4)$ is true}
+\subjclass[2020]{11A07, 11B65, 11F33, 14F30, 33C20}
+\keywords{Sun's conjectures, Dwork crystals, unit-root crystal, Ramanujan series for $1/\pi$,
+complex multiplication, supercongruences}
+\author{QEEDDD Verifiable-Mathematical-Reasoning-Corpus project}
+\date{November 8, 2026}
+
+\begin{document}
+
+\begin{abstract}
+Let $a_n=\sum_{k}(-4)^k\binom nk^2\binom{n-k}k^2=W_n(1,-4)$ and
+$S(n)=\sum_{k=0}^{n-1}(20k+17)a_k$. In 2010 Z.-W.~Sun conjectured that $n\mid S(n)$ for every
+$n\ge1$ (OEIS A179524). We prove this conjecture. Earlier work established the $2$-part, the
+$5$-part and all prime powers $p^e$ with $p\equiv11,13,17,19\pmod{20}$. The split primes
+$p\equiv1,3,7,9\pmod{20}$ remained open. At these primes the complex-multiplication elliptic curve behind the
+problem has ordinary reduction, and none of the earlier vanishing-moment mechanisms applies.
+We treat them with the unit-root crystals of Beukers and Vlasenko. First, an exact identity
+reduces $S(N)\bmod N$ to the constant term of $\Lambda^N\rho\Phi(uv)$. This reduces the $p$-part of
+the conjecture to a single $p$-adic number: the value at $b=-4$ of the Gauss--Manin connection
+$\eta_b$ on a rank-one unit-root crystal. Our main new result identifies this connection:
+$\eta_b(b)=-\tfrac12-\eta_{\mathcal R}(1/(256b))$, where $\eta_{\mathcal R}$ is the
+unit-root connection of Ramanujan's family
+${}_3F_2(\tfrac14,\tfrac12,\tfrac34;1,1;256T)$. The proof expands a second
+model of the crystal at a corner of its Newton polytope; the resulting Hasse--Witt coefficients
+converge $p$-adically to Ramanujan's period $c^{-1}\,{}_3F_2(\tfrac14,\tfrac12,\tfrac34;1,1;1/c^{2})$.
+Sun's theorem on the partial sums of Ramanujan's series
+$\sum(20k+3)\binom{2k}k^2\binom{4k}{2k}(-2^{10})^{-k}=8/\pi$ then gives
+$20\eta_b(-4)+7=0$, which yields $p^{v_p(N)}\mid S(N)$ for every $N$. All steps are unconditional;
+an exact-arithmetic verification script is included.
+\end{abstract}
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+For $n\ge0$ put
+\[
+ M(n,k)=\binom nk\binom{n-k}k=\binom n{2k}\binom{2k}k,\qquad
+ a_n=\sum_{0\le2k\le n}(-4)^kM(n,k)^2,
+\]
+and
+\[
+ S(n)=\sum_{k=0}^{n-1}(20k+17)a_k .
+\]
+In Sun's notation $a_n=W_n(1,-4)$, where $W_n(b,c)=\sum_k\binom n{2k}^2\binom{2k}k^2b^{n-2k}c^k$.
+The first values are $a_0,a_1,a_2,a_3=1,1,-15,-143$ and $S(1),\dots,S(4)=17,54,-801,-11812$.
+
+\begin{conjecture*}[{\cite[Conjecture 5.8(ii)]{Sun2010}, \cite{OEIS}}]
+For every positive integer $n$ we have $n\mid S(n)$.
+\end{conjecture*}
+
+The conjecture was stated in the eleventh version of \cite{Sun2010} (dated 1~July~2010 in
+OEIS A179524 \cite{OEIS}). It is recorded as an open statement in the Lean database
+\texttt{formal-conjectures} \cite{FC} and in the \emph{OEIS Open} benchmark \cite{OO}.
+
+\begin{maintheorem}
+For every integer $n\ge1$, $n\mid S(n)$. Moreover $v_2(S(n))=v_2(n)$.
+\end{maintheorem}
+
+\subsection{What was known}
+The following facts are reproved below for completeness.
+(i) $\mathrm{rad}(n)\mid S(n)$ for every $n$, by a Lucas congruence and a reflection that turns
+$S(p)\bmod p$ into a truncation of Ramanujan's series \cite{EarlierNote,K26}.
+(ii) $S(n)/n$ is an odd $2$-adic integer \cite{K26}.
+(iii) $p^e\mid S(p^em)$ for all $e,m\ge1$ when $p=5$ or $p\equiv11,13,17,19\pmod{20}$
+\cite{K26}. This uses an exact ``digit operator'' and the vanishing of three
+moments, which comes from the supersingular reduction of the CM curve $j=j(\sqrt{-5})$.
+At the \emph{split primes}, $p\equiv1,3,7,9\pmod{20}$, the CM curve is ordinary and the moments
+are units. Before this paper only finitely many prime-power levels were known there,
+by computation \cite{EarlierNote,K26}.
+
+\subsection{The new result}
+\begin{theorem}\label{thm:B}
+Let $p$ be a prime with $p\equiv1,3,7,9\pmod{20}$. Then $p^{v_p(N)}\mid S(N)$ for every $N\ge1$.
+\end{theorem}
+
+The Main Theorem follows from Theorem~\ref{thm:B} together with Theorems~\ref{thm:two},
+\ref{thm:inert} and~\ref{thm:five} (Section~\ref{sec:main}).
+
+\subsection{Strategy for the split primes}
+\begin{enumerate}[leftmargin=*]
+\item \emph{An exact reduction} (Section~\ref{sec:elementary}). A telescoping identity gives
+$S(N)=10N\cdot(\text{integer})+H_2(N)$, and $H_2(N)=\CT(\Lambda^N\rho\Phi(uv))$ with
+$\Lambda=(1+u)(1+v)/(uv)$, $\rho=uv/(1+u+v)$ and
+$\Phi(x)=\sum_l(20l+7)(-4)^l\binom{2l}l^2x^{2l}$. So it suffices to show that the power series
+$\rho\Phi(uv)$ is a $p$-adic \emph{formal divergence} $\theta_uJ_1+\theta_vJ_2$.
+\item \emph{A rank-one unit-root crystal} (Section~\ref{sec:crystal}). The series
+$\rho\Phi(uv)$ is a constant term of the rational function
+$\Omega=(20\theta_b+7)\bigl(uv/f_b\bigr)$ at $b=-4$, where
+$f_b=(1+u+v)(1-uv(z+b/z)(w+1/w))$. At an ordinary prime, the Beukers--Vlasenko theory of Dwork
+crystals \cite{BV1} gives $\Omega\equiv(20\eta_b+7)\,uv/f_b$ modulo formal derivatives,
+with a unit-root connection $\eta_b$. So everything reduces to the single identity
+$20\eta_b(-4)+7=0$.
+\item \emph{Identification with Ramanujan's family} (Section~\ref{sec:identification}). We prove
+$\eta_b(b)=-\frac12-\eta_{\mathcal R}(1/(256b))$, where $\eta_{\mathcal R}=\theta_T\log
+\cF(T)$ and $\cF(T)=\sum_k\frac{(4k)!}{k!^4}T^k$. To prove it we use a second model
+$f_c=(1-cxg(z,w))(1-xL(y))$ of the same crystal ($b=c^2$) and expand it at a
+\emph{corner} vertex of its Newton polytope. There the Hasse--Witt coefficients are explicit
+binomial sums that converge $p$-adically, as the level grows, to Ramanujan's period
+$c^{-1}\cF(1/(256c^2))$.
+\item \emph{Sun's theorem} (Section~\ref{sec:ramanujan}). Sun proved via a WZ pair that
+$4(2n+1)\binom{2n}n$ divides the partial sums of Ramanujan's $(20k+3)$-series
+\cite[Theorem~1.2]{SunEJC}. Together with Dwork's congruences \cite{MV,BV2} this gives
+$\eta_{\mathcal R}(-1/1024)=-3/20$. Hence $20\eta_b(-4)+7=20(-\frac12+\frac3{20})+7=0$.
+\end{enumerate}
+
+\begin{remark}[An upside-down Ramanujan formula]\label{rem:upside}
+The ``period'' of the crystal in step~(2) is
+$\int_0^{1/4}{}_2F_1(\frac12,\frac12;1;16bx^2)\,(1-4x)^{-1/2}\,dx=\frac12\,{}_3F_2(\frac12,\frac12,\frac12;\frac34,\frac54;b)$,
+a series that diverges at $b=-4$. The point of maximal unipotent monodromy of its differential
+equation is $b=\infty$, where the holomorphic solution is
+$b^{-1/2}{}_3F_2(\frac14,\frac12,\frac34;1,1;1/b)$. Formally, Sun's sum is the $p$-adic shadow of
+the ``upside-down'' series $\sum_l(20l+7)(-4)^l\frac{(1/2)_l^3}{(1)_l(3/4)_l(5/4)_l}$. Up to sign,
+this is Ramanujan's series $\sum_k(20k+3)\frac{(1/2)_k(1/4)_k(3/4)_k}{k!^3}(-\frac14)^k=\frac8\pi$
+continued to the half-integers $k=-l-\frac12$. Theorem~\ref{thm:identification} makes this precise
+$p$-adically, at every ordinary prime.
+\end{remark}
+
+\subsection*{Conventions}
+$\theta_y=y\,\partial/\partial y$ for any variable $y$. $\CT$ denotes the constant term.
+$v_p$ is the $p$-adic valuation, with $v_p(0)=\infty$. $(a)_k$ is the rising factorial. For an odd
+prime $p$ we write $h=(p-1)/2$ and $d=\lfloor p/4\rfloor$. We put
+$\gamma_l=(-4)^l\binom{2l}l^2$, $A_k=\frac{(4k)!}{k!^4}=\binom{2k}k^2\binom{4k}{2k}$, and
+\[
+ G_b(x)=\sum_{l\ge0}b^l\binom{2l}l^2x^{2l},\qquad
+ E(x)=\sum_{i\ge0}\binom{2i}ix^i=(1-4x)^{-1/2},\qquad
+ \Phi(x)=\sum_{l\ge0}(20l+7)\gamma_lx^{2l}.
+\]
+Thus $G_{-4}(x)=\sum_l\gamma_lx^{2l}$ and $\Phi=\bigl((20\theta_b+7)G_b\bigr)|_{b=-4}$.
+For $N\ge1$ we put
+\begin{equation}\label{eq:dN}
+ d_N(b)=[x^{N-1}]\,G_b(x)E(x)=\sum_{0\le2l\le N-1}b^l\binom{2l}l^2\binom{2i}i,\qquad i=N-1-2l.
+\end{equation}
+
+\section{Elementary reductions}\label{sec:elementary}
+
+\begin{lemma}\label{lem:telescope}
+For integers $m,N\ge0$,
+$\displaystyle\sum_{n=0}^{N-1}(2n-m+1)\binom nm^2=N\binom N{m+1}\binom{N-1}m$
+(the right side is read as $0$ for $N=0$).
+\end{lemma}
+\begin{proof}
+Put $g(n)=(n-m)^2\binom nm^2/(m+1)$. For $n\ge1$ this equals $n\binom n{m+1}\binom{n-1}m$, and
+$g(0)=0$. Since $\binom{n+1}m=\frac{n+1}{n+1-m}\binom nm$ for $n\ge m$,
+\[
+ g(n+1)-g(n)=\binom nm^2\frac{(n+1)^2-(n-m)^2}{m+1}=(2n-m+1)\binom nm^2.
+\]
+This holds for all $n\ge0$; for $n<m$ both sides vanish. Now sum over $0\le n<N$.
+\end{proof}
+
+\begin{proposition}\label{prop:split}
+Let
+\[
+ H_3(N)=\sum_{n<N}\sum_k(2n-2k+1)\gamma_k\binom n{2k}^2,\qquad
+ H_2(N)=\sum_{n<N}\sum_k(20k+7)\gamma_k\binom n{2k}^2 .
+\]
+Then $S(N)=10H_3(N)+H_2(N)$ and
+$H_3(N)=N\sum_k\gamma_k\binom N{2k+1}\binom{N-1}{2k}$. In particular $S(N)\equiv H_2(N)\pmod N$.
+\end{proposition}
+\begin{proof}
+We have $a_n=\sum_k\gamma_k\binom n{2k}^2$ and $10(2n-2k+1)+(20k+7)=20n+17$. Apply
+Lemma~\ref{lem:telescope} with $m=2k$.
+\end{proof}
+
+\begin{proposition}\label{prop:CT}
+Let $\Lambda=(1+u)(1+v)/(uv)$ and $\rho=uv/(1+u+v)\in\Z[[u,v]]$. For every
+$R(x)=\sum_lr_lx^{2l}\in\Q[[x]]$ and $N\ge1$,
+\[
+ \CT\bigl(\Lambda^N\rho\,R(uv)\bigr)=\sum_{n<N}\sum_lr_l\binom n{2l}^2 ,
+\]
+the constant term being taken in $(uv)^{-N}\Q[[u,v]]$. In particular
+$H_2(N)=\CT(\Lambda^N\rho\Phi(uv))$.
+\end{proposition}
+\begin{proof}
+We have $\Lambda-1=(1+u+v)/(uv)=\rho^{-1}$, so $\Lambda^N\rho=\sum_{n<N}\Lambda^n+\rho$.
+Moreover $\CT(\rho R(uv))=0$, because $\rho\in uv\Z[[u,v]]$. Finally
+$\CT(\Lambda^n(uv)^{2l})=[u^{n-2l}](1+u)^n\,[v^{n-2l}](1+v)^n=\binom n{2l}^2$.
+\end{proof}
+
+\begin{lemma}[Divergence criterion]\label{lem:divergence}
+Let $p$ be a prime and $\Psi=\sum_{(r,s)\neq(0,0)}\psi_{rs}u^rv^s\in\Zp[[u,v]]$ with
+$\psi_{rs}\in p^{\min(v_p(r),v_p(s))}\Zp$ for all $(r,s)$. Then $\CT(\Lambda^N\Psi)\in N\Zp$ for every $N\ge1$.
+\end{lemma}
+\begin{proof}
+For $(r,s)\ne(0,0)$ choose $x_{rs},y_{rs}\in\Zp$ with
+$x_{rs}r+y_{rs}s=p^{\min(v_p r,v_p s)}$; this is B\'ezout in the discrete valuation ring $\Zp$.
+Then $\Psi=\theta_uJ_1+\theta_vJ_2$, where $J_1,J_2\in\Zp[[u,v]]$ have coefficients
+$\psi_{rs}x_{rs}p^{-\min}$ and $\psi_{rs}y_{rs}p^{-\min}$. Since $\CT(\theta_u(\cdot))=0$,
+\[
+\CT(\Lambda^N\theta_uJ_1)=-\CT(\theta_u(\Lambda^N)J_1)=-N\,\CT\bigl(\Lambda^{N-1}\theta_u(\Lambda)J_1\bigr)\in N\Zp,
+\]
+because $\theta_u\Lambda=-(1+v)/(uv)$ has integer coefficients. The $v$-term is the same.
+\end{proof}
+
+\begin{corollary}\label{cor:criterion}
+Let $p$ be a prime. Suppose
+$[u^rv^s]\,\rho\Phi(uv)\in p^{\min(v_p(r),v_p(s))}\Zp$ for all $r,s\ge0$. Then
+$p^{v_p(N)}\mid S(N)$ for all $N\ge1$.
+\end{corollary}
+\begin{proof}
+Combine Propositions~\ref{prop:split} and~\ref{prop:CT} with Lemma~\ref{lem:divergence}.
+\end{proof}
+
+We record two more identities used in Sections~\ref{sec:two} and~\ref{sec:CM}:
+\begin{align}
+ \binom jm^2&=\sum_{i=0}^m\binom mi\binom{m+i}i\binom j{m+i},\label{eq:product}\\
+ \sum_{j<n}(20j+17)\binom jt&=(20t+17)\binom n{t+1}+20(t+1)\binom n{t+2}.\label{eq:hockey}
+\end{align}
+The first counts ordered pairs of $m$-subsets of a $j$-set by the size of their union. The second
+follows from the hockey-stick identity and $j\binom jt=t\binom jt+(t+1)\binom j{t+1}$.
+
+\section{The prime 2}\label{sec:two}
+
+The following argument is due to \cite[Theorem 3.1]{K26}.
+
+\begin{theorem}\label{thm:two}
+For every $n\ge1$, $S(n)/n$ is an odd $2$-adic integer. In particular $v_2(S(n))=v_2(n)$.
+\end{theorem}
+\begin{proof}
+Using \eqref{eq:product} with $m=2k$ and then \eqref{eq:hockey}, we get, with $t=2k+i$,
+\[
+\frac{S(n)}n=\sum_k\gamma_k\sum_{i=0}^{2k}\binom{2k}i\binom{2k+i}i
+\Bigl(\frac{20t+17}{t+1}\binom{n-1}t+\frac{20(t+1)}{t+2}\binom{n-1}{t+1}\Bigr),
+\]
+since $\binom n{t+1}/n=\binom{n-1}t/(t+1)$ and $\binom n{t+2}/n=\binom{n-1}{t+1}/(t+2)$. For
+$k\ge1$, $v_2(\gamma_k)\ge2k+2$ because $\binom{2k}k$ is even. Also
+$t+2\le4k+2<2^{2k+2}$, so every term with $k\ge1$ lies in $2\Z_2$. The term $k=0$ equals
+$n^{-1}\sum_{j<n}(20j+17)=10n+7$, which is odd.
+\end{proof}
+
+\section{The Hasse invariant and the CM dichotomy}\label{sec:CM}
+
+For an odd prime $p$ and an indeterminate $b$ put
+$U_p(b)=\sum_{r<p}\sum_kb^k\binom r{2k}^2\binom{2k}k^2$. Thus $U_p(-4)=\sum_{r<p}a_r$.
+Let $P_d$ be the Legendre polynomial.
+
+\begin{proposition}\label{prop:hasse}
+Let $p$ be an odd prime. In $\F_p[b,b^{-1}]$,
+\[
+ d_p(b)\equiv U_p(b)\equiv b^h\sum_{j=0}^dA_j(256b)^{-j}\equiv b^hP_d(t)^2,\qquad t^2=1-\frac1b .
+\]
+Here $P_d(t)^2$ is a polynomial in $t^2$, so the right side lies in $\F_p[b,b^{-1}]$.
+\end{proposition}
+\begin{proof}
+By \eqref{eq:product} and $\sum_{r<p}\binom r{m+i}=\binom p{m+i+1}$, only
+$i=p-1-m$ survives modulo $p$. Hence $\sum_{r<p}\binom r{2k}^2\equiv\binom{2k}{p-1-2k}$, because
+$\binom{p-1}{i}\equiv(-1)^i=1$. Therefore
+$U_p(b)\equiv\sum_kb^k\binom{2k}k^2\binom{2k}{p-1-2k}$.
+
+Put $k=h-j$ in $U_p$ and $l=h-j$ in \eqref{eq:dN}. The coefficients of $b^{h-j}$ are
+$\binom{2h-2j}{h-j}^2\binom{p-1-2j}{2j}$ and $\binom{2h-2j}{h-j}^2\binom{4j}{2j}$ respectively.
+For $j\le d$ we have $\binom{p-1-2j}{2j}\equiv\binom{-1-2j}{2j}=\binom{4j}{2j}$, since $(2j)!$ is a
+$p$-unit. For $d<j\le h$ both coefficients vanish modulo $p$: $4j>p-1$ forces a carry in
+$2j+2j$, and $\binom{p-1-2j}{2j}=0$. So $d_p\equiv U_p$.
+
+Next, for $j\le d$,
+$\binom{2h-2j}{h-j}\equiv\binom{-1-2j}{h-j}=(-1)^{h-j}\binom{h+j}{2j}$ and, since $h\equiv-\frac12$,
+$\binom{h+j}{2j}\equiv\binom{j-1/2}{2j}=(-1)^j\binom{2j}j16^{-j}$. Hence
+$\binom{2h-2j}{h-j}^2\equiv\binom{2j}j^2256^{-j}$, which gives the third expression.
+
+Finally, $A_j256^{-j}=(\frac14)_j(\frac12)_j(\frac34)_j/j!^3$. Also $\{-d,d+1\}\equiv\{\frac14,\frac34\}$,
+so $(\frac14)_j(\frac34)_j\equiv(-d)_j(d+1)_j$ for $j\le d$. The classical identity
+$P_d(t)^2={}_3F_2(-d,d+1,\frac12;1,1;1-t^2)
+=\sum_j\binom dj\binom{d+j}j\binom{2j}j\bigl(\frac{t^2-1}4\bigr)^j$ \cite{Bailey} then gives the last
+congruence with $1-t^2=1/b$.
+\end{proof}
+
+\begin{proposition}\label{prop:CMdichotomy}
+Let $p$ be an odd prime. Then $d_p(-4)\not\equiv0\pmod p$ if and only if $p\equiv1,3,7,9\pmod{20}$.
+\end{proposition}
+\begin{proof}
+For $p=5$, $d_5(-4)=550\equiv0$. Let $p\ne5$. By Proposition~\ref{prop:hasse} at $b=-4$,
+$d_p(-4)\equiv(-4)^hP_d(t_0)^2$ with $t_0^2=\frac54$, $t_0\in\overline{\F}_p$. Let $t_0=\sqrt5/2$ and
+consider
+$E:\ y^2=x\bigl(x^2+2x+\tfrac{1-t_0}2\bigr)$ over $\Q(\sqrt5)$. Its discriminant
+$\Delta=8(t_0-1)^2(t_0+1)$ is a unit at every prime above an odd rational prime, because
+$(t_0-1)(t_0+1)=\frac14$. Its $j$-invariant is
+$64(3t_0+5)^3/((t_0-1)^2(t_0+1))=632000+282880\sqrt5=j(\sqrt{-5})$ \cite{Duke}, so $E$ has complex
+multiplication by $\Z[\sqrt{-5}]$, of discriminant $-20$.
+
+The Hasse invariant of the reduction is the coefficient of $x^{p-1}$ in
+$(x^3+2x^2+b'x)^h$, with $b'=\frac{1-t_0}2$ \cite[Theorem V.4.1(a)]{Silverman}. Choosing $k$ factors
+$b'x$, $h-2k$ factors $2x^2$ and $k$ factors $x^3$, this coefficient is
+$2^h\sum_k\frac{(-h/2)_k((1-h)/2)_k}{k!^2}b'^k$. Since $h\equiv-\frac12$, we have
+$\{-\frac h2,\frac{1-h}2\}\equiv\{\frac14,\frac34\}\equiv\{-d,d+1\}$, and the sum terminates at
+$k=d$. So the coefficient is
+$\equiv2^h{}_2F_1(-d,d+1;1;b')=2^hP_d(1-2b')=2^hP_d(t_0)$ (cf.\ \cite[\S5]{K26}; checked in the
+Appendix). By Deuring's reduction theorem
+\cite{Deuring,EOY}, the reduction at a prime above $p\nmid20$ is ordinary if and only if $p$ splits
+in $\Q(\sqrt{-5})$, i.e.\ $\left(\frac{-20}p\right)=1$, i.e.\ $p\equiv1,3,7,9\pmod{20}$.
+\end{proof}
+
+\begin{corollary}\label{cor:units}
+Let $p\equiv1,3,7,9\pmod{20}$ and $t_0=-1/1024$. Then $d_p(-4)$, $U_p(-4)$ and
+$\cF_{<p}(t_0)=\sum_{k<p}A_kt_0^k$ are $p$-adic units.
+\end{corollary}
+\begin{proof}
+$A_k\equiv0\pmod p$ for $d<k<p$, so $\cF_{<p}(t_0)\equiv\sum_{k\le d}A_k(-1024)^{-k}$. This is
+$(-4)^{-h}d_p(-4)$ modulo $p$ by Proposition~\ref{prop:hasse}.
+\end{proof}
+
+\begin{lemma}[Lucas factorisation]\label{lem:lucas}
+For every odd prime $p$ and $s\ge1$, $d_{p^s}(b)\equiv d_p(b)^{(p^s-1)/(p-1)}\pmod p$ in $\Z[b]$.
+\end{lemma}
+\begin{proof}
+Write $l=l_0+pl'$ with $0\le l_0<p$. Lucas' theorem gives
+$\binom{2l}l\equiv\binom{2l_0}{l_0}\binom{2l'}{l'}\pmod p$; when $2l_0\ge p$ both sides vanish. In
+$\F_p[b]$ we also have $b^l=b^{l_0}(b^{l'})^p$. Hence $G_b(x)\equiv G_{b,<p}(x)\,G_b(x)^p$ in
+$\F_p[b][[x]]$, where $G_{b,<p}=\sum_{2l_0\le p-1}b^{l_0}\binom{2l_0}{l_0}^2x^{2l_0}$. Likewise
+$E(x)\equiv E_{<p}(x)E(x)^p$ with $E_{<p}=\sum_{2i\le p-1}\binom{2i}ix^i$. So
+$\Psi:=G_bE\equiv\Psi_1\Psi^p$ with $\Psi_1=G_{b,<p}E_{<p}$ of degree $<2p-1$. Since
+$\Psi^p$ is a series in $x^p$, the coefficient of $x^{p^s-1}$ in $\Psi_1\Psi^p$ comes only from
+$x^{p-1}$ in $\Psi_1$. As $[x^{p-1}]\Psi_1=[x^{p-1}]\Psi=d_p(b)$, we get
+$d_{p^s}\equiv d_p\,d_{p^{s-1}}^{\,p}$, and the claim follows by induction on $s$.
+\end{proof}
+
+\section{The primes 5 and \texorpdfstring{$p\equiv11,13,17,19\pmod{20}$}{inert primes}}\label{sec:inert}
+
+This section reproduces, with complete proofs, the exact digit operator of \cite[\S\S5--6]{K26}.
+Fix a prime $p\ge5$ and put $w(n,k)=(-4)^kM(n,k)^2$ for $0\le2k\le n$, and $w(n,k)=0$ otherwise.
+Let $\mathcal A_p=\Zp\langle X,Y\rangle$ be the ring of restricted power series. Its coefficients
+tend to $0$, so its elements can be evaluated on $\Zp^2$. Define
+\[
+ I_N(F)=\sum_{n<N}\sum_kw(n,k)F(n,k),\qquad U(N)=I_N(1),\ T(N)=I_N(X),\ V(N)=I_N(Y),
+\]
+so $S(N)=I_N(20X+17)$, $U(N)=\sum_{n<N}a_n$ and $T(N)=\sum_{n<N}na_n$. Put $W=(p-1)!$,
+$E_p(N)=\prod_{1\le i\le N,\,p\nmid i}i$, $H_r=\sum_{i\le r}1/i$ and
+$Q=((-4)^{p-1}-1)/p\in\Zp$.
+
+\begin{lemma}\label{lem:unitfactorial}
+There are $\mathcal H_r\in1+p\Zp\langle X\rangle$ ($0\le r<p$) with
+$E_p(pq+r)=W^qr!\,\mathcal H_r(q)$ for all integers $q\ge0$, and
+$\mathcal H_r(X)\equiv1+pH_rX\pmod{p^2}$.
+\end{lemma}
+\begin{proof}
+Let $B(X)=\prod_{i=1}^{p-1}(1+pX/i)$. Then $\log B(X)=\sum_{j\ge1}\ell_jX^j$ with
+$\ell_j=(-1)^{j-1}p^j\eta_j/j$, where $\eta_j=\sum_{i<p}i^{-j}$. Let
+$S_j(X)=\sum_{a=0}^j\genfrac\{\}{0pt}{}{j}{a}(X)_{\underline{a+1}}/(a+1)$ be the polynomial with
+$S_j(q)=\sum_{h<q}h^j$. Its coefficients have valuation $\ge-\lfloor\log_p(j+1)\rfloor$. Put
+$\mathcal A(X)=\sum_j\ell_jS_j(X)$. By Wolstenholme, $v_p(\eta_1)\ge2$ and $v_p(\eta_2)\ge1$
+for $p\ge5$; for $j\ge3$ we have $j-v_p(j)-\lfloor\log_p(j+1)\rfloor\ge3$, with a bound tending
+to $\infty$. Hence $\mathcal A\in p^3\Zp\langle X\rangle$ and
+$\mathcal E=\exp\mathcal A\in1+p^3\Zp\langle X\rangle$. At integers $q\ge0$ we get
+$\mathcal E(q)=\prod_{h<q}B(h)$. Set $\mathcal H_r(X)=\mathcal E(X)\prod_{i\le r}(1+pX/i)$. Then
+$E_p(pq+r)=\prod_{h<q}\prod_{i<p}(ph+i)\cdot\prod_{i\le r}(pq+i)=W^qr!\,\mathcal H_r(q)$.
+\end{proof}
+
+\begin{lemma}\label{lem:kernel}
+For $0\le r,s<p$ let $\varepsilon=\lceil(2s-r)/p\rceil\in\{0,1,2\}$, $t=r-2s+\varepsilon p\in[0,p)$
+and $z=X-2Y$. Put
+\[
+ K_{rs}=p^{2\varepsilon}(z)_{\underline\varepsilon}^2\frac{(-4)^sW^{2\varepsilon}r!^2}{s!^4t!^2}
+ \frac{\mathcal C(Y)\mathcal H_r(X)^2}{\mathcal H_s(Y)^4\mathcal H_t(X-2Y-\varepsilon)^2}\in\mathcal A_p,
+ \qquad \mathcal C(Y)=\exp\bigl(Y\log((-4)^{p-1})\bigr).
+\]
+Then $w(pq+r,pj+s)=w(q,j)K_{rs}(q,j)$ for all $q,j\ge0$, and $K_{rs}(0,0)=w(r,s)$. If
+$\varepsilon\ge1$ then $K_{rs}\in p^2\mathcal A_p$. If $\varepsilon=0$ then
+$K_{rs}\equiv w(r,s)\bigl[1+p\{2X(H_r-H_t)+Y(Q+4H_t-4H_s)\}\bigr]\pmod{p^2}$.
+\end{lemma}
+\begin{proof}
+Use $N!=p^{\lfloor N/p\rfloor}\lfloor N/p\rfloor!\,E_p(N)$ and Lemma~\ref{lem:unitfactorial} for
+$n=pq+r$, $k=pj+s$ and $n-2k=p(q-2j-\varepsilon)+t$. The powers of $W$ cancel down to
+$W^\varepsilon$, and $q_0!/(q_0-\varepsilon)!=(q_0)_{\underline\varepsilon}$ with $q_0=q-2j$. Also
+$(-4)^{pj+s}=(-4)^{j+s}\mathcal C(j)$. If $0\le q_0<\varepsilon$, both sides vanish, and if $2j>q$ both
+sides are $0$. The denominators are units of $\mathcal A_p$, since affine integral substitutions
+preserve $1+p\mathcal A_p$. The remaining claims follow from
+$\mathcal C\equiv1+pQY$ and $\mathcal H_r\equiv1+pH_rX\pmod{p^2}$.
+\end{proof}
+
+\begin{proposition}\label{prop:block}
+For $F\in\mathcal A_p$ put $(\mathcal T F)(X,Y)=\sum_{r,s<p}K_{rs}(X,Y)F(pX+r,pY+s)$. Then
+$I_{pN}(F)=I_N(\mathcal TF)$ for $N\ge1$. Moreover there are $\alpha_F,\beta_F\in\Zp$ and
+$R_F\in\mathcal A_p$ with $\mathcal TF=I_p(F)+p\alpha_FX+p\beta_FY+p^2R_F$, so that
+\begin{equation}\label{eq:exactblock}
+ I_{pN}(F)=I_p(F)U(N)+p\alpha_FT(N)+p\beta_FV(N)+p^2I_N(R_F).
+\end{equation}
+\end{proposition}
+\begin{proof}
+Split $n=pq+r$ and $k=pj+s$ and apply Lemma~\ref{lem:kernel}. For the second statement use
+$F(pX+r,pY+s)\equiv F(r,s)+pXF_X(r,s)+pYF_Y(r,s)\pmod{p^2}$, which holds for restricted series by
+Taylor's formula with divided derivatives. The constant term is
+$\sum_{r,s}w(r,s)F(r,s)=I_p(F)$.
+\end{proof}
+
+\begin{theorem}\label{thm:induction}
+Suppose $U(p),T(p),V(p)\in p\Zp$. Then for all $e,m\ge1$ and $F\in\mathcal A_p$ we have
+$I_{p^em}(F)\in p^{e-1}\Zp$, and $I_{p^em}(F)\in p^e\Zp$ when $I_p(F)\in p\Zp$.
+\end{theorem}
+\begin{proof}
+Induct on $e$. The case $e=1$ follows from \eqref{eq:exactblock} with $N=m$. For $e\ge2$ put
+$N=p^{e-1}m$. By the strong assertion at $e-1$, applied to $F=1,X,Y$ (whose $I_p$ are
+$U(p),T(p),V(p)\in p\Zp$), we get $U(N),T(N),V(N)\in p^{e-1}\Zp$. By the weak assertion,
+$I_N(R_F)\in p^{e-2}\Zp$. Now read off \eqref{eq:exactblock}.
+\end{proof}
+
+\begin{theorem}\label{thm:inert}
+If $p\equiv11,13,17,19\pmod{20}$, then $p^e\mid S(p^em)$ for all $e,m\ge1$.
+\end{theorem}
+\begin{proof}
+By Propositions~\ref{prop:hasse} and~\ref{prop:CMdichotomy}, $U(p)=U_p(-4)\equiv(-4)^hP_d(t_0)^2=0$.
+Next, $V(p)=(\theta_bU_p)(-4)$. Differentiating the polynomial congruence
+$U_p(b)\equiv b^hP_d(t)^2$ and using $P_d(t_0)=0$ and $t_0\ne0$ gives $V(p)\equiv0$. Finally,
+$F_k(X)=\binom X{2k}^2$ satisfies $F_k(2k-1-X)=F_k(X)$ over $\F_p$. Summing over $X\in\F_p$ gives
+$\sum_{r<p}rF_k(r)\equiv(k-\frac12)\sum_rF_k(r)$, hence $T(p)\equiv V(p)-\frac12U(p)\equiv0$.
+Apply Theorem~\ref{thm:induction} with $F=20X+17$, using $I_p(F)=S(p)=20T(p)+17U(p)$.
+\end{proof}
+
+\begin{theorem}\label{thm:five}
+For all $e,m\ge1$, $5^e\mid S(5^em)$.
+\end{theorem}
+\begin{proof}
+Take $p=5$. From Lemma~\ref{lem:kernel},
+$\mathcal T(1)=U(5)+5\alpha X+5\beta Y+25R$ with $\alpha=\sum2w(r,s)(H_r-H_t)$ and
+$\beta=\sum w(r,s)(Q+4H_t-4H_s)$, the sums over pairs with $\varepsilon=0$. Exact evaluation gives
+$U(5)=-155$, $\alpha=1440$ and $\beta=-37270/3$, all divisible by $5$ (see the Appendix). Hence
+$\mathcal T(1)=C+25R$ with $C\in5\Z_5$. Now we prove, by induction on $e$:
+(a) $I_{5^em}(F)\in5^{e-1}\Z_5$ for all $F$; (b) $U(5^em)\in5^e\Z_5$.
+For $e=1$, (a) is integrality and (b) is $U(5m)=CU(m)+25I_m(R)$. For the step, use
+\eqref{eq:exactblock} for (a). For (b), use $U(5N)=CU(N)+25I_N(R)$ with $N=5^{e-1}m$.
+Finally, $F=20X+17=17+5(4X)$ gives $S(5^em)=17U(5^em)+20T(5^em)\in5^e\Z_5$.
+\end{proof}
+
+\section{Dwork crystals}\label{sec:BV}
+
+We recall the results of Beukers and Vlasenko \cite{BV1} that will be used; see also \cite{BV2,BV3}.
+Let $p$ be an odd prime and let $R$ be a $p$-adically complete integral domain of characteristic
+$0$ with $\bigcap_sp^sR=0$. Let $f\in R[x_1^{\pm1},\dots,x_n^{\pm1}]$ have Newton polytope
+$\Delta\subset\mathbb R^n$, and let $\mu=\Delta^\circ$ be its interior. We assume
+$\mu\cap\Z^n=\{u_0\}$ is a single point. Let $\Omega_f(\mu)$ be the $R$-module spanned by the
+rational functions $(m-1)!\,g/f^m$, where $m\ge1$ and $g\in R[x^{\pm1}]$ is supported in $m\mu$.
+Let $\widehat\Omega_f(\mu)$ be its $p$-adic completion. Derivations $\delta$ of $R$ act
+coefficientwise and preserve $\widehat\Omega_f(\mu)$ \cite[Prop.~3.4]{BV1}.
+
+If $\nu$ is a vertex of $\Delta$ whose coefficient $f_{[\nu]}$ in $f$ lies in $R^\times$, every
+element of $\widehat\Omega_f(\mu)$ has a formal Laurent expansion supported in the cone
+$C(\Delta-\nu)$ \cite[\S2]{BV1}. A formal Laurent series $\sum a_kx^k$ is a \emph{formal derivative},
+i.e.\ lies in $\sum_i\theta_{x_i}(\cdot)$, if and only if $a_k\in\gcd(k_1,\dots,k_n)R$ for all $k$
+\cite[Lemma~2.2]{BV1}. Let $U_f(\mu)$ be the submodule of elements whose expansion is a formal
+derivative. It does not depend on the choice of $\nu$. Fix a Frobenius lift $\sigma$ on $R$; all rings below
+carry one, e.g.\ $b\mapsto b^p$. Then by \cite[Prop.~4.2]{BV1} the submodule equals
+$\{\omega:C_p^s(\omega)\in p^s\widehat\Omega_{f^{\sigma^s}}(\mu)\ \forall s\}$, and the Cartier
+operator $C_p$ is given by formulas independent of the vertex \cite[\S3, (4)--(7)]{BV1}. The
+\emph{Hasse--Witt invariant} $\beta_p\in R$ is the coefficient of $x^{(p-1)u_0}$ in $f^{p-1}$.
+
+\begin{theorem}[{Beukers--Vlasenko \cite[Theorems 4.3 and 5.7]{BV1}}]\label{thm:BV}
+Assume $\beta_p\in R^\times$ and put $\omega_0=x^{u_0}/f$.
+\begin{enumerate}[label=(\roman*)]
+\item $\widehat\Omega_f(\mu)/U_f(\mu)$ is a free $R$-module of rank one with basis the class of
+$\omega_0$. Hence for every derivation $\delta$ of $R$ there is a unique $\eta_\delta\in R$ with
+$\delta(\omega_0)-\eta_\delta\,\omega_0\in U_f(\mu)$.
+\item Let $\nu$ be a vertex of $\Delta$ with $f_{[\nu]}\in R^\times$, let
+$k\in C(\Delta-\nu)\cap\Z^n$, and let $a_m\in R$ be the coefficient of $x^m$ in the expansion of
+$\omega_0$ at $\nu$. Then
+$\delta(a_{p^sk})\equiv\eta_\delta\,a_{p^sk}\pmod{p^sR}$ for all $s\ge1$.
+\end{enumerate}
+\end{theorem}
+
+By the vertex-independence of $U_f(\mu)$, the element $\eta_\delta$ is the same for every vertex
+used in~(ii). This is the key point of Section~\ref{sec:identification}.
+
+\section{The unit-root crystal attached to \texorpdfstring{$S$}{S}}\label{sec:crystal}
+
+Let $p$ be an odd prime. In the variables $(u,v,z,w)$ put
+\[
+ f'_b=(1+u+v)\bigl(1-uv(z+b/z)(w+1/w)\bigr).
+\]
+Let $\mathrm{HW}'(b)\in\Z[b]$ be its Hasse--Witt polynomial (computed below), and let $R_b$ be the
+$p$-adic completion of $\Zp[b,b^{-1},\mathrm{HW}'(b)^{-1}]$. This is a $p$-adically complete
+domain, since its reduction $\F_p[b,b^{-1},\overline{\mathrm{HW}'}^{-1}]$ is a domain and it has no
+$p$-torsion.
+
+\begin{lemma}\label{lem:polytopeB}
+\begin{enumerate}[label=(\roman*)]
+\item The Newton polytope $\Delta'$ of $f'_b$ has the unique interior lattice point $u_0=(1,1,0,0)$,
+and $0$ is a vertex with coefficient $1$.
+\item $\mathrm{HW}'(b)\equiv d_p(b)\pmod p$.
+\item In the expansion of $\omega_0=uv/f'_b$ at the vertex $0$, the coefficient of
+$u^rv^sz^0w^0$ is $[u^rv^s]\,\rho\,G_b(uv)$. In particular the coefficient of
+$(uv)^N=x^{Nu_0}$ is $d_N(b)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) $\Delta'$ is the Minkowski sum of the triangle $\mathrm{conv}\{0,e_u,e_v\}$ and the pyramid
+$\mathrm{conv}\{0,e_u+e_v\pm e_z\pm e_w\}$. So its points are $(\alpha+\mu,\beta+\mu,z,w)$ with
+$\alpha,\beta\ge0$, $\alpha+\beta\le1$, $0\le\mu\le1$ and $|z|,|w|\le\mu$. If $(r,s,i,j)$ is an
+interior lattice point, moving in the $z$- or $w$-directions forces $|i|,|j|<1$. Moving in the
+$u$-, $v$- and $(u+v)$-directions forces $r,s\ge1$ and $r+s<3$. Hence $(r,s,i,j)=(1,1,0,0)$, which
+is interior (take $\mu=0.6$, $\alpha=\beta=0.4$). All other monomials of $f'_b$ have positive
+$u$- or $v$-degree, so $0$ is a vertex.
+
+(ii) The coefficient of $(uv)^{p-1}z^0w^0$ in $f'^{\,p-1}_b$ is
+$\sum_l\binom{p-1}{2l}b^l\binom{2l}l^2\cdot\frac{(p-1)!}{a!^2(p-1-2a)!}$ with $a=p-1-2l$. Modulo $p$,
+$\binom{p-1}{2l}\equiv1$, and the multinomial is $\binom{p-1}{2a}\binom{2a}a\equiv\binom{2a}a$ for
+$2a\le p-1$. When $2a>p-1$ the multinomial vanishes and so does $\binom{2a}a\bmod p$. This gives
+$d_p(b)$.
+
+(iii) $1/f'_b=(1+u+v)^{-1}\sum_j(uv)^j(z+b/z)^j(w+1/w)^j$, and
+$\CT_{z,w}(z+b/z)^j(w+1/w)^j=b^{j/2}\binom j{j/2}^2$ for even $j$ (and $0$ otherwise). Also
+$[u^iv^i](1+u+v)^{-1}=\binom{2i}i$.
+\end{proof}
+
+By Lemma~\ref{lem:polytopeB}, Theorem~\ref{thm:BV} applies to $f'_b$ over $R_b$. Let
+$\eta_b\in R_b$ denote $\eta_\delta$ for $\delta=\theta_b$:
+\begin{equation}\label{eq:etab}
+ \theta_b\Bigl(\frac{uv}{f'_b}\Bigr)\equiv\eta_b\,\frac{uv}{f'_b}\pmod{U_{f'_b}(\mu)} .
+\end{equation}
+
+\begin{proposition}\label{prop:onenumber}
+Let $p\equiv1,3,7,9\pmod{20}$. Then evaluation $b\mapsto-4$ extends to a continuous ring
+homomorphism $R_b\to\Zp$. If $20\,\eta_b(-4)+7=0$, then $p^{v_p(N)}\mid S(N)$ for every $N\ge1$.
+\end{proposition}
+\begin{proof}
+$\mathrm{HW}'(-4)\equiv d_p(-4)$ is a unit by Corollary~\ref{cor:units}, which gives the evaluation map.
+Let $\Omega=(20\theta_b+7)(uv/f'_b)\in\widehat\Omega_{f'_b}(\mu)$. By \eqref{eq:etab},
+$\Omega-(20\eta_b+7)uv/f'_b\in U_{f'_b}(\mu)$. So every coefficient $a_k(b)\in R_b$ of its
+expansion at $0$ lies in $\gcd(k)R_b$, and hence $a_k(-4)\in\gcd(k)\Zp$. Since
+$20\eta_b(-4)+7=0$, the coefficients of $\Omega|_{b=-4}$ lie in $\gcd(k)\Zp$. By
+Lemma~\ref{lem:polytopeB}(iii), the coefficient of $u^rv^sz^0w^0$ in $\Omega|_{b=-4}$ is
+$[u^rv^s]\,\rho\,((20\theta_b+7)G_b)(uv)|_{b=-4}=[u^rv^s]\rho\Phi(uv)$, and
+$\gcd(r,s,0,0)=\gcd(r,s)$. Conclude with Corollary~\ref{cor:criterion}.
+\end{proof}
+
+\section{Ramanujan's crystal and Sun's theorem}\label{sec:ramanujan}
+
+Let $\cF(T)=\sum_{k\ge0}A_kT^k$, $\cF_{<m}(T)=\sum_{k<m}A_kT^k$, and
+$\eta_{\mathcal R}=\theta_T\log\cF(T)\in\Zp[[T]]$. Let $R_T$ be the $p$-adic completion of
+$\Zp[T,\cF_{<p}(T)^{-1}]$, with Frobenius lift $\sigma(T)=T^p$. Since $\cF_{<p}(0)=1$, expansion at
+$T=0$ gives a map $R_T\to\Zp[[T]]$. It is injective and $p$-saturated: if the expansion of $r$
+lies in $p^s\Zp[[T]]$ then $r\in p^sR_T$. Indeed, approximate $r$ modulo $p^s$ by
+$g/\cF_{<p}^k$ with $g\in\Zp[T]$; then $g\in p^s\Zp[T]$ because $\cF_{<p}$ is a unit power series.
+
+\begin{proposition}\label{prop:dwork}
+(i) $\eta_{\mathcal R}\in R_T$, and $\eta_{\mathcal R}\equiv\theta_T\log\cF_{<p^s}\pmod{p^sR_T}$ for all $s\ge1$.
+(ii) If $p\equiv1,3,7,9\pmod{20}$, then evaluation at $t_0=-1/1024$ extends to $R_T\to\Zp$, and
+$\eta_{\mathcal R}(t_0)=-\frac3{20}$.
+\end{proposition}
+\begin{proof}
+(i) We have $A_k=\CT(g^k)$ for $g=(1+x_1+x_2+x_3)^4/(x_1x_2x_3)$, whose Newton polytope has $0$ as
+its only interior lattice point. By Dwork's congruences in the form of Mellit--Vlasenko \cite{MV}
+(see also \cite[\S1]{BV2}),
+$\frac{\cF(T)}{\cF(T^p)}\equiv\frac{\cF_{<p^s}(T)}{\cF_{<p^{s-1}}(T^p)}\pmod{p^s\Zp[[T]]}$ for all
+$s\ge1$. Lucas congruences give $\cF_{<p^s}\equiv\cF_{<p}^{(p^s-1)/(p-1)}\pmod p$, so the right
+sides are units of $R_T$. By saturation they form a Cauchy sequence in $R_T$, whose limit
+$\lambda$ has expansion $\cF(T)/\cF(T^p)$. The formal identity
+$\eta_{\mathcal R}=\theta_T\log\lambda+p\,\sigma(\eta_{\mathcal R})$ gives
+$\eta_{\mathcal R}=\sum_{i\ge0}p^i\sigma^i(\theta_T\log\lambda)\in R_T$.
+
+For the congruence, put $D_s=\theta_T\log\cF_{<p^s}-\eta_{\mathcal R}\in R_T$, with $D_0=-\eta_{\mathcal R}$.
+Taking $\theta_T\log$ of Dwork's congruence (a congruence of units modulo $p^s$) gives
+$D_s\equiv p\,\sigma(D_{s-1})\pmod{p^s}$. Hence by induction $D_s\in p^sR_T$.
+
+(ii) The evaluation exists because $\cF_{<p}(t_0)\in\Zp^\times$ (Corollary~\ref{cor:units}).
+Sun proved \cite[Theorem 1.2, (1.5)]{SunEJC} that for every $n\ge1$,
+\[
+ 4(2n+1)\binom{2n}n\ \Bigm|\ \sum_{k=0}^n(20k+3)\binom{2k}k^2\binom{4k}{2k}(-2^{10})^{n-k}.
+\]
+Take $n=p^s-1$. Adding $(p^s-1)+(p^s-1)$ in base $p$ produces $s$ carries, so
+$v_p\binom{2p^s-2}{p^s-1}=s$ by Kummer's theorem. Dividing by the unit $(-1024)^{p^s-1}$,
+$\sum_{k<p^s}(20k+3)A_kt_0^k=\bigl((20\theta_T+3)\cF_{<p^s}\bigr)(t_0)\equiv0\pmod{p^s}$. Since
+$\cF_{<p^s}(t_0)$ is a unit, part~(i) gives $20\eta_{\mathcal R}(t_0)+3\equiv0\pmod{p^s}$ for every
+$s$.
+\end{proof}
+
+\section{Identification of the connection}\label{sec:identification}
+
+\begin{theorem}\label{thm:identification}
+Let $p$ be an odd prime. The substitution $T\mapsto1/(256b)$ defines a ring homomorphism
+$R_T\to R_b$ compatible with $\theta_b=-\theta_T$, and in $R_b$
+\[
+ \eta_b(b)=-\frac12-\eta_{\mathcal R}\Bigl(\frac1{256b}\Bigr).
+\]
+\end{theorem}
+
+The substitution is well defined because
+$\cF_{<p}(1/(256b))\equiv b^{-h}d_p(b)\equiv b^{-h}\mathrm{HW}'(b)\pmod p$
+(Proposition~\ref{prop:hasse} and Lemma~\ref{lem:polytopeB}), which is a unit of $R_b$. The proof
+of the identity occupies the rest of this section.
+
+\subsection{A diagonal model}
+In the variables $(x,z,w,y)$ put $g(z,w)=(z+1/z)(w+1/w)$, $L(y)=y+2+1/y$ and
+\[
+ f_c=\bigl(1-c\,x\,g(z,w)\bigr)\bigl(1-x\,L(y)\bigr).
+\]
+Let $\mathrm{HW}_c(c)$ be its Hasse--Witt polynomial and $R_c$ the $p$-adic completion of
+$\Zp[c,c^{-1},\mathrm{HW}_c(c)^{-1}]$.
+
+\begin{lemma}\label{lem:polytopeC}
+\begin{enumerate}[label=(\roman*)]
+\item The Newton polytope $\Delta$ of $f_c$ has the unique interior lattice point $e_x=(1,0,0,0)$.
+Both $0$ (coefficient $1$) and $\nu_1=(2,-1,-1,-1)$ (coefficient $c$) are vertices.
+\item $\mathrm{HW}_c(c)\equiv d_p(c^2)\pmod p$. Its leading coefficient in $c$ is
+$\binom{p-1}h^2\equiv1$.
+\item The map $\iota:R_b\to R_c$, $b\mapsto c^2$, is an injective ring homomorphism with
+$\theta_c\circ\iota=2\,\iota\circ\theta_b$.
+\item In the expansion of $\omega_1=x/f_c$ at $0$, the coefficient of $x^Nz^0w^0y^0$ is $d_N(c^2)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) $\Delta$ is the Minkowski sum of the pyramid $\{(\mu,z,w):0\le\mu\le1,\ |z|,|w|\le\mu\}$ and
+the triangle $\{(\nu,y):0\le\nu\le1,\ |y|\le\nu\}$. An interior lattice point $(r,i,j,l)$ must have
+$|i|,|j|,|l|<1$ and $0<r<2$, so it is $e_x$, which is interior (take $\mu=\nu=\frac12$). The
+functional $e_x-e_z-e_w-e_y$ attains its maximum on the two summands uniquely, at
+$e_x-e_z-e_w$ and $e_x-e_y$. So $\nu_1$ is a vertex, and its coefficient is
+$(-c)(-1)=c$.
+
+(ii) The coefficient of $x^{p-1}$ in $f_c^{p-1}$ is
+$\sum_{a\ \mathrm{even}}\binom{p-1}a c^a\binom a{a/2}^2\binom{p-1}{e}(-1)^{e}\binom{2e}e$ with
+$e=p-1-a$. Reduce modulo $p$ as in Lemma~\ref{lem:polytopeB}(ii). The top term $a=p-1$ gives the
+leading coefficient.
+
+(iii) $\mathrm{HW}'(c^2)\equiv\mathrm{HW}_c(c)\pmod p$, so it is a unit in $R_c$. Injectivity
+holds modulo $p$ (a map of localized polynomial rings over $\F_p$), hence on completions.
+
+(iv) The expansion at $0$ is $x\sum_j(cxg+xL-cx^2gL)^j=x\,(1-cxg)^{-1}(1-xL)^{-1}$. Here
+$\CT_{z,w}(1-cxg)^{-1}=\sum_jc^jx^j\CT(g^j)=G_{c^2}(x)$ and $\CT_y(1-xL)^{-1}=E(x)$.
+\end{proof}
+
+Let $\eta_c\in R_c$ be the connection coefficient of $f_c$ for $\delta=\theta_c$
+(Theorem~\ref{thm:BV}(i)).
+
+\begin{lemma}\label{lem:etac}
+$\eta_c=2\,\iota(\eta_b)$.
+\end{lemma}
+\begin{proof}
+Apply Theorem~\ref{thm:BV}(ii) at the vertex $0$ to $f'_b$ with $k=u_0$, and to $f_c$ with $k=e_x$.
+By Lemmas~\ref{lem:polytopeB}(iii) and~\ref{lem:polytopeC}(iv),
+$\theta_bd_{p^s}(b)\equiv\eta_bd_{p^s}(b)$ in $R_b$ and
+$\theta_c\,d_{p^s}(c^2)\equiv\eta_c\,d_{p^s}(c^2)$ in $R_c$, both modulo $p^s$. Apply $\iota$ to
+the first and use $\theta_c\circ\iota=2\iota\circ\theta_b$. Since $d_{p^s}(c^2)$ is a unit
+(Lemma~\ref{lem:lucas}), $\eta_c\equiv2\iota(\eta_b)\pmod{p^s}$ for all $s$.
+\end{proof}
+
+\subsection{The corner expansion}
+\begin{lemma}\label{lem:corner}
+Let $k_1=e_x-\nu_1=(-1,1,1,1)\in C(\Delta-\nu_1)$ and $m=p^s$, $h_s=(m-1)/2$. In the expansion of
+$\omega_1$ at $\nu_1$, the coefficient of $x^{mk_1}=x^{-m}z^mw^my^m$ is
+\[
+ \alpha_s(c)=\sum_{l=0}^{h_s}c^{-1-2l}\binom{h_s+l}{2l}^2\binom{2m-1-2l}{2l}.
+\]
+\end{lemma}
+\begin{proof}
+Write $(1-cxg)(1-xL)=cxg\cdot xL\cdot(1-(cxg)^{-1})(1-(xL)^{-1})$, with
+$g=(1+z^2)(1+w^2)/(zw)$ and $L=(1+y)^2/y$. This gives
+\[
+ f_c=c\,x^{\nu_1}\,(1+z^2)(1+w^2)(1+y)^2\Bigl(1-\frac{zw}{cx(1+z^2)(1+w^2)}\Bigr)\Bigl(1-\frac{y}{x(1+y)^2}\Bigr).
+\]
+The monomials $z^2,w^2,y,y^2,zw/x,y/x$ occurring in the last five factors lie in
+$(\Delta-\nu_1)\setminus\{0\}$. So these factors are units of the ring of Laurent series supported
+in the pointed cone $C(\Delta-\nu_1)$, and the expansion of $\omega_1$ at $\nu_1$ is
+\[
+ \omega_1=\frac{zwy}{cx}\sum_{\alpha,\beta\ge0}\frac{(zw)^\alpha}{(cx)^\alpha}\frac{y^\beta}{x^\beta}
+ (1+z^2)^{-1-\alpha}(1+w^2)^{-1-\alpha}(1+y)^{-2-2\beta}.
+\]
+The coefficient of $x^{-m}z^mw^my^m$ requires $\alpha+\beta=m-1$. The $z$- and $w$-parts each
+give $\binom{-1-\alpha}{(m-1-\alpha)/2}$, and the $y$-part gives $\binom{-2-2\beta}{\alpha}$. With
+$\alpha=2l$ (forced, as $m$ is odd), these equal $\pm\binom{h_s+l}{2l}$ and $\binom{2m-1-2l}{2l}$,
+and the signs square away.
+\end{proof}
+
+\begin{lemma}\label{lem:limit}
+For fixed $l\ge0$, as $s\to\infty$,
+$\binom{h_s+l}{2l}^2\binom{2p^s-1-2l}{2l}\to\binom{4l}{2l}\binom{2l}l^2256^{-l}=A_l256^{-l}$ in $\Zp$.
+\end{lemma}
+\begin{proof}
+Both binomials are polynomials in $p^s$ with coefficients in $\frac1{(2l)!}\Z[\frac12]$, and
+$h_s\to-\frac12$, $2p^s-1-2l\to-1-2l$. The limits are
+$\binom{l-1/2}{2l}^2=\binom{2l}l^2/256^l$ (see the proof of Proposition~\ref{prop:hasse}) and
+$\binom{-1-2l}{2l}=\binom{4l}{2l}$.
+\end{proof}
+
+\subsection{Proof of Theorem~\ref{thm:identification}}
+Let $u=1/c$. Let $\cL$ be the ring of two-sided series $\sum_{n\in\Z}e_nu^n$ with $e_n\in\Zp$ and
+$e_n\to0$ as $n\to-\infty$. (Products converge, since in each coefficient of a product one
+factor's index is $\le n/2$.) Expansion at $u=0$ defines a ring homomorphism
+$\exp:\Zp[c,c^{-1},\mathrm{HW}_c^{-1}]\to\cL$, since $\mathrm{HW}_c$ has unit leading coefficient. It
+maps $p^s$-multiples to $p^s$-multiples, so it extends continuously to $R_c$, it commutes with
+$\theta_c=-\theta_u$, and it is injective by the saturation argument of
+Section~\ref{sec:ramanujan}. On the image of $R_T\to R_c$, $T\mapsto1/(256c^2)$, it is given by
+$T\mapsto u^2/256$ applied to expansions at $T=0$.
+
+By Theorem~\ref{thm:BV}(ii) at the vertex $\nu_1$ (coefficient $c\in R_c^\times$) and
+Lemma~\ref{lem:corner},
+\[
+ \theta_c\,\alpha_s-\eta_c\,\alpha_s\in p^sR_c,\qquad\text{hence}\qquad
+ \theta_c\,\alpha_s-\exp(\eta_c)\,\alpha_s\in p^s\cL\quad(s\ge1).
+\]
+Here $\alpha_s\in u\Z[u]$. Let $\Pi(u)=u\,\cF(u^2/256)=\sum_lA_l256^{-l}u^{2l+1}$. By
+Lemma~\ref{lem:limit}, $\alpha_s\to\Pi$ coefficientwise. Write $\exp(\eta_c)=\sum e_nu^n$. The
+coefficient of $u^n$ in $\exp(\eta_c)\alpha_s$ is $\sum_{j\ge1}e_{n-j}[u^j]\alpha_s$, with
+$|[u^j]\alpha_s|\le1$ and $e_{n-j}\to0$ as $j\to\infty$. So it converges to
+$\sum_je_{n-j}[u^j]\Pi$ as $s\to\infty$. Letting $s\to\infty$ gives
+$\theta_c\Pi=\exp(\eta_c)\Pi$ in $\cL$. Since $\Pi\in u(1+u^2\Zp[[u]])$ is invertible in
+$u^{-1}\Zp[[u]]\subset\cL$,
+\[
+ \exp(\eta_c)=\frac{\theta_c\Pi}\Pi=-\theta_u\log\Pi=-1-2\,(\theta_T\log\cF)(u^2/256)
+ =\exp\Bigl(-1-2\,\eta_{\mathcal R}\bigl(\tfrac1{256c^2}\bigr)\Bigr).
+\]
+By injectivity, $\eta_c=-1-2\eta_{\mathcal R}(1/(256c^2))$ in $R_c$. Since
+$\iota$ maps $\eta_{\mathcal R}(1/(256b))$ to $\eta_{\mathcal R}(1/(256c^2))$, Lemma~\ref{lem:etac}
+turns this into
+\[
+ \iota\Bigl(\eta_b+\frac12+\eta_{\mathcal R}\bigl(\tfrac1{256b}\bigr)\Bigr)=0 .
+\]
+Injectivity of $\iota$ finishes the proof.\qed
+
+\section{Proof of the Main Theorem}\label{sec:main}
+
+\begin{proof}[Proof of Theorem~\ref{thm:B}]
+Let $p\equiv1,3,7,9\pmod{20}$. Evaluating Theorem~\ref{thm:identification} at $b=-4$, which
+corresponds to $T=t_0=-1/1024$, and using Proposition~\ref{prop:dwork}(ii), we get
+$\eta_b(-4)=-\frac12+\frac3{20}=-\frac7{20}$. So $20\eta_b(-4)+7=0$, and
+Proposition~\ref{prop:onenumber} gives $p^{v_p(N)}\mid S(N)$ for all $N$.
+\end{proof}
+
+\begin{proof}[Proof of the Main Theorem]
+Let $n\ge1$ and $p\mid n$, and write $n=p^em$ with $p\nmid m$. For $p=2$ use
+Theorem~\ref{thm:two}; for $p=5$, Theorem~\ref{thm:five}; for $p\equiv11,13,17,19\pmod{20}$,
+Theorem~\ref{thm:inert}; for $p\equiv1,3,7,9\pmod{20}$, Theorem~\ref{thm:B}. Every prime is in
+exactly one of these classes, so $p^{v_p(n)}\mid S(n)$ for all $p$, i.e.\ $n\mid S(n)$.
+\end{proof}
+
+\begin{remark}
+The proof gives more. (a) For every prime $p$ with $p\equiv1,3,7,9\pmod{20}$, $\rho\Phi(uv)$ is a
+$p$-adic formal divergence; equivalently,
+$p^{\min(v_pr,v_ps)}\mid[u^rv^s]\rho\Phi(uv)$. In particular the diagonal coefficients
+$Y_2(n)=[u^nv^n]\rho\Phi(uv)=\sum_l(20l+7)\gamma_l\binom{2i}i$, $i=n-1-2l$, satisfy
+$p^{v_p(n)}\mid Y_2(n)$; compare the diagonal criterion of \cite[\S8]{K26}. (b) For every odd prime and every
+$b\in\Zp^\times$ with $d_p(b)\not\equiv0$, Theorem~\ref{thm:identification} evaluated at $b$
+expresses the unit-root connection of $f'_b$ through Ramanujan's family at $1/(256b)$.
+\end{remark}
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection*{Where the new input lies}
+Proposition~\ref{prop:split} and Sections~\ref{sec:crystal}, \ref{sec:ramanujan}
+and~\ref{sec:identification} are new. Proposition~\ref{prop:CT} is a variant of the
+negative-index reduction of \cite{K26}. Sections~\ref{sec:two} and~\ref{sec:inert} reproduce
+arguments of \cite{K26}, and the Hasse-invariant computation of Section~\ref{sec:CM} follows
+\cite{K26}. We know of no earlier proof of the conjecture. Searches of arXiv and of the literature
+on Sun's divisibility conjectures (including \cite{SunEJC,OO,FC}) found the problem listed as open
+and no proof. Such a search cannot by itself establish priority. The essential new step is
+Theorem~\ref{thm:identification}. It compares two unit-root crystals that are \emph{not} related by
+any monomial change of variables: the crystal of $S$, and Ramanujan's crystal at the reciprocal
+parameter. Their Hasse invariants agree modulo $p$ (Proposition~\ref{prop:hasse}), but that alone
+does not determine a unit root. The comparison comes from the corner expansion of the diagonal
+model, whose Hasse--Witt coefficients converge to Ramanujan's period. Conceptually this reflects
+the inversion $b\leftrightarrow1/b$ of the hypergeometric equation in Remark~\ref{rem:upside}, and
+the Landen-type involution $z\mapsto(1-iz)/(z-i)$, which satisfies
+$(z+z^{-1})(\mu(z)+\mu(z)^{-1})=4$ and exchanges the two degenerations of the Legendre family. No
+monomial substitution can realise this involution, which is why the comparison has to go through
+a limit.
+
+\subsection*{The role of the CM point}
+The prime $p$ is split (ordinary) or inert (supersingular) according to the reduction of the CM
+curve with $j=j(\sqrt{-5})$. At inert primes the three moments vanish and the digit operator of
+Section~\ref{sec:inert} suffices. At split primes the moments are units, and the divisibility is
+equivalent to the precise $p$-adic value $\eta_b(-4)=-7/20$. That value is the $p$-adic counterpart
+of Ramanujan's formula, supplied by Sun's WZ theorem through Proposition~\ref{prop:dwork}.
+
+\subsection*{Verification}
+The Appendix contains an exact-arithmetic script. It checks the conjecture for $n\le2000$ and
+every identity, congruence and hypothesis used above on explicit ranges: the decomposition of
+Proposition~\ref{prop:split}; the polytope facts; the Hasse--Witt congruences; the agreement of the
+two vertex expansions predicted by Theorem~\ref{thm:BV}(ii); Theorem~\ref{thm:identification} at
+the level of truncations (82 cases); Sun's theorem; the CM dichotomy for $p<1500$; the moments at
+inert primes and at $p=5$; the Legendre--Clausen identity; and the two-variable divisibility of
+$\rho\Phi(uv)$. Earlier exact runs verified $n\mid S(n)$ for all $n\le10^6$ \cite{EarlierNote}. No
+step of the proof depends on these computations.
+
+\begin{thebibliography}{99}
+\bibitem{Bailey} W.~N.~Bailey, \emph{Generalized Hypergeometric Series}, Cambridge Tracts 32,
+Cambridge Univ.\ Press, 1935 (Clausen's formula and its terminating cases, \S10).
+\bibitem{BV1} F.~Beukers and M.~Vlasenko, Dwork crystals I, \emph{Int.\ Math.\ Res.\ Not.\ IMRN}
+2021, no.~12, 8807--8844; arXiv:1903.11155.
+\bibitem{BV2} F.~Beukers and M.~Vlasenko, Dwork crystals II, \emph{Int.\ Math.\ Res.\ Not.\ IMRN}
+2021, no.~6, 4427--4444; arXiv:1907.10390.
+\bibitem{BV3} F.~Beukers and M.~Vlasenko, Dwork crystals III: from excellent Frobenius lifts towards
+supercongruences, \emph{Int.\ Math.\ Res.\ Not.\ IMRN} 2023, no.~23, 20433--20483;
+arXiv:2105.14841.
+\bibitem{Deuring} M.~Deuring, Die Typen der Multiplikatorenringe elliptischer Funktionenk\"orper,
+\emph{Abh.\ Math.\ Sem.\ Hansischen Univ.} 14 (1941), 197--272.
+\bibitem{Duke} W.~Duke, Modular functions and the uniform distribution of CM points,
+\emph{Math.\ Ann.} 334 (2006), 241--252.
+\bibitem{EarlierNote} QEEDDD Verifiable-Mathematical-Reasoning-Corpus project, Sun's divisibility
+conjecture for $\sum_{k<n}(20k+17)W_k(1,-4)$: squarefree moduli, the second layer, and a reduction
+via negative-index continuation, research note, 7 November 2026, \texttt{sun-A179524/paper.tex}.
+\bibitem{EOY} N.~Elkies, K.~Ono and T.~Yang, Reduction of CM elliptic curves and modular function
+congruences, \emph{Int.\ Math.\ Res.\ Not.} 2005, no.~44, 2695--2707.
+\bibitem{FC} Google DeepMind and contributors, \emph{formal-conjectures},
+\texttt{FormalConjectures/OEIS/179524.lean},
+\url{https://github.com/google-deepmind/formal-conjectures}.
+\bibitem{K26} Keio (research note prepared with ChatGPT), Prime-power divisibility in Sun's A179524
+conjecture: an integral analytic digit operator and a Catalan diagonal reduction, manuscript,
+8 November 2026 (supplied to this project).
+\bibitem{MV} A.~Mellit and M.~Vlasenko, Dwork's congruences for the constant terms of powers of a
+Laurent polynomial, \emph{Int.\ J.\ Number Theory} 12 (2016), 313--321.
+\bibitem{OEIS} OEIS Foundation, The On-Line Encyclopedia of Integer Sequences, sequence A179524
+(Z.-W.~Sun, 2010), \url{https://oeis.org/A179524}.
+\bibitem{OO} T.~Adamczewski, OEIS Open: How many conjectures can language models turn into
+theorems?, arXiv:2608.11941 (2026).
+\bibitem{Silverman} J.~H.~Silverman, \emph{The Arithmetic of Elliptic Curves}, 2nd ed., Graduate
+Texts in Math.\ 106, Springer, 2009.
+\bibitem{SunEJC} Z.-W.~Sun, Products and sums divisible by central binomial coefficients,
+\emph{Electron.\ J.\ Combin.} 20(1) (2013), \#P9; arXiv:1004.4623.
+\bibitem{Sun2010} Z.-W.~Sun, On Ap\'ery numbers and generalized central trinomial coefficients,
+arXiv:1006.2776v11 (2010), Conjecture 5.8.
+\end{thebibliography}
+
+\appendix
+\section{Verification script and output}\label{app:code}
+
+The following Python~3 script (standard library only) was run as \texttt{python3 verify\_full.py}
+(about one minute). Its output is reproduced after the listing.
+
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact-arithmetic checks for the proof of Sun's A179524 conjecture.
+
+Run:  python3 verify_full.py            (about one to three minutes)
+Every check prints PASS or FAIL; the script exits with status 1 on any FAIL.
+Nothing here is used as a proof step; the checks confirm each identity,
+congruence and hypothesis used in the paper on explicit ranges.
+"""
+from math import comb, factorial, gcd
+from fractions import Fraction as Fr
+import sys
+
+FAILED = []
+
+
+def report(name, ok):
+    print(("PASS  " if ok else "FAIL  ") + name)
+    if not ok:
+        FAILED.append(name)
+
+
+def primes(n):
+    s = bytearray([1]) * (n + 1)
+    s[0:2] = b"\x00\x00"
+    for i in range(2, int(n ** 0.5) + 1):
+        if s[i]:
+            s[i * i::i] = bytearray(len(s[i * i::i]))
+    return [i for i in range(n + 1) if s[i]]
+
+
+def gam(l):                      # gamma_l = (-4)^l C(2l,l)^2
+    return (-4) ** l * comb(2 * l, l) ** 2
+
+
+def A(k):                        # Ramanujan coefficients (4k)!/k!^4
+    return factorial(4 * k) // factorial(k) ** 4
+
+
+def a(n):                        # a_n = sum_k (-4)^k C(n,2k)^2 C(2k,k)^2
+    return sum(gam(k) * comb(n, 2 * k) ** 2 for k in range(n // 2 + 1))
+
+
+def vp(x, p):
+    if x == 0:
+        return 10 ** 9
+    v = 0
+    while x % p == 0:
+        x //= p
+        v += 1
+    return v
+
+
+# 1. Sun's conjecture n | S(n), exact, n <= NMAX
+NMAX = 2000
+S, ok = 0, True
+for n in range(1, NMAX + 1):
+    S += (20 * (n - 1) + 17) * a(n - 1)
+    if S % n:
+        ok = False
+report("n | S(n) for 1 <= n <= %d" % NMAX, ok)
+
+# 2. Telescoping identity and the decomposition S = 10 H3 + H2 (Prop. 2.4)
+ok = True
+for m in range(0, 14):
+    for N in range(0, 60):
+        lhs = sum((2 * n - m + 1) * comb(n, m) ** 2 for n in range(N))
+        rhs = N * comb(N, m + 1) * comb(N - 1, m) if N >= 1 else 0
+        ok &= (lhs == rhs)
+for N in range(1, 300):
+    S = sum((20 * n + 17) * a(n) for n in range(N))
+    H3 = N * sum(gam(k) * comb(N, 2 * k + 1) * comb(N - 1, 2 * k) for k in range(N))
+    H2 = sum((20 * k + 7) * gam(k) * comb(n, 2 * k) ** 2
+             for n in range(N) for k in range(n // 2 + 1))
+    ok &= (S == 10 * H3 + H2)
+report("telescoping identity and S = 10*H3 + H2 (N < 300)", ok)
+
+# 3. Unique interior lattice points of the two Newton polytopes (Lemma 6.4),
+#    via the explicit description used in the proof.
+def interior_fprime(r, s, i, j):   # exists mu: max(|i|,|j|,(r+s-1)/2) < mu < min(r,s,1)
+    lo = max(abs(i), abs(j), Fr(r + s - 1, 2))
+    hi = min(r, s, 1)
+    return lo < hi
+
+
+def interior_fc(r, i, j, l):       # exists mu,nu in (0,1): mu+nu=r, mu>max|i|,|j|, nu>|l|
+    lo_mu = max(abs(i), abs(j), r - 1)
+    hi_mu = min(1, r - abs(l))
+    return lo_mu < hi_mu
+pts1 = [(r, s, i, j) for r in range(0, 3) for s in range(0, 3)
+        for i in range(-2, 3) for j in range(-2, 3) if interior_fprime(r, s, i, j)]
+pts2 = [(r, i, j, l) for r in range(0, 3) for i in range(-2, 3)
+        for j in range(-2, 3) for l in range(-2, 3) if interior_fc(r, i, j, l)]
+report("interior lattice points: f'_b -> %s, f_c -> %s" % (pts1, pts2),
+       pts1 == [(1, 1, 0, 0)] and pts2 == [(1, 0, 0, 0)])
+
+
+def d_coeffs(n):                 # d_n(b) = sum_l b^l C(2l,l)^2 C(2i,i), i = n-1-2l
+    return {l: comb(2 * l, l) ** 2 * comb(2 * (n - 1 - 2 * l), n - 1 - 2 * l)
+            for l in range((n - 1) // 2 + 1)}
+
+
+# 4. Hasse-Witt congruences (Lemma 6.4)
+ok = True
+for p in primes(60)[1:]:
+    hw1 = {}
+    for l in range((p - 1) // 2 + 1):
+        aa = p - 1 - 2 * l
+        if 2 * aa <= p - 1:
+            mult = factorial(p - 1) // (factorial(aa) ** 2 * factorial(p - 1 - 2 * aa))
+            hw1[l] = comb(p - 1, 2 * l) * comb(2 * l, l) ** 2 * mult
+    d = d_coeffs(p)
+    ok &= all((hw1.get(l, 0) - d.get(l, 0)) % p == 0 for l in set(hw1) | set(d))
+    hw2 = {}
+    for a2 in range(0, p, 2):
+        cc = p - 1 - a2
+        hw2[a2] = (comb(p - 1, a2) * comb(a2, a2 // 2) ** 2 * comb(p - 1, cc)
+                   * (-1) ** cc * comb(2 * cc, cc))
+    ok &= all((hw2.get(e, 0) - (d.get(e // 2, 0) if e % 2 == 0 else 0)) % p == 0
+              for e in set(hw2) | {2 * l for l in d})
+report("HW(f'_b) == d_p(b) and HW(f_c) == d_p(c^2) mod p, 3 <= p < 60", ok)
+
+
+def ev(P, x, mod, der=False):
+    return sum((e if der else 1) * cf * pow(x, e, mod) for e, cf in P.items()) % mod
+
+
+def corner(m):                   # corner-vertex coefficients a_{p^s k_1}(c), exponents of c
+    h = (m - 1) // 2
+    return {-1 - 2 * l: comb(h + l, 2 * l) ** 2 * comb(2 * m - 1 - 2 * l, 2 * l)
+            for l in range(h + 1)}
+
+
+# 5. Two vertex expansions give the same connection (BV Thm 5.7 consistency)
+ok, tested = True, 0
+for p, s in [(3, 3), (3, 4), (7, 2), (7, 3), (11, 2), (13, 2), (23, 2)]:
+    M = p ** s
+    mod = M
+    cr = corner(M)
+    dd = {2 * l: v for l, v in d_coeffs(M).items()}
+    for cv in range(2, 14):
+        if cv % p == 0:
+            continue
+        X, D = ev(cr, cv, mod), ev(dd, cv, mod)
+        if X % p == 0 or D % p == 0:
+            continue
+        e1 = ev(cr, cv, mod, True) * pow(X, -1, mod) % mod
+        e2 = ev(dd, cv, mod, True) * pow(D, -1, mod) % mod
+        ok &= (e1 == e2)
+        tested += 1
+report("theta log(corner) == theta log(diagonal) mod p^s (%d cases)" % tested, ok)
+
+# 6. Key identity eta_b(b) = -1/2 - eta_R(1/(256 b)) at the level of truncations
+ok, tested = True, 0
+for p, s in [(3, 4), (7, 3), (11, 2), (13, 2), (23, 2), (29, 2)]:
+    M = p ** s
+    mod = M
+    dd = d_coeffs(M)
+    Fc = {k: A(k) for k in range(M)}
+    for bv in range(-6, 12):
+        if bv % p == 0:
+            continue
+        D = ev(dd, bv % mod, mod)
+        t = pow(256 * bv % mod, -1, mod)
+        F = ev(Fc, t, mod)
+        if D % p == 0 or F % p == 0:
+            continue
+        eta = ev(dd, bv % mod, mod, True) * pow(D, -1, mod) % mod
+        etaR = ev(Fc, t, mod, True) * pow(F, -1, mod) % mod
+        ok &= ((eta + etaR) * 2 + 1) % mod == 0
+        tested += 1
+report("theta log d_{p^s}(b) + theta log F_{<p^s}(1/(256b)) == -1/2 mod p^s (%d cases)"
+       % tested, ok)
+
+# 7. Sun's theorem (EJC 2013, (1.5)) and the instance n = p^s - 1
+ok = all(sum((20 * k + 3) * A(k) * (-1024) ** (n - k) for k in range(n + 1))
+         % (4 * (2 * n + 1) * comb(2 * n, n)) == 0 for n in range(1, 300))
+report("4(2n+1)C(2n,n) | sum_{k<=n}(20k+3)A_k(-1024)^{n-k}, 1 <= n < 300", ok)
+ok = True
+for q in [3, 9, 27, 81, 7, 49, 23, 29, 41, 43]:
+    tot = sum((20 * k + 3) * A(k) * (-1024) ** (q - 1 - k) for k in range(q))
+    p = [r for r in primes(q) if q % r == 0][0]
+    ok &= (tot % q == 0) and vp(comb(2 * q - 2, q - 1), p) == vp(q, p)
+report("p^s | sum_{k<p^s}(20k+3)A_k(-1024)^{p^s-1-k} and v_p C(2p^s-2,p^s-1) = s", ok)
+
+# 8. Ordinary / supersingular dichotomy of the Hasse invariant d_p(-4)
+ok = True
+for p in primes(1500)[1:]:
+    hv = ev(d_coeffs(p), -4 % p, p)
+    if p % 20 in (1, 3, 7, 9):
+        ok &= hv != 0
+    else:
+        ok &= hv == 0
+report("d_p(-4) != 0 mod p iff p = 1,3,7,9 mod 20 (odd p < 1500)", ok)
+
+# 9. Moments at inert primes and the p = 5 table
+def f4(r, s):
+    return (-4) ** s * (factorial(r) // (factorial(s) ** 2 * factorial(r - 2 * s))) ** 2
+ok = True
+for p in primes(400):
+    if p % 20 in (11, 13, 17, 19):
+        U = sum(f4(r, s) for r in range(p) for s in range(r // 2 + 1))
+        T = sum(r * f4(r, s) for r in range(p) for s in range(r // 2 + 1))
+        V = sum(s * f4(r, s) for r in range(p) for s in range(r // 2 + 1))
+        ok &= (U % p == 0 and T % p == 0 and V % p == 0)
+report("U(p), T(p), V(p) == 0 mod p for inert p < 400", ok)
+p = 5
+H = [Fr(0)] + [sum(Fr(1, i) for i in range(1, r + 1)) for r in range(1, p)]
+Q = Fr(4 ** 4 - 1, 5)
+al = sum(2 * f4(r, s) * (H[r] - H[r - 2 * s]) for r in range(p) for s in range(r // 2 + 1))
+be = sum(f4(r, s) * (Q + 4 * H[r - 2 * s] - 4 * H[s]) for r in range(p) for s in range(r // 2 + 1))
+U5 = sum(f4(r, s) for r in range(p) for s in range(r // 2 + 1))
+
+
+def zero_mod5(x):
+    return (x.numerator * pow(x.denominator, -1, 5)) % 5 == 0
+report("p = 5: U(5) = %d, alpha = %s, beta = %s, both == 0 mod 5" % (U5, al, be),
+       U5 == -155 and zero_mod5(al) and zero_mod5(be))
+
+# 10. Legendre-Clausen identity and the Hasse invariant (Prop. 4.2)
+def poly_mul(P, Q2):
+    R2 = {}
+    for i, x in P.items():
+        for j, y in Q2.items():
+            R2[i + j] = R2.get(i + j, 0) + x * y
+    return R2
+
+
+def legendre(nn):                # P_n(t) via Bonnet recursion, rational coefficients in t
+    P0, P1 = {0: Fr(1)}, {1: Fr(1)}
+    if nn == 0:
+        return P0
+    for k in range(1, nn):
+        P2 = {}
+        for e, cf in P1.items():
+            P2[e + 1] = P2.get(e + 1, 0) + Fr(2 * k + 1, k + 1) * cf
+        for e, cf in P0.items():
+            P2[e] = P2.get(e, 0) - Fr(k, k + 1) * cf
+        P0, P1 = P1, P2
+    return P1
+ok = True
+for dd_ in range(0, 15):
+    L = legendre(dd_)
+    lhs = poly_mul(L, L)
+    rhs = {}
+    for j in range(dd_ + 1):
+        base = {2: Fr(1, 4), 0: Fr(-1, 4)}
+        term = {0: Fr(comb(dd_, j) * comb(dd_ + j, j) * comb(2 * j, j))}
+        for _ in range(j):
+            term = poly_mul(term, base)
+        for e, cf in term.items():
+            rhs[e] = rhs.get(e, 0) + cf
+    ok &= all(lhs.get(e, 0) == rhs.get(e, 0) for e in set(lhs) | set(rhs))
+report("P_d(t)^2 = sum_j C(d,j)C(d+j,j)C(2j,j)((t^2-1)/4)^j, d < 15", ok)
+ok = True
+for p in primes(60)[3:]:
+    h, d = (p - 1) // 2, p // 4
+    # coefficient of x^{p-1} in (x(x^2+2x+b'))^h, b'=(1-t)/2, as polynomial in t
+    co = {}
+    for k in range(d + 1):
+        # choose k factors b'x, (h-2k) factors 2x^2, k factors x^3: h!/(k!(h-2k)!k!)
+        mult = factorial(h) // (factorial(k) * factorial(h - 2 * k) * factorial(k))
+        term = {0: Fr(mult * 2 ** (h - 2 * k))}
+        for _ in range(k):
+            term = poly_mul(term, {0: Fr(1, 2), 1: Fr(-1, 2)})
+        for e, cf in term.items():
+            co[e] = co.get(e, 0) + cf
+    L = legendre(d)
+    for e in set(co) | set(L):
+        x = co.get(e, 0) - 2 ** h * L.get(e, 0)
+        ok &= (x.numerator * pow(x.denominator, -1, p)) % p == 0
+report("Hasse invariant of E_t == 2^h P_d(t) mod p, 7 <= p < 60", ok)
+
+# 11. The two-variable gcd criterion for rho*F(uv) (consequence of the theorem)
+ok = True
+for r in range(1, 121):
+    for s in range(1, 121):
+        val = 0
+        for l in range((min(r, s) - 1) // 2 + 1):
+            aa, bb = r - 1 - 2 * l, s - 1 - 2 * l
+            val += (20 * l + 7) * gam(l) * (-1) ** (aa + bb) * comb(aa + bb, aa)
+        ok &= (val % gcd(r, s) == 0)
+report("gcd(r,s) | [u^r v^s] rho F(uv) for r, s <= 120", ok)
+
+print()
+print("ALL CHECKS PASSED" if not FAILED else "FAILED: " + "; ".join(FAILED))
+sys.exit(1 if FAILED else 0)
+\end{lstlisting}
+
+\noindent Output:
+\begin{lstlisting}
+PASS  n | S(n) for 1 <= n <= 2000
+PASS  telescoping identity and S = 10*H3 + H2 (N < 300)
+PASS  interior lattice points: f'_b -> [(1, 1, 0, 0)], f_c -> [(1, 0, 0, 0)]
+PASS  HW(f'_b) == d_p(b) and HW(f_c) == d_p(c^2) mod p, 3 <= p < 60
+PASS  theta log(corner) == theta log(diagonal) mod p^s (62 cases)
+PASS  theta log d_{p^s}(b) + theta log F_{<p^s}(1/(256b)) == -1/2 mod p^s (82 cases)
+PASS  4(2n+1)C(2n,n) | sum_{k<=n}(20k+3)A_k(-1024)^{n-k}, 1 <= n < 300
+PASS  p^s | sum_{k<p^s}(20k+3)A_k(-1024)^{p^s-1-k} and v_p C(2p^s-2,p^s-1) = s
+PASS  d_p(-4) != 0 mod p iff p = 1,3,7,9 mod 20 (odd p < 1500)
+PASS  U(p), T(p), V(p) == 0 mod p for inert p < 400
+PASS  p = 5: U(5) = -155, alpha = 1440, beta = -37270/3, both == 0 mod 5
+PASS  P_d(t)^2 = sum_j C(d,j)C(d+j,j)C(2j,j)((t^2-1)/4)^j, d < 15
+PASS  Hasse invariant of E_t == 2^h P_d(t) mod p, 7 <= p < 60
+PASS  gcd(r,s) | [u^r v^s] rho F(uv) for r, s <= 120
+
+ALL CHECKS PASSED
+\end{lstlisting}
+
+\end{document}

@@ -1,0 +1,1360 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{booktabs,longtable,array,tabularx,enumitem,xcolor,listings,fancyhdr}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\definecolor{ink}{HTML}{17364A}
+\definecolor{accent}{HTML}{147D83}
+\definecolor{pale}{HTML}{F2F6F8}
+\hypersetup{pdftitle={Certified Prime Extensions and Uniform Coefficient Bounds},pdfauthor={Keio},pdfsubject={Exact primality certificates and partial results on Philemon's conjecture}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}Certified Prime Extensions}
+\fancyhead[R]{\small Keio | 8 November 2026}
+\fancyfoot[C]{\thepage}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\NN}{\mathbb N}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\lpf}{P^{-}}
+\newcommand{\ph}{\varphi}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+ keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{black!15},
+ backgroundcolor=\color{pale},numbers=left,numberstyle=\tiny\color{gray},
+ numbersep=6pt,xleftmargin=12pt,framexleftmargin=8pt,aboveskip=9pt,belowskip=9pt}
+\title{\color{ink}\bfseries Certified Prime Extensions\\and Uniform Coefficient Bounds\\[6pt]
+ \large\normalfont Philemon's totient conjecture, exact certificates,\\and a Euclidean prime generator}
+\author{Keio}
+\date{8 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We identify the giant-prime computations in manuscripts [129] and [130] of
+the Verifiable Mathematical Reasoning Corpus, pin their source snapshot,
+and independently replay the seven-node certificate chain ending at the
+18,886-digit prime $r$. A new search gives
+\[
+ P=2347\,2^{8192}r+1,
+\]
+a 21,356-digit prime. Exact modular exponentiation and a greatest common
+divisor calculation certify this integer by Pocklington's theorem; the
+primality of the old corpus endpoint is an actual dependency of this proof.
+
+We prove Philemon's original totient implication for every coefficient
+$1\leq a\leq64$, with no upper bound on $m$, using an explicit weighted
+factor-count obstruction and a finite classification of possible coefficient
+patterns. An explicit exceptional set has at most $\lfloor X/10\rfloor$
+members among the first $X$ coefficients; outside this set, the original
+implication holds for every admissible $m$. Thus the proved coefficient
+set has lower density at least $9/10$. The unrestricted conjecture is not
+settled. We also investigate
+Euclidean prime generators. A corollary of the theorems of Booker--Pomerance
+and Munsch--Shparlinski proves eventual uniqueness of the new prime factor
+in OEIS A359504, while an exact finite computation checks its early terms.
+Neither this eventual statement nor the giant-prime computation is a full
+resolution of that original conjecture. We make no claim
+of a world record, historical first discovery, new general primality algorithm, or
+solution satisfying all six requested open-problem success gates.
+The complete primality verifier is embedded in this single source file.
+\end{abstract}
+\vspace{3pt}
+\noindent\textbf{Keywords.} Certified prime generation; Pocklington; Proth;
+Euclidean prime generators; squarefree smooth integers; reproducible computation.
+\newpage
+
+\section{Findings, provenance, and scope}
+The starting corpus was read at Git commit
+\begin{center}\small\ttfamily c30d40119134a59eda6fa5cc6331f27c8e67d034.\end{center}
+The commit timestamp is 6 November 2026, 16:24:52 UTC. The repository's own
+README identifies it as a collection of research drafts, not peer-reviewed
+or formally verified results. Accordingly, descriptions in the old files
+were treated as source claims until the relevant certificate was replayed.
+The exact sources are listed in the references \cite{corpus129,corpus130}.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabularx}{\linewidth}{@{}lXr@{}}
+\toprule
+Source & Explicitly certified endpoint & Decimal digits\\
+\midrule
+Corpus [129] & $s=5936p_5+1$ & 18,885\\
+Corpus [130] & $r=62988p_5+1$ & 18,886\\
+This computation & $P=2347\,2^{8192}r+1$ & 21,356\\
+
+\bottomrule
+\end{tabularx}
+\caption{Constructed endpoints in the audited experiments. The two old
+endpoints $s$ and $r$ are siblings; both have parent $p_5$.
+These are not world-record claims.}
+\label{tab:records}
+\end{table}
+
+The exact definition of $p_5$ is given in Section~\ref{sec:chain}.
+The new integer $P$ improves the number of decimal digits in the audited
+constructed endpoint by $21,356-18,886=2,470$, approximately $13.08\%$.
+This comparison concerns the completed certificate extensions in [129]
+and [130]. It excludes the much larger pre-existing Mersenne prime used
+as a benchmark input in [130]; $P$ is not larger than that input.
+The phrase ``new'' in this report means newly found and certified in the
+present computation. It does not assert that no person has previously
+considered the same integer.
+
+Corpus [129] also records an interrupted search among
+$2ms^2+1$, $1\leq m\leq10^6$, of approximately 37,775 digits. Its durable
+log summary contains 2,813 completed Fermat rejections and no certified
+prime from that search. The exact tested parameters are not included in
+the retrieved source, so their number cannot be used to skip the first
+2,813 parameters in a future search. The present search uses a different
+family and retains its own machine-readable journals.
+
+The work has two distinct outcomes. Extending the completed corpus
+certificate chain has a new unconditional answer. The request to solve an original named
+open problem under gates G1--G6 does not have a completed answer here.
+Section~\ref{sec:gates} records the precise distinction.
+
+\section{The classical certificate machinery}
+\label{sec:certificates}
+The following results are included to make the computational proof
+self-contained. They are classical; neither changing the coefficient nor
+reusing a previously certified factor creates a new primality theorem
+\cite{pocklington1914,bls1975,caldwell}.
+
+\begin{theorem}[Pocklington certificate]\label{thm:pocklington}
+Let $N>1$, and let $F\mid N-1$ be a completely factored positive integer
+with $F^2>N$. For every distinct prime $q\mid F$, suppose that an integer
+$a_q$ satisfies
+\begin{equation}\label{eq:pocklington}
+ a_q^{N-1}\equiv1\pmod N,
+ \qquad
+ \gcd\bigl(a_q^{(N-1)/q}-1,N\bigr)=1.
+\end{equation}
+Then $N$ is prime.
+\end{theorem}
+\begin{proof}
+Let $\ell$ be any prime divisor of $N$. The first congruence implies that
+$a_q$ is a unit modulo $\ell$ and its order divides $N-1$. The gcd
+condition means that this order does not divide $(N-1)/q$. Therefore its
+$q$-adic valuation is exactly $v_q(N-1)$; in particular
+$q^{v_q(F)}\mid\ell-1$. Applying this reasoning for every prime dividing
+$F$ gives $F\mid\ell-1$. Thus $\ell>F>\sqrt N$. A composite integer has
+a prime divisor at most its square root, a contradiction.
+\end{proof}
+
+\begin{corollary}[One known prime factor]\label{cor:linear}
+Let $q$ be a proven prime and $N=cq+1$ with $q^2>N$. If
+\[
+ a^{N-1}\equiv1\pmod N,\qquad\gcd(a^c-1,N)=1,
+\]
+then $N$ is prime. No factorization of $c$ is needed.
+\end{corollary}
+
+Repeated factors must be counted with their full multiplicity. For
+$N=kq^m+1$, one may take $F=q^m$ and use the reduced exponent
+$kq^{m-1}$ in \eqref{eq:pocklington}. In particular, for a quadratic lift
+the reduced exponent is $kq$, not $k$. Arbitrarily increasing $m$ is
+possible at the level of the certificate; it does not guarantee that the
+resulting candidate is prime or that the search is inexpensive.
+
+\begin{theorem}[Proth certificate]\label{thm:proth}
+Let $K$ be positive and odd, $n\geq1$, and $K<2^n$. If
+$N=K2^n+1$ and
+\begin{equation}\label{eq:proth}
+ a^{(N-1)/2}\equiv-1\pmod N,
+\end{equation}
+then $N$ is prime.
+\end{theorem}
+\begin{proof}
+Squaring the congruence gives the full Fermat congruence. Since $N$ is
+odd, the gcd of the reduced power minus one with $N$ is
+$\gcd(-2,N)=1$. Take $F=2^n$ in Theorem~\ref{thm:pocklington}; the strict
+bound $K<2^n$ implies $F^2>N$.
+\end{proof}
+
+\section{Replay of the existing corpus chain}\label{sec:chain}
+Define
+\begin{align}
+ p_0&=14^{512}-14^{256}+1,\label{eq:seed}\\
+ p_i&=k_i p_{i-1}^{\,2}+1\quad(1\leq i\leq5),\label{eq:chain}\\
+ (k_1,k_2,k_3,k_4,k_5)&=(438,13696,5494,13258,22330),\notag\\
+ r&=62988p_5+1.\label{eq:r}
+\end{align}
+The certificate starts only from the elementary primes $2$ and $7$,
+which the embedded verifier proves by trial division.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}lrrll@{}}
+\toprule
+Node & Digits & Bits & Factored part $F$ & Prime factor : base\\
+\midrule
+$p_0$ & 587 & 1,950 & $2^{256}7^{256}$ & $2:11$, $7:2$\\
+$p_1$ & 1,177 & 3,908 & $p_0^2$ & $p_0:2$\\
+$p_2$ & 2,357 & 7,829 & $p_1^2$ & $p_1:2$\\
+$p_3$ & 4,718 & 15,670 & $p_2^2$ & $p_2:2$\\
+$p_4$ & 9,439 & 31,354 & $p_3^2$ & $p_3:2$\\
+$p_5$ & 18,882 & 62,722 & $p_4^2$ & $p_4:2$\\
+$r$ & 18,886 & 62,738 & $p_5$ & $p_5:2$\\
+\bottomrule
+\end{tabular}
+\caption{All seven rows were independently replayed in this computation.
+Every required full-power residue and gcd equals $1$.}
+\label{tab:chain}
+\end{table}
+
+For the seed, put $x=14^{256}$. Then $p_0-1=x(x-1)$ and
+$x^2-p_0=x-1>0$, so the known factors $2^{256}7^{256}$ suffice.
+For each quadratic child, the verifier checks the exact bound
+$p_{i-1}^4>p_i$. For the final linear child it checks $p_5^2>r$.
+Every factor used in a later certificate must already belong to the
+verifier's set of proven primes.
+
+The canonical SHA-256 of $r$, computed from its decimal ASCII digits
+without a trailing newline, is
+\begin{lstlisting}[numbers=none]
+ca4c8532ec289a68d0fe9769f87f3797aa560f9f1a141866da17b917c11c1081
+\end{lstlisting}
+This agrees with the fingerprint in corpus [130]. The hash checks integer
+identity; primality comes from the order argument and arithmetic checks.
+
+\section{A 21,356-digit prime using the old certificate}\label{sec:newprime}
+\begin{theorem}[Newly certified direct extension]\label{thm:newprime}
+With $r$ defined by \eqref{eq:seed}--\eqref{eq:r}, the integer
+\begin{equation}\label{eq:newprime}
+ \boxed{P=2347\,2^{8192}r+1}
+\end{equation}
+is prime. It has $21,356$ decimal digits and $70,941$ bits.
+\end{theorem}
+\begin{proof}
+The replay in Section~\ref{sec:chain} proves that $r$ is prime.
+The exact computations recorded below and reproduced by the embedded
+verifier give
+\begin{align}
+ r^2&>P,\label{eq:newsize}\\
+ 2^{P-1}\bmod P&=1,\label{eq:newfermat}\\
+ \gcd\bigl(2^{2347\,2^{8192}}-1,P\bigr)&=1.\label{eq:newgcd}
+\end{align}
+Corollary~\ref{cor:linear} with $q=r$ and $c=2347\,2^{8192}$ proves the
+claim. The digit count and bit length are computed from the reconstructed
+integer, rather than estimated from floating-point logarithms.
+\end{proof}
+
+\subsection{Exact identity and arithmetic replay}
+The decimal SHA-256 is
+\begin{lstlisting}[numbers=none]
+6f4975bbc4efe37c474e15c24dcf3950b130a0338cbb03220550730ad73d4ad8
+\end{lstlisting}
+The first and last 100 decimal digits are:
+\begin{lstlisting}[numbers=none]
+First 100:
+19009340918408164175883324388920747198517797379045
+05369366949958056427946949933422137930810720308457
+Last 100:
+37652103594107303035768225277297523950490109469258
+78577840894258697187649178902755261635260357541889
+\end{lstlisting}
+The direct replay used gmpy2 2.3.2 with GMP 6.3.0. On this host, while a
+separate search was running, the full power in \eqref{eq:newfermat} took
+$20.1567$ seconds; the reduced power and gcd in \eqref{eq:newgcd} took
+$2.9247$ seconds. These are observed wall times, not complexity bounds or
+performance guarantees on another machine.
+
+The complete decimal expansion is included in the companion verification
+archive. It is unnecessary for the definition: equations
+\eqref{eq:seed}--\eqref{eq:newprime} specify every digit uniquely, and the
+single-file verifier reconstructs it without downloading any data.
+
+
+
+\section{Search design and retained evidence}\label{sec:search}
+The direct continuation considered
+\[
+ L_k=k\,r\,2^{8192}+1,\qquad
+ k\in\{1,3,5,\ldots,1,999,999\}.
+\]
+There were exactly $10^6$ coefficients before sieving. For each odd prime
+$\ell\leq10^8$, let $C\equiv r2^{8192}\pmod\ell$. If $C=0$, that
+prime cannot divide any $L_k$. Otherwise the unique prohibited class is
+\[
+ k\equiv-C^{-1}\pmod\ell.
+\]
+Writing $k=k_0+2j$ gives the equivalent index condition
+\[
+ j\equiv(-C^{-1}-k_0)2^{-1}\pmod\ell.
+\]
+This is an exact sieve of a linear family. It tests $5,761,455$ primes
+including $2$ and leaves $60,985$ coefficients. The parity check is
+automatic because every candidate is odd.
+
+Three single-thread workers tested survivors using OpenPFGW 4.1.8, with
+GWNUM 31.5, in base-two probable-prime mode \cite{pfgw}. The survivor
+$k=2347$ has zero-based sorted index $67$ in the retained candidate list.
+It passed after $43.3$ seconds of the parallel run. At that moment $67$
+tests had completed; after the already-running tests finished, the durable
+journals held $69$ completed tests: one pass and $68$ software rejections.
+The process ended at $44.1472$ seconds. The completion order of parallel
+workers is not the numerical ordering of the coefficients.
+
+The search result was only a screening pass. It became the prime in
+Theorem~\ref{thm:newprime} after the separate exact computations
+\eqref{eq:newsize}--\eqref{eq:newgcd}. The final proof does not rely on
+floating-point FFT roundoff behavior or on the program printing ``PRP''.
+The software rejection records describe what that search did; they are
+not needed for the primality proof or a claim of a globally first prime.
+
+An earlier, separate Proth search used $K2^{131072}+1$ with $K=202611080000001+2j$, $0\leq j<10^6$. It was stopped after 285 completed software rejections, with no passing candidate. Its journals are retained separately from the next search.
+
+A second Proth search used $K2^{131113}+1$ with $K=202611+2j$, $0\leq j<10^6$. Sieving through $10^8$ left 60,875 coefficients. Seven single-thread workers used the OpenPFGW $N-1$ test. The execution ended without a terminal summary. Reconciliation of the durable journals finds 3,429 completed tests, all software rejections, with no passing or unrecognized result. The last periodic checkpoint recorded 3,425 completions after 1463.1 seconds; later completed records are included in the reconciled count. Unlogged candidates are not classified. This interrupted search supplies no additional prime theorem.
+
+The sieve was checked on independent small-range enumerations of both
+families. The downloaded OpenPFGW archive matched the publisher's SHA-256,
+\begin{lstlisting}[numbers=none]
+aadf885e2d6489866bb7eeea2ba3f75a3fa02e679f1d6a86fd2632e042a99c99
+\end{lstlisting}
+This provenance check is separate from the mathematical certificate.
+The archive accompanying this report preserves the search program, sieve
+source, parameter files, journals, and exact verification output. It does
+not redistribute the third-party executables.
+
+\section{A bounded audit of the much larger old candidates}
+Corpus [130] also discusses
+\[
+ q=2^{136279841}-1,\qquad
+ U=28q^2+1,\qquad V=66q^3+1.
+\]
+The source gives $82,048,642$ and $123,072,962$ decimal digits, respectively.
+These were candidate integers, not certified successes. In particular,
+benchmarking a modular square did not evaluate the complete Fermat
+congruences that their proposed certificates would require.
+
+The present additional audit checks every prime $\ell\leq10^9$ by
+computing $q_\ell=(2^{136279841}-1)\bmod\ell$ and testing
+\[
+ 28q_\ell^2+1\pmod\ell,\qquad66q_\ell^3+1\pmod\ell.
+\]
+No prime in that range divides either candidate. The run covered
+$50,847,534$ primes, including the parity check, and took $8.77406$
+seconds on one core. The complete bounded-audit code is reproduced in
+Appendix~\ref{app:giant}. Products stay below the $64$-bit unsigned limit
+when the enforced bound is at most $10^9$.
+
+This is exactly a finite small-factor exclusion. It does not establish
+that $U$ or $V$ is prime, and it does not change the certified maximum in
+Table~\ref{tab:records}. No primality assumption about $q$ is needed for
+this modular audit.
+
+\section{An original named problem close to the certificate method}
+\label{sec:philemon}
+The most directly related named target located in the review is
+Conjecture 4.1 of Philemon \cite{philemon2021}:
+\begin{quote}
+Let $n=am+1$, where $a\geq1$, $m>1$, and $p=\lpf(m)$ is the least prime
+divisor of $m$. If $a<p$ and $m\mid\ph(n)$, then $n$ is prime.
+\end{quote}
+This formulation predates the present work and retains the original
+quantifiers. The author's version 5, dated 10 April 2021, explicitly
+states it as a conjecture. The same paper proves the prime-power case
+$m=p^e$ earlier. Original online discussions contain additional partial
+arguments, including a case with two distinct prime factors in $m$
+\cite{philemonMO,philemonMSE}. No established unrestricted resolution was
+located in the sources examined; that search result is not a proof of
+historical novelty.
+
+\subsection{Why the giant-prime certificate does not settle it}
+Pocklington's gcd condition works separately at every prime divisor
+$\ell$ of $n$. It forces a sufficiently large factor of the order modulo
+\emph{each} $\ell$, and thereby rules out a small divisor.
+The aggregate condition $m\mid\ph(n)$ is different: factors of $m$ may
+be supplied by different terms in
+\[
+ \ph(n)=\prod_{\ell^e\parallel n}\ell^{e-1}(\ell-1).
+\]
+For example, an order condition that is merely nontrivial modulo $n$
+does not automatically make its reduced-power gcd equal to one.
+Replacing the original totient condition by the local gcd conditions
+would change the problem and would invoke an existing theorem.
+
+An elementary necessary condition illustrates the remaining difficulty.
+If a composite counterexample existed, put $t=\ph(n)/m$. Then
+\[
+ 1\leq t<a<p,\qquad\gcd(n,m)=1.
+\]
+For every prime $u\mid m$, the inequality $t<p\leq u$ implies
+$v_u(\ph(n))=v_u(m)$. This constrains the allocation of large prime
+factors among the terms $\ell-1$, but does not force all of them into a
+single term. Such valuation reductions already occur in the original
+discussion; they are not claimed as new results here.
+
+% Standalone section fragment for the root manuscript.
+% Required bibliography keys: philemon2021, philemonMSE.
+% Required environments: lemma, theorem, corollary, proof.
+
+\section{A factor-count obstruction for Philemon's conjecture}
+\label{sec:philemon-obstruction}
+
+Philemon's Conjecture~4.1 asks whether
+\begin{equation}\label{eq:philemon-original}
+ m>1,\qquad n=am+1,\qquad 1\leq a<p:=\operatorname{lpf}(m),
+ \qquad m\mid\varphi(n)
+ \quad\Longrightarrow\quad n\text{ is prime}.
+\end{equation}
+Here $\operatorname{lpf}(m)$ is the least prime divisor of $m$.
+The prime-power case and a two-prime case precede the present work
+\cite{philemon2021,philemonMSE}.  The factor allocation and product-expansion
+strategy used below also have precedents in the 2020 discussion
+\cite{philemonMSE}, including the answers by Haran and user140242.
+We include the full justification because the distinction between
+$\varphi(n)$ and the orders modulo individual prime factors is essential.
+The weighted tail estimate and final factor-count bound are derived here,
+without a claim of historical priority.  The argument does
+not settle the unrestricted implication \eqref{eq:philemon-original}.
+
+\begin{lemma}[Exact allocation in a hypothetical counterexample]
+\label{lem:philemon-allocation}
+Suppose the hypotheses in \eqref{eq:philemon-original} hold and $n$ is
+composite.  Then $m$ is odd.  There are integers $C\geq1$, $s\geq1$,
+$c_i\geq2$, and $m_i\geq p$ such that
+\begin{equation}\label{eq:philemon-allocation}
+ n=C\prod_{i=1}^s(c_i m_i+1),\qquad
+ \prod_{i=1}^s m_i=m,\qquad
+ U:=C\prod_{i=1}^s c_i<a.
+\end{equation}
+Every $c_i$ is even.  The numbers $c_i m_i+1$ are precisely the distinct
+prime factors of $n$ greater than $p$, each with multiplicity one; every
+prime factor of $C$ is less than $p$.  In particular, $C<a$ and
+$U\geq C2^s$.  Moreover,
+\begin{equation}\label{eq:philemon-tail}
+ a-U+\frac1m
+ =U\left\{\prod_{i=1}^s\left(1+\frac1{c_i m_i}\right)-1\right\}
+ <\frac{Us}{2p-s}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Write $\varphi(n)=bm$.  Since $n$ is composite,
+$\varphi(n)<n-1=am$, and hence $1\leq b<a<p$.  Thus
+$\gcd(b,m)=1$.  Also $\gcd(n,m)=1$ because $n=am+1$.
+If $m$ were even, then $p=2$ and $a=1$, contradicting $b<a$.
+Therefore $m$ is odd and $p\geq3$.
+
+Call a prime divisor $\ell$ of $n$ active if
+$\gcd(\ell-1,m)>1$.  Any active prime exceeds $p$.  If any prime
+$\ell>p$ occurred in $n$ with multiplicity at least two, then
+$\ell\mid\varphi(n)$ and $\ell\nmid m$ would give
+$\ell\mid b$, contradicting $b<p<\ell$.
+If a prime $\ell>p$ were inactive, then
+$\ell-1\mid\varphi(n)$ and $\gcd(\ell-1,m)=1$ would give
+$\ell-1\mid b$, again impossible.  No prime divisor of $n$ equals
+$p$, since $\gcd(n,m)=1$.  Consequently, the active primes are exactly
+the prime divisors of $n$ greater than $p$, all with multiplicity one.
+List them as $\ell_1,\ldots,\ell_s$ and put
+$C=n/(\ell_1\cdots\ell_s)$.  All prime factors of $C$ are less than
+$p$, so $\gcd(\varphi(C),m)=1$.  The condition $m>1$ and
+$m\mid\varphi(n)$ ensures $s\geq1$.
+
+For each $i$ define the full part of $\ell_i-1$ supported on the prime
+divisors of $m$ by
+\[
+ m_i=\prod_{t\mid m,\ t\ \mathrm{prime}}t^{v_t(\ell_i-1)},
+ \qquad c_i=\frac{\ell_i-1}{m_i}.
+\]
+Because $\gcd(b,m)=\gcd(\varphi(C),m)=1$ and
+$\varphi(n)=\varphi(C)\prod_i(\ell_i-1)=bm$, the $t$-adic
+valuations on both sides show that $\prod_i m_i=m$ exactly.
+Every active $m_i$ is a nontrivial divisor supported on primes at least
+$p$, so $m_i\geq p$.  Each $m_i$ is odd, whereas $\ell_i-1$ is even;
+therefore $c_i\geq2$ is even.
+
+Expanding $C\prod_i(c_i m_i+1)$ gives
+$n=Um+\Delta$, where $\Delta>1$ in the composite case.  Indeed, if
+$s\geq2$ the nonleading positive terms already sum to more than one.
+If $s=1$, then $\Delta=C$; the alternative $C=1$ would make
+$n=\ell_1$ prime.  Comparison with $n=am+1$ now gives
+$(a-U)m=\Delta-1>0$, proving $U<a$ and $C<a$.
+
+Dividing the product formula for $n$ by $m$ proves the equality in
+\eqref{eq:philemon-tail}.  Since $c_i m_i\geq2p$,
+\[
+ \prod_i\left(1+\frac1{c_i m_i}\right)
+ \leq\left(1+\frac1{2p}\right)^s
+ <\frac1{1-s/(2p)}.
+\]
+The last inequality follows by comparing the binomial expansion with
+the geometric series, using $\binom{s}{j}\leq s^j$.
+Its denominator is positive: $p>a>U\geq2^s$ implies $s<2p$.
+Subtracting one and multiplying by $U$ proves the strict inequality
+in \eqref{eq:philemon-tail}.
+\end{proof}
+
+\begin{theorem}[Parity-sensitive factor-count obstruction]
+\label{thm:philemon-factor-count}
+In every composite counterexample to \eqref{eq:philemon-original}, the
+notation in Lemma~\ref{lem:philemon-allocation} satisfies the stronger
+weighted bound
+\begin{equation}\label{eq:philemon-weighted-gap}
+ a-U<\sum_{i=1}^s\frac1{c_i}\leq\frac{s}{2}.
+\end{equation}
+In particular,
+\begin{equation}\label{eq:philemon-quantitative-gap}
+ 2(a-U)<s,
+ \qquad\text{equivalently}\qquad s\geq2(a-U)+1.
+\end{equation}
+Consequently, a composite counterexample must have
+at least five distinct prime factors greater than $p$ if $n$ is odd,
+and at least three such factors if $n$ is even.
+\end{theorem}
+
+\begin{proof}
+Use Lemma~\ref{lem:philemon-allocation} and let $h=a-U$ and
+$S=\sum_i1/c_i$.  Since $S\leq s/2<a<p$, all the following denominators
+are positive.  The elementary symmetric terms in
+$\prod_i(1+1/(c_i p))$ are bounded by the corresponding powers of
+$S/p$, so comparison with a geometric series gives
+\[
+ \prod_i\left(1+\frac1{c_i m_i}\right)
+ \leq\prod_i\left(1+\frac1{c_i p}\right)
+ <\frac1{1-S/p}.
+\]
+The equality in \eqref{eq:philemon-tail}, followed by $p>a$, yields
+\[
+ h<\frac{US}{p-S}<\frac{US}{a-S}
+   =\frac{(a-h)S}{a-S}.
+\]
+Multiplication by $a-S$ and cancellation give $ah<aS$, and hence
+$h<S\leq s/2$.  This proves both
+\eqref{eq:philemon-weighted-gap} and
+\eqref{eq:philemon-quantitative-gap}.
+
+The integer $U$ is even.  If $n$ is odd, then $a$ is even because
+$m$ is odd; thus $h$ is a positive even integer, so $h\geq2$ and
+$s\geq5$.  If $n$ is even, then $a$ and $h$ are odd; thus $h\geq1$
+and $s\geq3$.
+\end{proof}
+
+\begin{corollary}
+Writing $\Omega(m)$ for the number of prime factors of $m$ counted with
+multiplicity, a composite counterexample has $\Omega(m)\geq5$ when
+$n$ is odd and $\Omega(m)\geq3$ when $n$ is even.  In the notation of
+Lemma~\ref{lem:philemon-allocation}, the corresponding lower bounds are
+$a\geq32C+2$ and $a\geq8C+1$, respectively.
+\end{corollary}
+
+\begin{proof}
+Each $m_i>1$ and $\prod_i m_i=m$, so $\Omega(m)\geq s$.
+Also $a=U+h\geq C2^s+h$; apply the theorem and the parity bounds on $h$.
+\end{proof}
+
+\begin{corollary}[All coefficients up to $32$]
+\label{cor:philemon-small-coefficient}
+The original implication \eqref{eq:philemon-original} is true for
+every integer $1\leq a\leq32$, with no bound on $m$.
+\end{corollary}
+
+\begin{proof}
+Suppose instead that a composite counterexample has $a\leq32$.
+If $n$ is odd, the preceding corollary gives
+$a\geq32C+2\geq34$, a contradiction.
+If $n$ is even, then $C$ is even and $s\geq3$.  Since
+$U=C\prod_i c_i<a\leq32$, the alternatives $s\geq4$, $C\geq4$,
+or any $c_i\geq4$ are all impossible: each would give $U\geq32$.
+Therefore $C=2$, $s=3$, $c_1=c_2=c_3=2$, and $U=16$.
+The strict bound $2(a-U)<s=3$ forces $a-U=1$, so $a=17$.
+
+Now $p>17$ and every prime factor of every $m_i$ is at least $p$;
+thus $3\nmid m_i$.  The number $\ell_i=2m_i+1$ is a prime greater
+than $p$, so it is not divisible by $3$.  These two facts force
+$m_i\equiv2\pmod3$ and $\ell_i\equiv2\pmod3$ for all three
+indices.  Consequently the product formula for $n$ gives
+$n=2\ell_1\ell_2\ell_3\equiv1\pmod3$, whereas
+$n=17m+1=17m_1m_2m_3+1\equiv2\pmod3$.
+This contradiction proves the claim.  No primality assumption on
+the individual $m_i$ was used.
+\end{proof}
+
+% Suggested bibliography entries, to merge into the manuscript bibliography:
+% \bibitem{philemon2021}
+% A. S. Philemon, Primality of numbers of the form $ap^k+1$,
+% arXiv:2005.02327v5 (2021), Conjecture 4.1.
+% \url{https://arxiv.org/abs/2005.02327v5}.
+%
+% \bibitem{philemonMSE}
+% Haran, Partial answer to ``Prove that there are no composite integers
+% $n=am+1$ such that $m\mid\varphi(n)$'', Mathematics Stack Exchange,
+% 7 October 2020, edited 2 November 2020.
+% \url{https://math.stackexchange.com/questions/3843281/}.
+
+% Section fragment: append after the factor-count theorem in
+% research/prime_strategy/philemon_obstruction.tex.
+% This is a uniform coefficient-range result, not a resolution of the
+% unrestricted conjecture, and no historical-priority claim is made.
+
+\subsection{A uniform coefficient range through 64}
+\label{sec:philemon-64}
+
+\begin{corollary}[All coefficients up to $64$]
+\label{cor:philemon-coeff64}
+The original implication \eqref{eq:philemon-original} holds for every
+integer $1\leq a\leq64$, with no upper bound on $m$.
+\end{corollary}
+
+\begin{proof}
+Suppose, to the contrary, that $n$ is composite and $a\leq64$.
+Use the exact decomposition in Lemma~\ref{lem:philemon-allocation}, and
+put $h=a-U$.  Thus $U<a\leq64$, $U\geq C2^s$, all $c_i$ are even,
+and \eqref{eq:philemon-quantitative-gap} gives $2h<s$.
+The integers $m_i$ are odd, and every prime divisor of every $m_i$ is
+at least $p>a$.  Distinct active primes with the same coefficient
+$c_i=c_j$ have $m_i\ne m_j$.
+
+\paragraph{Complete coefficient classification.}
+If $n$ is odd, then $C$ is odd, $h$ is positive and even, and $s\geq5$.
+The inequality $2^s\leq U<64$ forces $s=5$.
+Now $U=C\prod_i c_i$ is a positive multiple of $32$ below $64$, so
+$U=32$, $C=1$, and all five $c_i$ equal $2$.
+The inequality $2h<5$ forces $h=2$, hence $a=34$.
+
+If $n$ is even, then $C$ is even, $h$ is positive and odd, and $s\geq3$.
+Here $2^{s+1}\leq U<64$, so $s=3$ or $s=4$.
+For $s=4$, $U$ is a positive multiple of $32$ below $64$;
+therefore $U=32$, $C=2$, all $c_i=2$, $h=1$, and $a=33$.
+For $s=3$, $U$ is a positive multiple of $16$ below $64$, and $2h<3$
+gives $h=1$.  Thus $(U,a)$ is one of $(16,17)$, $(32,33)$, and
+$(48,49)$.  Factoring
+\[
+ \frac{U}{16}=\frac{C}{2}\prod_{i=1}^3\frac{c_i}{2}
+ \in\{1,2,3\}
+\]
+gives precisely the following cases, up to permutation of the $c_i$:
+\begin{equation}\label{eq:philemon-64-cases}
+\begin{array}{c|c|c|c|c|c}
+ a&C&s&(c_1,\ldots,c_s)&U&h\\ \hline
+ 17&2&3&(2,2,2)&16&1\\
+ 33&2&3&(2,2,4)&32&1\\
+ 33&4&3&(2,2,2)&32&1\\
+ 33&2&4&(2,2,2,2)&32&1\\
+ 34&1&5&(2,2,2,2,2)&32&2\\
+ 49&2&3&(2,2,6)&48&1\\
+ 49&6&3&(2,2,2)&48&1
+\end{array}
+\end{equation}
+In particular, this classification includes both the three-factor case
+$C=4$ and the four-factor case $C=2$ at $a=33$.
+
+\paragraph{Four exclusions modulo $3$.}
+In every row where all $c_i=2$, one has $p>17$, hence $3\nmid m_i$.
+Since $2m_i+1$ is prime and exceeds $p$, it is not divisible by $3$.
+Consequently $m_i\equiv2\pmod3$ and $2m_i+1\equiv2\pmod3$.
+The two formulas for $n$ therefore require
+\begin{equation}\label{eq:philemon-64-mod3}
+ C2^s\equiv a2^s+1\pmod3.
+\end{equation}
+For $(a,C,s)=(17,2,3),(33,4,3),(33,2,4),(34,1,5)$, the left and
+right residues are, respectively, $(1,2),(2,1),(2,1),(2,0)$.
+These four rows are impossible.  The row $(49,6,3)$ survives this
+particular congruence and is treated separately below.
+
+\paragraph{Monotone bounds for the remaining rows.}
+For positive coordinates $t_i$ define
+\[
+ R_U(\boldsymbol c;\boldsymbol t)
+ =U\left\{\prod_{i=1}^s\left(1+\frac1{c_i t_i}\right)-1\right\}.
+\]
+This expression decreases in each coordinate $t_i$.
+The equality in \eqref{eq:philemon-tail} says
+\begin{equation}\label{eq:philemon-64-monotone}
+ h+\frac1m=R_U(\boldsymbol c;\boldsymbol m).
+\end{equation}
+All remaining rows have $h=1$, so any coordinatewise upper bound on
+the right side that is less than $1$ gives a contradiction.
+
+For $a=33$, $C=2$, and $\boldsymbol c=(2,2,4)$, one has $p\geq37$.
+Order the first two coordinates so that $m_1<m_2$.
+The value $m_1=37$ would give the composite active factor $75$.
+Every integer from $38$ through $40$ has a prime factor below $37$,
+so $m_1\geq41$; oddness and distinctness then give $m_2\geq43$.
+Also $m_3\geq37$.  Hence
+\begin{equation}\label{eq:philemon-64-bound33}
+ R_{32}((2,2,4);\boldsymbol m)
+ \leq R_{32}((2,2,4);(41,43,37))
+ =\frac{64466}{65231}<1.
+\end{equation}
+
+Both remaining rows have $a=49$ and therefore $p\geq53$.
+An integer $m_i<53^2$ supported on primes at least $53$ must itself
+be prime.  Among integers $d$ in the interval $[53,113]$ for which
+both $d$ and $2d+1$ are prime, the possibilities are exactly
+\begin{equation}\label{eq:philemon-64-small-values}
+ 53,\quad83,\quad89,\quad113.
+\end{equation}
+This small enumeration is elementary: the other primes in the interval
+and proper factors of $2d+1$ are listed here:
+\[
+\begin{array}{c|rrrrrr}
+ d&59&61&67&71&73&79\\
+ \text{proper factor of }2d+1&7&3&5&11&3&3
+\end{array}
+\]
+\[
+\begin{array}{c|rrrrr}
+ d&97&101&103&107&109\\
+ \text{proper factor of }2d+1&3&7&3&5&3
+\end{array}
+\]
+The four retained numbers $107,167,179,227$ are prime by trial division
+through their square roots.  Integers $d\leq113$ that are not prime
+cannot be any $m_i$, because their least prime factors are below $53$.
+
+For $C=2$ and $\boldsymbol c=(2,2,6)$, order the two coordinates with
+coefficient $2$.  The preceding enumeration gives
+$m_1\geq53$, $m_2\geq83$, and $m_3\geq53$.  Consequently
+\begin{equation}\label{eq:philemon-64-bound49a}
+ R_{48}((2,2,6);\boldsymbol m)
+ \leq R_{48}((2,2,6);(53,83,53))
+ =\frac{209366}{233147}<1.
+\end{equation}
+
+Finally, consider $C=6$ and $\boldsymbol c=(2,2,2)$.
+Order all three coordinates increasingly.  If they are not exactly
+$(53,83,89)$, their coordinatewise lower bounds are $(53,83,113)$:
+the first three eligible values below $113$ are precisely those in
+the exceptional triple.  Thus in every nonexceptional case,
+\begin{equation}\label{eq:philemon-64-bound49b}
+ R_{48}((2,2,2);\boldsymbol m)
+ \leq R_{48}((2,2,2);(53,83,113))
+ =\frac{477402}{497087}<1.
+\end{equation}
+The exceptional triple gives, exactly,
+\[
+ m=53\cdot83\cdot89=391511,
+ \qquad n=6\cdot107\cdot167\cdot179=19191306.
+\]
+But
+\begin{equation}\label{eq:philemon-64-exception}
+ n-1-49m=19191305-19184039=7266\ne0,
+\end{equation}
+so it does not satisfy the required identity $n=49m+1$.
+Every row of \eqref{eq:philemon-64-cases} is excluded, proving the
+corollary.
+\end{proof}
+
+The bound in Corollary~\ref{cor:philemon-coeff64} is on the coefficient
+$a$, not on the size of $m$ or $n$.  The argument therefore covers
+infinitely many possible inputs in each of the $64$ coefficient classes.
+It remains a partial result for \eqref{eq:philemon-original}; neither
+the remaining coefficients nor historical priority are settled here.
+
+% Append after the factor-count theorem and the a <= 64 corollary.
+% Uses labels from philemon_obstruction.tex and philemon_64.tex.
+% The density is a density of coefficient classes, uniformly in m.
+% No assertion of historical novelty or of a complete conjecture proof.
+
+\subsection{A coefficient set of lower density at least 9/10}
+\label{sec:philemon-density}
+
+The quantitative factor-count obstruction also proves the original
+implication for an explicit infinite set of coefficients.  Define, for
+each positive integer $h$,
+\[
+ M_h=
+ \begin{cases}
+  2^{2h+1},&h\text{ even},\\
+  2^{2h+2},&h\text{ odd},
+ \end{cases}
+ \qquad
+ \mathcal E_h=\{h+tM_h:t=1,2,3,\ldots\},
+ \qquad
+ \mathcal E=\bigcup_{h\geq1}\mathcal E_h.
+\]
+The positive-multiple condition $t\geq1$ is part of the definition.
+In particular, the residue representative $a=h$ is not included merely
+by belonging to that residue class.
+
+\begin{theorem}[Uniform coefficient-density bound]
+\label{thm:philemon-density}
+For every coefficient $a\notin\mathcal E$, the original implication
+\eqref{eq:philemon-original} holds for every $m>1$ satisfying
+$a<\operatorname{lpf}(m)$.  For each positive integer $X$,
+\begin{equation}\label{eq:philemon-density-finite}
+ \#\bigl(\mathcal E\cap\{1,\ldots,X\}\bigr)
+ \leq\left\lfloor\frac{X}{10}\right\rfloor.
+\end{equation}
+Consequently, at least $X-\lfloor X/10\rfloor$ coefficient classes
+among $1,\ldots,X$ satisfy the conjectured implication uniformly in
+$m$.  The explicit set $\mathbb Z_{\geq1}\setminus\mathcal E$ has
+lower asymptotic density at least $9/10$.
+\end{theorem}
+
+\begin{proof}
+Suppose a composite counterexample exists, and retain the notation in
+Lemma~\ref{lem:philemon-allocation}.  Put $h=a-U>0$.
+Theorem~\ref{thm:philemon-factor-count} gives $s\geq2h+1$.
+Since every $c_i$ is even, $2^s\mid U$.
+
+If $a$ is even, then $n$ and $C$ are odd, while $h$ is even.
+It follows that
+\[
+ 2^{2h+1}\mid U=a-h.
+\]
+If $a$ is odd, then $n$ and $C$ are even, while $h$ is odd.
+The additional factor of two in $C$ gives
+\[
+ 2^{2h+2}\mid U=a-h.
+\]
+Thus in either case $M_h\mid a-h$.  Because $U=a-h>0$, the quotient
+is a positive integer; therefore $a\in\mathcal E_h\subseteq
+\mathcal E$.  Contraposition proves the first assertion, with all
+quantifiers over $m$ unrestricted.
+
+For a fixed $h$ and $X$, the number of terms in $\mathcal E_h$ up to
+$X$ is
+\[
+ \max\left\{0,\left\lfloor\frac{X-h}{M_h}\right\rfloor\right\}
+ \leq\frac{X}{M_h}.
+\]
+Only finitely many such sets meet $\{1,\ldots,X\}$, and their union
+has size at most the sum of their sizes.  Summing the convergent bounds
+over all $h$ gives
+\begin{align*}
+ \#\bigl(\mathcal E\cap\{1,\ldots,X\}\bigr)
+ &\leq X\left(
+     \sum_{j=1}^{\infty}2^{-(4j+1)}
+     +\sum_{j=0}^{\infty}2^{-(4j+4)}\right)\\
+ &=X\left(\frac1{30}+\frac1{15}\right)=\frac{X}{10}.
+\end{align*}
+The left side is an integer, giving
+\eqref{eq:philemon-density-finite}.  Taking a lower limit of the
+complementary proportions proves the density assertion.
+\end{proof}
+
+Membership in $\mathcal E$ is a finite calculation for any specified
+$a$: a relevant $h$ must satisfy $h+M_h\leq a$.  The set
+$\mathcal E$ contains only coefficients not certified by this density
+argument; membership does not assert the existence of a counterexample.
+Corollary~\ref{cor:philemon-coeff64} additionally settles every
+coefficient up to $64$, including those that lie in $\mathcal E$.
+Theorem~\ref{thm:philemon-density} concerns coefficient classes, not
+the frequency of primes or a proportion of arbitrary pairs $(a,m)$.
+The unrestricted conjecture remains unresolved by these arguments.
+
+\subsection{Restricted unconditional primality certificates}
+\label{sec:philemon-restricted-certificate}
+
+The preceding results give an unconditional instance of the certificate
+proposed conditionally in Philemon's Theorem~4.2
+\cite{philemon2021}.  The order argument itself is the earlier one;
+the point is the explicit coefficient range on which its premise has
+now been established here.
+
+\begin{corollary}[An unconditional instance of the extended Lucas criterion]
+\label{cor:philemon-restricted-certificate}
+Let $m>1$, $1\leq a<\operatorname{lpf}(m)$, and $N=am+1$.
+Assume either $a\leq64$ or $a\notin\mathcal E$.
+Suppose that for every prime $q\mid m$ there is an integer $b_q$
+such that
+\begin{equation}\label{eq:philemon-restricted-witnesses}
+ b_q^{N-1}\equiv1\pmod N,
+ \qquad
+ b_q^{(N-1)/q}\not\equiv1\pmod N.
+\end{equation}
+Then $N$ is prime.
+\end{corollary}
+
+\begin{proof}
+The first congruence makes $b_q$ a unit modulo $N$.
+Let $d_q=\operatorname{ord}_N(b_q)$.
+Then $d_q\mid N-1$ while $d_q\nmid(N-1)/q$.
+Because $a<\operatorname{lpf}(m)$, one has $\gcd(a,m)=1$.
+If $q^e\Vert m$, it follows that $q^e\Vert N-1$ and
+$q^e\mid d_q\mid\varphi(N)$.  Combining these divisibilities
+for the distinct primes dividing $m$ gives $m\mid\varphi(N)$.
+Apply Corollary~\ref{cor:philemon-coeff64} or
+Theorem~\ref{thm:philemon-density}, as appropriate.
+\end{proof}
+
+The noncongruence in \eqref{eq:philemon-restricted-witnesses} is taken
+modulo $N$ itself.  This corollary is restricted to its stated
+coefficient set; it does not justify omitting a Pocklington gcd check
+for arbitrary inputs.  No general speed advantage or historical
+priority for a new primality criterion is claimed.
+
+
+No proof in this report closes that allocation problem in general.
+Consequently, Philemon's conjecture cannot be used as an assumption in
+the new-prime proofs. The certificates in Sections~\ref{sec:certificates}
+and \ref{sec:newprime} are unconditional without it.
+
+\section{A named conjecture on a greedy Euclidean prime sequence}
+\label{sec:brennan}
+
+This section records a separate theoretical consequence and an exact bounded
+experiment.  The theoretical result is explicitly a corollary of existing
+theorems on smooth squarefree representatives.  It does not establish the
+all-step assertion in the original conjecture, and it does not depend on the
+size of the certified prime constructed elsewhere in this paper.
+
+\subsection{The original sequence and conjecture}
+
+Joel Brennan's OEIS entry A359504, dated January 3, 2023, defines the following
+sequence \cite{oeis359504}.  Put $S_0=\varnothing$.  For a finite set $S$ of
+primes, write
+\[
+  \mathcal D(S)=\left\{\prod_{q\in T}q:T\subseteq S\right\},
+\]
+where the empty product is $1$.  Thus $\mathcal D(S)$ consists of the
+squarefree positive integers whose prime factors belong to $S$.  Recursively,
+define
+\begin{align*}
+ P_{n+1}&=\min\{d\in\mathcal D(S_n):
+       d+1\text{ has a prime divisor outside }S_n\},\\
+ a_{n+1}&=\min\{q:q\text{ is prime},\ q\mid P_{n+1}+1,\ q\notin S_n\},\\
+ S_{n+1}&=S_n\cup\{a_{n+1}\}.
+\end{align*}
+These definitions preserve the original order of the two minimizations:
+first minimize the product, and then select its smallest new prime factor.
+They do not minimize the new prime across all available products.
+
+The construction continues indefinitely.  Indeed, the product of all primes
+in $S_n$ is an eligible product, since every prime factor of that product
+plus one lies outside $S_n$.  Each term is a new prime.  The first four terms
+are $2,3,7,5$, with selected products $1,2,6,14$ respectively.
+
+\paragraph{Brennan's conjecture.}
+At every step, $P_{n+1}+1$ has exactly one distinct prime divisor outside
+$S_n$.  The original entry states ``at most one''; eligibility supplies
+``at least one,'' so these formulations are equivalent.  Multiplicity of
+the new factor is not restricted by the original assertion.
+
+\subsection{Two published inputs}
+
+A positive integer is $p$-smooth when every prime factor is at most $p$.
+Booker and Pomerance \cite[Theorem~1]{booker2017} prove that, for every prime
+$p\notin\{5,7\}$, every residue class modulo $p$ has a positive squarefree
+$p$-smooth representative.  Applied to the residue $-1$, such a representative
+has all its prime factors strictly below $p$.
+
+Munsch and Shparlinski \cite[Theorem~1.4]{munsch2020} prove the stronger
+asymptotic size bound
+\[
+ M(p)\le p^{3/2+o(1)},
+\]
+where $M(p)$ is the smallest bound permitting squarefree $p$-smooth
+representatives for all residue classes.  In particular, for each fixed
+$\varepsilon>0$, every sufficiently large prime $p$ admits such a
+representative $d$ of $-1$ with $d\le p^{3/2+\varepsilon}$.
+
+Booker and Pomerance's Corollary~7 concerns a different selection rule: it
+minimizes the new prime over all products.  The argument below transfers
+their representative theorem to Brennan's product-first rule.
+
+\begin{corollary}[Every prime occurs]
+The sequence A359504 contains every prime exactly once.
+
+\end{corollary}\begin{proof}
+Distinctness follows from the definition.  Suppose that a prime never
+occurs, and let $p$ be the least such prime.  The displayed initial terms
+give $p\ge11$, handling both exceptional moduli in the published theorem.
+All primes smaller than $p$ occur, so there is an index $N$ after which
+all of them belong to $S_n$.
+
+Choose a squarefree integer $d$ with all prime factors below $p$ and
+$d\equiv-1\pmod p$, using Booker--Pomerance.  For every $n\ge N$, the
+integer $d$ belongs to $\mathcal D(S_n)$ and remains eligible, because
+$p\mid d+1$ and $p\notin S_n$.  Therefore $P_{n+1}\le d$ and
+$a_{n+1}\le d+1$ for every $n\ge N$.  This would give infinitely many
+distinct primes bounded by the fixed integer $d+1$, a contradiction.
+\end{proof}
+
+Let $\mu_n$ denote the least prime outside $S_n$.  The first corollary implies
+$\mu_n\to\infty$: each fixed finite set of primes is eventually contained
+in $S_n$.
+
+\begin{corollary}[Eventual uniqueness, with multiplicity one]
+For each $\varepsilon>0$, there is an index $N_\varepsilon$ such that
+\[
+ P_{n+1}\le \mu_n^{3/2+\varepsilon},\qquad
+ a_{n+1}\le \mu_n^{3/2+\varepsilon}+1
+ \quad(n\ge N_\varepsilon).
+\]
+Consequently, for all sufficiently large $n$, the integer $P_{n+1}+1$
+has exactly one prime divisor outside $S_n$, and that prime occurs to
+exponent one.
+
+\end{corollary}\begin{proof}
+For sufficiently large $n$, Munsch--Shparlinski provides a squarefree
+$\mu_n$-smooth integer $d_n\equiv-1\pmod{\mu_n}$ with
+$d_n\le \mu_n^{3/2+\varepsilon}$.  Since $\mu_n\nmid d_n$, all prime
+factors of $d_n$ are below $\mu_n$ and hence belong to $S_n$.
+Thus $d_n$ is eligible, and the two bounds follow from the selection rule.
+
+Fix $0<\varepsilon<1/2$.  As $\mu_n\to\infty$, these bounds give
+$P_{n+1}+1<\mu_n^2$ eventually.  Every prime outside $S_n$ is at least
+$\mu_n$.  If $P_{n+1}+1$ had two distinct new prime divisors, or if a new
+prime divisor occurred at least twice, it would be at least $\mu_n^2$.
+Both possibilities are excluded.  Eligibility guarantees the existence
+of a new prime divisor, completing the proof.\end{proof}
+
+The proof also gives an exact local criterion: at any step, an eligible
+squarefree integer $d\equiv-1\pmod{\mu_n}$ with prime factors below $\mu_n$
+and $d+1<\mu_n^2$ certifies uniqueness and exponent one at that step.
+This criterion is sufficient; its failure is not a counterexample.
+
+\subsection{Exact finite experiment and its scope}
+
+We implemented a smallest-prime-factor sieve and an availability queue for
+all squarefree products $d\le B$.  For each such product, a counter stores
+how many of its distinct prime factors have not yet appeared.  Adding a
+new prime decrements these counters on the corresponding squarefree
+multiples.  Products whose counters reach zero enter a min-heap.  A
+popped product is factored after adding one, and the distinct factors
+outside the current prime set are counted.
+
+This handles decreases in the selected products, such as the transition
+from $14$ to $10$ after the first four terms.  At every successful step,
+the least eligible product in the bounded queue is also the least
+eligible product globally, because every omitted product exceeds $B$.
+Already inspected products cannot acquire a new absent factor when the
+known-prime set grows.  These invariants justify the resulting sequence
+prefix; exhaustion of the bounded queue is only a stopping condition for
+the experiment.
+
+With $B=100{,}000{,}000$, the run generated the first $3{,}795{,}778$
+sequence terms and inspected $58{,}574{,}992$ available squarefree subset products.
+No selected product plus one had two distinct new prime factors.  The
+largest generated prime was $99{,}999{,}971$.  The recorded running time
+was $22.75$ seconds in the execution environment used for this paper;
+this is an observation rather than a hardware-independent performance
+claim.  The first $5{,}000$ terms were compared against the complete
+official OEIS b-file, with no mismatches; the common $5{,}000$th term is
+$77{,}291$.  The finite search checks distinct new factors, which is the
+property in Brennan's conjecture.
+
+\subsection{The remaining logical gap}
+
+The eventual-uniqueness corollary proves that any failures of Brennan's conjecture occur among
+finitely many steps.  The proof does not supply a numerical index after
+which failures are impossible.  The finite experiment cannot cover an
+unspecified exceptional range.  Combining the asymptotic theorem with
+the displayed search therefore does not prove the original assertion
+for every step.
+
+For the requested success conditions, the target retains its published
+definition, but the established statement has the weaker quantifier
+``all sufficiently late steps.''  Thus it does not satisfy the required
+full-scope G2/G4 closure.  The theoretical argument is a corollary of
+published representation bounds, so it supplies no independent claim
+of the methodological novelty demanded by G5.  No priority or G6 claim
+is made.  The explicit outcomes are the two corollaries and the bounded
+verification, with the original all-step conjecture left unresolved.
+
+
+\section{Success-gate audit and remaining conclusions}\label{sec:gates}
+\begingroup\small\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}>{\raggedright\arraybackslash}p{0.54\linewidth}@{}}
+\toprule
+Gate & Required success criterion & Result of this investigation\\
+\midrule\endhead
+G1 & A previously named problem with a prior original statement &
+Philemon Conjecture 4.1 and OEIS A359504 are concrete prior targets. A new
+large prime by itself is not such a solved conjecture.\\
+G2 & Preserve the original proposition and quantifiers &
+The targets are stated unchanged. The coefficient restrictions and
+eventual uniqueness are explicit partial results; neither replaces an
+original unrestricted quantifier.\\
+G3 & The target was actually unresolved &
+The primary sources examined still state the targets conjecturally. No
+claim is made that a search can rule out all unpublished or overlooked
+prior work.\\
+G4 & An unconditional complete proof of the original target &
+Complete proofs are supplied for the specific prime certificates, $a\leq64$, and the explicit
+coefficient set of lower density at least $9/10$, all uniformly in $m$.
+Not achieved for either unrestricted original
+conjecture. The unspecified eventual cutoff in A359504 is not closed.\\
+G5 & A substantive new argument, not a re-expression &
+The prime tests are classical. The weighted factor-count estimate works
+for a partial range of Philemon's conjecture; A359504 uses existing
+analytic theorems. No new method resolving an entire target is claimed.\\
+G6 & No prior identical result or essentially identical proof &
+No historical-first claim is justified for the integers, algorithms, or
+analytic corollaries in this report.\\
+\bottomrule
+\end{longtable}
+\endgroup
+
+The request to extend the completed corpus chain is fully answered.
+The partial theorems do not
+meet G4 for either original conjecture, and the historical priority required
+by G6 has not been established.
+
+\section*{Reproducibility and attribution}
+This report was prepared with assistant-supported source review,
+mathematical analysis, programming, and exact computation. Classical
+theorems are attributed to their sources. The original corpus is licensed
+CC BY 4.0; its seed definitions and certificate parameters are reused with
+attribution to manuscripts [129] and [130]. The verifier below is
+self-contained: the complete source needs no external bibliography,
+integer file, image, or custom style to compile. A normal TeX installation
+with the packages in the preamble suffices.
+
+\appendix
+\section{Complete exact-integer primality verifier}\label{app:verifier}
+The program reconstructs the complete dependency chain, proves the small
+base primes by trial division, and checks every certificate explicitly.
+It uses gmpy2 when available; otherwise Python's exact integers supply the
+same mathematical operations with a slower runtime. The checks are
+ordinary conditional statements and remain active under Python's
+optimization flag. No probable-prime oracle is used.
+% EMBEDDED_FILE_BEGIN verify_certificates.py
+\begin{lstlisting}[language=Python]
+"""Exact primality proofs. Python 3; optional gmpy2 accelerates the same checks.
+No input files, prime tables, PRP oracle, or network are used.
+"""
+import hashlib
+import json
+import math
+import sys
+import time
+
+if hasattr(sys, "set_int_max_str_digits"):
+    sys.set_int_max_str_digits(0)
+try:
+    import gmpy2
+    Z, modpow, gcd = gmpy2.mpz, gmpy2.powmod, gmpy2.gcd
+    backend = "gmpy2 " + gmpy2.version()
+except ImportError:
+    Z, modpow, gcd = int, pow, math.gcd
+    backend = "Python standard-library exact integers"
+
+def need(condition, explanation):
+    if not condition:
+        raise ArithmeticError(explanation)
+
+known = set()
+for q in (2, 7):
+    need(all(q % d for d in range(2, math.isqrt(q) + 1)),
+         "base-prime trial division failed")
+    known.add(Z(q))
+
+def fingerprint(label, n, expected_digits, expected_bits,
+                expected_hash=None):
+    decimal = str(n)
+    digest = hashlib.sha256(decimal.encode("ascii")).hexdigest()
+    need(len(decimal) == expected_digits, label + ": digit count")
+    need(n.bit_length() == expected_bits, label + ": bit length")
+    if expected_hash is not None:
+        need(digest == expected_hash, label + ": decimal identity")
+    print(json.dumps({"label": label, "status": "CERTIFIED",
+          "digits": len(decimal), "bits": n.bit_length(),
+          "sha256_decimal": digest}), flush=True)
+    return n
+
+def pocklington(label, n, factors):
+    need(n > 2 and n % 2, label + ": odd positive integer")
+    F = Z(1)
+    distinct = set()
+    for q, exponent, a in factors:
+        need(q in known, label + ": unknown factor primality")
+        need(exponent >= 1 and q not in distinct,
+             label + ": invalid factor list")
+        distinct.add(q)
+        F *= q**exponent
+    need((n-1) % F == 0, label + ": F does not divide n-1")
+    need(F*F > n, label + ": insufficient factored part")
+    for q, exponent, a in factors:
+        need(1 < a < n, label + ": witness range")
+        need(modpow(Z(a), n-1, n) == 1,
+             label + ": Fermat congruence failed")
+        t = modpow(Z(a), (n-1)//q, n)
+        need(gcd(t-1, n) == 1, label + ": gcd failed")
+    known.add(n)
+    return n
+
+started = time.perf_counter()
+x = Z(14)**256
+p = pocklington("p0", x*x-x+1,
+                [(Z(2), 256, 11), (Z(7), 256, 2)])
+fingerprint("p0", p, 587, 1950)
+sizes = [(1177,3908), (2357,7829), (4718,15670),
+         (9439,31354), (18882,62722)]
+for i, (k, size) in enumerate(zip(
+        (438,13696,5494,13258,22330), sizes), 1):
+    parent = p
+    p = pocklington("p"+str(i), k*parent*parent+1,
+                    [(parent,2,2)])
+    fingerprint("p"+str(i), p, *size)
+r = pocklington("r", 62988*p+1, [(p,1,2)])
+fingerprint("r", r, 18886, 62738,
+    "ca4c8532ec289a68d0fe9769f87f3797"
+    "aa560f9f1a141866da17b917c11c1081")
+P = pocklington("P", 2347*(Z(2)**8192)*r+1, [(r,1,2)])
+fingerprint("P", P, 21356, 70941,
+    "6f4975bbc4efe37c474e15c24dcf3950b"
+    "130a0338cbb03220550730ad73d4ad8")
+
+
+
+print("ALL CERTIFICATES PASSED;", backend,
+      "elapsed seconds", round(time.perf_counter()-started, 3))
+
+\end{lstlisting}
+% EMBEDDED_FILE_END verify_certificates.py
+
+\section{Source for the bounded giant-candidate audit}\label{app:giant}
+Compile with \texttt{g++ -O3 -std=c++17 audit.cpp -o audit} and run
+\texttt{./audit 1000000000}. At $2$, both integers are odd; all remaining
+primes are generated by an Eratosthenes sieve. Modular exponentiation
+uses only exact integer operations.
+% EMBEDDED_FILE_BEGIN audit_giant_small_factors.cpp
+\begin{lstlisting}[language=C++]
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+#include <chrono>
+
+static std::uint64_t power_mod(std::uint64_t a, std::uint64_t e, std::uint64_t m) {
+    std::uint64_t r=1;
+    while(e) { if(e&1) r=r*a%m; e>>=1; if(e) a=a*a%m; }
+    return r;
+}
+
+int main(int argc,char**argv) {
+    const std::uint64_t bound=argc>1 ? std::strtoull(argv[1],nullptr,10) : 100000000;
+    if(bound>1000000000ULL) return 2;
+    auto begin=std::chrono::steady_clock::now();
+    std::vector<bool> composite(bound/2+1,false);
+    for(std::uint64_t p=3;p*p<=bound;p+=2) if(!composite[p/2])
+        for(std::uint64_t n=p*p;n<=bound;n+=2*p) composite[n/2]=true;
+    std::uint64_t count=1,hits2=0,hits3=0;
+    for(std::uint64_t p=3;p<=bound;p+=2) if(!composite[p/2]) {
+        ++count;
+        std::uint64_t a=power_mod(2,136279841,p);
+        std::uint64_t q=(a+p-1)%p;
+        std::uint64_t sq=q*q%p;
+        if((28*sq+1)%p==0) { ++hits2; std::cout << "N2_FACTOR " << p << " q_mod " << q << std::endl; }
+        if((66*(sq*q%p)+1)%p==0) { ++hits3; std::cout << "N3_FACTOR " << p << " q_mod " << q << std::endl; }
+    }
+    double dt=std::chrono::duration<double>(std::chrono::steady_clock::now()-begin).count();
+    std::cout << "bound="<<bound<<" primes_checked="<<count<<" N2_hits="<<hits2<<" N3_hits="<<hits3<<" seconds="<<dt<<std::endl;
+}
+
+\end{lstlisting}
+% EMBEDDED_FILE_END audit_giant_small_factors.cpp
+
+\section{Source for the exact A359504 finite search}\label{app:frontier}
+This program maintains the original priority rule, including products
+smaller than the previously selected product that become eligible after
+a new prime is inserted. Its invariant and the precise scope of the
+finite result are explained in the main text. The plus-sign run is the
+one used for the A359504 claim. The optional minus-sign mode is retained
+for reproducibility of the exploratory code; no general theorem about
+that mode is asserted here.
+% EMBEDDED_FILE_BEGIN frontier.cpp
+\begin{lstlisting}[language=C++]
+#include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <fstream>
+#include <functional>
+#include <iostream>
+#include <queue>
+#include <string>
+#include <vector>
+using namespace std;
+int main(int argc,char**argv){
+ const int M=argc>1?stoi(argv[1]):1000000;
+ const int sign=argc>2?stoi(argv[2]):1;
+ auto start=chrono::steady_clock::now();
+ vector<int> spf(M+2),ps;
+ for(int i=2;i<=M+1;i++){
+  if(!spf[i]){spf[i]=i;ps.push_back(i);}
+  for(int p:ps){if(p>spf[i]||1LL*p*i>M+1)break;spf[p*i]=p;}
+ }
+ vector<int8_t> missing(M+1,0);
+ for(int i=2;i<=M;i++){
+  int p=spf[i],v=i/p;
+  missing[i]=(v%p==0||missing[v]<0)?-1:missing[v]+1;
+ }
+ vector<bool> seen(M+2,false);
+ priority_queue<int,vector<int>,greater<int>> heap;
+ heap.push(1);
+ int n=0,largest=0,maxP=0,examined=0; bool failure=false;
+ ofstream prefix(string("research/named_problem/prefix_")+(sign==1?"plus":"minus")+".csv");
+ prefix<<"n,P,new_prime\n";
+ auto add=[&](int q,int P){
+  n++; largest=max(largest,q);seen[q]=true;
+  if(n<=10000)prefix<<n<<","<<P<<","<<q<<"\n";
+  if(n<=59)cout<<q<<((n==59)?"\n":" ");
+  for(int x=q;x<=M;x+=q){if(missing[x]>=0){missing[x]--;if(missing[x]==0)heap.push(x);}}
+ };
+ if(sign==-1){add(2,0);add(3,0);}
+ while(!heap.empty()){
+  int P=heap.top();heap.pop();examined++;maxP=max(maxP,P);
+  int x=P+sign;
+  vector<int> unseen;
+  while(x>1){int p=spf[x]; if(!seen[p])unseen.push_back(p); while(x%p==0)x/=p;}
+  if(unseen.size()>1){cout<<"COUNTEREXAMPLE step="<<n+1<<" P="<<P<<" factors=";for(int p:unseen)cout<<p<<",";cout<<"\n";failure=true;break;}
+  if(unseen.size()==1)add(unseen[0],P);
+ }
+ double elapsed=chrono::duration<double>(chrono::steady_clock::now()-start).count();
+ cout<<"RESULT M="<<M<<" sign="<<sign<<" terms="<<n<<" largest_prime="<<largest<<" max_P="<<maxP<<" products="<<examined<<" failure="<<failure<<" elapsed_seconds="<<elapsed<<"\n";
+ return 0;
+}
+
+\end{lstlisting}
+% EMBEDDED_FILE_END frontier.cpp
+
+\clearpage
+\begin{thebibliography}{99}\small\raggedright
+\bibitem{corpus129} Keio,
+\emph{Certified Prime Lifting from Known Primes}, corpus manuscript [129],
+file \texttt{Certified\_Prime\_Lifting.tex}, snapshot
+\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}, 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\bibitem{corpus130} Keio,
+\emph{Certified Prime Lifting and Sparse Modular Squaring}, corpus
+manuscript [130], same snapshot, 2026. Repository as in [1].
+\bibitem{pocklington1914} H. C. Pocklington,
+The determination of the prime or composite nature of large numbers by
+Fermat's theorem, \emph{Proceedings of the Cambridge Philosophical Society}
+\textbf{18} (1914--1916), 29--30.
+\bibitem{bls1975} J. Brillhart, D. H. Lehmer, and J. L. Selfridge,
+New primality criteria and factorizations of $2^m\pm1$,
+\emph{Mathematics of Computation} \textbf{29} (1975), 620--647.
+\bibitem{caldwell} C. Caldwell, PrimePages,
+\emph{Primality Proving 3.1: $n-1$ tests and Pepin's tests for Fermats}.
+\url{https://t5k.org/prove/prove3_1.html}. Accessed 8 November 2026.
+\bibitem{pfgw} OpenPFGW project, Linux release 4.1.8 and command-line
+documentation. Accessed 8 November 2026.
+\url{https://sourceforge.net/projects/openpfgw/files/pfgw_linux_4.1.8.7z/}.
+\url{https://github.com/primesearch/OpenPFGW/blob/master/distribution/pfgwdoc.txt}.
+\bibitem{philemon2021} A. S. Philemon,
+\emph{Primality of numbers of the form $ap^k+1$},
+arXiv:2005.02327v5, 10 April 2021, Conjecture 4.1.
+\url{https://arxiv.org/abs/2005.02327}.
+\bibitem{philemonMO} A. S. Philemon and contributors,
+\emph{Prove that there are no composite integers $n=am+1$ such that
+$m\mid\phi(n)$}, MathOverflow question 373497, 2020.
+\url{https://mathoverflow.net/questions/373497}.
+\bibitem{philemonMSE} A. S. Philemon and contributors,
+same question, Mathematics Stack Exchange question 3843281, 2020.
+\url{https://math.stackexchange.com/questions/3843281}.
+\bibitem{oeis359504} J. Brennan, OEIS A359504, original entry
+3 January 2023, with extension by K. Ryde, 10 January 2023.
+\url{https://oeis.org/A359504}. Accessed 8 November 2026.
+\bibitem{booker2017} A. R. Booker and C. Pomerance,
+\emph{Squarefree smooth numbers and Euclidean prime generators}, 2017,
+Theorem 1 and Section 5.
+\url{https://math.dartmouth.edu/~carlp/nothing8.5.pdf}.
+\bibitem{munsch2020} M. Munsch and I. E. Shparlinski,
+On smooth square-free numbers in arithmetic progressions,
+\emph{Journal of the London Mathematical Society} (2020),
+doi:10.1112/jlms.12297; arXiv:1710.04705v3, Theorem 1.4.
+\url{https://arxiv.org/abs/1710.04705}.
+\end{thebibliography}
+\end{document}

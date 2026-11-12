@@ -1,0 +1,1049 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable}
+\usepackage{xcolor,listings,fancyhdr}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdftitle={A finite-difference measure converse and a Jacobi-symbol determinant counterexample},
+  pdfauthor={Research manuscript prepared with ChatGPT for Keio},
+  pdfsubject={Chasse--Csordas Conjecture 2.22 and Sun Conjecture 5.6(ii)}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Finite differences and Jacobi-symbol determinants}
+\fancyhead[R]{\small 7 November 2026}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\allowdisplaybreaks
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\jac}[2]{\left(\frac{#1}{#2}\right)}
+\DeclareMathOperator{\Res}{Res}
+\DeclareMathOperator{\diag}{diag}
+\lstset{
+  language=Python,basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{blue!45!black},
+  commentstyle=\color{black!65},stringstyle=\color{black!75},
+  showstringspaces=false,breaklines=true,
+  columns=fullflexible,keepspaces=true,
+  frame=single,rulecolor=\color{black!20},
+  xleftmargin=4pt,xrightmargin=4pt,
+  aboveskip=10pt,belowskip=10pt}
+
+\DeclareMathOperator{\meas}{meas}
+\DeclareMathOperator{\Gal}{Gal}
+
+\title{\textbf{A finite-difference measure converse\\
+and a Jacobi-symbol determinant\\counterexample}\\[7pt]
+\large Chasse--Csordas Conjecture 2.22 and Sun Conjecture 5.6(ii)}
+\author{Research manuscript prepared with ChatGPT for Keio}
+\date{7 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We give complete proofs concerning two previously stated conjectures.
+First, if a real polynomial $p$ of degree $n\ge2$ satisfies
+\[
+ \meas\left\{x\in\mathbb R:
+ \frac{p(x+1)-p(x)}{p(x)}\ge\lambda\right\}=\frac n\lambda
+ \qquad(\lambda>0),
+\]
+then all its zeros are real and simple, and consecutive zeros are at
+least one unit apart. This proves the implication in Chasse--Csordas
+Conjecture~2.22. In fact, the identity on any nonempty open interval of
+positive levels suffices. A rational measure-rigidity argument gives
+positive simple real poles after cancellation; a divisor-count identity
+then recovers the roots and multiplicities of the original polynomial.
+The inverse-branch mechanism is an adaptation of Szeg\H{o}'s 1934 method,
+and is not claimed as a historically new principle.
+
+Second, for Sun's original truncated Jacobi-symbol determinant
+$D_n=\{5,5\}_n$, we prove
+\[
+ D_{5469}\equiv2\pmod3,\qquad
+ D_{5469}\equiv1089\pmod{1823},\qquad
+ \jac{D_{5469}}{5469}=-1.
+\]
+Since $5469\equiv9\pmod{60}$ and $5469>69$, this is a counterexample to
+Conjecture~5.6(ii). The proof uses a complementary inverse minor,
+character diagonalization, and exact polynomial arithmetic. A complete
+standard-library Python certificate is embedded in this single source.
+Mathematical conclusions, historical attribution, and unverified
+priority claims are kept separate.
+\end{abstract}
+
+\section{The finite-difference measure conjecture}
+\label{sec:cc-statement}
+
+For a real polynomial $p$ of degree $n\ge2$, define
+\[
+ F_p(x)=\frac{p(x+1)-p(x)}{p(x)}.
+\]
+Its domain excludes the real zeros of $p$. Removing or filling any
+removable singularities changes a level set only at finitely many points,
+so it does not change its Lebesgue measure.
+For a polynomial with real zeros
+$r_1\le\cdots\le r_n$, listed with multiplicities, write
+\[
+ \mu(p)=\min_{1\le j<n}(r_{j+1}-r_j).
+\]
+Thus $\mu(p)\ge1$ includes simplicity of every zero.
+
+Chasse and Csordas \cite[Conjecture~2.22, p.~88]{ChasseCsordas2012}
+ask whether the exact identity
+\begin{equation}\label{eq:cc-original}
+ \meas\{x\in\mathbb R:F_p(x)\ge\lambda\}=\frac n\lambda
+ \quad\hbox{for every }\lambda>0
+\end{equation}
+forces $p$ to have only real zeros and $\mu(p)\ge1$.
+No real-rootedness or simplicity hypothesis is imposed in this converse.
+We prove it in the following slightly stronger form.
+
+\begin{theorem}[Finite-difference measure characterization]
+\label{thm:cc}
+Let $p\in\mathbb R[x]$ have degree $n\ge2$. The following are equivalent.
+\begin{enumerate}
+\item All zeros of $p$ are real and $\mu(p)\ge1$.
+\item Equation~\eqref{eq:cc-original} holds for every $\lambda>0$.
+\item There is a nonempty open interval $I\subset(0,\infty)$ on which
+\eqref{eq:cc-original} holds for every $\lambda\in I$.
+\end{enumerate}
+In particular, the implication in Chasse--Csordas Conjecture~2.22 holds
+under its original hypotheses.
+\end{theorem}
+
+The forward implication is included for completeness and is not a new
+claim: it is Theorem~88 of Chasse's 2011 dissertation
+\cite[pp.~45--46]{ChasseThesis}; the converse appears there as
+Conjecture~89. The main algebraic mechanism below has a substantial
+precedent in Szeg\H{o}'s solution of P\'olya's Problem~107
+\cite[pp.~19--20]{Szego1934}. We provide all details needed for the
+present local level law and for the recovery of the original polynomial
+after cancellation.
+
+\section{A local rational measure-rigidity theorem}
+\label{sec:rigidity}
+
+\begin{theorem}[Local Boole-law rigidity]\label{thm:rigidity}
+Let $F=A/B$ be a reduced nonconstant real rational function such that
+\begin{equation}\label{eq:asymptotic}
+ F(x)=\frac c x+O(x^{-2})\quad(x\longrightarrow\infty),\qquad c>0.
+\end{equation}
+If, on some nonempty open interval $I\subset(0,\infty)$,
+\begin{equation}\label{eq:local-boole}
+ \meas\{x\in\mathbb R:F(x)\ge\lambda\}=\frac c\lambda
+ \qquad(\lambda\in I),
+\end{equation}
+then
+\begin{equation}\label{eq:positive-poles}
+ F(x)=\sum_{j=1}^{m}\frac{\rho_j}{x-b_j},\qquad
+ b_1<\cdots<b_m\in\mathbb R,\quad
+ \rho_j>0,\quad \sum_{j=1}^m\rho_j=c.
+\end{equation}
+In particular, every pole of the reduced rational function is simple
+and real. Here $m=\deg B$.
+\end{theorem}
+
+\begin{proof}
+Normalize $B$ to be monic. Equation~\eqref{eq:asymptotic} implies
+$m=\deg B\ge1$, $\deg A=m-1$, and that the leading coefficient of
+$A$ is $c$.
+
+\paragraph{Step 1: an identity among inverse branches.}
+The polynomial
+\[
+ L(X,T)=T B(X)-A(X)
+\]
+has only finitely many exceptional nonzero parameter values at which
+its roots are not simple. Indeed, it is separable over $\mathbb C(T)$,
+as also follows from the irreducibility argument in Step~2.
+Choose a connected open subinterval $J\subset I$ avoiding these values.
+Its $m$ roots can be labeled by analytic algebraic branches
+$\alpha_1(T),\ldots,\alpha_m(T)$ on a complex neighborhood of a point
+of $J$ and then continued along $J$. No root is a pole of $F$, since
+$A$ and $B$ are coprime. Their real or nonreal status, and the crossing
+direction of every real root, are fixed on $J$.
+
+For $T>0$, the set $\{x:F(x)\ge T\}$ is bounded because $F(x)$ tends
+to zero at both ends of the real axis. Its endpoints are real roots
+of $F(x)=T$ and real poles of $F$. The poles contribute a constant
+$C$. A downward crossing contributes its coordinate positively to
+the length, an upward crossing negatively, and a nonreal root does
+not contribute. Hence the assumed identity is
+\begin{equation}\label{eq:signed-trace}
+ C+\sum_{i=1}^m e_i\alpha_i(T)=\frac cT,\qquad
+ e_i\in\{-1,0,1\},
+\end{equation}
+where the $e_i$ are constant on $J$.
+This analytic identity is an identity of algebraic germs: its
+difference vanishes on a real interval and therefore on the complex
+neighborhood by the identity theorem. We may consequently apply
+automorphisms of a splitting field of $L$ over $\mathbb C(T)$.
+
+\paragraph{Step 2: transitivity excludes missing branches and wrong signs.}
+The polynomial $T B(X)-A(X)$ is irreducible in $\mathbb C[X,T]$.
+In any factorization, its degree one in $T$ forces one factor to
+belong to $\mathbb C[X]$; that factor would divide both $A$ and $B$,
+and is therefore constant. It is primitive as a polynomial in $X$
+over $\mathbb C[T]$: a common nonconstant parameter factor would
+give $A=t_0B$ for some $t_0$, contrary to their different degrees.
+Gauss's lemma gives irreducibility over $\mathbb C(T)$, and
+characteristic zero gives separability. Thus its splitting-field
+Galois group $G$ acts transitively on the $m$ roots.
+
+Let $s=\sum_i e_i$ and let $S_B$ be the sum of the roots of $B$,
+with multiplicities. Average all $G$-conjugates of
+\eqref{eq:signed-trace}. Each root occurs with average coefficient
+$s/m$, so
+\[
+ C+\frac{s}{m}\sum_{i=1}^m\alpha_i(T)=\frac cT.
+\]
+By Vieta's formula,
+\[
+ \sum_{i=1}^m\alpha_i(T)=S_B+\frac cT.
+\]
+Comparison of the coefficients of $1/T$ gives $s=m$. Since every
+$e_i\le1$, this forces
+\[
+ e_1=\cdots=e_m=1.
+\]
+Every level root on $J$ is therefore real and is a downward crossing.
+
+\paragraph{Step 3: the poles are simple, real, and positive.}
+Fix $T\in J$ and order the level roots
+$\alpha_1<\cdots<\alpha_m$. At minus infinity $F-T<0$, whereas
+immediately to the left of each $\alpha_i$ it is positive and
+immediately to the right it is negative. Each of the $m$ disjoint
+intervals
+\[
+ (-\infty,\alpha_1),\quad
+ (\alpha_1,\alpha_2),\quad\ldots,\quad
+ (\alpha_{m-1},\alpha_m)
+\]
+must contain a pole. Otherwise continuity would require an additional
+level root, or an upward crossing, to change the sign from negative
+to positive. Since $B$ has degree $m$, these exhaust all its zeros:
+there is exactly one simple real pole in each interval and no others.
+Across each such pole the sign changes from negative on the left to
+positive on the right. The residue is therefore positive.
+The rational function is proper, so its partial-fraction expansion is
+\eqref{eq:positive-poles}; comparison at infinity gives
+$\sum_j\rho_j=c$.
+\end{proof}
+
+\begin{remark}[Attribution of the mechanism]\label{rem:szego}
+Szeg\H{o}'s 1934 converse for rational Lebesgue-measure preservers
+already uses signed algebraic inverse branches, Vieta's formula,
+irreducibility, and transitive monodromy to exclude a missing branch
+or an incorrect sign \cite[pp.~19--20]{Szego1934}.
+The Galois average above is an adaptation of that mechanism to a local
+positive-tail identity with a prescribed coefficient at infinity.
+We do not present the underlying principle as new, or infer worldwide
+priority for the finite-difference application from a bounded search.
+\end{remark}
+
+\section{Recovering all polynomial zeros after cancellation}
+\label{sec:recover}
+
+\begin{proof}[Proof of Theorem~\ref{thm:cc}]
+The implication (2)$\Rightarrow$(3) is immediate. We first prove
+(3)$\Rightarrow$(1).
+
+For any real polynomial of degree $n$,
+\[
+ F_p(x)=\frac{p(x+1)-p(x)}{p(x)}
+       =\frac nx+O(x^{-2}).
+\]
+Reduce this rational function before applying
+Theorem~\ref{thm:rigidity}. The denominator degree $m$ after reduction
+may be smaller than $n$, but the coefficient at infinity remains $n$.
+We obtain
+\[
+ R(x):=\frac{p(x+1)}{p(x)}=1+F_p(x)
+ =1+\sum_{j=1}^m\frac{\rho_j}{x-b_j},\qquad \rho_j>0.
+\]
+
+\paragraph{No nonreal root can be lost through all cancellations.}
+Suppose that $p$ has a nonreal root. Among the roots on one of the
+corresponding horizontal lines, choose $z$ with maximal real part.
+Then $p(z+1)\ne0$, so $R$ has a nonreal pole at $z$.
+This contradicts the real-pole conclusion of
+Theorem~\ref{thm:rigidity}. Hence all roots of $p$ are real.
+
+\paragraph{The reduced quotient has strictly alternating zeros and poles.}
+For real $x$ away from the poles,
+\[
+ R'(x)=-\sum_{j=1}^m\frac{\rho_j}{(x-b_j)^2}<0.
+\]
+Its limit at both infinities is $1$, and its limits at each pole
+are $-\infty$ from the left and $+\infty$ from the right.
+It follows that $R$ has exactly one simple zero to the left of $b_1$
+and one in each interval $(b_j,b_{j+1})$, with none to the right of
+$b_m$. These $m$ zeros exhaust its numerator degree. Denoting them
+by $a_1,\ldots,a_m$, their order is
+\begin{equation}\label{eq:alternation}
+ a_1<b_1<a_2<b_2<\cdots<a_m<b_m.
+\end{equation}
+
+\paragraph{A divisor count recovers multiplicity and spacing.}
+Let $N_p(t)$ count the zeros of $p$ in $(-\infty,t]$, with their
+original multiplicities. The zeros of $p(x+1)$ are the zeros of $p$
+shifted left by one. Common factors cancel equally in the numerator
+and denominator, so for every real $t$,
+\begin{equation}\label{eq:divisor-count}
+ N_p(t+1)-N_p(t)
+ =\#\{j:a_j\le t\}-\#\{j:b_j\le t\}\in\{0,1\}.
+\end{equation}
+The final inclusion follows from \eqref{eq:alternation}.
+If $p$ had a multiple root, or two distinct roots less than one apart,
+we could place at least two roots, counted with multiplicities,
+strictly inside some interval $(t,t+1)$. The left side of
+\eqref{eq:divisor-count} would then be at least two, a contradiction.
+All roots are consequently simple and $\mu(p)\ge1$.
+
+\paragraph{The known forward implication.}
+Suppose now that $r_1<\cdots<r_n$ are the roots of $p$ and
+$r_{j+1}-r_j\ge1$. Partial fractions give
+\[
+ F_p(x)=\sum_{j=1}^n\frac{\rho_j}{x-r_j},\qquad
+ \rho_j=\frac{p(r_j+1)}{p'(r_j)}
+       =\prod_{k\ne j}\frac{r_j+1-r_k}{r_j-r_k}\ge0.
+\]
+Every factor is nonnegative by the spacing assumption. Zero residues
+represent removable poles; discard them, retaining poles
+$b_1<\cdots<b_m$ with positive residues. Their sum is $n$ by the
+coefficient at infinity.
+For each $\lambda>0$, strict decrease between poles shows that the
+superlevel set is, up to finitely many endpoints,
+\[
+ \bigcup_{j=1}^m(b_j,\alpha_j],
+\]
+where $\alpha_j$ is the unique level root to the right of $b_j$
+and before the next pole, or on $(b_m,\infty)$ for $j=m$.
+Vieta's formula for $\lambda B-A$ gives
+\[
+ \meas\{F_p\ge\lambda\}
+ =\sum_j(\alpha_j-b_j)=\frac n\lambda.
+\]
+This proves (1)$\Rightarrow$(2), and finishes the proof.
+\end{proof}
+
+\begin{remark}[Why reduction cannot be skipped]
+For $p(x)=\prod_{j=0}^{n-1}(x-a-j)$,
+\[
+ F_p(x)=\frac{n}{x-a-(n-1)}.
+\]
+The reduced denominator has degree one, although $\deg p=n$.
+This example attains $\mu(p)=1$ and obeys the exact measure law.
+Conversely, for $p(x)=x^2(x-1)$ one obtains
+\[
+ F_p(x)=-\frac1x+\frac4{x-1},\qquad
+ \meas\{F_p\ge1\}=2\sqrt5-1\ne3.
+\]
+The negative residue records the failure of the required root spacing.
+These examples illustrate why the proof must retain the original
+divisor multiplicities after reducing the quotient.
+\end{remark}
+
+\section{The unchanged Sun conjecture and its counterexample}\label{sec:sun-target}
+
+Sun defines, for an odd integer \(n>1\),
+\begin{equation}\label{eq:original}
+\{c,d\}_n=
+\det\!\left[\jac{j^2+cjk+dk^2}{n}\right]_{1<j,k<n-1},
+\end{equation}
+where the entries are Jacobi symbols. The indices are all integers
+\(2,\ldots,n-2\), without a coprimality restriction.
+Conjecture~5.6(ii) in \cite[p.~23]{Sun2024} asserts that
+\(\jac{\{5,5\}_n}{n}=0\) whenever \(n\equiv11,19\pmod{20}\), or
+whenever \(n\equiv9\pmod{60}\) and \(n>69\).
+The assumption that \(n\) is a sum of two squares belongs to part~(i)
+and is absent from part~(ii).
+
+Li and Yan \cite[Theorem~1.1(f), Remark~1.2]{LiYan2026} prove the
+\(11,19\pmod{20}\) cases of part~(ii). Their stated results leave the
+\(9\pmod{60}\) clause untreated. The counterexample below addresses
+exactly that clause.
+
+\begin{theorem}\label{thm:main}
+Set \(p=1823\), \(n=3p=5469\), and \(D_n=\{5,5\}_n\), with the
+definition \eqref{eq:original}. Then
+\begin{equation}\label{eq:main-residues}
+D_n\equiv2\pmod3,\qquad D_n\equiv1089\pmod p.
+\end{equation}
+Equivalently, \(D_n\equiv2912\pmod{5469}\). Consequently \(\gcd(D_n,n)=1\) and
+\[
+\jac{D_n}{n}=-1.
+\]
+In particular, Sun's Conjecture~5.6(ii), as stated in
+\cite{Sun2024}, is false.
+\end{theorem}
+
+The modulus \(n=5469\) is odd, exceeds \(69\), and is congruent to
+\(9\) modulo \(60\). Since \(1089=33^2\) is nonzero modulo \(1823\),
+\eqref{eq:main-residues} gives
+\[
+\jac{D_n}{3p}
+=\jac{2}{3}\jac{33^2}{1823}
+=(-1)(1)=-1.
+\]
+Thus proving the two displayed congruences suffices. No exact decimal
+expansion of the large integer \(D_n\) is needed.
+
+\paragraph{What is being proved computationally.}
+This is a finite, exact certificate for a counterexample to a universal
+assertion. It is not an extrapolation from a finite range of successful
+tests. The matrices, fields, loop bounds, polynomial identities and
+final residues are all specified below. The certificate uses integer
+arithmetic throughout.
+
+\section{Restoring the deleted indices}
+
+Write \(q(X)=X^2+5X+5\). For an odd prime \(r\), define the full matrix
+\[
+A_r=\left[\jac{j^2+5jk+5k^2}{r}\right]_{j,k\in\F_r}.
+\]
+The row and column orders are the same. Define \(A_n\) by the same full matrix with Jacobi entries when \(n\) is composite. If \(n=3p\), with \(p\ne3\),
+the Chinese remainder bijection
+\(\Z/n\Z\longrightarrow\F_3\times\F_p\) gives
+\begin{equation}\label{eq:tensor}
+A_n\sim A_3\otimes A_p.
+\end{equation}
+Here \(\sim\) is simultaneous permutation of rows and columns, so it
+preserves determinants. Equality of entries follows from
+\(\jac{a}{3p}=\jac{a}{3}\jac{a}{p}\).
+The determinant \(D_n\) is obtained from \(A_n\) by deleting the
+three rows and columns indexed by
+\[
+\mathcal E=\{0,1,-1\}.
+\]
+Under the Chinese remainder ordering these indices become
+\((0,0),(1,1),(-1,-1)\), respectively.
+
+\begin{lemma}[Complementary principal minor]\label{lem:complement}
+If \(M\) is an invertible matrix over a field and \(I\) is a set of
+indices, then
+\[
+\det M_{I^c,I^c}=\det M\;\det(M^{-1})_{I,I}.
+\]
+\end{lemma}
+\begin{proof}
+After a simultaneous permutation, partition \(M\) into blocks indexed
+by \(I^c,I\). If its upper-left block is invertible, block elimination
+and the Schur complement prove the formula. Multiplying by suitable
+powers of \(\det M\) makes the identity polynomial in the matrix
+entries. The generic identity therefore holds for every invertible
+\(M\), including cases where the upper-left block is singular.
+\end{proof}
+
+A direct calculation gives
+\begin{equation}\label{eq:A3}
+A_3=
+\begin{pmatrix}
+0&-1&-1\\
+1&-1&1\\
+1&1&-1
+\end{pmatrix},
+\qquad
+\det A_3=-4,\qquad
+A_3^{-1}=
+\begin{pmatrix}
+0&1/2&1/2\\
+-1/2&-1/4&1/4\\
+-1/2&1/4&-1/4
+\end{pmatrix}.
+\end{equation}
+These formulas are valid over each field used below.
+
+\begin{proposition}[Three-coordinate reduction]\label{prop:minor}
+Let \(K\) be a field of odd characteristic, let \(p\ne3\) be an odd prime, and suppose
+\(A_p\) is invertible over \(K\). If the entries of \(B=A_p^{-1}\)
+at \(0,1,-1\) have the form
+\begin{equation}\label{eq:Bsmall}
+B_{\mathcal E,\mathcal E}
+=
+\begin{pmatrix}
+0&u&u\\
+-u&a&b\\
+-u&b&a
+\end{pmatrix},
+\end{equation}
+then, as an identity in \(K\),
+\begin{equation}\label{eq:master}
+D_{3p}=(-4)^p(\det A_p)^3\,
+\frac{u^2(a+b)}8.
+\end{equation}
+\end{proposition}
+\begin{proof}
+By \eqref{eq:tensor},
+\(\det A_{3p}=(-4)^p(\det A_p)^3\) and
+\(A_{3p}^{-1}=A_3^{-1}\otimes B\) in the corresponding order.
+Its principal submatrix at the three deleted indices is
+\[
+C=
+\begin{pmatrix}
+0&u/2&u/2\\
+u/2&-a/4&b/4\\
+u/2&b/4&-a/4
+\end{pmatrix}.
+\]
+Expansion gives \(\det C=u^2(a+b)/8\).
+Lemma~\ref{lem:complement} proves \eqref{eq:master}.
+\end{proof}
+
+Formula \eqref{eq:master} shows the necessary additional condition:
+invertibility of the full local matrices alone does not ensure
+nonvanishing after truncation. The inverse entries must also satisfy
+\(a+b\ne0\). This is the cancellation that the certificate will check.
+Restoration, character diagonalization and Chinese remainder
+decomposition are established tools; see in particular
+\cite[\S1.2, Lemmas~2.1 and~2.4]{LiYan2026}.
+The complementary inverse minor is used here to prove nonvanishing
+for the original truncated determinant.
+
+\section{The congruence modulo 1823}\label{sec:sun-prime}
+
+We first work over \(\F_p\), for a prime \(p>3\) with \(p\equiv3\pmod{20}\).
+Put \(h=(p-1)/2\), and define
+\begin{equation}\label{eq:coeffs}
+q(X)^h=\sum_{s=0}^{p-1}a_sX^s\quad\text{in }\F_p[X].
+\end{equation}
+Quadratic reciprocity gives \(\jac5p=-1\), so \(a_0=-1\) and
+\(a_{p-1}=1\).
+
+\begin{lemma}\label{lem:prime}
+Suppose \(a_s\ne0\) for \(1\le s\le p-2\). Define
+\[
+P=\prod_{s=1}^{p-2}a_s,\qquad
+E=\sum_{\substack{1\le s\le p-2\\s\ {\rm even}}}a_s^{-1}.
+\]
+Then
+\begin{equation}\label{eq:prime-formula}
+\det A_p=P,\qquad D_{3p}=-P^3E\quad\text{in }\F_p.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Let \(e_0\) be the vector supported at zero, and let \(v_0\) be
+zero at zero and one at every nonzero element of \(\F_p\).
+For \(1\le s\le p-2\), let \(v_s(0)=0\) and \(v_s(j)=j^s\)
+for \(j\ne0\).
+The vectors \(e_0,v_0,v_1,\ldots,v_{p-2}\) form a basis.
+For nonzero \(j,k\), Euler's criterion gives
+\[
+(A_p)_{j,k}=q(j/k)^h=\sum_{t=0}^{p-1}a_tj^tk^{-t}.
+\]
+Using \(\sum_{k\ne0}k^r=-1\) when \(p-1\mid r\) and zero
+otherwise, we obtain
+\[
+A_pv_s=-a_sv_s\quad(1\le s\le p-2),\qquad
+A_pe_0=v_0,\qquad A_pv_0=e_0.
+\]
+The last equality uses \(a_0+a_{p-1}=0\) and
+\(-(p-1)=1\) in \(\F_p\).
+The two-dimensional block on \(e_0,v_0\) has determinant \(-1\).
+There are \(p-2\) remaining, hence an odd number of, eigenvalues.
+It follows that
+\[
+\det A_p=-\prod_{s=1}^{p-2}(-a_s)=P.
+\]
+
+For a nonzero index \(k\), the coordinate vector satisfies
+\[
+e_k=-v_0-\sum_{s=1}^{p-2}k^{-s}v_s.
+\]
+Applying \(A_p^{-1}\) gives
+\[
+A_p^{-1}e_k=-e_0+\sum_{s=1}^{p-2}a_s^{-1}k^{-s}v_s.
+\]
+Also \(A_p^{-1}e_0=v_0\). Thus \eqref{eq:Bsmall} holds with
+\[
+u=-1,\quad
+a=\sum_{s=1}^{p-2}a_s^{-1},\quad
+b=\sum_{s=1}^{p-2}(-1)^sa_s^{-1},
+\qquad a+b=2E.
+\]
+Proposition~\ref{prop:minor} and \((-4)^p=-4\) in \(\F_p\)
+now give \(D_{3p}=(-4)P^3(2E)/8=-P^3E\).
+\end{proof}
+
+\subsection{Exact specialization}
+The complete calculation in Appendix~\ref{app:code} gives, for \(p=1823\),
+\begin{equation}\label{eq:prime-data}
+\begin{gathered}
+a_s\ne0\quad(1\le s\le1821),\\
+P=697,\qquad E=1662,\qquad
+a=921,\quad b=580.
+\end{gathered}
+\end{equation}
+In particular, \(a+b=1501=2E\) in \(\F_{1823}\), and the
+complementary inverse determinant is
+\[
+\frac E4=1327.
+\]
+The full determinant is
+\((-4)^{1823}697^3=641\) in this field. Therefore
+\[
+D_{5469}=641\cdot1327
+=-697^3\cdot1662
+=1089\quad\text{in }\F_{1823}.
+\]
+The program constructs every coefficient in \eqref{eq:coeffs}
+by \(911\) multiplications by \(X^2+5X+5\).
+It checks every required nonzero coefficient before taking any inverse.
+The value \(E=1662\ne0\), in addition to \(P\ne0\), is the
+operative noncancellation certificate.
+
+\section{The congruence modulo 3}\label{sec:sun-three}
+
+The prime local matrix \(A_p\) can also be studied over a field whose
+characteristic differs from \(p\). We give all the details needed
+for \(p=1823\) and \(K=\F_3\).
+Set \(m=p-1=1822\). The number \(5\) generates \(\F_p^\times\).
+Indeed, \(m=2\cdot911\), both \(p\) and \(911\) are prime, and
+the program verifies \(5^{911}\not\equiv1\pmod p\) and
+\(5^2\not\equiv1\pmod p\).
+
+Order the nonzero indices as \(1,5,\ldots,5^{m-1}\), and define
+\begin{equation}\label{eq:circulant}
+f_k=\jac{q(5^k)}p,\qquad
+F(X)=\sum_{k=0}^{m-1}f_kX^k,\qquad
+S(X)=1+X+\cdots+X^{m-1},
+\end{equation}
+with the coefficients of \(F\) reduced modulo \(3\).
+The nonzero-index block of \(A_p\) is the circulant
+\((f_{i-j})_{0\le i,j<m}\), where subscripts are taken modulo \(m\).
+
+Its row sum is zero already over the integers. To see this,
+the discriminant of \(q\) is \(5\ne0\pmod p\), and
+\(\sum_{x\in\F_p}\jac{q(x)}p=-1\).
+The latter identity follows by completing the square and counting
+solutions of \(y^2=x^2-d\), \(d\ne0\): the bijection
+\((x-y,x+y)\) identifies these solutions with pairs of nonzero
+elements with product \(d\), of which there are \(p-1\).
+Removing \(x=0\), whose symbol is \(-1\), gives a zero row sum.
+In particular \(F(1)=0\).
+
+Since \(3\nmid m\), we have the direct sum of the constant vectors
+and the subspace of nonzero-index vectors with coordinate sum zero.
+On the two-dimensional space generated by \(e_0,v_0\), the full
+matrix has the block
+\[
+\begin{pmatrix}0&-m\\1&0\end{pmatrix},
+\]
+whose determinant is \(m\).
+On the complementary space, the circulant has eigenvalues
+\(F(\zeta)\), where \(\zeta\) runs over the nontrivial \(m\)-th
+roots of unity in an algebraic closure of \(\F_3\).
+The inversion of \(\zeta\) merely permutes the eigenvalues.
+Consequently
+\begin{equation}\label{eq:resultant}
+\det A_p=m\,\Res(S,F).
+\end{equation}
+
+Assume \(F\) is invertible modulo \(S\).
+Compute \(H_0\), of degree at most \(m-2\), such that
+\(FH_0\equiv1\pmod S\), and set
+\begin{equation}\label{eq:H}
+H=H_0-\frac{H_0(1)}mS.
+\end{equation}
+Then \(H(1)=0\), and
+\[
+FH\equiv1-\frac1mS\pmod{X^m-1}.
+\]
+This follows by checking the congruence modulo the coprime
+polynomials \(S\) and \(X-1\).
+Thus the circulant defined by the coefficients of \(H\) is the
+inverse on the sum-zero subspace and vanishes on the constants.
+If
+\[
+u=m^{-1},\qquad a=[X^0]H,\qquad b=[X^{m/2}]H,
+\]
+the entries of \(A_p^{-1}\) have exactly the form
+\eqref{eq:Bsmall}. The entries involving zero follow from the
+inverse of the displayed two-dimensional block. The equalities
+at \(1,-1\) use \(5^{m/2}=-1\).
+
+The polynomial Euclidean algorithm and resultant computation in
+Appendix~\ref{app:code} give the exact data
+\begin{equation}\label{eq:3data}
+\Res(S,F)=2,\qquad u=1,\qquad a=1,\qquad b=0
+\quad\text{in }\F_3.
+\end{equation}
+The inverse returned by the Euclidean algorithm is verified by a
+separate multiplication and polynomial remainder calculation.
+Equations \eqref{eq:resultant} and \eqref{eq:3data} give
+\(\det A_p=2\), while
+\[
+\det C=\frac{1^2(1+0)}8=2\quad\text{in }\F_3.
+\]
+Finally, Proposition~\ref{prop:minor} yields
+\[
+D_{5469}=(-4)^{1823}\cdot2^3\cdot2=2
+\quad\text{in }\F_3.
+\]
+Together with Section~\ref{sec:sun-prime}, this proves Theorem~\ref{thm:main}.
+
+
+\section{Verification, provenance and historical scope}
+\label{sec:scope}
+Theorem~\ref{thm:cc} is an algebraic and real-variable proof for all
+polynomial degrees; it does not depend on numerical verification.
+Theorem~\ref{thm:main} is a complete exact counterexample to a universal
+assertion, with its finite calculations reproduced below.
+\subsection{Independent checks}
+The structural certificate in Appendix~\ref{app:code} was executed
+successfully. It was checked against independently implemented
+calculations with different reductions:
+\begin{center}
+\begin{tabular}{@{}p{.54\textwidth}cc@{}}
+\toprule
+Calculation & modulo \(3\) & modulo \(1823\)\\
+\midrule
+Complementary minor and local polynomial certificate & \(2\) & \(1089\)\\
+Direct original matrix, split under \(j\mapsto-j\) & \(1\cdot2\) & \(1054\cdot449\)\\
+Literal \(5466\times5466\) matrix, direct elimination & \(2\) & ---\\
+\bottomrule
+\end{tabular}
+\end{center}
+In the second row, the two factors are determinants of blocks of
+size \(2733\); their products are taken in the indicated fields.
+The third row uses an integer Jacobi-symbol algorithm and direct
+Gaussian elimination over \(\F_3\), without the Chinese remainder
+or character reductions.
+These checks support the certificate. The complete reproducible
+proof route is the one supplied in the present manuscript.
+No proof-assistant formalization or external referee assessment
+is asserted.
+
+
+\subsection{Relation to the supplied corpus}
+The investigation used the supplied
+\emph{Verifiable Mathematical Reasoning Corpus}, at commit
+\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}
+\cite{Corpus}. Its work on root criteria, finite congruences, and
+spectral reductions supplied directions for investigation.
+Manuscript [077], the T96--T100 collection, led to Sun's determinant
+problems; its T100 discussion concerns Conjecture~4.10(ii), a different
+assertion. The finite congruence viewpoint of [089] was another useful
+heuristic. No unverified corpus theorem is used as a premise here.
+The targets and their original hypotheses were checked against the
+primary papers \cite{ChasseCsordas2012,Sun2024}.
+
+\subsection{What is proved and what is not certified}
+The mathematical assertions are the original Chasse--Csordas
+implication and the falsity of Sun's original universal assertion.
+The stronger local-interval version is stated explicitly rather than
+substituted for the original target.
+For the first result, the forward measure formula was already proved
+in Chasse's dissertation, and the decisive inverse-branch mechanism
+is already present in Szeg\H{o}'s 1934 argument.
+This manuscript supplies the full adaptation and cancellation-safe
+recovery of the polynomial, but makes no claim to have invented that
+general mechanism.
+
+For the second result, the Chinese remainder theorem, character
+diagonalization, polynomial Euclidean algorithms and the
+complementary-minor identity are classical. Li--Yan already use
+character diagonalization and Chinese remainder lifting in the same
+determinant family. Here the additional calculations show that the
+original truncated determinant is a unit at both prime factors of
+$5469$, including the required nonzero complementary inverse minor.
+This refutes the conjecture; it does not classify all integers in the
+arithmetic progression, and no minimality claim for $5469$ is made.
+Sun reports tests below $2000$ \cite[Remark~5.6]{Sun2024}; this
+counterexample lies outside that range.
+
+A bounded literature review checked the exact source conjectures,
+Chasse's dissertation, the relevant classical rational-measure
+argument, the dedicated Li--Yan paper, and searches for subsequent
+resolutions and the specific counterexample. No identical later
+resolution was located in that review. Such an absence is not a
+certificate of priority or of the complete state of the literature.
+The stronger requested success conditions therefore have the
+following assessment.
+
+\begin{center}\small
+\begin{tabular}{@{}p{.06\textwidth}p{.84\textwidth}@{}}
+\toprule
+Gate & Assessment for the present manuscript\\
+\midrule
+G1 & Both targets have prior named and numbered source statements.\\
+G2 & The finite-difference quotient, degree, measure law, original determinant, indices, and parameters are retained. Every change of representation is justified.\\
+G3 & The source conjectures and inspected later treatments are documented; a universal absence of prior resolutions is not certified.\\
+G4 & The polynomial implication is proved for all degrees and all hypotheses in its statement. The determinant assertion is refuted by an exact unconditional counterexample.\\
+G5 & The arguments reach actual rigidity and nonvanishing. However, a historically unprecedented general principle is not established; Szeg\H{o}'s prior mechanism is material, and the determinant tools are classical.\\
+G6 & No identical resolution was found in the bounded review. Search absence is not proof of firstness, and absolute priority is not asserted.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The manuscript is a mathematical proof document for scrutiny. It does
+not certify all historical or methodological success conditions, an
+external referee's acceptance, or a higher significance ranking than
+every previous manuscript in the corpus.
+\appendix
+\section{Complete exact certificate}\label{app:code}
+
+The following program needs Python~3.8 or later and only its standard
+library. It reads no files, downloads no data, and uses no floating-point
+operations. Polynomial lists are in increasing order of degree.
+The displayed code is embedded in this \texttt{.tex} file; no separate
+source file is needed.
+
+The routines \texttt{sub}, \texttt{mul} and \texttt{divrem} perform
+polynomial arithmetic over the indicated prime field.
+The extended Euclidean algorithm in \texttt{inverse\_mod} maintains
+a coefficient of the input polynomial modulo the modulus.
+The resultant routine uses, with \(R=A\bmod B\), \(d=\deg A\),
+\(e=\deg B\), and \(r=\deg R\),
+\[
+\Res(A,B)=(-1)^{de}\operatorname{lc}(B)^{d-r}\Res(B,R),
+\qquad \Res(A,b)=b^{\deg A}.
+\]
+This proves that the computed scalar is the resultant used in
+\eqref{eq:resultant}. Inverse certificates are additionally checked
+by multiplying them out. Primality of \(1823\) and \(911\) is
+verified by exhaustive trial division through their integer square
+roots, so no probabilistic primality test is involved.
+
+The output is
+\begin{verbatim}
+n = 5469
+mod p: Q = 1126 E = 1662 D = 1089
+mod 3: det(Ap) = 2 a = 1 b = 0 inverse minor = 2 D = 2
+Jacobi(D, 5469) = -1
+\end{verbatim}
+The program uses \(Q=\prod_{s=1}^{p-2}(-a_s)=-P\), so its
+\(Q^3E\) is exactly \(-P^3E\) from \eqref{eq:prime-formula}.
+
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact, standard-library-only certificate for Sun Conjecture 5.6(ii).
+
+Every operation is integer arithmetic.  This verifies D={5,5}_5469 is
+2 modulo 3 and 1089 modulo 1823, hence (D/5469)=-1, not 0.
+The structural formulas are proved in Sections 5--7 of this manuscript.
+"""
+
+from math import isqrt
+
+
+def trim(a):
+    while a and not a[-1]:
+        a.pop()
+    return a
+
+
+def sub(a, b, ell):
+    c = [0] * max(len(a), len(b))
+    for i, x in enumerate(a):
+        c[i] += x
+    for i, x in enumerate(b):
+        c[i] -= x
+    return trim([x % ell for x in c])
+
+
+def mul(a, b, ell):
+    if not a or not b:
+        return []
+    c = [0] * (len(a) + len(b) - 1)
+    for i, x in enumerate(a):
+        if x:
+            for j, y in enumerate(b):
+                c[i+j] += x*y
+    return trim([x % ell for x in c])
+
+
+def divrem(a, b, ell):
+    assert b
+    a = a[:]
+    q = [0] * max(0, len(a)-len(b)+1)
+    leading_inverse = pow(b[-1], -1, ell)
+    while a and len(a) >= len(b):
+        k = len(a)-len(b)
+        t = a[-1] * leading_inverse % ell
+        q[k] = t
+        for j, x in enumerate(b):
+            a[k+j] = (a[k+j]-t*x) % ell
+        trim(a)
+    return trim(q), a
+
+
+def inverse_mod(a, modulus, ell):
+    r0, r1 = modulus[:], divrem(a, modulus, ell)[1]
+    t0, t1 = [], [1]
+    while r1:
+        q, r2 = divrem(r0, r1, ell)
+        r0, r1 = r1, r2
+        t0, t1 = t1, sub(t0, mul(q, t1, ell), ell)
+    assert len(r0) == 1 and r0[0], "not invertible"
+    t0 = [(x * pow(r0[0], -1, ell)) % ell for x in t0]
+    return divrem(t0, modulus, ell)[1]
+
+
+def resultant(a, b, ell):
+    a, b = trim(a[:]), trim(b[:])
+    res = 1
+    while b:
+        m, n = len(a)-1, len(b)-1
+        if n == 0:
+            return res * pow(b[0], m, ell) % ell
+        r = divrem(a, b, ell)[1]
+        if not r:
+            return 0
+        if m*n % 2:
+            res = -res
+        res = res * pow(b[-1], m-(len(r)-1), ell) % ell
+        a, b = b, r
+    return 0
+
+
+def main():
+    p = 1823
+    n = 3*p
+    assert n == 5469 and n % 60 == 9 and n > 69
+    assert all(p % d for d in range(2, isqrt(p)+1))
+    assert all(911 % d for d in range(2, isqrt(911)+1))
+    m = p-1
+    g = 5
+    # m=2*911, so these two tests certify that g generates F_p^*.
+    assert pow(g, m//2, p) != 1 and pow(g, m//911, p) != 1
+
+    def chi(x):
+        r = pow(x % p, m//2, p)
+        return -1 if r == p-1 else r
+
+    assert chi(5) == -1
+
+    # Modulo p: coefficients of (X^2+5X+5)^((p-1)/2).
+    a = [1]
+    for _ in range(m//2):
+        b = [0]*(len(a)+2)
+        for i, x in enumerate(a):
+            b[i] += 5*x
+            b[i+1] += 5*x
+            b[i+2] += x
+        a = [x % p for x in b]
+    assert len(a) == p and a[0] == p-1 and a[-1] == 1
+    assert all(a[s] for s in range(1, p-1))
+    Q = 1
+    for s in range(1, p-1):
+        Q = Q * (-a[s]) % p
+    E = sum(pow(a[s], -1, p) for s in range(2, p-1, 2)) % p
+    Dp = pow(Q, 3, p)*E % p
+    assert (Q, E, Dp) == (1126, 1662, 1089)
+    alpha = sum(pow(a[s], -1, p) for s in range(1, p-1)) % p
+    beta = sum((-1)**s * pow(a[s], -1, p)
+               for s in range(1, p-1)) % p
+    assert (alpha, beta, (-Q) % p) == (921, 580, 697)
+    assert pow(-4, p, p)*pow((-Q) % p, 3, p) % p == 641
+    assert E*pow(4, -1, p) % p == 1327
+
+    # Modulo 3: multiplicative circulant and its inverse off constants.
+    # F_k=chi(g^(2k)+5g^k+5), S=1+X+...+X^(m-1).
+    F = []
+    z = 1
+    for _ in range(m):
+        F.append(chi(z*z+5*z+5) % 3)
+        z = z*g % p
+    assert z == 1 and sum(F) % 3 == 0
+    S = [1]*m
+    H = inverse_mod(F, S, 3)
+    # Independently multiply the returned inverse, checking its certificate.
+    assert divrem(mul(F, H, 3), S, 3)[1] == [1]
+    H += [0]*(m-len(H))
+    kshift = sum(H)*pow(m, -1, 3) % 3
+    H = [(x-kshift) % 3 for x in H]
+    assert sum(H) % 3 == 0
+    cyclic_modulus = [2] + [0]*(m-1) + [1]
+    target = [(1-pow(m, -1, 3)) % 3]
+    target += [(-pow(m, -1, 3)) % 3]*(m-1)
+    assert divrem(mul(F, H, 3), cyclic_modulus, 3)[1] == trim(target)
+    aa, bb = H[0], H[m//2]
+    det_Ap = m*resultant(S, F, 3) % 3
+    u = pow(m, -1, 3)
+    det_minor = u*u*(aa+bb)*pow(8, -1, 3) % 3
+    D3 = pow(-4, p, 3)*pow(det_Ap, 3, 3)*det_minor % 3
+    assert (det_Ap, aa, bb, det_minor, D3) == (2, 1, 0, 2, 2)
+
+    # Legendre symbols at the two distinct prime factors of n.
+    assert pow(Dp, m//2, p) == 1 and Dp == 33**2
+    assert D3 == 2
+    print("n =", n)
+    print("mod p: Q =", Q, "E =", E, "D =", Dp)
+    print("mod 3: det(Ap) =", det_Ap, "a =", aa, "b =", bb,
+          "inverse minor =", det_minor, "D =", D3)
+    print("Jacobi(D, 5469) = -1")
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\raggedright
+
+\bibitem{ChasseCsordas2012}
+M. Chasse and G. Csordas,
+\emph{Discrete analogues of the Laguerre inequalities and a conjecture
+of I. Krasikov},
+Annales des sciences math\'ematiques du Qu\'ebec
+\textbf{36} (2012), no.~1, 77--91.
+Definition~1.3, p.~78; Conjectures~2.21--2.22, p.~88.
+\url{https://www.labmath.uqam.ca/~annales/volumes/36-1/PDF/077-091.pdf}.
+
+\bibitem{ChasseThesis}
+M. N. Chasse,
+\emph{Linear preservers and entire functions with restricted zero loci},
+Ph.D. dissertation, University of Hawai`i at Manoa, May 2011.
+Theorem~88, pp.~45--46; Conjecture~89, p.~46.
+\url{https://math.hawaii.edu/home/talks/thesis.pdf}.
+
+\bibitem{Szego1934}
+G. Szeg\H{o},
+\emph{L\"osung der Aufgabe 107},
+Jahresbericht der Deutschen Mathematiker-Vereinigung
+\textbf{43} (1934), zweite Abteilung, 17--20.
+Solution received 24 May 1931.
+Authoritative digitization, scans 323--326:
+\url{https://gdz.sub.uni-goettingen.de/id/PPN37721857X_0043}.
+
+\bibitem{Sun2024}
+Z.-W. Sun,
+\emph{Problems and results on determinants involving Legendre symbols},
+arXiv:2405.03626v8, 28 July 2024.
+Definition (5.1), p.~22; Conjecture~5.6(ii) and Remark~5.6, p.~23.
+\url{https://arxiv.org/abs/2405.03626v8}.
+
+\bibitem{LiYan2026}
+G. Li and X. Yan,
+\emph{On Sun's conjectures for truncated Jacobi-symbol determinants
+via supersingular elliptic curves},
+arXiv:2608.08509v2, 23 October 2026.
+Theorem~1.1(f), Remark~1.2, and Lemmas~2.1 and~2.4.
+The author name in the inspected v2 PDF is Xiaojun Yan.
+\url{https://arxiv.org/pdf/2608.08509v2}.
+
+\bibitem{Corpus}
+QEEDDD,
+\emph{Verifiable Mathematical Reasoning Corpus},
+research-draft repository, snapshot at commit
+\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034},
+6 November 2026.
+Manuscripts [077] and [089] are contextual sources, not
+logical dependencies.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\end{thebibliography}
+\end{document}

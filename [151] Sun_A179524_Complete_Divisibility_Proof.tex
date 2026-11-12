@@ -1,0 +1,999 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm]{geometry}
+\usepackage{microtype,booktabs,enumitem,xcolor,listings,xurl,hyperref,fancyhdr}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black,pdftitle={A Proof of Sun's Divisibility Conjecture for A179524},pdfauthor={Research manuscript prepared with ChatGPT for Keio}}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{Sun's A179524 divisibility conjecture}
+\fancyhead[R]{A complete divisibility argument}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}\newcommand{\Q}{\mathbb Q}
+\newcommand{\CT}{\operatorname{CT}}
+\newcommand{\Diag}{\operatorname{Diag}}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,keywordstyle=\color{blue!55!black},commentstyle=\color{gray!80!black},stringstyle=\color{gray!80!black},breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{gray!40},aboveskip=10pt,belowskip=10pt}
+\title{\textbf{A Proof of Sun's Divisibility\\Conjecture for A179524}\\[5pt]
+\large Abel summation, two coefficient states, and integral Catalan coordinates}
+\author{Research manuscript prepared with ChatGPT for Keio}
+\date{8 November 2026}
+\begin{document}\maketitle
+\begin{abstract}
+Let \(a_n=\sum_k(-4)^k\binom nk^2\binom{n-k}k^2\).
+We prove that \(N\) divides \(\sum_{n=0}^{N-1}(20n+17)a_n\) for every
+positive integer \(N\), the unchanged divisibility assertion in Sun's
+Conjecture 5.8(ii).
+We first introduce a diagonal sequence \(Y(N)\). An established
+Ramanujan-sum divisibility theorem of Sun, combined with an exact
+Abel-summation estimate, proves \(p^e\mid Y(p^e)\) for every odd prime
+and every exponent. A digit operator on two copies of the restricted
+integral \(p\)-adic power-series ring propagates these bases to all
+multiples: the second coefficient state is killed modulo \(p\), giving
+a rank-one reduction. The 2-part is termwise. An integral Catalan
+coordinate change then converts diagonal divisibility into a
+logarithmic divergence, and a constant-term identity returns the result
+to the original weighted sum.
+All exponents and cofactors are covered, and no finite computation is
+an assumption of the proof. The external arithmetic input and the
+antecedents of the analytic methods are identified explicitly;
+historical priority of the resulting proof is not asserted.
+\end{abstract}
+
+\section{The original conjecture and the result}\label{sec:intro}
+
+Set
+\begin{equation}\label{eq:original}
+ a_n=\sum_{k=0}^{\lfloor n/2\rfloor}
+       (-4)^k\binom nk^2\binom{n-k}k^2,
+ \qquad S(N)=\sum_{n=0}^{N-1}(20n+17)a_n.
+\end{equation}
+The initial sequence values are \(1,1,-15,-143,1,12801\).
+The assertion \(N\mid S(N)\) is the divisibility part of Sun's
+Conjecture 5.8(ii) in \cite[printed p.~33]{Sun2010}, with
+\(a_n=W_n(1,-4)\). It is also recorded in OEIS A179524, with its
+formulation attributed to 1 July 2010 \cite{OEIS}.
+
+\begin{theorem}\label{thm:main}
+For every positive integer \(N\),
+\[
+                     \boxed{\quad N\mid S(N).\quad}
+\]
+Consequently, for every prime \(p\equiv1,3,7,9\pmod{20}\),
+\[
+                   p^e\mid S(p^e)\qquad\text{for all }e\ge1.
+\]
+\end{theorem}
+
+The proof does not distinguish split and inert primes. Instead it
+closes a stronger sufficient condition from the negative-index route
+of the supplied manuscript \cite{Supplied} and the integral Catalan
+reduction in the preceding note \cite{Previous}. We include that
+reduction and the constant-term argument in full, so neither unpublished
+note is required as an unproved input.
+The only specialized external arithmetic theorem used is Sun's
+published Ramanujan partial-sum divisibility result
+\cite[Theorem~5, (5)]{Sun2013}.
+
+For clarity, the proof has five steps. First, reverse the diagonal
+sum at \(N=p^e\) into a Ramanujan sum with an exact product correction.
+Second, use Abel summation to control that correction at every
+exponent. Third, construct an integral digit operator on two coefficient
+states and propagate the prime-power bases to arbitrary cofactors.
+Fourth, handle the 2-part directly. Finally, use integral Catalan
+coordinates and formal integration by parts to obtain
+Theorem~\ref{thm:main} with the original weight and sequence.
+
+\section{The diagonal sequence}\label{sec:diagonal}
+
+Write \(b_n=\binom{2n}{n}\), and define
+\begin{equation}\label{eq:diagonal}
+ Y(N)=\sum_{\substack{i,l\ge0\\i+2l=N-1}}
+          (-4)^l b_l^2 b_i(10i+3),\qquad N\ge1.
+\end{equation}
+The auxiliary theorem to be established is
+\begin{equation}\label{eq:Ytarget}
+                         N\mid Y(N)\qquad(N\ge1).
+\end{equation}
+For example, \(Y(N)/N\) begins
+\(3,13,30,61,506,2962\).
+These values only illustrate the definitions; they are not used below.
+If
+\[
+ G(x)=\sum_{l\ge0}(-4)^l b_l^2 x^{2l},
+\]
+then the binomial series gives
+\begin{equation}\label{eq:Ygenerator}
+ \sum_{N\ge1}Y(N)x^{N-1}
+       =\frac{3+8x}{(1-4x)^{3/2}}G(x).
+\end{equation}
+Thus \eqref{eq:Ytarget} is also the integrality assertion
+\[
+ \int_0^x\frac{3+8t}{(1-4t)^{3/2}}G(t)\,dt\in x\Z[[x]].
+\]
+The implication from \eqref{eq:Ytarget} to the original assertion will
+be proved in Sections~\ref{sec:catalan}--\ref{sec:return}; no converse
+is required or assumed.
+
+
+
+\section{All prime-power diagonal bases by Abel summation}
+\label{sec:abel}
+
+Write \(b_j=\binom{2j}{j}\), and set
+\[
+ A_j=\frac{(20j+3)b_j^2b_{2j}}{(-1024)^j},\qquad
+ R_j=\sum_{k=0}^j A_k.
+\]
+The input to the argument is the following established divisibility theorem
+of Sun, not a new result of this paper.
+
+\begin{theorem}[Sun {\cite[Theorem~5, (5)]{Sun2013}}]\label{sun:partial}
+For every integer \(j\ge1\),
+\[
+ 4(2j+1)b_j\ \Bigm|\
+ \sum_{k=0}^j(20k+3)b_k^2b_{2k}(-1024)^{j-k}
+ =(-1024)^jR_j.
+\]
+\end{theorem}
+
+\begin{lemma}\label{abel:partialbound}
+For every odd prime \(p\) and every integer \(j\ge0\),
+\[
+                  v_p(R_j)\ge v_p\bigl((2j+1)(2j+2)\bigr).
+\]
+\end{lemma}
+\begin{proof}
+For \(j\ge1\), Theorem~\ref{sun:partial} and the fact that \(-1024\)
+is a \(p\)-adic unit give
+\[
+ v_p(R_j)\ge v_p(2j+1)+v_p(b_j).
+\]
+The Catalan number \(b_j/(j+1)\) is an integer, so
+\(v_p(b_j)\ge v_p(j+1)=v_p(2j+2)\).
+For \(j=0\), the assertion follows directly from \(R_0=3\).
+\end{proof}
+
+\begin{theorem}[All odd prime-power diagonal bases]\label{abel:bases}
+For every odd prime \(p\) and every integer \(e\ge1\),
+\[
+                              p^e\mid Y(p^e).
+\]
+\end{theorem}
+\begin{proof}
+Put \(N=p^e\) and \(h=(N-1)/2\). For \(0\le j\le h\), define
+\[
+ r_j=\prod_{i=1}^j
+       \left(\frac{1-N/(2i-1)}{1-N/(2i)}\right)^2,
+ \qquad r_0=1.
+\]
+Every factor is a \(p\)-adic unit, since \(1\le2i-1,2i<N\), and hence
+\(v_p(N/(2i-1)),v_p(N/(2i))\ge1\).
+An exact factorial-ratio identity is
+\[
+ \left(\frac{b_{h-j}}{b_h}\right)^2
+                 =\frac{b_j^2}{256^j}\,r_j.
+\]
+It follows either by expanding the factorials or by comparing successive
+ratios, starting at \(j=0\). In the definition of \(Y(N)\), substitute
+\(l=h-j\), so that \(i=N-1-2l=2j\). We obtain the exact identity
+\begin{equation}\label{abel:bridge}
+ Y(N)=\sum_{j=0}^h(20j+3)(-4)^{h-j}b_{h-j}^2b_{2j}
+     =(-4)^h b_h^2\sum_{j=0}^h A_jr_j.
+\end{equation}
+
+For \(0\le j<h\), put \(a=2j+1\), \(b=2j+2\). Then
+\begin{equation}\label{abel:difference}
+ r_{j+1}-r_j
+ =-N r_j\frac{2ab-N(a+b)}{a^2(b-N)^2}.
+\end{equation}
+The positive integers \(a,b\) are consecutive and less than \(N\).
+Consequently, if \(t=v_p(ab)\), then \(t<e\),
+\(v_p(b-N)=v_p(b)\), and
+\[
+ v_p\bigl(2ab-N(a+b)\bigr)=t.
+\]
+Here the first summand has valuation \(t\), because \(p\) is odd,
+whereas the second has valuation at least \(e>t\).
+As \(r_j\) is a unit, \eqref{abel:difference} gives
+\begin{equation}\label{abel:valuation}
+ v_p(r_{j+1}-r_j)=e-v_p\bigl((2j+1)(2j+2)\bigr).
+\end{equation}
+
+Abel summation yields
+\[
+ \sum_{j=0}^h A_jr_j
+       =R_hr_h-\sum_{j=0}^{h-1}R_j(r_{j+1}-r_j).
+\]
+Every summand in the last sum belongs to \(p^e\Z_p\), by
+Lemma~\ref{abel:partialbound} and \eqref{abel:valuation}.
+Theorem~\ref{sun:partial} at \(h\ge1\) also gives
+\(R_h\in p^e\Z_p\), because \(2h+1=N\).
+Thus the entire right-hand side is in \(p^e\Z_p\).
+The prefactor in \eqref{abel:bridge} is an integer, and \(Y(N)\) is an
+integer, proving the asserted divisibility.
+\end{proof}
+
+\section{Exact integral kernels for central binomial coefficients}
+\label{sec:central-kernels}
+
+Throughout this section, \(p\) is an arbitrary odd prime.
+Let \(\Z_p\langle X_1,\ldots,X_d\rangle\) denote the ring of restricted
+power series: its coefficients lie in \(\Z_p\) and tend to zero as total
+degree tends to infinity. It is complete for the Gauss norm. Integral
+affine substitutions preserve this ring, and its elements may be evaluated
+at every point of \(\Z_p^d\).
+
+\begin{lemma}[Normalized unit-factorial interpolation]\label{kernel:units}
+Put
+\[
+ E_p(M)=\prod_{\substack{1\le i\le M\\p\nmid i}}i,
+ \qquad W=(p-1)!.
+\]
+For each \(0\le r<p\), there is a unit
+\(\mathcal H_r(X)\in1+p\Z_p\langle X\rangle\), with
+\(\mathcal H_r(0)=1\), such that
+\[
+ E_p(pq+r)=W^q r!\,\mathcal H_r(q)\qquad(q\ge0).
+\]
+\end{lemma}
+\begin{proof}
+Set
+\[
+ B(X)=\prod_{i=1}^{p-1}(1+pX/i),\qquad
+ \log B(X)=\sum_{j\ge1}\ell_jX^j,\qquad
+ \ell_j=\frac{(-1)^{j-1}p^j}{j}\sum_{i=1}^{p-1}i^{-j}.
+\]
+The polynomial continuation of \(\sum_{h=0}^{q-1}h^j\) is
+\[
+ S_j(X)=\sum_{a=0}^j
+ \left\{\begin{matrix}j\\a\end{matrix}\right\}
+ \frac{(X)_{\underline{a+1}}}{a+1},
+\]
+where braces denote Stirling numbers of the second kind and the underlined
+subscript denotes a falling factorial. Thus
+\[
+ S_j(X)\in p^{-\lfloor\log_p(j+1)\rfloor}\Z_p[X].
+\]
+For every odd \(p\) and \(j\ge1\),
+\[
+ j-v_p(j)-\lfloor\log_p(j+1)\rfloor\ge1,
+\]
+and this lower bound tends to infinity with \(j\).
+For completeness, check \(j=1,2,3\) directly; for \(j\ge4\) use
+\(v_p(j)\le\lfloor\log_3(j+1)\rfloor\) and
+\(2\lfloor\log_3(j+1)\rfloor\le j-1\).
+The latter is direct for \(4\le j\le7\); for
+\(t=\lfloor\log_3(j+1)\rfloor\ge2\), use
+\(j\ge3^t-1\) and \(2t\le3^t-2\).
+It follows that
+\[
+ A(X)=\sum_{j\ge1}\ell_jS_j(X)\in p\Z_p\langle X\rangle.
+\]
+Because \(p\) is odd, \(\exp A(X)\) converges in
+\(1+p\Z_p\langle X\rangle\): the \(k\)-th exponential term has
+valuation at least \(k-v_p(k!)\), which tends to infinity.
+Define
+\[
+ \mathcal H_r(X)=\exp A(X)\prod_{i=1}^r(1+pX/i).
+\]
+All \(S_j(0)\) vanish, so \(\mathcal H_r(0)=1\).
+For a nonnegative integer \(q\), convergence and the finite sum over
+\(0\le h<q\) give
+\[
+ A(q)=\sum_{h=0}^{q-1}\log B(h),\qquad
+ \exp A(q)=\prod_{h=0}^{q-1}B(h).
+\]
+Splitting the product \(E_p(pq+r)\) into its \(q\) complete blocks and
+its final \(r\) factors proves the asserted identity.
+Only the normalized factor is interpolated; no interpolation of \(W^q\)
+is required.
+\end{proof}
+
+\begin{lemma}[Central-binomial digit kernel]\label{kernel:central}
+For \(0\le r<p\), put
+\[
+ \delta_r=\left\lfloor\frac{2r}{p}\right\rfloor\in\{0,1\},
+ \qquad t_r=2r-p\delta_r.
+\]
+Define
+\[
+ \mathcal B_r(X)=
+ p^{\delta_r}(2X+1)^{\delta_r}W^{\delta_r}
+ \frac{t_r!}{r!^2}
+ \frac{\mathcal H_{t_r}(2X+\delta_r)}{\mathcal H_r(X)^2}.
+\]
+Then \(\mathcal B_r\in p^{\delta_r}\Z_p\langle X\rangle\), and
+\[
+ b_{pq+r}=b_q\mathcal B_r(q)\qquad(q\ge0).
+\]
+Moreover,
+\[
+ \mathcal B_r(0)=b_r,\qquad
+ \mathcal B_r(X)\equiv b_r\pmod p.
+\]
+\end{lemma}
+\begin{proof}
+All the factorial denominators are units, and the \(\mathcal H\)'s are
+units in the restricted ring. Use the exact identity
+\[
+ M!=p^{\lfloor M/p\rfloor}\lfloor M/p\rfloor!E_p(M)
+\]
+in \(b_{pq+r}\), and apply Lemma~\ref{kernel:units}. The factorial part
+remaining after the unit factorials have been removed is
+\[
+ p^{\delta_r}\frac{(2q+\delta_r)!}{q!^2}
+       =p^{\delta_r}b_q(2q+1)^{\delta_r}.
+\]
+The powers of \(W\) cancel to \(W^{\delta_r}\), proving the exact formula.
+Taking \(q=0\) gives the constant value.
+If \(\delta_r=1\), both sides of the final congruence vanish modulo \(p\).
+If \(\delta_r=0\), reduce the unit factors modulo \(p\) and use
+\(t_r=2r\).
+\end{proof}
+
+Let
+\[
+ w(i,l)=(-4)^l b_i b_l^2,\qquad
+ \mathcal A_p=\Z_p\langle X,Y\rangle.
+\]
+Since \((-4)^{p-1}\in1+p\Z_p\), the restricted series
+\[
+ \mathcal C(Y)=\exp\bigl(Y\log((-4)^{p-1})\bigr)
+\]
+is a unit in \(1+p\Z_p\langle Y\rangle\), and
+\(\mathcal C(j)=(-4)^{(p-1)j}\) for every integer \(j\ge0\).
+Define
+\begin{equation}\label{kernel:double}
+ K_{r,s}(X,Y)=(-4)^s\mathcal C(Y)
+                      \mathcal B_r(X)\mathcal B_s(Y)^2.
+\end{equation}
+Lemma~\ref{kernel:central} gives, for all \(q,j\ge0\),
+\begin{equation}\label{kernel:exact}
+ w(pq+r,pj+s)=w(q,j)K_{r,s}(q,j).
+\end{equation}
+In addition,
+\begin{equation}\label{kernel:properties}
+ \begin{gathered}
+ K_{r,s}\in p^{\delta_r+2\delta_s}\mathcal A_p,\qquad
+ K_{r,s}(0,0)=w(r,s),\\
+ K_{r,s}(X,Y)\equiv w(r,s)\pmod p.
+ \end{gathered}
+\end{equation}
+These formulas include every carry in the two central binomial coefficients.
+
+\section{A two-state coefficient operator}
+\label{sec:two-state}
+
+The two neighboring coefficient indices below form a closed system under
+base-\(p\) digit decomposition. This is the additional propagation mechanism
+needed to use Theorem~\ref{abel:bases}.
+
+For \(F=(F_0,F_1)\in\mathcal M_p:=\mathcal A_p^2\) and \(N\ge1\), set
+\begin{equation}\label{state:functional}
+ \mathcal J_N(F)=
+ \sum_{\substack{i,l\ge0\\i+2l=N-1}}w(i,l)F_0(i,l)
+ +\sum_{\substack{i,l\ge0\\i+2l=N-2}}w(i,l)F_1(i,l).
+\end{equation}
+A sum with negative right-hand side is empty. In particular,
+\(\mathcal J_1(F)=F_0(0,0)\).
+
+\begin{proposition}[Exact digit decomposition]\label{state:operator}
+For \(d=0,1\), define
+\[
+ (\mathcal L_pF)_d(X,Y)=
+ \sum_{a=0}^1
+ \sum_{\substack{0\le r,s<p\\r+2s=p-1-a+pd}}
+ K_{r,s}(X,Y)F_a(pX+r,pY+s).
+\]
+Then \(\mathcal L_p\) is a \(\Z_p\)-linear operator on \(\mathcal M_p\),
+and for every \(N\ge1\),
+\begin{equation}\label{state:block}
+               \mathcal J_{pN}(F)=\mathcal J_N(\mathcal L_pF).
+\end{equation}
+For every \(F\in\mathcal M_p\), there is \(R_F\in\mathcal M_p\) such that
+\begin{equation}\label{state:rank-one}
+ \mathcal L_pF=(\mathcal J_p(F),0)+pR_F,
+ \qquad (R_F)_0(0,0)=0.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Write \(i=pq+r\), \(l=pj+s\) in the summand with input index \(a\in\{0,1\}\).
+The constraint \(i+2l=pN-1-a\) becomes
+\[
+ r+2s=p-1-a+pd,\qquad q+2j=N-1-d.
+\]
+The only possible values of \(d\) are \(0,1\): the low sum lies between
+\(0\) and \(3p-3\), whereas \(d=-1\) would make it negative and
+\(d=2\) would make it at least \(3p-2\).
+Equation~\eqref{kernel:exact} now proves \eqref{state:block}, including
+all empty boundary ranges. The asserted operator preserves
+\(\mathcal M_p\) because it is a finite sum of integral restricted-series
+products and integral affine substitutions.
+
+For \(d=1\), the low sum is \(2p-1\) or \(2p-2\).
+If \(\delta_r=\delta_s=0\), then
+\[
+ r+2s\le\frac{3(p-1)}2<2p-2,
+\]
+a contradiction. Hence \(\delta_r+2\delta_s\ge1\), and
+\eqref{kernel:properties} shows that
+\((\mathcal L_pF)_1\in p\mathcal A_p\).
+
+For \(d=0\), use \eqref{kernel:properties} and
+\[
+ F_a(pX+r,pY+s)\equiv F_a(r,s)\pmod p.
+\]
+The latter congruence follows for polynomials by expansion, and for
+restricted series by Gauss-norm continuity. We obtain
+\[
+ (\mathcal L_pF)_0\equiv
+ \sum_{a=0}^1\sum_{\substack{0\le r,s<p\\r+2s=p-1-a}}
+          w(r,s)F_a(r,s)=\mathcal J_p(F)\pmod p.
+\]
+The constant-term equality is exact, because
+\(K_{r,s}(0,0)=w(r,s)\):
+\[
+                 (\mathcal L_pF)_0(0,0)=\mathcal J_p(F).
+\]
+Subtracting the constant vector and dividing both components by \(p\)
+gives \eqref{state:rank-one}, including the specified zero constant term.
+\end{proof}
+
+\begin{theorem}[Propagation from a chain of prime-power bases]\label{state:propagation}
+Let \(p\) be an odd prime, let \(F\in\mathcal M_p\), and let \(e\ge1\).
+Suppose
+\[
+ \mathcal J_{p^j}(F)\in p^j\Z_p\qquad(1\le j<e).
+\]
+Then, for every \(m\ge1\),
+\[
+ \mathcal J_{p^em}(F)\equiv
+ \mathcal J_{p^e}(F)\,\mathcal J_m(1,0)\pmod{p^e}.
+\]
+If the base divisibility also holds at \(j=e\), then
+\(\mathcal J_{p^em}(F)\in p^e\Z_p\) for every \(m\ge1\).
+\end{theorem}
+\begin{proof}
+Iterating \eqref{state:block}, and using \(\mathcal J_1(F)=F_0(0,0)\), gives
+\[
+                 (\mathcal L_p^jF)_0(0,0)=\mathcal J_{p^j}(F).
+\]
+Suppose the base divisibilities have been used through \(j-1\), so that
+\(\mathcal L_p^{j-1}F=p^{j-1}G\) with \(G\in\mathcal M_p\).
+For \(j=1\), this means simply \(G=F\).
+By \eqref{state:rank-one},
+\[
+ \mathcal L_p^jF
+ =p^{j-1}(\mathcal J_p(G),0)+p^jR_G
+ =(\mathcal J_{p^j}(F),0)+p^jR_G.
+\]
+The second equality follows by evaluating the first component at \((0,0)\),
+since \((R_G)_0(0,0)=0\).
+When the next base is divisible by \(p^j\), the entire iterate belongs
+to \(p^j\mathcal M_p\). Induction through \(e-1\), followed by one more
+application of the formula, therefore gives
+\[
+ \mathcal L_p^eF=(\mathcal J_{p^e}(F),0)+p^eR
+ \qquad(R\in\mathcal M_p).
+\]
+Apply \(\mathcal J_m\), whose values on integral pairs are integral, to
+obtain the asserted congruence and its divisibility consequence.
+The hypothesis is empty when \(e=1\), and the same proof applies.
+\end{proof}
+
+\begin{corollary}[Every odd primary part of the diagonal condition]\label{state:all-odd}
+For every odd prime \(p\) and all integers \(e,m\ge1\),
+\[
+                              p^e\mid Y(p^em).
+\]
+\end{corollary}
+\begin{proof}
+Take \(F=(10X+3,0)\). Then \(\mathcal J_N(F)=Y(N)\).
+All its prime-power bases are supplied by Theorem~\ref{abel:bases}.
+Apply Theorem~\ref{state:propagation}.
+\end{proof}
+
+\section{The full diagonal integrality theorem}
+\label{sec:diagonal-complete}
+
+\begin{lemma}[Termwise divisibility at the prime two]\label{diag:two}
+For every \(N\ge1\), \(2^{v_2(N)}\mid Y(N)\).
+\end{lemma}
+\begin{proof}
+Write \(s_2(a)\) for the binary digit sum of a nonnegative integer \(a\).
+Legendre's factorial formula gives \(v_2(b_a)=s_2(a)\).
+For a summand indexed by \(i+2l=N-1\), the factor \(10i+3\) is odd, so
+\[
+ v_2\bigl((-4)^l b_l^2b_i(10i+3)\bigr)
+                         =2l+2s_2(l)+s_2(i).
+\]
+Digit-sum subadditivity yields
+\[
+ s_2(i)+s_2(l)=s_2(i)+s_2(2l)
+                     \ge s_2(N-1)\ge v_2(N).
+\]
+The final inequality holds because the last \(v_2(N)\) binary digits
+of \(N-1\) are ones. Thus each individual summand is divisible by
+\(2^{v_2(N)}\), and so is their sum. The case \(N=1\) is included,
+with exponent zero.
+\end{proof}
+
+\begin{theorem}[Integral diagonal primitive]\label{diag:complete}
+For every positive integer \(N\),
+\[
+                                \boxed{N\mid Y(N)}.
+\]
+Equivalently, with
+\(G(x)=\sum_{l\ge0}(-4)^l b_l^2x^{2l}\),
+\[
+ \int_0^x\frac{3+8t}{(1-4t)^{3/2}}G(t)\,dt\in\Z[[x]].
+\]
+\end{theorem}
+\begin{proof}
+For every odd prime divisor \(p\) of \(N\), write
+\(N=p^em\), where \(e=v_p(N)\ge1\).
+Corollary~\ref{state:all-odd} gives \(p^e\mid Y(N)\).
+Lemma~\ref{diag:two} supplies the entire \(2\)-part.
+These prime-power divisors are pairwise coprime, so their product \(N\)
+divides \(Y(N)\). For \(N=1\), the assertion is immediate.
+The integrand in the displayed formal antiderivative is
+\(\sum_{N\ge1}Y(N)x^{N-1}\), proving the equivalent formulation.
+\end{proof}
+
+
+\section{An integral Catalan criterion}\label{sec:catalan}
+
+We now give the algebraic bridge from the proved diagonal divisibility
+to the original sum. Everything in this section takes place over
+\(\Z\); there is no convergence condition beyond formal power series.
+Let
+\[
+ A=\Z[[u,v]],\qquad
+ \theta_u=u\frac{\partial}{\partial u},\quad
+ \theta_v=v\frac{\partial}{\partial v},\qquad
+ \mathcal D_A=\theta_u A+\theta_v A.
+\]
+A coefficientwise application of B\'ezout's identity shows that
+\begin{equation}\label{eq:bezout}
+ F\in\mathcal D_A
+ \quad\Longleftrightarrow\quad
+ \begin{cases}
+ [u^0v^0]F=0,\\
+ \gcd(r,s)\mid[u^rv^s]F\quad((r,s)\ne(0,0)).
+ \end{cases}
+\end{equation}
+Indeed, the coefficient of \(u^rv^s\) in \(\theta_u H+\theta_v K\)
+is \(rH_{r,s}+sK_{r,s}\), and these integer combinations form precisely
+\(\gcd(r,s)\Z\).
+
+\begin{theorem}[Diagonal criterion]\label{thm:catalan}
+Let \(R(x)\in\Z[[x]]\), \(\alpha,\beta\in\Z\), and
+\[
+ \rho=\frac{uv}{1+u+v},\qquad
+ F(u,v)=(\alpha\rho+\beta\rho^2)R(uv).
+\]
+Then
+\[
+ F\in\mathcal D_A
+ \quad\Longleftrightarrow\quad
+ n\mid[u^nv^n]F\qquad\text{for every }n\ge1.
+\]
+\end{theorem}
+\begin{proof}
+The forward direction follows from \eqref{eq:bezout}.
+For the converse let \(C(x)\in1+x\Z[[x]]\) be the Catalan series,
+characterized by \(C=1+xC^2\), and set
+\[
+ U=uC(uv),\qquad V=vC(uv),\qquad y=UV.
+\]
+This is an integral formal automorphism. Its inverse and the induced
+radial substitution are
+\begin{equation}\label{eq:catalaninverse}
+ u=\frac{U}{1+y},\qquad v=\frac{V}{1+y},\qquad
+ x=uv=\frac{y}{(1+y)^2},\qquad C(x)=1+y.
+\end{equation}
+The inverse logarithmic differential matrix is
+\[
+ \begin{pmatrix}d\log u\\d\log v\end{pmatrix}
+ =\frac1{1+y}
+  \begin{pmatrix}1&-y\\-y&1\end{pmatrix}
+  \begin{pmatrix}d\log U\\d\log V\end{pmatrix}.
+\]
+Its determinant
+\[
+                         J(y)=\frac{1-y}{1+y}
+\]
+is an integral unit, and the matrix and its inverse have integral
+power-series entries. In the free module of logarithmic differentials,
+\[
+ F\,d\log u\wedge d\log v
+       =d(H\,d\log v-K\,d\log u)
+ \quad\Longleftrightarrow\quad F=\theta_uH+\theta_vK.
+\]
+Thus pullback preserves integral exactness in both directions. In
+particular \(F\in\mathcal D_A\) if and only if
+\[
+ \widetilde F(U,V)
+       =J(y)F\left(\frac{U}{1+y},\frac{V}{1+y}\right)
+\]
+is an integral logarithmic divergence in \(U,V\).
+
+The useful factorization is
+\[
+ 1+u+v=\frac{(1+U)(1+V)}{1+y},\qquad
+ \rho=\frac{y}{(1+y)(1+U)(1+V)}.
+\]
+It gives
+\begin{equation}\label{eq:separated}
+ \widetilde F
+   =\frac{A_1(y)}{(1+U)(1+V)}
+    +\frac{A_2(y)}{(1+U)^2(1+V)^2},
+\end{equation}
+where
+\[
+ A_1(y)=\frac{\alpha y(1-y)}{(1+y)^2}R\left(\frac{y}{(1+y)^2}\right),
+ \qquad
+ A_2(y)=\frac{\beta y^2(1-y)}{(1+y)^3}R\left(\frac{y}{(1+y)^2}\right).
+\]
+These are integral; \(A_1\) starts in degree one and \(A_2\) in degree
+two. Write \(A_j(y)=\sum_k A_{j,k}y^k\). For \(r,s\ge1\), set
+\(q=\min(r,s)\) and \(d=\gcd(r,s)\). Expanding the denominators in
+\eqref{eq:separated},
+\[
+ [U^rV^s]\widetilde F
+   =(-1)^{r+s}\sum_{k=0}^{q}
+       \bigl(A_{1,k}+A_{2,k}(r-k+1)(s-k+1)\bigr).
+\]
+Since \(r,s,q\) are all multiples of \(d\),
+\begin{equation}\label{eq:gcdreduction}
+ [U^rV^s]\widetilde F
+       \equiv(-1)^{r+s}[U^qV^q]\widetilde F\pmod d.
+\end{equation}
+
+We must also preserve the diagonal divisibility under the change of
+variables. Let \(\Diag F(x)=\sum_{n\ge0}[u^nv^n]F\,x^n\).
+The radial substitution \eqref{eq:catalaninverse} preserves the
+difference of the two exponents, hence
+\[
+ \Diag\widetilde F(y)=J(y)\,\Diag F\left(\frac{y}{(1+y)^2}\right).
+\]
+The assumed diagonal divisibility gives an integral series
+\(H_0(x)\in x\Z[[x]]\) such that \(\Diag F(x)=xH_0'(x)\).
+For \(x(y)=y/(1+y)^2\), the identity
+\(yx'(y)/x(y)=J(y)\) therefore gives
+\[
+              \Diag\widetilde F(y)
+                       =y\frac{d}{dy}H_0(x(y)).
+\]
+Its coefficient of \(y^q\) is divisible by \(q\).
+Equation~\eqref{eq:gcdreduction} now proves every required gcd
+condition. The constant and axis coefficients vanish because of the
+initial degrees of \(A_1,A_2\). By \eqref{eq:bezout}, \(\widetilde F\)
+is an integral logarithmic divergence. Pulling back by the inverse
+automorphism proves the same for \(F\).
+\end{proof}
+
+\begin{corollary}\label{cor:Psi}
+Let \(G(x)\) be as in Section~\ref{sec:diagonal}, and put
+\[
+                       \Psi=(3\rho+20\rho^2)G(uv).
+\]
+There exist \(H,K\in\Z[[u,v]]\) with
+\[
+                            \Psi=\theta_uH+\theta_vK.
+\]
+\end{corollary}
+\begin{proof}
+For \(i\ge0\),
+\[
+ [u^{i+1}v^{i+1}]\rho=\binom{2i}{i}.
+\]
+For \(i\ge1\),
+\[
+ [u^{i+1}v^{i+1}]\rho^2
+       =(2i-1)\binom{2i-2}{i-1},\qquad
+ 20(2i-1)\binom{2i-2}{i-1}=10i\binom{2i}{i}.
+\]
+For \(i=0\) the \(\rho^2\) coefficient is zero. Consequently
+\([u^Nv^N]\Psi=Y(N)\) for every \(N\ge1\).
+The already proved divisibility \eqref{eq:Ytarget} and
+Theorem~\ref{thm:catalan} give the assertion.
+\end{proof}
+
+\section{Returning to the original weighted sum}\label{sec:return}
+
+Put
+\[
+ \Lambda=\frac{(1+u)(1+v)}{uv},\qquad
+ B=\bigcup_{M\ge0}(uv)^{-M}\Z[[u,v]].
+\]
+Constant terms of the expressions below are well defined in \(B\):
+all exponents have a fixed lower bound in each variable. The formal
+series in \(A\) have integer coefficients, so these constant terms
+are integers. For every \(n\ge0\),
+\begin{equation}\label{eq:ct-original}
+ \CT\bigl(\Lambda^nG(uv)\bigr)
+    =\sum_{l\ge0}(-4)^l\binom{2l}{l}^2\binom{n}{2l}^2
+    =a_n.
+\end{equation}
+We used \(\binom{n}{2l}\binom{2l}{l}
+=\binom nl\binom{n-l}{l}\), including the zero convention outside
+the admissible range.
+
+\begin{lemma}[Exact constant-term identity]\label{lem:negative}
+For every \(N\ge1\),
+\begin{equation}\label{eq:negative}
+ S(N)=-\CT(\Lambda^N\Psi)
+                   +20N\,\CT\bigl(\Lambda^N\rho G(uv)\bigr).
+\end{equation}
+\end{lemma}
+\begin{proof}
+An exact polynomial identity is
+\[
+ (T-1)^2\sum_{n=0}^{N-1}(20n+17)T^n
+    =(3T+17)(1-T^N)+20NT^N(T-1).
+\]
+Substitute \(T=\Lambda\) and use
+\(\rho=(\Lambda-1)^{-1}=uv/(1+u+v)\). Since
+\((3\Lambda+17)\rho^2=3\rho+20\rho^2\),
+\[
+ \sum_{n=0}^{N-1}(20n+17)\Lambda^n
+    =(3\rho+20\rho^2)(1-\Lambda^N)+20N\Lambda^N\rho.
+\]
+Multiply by \(G(uv)\), take the constant term, and apply
+\eqref{eq:ct-original}. The remaining term \(\CT\Psi\) vanishes
+because \(\Psi\in uvA\).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+By Corollary~\ref{cor:Psi}, write
+\(\Psi=\theta_uH+\theta_vK\) with \(H,K\in A\).
+The constant term of a logarithmic derivative in \(B\) is zero.
+Since
+\[
+ \frac{\theta_u\Lambda}{\Lambda}=-\frac1{1+u},\qquad
+ \frac{\theta_v\Lambda}{\Lambda}=-\frac1{1+v},
+\]
+formal integration by parts gives
+\[
+ \CT(\Lambda^N\Psi)
+       =N\,\CT\left[\Lambda^N
+               \left(\frac{H}{1+u}+\frac{K}{1+v}\right)\right]
+       \in N\Z.
+\]
+The second term of \eqref{eq:negative} also lies in \(N\Z\).
+Thus \(N\mid S(N)\) for every positive integer \(N\), as claimed.
+\end{proof}
+
+\begin{corollary}\label{cor:allcofactors}
+For every prime \(p\) and all \(e,m\ge1\),
+\[
+                            p^e\mid S(p^em).
+\]
+In particular the entire split-prime-power family
+\(p\equiv1,3,7,9\pmod{20}\) is included.
+\end{corollary}
+\begin{proof}
+Apply Theorem~\ref{thm:main} with \(N=p^em\).
+\end{proof}
+
+
+\section{Scope, provenance, and verification}\label{sec:scope}
+
+The result proved here is exactly the all-integer divisibility assertion
+in Conjecture 5.8(ii) of \cite{Sun2010}. The same part of that conjecture
+also predicts the more precise congruence
+\[
+ S(p)\equiv p\left(10\left(\frac{-1}{p}\right)+7\right)\pmod{p^2}
+ \qquad(p\text{ odd prime}).
+\]
+This congruence is not a conclusion of the present paper. Nor do we
+claim to prove the separate unweighted CM evaluations in part (i).
+Theorem~\ref{thm:main} covers the exact original sequence, original
+weight, all positive integers, and consequently every requested split
+prime power.
+
+The external arithmetic input is Theorem~\ref{sun:partial}, a published
+theorem of Sun. The additional arguments connecting it to the target are
+the exact reflected product in \eqref{abel:bridge}, the valuation in
+\eqref{abel:valuation}, the closed pair of coefficient states in
+Proposition~\ref{state:operator}, and the integral diagonal criterion
+of Theorem~\ref{thm:catalan}. In particular, a formal identity alone
+does not prove the target: the Abel corrections must lie in \(p^e\Z_p\),
+and the digit operator must preserve an integral coefficient module
+at every iteration. Those two assertions are proved in detail above.
+
+The use of normalized factorial units, digit decompositions, and
+\(p\)-adic coefficient estimates has substantial antecedents. For
+related arithmetic methods for Ap\'ery-like sequences, see Delaygue
+\cite{Delaygue}. The present paper does not assert that such general
+principles originate here. The supplied research draft \cite{Supplied}
+provided the negative-index direction, and the preceding research note
+\cite{Previous} supplied the integral Catalan criterion used as a
+starting point. All unpublished ingredients needed for the conclusion
+have been proved again in this paper.
+
+The bibliography and the accompanying source review are bounded.
+A search using the exact sequence identifier, the original weight,
+equivalent binomial notation, and the auxiliary convolution did not
+identify an earlier complete proof of this exact assertion or of the
+full chain presented here.
+Neither the appearance of a conjecture in OEIS nor a failure to locate
+an identical proof establishes historical priority. Accordingly, this
+manuscript makes no claim that the theorem or its essential proof has
+never appeared elsewhere. The work is a newly prepared proof manuscript;
+its internal checking is not external peer review or a proof-assistant
+verification. Mathematical completeness of the argument and a certified
+priority claim are separate questions.
+
+The finite tests in the appendix are transcription checks. They use
+exact integers and rational numbers, and check the original sums, the
+reflected-product identity, the Abel correction valuations, the diagonal
+coefficients, and the final constant-term identity. In the accompanying
+run, all assertions passed: \(1\le N\le400\) for the original and
+diagonal sums, eleven prime-power bases for the Abel identities,
+\(1\le r,s\le40\) for the coefficient gcd conditions, and
+\(1\le N\le30\) for the constant-term identity.
+No upper bound from a computation is used anywhere in the proof.
+
+\appendix
+\section{Exact reproducibility checks}\label{app:checks}
+
+The following complete Python program uses only the standard library.
+It is included in this single source file for reproducibility.
+Its finite assertions supplement, but do not replace, the quantified
+proofs in the main text.
+\begin{lstlisting}
+
+
+"""Finite transcription checks; no assertion below replaces a proof."""
+from fractions import Fraction as Q
+from functools import lru_cache
+from math import comb, gcd
+
+@lru_cache(None)
+def b(j):
+    return comb(2*j, j)
+
+def a(n):
+    return sum((-4)**k * comb(n, k)**2 * comb(n-k, k)**2
+               for k in range(n//2 + 1))
+
+
+def Y(n):
+    return sum((-4)**l * b(l)**2 * b(n-1-2*l)
+               * (10*(n-1-2*l)+3)
+               for l in range((n-1)//2 + 1))
+
+
+def vp(x, p):
+    x = Q(x)
+    if x == 0:
+        return float('inf')
+    z, v = abs(x.numerator), 0
+    while z % p == 0:
+        z //= p
+        v += 1
+    z = x.denominator
+    while z % p == 0:
+        z //= p
+        v -= 1
+    return v
+
+
+def rho_coefficient(r, s, power):
+    if min(r, s) < power:
+        return 0
+    d = r+s-2*power
+    return (-1)**d * comb(power+d-1, d) * comb(d, r-power)
+
+
+@lru_cache(None)
+def coeff(r, s, kind):
+    return sum((-4)**l * b(l)**2 * (
+        (3 if kind == 'psi' else 1)
+        * rho_coefficient(r-2*l, s-2*l, 1)
+        + (20 if kind == 'psi' else 0)
+        * rho_coefficient(r-2*l, s-2*l, 2))
+        for l in range((min(r, s)-1)//2 + 1))
+
+
+def ct(n, kind):
+    return sum(comb(n, r)*comb(n, s)*coeff(r, s, kind)
+               for r in range(n+1) for s in range(n+1))
+
+
+partial = [0]
+for n in range(1, 401):
+    partial.append(partial[-1] + (20*(n-1)+17)*a(n-1))
+    assert partial[n] % n == 0
+    assert Y(n) % n == 0
+assert [Y(n)//n for n in range(1, 7)] == [3, 13, 30, 61, 506, 2962]
+
+bases = [(3, 1), (3, 2), (3, 3), (3, 4), (5, 1), (5, 2),
+         (5, 3), (7, 1), (7, 2), (11, 2), (13, 2)]
+for p, e in bases:
+    n, r, R, total = p**e, Q(1), Q(0), Q(0)
+    h = (n-1)//2
+    for j in range(h+1):
+        A = Q((20*j+3)*b(j)**2*b(2*j), (-1024)**j)
+        R += A
+        total += A*r
+        assert Q(b(h-j), b(h))**2 == Q(b(j)**2, 256**j)*r
+        assert vp(R, p) >= vp((2*j+1)*(2*j+2), p)
+        if j < h:
+            aa, bb = 2*j+1, 2*j+2
+            next_r = r*(Q(1)-Q(n, aa))**2/(Q(1)-Q(n, bb))**2
+            delta = next_r-r
+            assert delta == -n*r*Q(2*aa*bb-n*(aa+bb), aa**2*(bb-n)**2)
+            assert vp(delta, p) == e-vp(aa*bb, p)
+            assert vp(R*delta, p) >= e
+            r = next_r
+    assert Y(n) == (-4)**h*b(h)**2*total
+    assert vp(R, p) >= e
+
+for r in range(1, 41):
+    for s in range(1, 41):
+        assert coeff(r, s, 'psi') % gcd(r, s) == 0
+for n in range(1, 31):
+    assert coeff(n, n, 'psi') == Y(n)
+    assert partial[n] == -ct(n, 'psi') + 20*n*ct(n, 'rho')
+print('PASS: original and diagonal divisibility for 1 <= n <= 400')
+print('PASS: exact Abel identities and valuations at 11 prime powers')
+print('PASS: 1600 coefficient gcd tests and 30 constant-term identities')
+
+
+\end{lstlisting}
+
+\begin{thebibliography}{9}\raggedright
+
+\bibitem{Sun2010}
+Zhi-Wei Sun,
+\emph{On Ap\'ery numbers and generalized central trinomial coefficients},
+arXiv:1006.2776v11, 19 August 2010, Conjecture 5.8(ii), printed p.~33.
+\url{https://arxiv.org/abs/1006.2776v11}.
+The version identifier is specified because a later version was
+withdrawn when the material was reorganized.
+
+\bibitem{Sun2013}
+Zhi-Wei Sun,
+\emph{Products and sums divisible by central binomial coefficients},
+Electronic Journal of Combinatorics \textbf{20}(1) (2013), Paper P9,
+14 pp.; Theorem~5, equation~(5).
+\url{https://www.combinatorics.org/ojs/index.php/eljc/article/download/v20i1p9/pdf/}.
+
+\bibitem{OEIS}
+OEIS Foundation Inc.,
+\emph{The On-Line Encyclopedia of Integer Sequences}, entry A179524,
+contributed by Zhi-Wei Sun, 17 July 2010; accessed 8 November 2026.
+\url{https://oeis.org/A179524}.
+
+\bibitem{Delaygue}
+\'Eric Delaygue,
+\emph{Arithmetic properties of Ap\'ery-like numbers},
+Compositio Mathematica \textbf{154} (2018), 249--274.
+\url{https://doi.org/10.1112/S0010437X17007552}.
+Preprint: \url{https://arxiv.org/abs/1310.4131}.
+
+\bibitem{Supplied}
+QEEDDD / Verifiable Mathematical Reasoning Corpus project,
+\emph{Sun's divisibility conjecture for
+\(\sum_{k<n}(20k+17)W_k(1,-4)\): squarefree moduli, the second layer,
+and a reduction via negative-index continuation},
+user-supplied unpublished research manuscript, 7 November 2026,
+13 pp.
+
+\bibitem{Previous}
+Research manuscript prepared with ChatGPT for Keio,
+\emph{Prime-Power Divisibility in Sun's A179524 Conjecture},
+unpublished research note, 8 November 2026, 23 pp.
+The present paper reproduces all required arguments and supplies
+the remaining prime-power bases and their propagation.
+
+\end{thebibliography}
+\end{document}

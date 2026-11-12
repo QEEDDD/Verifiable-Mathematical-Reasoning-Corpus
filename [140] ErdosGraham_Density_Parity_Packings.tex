@@ -1,0 +1,639 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1.05in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,backgroundcolor=\color{codebg},
+  frame=single,framerule=0.2pt,columns=fullflexible,keepspaces=true,showstringspaces=false}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{computation}[theorem]{Computation}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\dlow}{\underline{d}}
+\newcommand{\dup}{\overline{d}}
+\newcommand{\llow}{\underline{\delta}}
+\newcommand{\lup}{\overline{\delta}}
+\newcommand{\Cor}{\mathcal{C}}
+\newcommand{\lamc}{\lambda_{\mathrm{coset}}}
+
+\title[The Erd\H{o}s--Graham density problem for $\{x,2x,3x\}$]{Parity packings and the Erd\H{o}s--Graham density problem\\ for sets without $\{x,2x,3x\}$}
+\subjclass[2020]{11B05, 11B83, 05D05, 90C27, 11J70}
+\keywords{triple-free sets, natural density, logarithmic density, Erd\H{o}s Problem 168, linear programming duality, corner hypergraph, smooth numbers}
+\date{11 November 2026}
+
+\begin{document}
+
+\begin{abstract}
+In 1979 Erd\H{o}s and Graham asked: if $a_1<a_2<\cdots$ is an infinite sequence of integers such that for no $x$ are $x,2x,3x$ all terms, \emph{how large can the density of the sequence be (if it exists)? Can the upper density be larger?} We answer both questions exactly. Every set $A$ of positive integers containing no triple $\{x,2x,3x\}$ satisfies
+\[
+\sum_{n\le N,\ n\in A}\frac1n\;\le\;\frac34\log N+8\qquad(N\ge1),
+\]
+so its upper logarithmic density, its lower density and (when it exists) its density are at most $3/4$; the bound is attained by the integers whose $3$-adic valuation is even. In contrast, the largest upper density equals the finite extremal constant $\lambda=\lim_N F(N)/N$ of Erd\H{o}s Problem~\#168 and is attained. We prove the explicit bound $\lambda\ge \lamc=0.8003091375\ldots$ and, by a computer-certified evaluation, $0.8009657546\le\lambda\le0.8009657552$. Hence the upper density can exceed every attainable density, and the exact gap is $\lambda-\tfrac34=0.050965755\ldots$.
+
+The proof introduces a weighted transversal problem for the corner hypergraph $\{(i,j),(i+1,j),(i,j+1)\}$ on $\N_0^2$ with product weights $a^{-i}b^{-j}$, and solves it on the whole region $|a-b|\ge1$ by an explicit linear-programming dual certificate, a \emph{parity packing} supported on alternate rows. The certificate is tight exactly on the critical line $b=a+1$, on which the Erd\H{o}s--Graham pair $(a,b)=(2,3)$ lies. The same method shows that the largest density of a set avoiding $\{x,ax,bx\}$ is $b/(b+1)$ for every pair of coprime integers $2\le a<b$, and that the largest density of a set avoiding $\{x,a_1x,\dots,a_rx\}$ is $a_r/(a_r+1)$ whenever the $a_i$ are pairwise coprime and $a_r\ge 1+a_1+\dots+a_{r-1}$. In the band $|a-b|<1$ the weighted optimum is, numerically, a residue class of $i+2j$ modulo $3$, possibly modified near the origin; on the diagonal $a=b$ we conjecture the coset value $a/(a^2+a+1)$.
+
+For the finite problem we prove the coset bound behind $\lamc$, an exact identity expressing the imbalance of the three cosets as a Birkhoff sum of the rotation by $\tfrac13\log_2\tfrac43$, and a four-row rigidity lemma, and we verify that the minimum staircase transversal equals the minimum coset count up to one for the first $5000$ staircases. The irrationality of $\lambda$, the remaining part of Problem~\#168, is not settled here; we explain how it is entangled with the continued fraction of $\log_2 3$.
+\end{abstract}
+
+\maketitle
+
+\setcounter{tocdepth}{1}
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{The question}
+Call a set $A\subseteq\N=\{1,2,\dots\}$ \emph{triple-free} if there is no $x\in\N$ with $\{x,2x,3x\}\subseteq A$. Let
+\[
+F(N)=\max\{|S|:\ S\subseteq\{1,\dots,N\}\text{ triple-free}\},\qquad \lambda=\limsup_{N\to\infty}\frac{F(N)}N .
+\]
+Graham, Spencer and Witsenhausen \cite{GSW77} proved that $F(N)/N$ converges and expressed the limit through the increments of an extremal function on the $3$-smooth numbers (see \S\ref{sec:finite}). In their survey of 1979, Erd\H{o}s and Graham then wrote \cite[p.~336]{EG79}:
+
+\begin{quote}\small
+``Let $R_n$ be a maximum subset of $\{1,2,\dots,n\}$ with the property that for no $x$ are $x$, $2x$ and $3x$ all in $R_n$. What is $\lambda=\lim |R_n|/n$? (Its existence is known.) In particular, prove that $\lambda$ is irrational. Of course, one could ask these questions for infinite sets of integers. For example, if $a_1<a_2<\cdots$ is an infinite sequence of integers such that for no $x$ are $x,2x,3x$ all $a_i$'s, then how large can the density of the $a$'s be (if it exists)? Can the upper density be larger?''
+\end{quote}
+
+The finite question and the irrationality of $\lambda$ form Erd\H{o}s Problem~\#168 \cite{EP168}, whose statement adds: ``Similar questions can be asked for the density or upper density of infinite sets without such configurations.'' The numerical value $\lambda=0.80096575500655898909\ldots$ was computed by Eberhard (OEIS A386439) from the formula of \cite{GSW77} and exact integer-programming values of the extremal function for the first $5000$ smooth numbers (OEIS A004059, A057561).
+
+This paper answers the two questions about infinite sequences completely. Densities are recalled in \S\ref{sec:prelim}; $\dlow,\dup$ denote lower and upper (natural) density, $\llow,\lup$ lower and upper logarithmic density, and $d$, $\delta$ the corresponding limits when they exist.
+
+\subsection{Main results}
+
+\begin{theorem}[maximal density]\label{thm:main}
+Let $A\subseteq\N$ be triple-free. Then for every $N\ge1$
+\begin{equation}\label{eq:main}
+\sum_{\substack{n\le N\\ n\in A}}\frac1n\;\le\;\frac34\,\log N+8 .
+\end{equation}
+Consequently $\dlow(A)\le\llow(A)\le\lup(A)\le\tfrac34$, and $d(A)\le\tfrac34$ whenever $d(A)$ exists. The set
+\[
+A^\ast=\{n\in\N:\ v_3(n)\ \text{is even}\}
+\]
+is triple-free and has natural density $3/4$. Hence the largest possible density of a triple-free sequence is exactly $3/4$, and the same is true for the lower density, the logarithmic density, and the upper logarithmic density.
+\end{theorem}
+
+\begin{theorem}[maximal upper density]\label{thm:upper}
+We have $\sup\{\dup(A): A\subseteq\N\text{ triple-free}\}=\lambda$, and the supremum is attained. Moreover:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item $\lambda\ge\lamc$, where $\lamc=0.80030913757154911813290181557705295218\ldots$ is the explicitly computable number of Proposition~\ref{prop:cosetlower};
+\item \textup{(computer-certified, \S\ref{sec:verify})} $0.8009657546\le\lambda\le 0.8009657552$.
+\end{enumerate}
+In particular every triple-free set whose density exists has density at most $\lambda-0.0509657$, while some triple-free set has upper density $\lambda$.
+\end{theorem}
+
+Theorem~\ref{thm:main} determines the quantity asked for by Erd\H{o}s and Graham, and Theorem~\ref{thm:upper} answers their second question with the exact supremum and the exact gap $\lambda-\tfrac34$. Both results extend to other multipliers.
+
+\begin{theorem}[two multipliers]\label{thm:pairs}
+Let $2\le a<b$ be coprime integers, and call $A\subseteq\N$ \emph{$(a,b)$-free} if there is no $x$ with $\{x,ax,bx\}\subseteq A$. Then there is a constant $C_{a,b}$ such that every $(a,b)$-free set satisfies
+\[
+\sum_{n\le N,\ n\in A}\frac1n\le\frac{b}{b+1}\log N+C_{a,b}\qquad(N\ge1),
+\]
+and the set $\{n: \nu_b(n)\ \text{even}\}$, where $\nu_b(n)=\max\{k: b^k\mid n\}$, is $(a,b)$-free of density $b/(b+1)$. Thus the largest density (lower, logarithmic, upper logarithmic) of an $(a,b)$-free set is $b/(b+1)$.
+\end{theorem}
+
+\begin{theorem}[several multipliers]\label{thm:several}
+Let $2\le a_1<a_2<\dots<a_r$ be pairwise coprime integers with
+\[
+a_r\;\ge\;1+a_1+a_2+\dots+a_{r-1}.
+\]
+Then the largest density (lower, logarithmic, upper logarithmic, and natural when it exists) of a set containing no configuration $\{x,a_1x,\dots,a_rx\}$ equals $a_r/(a_r+1)$, attained by $\{n:\nu_{a_r}(n)\ \text{even}\}$.
+\end{theorem}
+
+For $r=1$ this recovers the classical value $a/(a+1)$ for sets with no $\{x,ax\}$; for $r=2$ the hypothesis is automatic and Theorem~\ref{thm:several} reduces to Theorem~\ref{thm:pairs}. For $\{x,2x,3x,5x\}$ the hypothesis fails ($5<1+2+3$) and the maximal density is not determined here.
+
+\subsection{A new weighted problem and the method}
+The arithmetic problems reduce, through the decomposition $n=m\,a^ib^j$, to the following problem on the lattice $\N_0^2$; it is the ``new problem'' of this paper.
+
+\begin{problem}[weighted corner transversals]\label{prob:kappa}
+For real $a,b>1$ give the cell $(i,j)\in\N_0^2$ the weight $w(i,j)=a^{-i}b^{-j}$, of total mass $W(a,b)=\frac{a}{a-1}\cdot\frac{b}{b-1}$. A \emph{corner} is a triple $\Cor(i,j)=\{(i,j),(i+1,j),(i,j+1)\}$. Determine
+\[
+\kappa(a,b)=\inf\Bigl\{\sum_{v\in T}w(v):\ T\subseteq\N_0^2\ \text{meets every corner}\Bigr\}.
+\]
+\end{problem}
+
+\begin{theorem}[parity law]\label{thm:parity}
+If $b\ge a+1$, then $\kappa(a,b)=W(a,b)/(b+1)=\frac{a}{a-1}\cdot\frac{b}{b^2-1}$, attained by the odd rows $\{(i,j): j\ \text{odd}\}$. Symmetrically, if $a\ge b+1$, then $\kappa(a,b)=W(a,b)/(a+1)$, attained by the odd columns.
+\end{theorem}
+
+The lower bound is an explicit fractional packing of corners, supported on the corners with even second coordinate, which certifies optimality of the odd rows by linear-programming duality (\S\ref{sec:kappa}). We call it the \emph{parity packing}. Its vertex constraints read $(1+a)/b\le1$ on even rows and are tight on odd rows; on the critical line $b=a+1$ every vertex constraint is tight. The pair $(2,3)$ of Erd\H{o}s and Graham lies exactly on this line.
+
+Inside the band $|a-b|<1$ neither parity structure is optimal. There, exact optimisation on large boxes returns a residue class $\{(i,j):i+2j\equiv r\pmod 3\}$, possibly modified at the origin (Table~\ref{tab:band}). These residue classes, which we call \emph{cosets}, also govern the finite problem of Erd\H{o}s and Graham; this explains why the finite constant $\lambda$ and the infinite density $3/4$ differ.
+
+\subsection{The finite problem}
+For the finite question we prove the coset bound $\lambda\ge\lamc$; an exact identity (Proposition~\ref{prop:race}) expressing the differences between the three coset counts of a staircase as a Birkhoff sum of the circle rotation by $\alpha=\frac13\log_2\frac43$; and a four-row rigidity lemma (Lemma~\ref{lem:rigid}) showing that transversals which hit every corner exactly once are cosets away from the boundary. We also verify that the minimum staircase transversal equals the minimum coset count, or that count minus one, for the first $5000$ staircases (\S\ref{sec:finite}). These results identify the mechanism behind $\lambda$: a \emph{race} between the three cosets, driven by the continued fraction of $\alpha$, whose partial quotients $7,4,2,1,1,1,2,71,3,1,168,\dots$ produce long stretches with a stable leader. We do not prove that $\lambda$ is irrational. Section~\ref{subsec:barrier} records precisely what an argument along these lines would still require.
+
+\subsection{Relation to previous work, and status}
+Graham, Spencer and Witsenhausen \cite{GSW77} decomposed the problem into the classes $m2^a3^b$, proved that $F(N)/N$ converges, and obtained its series representation. In Chapman's formulation \cite[Thm.~3.2]{Chapman}, their theorem identifies the minimal \emph{lower} density of a multiplicatively $\{1,2,3\}$-syndetic set, that is, of the complement of a triple-free set; complementation gives the upper-density statement of Theorem~\ref{thm:upper} apart from the bounds (i) and (ii). Chung, Erd\H{o}s and Graham \cite{CEG02} and Finch \cite{Finch} survey the finite hitting-set problem, and Veselinov \cite{Ves26} studies its $S$-smooth generalisation. Most recently, a public repository \cite{Coleski} proved that $d(A)\le\lambda-\tfrac1{192}$ for every triple-free $A$ with natural density and constructed a set $B$ with $\dup(B)=\lambda$, answering the qualitative comparison. Its literature review (dated 15 September 2026) states explicitly that the maximum natural density had not been determined.
+
+Theorem~\ref{thm:main} determines that maximum. The block construction giving $\dup(B)=\lambda$ is standard; we include it for completeness and credit \cite{Coleski,GSW77,Chapman}. New here are: the value $3/4$ together with its logarithmic-density form \eqref{eq:main}; the extensions in Theorems~\ref{thm:pairs}--\ref{thm:several}; the weighted problem and the parity law; the explicit coset bound and the certified enclosure of $\lambda$; and the structural results on the finite problem. We searched the sources cited above, the discussion thread of Problem~\#168, the formal-conjectures database, and web indices as of 11 November 2026, and found no earlier determination of the value $3/4$. As usual, such a search cannot exclude an unindexed earlier source.
+
+\emph{Status register.} \textbf{Settled here}: the largest density, lower density, logarithmic density and upper logarithmic density of an infinite triple-free set (all equal to $3/4$); the largest upper density ($\lambda$, attained), with explicit and certified bounds. \textbf{Not settled}: whether $\lambda$ is irrational; the exact structure of the finite extremal sets (Conjecture~\ref{conj:structure}); the weighted problem in the band $|a-b|<1$, including the diagonal (Conjecture~\ref{conj:phase}); the maximal density for configurations such as $\{x,2x,3x,5x\}$ that violate the hypothesis of Theorem~\ref{thm:several}.
+
+\section{Preliminaries}\label{sec:prelim}
+
+\subsection{Densities}
+For $A\subseteq\N$ let $A(N)=|A\cap[1,N]|$ and $L_A(N)=\sum_{n\le N,\,n\in A}1/n$. Then
+\[
+\dlow(A)=\liminf\frac{A(N)}{N},\quad \dup(A)=\limsup\frac{A(N)}{N},\quad \llow(A)=\liminf\frac{L_A(N)}{\log N},\quad \lup(A)=\limsup\frac{L_A(N)}{\log N}.
+\]
+It is classical (partial summation; see e.g.\ \cite[Ch.~III.1]{Tenenbaum}) that
+\begin{equation}\label{eq:densities}
+\dlow(A)\le\llow(A)\le\lup(A)\le\dup(A),
+\end{equation}
+so in particular the natural density, when it exists, equals the logarithmic density.
+
+\subsection{The lattice decomposition}
+Let $a_1,\dots,a_r\ge2$ be pairwise coprime integers. For $n\in\N$ write $e_k(n)=\nu_{a_k}(n)=\max\{e:a_k^e\mid n\}$, and
+\[
+\operatorname{core}(n)=n\Big/\prod_{k=1}^r a_k^{e_k(n)},\qquad M=\{m\in\N:\ a_k\nmid m\ \text{for all }k\}.
+\]
+
+\begin{lemma}\label{lem:grid}
+\textup{(a)} The map $n\mapsto(\operatorname{core}(n),e_1(n),\dots,e_r(n))$ is a bijection $\N\to M\times\N_0^r$, with inverse $(m,e)\mapsto m\prod a_k^{e_k}$.
+
+\textup{(b)} For every $k$, $e_k(a_kn)=e_k(n)+1$, $e_l(a_kn)=e_l(n)$ for $l\ne k$, and $\operatorname{core}(a_kn)=\operatorname{core}(n)$.
+
+\textup{(c)} $M$ is periodic modulo $a_1\cdots a_r$ and has density $\prod_k(1-1/a_k)$; consequently \[\sum_{m\le y,\ m\in M}\frac1m=\prod_k\Bigl(1-\frac1{a_k}\Bigr)\log y+O(1).\]
+\end{lemma}
+
+\begin{proof}
+(a) Since the $a_k^{e_k(n)}$ are pairwise coprime divisors of $n$, their product divides $n$, so $\operatorname{core}(n)\in\N$. If $a_k\mid\operatorname{core}(n)$, then $a_k^{e_k(n)+1}$ would divide $a_k^{e_k(n)}\operatorname{core}(n)$, which divides $n$; this is impossible. Hence $\operatorname{core}(n)\in M$. Conversely, let $m\in M$ and $n=m\prod_l a_l^{e_l}$. Then $a_k^{e_k}\mid n$, and $a_k^{e_k+1}\mid n$ would give $a_k\mid m\prod_{l\neq k}a_l^{e_l}$, hence $a_k\mid m$ by coprimality, which is false. So $e_k(n)=e_k$ and $\operatorname{core}(n)=m$.
+
+(b) We have $a_k^{e+1}\mid a_kn$ if and only if $a_k^e\mid n$. For $l\ne k$, $a_l^e\mid a_kn$ if and only if $a_l^e\mid n$, because $\gcd(a_l,a_k)=1$. The statement about the core follows.
+
+(c) The conditions $a_k\nmid m$ depend only on $m\bmod a_k$. By the Chinese remainder theorem they are independent, so the density of $M$ is $\prod_k(1-1/a_k)$. The asymptotic for $\sum 1/m$ follows by partial summation over a periodic set.
+\end{proof}
+
+By Lemma~\ref{lem:grid}(b), each configuration $\{x,a_1x,\dots,a_rx\}$ lies in a single \emph{fibre} $\{m\prod a_k^{e_k}: e\in\N_0^r\}$ with $m=\operatorname{core}(x)$, and corresponds there to the \emph{corner} $\{e,e+\mathbf e_1,\dots,e+\mathbf e_r\}$ of $\N_0^r$, where $\mathbf e_k$ are the unit vectors. For a set $A\subseteq\N$ and $m\in M$ put
+\begin{equation}\label{eq:fibre}
+D_m(A)=\{e\in\N_0^r:\ m\textstyle\prod_k a_k^{e_k}\in A\}.
+\end{equation}
+Then $A$ contains no configuration if and only if no $D_m(A)$ contains a corner.
+
+\section{The weighted corner-transversal problem}\label{sec:kappa}
+
+We work in $\N_0^2$ with weights $w(i,j)=a^{-i}b^{-j}$, $a,b>1$, and the corners $\Cor(i,j)=\{(i,j),(i+1,j),(i,j+1)\}$. A set $T$ is a \emph{transversal} of a family of corners if it meets each of them.
+
+\begin{definition}[parity packing]\label{def:packing}
+For $(i,j)\in\N_0^2$ put
+\[
+y(i,j)=\begin{cases} w(i,j+1)=a^{-i}b^{-j-1}, & j \text{ even},\\ 0,& j\text{ odd},\end{cases}
+\]
+regarded as a weight on the corner $\Cor(i,j)$. The \emph{load} of a cell $v$ is $\ell(v)=\sum_{\Cor\ni v}y(\Cor)$.
+\end{definition}
+
+\begin{lemma}[loads]\label{lem:loads}
+For every cell $v=(i,j)$:
+\[
+\ell(v)=\begin{cases} w(v)\,\dfrac{1+a\,[i\ge1]}{b}, & j\ \text{even},\\[1ex] w(v), & j\ \text{odd}.\end{cases}
+\]
+In particular $\ell(v)\le w(v)$ for all $v$ if and only if $b\ge a+1$, and on the line $b=a+1$ equality holds for every cell with $i\ge1$.
+\end{lemma}
+
+\begin{proof}
+The corners containing $(i,j)$ are $\Cor(i,j)$, $\Cor(i-1,j)$ (if $i\ge1$) and $\Cor(i,j-1)$ (if $j\ge1$). If $j$ is even, $y(i,j)=a^{-i}b^{-j-1}=w(v)/b$, $y(i-1,j)=a^{-i+1}b^{-j-1}=a\,w(v)/b$, and $y(i,j-1)=0$ because $j-1$ is odd. If $j$ is odd, $y(i,j)=y(i-1,j)=0$ and $y(i,j-1)=a^{-i}b^{-j}=w(v)$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:parity}]
+The set $R=\{(i,j): j\ \text{odd}\}$ meets every corner, since $\Cor(i,j)$ contains $(i,j)$ and $(i,j+1)$. Its weight is
+\[
+w(R)=\sum_{i\ge0}a^{-i}\sum_{j\ \text{odd}}b^{-j}=\frac a{a-1}\cdot\frac{b}{b^2-1}=\frac{W(a,b)}{b+1}.
+\]
+Conversely, let $T$ be any transversal and assume $b\ge a+1$. By Lemma~\ref{lem:loads},
+\[
+w(T)\ \ge\ \sum_{v\in T}\ell(v)=\sum_{\Cor}y(\Cor)\,|\Cor\cap T|\ \ge\ \sum_{\Cor}y(\Cor)=\sum_{i\ge0}\sum_{j\ \text{even}}a^{-i}b^{-j-1}=\frac{a}{a-1}\cdot\frac{b}{b^2-1}.
+\]
+All terms are nonnegative, so the rearrangements are legitimate. The case $a\ge b+1$ follows by exchanging the roles of the coordinates: one takes the odd columns and the packing $y(i,j)=w(i+1,j)$ for even $i$.
+\end{proof}
+
+The proof uses only corners actually present, so it truncates.
+
+\begin{lemma}[truncated certificate]\label{lem:trunc}
+Let $\Lambda\subseteq\N_0^2$ be any set, and $T\subseteq\Lambda$ a transversal of the corners contained in $\Lambda$. If $b\ge a+1$, then
+\[
+w(T)\ \ge\ Y(\Lambda):=\sum_{\Cor(i,j)\subseteq\Lambda,\ j\ \text{even}} a^{-i}b^{-j-1}.
+\]
+\end{lemma}
+
+\begin{proof}
+Restricting the packing to corners inside $\Lambda$ only decreases loads, so $w(T)\ge\sum_{v\in T}\ell_\Lambda(v)\ge\sum_{\Cor\subseteq\Lambda}y(\Cor)$.
+\end{proof}
+
+\begin{remark}[complementary slackness]\label{rem:slack}
+The odd rows meet every corner $\Cor(i,j)$ with $j$ even in exactly one cell, namely $(i,j+1)$, and every cell of the odd rows has load equal to its weight. These are the complementary slackness conditions, so the parity packing and the odd rows are an optimal primal--dual pair. On the critical line $b=a+1$ the even rows are also fully loaded. The certificate therefore has no slack left exactly in the Erd\H{o}s--Graham case $(a,b)=(2,3)$.
+\end{remark}
+
+\subsection{Cosets and the band \texorpdfstring{$|a-b|<1$}{|a-b|<1}}
+For $r\in\Z/3\Z$ let $C_r=\{(i,j)\in\N_0^2:\ i+2j\equiv r\pmod 3\}$. Every corner contains exactly one cell of each $C_r$, since $i+2j$, $(i+1)+2j$ and $i+2(j+1)$ are the three residues modulo $3$. So every coset is a transversal, and in fact one hitting each corner exactly once.
+
+\begin{proposition}\label{prop:cosetweight}
+With $\omega=e^{2\pi i/3}$, $x=1/a$, $y=1/b$,
+\[
+\frac{w(C_r)}{W(a,b)}=\frac{(1-x)(1-y)}3\sum_{k=0}^{2}\frac{\omega^{-rk}}{(1-\omega^kx)(1-\omega^{2k}y)} .
+\]
+For $a=b$ the two lighter cosets have relative weight $a/(a^2+a+1)$.
+\end{proposition}
+
+\begin{proof}
+Filter $\sum_{i,j}x^iy^j=1/((1-x)(1-y))$ by the character $(i,j)\mapsto\omega^{k(i+2j)}$. For $a=b$ and $r\ne0$ one obtains $\tfrac13\bigl(1-\frac{(1-x)^2}{1+x+x^2}\bigr)=\frac{x}{1+x+x^2}$.
+\end{proof}
+
+For $(a,b)=(2,3)$ the lightest coset has relative weight $23/91=0.2527\ldots>1/4$, so the odd rows win, in accordance with Theorem~\ref{thm:parity}. Table~\ref{tab:band} compares exact box optima, computed by integer programming on boxes of $28\times28$ to $40\times40$ cells, with the coset and parity values. Since the odd rows, the odd columns and the three cosets are transversals for every $(a,b)$, each of them always gives an upper bound for $\kappa$.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{cccccl}
+\toprule
+$(a,b)$ & box ILP optimum & box LP optimum & lightest coset & $1/(b+1)$ & optimiser\\
+\midrule
+$(2,4)$ & $0.200000$ & $0.200000$ & $0.231293$ & $0.200000$ & odd rows\\
+$(2,3)$ & $0.250000$ & $0.250000$ & $0.252747$ & $0.250000$ & odd rows (critical line)\\
+$(2,2.95)$ & $0.252469$ & --- & $0.254072$ & $0.253165$ & $C_0$ with origin modified\\
+$(2,2.9)$ & $0.254679$ & --- & $0.255425$ & $0.256410$ & $C_0$ with origin modified\\
+$(2,2.8)$ & $0.258223$ & --- & $0.258223$ & $0.263158$ & lightest coset\\
+$(2,2.5)$ & $0.267399$ & $0.259946$ & $0.267399$ & $0.285714$ & lightest coset\\
+$(2,2)$ & $0.285714$ & $0.273809$ & $0.285714$ & $0.333333$ & lightest coset\\
+$(3,3)$ & $0.230769$ & $0.217948$ & $0.230769$ & $0.250000$ & lightest coset\\
+$(1.5,2)$ & $0.300752$ & $0.294917$ & $0.300752$ & $0.333333$ & lightest coset\\
+$(3,3.5)$ & $0.214696$ & $0.207891$ & $0.214696$ & $0.222222$ & lightest coset\\
+\bottomrule
+\end{tabular}
+\caption{Optimal transversal weight divided by $W(a,b)$. For $b\ge a+1$ the parity value is attained and LP and ILP agree. Inside the band there is an integrality gap. Near the critical line the optimum lies strictly below both the coset and the parity values: for $(2,2.9)$ and $(2,2.95)$ it is the heaviest coset $C_0$ with the origin $(0,0)$ replaced by $(0,1)$, of relative weight $(w(C_0)-1+b^{-1})/W$.}
+\label{tab:band}
+\end{table}
+
+\begin{conjecture}[diagonal]\label{conj:phase}
+For every real $a>1$, $\kappa(a,a)=W(a,a)\,\dfrac{a}{a^2+a+1}$, attained by the cosets $C_1$ and $C_2$.
+\end{conjecture}
+
+Exact box optima confirm Conjecture~\ref{conj:phase} for $a\in\{1.5,2,2.5,3,4\}$. Table~\ref{tab:band} shows that the full phase diagram in the band $|a-b|<1$ is not simply ``the better of cosets and parity''. Near the line $b=a+1$ a third, locally modified structure appears, and the passage to the parity phase at $b=a+1$ is a genuine transition. The integrality gap shows that any proof inside the band must use integrality, unlike Theorem~\ref{thm:parity}.
+
+\section{Proofs of Theorems \ref{thm:main}, \ref{thm:pairs} and \ref{thm:several}}\label{sec:proofs}
+
+\subsection{The case \texorpdfstring{$\{x,2x,3x\}$}{\{x,2x,3x\}}}
+Take $r=2$, $(a_1,a_2)=(2,3)$ in Lemma~\ref{lem:grid}, so that $M=\{m:\gcd(m,6)=1\}$, and work with $w(i,j)=2^{-i}3^{-j}$, for which $b=a+1$.
+
+\begin{lemma}\label{lem:rho}
+For $z\ge1$ let $\Lambda_z=\{(i,j):2^i3^j\le z\}$ and $\rho(z)=\tfrac34-Y(\Lambda_z)$. Then $0\le\rho(z)\le(\log z+5)/z$.
+\end{lemma}
+
+\begin{proof}
+A corner $\Cor(i,j)$ lies in $\Lambda_z$ if and only if $2^{i+1}3^j\le z$ and $2^i3^{j+1}\le z$, that is, iff $2^i3^{j+1}\le z$. Hence
+\[
+\rho(z)=\sum_{j\ \text{even}}3^{-j-1}\sum_{i:\,2^i3^{j+1}>z}2^{-i}.
+\]
+If $3^{j+1}\le z$, let $i_j\ge1$ be minimal with $2^{i_j}3^{j+1}>z$; then the inner sum is $2^{1-i_j}<2\cdot3^{j+1}/z$, so the term is $<2/z$, and there are at most $(\log_3z+1)/2$ such even $j$. If $3^{j+1}>z$, the term is $2\cdot3^{-j-1}$, and summing over these even $j$ gives less than $\tfrac94\cdot\frac1z$. Thus $\rho(z)<(\log z/\log3+1+\tfrac94)/z\le(\log z+5)/z$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Let $A$ be triple-free, $N\ge1$, and for $m\in M$, $m\le N$, let $\Lambda=\Lambda_{N/m}$ and $D_m=D_m(A)$ as in \eqref{eq:fibre}. The set $T_m=\Lambda\setminus D_m$ meets every corner contained in $\Lambda$, for otherwise the three integers $m2^i3^j\cdot\{1,2,3\}$ of that corner would lie in $A$. By Lemma~\ref{lem:trunc},
+\[
+w(D_m\cap\Lambda)=w(\Lambda)-w(T_m)\le w(\Lambda)-\bigl(\tfrac34-\rho(N/m)\bigr).
+\]
+By Lemma~\ref{lem:grid}(a), every $n\le N$ is uniquely $m2^i3^j$ with $(i,j)\in\Lambda_{N/m}$, so
+\[
+L_A(N)=\sum_{\substack{m\le N\\ m\in M}}\frac1m\,w\bigl(D_m\cap\Lambda_{N/m}\bigr)\le\sum_{n\le N}\frac1n-\frac34\sum_{\substack{m\le N\\ \gcd(m,6)=1}}\frac1m+\sum_{m\le N}\frac{\rho(N/m)}m .
+\]
+We bound the three sums for integer $N$. This suffices, since $L_A(N)=L_A(\lfloor N\rfloor)$ and $\log N\ge\log\lfloor N\rfloor$. First, $\sum_{n\le N}1/n\le\log N+1$. Second, $\sum_{m\le N,\,(m,6)=1}1/m\ge\frac13\log N-0.54$. Indeed, $\frac1{6t+1}+\frac1{6t+5}\ge\frac2{6t+5}\ge\frac13\int_{6t+5}^{6t+11}\frac{du}u$, and summing over $0\le t\le T$ with $6T+5\le N<6T+11$ gives at least $\frac13\log\frac{N}{5}$; the case $N<5$ is immediate. Third, by Lemma~\ref{lem:rho} and $\log N!\ge N\log N-N$,
+\[
+\sum_{m\le N}\frac{\rho(N/m)}m\le\frac1N\sum_{m\le N}\Bigl(\log\frac Nm+5\Bigr)\le1+5=6 .
+\]
+Altogether $L_A(N)\le\log N+1-\frac34(\frac13\log N-0.54)+6\le\frac34\log N+8$, which is \eqref{eq:main}. Dividing by $\log N$ gives $\lup(A)\le\frac34$, and \eqref{eq:densities} gives the remaining inequalities.
+
+For $A^\ast$: since $v_3(3x)=v_3(x)+1$, the integers $x$ and $3x$ are never both in $A^\ast$. The set $\{n: v_3(n)=2t\}$ has density $9^{-t}(1-\frac13)$, and the tail $\{n:v_3(n)\ge 2T\}$ has upper density $9^{-T}$, so $A^\ast$ has density $\frac23\sum_{t\ge0}9^{-t}=\frac34$.
+\end{proof}
+
+\begin{remark}
+For $A^\ast$ one has $L_{A^\ast}(N)=\frac34\log N+0.6389\ldots+o(1)$ numerically (\S\ref{sec:verify}), so \eqref{eq:main} is sharp up to the additive constant.
+\end{remark}
+
+\subsection{General multipliers}
+\begin{proof}[Proof of Theorems~\ref{thm:pairs} and \ref{thm:several}]
+Let $a_1<\dots<a_r$ be pairwise coprime with $a_r\ge1+a_1+\dots+a_{r-1}$, and use the weights $w(e)=\prod_k a_k^{-e_k}$ on $\N_0^r$. Define $y(e)=w(e+\mathbf e_r)$ for $e_r$ even and $y(e)=0$ otherwise, as a weight on the corner $\{e,e+\mathbf e_1,\dots,e+\mathbf e_r\}$. A cell $u$ lies in the corners based at $u$ and at $u-\mathbf e_k$ for $1\le k\le r$. If $u_r$ is even, its load is at most $w(u)\bigl(1+\sum_{k<r}a_k\bigr)/a_r\le w(u)$, since $y(u-\mathbf e_r)=0$. If $u_r$ is odd, only the corner based at $u-\mathbf e_r$ contributes, with weight $w(u)$. Hence the argument of Theorem~\ref{thm:parity} applies, also in truncated form. The packing has total mass
+\[
+\prod_{k<r}\frac{a_k}{a_k-1}\sum_{t\ even}a_r^{-t-1}=\Bigl(\prod_{k<r}\frac{a_k}{a_k-1}\Bigr)\frac{a_r}{a_r^2-1},
+\]
+which is a fraction $1/(a_r+1)$ of the total mass. By Lemma~\ref{lem:grid}(c) the fibres are weighted by $\sum_{m\le y,\,m\in M}1/m=\prod_k(1-1/a_k)\log y+O(1)$. The proof of Theorem~\ref{thm:main} then goes through with $\frac34$ replaced by $1-\frac1{a_r+1}$. The truncation error is handled as in Lemma~\ref{lem:rho}: the omitted packing mass on fibres $\{e: \prod a_k^{e_k}\le z\}$ is $O_{a}((\log z)^{r-1}/z)$, whose weighted sum over $m\le N$ is $O(1)$. This gives an inequality $L_A(N)\le\frac{a_r}{a_r+1}\log N+C$.
+
+For the lower bound, $\nu_{a_r}(a_rx)=\nu_{a_r}(x)+1$, so $\{n:\nu_{a_r}(n)\ \text{even}\}$ never contains both $x$ and $a_rx$. Its density is $(1-\frac1{a_r})\sum_{t}a_r^{-2t}=\frac{a_r}{a_r+1}$. For $r=2$ the condition $b\ge a+1$ holds automatically.
+\end{proof}
+
+\section{Upper densities: proof of Theorem \ref{thm:upper}}\label{sec:upper}
+
+\subsection{Attainment}
+Trivially $A(N)\le F(N)$, so $\dup(A)\le\lambda$ for every triple-free $A$. The following construction is standard; compare \cite{Coleski}.
+
+\begin{proposition}\label{prop:block}
+There is a triple-free $B$ with $\dup(B)=\lambda$.
+\end{proposition}
+
+\begin{proof}
+Choose integers $N_1<N_2<\cdots$ with $N_{j}\ge j\,N_{j-1}$ and $F(N_j)/N_j\to\lambda$. Let $S_j\subseteq[1,N_j]$ be triple-free with $|S_j|=F(N_j)$, and put $B=\bigcup_j\bigl(S_j\cap(3N_{j-1},N_j]\bigr)$, where $N_0=0$. A triple $\{x,2x,3x\}$ spans a factor $3$. The blocks $(3N_{j-1},N_j]$ are separated by the empty gaps $(N_j,3N_j]$, so any triple contained in $B$ lies in a single block and hence in $S_j$; this is impossible. Finally $B(N_j)\ge F(N_j)-3N_{j-1}$, so $\dup(B)\ge\lim F(N_j)/N_j=\lambda$.
+\end{proof}
+
+\subsection{The coset lower bound}\label{subsec:coset}
+Let $d_1=1<d_2=2<d_3=3<d_4=4<d_5=6<\cdots$ be the $3$-smooth numbers, $d_k=2^{i_k}3^{j_k}$, and let $\Lambda_k=\{(i_1,j_1),\dots,(i_k,j_k)\}$ be the corresponding initial staircase. Put
+\[
+c_r(k)=|\Lambda_k\cap C_r|,\qquad m(k)=\min_r c_r(k),\qquad g(k)=k-m(k).
+\]
+
+\begin{proposition}\label{prop:cosetlower}
+\[
+\lambda\ \ge\ \lamc:=\frac13\sum_{k\ge1}\frac{g(k)-g(k-1)}{d_k}=0.80030913757154911813290181557705\ldots
+\]
+\end{proposition}
+
+\begin{proof}
+In the fibre of $m$, with $\gcd(m,6)=1$, the integers $\le N$ correspond to the staircase $\Lambda_{\psi(N/m)}$, where $\psi(x)=\#\{k:d_k\le x\}$. Removing the lightest coset leaves a corner-free set of size $g(\psi(N/m))$. Taking these sets in all fibres gives a triple-free subset of $[1,N]$, so $F(N)\ge\sum_{m\le N,\,(m,6)=1}g(\psi(N/m))$. Since $g(0)=0$ and $g(k)-g(k-1)\in\{0,1\}$,
+\begin{align*}
+\frac1N\sum_{\substack{m\le N\\(m,6)=1}}g(\psi(N/m))&=\frac1N\sum_{d_k\le N}\bigl(g(k)-g(k-1)\bigr)\,\#\{m\le N/d_k:(m,6)=1\}\\
+&=\sum_{d_k\le N}\frac{g(k)-g(k-1)}{3d_k}+O\Bigl(\frac{\psi(N)}N\Bigr),
+\end{align*}
+and $\psi(N)=O((\log N)^2)$. Letting $N\to\infty$ proves the inequality. The numerical value is obtained by summing over all $d_k\le10^{70}$; the tail is at most $\frac13\sum_{d_k>10^{70}}d_k^{-1}<10^{-68}$ (script S3).
+\end{proof}
+
+The same computation with $g$ replaced by the true staircase optimum $f(k)$ gives the formula of \cite{GSW77}:
+\begin{equation}\label{eq:GSW}
+\lambda=\frac13\sum_{k\ge1}\frac{f(k)-f(k-1)}{d_k}.
+\end{equation}
+Here $f(k)$ is the largest size of a corner-free subset of $\Lambda_k$. This relies on the decomposition into fibres, in which a set is triple-free if and only if each fibre is corner-free.
+
+\subsection{Certified enclosure}
+We computed $f(k)$ exactly for $1\le k\le400$ by integer programming, with optimality certified by the solver (script S8). The values agree with OEIS A057561/A004059 (Eberhard). Inserting them into \eqref{eq:GSW}, bounding $f(k)-f(k-1)$ by $0$ and by $1$ for $k>400$, and using $\sum_{d_k>d_{400}}d_k^{-1}<1.6\cdot10^{-9}$ gives
+\[
+0.8009657546\le\lambda\le0.8009657552 .
+\]
+With Eberhard's data for $k\le5000$ the same computation gives\[\lambda=0.80096575500655898909042032638808241\ldots,\]in agreement with OEIS A386439. This completes the proof of Theorem~\ref{thm:upper}.
+
+\section{The finite problem of Erd\H{o}s Problem \#168: the coset race}\label{sec:finite}
+
+Write $\tau(k)=k-f(k)$ for the minimum size of a transversal of the corners contained in $\Lambda_k$. By \eqref{eq:GSW},
+\begin{equation}\label{eq:lambda-tau}
+\lambda=1-\frac13\sum_{k\ge1}\frac{\tau(k)-\tau(k-1)}{d_k},
+\end{equation}
+so the irrationality question concerns the set of $k$ at which $\tau$ increases.
+
+\subsection{The coset bound}
+\begin{proposition}\label{prop:cosetbound}
+For every $k$, $\tau(k)\le m(k)$. Hence $\lambda\ge\lamc$.
+\end{proposition}
+\begin{proof}
+$\Lambda_k\cap C_r$ meets every corner contained in $\Lambda_k$. The consequence for $\lambda$ is Proposition~\ref{prop:cosetlower}.
+\end{proof}
+
+\subsection{The race identity}
+For $X\ge0$ let $\Lambda(X)=\{(i,j):i\log2+j\log3\le X\}$, let $c_r(X)$ be its coset counts, $B(X)=\lfloor X/\log3\rfloor$, and for $0\le j\le B$ let $R_j=\lfloor (X-j\log 3)/\log 2\rfloor$ be the last index of row $j$.
+
+\begin{proposition}[race identity]\label{prop:race}
+For each $r\in\Z/3\Z$ we have the identity of integers
+\[
+c_{r+1}(X)-c_r(X)=\#\{0\le j\le B:\ 2j\equiv r+1 \!\!\pmod 3\}-\#\{0\le j\le B:\ R_j+2j\equiv r\!\!\pmod 3\}.
+\]
+Moreover $R_j+2j=\lfloor X/\log 2+j\,\theta'\rfloor$ with $\theta'=2-\log_23=\log_2\frac43$. Thus the second count is a Birkhoff sum, over $B+1$ steps, of the $3$-interval coding of the circle rotation by $\alpha=\theta'/3=\frac13\log_2\frac43$ started at $X/(3\log 2)$.
+\end{proposition}
+
+\begin{proof}
+The shift $(i,j)\mapsto(i+1,j)$ maps $C_r\cap\Lambda(X-\log2)$ bijectively onto $C_{r+1}\cap\Lambda(X)\cap\{i\ge1\}$. Hence $c_{r+1}(X)=c_r(X-\log2)+\#\{j\le B:2j\equiv r+1\}$, the last term counting the cells of the column $i=0$ that lie in $C_{r+1}$. The cells of $\Lambda(X)\setminus\Lambda(X-\log2)$ are exactly the row ends $(R_j,j)$, $0\le j\le B$, so $c_r(X)-c_r(X-\log2)=\#\{j\le B:R_j+2j\equiv r\}$. Subtracting the two identities gives the formula. Finally $R_j=\lfloor X/\log2-j\log_23\rfloor$, and adding the integer $2j$ gives the floor expression.
+\end{proof}
+
+The identity was also checked directly at the first $20000$ thresholds (script S4). Since the interval length $1/3$ does not lie in $\Z\alpha+\Z$, Kesten's theorem \cite{Kesten} shows that Birkhoff sums of this coding are unbounded. We do not prove that this unboundedness persists along the particular starting points and lengths that occur here. Numerically the spread $\max_rc_r-\min_rc_r$ reaches $4$ at $X\approx320$ and then grows steadily: $5$ at $X\approx1622$, $10$ at $X\approx7008$, $19$ at $X\approx17133$ (script \texttt{race\_big.c}). This growth coincides with the partial quotient $71$ in
+\[
+\alpha=[0;7,4,2,1,1,1,2,71,3,1,168,2,3,5,5,3,3,6,\dots],
+\]
+which follows the convergent denominator $665$. Over a long range of rows the rotation is then nearly periodic with a nonzero drift per period, and the same coset stays in the lead.
+
+\subsection{Rigidity}
+\begin{lemma}[four-row rigidity]\label{lem:rigid}
+Let $n\ge4$ and $T\subseteq[0,n)\times[0,4)$ meet every corner $\Cor(i,j)$ with $0\le i\le n-2$, $0\le j\le2$ in exactly one cell. Then there is $r$ with
+\[
+T\cap\bigl([0,n-3]\times\{0,1\}\bigr)=C_r\cap\bigl([0,n-3]\times\{0,1\}\bigr).
+\]
+\end{lemma}
+
+\begin{proof}
+Write $x_i,y_i,z_i,u_i\in\{0,1\}$ for the indicators of $(i,0),(i,1),(i,2),(i,3)$. Exactly-once means $x_i+x_{i+1}+y_i=1$, $y_i+y_{i+1}+z_i=1$ and $z_i+z_{i+1}+u_i=1$ for $0\le i\le n-2$. The first gives $y_i=1-x_i-x_{i+1}$, so $x$ has no two adjacent ones on $[0,n-1]$. The second gives $z_i=x_i+2x_{i+1}+x_{i+2}-1\ge0$ for $i\le n-3$, so $x$ has no three consecutive zeros starting at $i\le n-3$. The third gives $z_i+z_{i+1}\le1$, that is $x_i+3x_{i+1}+3x_{i+2}+x_{i+3}\le3$, for $i\le n-4$.
+
+Let $p<q\le n-2$ be consecutive ones of $x$. Then $q-p\ne1$. Suppose $q=p+2$; then $p\le n-4$. If $p\ge1$, the third relation at $i=p-1\le n-4$ gives $x_{p-1}+3x_p+3x_{p+1}+x_{p+2}\ge3+1=4>3$. If $p=0$, the third relation at $i=0$ gives $x_0+3x_1+3x_2+x_3\ge1+3=4>3$. Both are contradictions. Suppose $q\ge p+4$; then $x_{p+1}=x_{p+2}=x_{p+3}=0$ and $p+1\le n-5$, contradicting the second relation at $i=p+1$. Hence consecutive ones of $x$ in $[0,n-2]$ are exactly $3$ apart. The second relation at $i=0$ puts a one in $\{0,1,2\}$. The same relation at $i=p+1$ shows that the last one $p$ in $[0,n-2]$ satisfies $p\ge n-4$, because otherwise $p+1,p+2,p+3\le n-2$ would all be zeros with $p+1\le n-3$. Therefore $x_i=[i\equiv s\pmod 3]$ for $0\le i\le n-2$ and some $s$. Then $y_i=1-x_i-x_{i+1}=[i\equiv s+1\pmod3]$ for $0\le i\le n-3$. Since $(i,0)\in C_s\iff i\equiv s$ and $(i,1)\in C_s\iff i\equiv s+1$, the claim holds with $r=s$.
+\end{proof}
+
+Exhaustive enumeration for $n\le7$ confirms the statement and shows that the range cannot be enlarged in general (script S5). The lemma says that a transversal with no doubly hit corners is a coset away from the top and right boundary. In a staircase all savings relative to a coset must therefore come from doubly hit corners and from cells near the boundary.
+
+\subsection{Computations}
+\begin{computation}\label{comp:structure}
+For every $1\le k\le400$ (independently, by our certified integer programs) and for every $1\le k\le5000$ (using the exact values of OEIS A004059 computed by Eberhard),
+\[
+\tau(k)\in\{m(k)-1,\ m(k)\}.
+\]
+Writing $\tau(k)=m(k)-\varepsilon(k)$, the statistics for $k\le5000$ are: $\varepsilon=1$ in $1058$ cases, all with spread $\le2$; and $\varepsilon=0$ in all $72$ cases with spread $\ge3$ (script S7).
+\end{computation}
+
+In the optimal transversals we inspected, the deviation from the lightest coset is confined to a few cells near the end of the bottom rows, the ``tip'' of the staircase. This is consistent with the speculation attributed to \cite{GSW77} on the problem page that an extremiser can be chosen to avoid a coset.
+
+\begin{conjecture}[coset rigidity]\label{conj:structure}
+For every $k$, $\tau(k)\in\{m(k)-1,m(k)\}$, and $\tau(k)=m(k)$ whenever the lightest coset of $\Lambda_k$ is lighter than the other two by at least $3$.
+\end{conjecture}
+
+Under Conjecture~\ref{conj:structure}, \eqref{eq:lambda-tau} and the coset bound give $\lambda-\lamc=\frac13\sum_k\frac{\varepsilon(k)-\varepsilon(k-1)}{d_k}$, numerically $6.566\cdot10^{-4}$.
+
+\subsection{What the irrationality of \texorpdfstring{$\lambda$}{lambda} would require}\label{subsec:barrier}
+Suppose that between thresholds $y<y'$ the minimum transversal increases exactly at the cells of a fixed coset $C_r$. This is what Conjecture~\ref{conj:structure} predicts on stretches where the spread stays $\ge3$. Then the rational number
+\[
+P=1-\frac13\Bigl(\sum_{d_k\le y}\frac{\tau(k)-\tau(k-1)}{d_k}+\sum_{d_k>y,\ (i_k,j_k)\in C_r}\frac1{d_k}\Bigr)
+\]
+has denominator dividing $3\cdot91\cdot 2^{\lfloor\log_2y\rfloor}3^{\lfloor\log_3y\rfloor}=O(y^2)$; the coset tails are rational with denominator $91$, for instance $\sum_{C_2}2^{-i}3^{-j}=69/91$. Its distance to $\lambda$ is at most $\frac13\sum_{d_k>y'}d_k^{-1}=O(\log y'/y')$. A Liouville-type argument would therefore give irrationality of $\lambda$ from three ingredients:
+\begin{enumerate}[label=(\alph*)]
+\item Conjecture~\ref{conj:structure}, or at least its second half;
+\item infinitely many stable stretches with $\log y'\ge(2+\eta)\log y$;
+\item non-vanishing of the residual tails $\lambda-P$.
+\end{enumerate}
+Requirement (b) is a statement about long excursions of Birkhoff sums of the rotation by $\alpha$. It would follow from infinitely many sufficiently large partial quotients of $\alpha$, a property that is not known for $\alpha$, just as it is not known for $\log_23$. The quadratic denominator $y^2$, which accounts for the threshold $2$ in (b), reflects the two primes. This shows how closely the irrationality part of Problem~\#168 is tied to the Diophantine nature of $\log 3/\log 2$. The density of infinite sets, by contrast, is decided by the parity certificate and does not see this rotation at all.
+
+\section{Verification record}\label{sec:verify}
+
+All computations use exact integer or rational arithmetic or certified integer programming (OR-Tools CP-SAT, optimality status). The script \texttt{verify\_all.py} (Appendix~\ref{app:code}) reproduces the following outputs:
+\begin{itemize}[leftmargin=2em]
+\item[S1] parity packing on a $40\times40$ box, for $(a,b)\in\{(2,3),(2,5),(3,4),(3,5),(4,5),(5,7)\}$: maximal load/weight ratio exactly $1$, box values converging to $\frac a{a-1}\frac b{b^2-1}$;
+\item[S2] the values $\tfrac34-Y(\Lambda_z)$ are $4.5\cdot10^{-3}$, $9.6\cdot10^{-6}$, $1.5\cdot10^{-8}$, $1.9\cdot10^{-11}$ for $z=10^3,10^6,10^9,10^{12}$, and $\max\rho(z)z/(\log z+5)=0.62\le1$ on a grid in $[1,10^9]$;
+\item[S3] $\lamc=0.8003091375715491181329018155770529\ldots$;
+\item[S4] race identity: no failure at the first $20000$ thresholds;
+\item[S5] four-row rigidity: no violation among all exactly-once transversals for $n=4,5,6$; the separate check \texttt{v6c.py} covers $n\le7$;
+\item[S6] lightest coset fractions of Table~\ref{tab:band};
+\item[S7] histogram of the pairs $(\varepsilon(k),\min(\text{spread},3))$ for $k\le5000$, namely $(0,0)\colon 299$, $(0,1)\colon 2449$, $(0,2)\colon 1122$, $(0,3)\colon 72$, $(1,0)\colon 585$, $(1,1)\colon 440$, $(1,2)\colon 33$; the partial sum \eqref{eq:GSW} over $k\le5000$ equals $0.8009657550065589890904203\ldots$;
+\item[S8] (\texttt{--heavy}) exact $f(k)$ for $k\le400$, every solve certified optimal, with increment set equal to that of A004059, and the enclosure $0.8009657546\le\lambda\le0.8009657552$.
+\end{itemize}
+The box optimisations of Table~\ref{tab:band} use \texttt{v5\_kappa.py} (rows away from the critical line, ILP and LP), \texttt{v5b\_boundary.py} (the line $a=2$, $2.6\le b\le3$) and \texttt{v5c.py} (the diagonal and the optimal pattern at $(2,2.9)$); every integer program there was solved to proven optimality. The spread growth uses \texttt{race\_big.c}, and the value $L_{A^\ast}(N)-\frac34\log N=0.6389\ldots$ for $N\le3\cdot10^6$ uses \texttt{v7\_constants.py}. These auxiliary scripts accompany the source and are short variants of the routines below.
+
+\appendix
+\section{The verification script}\label{app:code}
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+"""Reproduces every quantitative claim of the paper
+'Parity packings and the Erdos-Graham density problem for sets without {x,2x,3x}'.
+Usage: python3 verify_all.py [--heavy]    (--heavy adds the CP-SAT certifications; needs ortools)
+Optional input: b004059.txt (OEIS A004059 b-file, Eberhard) in the working directory for Section 6 statistics."""
+import sys, math, heapq, cmath, itertools, os
+from fractions import Fraction as Fr
+HEAVY = '--heavy' in sys.argv
+
+def smooth(n):
+    """first n 3-smooth numbers 2^i 3^j in increasing order, as (value,i,j)"""
+    h=[(1,0,0)]; seen={(0,0)}; out=[]
+    while len(out)<n:
+        v,i,j=heapq.heappop(h); out.append((v,i,j))
+        for (ii,jj) in ((i+1,j),(i,j+1)):
+            if (ii,jj) not in seen: seen.add((ii,jj)); heapq.heappush(h,(2**ii*3**jj,ii,jj))
+    return out
+
+# --- S1: parity packing (Theorem 1.6): exact feasibility and value on a 40x40 box ---------------
+def packing_check(a,b,I=40,J=40):
+    a=Fr(a); b=Fr(b); w=lambda i,j: a**(-i)*b**(-j)
+    y={(i,j):w(i,j+1) for i in range(I) for j in range(0,J,2)}
+    worst=max(sum(y.get(c,0) for c in ((i,j),(i-1,j),(i,j-1)))/w(i,j) for i in range(I-1) for j in range(J-2))
+    return worst, float(sum(y.values())), float(a/(a-1)*b/(b*b-1))
+print('S1 parity packing: (a,b) -> max load/weight, box value, closed form')
+for ab in [(2,3),(2,5),(3,4),(3,5),(4,5),(5,7)]:
+    wst,val,cf=packing_check(*ab); print('   ',ab, wst, '%.12f'%val, '%.12f'%cf)
+
+# --- S2: truncated packing value Y(z) and the bound rho(z)=3/4-Y(z) <= (log z+5)/z -------------
+def Y(z):
+    s=Fr(0); j=0
+    while 3**(j+1)<=z:
+        if j%2==0:
+            i=0
+            while 2**i*3**(j+1)<=z: s+=Fr(1,2**i*3**(j+1)); i+=1
+        j+=1
+    return s
+print('S2 Y(z):',[(z,'%.3e'%(0.75-float(Y(z)))) for z in (10**3,10**6,10**9,10**12)])
+z=1.0; worst=0.0
+while z<1e9:
+    worst=max(worst,(0.75-float(Y(z)))*z/(math.log(z)+5)); z*=1.05
+print('   max rho(z) z/(log z+5) on grid [1,1e9]: %.4f'%worst)
+
+# --- S3: coset lower bound lambda_coset (Proposition 5.2) to 40 digits ------------------------
+from decimal import Decimal, getcontext
+getcontext().prec=60
+X=10**70; cells=[]
+i=0
+while 2**i<=X:
+    v=2**i; j=0
+    while v<=X: cells.append((v,i,j)); v*=3; j+=1
+    i+=1
+cells.sort()
+cnt=[0,0,0]; m_prev=0; S=Decimal(0)
+for (v,i,j) in cells:
+    cnt[(i+2*j)%3]+=1; m=min(cnt)
+    if m==m_prev: S+=Decimal(1)/Decimal(v)
+    m_prev=m
+print('S3 lambda_coset = %s   (truncation error < 1e-68)'%(S/3))
+
+# --- S4: race identity (Proposition 6.2) at 20000 thresholds ----------------------------------
+sm=smooth(20000); cnt=[0,0,0]; rows={}; bad=0
+for (v,i,j) in sm:
+    cnt[(i+2*j)%3]+=1; rows[j]=i; B=max(rows)
+    for r in range(3):
+        L=sum(1 for t in range(B+1) if (2*t)%3==(r+1)%3)
+        Nn=sum(1 for t in range(B+1) if (rows[t]+2*t)%3==r)
+        bad+= (cnt[(r+1)%3]-cnt[r])!=(L-Nn)
+print('S4 race identity failures:',bad)
+
+# --- S5: four-row rigidity (Lemma 6.3), exhaustive for n<=6 ----------------------------------
+def rig(n):
+    cells=[(i,j) for i in range(n) for j in range(4)]; corners=[(i,j) for i in range(n-1) for j in range(3)]
+    tot=bad=0
+    for bits in itertools.product([0,1],repeat=len(cells)):
+        T={c for c,bb in zip(cells,bits) if bb}
+        if all(len({(i,j),(i+1,j),(i,j+1)}&T)==1 for (i,j) in corners):
+            tot+=1
+            bad+= not any(all(((i+2*j)%3==r)==((i,j) in T) for i in range(n-2) for j in range(2)) for r in range(3))
+    return tot,bad
+print('S5 rigidity (n, solutions, violations):',[(n,)+rig(n) for n in (4,5,6)])
+
+# --- S6: coset fractions in the weighted problem (Proposition 3.5, Table 1) ------------------
+def coset_fracs(a,b):
+    x=1/a;y=1/b;W=1/((1-x)*(1-y));w=cmath.exp(2j*math.pi/3)
+    return [ (sum(w**(-r*k)/((1-x*w**k)*(1-y*w**(2*k))) for k in range(3))/3/W).real for r in range(3)]
+print('S6 minimal coset fractions:',{ab:round(min(coset_fracs(*ab)),6) for ab in [(2,3),(2,2.5),(2,2),(3,3),(1.5,2),(3,3.5),(2,4)]})
+
+# --- S7: statistics from Eberhard's exact data (needs b004059.txt) ----------------------------
+if os.path.exists('b004059.txt'):
+    K=set(int(l.split()[1]) for l in open('b004059.txt') if l.strip() and not l.startswith('#'))
+    sm=smooth(5000); f=0; cnt=[0,0,0]; hist={}
+    for k,(v,i,j) in enumerate(sm,1):
+        cnt[(i+2*j)%3]+=1; f+= (k in K); m=min(cnt); eps=f-(k-m); sp=max(cnt)-m
+        hist[(eps,min(sp,3))]=hist.get((eps,min(sp,3)),0)+1
+    print('S7 (epsilon, min(spread,3)) histogram for k<=5000:',sorted(hist.items()))
+    from decimal import Decimal as D
+    part=sum(D(1)/D(sm[k-1][0]) for k in K)/3
+    print('   partial GSW sum (k<=5000):',part)
+
+# --- S8 (heavy): CP-SAT certification of f(k), k<=400, and the certified interval for lambda ---
+if HEAVY:
+    from ortools.sat.python import cp_model
+    sm=smooth(405)
+    def f_exact(k):
+        cells=[(i,j) for (v,i,j) in sm[:k]]; St=set(cells); md=cp_model.CpModel(); x={c:md.NewBoolVar('') for c in cells}
+        for (i,j) in cells:
+            if (i+1,j) in St and (i,j+1) in St: md.Add(x[(i,j)]+x[(i+1,j)]+x[(i,j+1)]<=2)
+        md.Maximize(sum(x.values())); s=cp_model.CpSolver(); s.parameters.num_workers=4
+        assert s.Solve(md)==cp_model.OPTIMAL; return round(s.ObjectiveValue())
+    fv=[0]+[f_exact(k) for k in range(1,401)]
+    lo=sum(Fr(1,sm[k-1][0]) for k in range(1,401) if fv[k]>fv[k-1])/3
+    Dk=sm[399][0]; tail=Fr(0)
+    for i in range(0,400):
+        j0=0
+        while 2**i*3**j0<=Dk: j0+=1
+        tail+=Fr(3,2)/(2**i*3**j0)
+    tail+=Fr(3,2**400)   # rows i>=400
+    print('S8 certified: %.12f <= lambda <= %.12f'%(float(lo),float(lo+tail/3)))
+    if os.path.exists('b004059.txt'):
+        K=set(int(l.split()[1]) for l in open('b004059.txt') if l.strip() and not l.startswith('#'))
+        print('   increment set of f equals A004059 for k<=400:',
+              {k for k in range(1,401) if fv[k]>fv[k-1]}=={k for k in K if k<=400})
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+
+\bibitem{Chapman} J.~Chapman, \emph{Partition regularity and multiplicatively syndetic sets}, Acta Arith. \textbf{196} (2020); arXiv:1902.01149, \S3 (Theorem 3.2, attributed to \cite{GSW77}).
+
+\bibitem{CEG02} F.~Chung, P.~Erd\H{o}s and R.~L.~Graham, \emph{On sparse sets hitting linear forms}, in: Number Theory for the Millennium I (Urbana, 2000), A~K~Peters, 2002, 257--272.
+
+\bibitem{Coleski} \texttt{coleski/erdos}, \emph{168: natural density versus upper density}, public repository (GitHub), proof, Lean files and prior-art review dated 15 September 2026.
+
+\bibitem{EG79} P.~Erd\H{o}s and R.~L.~Graham, \emph{Old and new problems and results in combinatorial number theory: van der Waerden's theorem and related topics}, Enseign. Math. (2) \textbf{25} (1979), 325--344; see p.~336.
+
+\bibitem{EP168} T.~F.~Bloom, \emph{Erd\H{o}s Problem \#168}, \url{https://www.erdosproblems.com/168}, accessed 11 November 2026.
+
+\bibitem{Finch} S.~R.~Finch, \emph{Triple-free sets of integers}, essay, 2002, \url{https://oeis.org/FinchTriple.html}.
+
+\bibitem{GSW77} R.~L.~Graham, J.~H.~Spencer and H.~S.~Witsenhausen, \emph{On extremal density theorems for linear forms}, in: Number Theory and Algebra (H.~Zassenhaus, ed.), Academic Press, 1977, 103--109.
+
+\bibitem{Kesten} H.~Kesten, \emph{On a conjecture of Erd\H{o}s and Sz\"usz related to uniform distribution mod 1}, Acta Arith. \textbf{12} (1966/67), 193--212.
+
+\bibitem{OEIS} The On-Line Encyclopedia of Integer Sequences, A004059, A057561, A094708, A386439 (data and programs by S.~Eberhard).
+
+\bibitem{Tenenbaum} G.~Tenenbaum, \emph{Introduction to Analytic and Probabilistic Number Theory}, 3rd ed., AMS, 2015.
+
+\bibitem{Ves26} N.~Veselinov, \emph{Extremal densities for forbidden configurations in $S$-smooth numbers}, arXiv:2604.15515 (2026).
+
+\end{thebibliography}
+
+\bigskip
+\noindent\small\emph{Provenance.} This note was developed with the assistance of an AI model (Claude, Anthropic) for the Verifiable Mathematical Reasoning Corpus; every quantitative claim is reproduced by the appended script. It has not been peer reviewed.
+
+\end{document}

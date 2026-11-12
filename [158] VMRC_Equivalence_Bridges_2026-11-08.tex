@@ -1,0 +1,2845 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[margin=21mm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,enumitem}
+\usepackage{xcolor,microtype,fancyhdr,listings}
+\usepackage{titlesec}
+\usepackage[colorlinks=true,linkcolor=blue!40!black,citecolor=blue!40!black,urlcolor=blue!45!black]{hyperref}
+\definecolor{inkblue}{RGB}{24,49,76}
+\definecolor{muted}{RGB}{86,99,111}
+\definecolor{codebg}{RGB}{247,248,250}
+\titleformat{\section}{\Large\bfseries\color{inkblue}}{\thesection}{0.7em}{}
+\titleformat{\subsection}{\large\bfseries\color{inkblue}}{\thesubsection}{0.7em}{}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\setlist{topsep=5pt,itemsep=3pt,parsep=0pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{muted}Equivalence bridges from the VMRC}
+\fancyhead[R]{\small\color{muted}8 November 2026}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,
+  keepspaces=true,breaklines=true,showstringspaces=false,
+  backgroundcolor=\color{codebg},frame=single,rulecolor=\color{gray!25},
+  xleftmargin=5pt,xrightmargin=5pt,aboveskip=8pt,belowskip=8pt,
+  keywordstyle=\color{blue!40!black},commentstyle=\color{green!25!black},
+  stringstyle=\color{red!35!black},upquote=true}
+\hypersetup{pdftitle={Equivalence Bridges from the 130-Manuscript Corpus},
+  pdfauthor={Prepared for Keio},
+  pdfsubject={Proofs, exact equivalences, arithmetic obstructions and a positivity boundary},
+  pdfkeywords={Bessel, algebraic independence, reciprocal sums, weighted binary expansions, Le Roy, complete monotonicity}}
+
+\begin{document}
+\begin{titlepage}
+\vspace*{13mm}
+{\small\sffamily\color{muted}RESEARCH SYNTHESIS\hfill 8 NOVEMBER 2026\par}
+\vspace{13mm}
+{\Huge\bfseries\color{inkblue}Equivalence Bridges\par}
+\vspace{3mm}
+{\LARGE\bfseries\color{inkblue}from the 130-Manuscript Corpus\par}
+\vspace{8mm}
+{\Large Explicit independence, arithmetic obstructions,\par
+and a positivity boundary\par}
+\vspace{9mm}
+{\large Prepared for Keio\par}
+\vspace{8mm}
+\hrule
+\vspace{7mm}
+\textbf{Abstract.}
+This note develops seven connections from selected arguments in the
+Verifiable Mathematical Reasoning Corpus. Its 28 numbered theorems and
+corollaries include a complete algebraic-relation criterion for
+logarithm-cancelled Bessel values; density-one independence under rational
+height; exact prime-power multiplicity and a unique height-eight
+minimizer; a quadratic weighted-binary denominator obstruction;
+a number-field extension of the translated reciprocal-tail method;
+geometric characterizations of universal integrability; and an exact
+contact description of a Le Roy complete-monotonicity boundary.
+
+Three representative conclusions are
+\[
+ \operatorname{trdeg}_{\mathcal F}\mathcal F(C\kappa)
+       =\operatorname{rank}_{\mathbb Q}C,
+ \qquad
+ \lambda^d\le d[K:\mathbb Q]+1,
+\]
+and the certified strict lower bound
+\[
+ \beta_c(1/3,2)>0.428292245841.
+\]
+Each statement is given with its hypotheses and proof. Exact finite
+checks and interval certificates accompany the analytic arguments.
+The count includes supporting corollaries and useful classical
+equivalences; it is not a claim to 28 independent discoveries or to
+28 newly solved conjectures. No historical priority or external
+peer-review certification is asserted.
+\vfill
+{\small\color{muted}
+Corpus snapshot: \texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}.\par
+All 130 manuscript files matched the snapshot's Git blob hashes.\par
+Mathematical review was targeted at the inputs used in this note.}
+\end{titlepage}
+\setcounter{page}{2}
+
+\tableofcontents
+\clearpage
+
+\section{Sources, results, and proof boundaries}
+\label{sec:overview}
+
+\subsection{Verified source scope}
+
+The source repository is the
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}{Verifiable Mathematical Reasoning Corpus}.
+Its \href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c30d40119134a59eda6fa5cc6331f27c8e67d034}{immutable snapshot}
+contains 130 numbered \texttt{.tex} manuscripts. On 8 November 2026,
+all 130 local file contents were compared with the current repository
+tree using Git's blob hash rule and matched. This checks source
+identity and coverage of the inventory; it does not verify every
+argument in all 130 manuscripts.
+
+The principal inputs inspected for this synthesis are the following.
+The bracketed numbers throughout the note refer to corpus manuscript
+numbers, while ordinary bibliography citations refer to external works.
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.09\linewidth}p{0.41\linewidth}p{0.43\linewidth}@{}}
+\toprule
+Source & Subject & Role here\\
+\midrule
+{[044]} & Euler--Gompertz and Bessel values & Joint E-function independence and affine logarithmic rank\\
+{[056]} & Square moduli and vanishing Erd\H{o}s sums & Congruence-constrained periodic coefficients\\
+{[080]} & Exponent window for Erd\H{o}s 265 & Positive multilinear tails\\
+{[086]} & Three nearby primes in Erd\H{o}s 700 & Lucas digit restrictions\\
+{[088]} & Integer-tail analytic attack & Perturbation classes and the P\'olya--Carlson bridge\\
+{[112]} & Period obstructions for weighted binary expansions & Multiplicative orders and valuations\\
+{[113], [114]} & Polynomial inverses and integration stability & Polynomial primitive towers and geometric obstructions\\
+{[116]} & Le Roy positivity beyond infinite divisibility & Inverse Mellin density and the strict positivity gap\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For Bessel values, Section~\ref{arb:input-audit} reconstructs the
+positive-scale joint-independence argument and states separately the
+stronger six-coordinate input from [044]. The linear-algebra and
+height deductions are then proved here. The discrete, norm, geometric,
+and positivity arguments below include the steps on which their new
+conclusions depend. Classical specialization, de Rham, moment, and
+natural-boundary theorems remain explicitly identified mathematical
+inputs, rather than being counted as new proofs.
+
+\subsection{Seven connections and their exact outputs}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.24\linewidth}p{0.07\linewidth}p{0.62\linewidth}@{}}
+\toprule
+Theme & Count & Main output\\
+\midrule
+Bessel independence & 5 & All polynomial relations among cancelled coordinates are exactly the row relations of a rational matrix; explicit infinite independent family and height bounds.\\
+Periodic harmonic sums & 5 & Exact attainable zero multiplicities, congruence iff tests, and a unique height-optimal period-64 example.\\
+Quadratic binary coding & 5 & Prime-cube denominator obstruction, finite period bounds, and recurrence/natural-boundary equivalences.\\
+Binomial gcd values & 1 & Exact four-value distribution, including all multiplicities, in the nearby-prime family.\\
+Translated reciprocal sums & 2 & Common number-field degree lower bounds, uniformly across the perturbation class of Erd\H{o}s 263.\\
+Algebraic integration & 3 & Obstruction dimension $2g+s-1$ and universal algebraic/elementary integrability criteria.\\
+Le Roy positivity & 7 & Largest-contact equivalence, strict finite Hankel hierarchy, certified numerical lower bound, and convex-order comparison.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Reading the count.}
+There are 28 theorem/corollary statements, in addition to auxiliary
+lemmas. For example, the six-way equivalence for binary sequences is
+a classical analytic consequence used to transfer the new quadratic
+denominator obstruction to recurrence theory. The universal integration
+criteria likewise make classical geometric machinery explicit.
+``Additional'' means an additional conclusion relative to the selected
+corpus passages, not a verified worldwide novelty claim.
+
+\textbf{Connections to open questions.}
+The number-field result covers the entire relative-perturbation class
+asked about in Erd\H{o}s 263, while leaving its singled-out rationality
+question unresolved. The Le Roy analysis characterizes the unknown
+true boundary without giving its closed form. The Bessel results
+give explicit independent combinations while preserving the distinction
+between combinations and individual raw second-kind values. The final
+section identifies the precise remaining steps, rather than treating
+an equivalence itself as a solution of its open endpoint.
+
+\textbf{Literature controls.}
+The CM--moment connection is already in Simon \cite{Simon2021}.
+E-function specialization is classical \cite{Beukers2006}.
+The unperturbed Mahler/Fermat reciprocal values have classical
+transcendence results \cite{Coons2011,AdamczewskiFaverjon2023};
+they are not the new perturbative conclusion here. Recent cumulant
+lifting results \cite{Zhu2026} also make it inappropriate to count a
+generic Bell/Hankel reformulation as a new conjecture resolution.
+
+
+% Arithmetic bridge fragment.  Self-contained except for the common theorem
+% environments and the standard packages listed by the parent agent.
+\providecommand{\arbQbar}{\overline{\mathbb Q}}
+\providecommand{\arbKexp}{K_{\mathrm{exp}}}
+\providecommand{\arbkap}{\kappa}
+
+\section{An exact algebraic-relation criterion for Bessel circuits}
+\label{arb:circuits}
+
+Put
+\[
+ k=\arbQbar,\qquad
+ \arbKexp=k(e^a:a\in k),\qquad
+ \arbkap(t)=\frac{K_0(t)}{I_0(t)}\quad(t>0),
+\]
+and let
+\[
+ \mathcal F=\arbKexp\bigl(I_0(t),I_1(t):
+                         t\in k\cap\mathbb R_{>0}\bigr).
+\]
+All assertions over these countably generated fields have their usual
+finite-subset meaning.  The harmonic Bessel coordinate is
+\[
+ \beta(t)=
+ \frac{\displaystyle\sum_{n\geq0}
+           H_n(t/2)^{2n}/(n!)^2}{I_0(t)},
+ \qquad H_0=0.
+\]
+The connection formula is
+\begin{equation}\label{arb:connection}
+ \beta(t)=\gamma+\log(t/2)+\arbkap(t).
+\end{equation}
+The positive-argument part of corpus [044, Theorem
+\texttt{cf:joint}] says that the entire family
+\(\{\beta(t):t\in k\cap\mathbb R_{>0}\}\) is algebraically
+independent over \(\mathcal F\).  We use this precise statement,
+not an inference from separate one-point transcendence results.
+A verification of the required functional argument is given below.
+
+\begin{theorem}[Complete relation ideal for cancelled coordinates]
+\label{arb:relation-ideal}
+Let \(t_1,\ldots,t_m\) be distinct positive algebraic numbers.
+Let \(C=(c_{ij})\in\mathbb Q^{s\times m}\) satisfy, for every row,
+\[
+ \sum_{j=1}^m c_{ij}=0,
+ \qquad \prod_{j=1}^m t_j^{c_{ij}}=1.
+\]
+Define
+\[
+ L_i=\sum_{j=1}^m c_{ij}\arbkap(t_j),\qquad 1\leq i\leq s.
+\]
+Then
+\begin{equation}\label{arb:rank-equivalence}
+ \operatorname{trdeg}_{\mathcal F}
+       \mathcal F(L_1,\ldots,L_s)=\operatorname{rank}_{\mathbb Q}C.
+\end{equation}
+More precisely, the kernel of evaluation
+\(\mathcal F[X_1,\ldots,X_s]\to\mathbb C\),
+\(X_i\mapsto L_i\), is the ideal generated by
+\[
+ \sum_i u_iX_i,\qquad u\in\mathbb Q^s,\quad u^{\mathsf T}C=0.
+\]
+In particular, the \(L_i\) are algebraically independent over
+\(\mathcal F\) if and only if the rows of \(C\) are linearly
+independent over \(\mathbb Q\).
+\end{theorem}
+
+\begin{proof}
+For positive arguments the multiplicative equation is equivalent to
+\(\sum_jc_{ij}\log t_j=0\).  Equation
+\eqref{arb:connection} therefore gives
+\(L_i=\sum_jc_{ij}\beta(t_j)\).
+The \(\beta(t_j)\) are algebraically independent over
+\(\mathcal F\), so they can be treated as indeterminates.
+Let \(r=\operatorname{rank}C\).  Rational row operations and an
+invertible rational change of coordinates on the indeterminates turn
+the map \(X\mapsto C\beta\) into
+\[
+ (X_1,\ldots,X_s)\longmapsto
+       (Y_1,\ldots,Y_r,0,\ldots,0).
+\]
+Its kernel is generated by \(X_{r+1},\ldots,X_s\).
+Undoing the changes of coordinates proves both assertions.
+\end{proof}
+
+This is a full algebraic-relation classification for the stated class
+of expressions.  It does not assert that an arbitrary combination
+of second-kind Bessel values satisfies the two cancellation conditions.
+For rational arguments the conditions are decidable by exact
+prime factorization: use the matrix whose columns are
+\((1,(v_p(t_j))_p)\).
+
+\begin{corollary}[A canonical explicit independent family]
+\label{arb:canonical}
+For every positive rational \(r\) other than \(1\) or a prime, put
+\begin{equation}\label{arb:Dr}
+ D_r=\arbkap(r)-\arbkap(1)
+       -\sum_{p}v_p(r)\bigl(\arbkap(p)-\arbkap(1)\bigr).
+\end{equation}
+The sum is finite.  The entire family
+\[
+ \{D_r:r\in\mathbb Q_{>0}\setminus(\{1\}\cup\{\text{primes}\})\}
+\]
+is algebraically independent over \(\mathcal F\).
+In particular every member is transcendental.  Any nonconstant
+rational function, with coefficients in \(\mathcal F\), of finitely
+many distinct members is transcendental over \(\mathcal F\).
+\end{corollary}
+
+\begin{proof}
+Unique prime factorization gives
+\(\log r=\sum_pv_p(r)\log p\), and the coefficients in
+\eqref{arb:Dr} sum to zero.  In any finite list of such rows,
+the column indexed by its non-anchor argument \(r\) has coefficient
+one in that row and zero in the others.  The rows are therefore
+independent.  Apply Theorem~\ref{arb:relation-ideal}.
+A rational function field is relatively algebraically closed over
+its coefficient field, which proves the last assertion.
+\end{proof}
+
+For example, the following four explicitly specified numbers are
+jointly algebraically independent, even over \(\mathcal F\):
+\begin{align*}
+ D_4&=\arbkap(4)+\arbkap(1)-2\arbkap(2),\\
+ D_6&=\arbkap(6)+\arbkap(1)-\arbkap(2)-\arbkap(3),\\
+ D_9&=\arbkap(9)+\arbkap(1)-2\arbkap(3),\\
+ D_{1/2}&=\arbkap(1/2)+\arbkap(2)-2\arbkap(1).
+\end{align*}
+For illustration,
+\[
+ (D_4,D_6,D_9)\approx
+ (0.2336077763,\ 0.2754838101,\ 0.3183102998).
+\]
+These numerical values play no role in the proof.
+
+\subsection{Verification of the independence input used here}
+\label{arb:input-audit}
+
+Here is a short reconstruction of the positive-scale input of [044].
+It explains why the argument requires joint independence and why
+rationally dependent scales such as \(1,2,4\) cause no difficulty.
+For a fixed nonzero algebraic scale \(t\), write
+\[
+ f_t(z)=I_0(tz),\qquad
+ y_t(z)=\sum_{n\geq0}\frac{H_n(tz/2)^{2n}}{(n!)^2}.
+\]
+Then
+\[
+ f_t''+z^{-1}f_t'-t^2f_t=0,
+ \qquad y_t''+z^{-1}y_t'-t^2y_t=2f_t'/z,
+\]
+and \(g_t=y_t-f_t\log z\) is a second homogeneous solution,
+with Wronskian
+\(f_tg_t'-f_t'g_t=-1/z\).
+
+The homogeneous equation has differential Galois group
+\(\mathrm{SL}_2\).  One can check the usual Bessel input directly:
+its logarithmic local solution gives nontrivial unipotent monodromy,
+and it is irreducible over \(\mathbb C(z)\).
+Indeed a rational logarithmic derivative \(r\) would satisfy
+\(r'+r^2+r/z-t^2=0\).
+At every nonzero finite pole its residue would be one, while it has
+no pole at zero.  At infinity it would have expansion
+\(r=\pm t-1/(2z)+O(z^{-2})\), contradicting the nonnegative integer
+sum of its finite residues.  The classification of algebraic
+subgroups of \(\mathrm{SL}_2\), together with the unipotent element,
+then excludes every proper irreducible subgroup.
+
+For scales distinct modulo sign the joint group is the product
+\(\mathrm{SL}_2^m\).  If a subdirect product were smaller, two of
+its adjoint modules would become isomorphic after a finite algebraic
+base change.  Their exponential parts at infinity are respectively
+\(0,2t_i,-2t_i\) and \(0,2t_j,-2t_j\).
+An invertible formal intertwiner forces equality of these sets,
+and hence \(t_i=\pm t_j\), a contradiction.
+This is the argument in [044, Lemma \texttt{cf:product}].
+
+Adjoin any finite collection of exponential functions with algebraic
+exponents and \(\log z\).  Their Picard--Vessiot group is solvable,
+whereas \(\mathrm{SL}_2^m\) has no nontrivial solvable quotient.
+The groups therefore form a direct product.
+Since the full Bessel solution field is recovered from
+\(f_t,f_t',y_t\) after adjoining \(\log z\), dimension counting
+gives functional algebraic independence of these \(3m\) coordinates
+over the exponential field.
+All \(f_t,f_t',y_t,y_t'\) are E-functions in a first-order system
+whose only finite singularity is zero.  Ordinary-point
+Siegel--Shidlovskii specialization at \(z=1\) applies
+\cite{Beukers2006}.
+The identity
+\[
+ f_t'y_t-f_ty_t'=(1-f_t^2)/z
+\]
+recovers \(y_t'(1)\) from the other three values, since
+\(I_0(t)>0\) for positive \(t\).
+Lindemann--Weierstrass gives the expected dimension of the
+exponential value field.  Thus the \(3m\) values are jointly
+independent over each finite exponential coefficient field.
+Passing to \(I_0,I_1,\beta\) is birational.  Every proposed relation
+over \(\mathcal F\) uses only finitely many additional scales and
+exponentials, so the same argument proves the claimed infinite-base
+independence.  The specialization input is classical; the scaled
+product argument is explicitly checked here and in [044].
+
+\section{From integer arguments to rational height and number fields}
+\label{arb:height}
+
+For a finite set \(T=\{t_1,\ldots,t_m\}\) of distinct positive
+algebraic numbers, define
+\[
+ W_T=\{c\in\mathbb Q^m:
+             \sum_jc_j=0,\ \sum_jc_j\log t_j=0\},
+ \qquad d_T=m-\dim_{\mathbb Q}W_T.
+\]
+Theorem~\ref{arb:relation-ideal} gives \(m-d_T\) independent
+linear combinations of \(\arbkap(t_j)\) over \(\mathcal F\).
+Consequently
+\begin{equation}\label{arb:Krank}
+ \operatorname{trdeg}_{\arbKexp}
+    \arbKexp(K_0(t):t\in T)\geq |T|-d_T.
+\end{equation}
+This is the affine-rank theorem in [044, Theorem \texttt{kd:rank}],
+now with an exact relation-ideal formulation for its cancelled outputs.
+
+The stronger six-coordinate input of [044, Theorem
+\texttt{jden:rank}] concerns
+\begin{align*}
+ Z_\lambda={}&\bigl(E_1^{\rm tail}(\lambda),
+ K_0(2\lambda),K_1(2\lambda),
+ \pi Y_0(2\lambda),\pi Y_1(2\lambda),\mathcal L(\lambda)\bigr),\\
+ E_1^{\rm tail}(\lambda)={}&
+     \int_\lambda^\infty e^{-u}\,du/u,\\
+ \mathcal L(\lambda)={}&
+     \sum_{n\geq1}\frac{(-1)^{n-1}\lambda^n}{n(n!)^2}
+          -\gamma-\log\lambda.
+\end{align*}
+It states
+\begin{equation}\label{arb:six-input}
+ \operatorname{trdeg}_{\arbKexp}
+   \arbKexp(Z_\lambda:\lambda\in T)\geq 6|T|-d_T.
+\end{equation}
+For clarity, this uses more than the positive-scale Bessel input:
+it also uses the ordinary-Bessel scales, the entire exponential
+integral, and the primitive nonexactness lemma
+\texttt{msprim:nonexact} in [044].  The latter reduces to the impossibility
+of a rational solution of
+\[
+ -b''+b'/z-b/z^2+t^2b=1/z.
+\]
+Nonzero finite poles are impossible.  At zero a nonpositive lowest
+Laurent exponent produces an uncancellable pole of order at least
+two; a positive lowest exponent produces no \(z^{-1}\) term.
+This verifies the critical rational obstruction in that source.
+The algebraic recovery in [044, \texttt{jden:rank}] uses eight
+independent E-function coordinates, two additional first-kind
+coordinates, and the common logarithmic family
+\(\gamma+\log\lambda\), of rank at most \(d_T\).
+Thus \(8|T|\leq \operatorname{trdeg}(Z_T)+2|T|+d_T\),
+which is \eqref{arb:six-input}.
+
+\begin{theorem}[Rational-height density and simultaneous independence]
+\label{arb:rationalheight}
+Let
+\[
+ \mathcal R_N=\{a/b:1\leq a,b\leq N,\ \gcd(a,b)=1\},
+ \qquad M_N=|\mathcal R_N|=2\sum_{n=1}^N\varphi(n)-1.
+\]
+Then
+\begin{align}
+ \operatorname{trdeg}_{\arbKexp}
+    \arbKexp(K_0(r):r\in\mathcal R_N)
+       &\geq M_N-\pi(N)-1,\label{arb:rationalK}\\
+ \operatorname{trdeg}_{\arbKexp}
+    \arbKexp(Z_{r/2}:r\in\mathcal R_N)
+       &\geq 6M_N-\pi(N)-1.\label{arb:rational6}
+\end{align}
+There is a single subset \(\mathcal S\subset\mathbb Q_{>0}\)
+with
+\[
+ |\mathcal S\cap\mathcal R_N|\geq M_N-\pi(N)-1
+ \qquad(N\geq1)
+\]
+such that all six coordinates of \(Z_{r/2}\), as
+\(r\) ranges over \(\mathcal S\), are jointly algebraically
+independent over \(\arbKexp\).
+At most \(\pi(N)+1\) arguments \(r\in\mathcal R_N\) can have
+any one of
+\[
+ E_1^{\rm tail}(r/2),\quad \mathcal L(r/2),\quad
+ K_j(r),\quad \pi Y_j(r)\quad(j\geq0)
+\]
+algebraic over \(\arbKexp\).
+\end{theorem}
+
+\begin{proof}
+The logarithms of the rationals in \(\mathcal R_N\) span exactly
+the rational space generated by \(\log p\) for primes \(p\leq N\).
+The augmented exponent vectors of \(1\) and of these primes are
+independent.  Hence \(d_{\mathcal R_N}=\pi(N)+1\).
+Common multiplication by \(1/2\) preserves affine logarithmic
+rank, so \eqref{arb:Krank} and \eqref{arb:six-input} give the two
+bounds.  The counting formula for \(M_N\) follows by counting the
+coprime pairs with \(a\leq b\), and then reflecting across the
+diagonal; only \((1,1)\) is on the diagonal.
+
+Enumerate positive rationals by nondecreasing \(\max(a,b)\), and
+process the six coordinates in each block in a fixed order.  Keep a
+coordinate exactly when it is transcendental over the field generated
+by the preceding kept coordinates and \(\arbKexp\).
+At the end of \(\mathcal R_N\), at most \(\pi(N)+1\) coordinates
+have been rejected by \eqref{arb:rational6}.  Delete every block
+containing a rejected coordinate.  At most the same number of blocks
+is deleted, and all remaining coordinates are jointly independent.
+
+For the final statement, let \(T\) be the set of bad arguments.
+The standard integer-order recurrences express every
+\(K_j(r)\), respectively \(\pi Y_j(r)\), as a nonzero
+algebraic linear form in the corresponding orders zero and one.
+Thus each bad block has a polynomial relation and transcendence
+degree at most five.  If \(m=|T|\), its total rank is at most
+\(5m\), whereas \eqref{arb:six-input} gives at least
+\(6m-d_T\).  Therefore \(m\leq d_T\leq\pi(N)+1\).
+\end{proof}
+
+The independent set is existential; this proof does not provide a
+membership test or identify an individual algebraic or transcendental
+raw second-kind value.  It does, however, give a much sparser
+exception proportion under rational height:
+\[
+ M_N=\frac{6}{\pi^2}N^2+O(N\log N),\qquad
+ \frac{\pi(N)+1}{M_N}=O\!\left(\frac1{N\log N}\right).
+\]
+For example,
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+\(N\)&\(M_N\)&block deletion bound&retained blocks&six-coordinate rank bound\\
+\midrule
+10&63&5&58&373\\
+100&6087&26&6061&36496\\
+1000&608383&169&608214&3650129\\
+\bottomrule
+\end{tabular}
+\end{center}
+The numerical table uses only exact totient and prime counts.
+
+\begin{corollary}[Stability under finitely many additional constants]
+\label{arb:base-extension}
+Let \(\mathcal B\supset\arbKexp\) be a subfield of \(\mathbb C\)
+with finite \(d=\operatorname{trdeg}_{\arbKexp}\mathcal B\).
+Every bound in Theorem~\ref{arb:rationalheight} remains valid over
+\(\mathcal B\) after adding \(d\) to its deletion or exception
+budget, or subtracting \(d\) from its rank bound.
+In particular, adjoining any fixed finite list of unresolved
+constants preserves the density-one conclusion.
+\end{corollary}
+
+\begin{proof}
+For any finite tuple \(x\),
+\[
+ \operatorname{trdeg}_{\mathcal B}\mathcal B(x)
+ \geq\operatorname{trdeg}_{\arbKexp}\arbKexp(x)-d.
+\]
+Apply this to the rank inequalities, then repeat the same greedy
+argument and bad-block count.  A list of \(d_0\) constants gives
+\(d\leq d_0\), irrespective of their presently unknown arithmetic
+natures.
+\end{proof}
+
+\begin{theorem}[Density one in a fixed real-embedded number field]
+\label{arb:numberfield}
+Let \(K\) be a number field of degree \(d_K\) with a fixed real
+embedding \(\sigma_0\), and let
+\(u_K=r_1+r_2-1\) be its unit rank.  Identify its elements with
+their images under \(\sigma_0\), and define
+\[
+ \mathcal A_X=\{\alpha\in\mathcal O_K:
+       \sigma_0(\alpha)>0,\ |\sigma(\alpha)|\leq X
+       \text{ for every embedding }\sigma:K\hookrightarrow\mathbb C\}.
+\]
+Put \(M_K(X)=|\mathcal A_X|\) and
+\[
+ B_K(X)=d_K\pi(X^{d_K})+u_K+1.
+\]
+Then
+\begin{align*}
+ \operatorname{trdeg}_{\arbKexp}
+  \arbKexp(K_0(\alpha):\alpha\in\mathcal A_X)
+    &\geq M_K(X)-B_K(X),\\
+ \operatorname{trdeg}_{\arbKexp}
+  \arbKexp(Z_{\alpha/2}:\alpha\in\mathcal A_X)
+    &\geq 6M_K(X)-B_K(X).
+\end{align*}
+There is a single set of retained arguments having at least
+\(M_K(X)-B_K(X)\) members in every \(\mathcal A_X\), on which
+all six coordinates are jointly independent.  The retained set has
+relative density one in these expanding regions.  The same conclusion
+survives a fixed finite-transcendence-degree coefficient extension.
+\end{theorem}
+
+\begin{proof}
+For \(\alpha\in\mathcal A_X\),
+\(0<|N_{K/\mathbb Q}(\alpha)|\leq X^{d_K}\).
+Every prime ideal dividing \((\alpha)\) lies over a rational prime
+at most \(X^{d_K}\).  There are at most
+\(d_K\pi(X^{d_K})\) such prime ideals.  The valuation map from
+the multiplicative group supported on these primes to the free
+abelian group on the primes has kernel \(\mathcal O_K^\times\).
+Consequently its rank is at most
+\(d_K\pi(X^{d_K})+u_K\).
+No assumption that the prime ideals are principal is needed.
+Thus \(d_{\mathcal A_X}\leq B_K(X)\), and the rank and greedy
+arguments apply exactly as before.
+
+The Minkowski embedding of \(\mathcal O_K\) is a lattice of
+covolume \(2^{-r_2}\sqrt{|\Delta_K|}\).  The region consists of a
+half-box in the real coordinates and disks in the complex
+coordinates.  Elementary lattice counting gives
+\[
+ M_K(X)=
+ \frac{2^{r_1+r_2-1}\pi^{r_2}}{\sqrt{|\Delta_K|}}X^{d_K}
+       +O_K(X^{d_K-1}).
+\]
+On the other hand \(B_K(X)=O_K(X^{d_K}/\log X)\).
+Their ratio tends to zero.  Finally use
+Corollary~\ref{arb:base-extension}.
+\end{proof}
+
+\section{Prime-power coefficient congruences and high-order harmonic zeros}
+\label{arb:primepowers}
+
+The congruence classification of corpus [056] concerns the existence
+of rational Okada vectors.  The following statements refine the
+prime-power construction by measuring the order of vanishing of the
+entire periodic Dirichlet series at \(s=1\).  Their scope is explicit:
+the first theorem classifies a separated divisor-layer family, and
+the second classifies functions constant on each gcd layer.  Neither
+is a classification of binary sign functions at arbitrary square
+moduli.
+
+Let \(\ell\) and \(p\) be primes with \(p\equiv1\pmod\ell\).
+Define the \(p\)-periodic integer function
+\[
+ u(0)=0,\qquad u(1)=2-p,\qquad
+ u(a)=1\quad(2\leq a\leq p-1).
+\]
+Its period sum is zero and all its nonzero-residue values are one
+modulo \(\ell\).  Furthermore
+\begin{equation}\label{arb:unonzero}
+ L(1,u)<0.
+\end{equation}
+Indeed, each length-\(p\) block is the sum of \(p-2\) positive
+reciprocals with denominators larger than the denominator of the
+negative term of magnitude \(p-2\).  Thus each block is strictly
+negative, and their sum converges.
+
+\begin{theorem}[Exact maximal zero order in separated prime-power layers]
+\label{arb:separated}
+Let \(e\geq1\).  For rational
+\(c_0,\ldots,c_{e-1}\in1+\ell\mathbb Z_{(\ell)}\), define the
+\(p^e\)-periodic function
+\[
+ f(n)=
+ \begin{cases}
+ c_tu(n/p^t),&v_p(n)=t<e,\\
+ 0,&p^e\mid n.
+ \end{cases}
+\]
+Then its period sum is zero, and
+\[
+ L(s,f)=C(p^{-s})L(s,u),\qquad
+ C(T)=\sum_{t=0}^{e-1}c_tT^t.
+\]
+The maximum possible order of vanishing at \(s=1\), as the
+\(c_t\) vary, is exactly
+\begin{equation}\label{arb:maxorder}
+             \ell^{v_\ell(e)}-1.
+\end{equation}
+For every integer \(r\geq1\), the following are equivalent:
+\begin{enumerate}
+\item At least one such \(f\) satisfies \(L^{(j)}(1,f)=0\) for
+      \(0\leq j<r\).
+\item \(\ell^{v_\ell(e)}\geq r+1\).
+\item \(\ell^{\lceil\log_\ell(r+1)\rceil}\) divides \(e\).
+\end{enumerate}
+The maximal order is attained with integer coefficients and exact
+fundamental period \(p^e\).
+\end{theorem}
+
+\begin{proof}
+The Dirichlet-series identity follows by partitioning the summation
+according to \(v_p(n)\).  Each divisor layer has zero mean because
+\(u\) has zero mean.  By \eqref{arb:unonzero}, the zero order is
+exactly the root multiplicity of \(C(T)\) at \(T=1/p\).
+
+Modulo \(\ell\), one has
+\(\overline C(T)=S_e(T)=1+T+\cdots+T^{e-1}\), and \(1/p\)
+reduces to one.  Write \(e=Dm\), where
+\(D=\ell^{v_\ell(e)}\) and \(\ell\nmid m\).
+In characteristic \(\ell\),
+\[
+ S_e(T)=\frac{(T^m-1)^D}{T-1}
+\]
+has a root of exact multiplicity \(D-1\) at one.
+Since \(p\) is an \(\ell\)-adic unit, any factor
+\((T-1/p)^r\) of \(C\) over the rationals can be divided out
+over \(\mathbb Z_{(\ell)}\); reduction therefore gives
+\(r\leq D-1\).
+
+Equality is attained by
+\begin{equation}\label{arb:attainer}
+ C(T)=(1-pT)^{D-1}\sum_{j=0}^{m-1}(pT)^{Dj}.
+\end{equation}
+Its reduction is
+\((1+T+\cdots+T^{D-1})\sum_{j=0}^{m-1}T^{Dj}=S_e(T)\),
+so every coefficient is one modulo \(\ell\).
+The second factor has value \(m\ne0\) at \(T=1/p\).
+This proves the exact order and the equivalences.
+No off-zero coefficient of \(f\) vanishes, since it is one
+modulo \(\ell\).  As \(p^e\) is a period and its zero set is
+exactly the multiples of \(p^e\), its fundamental period is
+\(p^e\).
+\end{proof}
+
+\begin{corollary}[Three logarithmic harmonic cancellations]
+\label{arb:81}
+There is an odd-integer-valued periodic function of exact period
+\(81\), zero exactly at multiples of \(81\), such that
+\[
+ \sum_{n\geq1}\frac{f(n)}n
+ =\sum_{n\geq1}\frac{f(n)\log n}n
+ =\sum_{n\geq1}\frac{f(n)(\log n)^2}n=0.
+\]
+One explicit choice is the construction above with \(p=3\),
+\(e=4\), \(u(1)=-1,u(2)=1\), and
+\[
+ (c_0,c_1,c_2,c_3)=(1,-9,27,-27).
+\]
+It satisfies
+\[
+ L(s,f)=-\bigl(1-3^{1-s}\bigr)^3L(s,\chi_{-3}),
+ \qquad
+ L'''(1,f)=-\frac{2\pi}{\sqrt3}(\log3)^3\ne0.
+\]
+More generally, for any prescribed \(r\), a suitable
+\(p^{2^k}\) supports an odd-integer-valued function whose first
+\(r\) logarithm-weighted harmonic sums vanish.
+\end{corollary}
+
+\begin{proof}
+Here \(u=-\chi_{-3}\), and \(C(T)=(1-3T)^3\).
+Use \(L(1,\chi_{-3})=\pi/(3\sqrt3)\) and differentiate the
+factor of exact order three.  For a zero-mean periodic function,
+the Dirichlet series and its derivatives converge in the half-plane
+\(\Re s>0\) after the usual partial summation; in particular the
+displayed logarithm-weighted series converge and equal the indicated
+derivatives up to the sign \((-1)^j\).
+Choose \(2^k-1\geq r\) for the last assertion.
+\end{proof}
+
+\begin{theorem}[Exact gcd-layer criterion for arbitrary congruence modulus]
+\label{arb:gcdlayers}
+Let \(p\) be prime, \(M\geq2\) with \(\gcd(p,M)=1\), and
+let \(R_M\) be the rational numbers with denominator coprime to
+\(M\).  Fix \(e\geq1\) and \(r\geq0\).
+There are coefficients \(c_0,\ldots,c_{e-1}\in1+MR_M\)
+for which the function
+\[
+ f(n)=c_{v_p(n)}\quad(v_p(n)<e),\qquad f(n)=0\quad(p^e\mid n)
+\]
+has zero mean and a zero of order at least \(r\) at \(s=1\)
+if and only if
+\begin{equation}\label{arb:hasse}
+ \sum_{t=j}^{e-1}\binom tj p^{-(t-j)}\equiv0\pmod{MR_M}
+                  \quad(0\leq j\leq r).
+\end{equation}
+An empty sum is zero, but if \(r\geq e-1\) the test with
+\(j=e-1\) is one and hence prevents existence.
+The coefficients can be chosen to be integers with the same
+congruences.
+\end{theorem}
+
+\begin{proof}
+For \(\Re s>1\),
+\[
+ L(s,f)=(1-p^{-s})\zeta(s)C(p^{-s}),
+ \qquad C(T)=\sum_{t=0}^{e-1}c_tT^t.
+\]
+The pole of \(\zeta\) has order one and the other Euler factor
+is nonzero at one.  Thus zero mean and zero order at least \(r\)
+are equivalent to divisibility of \(C\) by
+\((T-1/p)^{r+1}\).
+Because \(C\equiv S_e\pmod M\), this implies the vanishing
+of the first \(r+1\) Hasse derivatives of \(S_e\) at \(1/p\),
+which is precisely \eqref{arb:hasse}.
+
+Conversely subtract from \(S_e(T)\) its Taylor polynomial of
+degree \(r\) at \(1/p\).  Under \eqref{arb:hasse}, every
+coefficient of the Taylor polynomial being subtracted lies in \(MR_M\), so the resulting
+polynomial \(C\) is congruent to \(S_e\) and is divisible by
+\((T-1/p)^{r+1}\).
+Its coefficients have denominators prime to \(M\).
+Multiply by a common denominator chosen to be one modulo \(M\)
+to obtain integer coefficients, preserving the congruences and
+the zero order.
+\end{proof}
+
+\begin{corollary}[Closed form for prime congruence moduli]
+\label{arb:gcdprime}
+Take \(M=\ell\ne p\) prime and put
+\(a=\operatorname{ord}_\ell(p)\) and
+\(D=\ell^{v_\ell(e)}\).
+The largest root multiplicity at \(T=1/p\) attainable by a
+polynomial \(C\equiv S_e\pmod\ell\) is
+\[
+ \mu=
+ \begin{cases}
+ 0,&a\nmid e,\\
+ D,&a\mid e,\ a>1,\\
+ D-1,&a=1.
+ \end{cases}
+\]
+Accordingly, a convergent gcd-layer series exists exactly when
+\(\mu\geq1\), and its maximal zero order at one is
+\(\mu-1\).  In particular, for odd \(p\) and odd coefficients,
+the maximal order in this gcd-layer class is
+\(2^{v_2(e)}-2\), when a convergent series exists.
+\end{corollary}
+
+\begin{proof}
+In characteristic \(\ell\), write \(e=Dm\) with
+\(\ell\nmid m\), and factor
+\(T^e-1=(T^m-1)^D\).
+The point \(p^{-1}\) is a root precisely when \(a\mid e\).
+Its multiplicity in \(T^e-1\) is then \(D\), with one removed
+by division by \(T-1\) exactly when \(a=1\).
+For attainability, divide \(S_e\) in \(\mathbb F_\ell[T]\)
+by the maximal power of \(1-\overline pT\), lift the quotient
+to an integer polynomial, and multiply by \((1-pT)^\mu\).
+The lifted quotient is nonzero at \(1/p\), as its reduction is
+nonzero there.  Hence the multiplicity is exactly \(\mu\).
+\end{proof}
+
+\begin{corollary}[A height-optimal double zero at period 64]
+\label{arb:64-optimal}
+Define \(f(n)=c_{v_2(n)}\) when \(v_2(n)<6\), and zero when
+\(64\mid n\), using
+\[
+ (c_0,c_1,c_2,c_3,c_4,c_5)=(1,-5,7,-2,4,-8).
+\]
+All its off-zero values are one modulo three, its fundamental period
+is 64, and
+\[
+ L(s,f)=(1-2^{-3s})\zeta(s)(1-2^{1-s})^3.
+\]
+Consequently
+\[
+ L(1,f)=L'(1,f)=0,\qquad
+ L''(1,f)=\frac74(\log2)^3\ne0.
+\]
+Its height \(\max_n|f(n)|=8\) is the least possible among integer
+gcd-layer functions of period 64, congruent to one modulo three
+off zero, whose Dirichlet series vanishes to order at least two
+at one. The displayed coefficient vector is the unique minimizer in
+that class.
+\end{corollary}
+
+\begin{proof}
+The coefficient polynomial factors as
+\[
+ 1-5T+7T^2-2T^3+4T^4-8T^5
+     =(1-2T)^3(1+T+T^2).
+\]
+Use the identity in Theorem~\ref{arb:gcdlayers} and
+\((1-T)(1+T+T^2)=1-T^3\).
+The factor \(1-2^{1-s}\) has a simple zero with leading
+coefficient \(\log2\), while \(\zeta(s)\) has residue one.
+The coefficient of \((s-1)^2\) is therefore
+\((7/8)(\log2)^3\), giving the stated second derivative.
+
+For optimality, any competing integer polynomial of degree five
+must have the factor \((1-2T)^3\).
+That factor is primitive in \(\mathbb Z[T]\), so Gauss's lemma
+makes its quotient an integer polynomial.  Its leading coefficient
+\(c_5\) is a nonzero multiple of eight; it cannot be zero since
+\(c_5\equiv1\pmod3\).  The height is thus at least eight,
+and the displayed example attains it.
+
+For uniqueness at height eight, write
+\(C(T)=(1-2T)^3(A+BT+ET^2)\), where \(A,B,E\in\mathbb Z\).
+The conditions on \(c_5=-8E\) force \(E=1\).
+Then \(c_4=12-8B\), its height bound and its congruence force \(B=1\).
+Finally \(c_0=A\equiv1\pmod3\) and \(|c_3|=|6-8A|\le8\)
+force \(A=1\). This gives exactly the stated vector.
+\end{proof}
+
+These two prime-power theorems expose a genuine distinction.
+The nonconstant zero-mean layer seed in
+Theorem~\ref{arb:separated} removes the zeta pole before the
+coefficient polynomial is used.  Constant gcd layers must spend
+one additional root on that pole.  The factor-of-two discrepancy
+between an arbitrary odd Okada vector and a gcd-invariant one at
+small prime-power exponents is therefore an exact algebraic effect.
+The constructions have odd or prescribed-congruence coefficients,
+not coefficients restricted to \(\{\pm1\}\); they do not solve
+the remaining square-modulus sign problem.
+
+
+\section{Quadratic weighted binary expansions}
+\label{disc:quadratic}
+
+The valuation argument of corpus [112] concerns the weight $n$ in a
+binary expansion.  The following extension concerns the weight $n^2$.
+All valuation and representation arguments needed here are included.
+The analytic consequence uses the classical P\'olya--Carlson theorem,
+also used in corpus [088].
+
+For binary digits $\varepsilon_n\in\{0,1\}$, put
+\[
+ X_2(\varepsilon)=\sum_{n\ge1}\frac{n^2\varepsilon_n}{2^n}.
+\]
+For an odd prime $p$, write
+\[
+ t_p=\operatorname{ord}_p(2),\qquad
+ w_p=v_p(2^{t_p}-1)\ge1.
+\]
+
+\begin{theorem}[Exact quadratic denominator amplification]
+\label{disc:amplification}
+Suppose the digits of $X_2$ have a nonconstant periodic tail, beginning
+after position $N$, of least period $r$.  Let $d>1$ be the reduced
+denominator of the ordinary binary value of this periodic tail, and let
+$Q$ be the odd part of the reduced denominator of $X_2$.  If $p\mid d$
+and
+\[
+ a=v_p(d)>b=v_p(r),
+\]
+then
+\[
+ \boxed{v_p(Q)=a+2w_p.}
+\]
+In particular, $Q$ is divisible by the cube of some odd prime.
+\end{theorem}
+
+\begin{proof}
+Write the periodic word as $e_1,\ldots,e_r$, and set
+\[
+ M=2^r-1,\quad
+ S=\sum_{i=1}^r e_i2^{r-i},\quad
+ T=\sum_{i=1}^r i e_i2^{r-i},\quad
+ U=\sum_{i=1}^r i^2 e_i2^{r-i}.
+\]
+Summing over the positions $i+kr$ gives the three tail values
+\begin{align*}
+ y&=\sum_{i\ge1}\frac{e_i}{2^i}=\frac{S}{M},\\
+ z&=\sum_{i\ge1}\frac{i e_i}{2^i}=\frac{T}{M}+\frac{rS}{M^2},\\
+ w&=\sum_{i\ge1}\frac{i^2e_i}{2^i}
+   =\frac{U}{M}+\frac{2rT}{M^2}
+      +\frac{r^2S(M+2)}{M^3}.
+\end{align*}
+Here the digits on the left are extended periodically.  The last
+formula follows from
+$\sum_{k\ge0}k^2q^k=q(1+q)/(1-q)^3$ with $q=2^{-r}$.
+The prefix contributes an integer $I$ after multiplication by $2^N$,
+so
+\begin{equation}\label{disc:prefix}
+ 2^NX_2=I+N^2y+2Nz+w.
+\end{equation}
+
+The ordinary radix-expansion theorem gives $r=\operatorname{ord}_d(2)$.
+Put $k=v_p(M)$.  The lifting formula at an odd prime gives
+$k=w_p+b$, while reduction of $S/M$ gives $v_p(S)=k-a$.
+Since $M+2$ is a $p$-adic unit, the last term in $w$ has exact valuation
+\[
+ 2b+(k-a)-3k=-a-2w_p.
+\]
+The middle term has valuation at least
+$b-2k=-b-2w_p$, and the first at least $-k=-b-w_p$.
+Both bounds are strictly larger because $a>b$.  Hence
+$v_p(w)=-a-2w_p$.  Similarly, the displayed formula for $z$ gives
+$v_p(z)=-a-w_p$, while $v_p(y)=-a$.  Thus no other term in
+\eqref{disc:prefix} can cancel the term of least valuation.  This proves
+the exact formula for $Q$.
+
+To obtain the final assertion, choose the largest prime $p\mid d$.
+For an odd prime $q$ and an integer $c\ge1$, the order formula is
+\[
+ \operatorname{ord}_{q^c}(2)
+ =t_q q^{\max(0,c-w_q)}.
+\]
+Taking the least common multiple of these orders over $q\mid d$ shows
+that $b=\max(0,a-w_p)<a$: a smaller prime $q<p$ contributes no factor
+$p$, because $t_q\mid q-1<p$.  The exact formula therefore gives
+$v_p(Q)=a+2w_p\ge3$.
+\end{proof}
+
+\begin{corollary}[Aperiodicity for cube-free odd denominators]
+\label{disc:cubefree}
+Every $x\in[0,6]$ has a representation
+\[
+ x=\sum_{n\ge1}\frac{n^2\varepsilon_n}{2^n},
+ \qquad \varepsilon_n\in\{0,1\}.
+\]
+If $x$ is rational and the odd part $Q>1$ of its reduced denominator
+is cube-free, then every such representation is aperiodic after every
+finite prefix.  This applies, for example, to both $1/3$ and $1/9$.
+The prime-cube obstruction is sharp: the periodic word $10$ gives
+\[
+ \sum_{k\ge0}\frac{(2k+1)^2}{2^{2k+1}}=\frac{82}{27}.
+\]
+\end{corollary}
+
+\begin{proof}
+Let $u_n=n^2/2^n$.  Its future tail is
+\[
+ T_n=\sum_{j>n}u_j=\frac{n^2+4n+6}{2^n},
+\]
+so $u_n\le T_n$ for every $n$ and the total sum is $6$.
+Given a remainder in $[0,u_n+T_n]$, choose the next digit so that the
+new remainder lies in $[0,T_n]$.  This is possible because
+$[0,T_n]\cup[u_n,u_n+T_n]=[0,u_n+T_n]$.  Since $T_n\to0$, the
+construction proves existence for every $x\in[0,6]$.
+
+A nonconstant periodic tail contradicts
+Theorem~\ref{disc:amplification}.  An eventually zero tail gives a
+dyadic rational, and an eventually one tail does too, by the formula
+for $T_n$.  Neither is possible when $Q>1$.  Finally, the word $10$
+has $r=2$, $M=3$, and $S=T=U=2$, so its quadratic weighted value is
+$2/3+8/9+40/27=82/27$.
+\end{proof}
+
+\begin{theorem}[Finite bound on all eventual periods]
+\label{disc:periodbound}
+For an odd positive integer $Q$, let $\mathcal P_Q^{(2)}$ be the
+smallest set of odd primes containing every $p$ with
+$v_p(Q)>2w_p$, and containing every odd prime divisor of $t_q$
+whenever it contains $q$.  This set is finite.  Define
+\[
+ e_p=\max\left\{0,\ v_p(Q)-2w_p,\
+       \max_{\substack{q\in\mathcal P_Q^{(2)}\\q>p}}v_p(t_q)\right\},
+ \qquad D_Q^{(2)}=\prod_{p\in\mathcal P_Q^{(2)}}p^{e_p},
+\]
+with empty maxima and products interpreted as $0$ and $1$.
+For every nonconstant eventual tail of a quadratic weighted binary
+representation with odd denominator $Q$, its ordinary binary
+denominator $d$ and least period $r$ satisfy
+\[
+ d\mid D_Q^{(2)},\qquad
+ r\mid\operatorname{ord}_{D_Q^{(2)}}(2).
+\]
+In particular, such a tail requires $D_Q^{(2)}>1$.
+\end{theorem}
+
+\begin{proof}
+Every newly added prime is smaller than its parent because
+$t_q\mid q-1$, proving finiteness.  Write $a_p=v_p(d)$ and
+$b_p=v_p(r)$.  If $a_p>b_p$, Theorem~\ref{disc:amplification}
+gives $a_p=v_p(Q)-2w_p$.  Otherwise $a_p\le b_p$, and the order
+formula in the preceding proof gives
+\[
+ b_p=\max\left\{\max(0,a_p-w_p),\
+          \max_{\substack{q\mid d\\q>p}}v_p(t_q)\right\}.
+\]
+Its first entry is strictly smaller than $a_p$.  Thus a larger
+$q\mid d$ satisfies $a_p\le v_p(t_q)$.  Process the prime factors
+of $d$ in decreasing order.  Each is either an initial seed with the
+stated exponent bound, or is introduced by an already processed
+larger prime and again has exponent at most $e_p$.  This proves
+$d\mid D_Q^{(2)}$.  Divisibility of multiplicative orders gives
+the assertion about $r$.
+\end{proof}
+
+This is a necessary period bound, not a sufficient condition for the
+existence of a periodic representation of a specified numerator.
+For $Q=27$, it gives $D_Q^{(2)}=3$ and $r\mid2$.
+For a fully finite example, trial division through $31$ proves that
+$1093$ is prime, and exact modular exponentiation gives
+\[
+\begin{array}{c|rrrr}
+m&364&182&52&28\\\hline
+2^m\bmod1093&1&1092&27&121.
+\end{array}
+\]
+Since the prime divisors of $364$ are $2,7,13$, these congruences
+prove $\operatorname{ord}_{1093}(2)=364$.  Also
+\[
+2^{364}\equiv1\pmod{1093^2},\qquad
+2^{364}\equiv1064432260\not\equiv1\pmod{1093^3},
+\]
+so $w_{1093}=2$.  These are the finite checks recorded in [112]; the
+two prime-power congruences were recomputed for this manuscript.
+They give $D_{1093^4}^{(2)}=1$.
+Thus every quadratic weighted binary representation of
+$1/1093^4$ is aperiodic.  This is a consequence for one explicitly
+checked prime, and makes no assertion about the infinitude of
+Wieferich primes.
+
+\begin{corollary}[Rational derivative data and a natural boundary]
+\label{disc:naturalboundary}
+For binary digits define
+\[
+ Y=\sum_{n\ge1}\frac{\varepsilon_n}{2^n},\qquad
+ F(z)=\sum_{n\ge1}\varepsilon_nz^n.
+\]
+The following conditions are equivalent: the digits are eventually
+periodic; $Y$ is rational; $F$ is a rational function.
+If $x$ satisfies Corollary~\ref{disc:cubefree}, then every quadratic
+weighted representation of $x$ therefore gives
+\[
+ Y\notin\mathbb Q,
+ \qquad F\text{ has the unit circle as a natural boundary},
+ \qquad
+ \left.\left(z\frac{d}{dz}\right)^2F(z)\right|_{z=1/2}
+ =x\in\mathbb Q.
+\]
+In particular, $F$ is transcendental over $\mathbb C(z)$.
+\end{corollary}
+
+\begin{proof}
+The equivalence between eventual periodicity and rationality of $Y$
+is the ordinary radix-expansion theorem.  Periodicity makes $F$
+rational by the geometric-series formula.  Conversely, a rational
+$F$ gives an eventual linear recurrence with constant rational
+coefficients.  A state consisting of sufficiently many consecutive
+digits determines the next digit.  There are only finitely many such
+binary states, so a repeated state forces eventual periodicity.
+
+For a nonperiodic sequence, infinitely many digits are one, and the
+integer-coefficient series $F$ has radius of convergence exactly one.
+The P\'olya--Carlson theorem \cite{Bell2023} says that such a series is either rational
+or has the unit circle as a natural boundary.  The rational case has
+been excluded.  An algebraic function has only finitely many possible
+singularities and branch points, so cannot have that natural boundary.
+The derivative identity follows by termwise differentiation strictly
+inside the circle of convergence.
+\end{proof}
+
+\begin{corollary}[An exact recurrence criterion for binary sequences]
+\label{disc:recurrencecriterion}
+For a binary sequence $\varepsilon_n$, the following six conditions
+are equivalent:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item the sequence is eventually periodic;
+\item $\sum_{n\ge1}\varepsilon_n2^{-n}$ is rational;
+\item $F(z)=\sum_{n\ge1}\varepsilon_nz^n$ is rational;
+\item $F(z)$ is algebraic over $\mathbb C(z)$;
+\item $F(z)$ is D-finite over $\mathbb C(z)$;
+\item the sequence is P-recursive: for some polynomials
+$P_0,\ldots,P_m\in\mathbb C[n]$, not all zero,
+\[
+ \sum_{j=0}^mP_j(n)\varepsilon_{n+j}=0
+\]
+for all sufficiently large $n$.
+\end{enumerate}
+Consequently every quadratic weighted representation in
+Corollary~\ref{disc:cubefree} fails all six conditions, including every
+nonzero polynomial-coefficient linear recurrence.
+\end{corollary}
+
+\begin{proof}
+The first three equivalences were proved in
+Corollary~\ref{disc:naturalboundary}.  A rational function is algebraic
+and D-finite.  An algebraic function cannot have a full circle as a
+natural boundary, since its possible branch points and singularities
+belong to a finite set.  A D-finite analytic germ satisfies a nonzero
+linear differential equation with polynomial coefficients, and can be
+continued along paths avoiding the finite zero set of its leading
+coefficient.  It therefore cannot have the unit circle as a natural
+boundary either.  The P\'olya--Carlson dichotomy in the preceding proof
+forces rationality in both cases.
+
+Finally, coefficient extraction converts a polynomial-coefficient
+differential equation into an eventual polynomial-coefficient recurrence,
+and summing such a recurrence converts it into a polynomial-coefficient
+differential equation with at most a polynomial inhomogeneous term.
+Applying sufficiently many derivatives removes that term.  This proves
+the equivalence of D-finiteness and P-recursiveness used here.
+\end{proof}
+
+A further standard consequence links this criterion to corpus [111]:
+no such digit generating function can be a diagonal of a rational
+function over $\mathbb Q$ in finitely many variables, since these
+diagonals are D-finite in characteristic zero.  This is a consequence
+of the classical diagonal theorem, not a separate conjecture resolution.
+
+\section{The complete binomial gcd distribution in a prime family}
+\label{disc:gcdsection}
+
+Corpus [086] proves a minimum-value criterion by examining the base-prime
+digits of three nearby primes.  Its increasing-gap half also yields the
+full distribution of the binomial gcd values.
+
+\begin{theorem}[Exact four-value histogram]
+\label{disc:histogram}
+Let $p<q<r$ be primes and put
+\[
+ a=q-p,\quad c=r-q,\quad b=a+c=r-p,\quad n=pqr.
+\]
+Suppose $2b^2<p$ and $c>a$.  Set
+\begin{align*}
+ A_p&=2(a+b+1)(ab+1)-2,\\
+ A_q&=2(c-a)(q-ac+1)-2,\\
+ A_r&=(r-b-c+1)(bc+1)-2.
+\end{align*}
+For $1\le k\le n-1$, the distribution is exactly
+\[
+\begin{array}{c|c}
+\gcd(n,\binom nk)&\text{number of indices}\\\hline
+qr&A_p\\
+pr&A_q\\
+pq&A_r\\
+n&n-1-A_p-A_q-A_r.
+\end{array}
+\]
+For $1<k\le n/2$, the first three counts are halved, and the last
+count is $(n-3-A_p-A_q-A_r)/2$.
+Furthermore, uniformly in this family, all but $O(pb^2)$ of the
+interior coefficients are divisible by the entire integer $n$.
+The exceptional proportion is $O(b^2/p^2)=O(1/p)$.
+\end{theorem}
+
+\begin{proof}
+We include the pair-exclusion argument from [086] so the arithmetic
+input is explicit.  By symmetry it is enough to consider
+$1\le k\le n/2$.  If two distinct primes $s,t\mid n$ fail to divide
+$\binom nk$, Lucas' lowest digit forces $k=stj$, where
+$1\le j\le(u-1)/2$ and $u$ is the remaining prime.  The necessary
+conditions are that $tj$ is digitwise at most $tu$ in base $s$, and
+$sj$ is digitwise at most $su$ in base $t$.
+The product expansions give
+\[
+ qr=(1,a+b,ab)_p,\qquad
+ pr=(1,c-a-1,q-ac)_q,\qquad
+ pq=(r-b-c,bc)_r.
+\]
+All displayed digits are in range under $2b^2<p$.
+We will use $a(a+b),b(a+b),c(b+c)<2b^2<p$.
+
+For the pair $\{p,q\}$, write
+$qj=(j+\lfloor aj/p\rfloor)p+(aj\bmod p)$.
+Since $j<(p+b)/2$ and $b+2a<p$, its middle digit is less than $p$.
+The middle-digit bound gives $j\le a+b$, hence $aj<p$.
+The last-digit bound now gives $aj\le ab$, so $j\le b$.
+In base $q$ we have $pj=(j-1)q+(q-aj)$.
+Its two digit bounds force respectively $j\le c-a$ and $j\ge c$,
+a contradiction.
+
+For the pair $\{p,r\}$, similarly
+$rj=(j+\lfloor bj/p\rfloor)p+(bj\bmod p)$ has two digits,
+since $j<(p+a)/2$ and $a+2b<p$.
+The middle-digit bound gives $j\le a+b$, so $bj<p$;
+the last-digit bound then yields $bj\le ab$ and $j\le a$.
+In base $r$, $pj=(j-1)r+(r-bj)$, and the last-digit bound requires
+$r\le b(j+c)\le b^2<p$, again impossible.
+
+For $\{q,r\}$, write
+$rj=(j+\lfloor cj/q\rfloor)q+(cj\bmod q)$.
+Here $j<p/2$ makes the middle digit less than $q$, so its bound gives
+$j\le c-a-1<c$.  Thus $cj<c^2<r$, and in base $r$,
+$qj=(j-1)r+(r-cj)$.  Its last-digit bound requires
+$r\le c(j+b)<c(b+c)<p$, the final contradiction.
+Therefore at least two primes divide every interior coefficient.
+
+For a prime $s$ and base-$s$ digits $n_j$ of $n$, Lucas' theorem gives
+\[
+ \#\{0\le k\le n:s\nmid\tbinom nk\}=\prod_j(n_j+1).
+\]
+Indeed each digit of $k$ can independently be chosen from $0$ to
+$n_j$.  Excluding $k=0,n$ subtracts two.  The product expansions
+give the base-prime digits
+\[
+ qr=(1,a+b,ab)_p,\qquad
+ pr=(1,c-a-1,q-ac)_q,\qquad
+ pq=(r-b-c,bc)_r.
+\]
+Every displayed digit is in range because $2b^2<p$.
+Multiplication by the corresponding missing prime appends a zero
+digit to obtain $n$.  The Lucas counts are therefore $A_p,A_q,A_r$.
+The three nondivisibility sets are disjoint by the first paragraph,
+so these are exactly the counts for gcd $n/p,n/q,n/r$; the remaining
+indices have gcd $n$.
+
+Since $n$ is odd, the symmetry $k\leftrightarrow n-k$ halves each
+interior count.  Excluding $k=1$ removes one only from the gcd-$n$
+count.  Finally the three explicit expressions are respectively
+$O(b^3)$, $O(pb)$, and $O(pb^2)$.  As $b<p$ and $n\ge p^3$, the
+claimed concentration estimates follow.
+\end{proof}
+
+For $p=101$, $q=103$, and $r=107$, the hypotheses hold because
+$2\cdot6^2=72<101$ and $4>2$.  Here $n=1,113,121$, and for
+$2\le k\le556,560$ the four counts are
+\[
+\begin{array}{r|r}
+\gcd(n,\binom nk)&\text{count}\\\hline
+10,403&1,224\\
+10,807&191\\
+11,021&116\\
+1,113,121&555,028.
+\end{array}
+\]
+They sum to $556,559$.  An independent computation using Legendre's
+factorial valuation formula checked every index in this interval.
+This histogram extends the conclusion of [086]; it does not classify
+arbitrary squarefree integers or settle the remaining asymptotic
+upper-bound question in Erd\H{o}s Problem 700.
+
+\section{Translated reciprocal sums in one number field}
+\label{disc:fieldsection}
+
+The rational multilinear-tail argument of corpus [080] admits a number
+field extension.  The new input is the norm of a nonzero algebraic
+integer; no sign assumption is imposed on its conjugates.
+
+\begin{theorem}[Growth versus common field degree]
+\label{disc:fielddegree}
+Let $a_1<a_2<\cdots$ be positive integers satisfying
+\begin{equation}\label{disc:taildomination}
+ \sup_n a_n\sum_{k\ge n}\frac1{a_k}<\infty.
+\end{equation}
+For rational $h$ avoiding all poles $-a_n$, write
+\[
+ S(h)=\sum_{n\ge1}\frac1{a_n+h}.
+\]
+Suppose that, for $d$ distinct rational numbers $h_1,\ldots,h_d$,
+all $S(h_i)$ belong to a number field $K$ of degree
+$D=[K:\mathbb Q]$.  Then
+\[
+ \boxed{\log a_n=O\bigl((dD+1)^{n/d}\bigr).}
+\]
+For integer shifts, after a finite truncation, there is a constant $C$
+such that
+\[
+ \sum_{j=0}^{d-1}\log a_{n+j}
+ \le dD\sum_{k<n}\log a_k+C.
+\]
+\end{theorem}
+
+\begin{proof}
+First take integer shifts $h_1<\cdots<h_d$, and discard finitely
+many terms so all denominators are positive. The resulting tail values
+are denoted by $S(h_i)$ again; each differs from its original value by
+a rational number and hence still belongs to $K$. Write
+\[
+ \alpha_k^{(i)}=a_k+h_i,\quad
+ \Pi_n^{(i)}=\prod_{k<n}\alpha_k^{(i)},\quad
+ R_n^{(i)}=S(h_i)-\sum_{k<n}\frac1{\alpha_k^{(i)}}.
+\]
+Choose a positive integer $Q$ for which every $QS(h_i)$ is an
+algebraic integer.  Then $Q\Pi_n^{(i)}R_n^{(i)}$ is an algebraic
+integer.  Define the strictly positive sum
+\[
+ O_n=\sum_{\substack{k_1,\ldots,k_d\ge n\\
+                    k_1,\ldots,k_d\ \mathrm{distinct}}}
+               \prod_{i=1}^d\frac1{\alpha_{k_i}^{(i)}}.
+\]
+
+For a block $B\subseteq\{1,\ldots,d\}$ put
+$c_{B,i}=\prod_{j\in B\setminus\{i\}}(h_j-h_i)^{-1}$.
+Partial fractions give
+\[
+ \prod_{i\in B}\frac1{x+h_i}
+   =\sum_{i\in B}\frac{c_{B,i}}{x+h_i}.
+\]
+For a set partition $\pi$, let
+$\mu(\pi)=\prod_{B\in\pi}(-1)^{|B|-1}(|B|-1)!$.
+M\"obius inversion on set partitions, followed by the displayed
+partial fractions, gives the exact identity
+\begin{equation}\label{disc:moebius}
+ O_n=\sum_{\pi}\mu(\pi)
+       \prod_{B\in\pi}\left(\sum_{i\in B}c_{B,i}R_n^{(i)}\right).
+\end{equation}
+The inversion removes precisely the tuples having repeated indices;
+all sums converge absolutely.
+
+Let $\Delta=\prod_{i<j}(h_j-h_i)>0$.  In an expanded term of
+\eqref{disc:moebius}, the representatives chosen from different blocks
+are distinct.  The denominator of the product of their $c_{B,i}$
+coefficients is a product over distinct unordered pairs and divides
+$\Delta$.  Consequently
+\[
+ Z_n=M_nO_n,\qquad
+ M_n=\Delta Q^d\prod_{i=1}^d\Pi_n^{(i)},
+\]
+is a nonzero algebraic integer.
+
+For every embedding $\sigma:K\longrightarrow\mathbb C$,
+\[
+ \sigma(R_n^{(i)})=
+ \sigma(S(h_i))-\sum_{k<n}\frac1{\alpha_k^{(i)}}
+\]
+is uniformly bounded in $n$.  Equation~\eqref{disc:moebius} therefore
+gives $|\sigma(O_n)|\le B$ for a fixed $B\ge1$, simultaneously
+for all embeddings and all $n$.  The norm of $Z_n$ is a nonzero
+rational integer.  At the distinguished real embedding $O_n>0$,
+and thus
+\[
+ 1\le\left|\operatorname{Norm}_{K/\mathbb Q}(Z_n)\right|
+   =M_n^DO_n\prod_{\sigma\ne\mathrm{id}}|\sigma(O_n)|
+   \le M_n^DB^{D-1}O_n.
+\]
+
+Put $P_n=\sum_{k<n}\log a_k$.  The convergence of $\sum1/a_k$
+implies that the partial products for every fixed shift differ from
+$\prod_{k<n}a_k$ by uniformly bounded positive factors.  Hence
+$M_n\le C_1e^{dP_n}$.  Symmetrization and then removal of the
+ordering restrictions on distinct indices give
+\[
+ O_n\le d!\prod_{j=0}^{d-1}
+             \left(\sum_{k\ge n+j}\frac1{a_k+h_1}\right)
+       \le C_2\prod_{j=0}^{d-1}a_{n+j}^{-1},
+\]
+where the last inequality is \eqref{disc:taildomination}.
+Combining the estimates and taking logarithms proves
+\[
+ P_{n+d}\le(dD+1)P_n+C.
+\]
+Iteration on each residue class modulo $d$ gives the required bound.
+
+For rational shifts take a common denominator $w$, write $h_i=u_i/w$,
+and replace $a_n$ by $b_n=wa_n$.  The translated sums become
+$S(h_i)/w\in K$, condition~\eqref{disc:taildomination} is unchanged,
+and $\log b_n=\log a_n+O(1)$.  The integer-shift result applies.
+\end{proof}
+
+\begin{corollary}[Finitely many translated values in each fixed field]
+\label{disc:fieldcount}
+Under \eqref{disc:taildomination}, suppose
+\[
+ \lambda=\limsup_{n\to\infty}(\log a_n)^{1/n}>1.
+\]
+If $d$ distinct translated values $S(h_i)$ lie in a number field of
+degree $D$, then
+\[
+ \lambda^d\le dD+1.
+\]
+Thus each fixed number field contains only finitely many values
+$S(h)$ at rational shifts avoiding the poles. If $1<\lambda<\infty$
+and $d$ selected values are all algebraic, then
+\[
+ \boxed{
+ [\mathbb Q(S(h_1),\ldots,S(h_d)):\mathbb Q]
+\ge\left\lceil\frac{\lambda^d-1}{d}\right\rceil.}
+\]
+If $\lambda=\infty$, every allowed rational-shift value $S(h)$ is
+transcendental.
+\end{corollary}
+
+\begin{proof}
+The growth bound of Theorem~\ref{disc:fielddegree} gives
+$\lambda\le(dD+1)^{1/d}$.  For fixed $D$, this fails for all
+sufficiently large $d$, proving finiteness.  Apply the same inequality
+to the field generated by the selected algebraic values.
+When $\lambda=\infty$, apply the theorem with $d=1$ to the number
+field generated by any putatively algebraic value; the resulting
+finite bound $\lambda\le D+1$ is impossible.
+\end{proof}
+
+The conclusion applies uniformly to every positive integer sequence
+with $a_n/2^{2^n}\to1$, the perturbation class in Erd\H{o}s
+Problem 263 \cite{Erdos263}. Indeed $a_{n+1}/a_n\to\infty$, so
+eventual monotonicity and the tail hypothesis follow after discarding
+a finite prefix, while $\log a_n=2^n\log2+o(1)$ gives $\lambda=2$.
+If all values at $d$ distinct rational shifts are algebraic, their
+compositum has degree at least $\lceil(2^d-1)/d\rceil$.
+For $d=5,10,16$ these lower bounds are $7,103,4096$, respectively.
+At most one allowed shift value belongs to $\mathbb Q$, and at most
+two belong to any specified quadratic field. In particular no three
+distinct rational shifts can all give values in the same quadratic
+field, for any sequence in this entire perturbation class.
+
+An explicit perturbed example is $a_n=2^{2^n}+n$. It has
+$a_{n+1}\ge3a_n$ and hence tail constant at most $3/2$.
+These are common-field restrictions; they do not determine the
+arithmetic nature of a specified $S(0)$ throughout this class or
+settle Erd\H{o}s Problems 263 or 265. We deliberately do not label
+the unperturbed Mahler/Fermat special values as newly unresolved:
+classical transcendence results already apply to important instances
+of those values \cite{Coons2011}.
+
+For comparison, $a_n=2^{n!}$ satisfies the tail hypothesis and has
+$\lambda=\infty$. Thus every number
+$\sum_{n\ge1}(2^{n!}+h)^{-1}$ at an allowed rational shift $h$ is
+transcendental. This is the classical rapid-growth mechanism; the
+fixed-field degree restriction above reaches the slower sequence
+$2^{2^n}$ where that one-variable conclusion does not follow.
+
+\paragraph{Checks.}
+Exact rational arithmetic verified the quadratic valuation identity
+in $4,330$ prime-valuation cases coming from primitive binary periods at
+most eight and prefix lengths from zero through four.  The binomial
+histogram example was independently verified at every relevant index
+using Legendre's formula, rather than the Lucas count used in the
+proof.  These checks supplement the all-index arguments above.
+
+
+\section{A geometric converse to polynomial primitive towers}
+\label{sec:geometry}
+
+\paragraph{Source and additional step.}
+Corpus [113] proves that polynomial covers possess algebraic primitive
+towers, and [114] organizes stability by homology and monodromy.  We
+extract a converse that does not need the representation-theoretic
+classification: universal integrability detects the genus and the
+number of points above infinity.  Its proof uses trace descent,
+approximation of finite jets, and the classical de Rham theorem for
+affine curves.  These are structural consequences of classical tools;
+no assertion of historical priority is made.
+
+Let $X$ be a smooth connected projective complex curve, let
+$x\in K=\mathbb C(X)$ be nonconstant, and let $S$ be the nonempty set
+of poles of $x$. Put $U=X\setminus S$, $A=\mathcal O(U)$, and
+$D=d/dx$. Write $g$ for the genus of $X$ and $s=|S|$.
+All assertions concern characteristic zero. An algebraic primitive is
+allowed initially in a finite algebraic extension of $K$; elementary
+primitives are allowed in elementary extensions with the same constants.
+
+\begin{lemma}[Trace descent and absence of new finite poles]
+\label{geom:trace}
+If $f\in K$ has an algebraic $n$th primitive, it has one in $K$.
+If $f\in A$ and $Dh=f$ for $h\in K$, then $h\in A$.
+\end{lemma}
+\begin{proof}
+For a finite extension $L/K$, the derivation extends uniquely and
+commutes with all $K$-embeddings. Consequently it commutes with trace.
+If $D^n h=f$, then $D^n(\operatorname{Tr}_{L/K}(h)/[L:K])=f$.
+For the second assertion, $dh=f\,dx$ has no pole on $U$. A pole of
+order $m>0$ of $h$ would give a pole of order $m+1$ of $dh$, which
+is impossible.
+\end{proof}
+
+\begin{theorem}[Exact dimension of the algebraic-integration obstruction]
+\label{geom:codim}
+Let
+\[
+ I_x=\{f\in A: f\text{ has an algebraic primitive with respect to }x\}.
+\]
+Then
+\[
+ \boxed{\quad \dim_{\mathbb C}(A/I_x)=2g+s-1.\quad}
+\]
+More precisely, $f\mapsto[f\,dx]$ induces an isomorphism
+$A/I_x\simeq H^1_{\mathrm{dR}}(U)$.
+\end{theorem}
+\begin{proof}
+Because $U$ is a smooth affine curve,
+$H^1_{\mathrm{dR}}(U)=\Omega^1_A/dA$. The kernel of the indicated map
+is $I_x$, by Lemma~\ref{geom:trace}.
+To prove surjectivity, take $\omega\in\Omega^1_A$.
+The zeros of $dx$ on $U$ form a finite set. At such a point $P$, choose
+a local parameter $z$ and put $m_P=\operatorname{ord}_P(dx)\ge1$.
+Choose a truncated Taylor primitive $h_P$ of $\omega$ through degree
+$m_P$, so that $\omega-dh_P$ vanishes to order at least $m_P$.
+The Chinese remainder theorem in $A$ supplies an $h\in A$ with
+$h-h_P\in\mathfrak m_P^{m_P+1}$ at every chosen point.
+Therefore $(\omega-dh)/dx$ has no pole anywhere on $U$, and equals
+some $f\in A$. Thus $[\omega]=[f\,dx]$.
+The classical algebraic de Rham comparison and the topology of a
+genus-$g$ surface with $s$ punctures give
+$\dim H^1_{\mathrm{dR}}(U)=2g+s-1$.
+\end{proof}
+
+\begin{theorem}[Universal algebraic stability characterizes polynomial covers]
+\label{geom:polynomial}
+The following statements are equivalent:
+\begin{enumerate}
+\item Every $f\in A$ has an algebraic primitive.
+\item Every $f\in A$ has a coherent infinite tower of algebraic primitives.
+\item $g=0$ and $s=1$.
+\item There is a coordinate $t$ with $K=\mathbb C(t)$ and
+      $x=P(t)$ for a nonconstant polynomial $P\in\mathbb C[t]$.
+\end{enumerate}
+In the affirmative case every tower can be chosen in $K$.
+\end{theorem}
+\begin{proof}
+The second assertion implies the first. Theorem~\ref{geom:codim}
+makes the first equivalent to $2g+s-1=0$, hence to $g=0,s=1$.
+A genus-zero smooth projective curve over $\mathbb C$ is the projective
+line. Choosing its unique point in $S$ as infinity gives
+$A=\mathbb C[t]$ and makes $x$ a polynomial in $t$; the converse is
+immediate. Finally, on a polynomial cover define
+\[
+ J_PQ(t)=\int_0^t P'(u)Q(u)\,du,\qquad Q\in\mathbb C[t].
+\]
+This is polynomial and $D(J_PQ)=Q$. Hence $J_P^nQ$ gives a coherent
+infinite tower for every $Q\in A$.
+\end{proof}
+
+\begin{theorem}[Universal elementary stability characterizes genus zero]
+\label{geom:elementary}
+The following are equivalent:
+\begin{enumerate}
+\item Every $f\in K$ has an elementary primitive with respect to $x$.
+\item Every $f\in K$ has elementary primitives of every order.
+\item $g=0$.
+\end{enumerate}
+When $g>0$, the $g$-dimensional space
+$\{\omega/dx:\omega\in H^0(X,\Omega_X^1)\}$ consists, except for zero,
+entirely of obstructions already at the first integration.
+\end{theorem}
+\begin{proof}
+If $g=0$, write $K=\mathbb C(t)$ and $x=R(t)$ with $R$ rational.
+For every $j\ge0$, the differential $x^j f\,dx$ is rational in $t$,
+and hence has an elementary primitive $H_j$ by partial fractions.
+For $n\ge1$, repeated integration by parts gives
+\[
+ F_n=\frac1{(n-1)!}\sum_{j=0}^{n-1}(-1)^j\binom{n-1}{j}
+                 x^{n-1-j}H_j,
+ \qquad D^nF_n=f.
+\]
+Using the same chosen primitives $H_j$ for all $n$ gives
+$DF_n=F_{n-1}$ for $n\ge2$ directly, so these form a coherent tower.
+
+Conversely, suppose $g>0$ and choose a nonzero holomorphic differential
+$\omega$. Put $f=\omega/dx\in K$. Liouville's theorem for integration
+of algebraic functions, followed by trace and norm from its finite
+algebraic extension, would express an elementary-integrable $\omega$ as
+\[
+ \omega=dh+\sum_{i=1}^r c_i\,du_i/u_i,
+ \qquad h\in K,\quad u_i\in K^*,\quad c_i\in\mathbb C.
+\]
+A pole of $h$ would produce a pole of order at least two in $dh$,
+which the logarithmic differentials cannot cancel. Thus $h$ is constant.
+The vanishing residues of $\omega$ then give
+$\sum_i c_i\operatorname{ord}_P(u_i)=0$ for all $P$.
+The finite matrix of these valuations has integer entries, so its
+complex kernel is generated by rational vectors. Multiplying a
+rational kernel vector by a common denominator yields integers $a_i$
+with $\operatorname{div}(\prod_i u_i^{a_i})=0$. The product is constant
+on $X$, and hence $\sum_i a_i\,du_i/u_i=0$. Every residue-free
+linear combination in the display is therefore zero, contrary to
+$\omega\ne0$. This proves both necessity and the last statement.
+\end{proof}
+
+\paragraph{An explicit elliptic obstruction.}
+For $y^2=x^3-x$, the smooth projective curve has genus one and one
+point above infinity. Therefore $A=\mathbb C[x,y]/(y^2-x^3+x)$ has
+exactly two independent one-step algebraic-integration obstructions.
+The identities
+\begin{align*}
+ d\bigl((3x^2-2)y\bigr)&=dx/y+(21/2)xy\,dx,\\
+ d(xy)&=x\,dx/y+(5/2)y\,dx
+\end{align*}
+give concrete representatives. Since $dx/y$ is a nonzero holomorphic
+differential, $xy$ has no elementary primitive. The classes of $dx/y$
+and $x\,dx/y$ are independent: if the
+second were a multiple of the first plus an exact differential, its
+primitive would have a unique simple pole at infinity, which is
+impossible on a genus-one curve by Riemann--Roch. Thus $xy$ and $y$
+represent the two independent algebraic obstructions. For
+$y^2=P(x)$ with $P$ squarefree of degree $d\ge2$, the dimension in
+Theorem~\ref{geom:codim} is $d-1$. This count is about first primitives;
+it must not be confused with the full repeated-integration
+classification of [114].
+
+\paragraph{What this connection establishes.}
+Universal integrability on an entire algebraic function ring or field
+is equivalent to a precise geometric condition. It does not prove
+elementary stability of arbitrary transcendental elementary inputs,
+and it does not certify the broader claims of corpus [119]--[121].
+
+
+\section{A positivity threshold, finite moment tests, and a martingale comparison}
+\label{spec:section}
+
+This section develops the inverse-Mellin argument of corpus manuscript
+[116].  The link between complete monotonicity and a Stieltjes moment
+sequence is already explicit in Simon's paper \cite[Section~3]{Simon2021}.
+The additional conclusions here concern the structure of the actual
+positivity boundary, its finite moment approximations, a parameter
+evolution equation, and a probabilistic comparison.  They do not provide
+a closed formula for that boundary.  The strict separation from the
+logarithmic infinite-divisibility boundary is the starting result of
+[116]; the analytic ingredients needed for it are included below.
+
+Fix throughout
+\[
+ \gamma>1,\qquad 0<\alpha<1/\gamma,\qquad \nu=1-\alpha\gamma\in(0,1).
+\]
+For \(\beta>0\), write
+\[
+ F_\beta(z)=\sum_{n=0}^{\infty}
+             \frac{z^n}{\Gamma(\beta+\alpha n)^\gamma},
+ \qquad
+ m_n(\beta)=\frac{n!\,\Gamma(\beta)^\gamma}
+                   {\Gamma(\beta+\alpha n)^\gamma}.
+\]
+The power series for \(F_\beta\) is entire.  Set
+\begin{equation}\label{spec:ID-boundary}
+ \beta_{\rm ID}=\max_{t>0}
+ \left[\alpha+\frac{\alpha}{t}
+  \log\!\left(\frac{\gamma(1-e^{-t})}{1-e^{-t/\alpha}}\right)\right].
+\end{equation}
+This is the threshold for the scalar inequality in Simon's conjecture,
+and is not the threshold for complete monotonicity.
+
+\subsection{Analytic preparation}
+
+For \(\beta\ge\alpha\) and \(\Re s>-1\), use the holomorphic logarithm
+of Gamma in the right half-plane to define
+\[
+ M_\beta(s)=\Gamma(1+s)\Gamma(\beta)^\gamma
+       \exp\{-\gamma\operatorname{Log}\Gamma(\beta+\alpha s)\}.
+\]
+The following real, initially signed, density is well defined:
+\begin{equation}\label{spec:q}
+ q_\beta(x)=\frac{1}{2\pi i x}
+       \int_{-i\infty}^{i\infty}M_\beta(s)x^{-s}\,ds,
+ \qquad x>0.
+\end{equation}
+
+\begin{lemma}[Uniform endpoint estimates]\label{spec:endpoints}
+The function \(q_\beta(x)\) is jointly real analytic in
+\(\beta>\alpha\) and \(x>0\).  It has total signed mass one and
+\begin{equation}\label{spec:mellin}
+ \int_0^\infty x^s q_\beta(x)\,dx=M_\beta(s),\qquad \Re s>-1.
+\end{equation}
+For every compact \(K\subset(\alpha,\infty)\), uniformly for \(\beta\in K\),
+\begin{align}
+ q_\beta(x)&=\frac{\Gamma(\beta)^\gamma}
+                   {\Gamma(\beta-\alpha)^\gamma}+O_K(x^\eta),
+                   &&x\downarrow0,\label{spec:zero-tail}\\
+ q_\beta(x)&=\frac{C_\beta}{x\sqrt{2\pi\nu}}
+           r^{\kappa_\beta+1/2}e^{-\nu r}(1+o_K(1)),
+                   &&x\to\infty,\label{spec:infty-tail}
+\end{align}
+where
+\[
+ \kappa_\beta=\frac{1+\gamma}{2}-\gamma\beta,
+ \qquad r=(\alpha^{\alpha\gamma}x)^{1/\nu},
+\]
+\[
+ C_\beta=(2\pi)^{(1-\gamma)/2}\Gamma(\beta)^\gamma
+                       \alpha^{\gamma(1/2-\beta)},
+\]
+where any \(0<\eta<\min(1,\min K/\alpha-1)\) is allowed.
+In particular, the densities are positive near both endpoints uniformly
+on \(K\), and their absolute values have every positive exponential moment.
+At \(\beta=\alpha\), the same Mellin identity holds, the upper-end estimate
+continues to hold, and \(q_\alpha(x)=O_\varepsilon(x^{-\varepsilon})\)
+as \(x\downarrow0\), for every \(\varepsilon>0\).
+\end{lemma}
+
+\begin{proof}
+Vertical Stirling estimates give a polynomial in \(|\Im s|\) times
+\(e^{-\pi\nu|\Im s|/2}\) on each permissible fixed vertical line.
+This proves absolute convergence, differentiation under the integral,
+and analyticity in the logarithmic variable \(\log x\); small complex
+neighborhoods of \(\beta\) have the same estimates.  Moving the contour
+to \(\Re s=-1-\eta\) crosses only the numerator pole at \(s=-1\) and
+gives \eqref{spec:zero-tail}.  When \(\beta=\alpha\), moving instead to
+\(\Re s=-1+\varepsilon\) gives the stated bound without crossing a pole.
+
+For completeness the uniform large-\(x\) step is as follows.  Stirling's
+formula on the right half-plane gives
+\[
+ M_\beta(s)=C_\beta s^{\kappa_\beta}
+ \exp\{\nu s(\log s-1)-\alpha\gamma s\log\alpha\}
+ (1+O_K(|s|^{-1})).
+\]
+Shift to \(\Re s=r\), where
+\(\log x+\alpha\gamma\log\alpha=\nu\log r\), and set
+\(s=r+i\sqrt r\,u\).  The normalized integrand tends to
+\(e^{-\nu u^2/2}\).  If \(v=u/\sqrt r\), its modulus is bounded by
+\[
+ D_K(1+v^2)^{\kappa_\beta/2}e^{\nu r H(v)},\qquad
+ H(v)=\tfrac12\log(1+v^2)-v\arctan v.
+\]
+The bounds \(H(v)\le-v^2/4\) for \(|v|\le1\) and
+\(H(v)\le H(1)-\pi(|v|-1)/4\) for \(|v|\ge1\) prove uniform
+dominated convergence on the central part and exponential negligibility
+of the outer part.  This proves \eqref{spec:infty-tail}.  These are the
+uniform saddle estimates used in [116], based on \cite[Section~5.11]{DLMF}.
+
+The endpoint bounds imply integrability of the signed density and of
+\(x^s q_\beta(x)\) for \(\Re s>-1\).  In the coordinate \(y=\log x\),
+Fourier inversion identifies the transform of \(e^yq_\beta(e^y)\)
+with \(M_\beta(iu)\).  Analytic continuation in \(s\) proves
+\eqref{spec:mellin}, including mass one at \(s=0\).
+Since \(1/\nu>1\), the upper tail also gives all positive exponential
+moments of \(|q_\beta|\).
+\end{proof}
+
+For \(\beta\ge\alpha\), absolute integration of the exponential series
+therefore gives
+\begin{equation}\label{spec:signed-laplace}
+ \int_0^\infty e^{zx}q_\beta(x)\,dx
+       =\Gamma(\beta)^\gamma F_\beta(z),\qquad z\in\mathbb C.
+\end{equation}
+Bernstein's theorem and uniqueness of Laplace transforms of finite
+signed measures imply the exact equivalence
+\begin{equation}\label{spec:CM-positive}
+ F_\beta(-x)\text{ is completely monotone}
+ \quad\Longleftrightarrow\quad q_\beta(x)\ge0\quad(x>0).
+\end{equation}
+
+\subsection{A parameter coupling and a single positivity boundary}
+
+\begin{lemma}[Beta factors]\label{spec:beta-factor}
+For every \(\beta,\delta>0\), there is a random variable
+\(Z_{\beta,\delta}\) with \(0<Z_{\beta,\delta}<1\) such that
+\begin{equation}\label{spec:Z-mellin}
+ \mathbb E Z_{\beta,\delta}^{\,s}
+ =\left[
+   \frac{\Gamma(\beta+\delta)\Gamma(\beta+\alpha s)}
+        {\Gamma(\beta)\Gamma(\beta+\delta+\alpha s)}
+   \right]^\gamma,\qquad \Re s\ge0.
+\end{equation}
+Consequently the complete-monotonicity property, once true at \(\beta\),
+is true at every larger parameter.  When both parameters belong to
+the positive-density region, they can be coupled by
+\begin{equation}\label{spec:coupling}
+ X_{\beta+\delta}\overset{d}=X_\beta Z_{\beta,\delta},
+ \qquad X_\beta\ \hbox{independent of }Z_{\beta,\delta}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The logarithm of the right side of \eqref{spec:Z-mellin} is
+\[
+ \gamma\int_0^\infty (e^{-\alpha st}-1)
+ \frac{e^{-\beta t}(1-e^{-\delta t})}{t(1-e^{-t})}\,dt.
+\]
+Its positive kernel is a subordinator Levy measure: near zero it is
+\(\gamma\delta/t+O(1)\), and it decays exponentially at infinity.
+Exponentiating the negative of that finite-valued subordinator defines
+\(Z\).  Equivalently, it is the multiplicative convolution power
+\(\gamma\) of \(B^\alpha\), where \(B\) has the beta law
+\(\operatorname{Beta}(\beta,\delta)\).  Its law has no atom at one.
+The gamma-ratio identity gives
+\(m_n(\beta+\delta)=m_n(\beta)\mathbb E Z^n\).
+
+If complete monotonicity holds at \(\beta\), Bernstein's law has
+moments \(m_n(\beta)\).  The product with an independent \(Z\) has
+moments \(m_n(\beta+\delta)\).  The entire series for \(F_{\beta+\delta}\)
+shows by monotone convergence that this product has all positive
+exponential moments and moment generating function
+\(\Gamma(\beta+\delta)^\gamma F_{\beta+\delta}\).  Thus its Laplace
+transform proves complete monotonicity at \(\beta+\delta\).
+Moment or Laplace-transform uniqueness also proves \eqref{spec:coupling}.
+\end{proof}
+
+\begin{theorem}[One true threshold, with strict interior positivity]
+\label{spec:threshold}
+There is a unique number \(\beta_c=\beta_c(\alpha,\gamma)\) such that
+\begin{equation}\label{spec:threshold-range}
+ \alpha<\beta_c<\beta_{\rm ID}<\frac{\alpha(1+\gamma)}2,
+\end{equation}
+and
+\[
+ F_\beta(-x)\text{ is completely monotone}
+       \quad\Longleftrightarrow\quad \beta\in[\beta_c,\infty).
+\]
+The density is strictly positive at every \(x>0\) whenever
+\(\beta>\beta_c\).  At \(\beta_c\) it is nonnegative and has a
+nonempty finite set of zeros in \((0,\infty)\); all these zeros
+have finite even order.
+\end{theorem}
+
+\begin{proof}
+At \(\beta=\alpha\), if \(q_\alpha\) were nonnegative, then
+\eqref{spec:mellin} and Fatou's lemma would give
+\[
+ 0<\int_0^\infty x^{-1}q_\alpha(x)\,dx
+ \le\liminf_{s\downarrow-1}M_\alpha(s)=0,
+\]
+because \(M_\alpha(s)\) is a positive constant times
+\((1+s)^{\gamma-1}(1+o(1))\).  The left integral is allowed to be
+infinite, and is strictly positive since the mass is one.  Hence
+complete monotonicity fails at \(\alpha\).  By the beta-factor lemma
+it also fails below \(\alpha\).
+
+We recall why the upper endpoint in \eqref{spec:threshold-range} lies
+strictly above some positive-density parameters.  Put
+\[
+ \phi_\beta(t)=\frac{e^{-t}}{1-e^{-t}}
+       -\gamma\frac{e^{-\beta t/\alpha}}{1-e^{-t/\alpha}}.
+\]
+The condition \(\phi_\beta\ge0\) is equivalent to
+\(\beta\ge\beta_{\rm ID}\).  The maximand in
+\eqref{spec:ID-boundary} tends to \(-\infty\) at zero and to
+\(\alpha\) from above at infinity; its maximum is attained.
+It exceeds \(\alpha\).  At \(\beta_U=\alpha(1+\gamma)/2\),
+\[
+ \phi_{\beta_U}(t)>
+ \frac{e^{-t/2}}2\left[
+  \frac1{\sinh(t/2)}-\frac\gamma{\sinh(\gamma t/2)}\right]>0.
+\]
+The attained maximum is consequently smaller than \(\beta_U\).
+
+At \(\beta=\beta_{\rm ID}\), the logarithmic gamma identity
+\[
+ \log M_\beta(s)
+  =\bigl(\psi(1)-\alpha\gamma\psi(\beta)\bigr)s
+   +\int_0^\infty(e^{-st}-1+st)\phi_\beta(t)\,\frac{dt}{t}
+\]
+is a Levy--Khintchine representation.  Thus \(M_\beta(iu)\) is
+an infinitely divisible characteristic function with exponential
+Fourier decay.  A convolution square root has an analytic nonnegative
+density on the real line.  It is not identically zero, so its real
+zeros are isolated; its convolution with itself is strictly positive
+everywhere.  Fourier uniqueness then proves \(q_\beta(x)>0\) at all
+positive \(x\).  Lemma~\ref{spec:endpoints} supplies uniform positive
+tails in a compact parameter neighborhood.  The minimum on the
+remaining compact \(x\)-interval stays positive for all sufficiently
+nearby parameters.  This recovers the strict-gap argument of [116]:
+some entire interval below \(\beta_{\rm ID}\) is admissible.
+
+The admissible set is an upper set by Lemma~\ref{spec:beta-factor} and
+is closed in \((0,\infty)\), since every derivative of \(F_\beta(-x)\)
+depends continuously on \(\beta\).  It is therefore
+\([\beta_c,\infty)\), with \(\beta_c>\alpha\); otherwise closedness
+would make \(\alpha\) admissible.  The strict gap gives
+\(\beta_c<\beta_{\rm ID}\).
+
+To obtain strict positivity above the boundary, split the factor in
+\eqref{spec:Z-mellin} as \(Z=B^\alpha W\), where
+\(B\sim\operatorname{Beta}(\beta_c,\delta)\), and \(W>0\) is the
+independent multiplicative convolution power \(\gamma-1\).
+The density \(q_{\beta_c}\) is analytic and nonnegative, with mass
+one, so its zeros are isolated.  For every \(x>0\),
+\[
+ q_{\beta_c+\delta}(x)
+   =\mathbb E\bigl[Z^{-1}q_{\beta_c}(x/Z)\bigr]>0.
+\]
+Indeed, conditional on \(W\), the continuous beta variable avoids
+the discrete zero set with probability one.  The integrand is bounded
+for fixed \(x\) by the upper-tail estimate, so the formula is finite.
+
+If \(q_{\beta_c}\) had no zero, uniform positive tails and compactness
+would preserve positivity below \(\beta_c\), a contradiction.  All its
+zeros lie in a compact subinterval by Lemma~\ref{spec:endpoints};
+analyticity makes their number finite, and nonnegativity makes each
+order even with positive leading coefficient.
+\end{proof}
+
+\subsection{The boundary is crossed transversally in the parameter}
+
+\begin{theorem}[Evolution equation and local loss of positivity]
+\label{spec:contact}
+For \(\beta>\alpha\),
+\begin{equation}\label{spec:generator}
+ \partial_\beta q_\beta(x)
+ =\gamma\int_0^\infty\frac{e^{-\beta t}}{1-e^{-t}}
+       \bigl[e^{\alpha t}q_\beta(xe^{\alpha t})-q_\beta(x)\bigr]\,dt.
+\end{equation}
+At every zero \(x_*\) of \(q_{\beta_c}\),
+\[
+ q_{\beta_c}(x_*)=\partial_xq_{\beta_c}(x_*)=0,
+ \qquad b:=\partial_\beta q_{\beta_c}(x_*)>0.
+\]
+If this zero has order \(2m\), and
+\(a=\partial_x^{2m}q_{\beta_c}(x_*)/(2m)!>0\), then as
+\(\varepsilon\downarrow0\) a single negative interval is born near
+\(x_*\) for \(q_{\beta_c-\varepsilon}\).  Its two endpoints satisfy
+\begin{equation}\label{spec:splitting}
+ x_\pm(\varepsilon)
+  =x_*\pm(b/a)^{1/(2m)}\varepsilon^{1/(2m)}
+       +o(\varepsilon^{1/(2m)}).
+\end{equation}
+Its negative mass is
+\begin{equation}\label{spec:negative-mass}
+ \int_{x_-(\varepsilon)}^{x_+(\varepsilon)}
+       -q_{\beta_c-\varepsilon}(x)\,dx
+ =\frac{4m}{2m+1}\,b(b/a)^{1/(2m)}
+       \varepsilon^{1+1/(2m)}(1+o(1)).
+\end{equation}
+In particular, an ordinary quadratic contact has a square-root
+interval width and negative mass of order \(\varepsilon^{3/2}\).
+No assertion that all contacts are quadratic is needed.
+\end{theorem}
+
+\begin{proof}
+The digamma integral gives
+\[
+ \partial_\beta\log M_\beta(s)
+  =\gamma\int_0^\infty
+       \frac{e^{-\beta t}(e^{-\alpha st}-1)}{1-e^{-t}}\,dt.
+\]
+Mellin inversion gives \eqref{spec:generator}.  Interchanging integrals
+is justified near \(t=0\) by the cancellation in the brackets and
+integrability of \((1+|u|)|M_\beta(iu)|\); at infinity the exponential
+kernel suffices.  The resulting real-space integral is also absolutely
+convergent, by analyticity at small \(t\) and the upper tail at large
+\(t\).
+
+At a zero of the critical density the subtracted term vanishes.
+The remaining integrand is nonnegative and is positive except at a
+discrete set of \(t>0\).  It has positive integral.  Joint analyticity
+therefore gives, with \(h=x-x_*\),
+\[
+ q_{\beta_c-\varepsilon}(x_*+h)
+    =a h^{2m}-b\varepsilon
+        +O(h^{2m+1}+\varepsilon |h|+\varepsilon^2).
+\]
+After \(h=\varepsilon^{1/(2m)}u\) and division by \(\varepsilon\),
+the local function tends to \(au^{2m}-b\), together with its derivatives
+on compact sets.  Analytic root separation, or the Weierstrass preparation
+theorem, gives exactly two nearby real roots, with the asymptotics
+\eqref{spec:splitting}; the other local roots are nonreal.  The sign
+between the real roots is negative.  Integration of the scaled limit
+over \([-(b/a)^{1/(2m)},(b/a)^{1/(2m)}]\) gives
+\eqref{spec:negative-mass}.
+\end{proof}
+
+\begin{corollary}[The largest-contact characterization]\label{spec:largest-contact}
+Define
+\[
+ \mathcal T=\{\beta\in(\alpha,\beta_{\rm ID}):
+       q_\beta(x)=\partial_xq_\beta(x)=0
+       \text{ for some }x>0\}.
+\]
+This set is nonempty, has a largest element, and
+\[
+              \max\mathcal T=\beta_c.
+\]
+Consequently complete monotonicity is equivalent to
+\(\beta\ge\max\mathcal T\).  The original infinite collection of
+derivative inequalities can thus be replaced by the largest-parameter
+solution of the explicit two-equation contact system.  This is an exact
+implicit characterization, not an evaluation of its largest solution.
+\end{corollary}
+
+\begin{proof}
+Theorem~\ref{spec:threshold} supplies a contact at \(\beta_c\).
+Strict positivity at every larger parameter excludes all larger
+solutions of the contact system.  Smaller contacts, if any, do not
+affect its largest parameter.
+\end{proof}
+
+\subsection{An exact hierarchy of finite moment obstructions}
+
+For \(N\ge1\), put
+\[
+ H_N(\beta)=(m_{i+j}(\beta))_{i,j=0}^N,
+ \qquad K_N(\beta)=(m_{i+j+1}(\beta))_{i,j=0}^N.
+\]
+
+\begin{theorem}[Finite thresholds converge, but never reach the boundary]
+\label{spec:hankel}
+For each \(N\ge1\) there is a finite \(b_N>0\) such that
+\[
+ H_N(\beta)\succeq0\ \hbox{and}\ K_N(\beta)\succeq0
+       \quad\Longleftrightarrow\quad \beta\ge b_N.
+\]
+These thresholds satisfy
+\begin{equation}\label{spec:hankel-limit}
+ b_N\le b_{N+1}<\beta_c,
+ \qquad \lim_{N\to\infty}b_N=\beta_c.
+\end{equation}
+Thus every non-CM parameter has a finite negative quadratic-form
+witness in a Hankel or shifted Hankel matrix.  Nevertheless every
+fixed finite collection of these tests accepts some parameters below
+the true boundary.
+\end{theorem}
+
+\begin{proof}
+The beta-factor identity makes \(H_N(\beta+\delta)\) the entrywise
+product of \(H_N(\beta)\) with the moment matrix of \(Z_{\beta,\delta}\).
+The analogous statement holds for \(K_N\).  Schur's product theorem
+therefore makes the simultaneous positive-semidefinite set an upper
+set.  It is closed, and is nonempty by Theorem~\ref{spec:threshold}.
+As \(\beta\downarrow0\), \(m_1\) and \(m_2\) are positive constants
+times \(\beta^{-\gamma}(1+o(1))\), so
+\(m_2-m_1^2<0\).  Hence its left endpoint \(b_N\) is positive.
+
+At \(\beta_c\), both matrices are strictly positive definite:
+their quadratic forms are respectively
+\(\int p(x)^2q_{\beta_c}(x)\,dx\) and
+\(\int xp(x)^2q_{\beta_c}(x)\,dx\), which are positive for every
+nonzero polynomial \(p\).  Continuity of finitely many eigenvalues
+preserves this property in a parameter neighborhood, proving
+\(b_N<\beta_c\).  Taking principal submatrices gives monotonicity in
+\(N\).
+
+Suppose \(b_*:=\sup_N b_N<\beta_c\), and choose
+\(b_*<\beta<\beta_c\).  Every finite Hankel and shifted Hankel
+matrix is then positive semidefinite.  The classical Stieltjes moment
+theorem gives a probability measure on \([0,\infty)\) with moments
+\(m_n(\beta)\).  For every \(t>0\), monotone convergence gives
+\[
+ \mathbb E e^{tX}
+   =\sum_{n=0}^\infty\frac{m_n(\beta)t^n}{n!}
+   =\Gamma(\beta)^\gamma F_\beta(t)<\infty.
+\]
+Absolute expansion of \(e^{-tX}\) therefore identifies its Laplace
+transform with \(\Gamma(\beta)^\gamma F_\beta(-t)\), contradicting
+the definition of \(\beta_c\).  This proves \eqref{spec:hankel-limit}.
+The moment characterization itself is classical and already noted
+in \cite[Section~3]{Simon2021}; the strict finite-threshold behavior
+uses the parameter coupling and the analytic critical density.
+\end{proof}
+
+The first unshifted test gives the explicit necessary condition
+\begin{equation}\label{spec:variance-bound}
+ \frac{\Gamma(\beta)\Gamma(\beta+2\alpha)}
+      {\Gamma(\beta+\alpha)^2}\le2^{1/\gamma}.
+\end{equation}
+The left side strictly decreases from infinity to one as \(\beta\)
+runs from zero to infinity: differentiating its logarithm gives
+\(\psi(\beta)+\psi(\beta+2\alpha)-2\psi(\beta+\alpha)<0\), by
+strict concavity of the digamma function.  Thus this single necessary
+condition already has a unique, explicit one-dimensional threshold.
+The shifted \(2\times2\) test similarly requires
+\[
+ \frac{\Gamma(\beta+\alpha)\Gamma(\beta+3\alpha)}
+      {\Gamma(\beta+2\alpha)^2}\le(3/2)^{1/\gamma}.
+\]
+
+\subsection{A concrete rational obstruction}
+
+\begin{theorem}[Certified lower bound at \(\alpha=1/3,\gamma=2\)]
+\label{spec:rational-witness}
+The actual complete-monotonicity threshold satisfies
+\[
+       \beta_c(1/3,2)>
+            \frac{428292245841}{10^{12}}=0.428292245841.
+\]
+Two explicit rational negative-density witnesses are certified.  The
+simpler one is
+\begin{equation}\label{spec:q-negative}
+ -\frac1{2000}<q_{107/250}(1/2)<-\frac1{2500}<0.
+\end{equation}
+The sharper one, with
+\(\beta_*=428292245841/10^{12}\) and
+\(x_*=511574841194/10^{12}\), is
+\[
+                 -10^{-12}<q_{\beta_*}(x_*)<-10^{-13}<0.
+\]
+The bound is certified by a finite interval computation and the
+explicit analytic remainder estimate below.
+\end{theorem}
+
+\begin{proof}
+For \(\alpha=1/3\) and \(\gamma=2\), the density has the convergent
+entire series
+\begin{equation}\label{spec:q-series}
+ q_\beta(x)=\Gamma(\beta)^2\sum_{n=0}^\infty
+    \frac{(-x)^n}{n!\,\Gamma(\beta-(n+1)/3)^2}.
+\end{equation}
+Here a reciprocal Gamma value at a nonpositive integer is interpreted
+as zero.  One justification, avoiding a formal closure of an infinite
+Mellin contour, is to shift the contour finitely many times to read
+off \(q(0),q'(0),q''(0)\), and then use the Gamma shift relation in
+the Mellin transform.  It gives the ordinary differential equation
+\[
+ 9q'''(x)+x^2q''(x)+(9-6\beta)xq'(x)+(4-3\beta)^2q(x)=0.
+\]
+The finite contour shifts give smooth extension at zero and the
+initial values in \eqref{spec:q-series}.  The equation is regular
+at zero and has an analytic solution uniquely determined by these
+three values.  Its coefficient recurrence is exactly the recurrence
+in \eqref{spec:q-series}, whose three residue-class series are entire
+by the ratio test.  Uniqueness proves \eqref{spec:q-series} globally.
+
+Put \(\beta=107/250\), \(x=1/2\), and
+\[
+ t_n=\frac{(1/2)^n}{n!\,\Gamma(107/250-(n+1)/3)^2}>0.
+\]
+Gamma's recurrence gives the exact rational ratio
+\[
+ \frac{t_{n+3}}{t_n}
+ =\frac{(n+4-321/250)^2}{72(n+1)(n+2)(n+3)}
+ <\frac{n+3}{72(n+1)(n+2)}.
+\]
+For \(n\ge30\), the last expression is at most
+\(33/71424<1/1000\).  Therefore
+\begin{equation}\label{spec:tail-certificate}
+ \left|\sum_{n=30}^\infty(-1)^nt_n\right|
+ \le\frac{1000}{999}(t_{30}+t_{31}+t_{32})=:T.
+\end{equation}
+The accompanying script \texttt{leroy\_rational\_certificate.py}
+uses exact rational inputs and 256-bit Arb balls for the 33 reciprocal
+Gamma evaluations.  It verifies, by interval comparisons,
+\[
+ T<10^{-30},\qquad
+ \Gamma(107/250)^2\left(\sum_{n=0}^{29}(-1)^nt_n-T\right)>-1/2000,
+\]
+and
+\[
+ \Gamma(107/250)^2\left(\sum_{n=0}^{29}(-1)^nt_n+T\right)<-1/2500.
+\]
+For readability, the normalized partial sum is enclosed by the short
+decimal interval
+\[
+ -9.6084728959550860\times10^{-5}
+ <\sum_{n=0}^{29}(-1)^nt_n
+ <-9.6084728959550858\times10^{-5},
+\]
+and the absolute normalized remainder bound is below
+\(3.838\times10^{-31}\).  The script's rational comparisons, rather
+than rounded displayed decimals, are the certificate; its log records
+the full Arb enclosures.  Formula
+\eqref{spec:tail-certificate} proves \eqref{spec:q-negative};
+the second pair is treated identically.  Indeed both pairs satisfy
+\(1/3<\beta<1/2\) and \(0<x\le13/25\), so for \(n\ge30\) their
+three-step absolute term ratios are at most
+\[
+ (13/25)^3\frac{33}{9\cdot31\cdot32}
+          =\frac{24167}{46500000}<\frac1{1000}.
+\]
+For the second pair the absolute normalized tail is below
+\(7.707\times10^{-31}\); the same script verifies the stated rational
+interval, enclosing its value near \(-5.18172\times10^{-13}\).
+Finally \eqref{spec:CM-positive} and Theorem~\ref{spec:threshold}
+turn each negative-density witness into the corresponding strict lower
+bound.  No global uniqueness of a numerical contact is assumed.
+\end{proof}
+
+\subsection{A convex-order bridge to the exponential law}
+
+Let \(X_\beta\) have density \(q_\beta\) for \(\beta\ge\beta_c\), and set
+\[
+ \mu_\beta=\mathbb E X_\beta
+       =\frac{\Gamma(\beta)^\gamma}{\Gamma(\beta+\alpha)^\gamma},
+ \qquad Y_\beta=X_\beta/\mu_\beta.
+\]
+We use \(U\le_{\rm cx}V\) to mean that \(U,V\) have the same mean and
+\(\mathbb E\varphi(U)\le\mathbb E\varphi(V)\) for every convex function
+for which the expectations are defined.
+
+\begin{theorem}[An exponential upper law in convex order]
+\label{spec:convex-order}
+If \(\beta_c\le\beta_1<\beta_2\), then
+\[
+ X_{\beta_2}\le_{\rm st}X_{\beta_1},\qquad
+ Y_{\beta_1}\le_{\rm cx}Y_{\beta_2}\le_{\rm cx}E,
+ \qquad E\sim\operatorname{Exp}(1).
+\]
+Moreover \(Y_\beta\) converges in distribution to \(E\) as
+\(\beta\to\infty\).  The coupling can be chosen so that
+\((Y_\beta)_{\beta\ge\beta_c}\) is a positive martingale, bounded in
+every fixed \(L^p\), and converges in every finite \(L^p\) to an
+exponential terminal variable.
+\end{theorem}
+
+\begin{proof}
+In \eqref{spec:coupling}, \(0<Z<1\), proving stochastic decrease of
+the unnormalized law.  After normalization,
+\[
+ Y_{\beta_2}\overset d=Y_{\beta_1}V,
+ \qquad V=Z/\mathbb E Z,\qquad \mathbb E V=1,
+\]
+with independence.  Conditional Jensen proves the first convex-order
+inequality.
+
+For every positive integer \(n\),
+\[
+ \mathbb E Y_\beta^n
+ =n!\left[
+   \frac{\Gamma(\beta+\alpha)^n}
+        {\Gamma(\beta)^{n-1}\Gamma(\beta+n\alpha)}
+       \right]^\gamma\le n!,
+\]
+where the inequality is Gamma log-convexity.  The Gamma-ratio
+asymptotic makes these moments tend to \(n!\).  The moment problem
+for the exponential distribution is determinate; tightness and the
+uniform higher-moment bounds prove convergence in distribution to
+\(E\).  The second-moment bound supplies uniform integrability,
+so the expectations of each stop-loss function \((y-t)_+\) converge.
+Passing to the limit in the convex-order inequalities proves
+\(Y_\beta\le_{\rm cx}E\).
+
+Finally the logarithms of the factors in \eqref{spec:Z-mellin}
+add when consecutive parameter intervals are concatenated.  Independent
+increments can be realized using a Poisson measure on the parameter and
+jump variables \((b,t)\) with intensity
+\[
+ \gamma\frac{e^{-bt}}{1-e^{-t}}\,db\,dt,
+ \qquad b>\beta_c,\quad t>0,
+\]
+where a point produces the logarithmic downward jump \(-\alpha t\).
+The integral of \(\min(1,t)\) over a finite parameter interval is
+finite, so this defines the required multiplicative process.
+Dividing it by its mean gives the conditional-mean-one factors above,
+and hence a positive martingale \(Y_\beta\).  Uniform bounds in
+\(L^n\) for every integer \(n\) give martingale convergence in every
+fixed finite \(L^p\); its already identified limiting distribution is
+exponential.
+\end{proof}
+
+\begin{corollary}[Sharp uniform transform bounds]\label{spec:transform-bounds}
+For every \(\beta\ge\beta_c\) and \(x>0\),
+\[
+ e^{-x}<\Gamma(\beta)^\gamma
+             F_\beta(-x/\mu_\beta)<\frac1{1+x}.
+\]
+For \(0<x<1\),
+\[
+ e^x<\Gamma(\beta)^\gamma
+             F_\beta(x/\mu_\beta)<\frac1{1-x}.
+\]
+The upper bounds are sharp in the parameter limit \(\beta\to\infty\).
+Also \(\mathbb E(Y_\beta-t)_+\le e^{-t}\) for every \(t\ge0\).
+\end{corollary}
+
+\begin{proof}
+Apply Jensen and Theorem~\ref{spec:convex-order} to \(e^{-xy}\),
+\(e^{xy}\), and \((y-t)_+\).  The density is nondegenerate, so Jensen
+is strict.  The independent beta factor is nondegenerate for every
+positive parameter increment, making each finite-step inequality
+strict for the exponential test functions; a further parameter
+increment followed by the limit proves strictness of the upper bounds.
+For \(0<x<1\), the uniform moment bound by \(n!\) also justifies
+convergence of the moment-generating series to \((1-x)^{-1}\).
+\end{proof}
+
+\paragraph{What remains open here.}
+The results locate a unique true threshold and characterize its finite
+moment approximations and local density contacts.  They do not evaluate
+\(\beta_c\) in closed form, prove that there is exactly one critical
+contact, or prove that every contact is quadratic.  Numerical solutions
+of \(q=q_x=0\) are not used to certify the global threshold.  The
+strictly negative rational density value in
+Theorem~\ref{spec:rational-witness} is a certified lower bound only.
+
+\section{Precise open endpoints suggested by the proofs}
+\label{sec:frontiers}
+
+The following are research targets, not additional proved statements.
+They are included to show where each bridge reaches and what further
+argument would actually be needed.
+
+\paragraph{An individual value in the Erd\H{o}s perturbation class.}
+For an arbitrary integer sequence $a_n/2^{2^n}\to1$, the common-field
+theorem proves that at most one rational shift can yield a rational
+value, and at most two can yield values in a specified quadratic
+field. Erd\H{o}s 263 asks for irrationality at the prescribed shift
+zero throughout that class \cite{Erdos263}. Moving from ``at most
+one exception'' to ``zero is never exceptional'' requires an argument
+that locates the exception. The norm argument does not supply it.
+
+\paragraph{Exact evaluation and geometry of the Le Roy boundary.}
+Theorem~\ref{spec:threshold} and Corollary~\ref{spec:largest-contact}
+reduce the boundary to the largest solution of $q=q_x=0$.
+It remains to determine whether the critical density has exactly
+one zero and whether each critical zero is always quadratic.
+An affirmative nondegeneracy statement would force the
+$\varepsilon^{3/2}$ negative-mass law universally. The rigorous
+lower bound in Theorem~\ref{spec:rational-witness} gives neither
+an equal upper bound nor a closed expression for $\beta_c$.
+
+\paragraph{Effective Bessel selection.}
+The explicit $D_r$ family needs no selection procedure. In contrast,
+the independent raw $K_0$ and six-coordinate subsets in
+Theorem~\ref{arb:rationalheight} are existential. A method that
+identifies the exceptional arguments, or settles a specified raw
+$K_0(t)$, would go beyond the rank estimate. No irrationality or
+transcendence claim for Euler's constant follows from cancelling it.
+
+\paragraph{The binary sign restriction.}
+The prime-power construction gives coefficients in a prescribed
+congruence class, with exact multiplicity and one minimax solution.
+Forcing every off-zero coefficient into $\{-1,1\}$ is an additional
+nonlinear restriction. The displayed period-81 and period-64 vectors
+do not meet that restriction, so they are not sign-restricted
+counterexamples to Erd\H{o}s-type harmonic problems.
+
+\paragraph{Beyond the nearby-prime binomial family.}
+The four-value histogram depends on $p<q<r$, increasing gaps, and
+$2(r-p)^2<p$. Removing those hypotheses, handling arbitrary squarefree
+integers, or proving a global extremal bound for Erd\H{o}s 700 requires
+new information. The exact distribution here gives a family on which
+such a proposed global result must agree.
+
+\paragraph{From universal to individual integration stability.}
+The geometric iff statements concern all regular functions on an
+affine curve, or all functions in its algebraic function field.
+They give a converse to the polynomial-cover construction and a
+dimension for its first obstruction. They do not classify all
+individual transcendental elementary functions under repeated
+integration, the wider setting of \cite{Chen2022}.
+
+\appendix
+\section{A scope check using classical Mahler specialization}
+\label{app:mahler}
+
+For completeness, all allowed rational translates of the unperturbed
+sequence $2^{2^n}$ are already transcendental by classical Mahler
+theory. Here is a direct verification of the needed hypotheses; it
+explains the use of the entire perturbation class in
+Section~\ref{disc:fieldsection}.
+
+For $h\in\mathbb Q$, set
+\[
+ g_h(z)=\sum_{n\ge0}\frac{z^{2^n}}{1+h z^{2^n}},\qquad
+ g_h(z)-g_h(z^2)=\frac{z}{1+hz}.
+\]
+This defines an analytic germ at zero and a meromorphic function in
+the unit disk. It is never rational. Indeed, if $h\ne0$ and a
+rational $g_h$ had finite nonzero pole set $S$, the functional equation
+would give
+\[
+ \{z:z^2\in S\}\subseteq S\cup\{-1/h\},
+ \qquad 2|S|\le |S|+1.
+\]
+If $S$ is empty, $g_h$ is polynomial, contradicting the pole of the
+right side. If $S$ has one member, the inclusion forces $S=\{1\}$
+and $h=1$. But a pole of order $m$ at one leaves in the difference a
+nonzero leading coefficient multiplied by $1-2^{-m}$, whereas
+$z/(1+z)$ is regular at one. This too is impossible. When $h=0$,
+the same pole-count argument forces a polynomial, and comparison of
+degrees in $g(z)-g(z^2)=z$ excludes that possibility.
+
+A nonrational Mahler function is transcendental over
+$\overline{\mathbb Q}(z)$, and Nishioka's specialization theorem
+transfers the transcendence degree at regular algebraic points
+\cite[Theorem~1]{AdamczewskiFaverjon2023}. Apply it to
+\[
+ \binom{g_h(z)}1=
+ \begin{pmatrix}1&z/(1+hz)\\0&1\end{pmatrix}
+ \binom{g_h(z^2)}1.
+\]
+The point $1/4$ is regular exactly when
+$h\ne-2^{2^n}$ for every $n\ge1$, the original pole exclusions.
+Thus $g_h(1/4)=\sum_{n\ge1}(2^{2^n}+h)^{-1}$ is transcendental.
+For a parameter whose initial power-series disk is small, iterate to
+a sufficiently small point on this same regular orbit and return by
+the functional equation; only rational terms are added. This
+classical corollary is not included in the count of 28 statements.
+
+\section{Reproducibility and computational certificates}
+\label{app:checks}
+
+The proof statements concern all allowed inputs. The finite checks
+listed here audit formulas and examples; they do not replace the
+infinite-range arguments. The Le Roy sign bound is different in one
+respect: its numerical part is a rigorous interval certificate,
+combined with an analytic bound for the infinite remainder.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.38\linewidth}p{0.55\linewidth}@{}}
+\toprule
+Check & Result\\
+\midrule
+Corpus identity & 130 of 130 Git blob hashes matched the snapshot.\\
+Quadratic weighted digits & 4,330 exact prime-valuation cases passed.\\
+Binomial example & All 556,559 indices in the stated half range matched independent Legendre valuations.\\
+Prime 1093 & Multiplicative order and both prime-power residues matched.\\
+Period 64 minimum & The algebraic factorization proves height 8 and uniqueness; independent finite enumeration agreed.\\
+Le Roy interval witnesses & Both 256-bit Arb certificates passed; each absolute normalized tail is below $10^{-30}$.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The following code is embedded in this single TeX source. The first
+listing requires Python 3 and \texttt{python-flint}; it was executed
+with \texttt{python-flint 0.9.0}. It uses exact rational inputs,
+reciprocal Gamma intervals, and comparisons against exact rational
+targets. The second listing requires Python 3 and SymPy.
+Neither certificate depends on a floating-point root solver.
+
+\subsection{Rigorous Le Roy signs}
+\begin{lstlisting}
+"""Rigorous non-CM witness for a Le Roy inverse-Mellin density.
+
+Requires python-flint (tested with 0.9.0 / FLINT 3.6.0).
+The mathematical proof of the series and its remainder bound is in
+spectral_bridges.tex.  This script certifies only the stated rational
+point, and does not locate the global positivity threshold.
+"""
+
+import math
+import flint
+from flint import arb, fmpq, ctx
+
+
+def certify(beta, x, lower_target, upper_target):
+    n_terms = 30
+    assert fmpq(1, 3) < beta < fmpq(1, 2)
+    assert 0 < x <= fmpq(13, 25)
+
+    # All inputs are exact rational numbers, converted to Arb balls.
+    terms = [
+        arb(x) ** n
+        * arb(beta - fmpq(n + 1, 3)).rgamma() ** 2
+        / math.factorial(n)
+        for n in range(n_terms + 3)
+    ]
+    partial = sum(
+        ((-1) ** n * terms[n] for n in range(n_terms)), arb(0)
+    )
+
+    # For n >= 30, beta > 1/3 and x <= 13/25 imply
+    # t_(n+3)/t_n <= (13/25)^3 * 33/(9*31*32) < 1/1000.
+    assert fmpq(24167, 46500000) < fmpq(1, 1000)
+    tail_bound = sum(terms[n_terms : n_terms + 3], arb(0)) * arb(
+        fmpq(1000, 999)
+    )
+    gamma_squared = arb(beta).gamma() ** 2
+    lower = gamma_squared * (partial - tail_bound)
+    upper = gamma_squared * (partial + tail_bound)
+
+    assert tail_bound < arb(fmpq(1, 10**30))
+    assert lower > arb(lower_target)
+    assert upper < arb(upper_target)
+
+    print("alpha = 1/3; gamma = 2; beta =", beta, "; x =", x)
+    print("Normalized 30-term sum:", partial)
+    print("Absolute normalized tail bound:", tail_bound)
+    print("q(x) lower enclosure:", lower)
+    print("q(x) upper enclosure:", upper)
+    print("CERTIFIED:", lower_target, "< q_beta(x) <", upper_target, "< 0")
+    print("CONCLUSION: beta_CM(1/3, 2) >", beta)
+
+
+def main():
+    ctx.prec = 256
+    print("python-flint version:", flint.__version__)
+    print("Arb precision (bits):", ctx.prec)
+    certify(fmpq(107, 250), fmpq(1, 2), fmpq(-1, 2000), fmpq(-1, 2500))
+    certify(
+        fmpq(428292245841, 10**12),
+        fmpq(511574841194, 10**12),
+        fmpq(-1, 10**12),
+        fmpq(-1, 10**13),
+    )
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+The observed certified inequalities are
+\[
+ -1/2000<q_{107/250}(1/2)<-1/2500,
+\]
+and
+\[
+ -10^{-12}<
+ q_{428292245841/10^{12}}(511574841194/10^{12})
+ <-10^{-13}.
+\]
+The normalized absolute remainder bounds were respectively below
+$3.838\cdot10^{-31}$ and $7.707\cdot10^{-31}$.
+
+\subsection{Exact discrete checks}
+\begin{lstlisting}
+"""Exact supplementary checks for the three discrete/arithmetic bridges.
+
+This is reproducibility material for the accompanying proof dossier.
+The all-index theorems have analytic proofs; finite checks do not replace them.
+Dependencies: Python 3 and SymPy.
+"""
+
+from fractions import Fraction
+from itertools import product
+from sympy import factorint, n_order
+
+
+def vp(n, p):
+    n = abs(int(n))
+    if n == 0:
+        raise ValueError("valuation of zero is not needed")
+    result = 0
+    while n % p == 0:
+        n //= p
+        result += 1
+    return result
+
+
+def check_quadratic_valuations():
+    checked = 0
+    for r in range(2, 9):
+        modulus = 2**r - 1
+        for digits in product((0, 1), repeat=r):
+            S = sum(digits[i - 1] * 2**(r - i) for i in range(1, r + 1))
+            if S in (0, modulus):
+                continue
+            y = Fraction(S, modulus)
+            denominator = y.denominator
+            if int(n_order(2, denominator)) != r:
+                continue
+            T = sum(i * digits[i - 1] * 2**(r - i) for i in range(1, r + 1))
+            U = sum(i*i * digits[i - 1] * 2**(r - i) for i in range(1, r + 1))
+            z = Fraction(T, modulus) + Fraction(r*S, modulus**2)
+            w = (Fraction(U, modulus) + Fraction(2*r*T, modulus**2)
+                 + Fraction(r*r*S*(modulus + 2), modulus**3))
+            for prefix_length in range(5):
+                value = (prefix_length**2*y + 2*prefix_length*z + w) / 2**prefix_length
+                for prime, exponent in factorint(denominator).items():
+                    prime, exponent = int(prime), int(exponent)
+                    if exponent > vp(r, prime):
+                        order = int(n_order(2, prime))
+                        lift = vp(2**order - 1, prime)
+                        assert vp(value.denominator, prime) == exponent + 2*lift
+                        checked += 1
+    assert checked == 4330
+    return checked
+
+
+def check_binomial_histogram():
+    """Independent of Lucas counting: use factorial valuations at each k."""
+    primes = (101, 103, 107)
+    n = 101*103*107
+    counts = {10403: 0, 10807: 0, 11021: 0, n: 0}
+    for k in range(2, n//2 + 1):
+        common_divisor = 1
+        for prime in primes:
+            power, valuation = prime, 0
+            while power <= n:
+                valuation += n//power - k//power - (n-k)//power
+                power *= prime
+            if valuation:
+                common_divisor *= prime
+        assert common_divisor in counts
+        counts[common_divisor] += 1
+    assert counts == {10403: 1224, 10807: 191, 11021: 116, n: 555028}
+    assert sum(counts.values()) == 556559
+    return counts
+
+
+def check_wieferich_example():
+    prime = 1093
+    assert all(prime % d for d in range(2, 34))
+    assert [pow(2, m, prime) for m in (364, 182, 52, 28)] == [1, 1092, 27, 121]
+    assert pow(2, 364, prime**2) == 1
+    assert pow(2, 364, prime**3) == 1064432260
+
+
+if __name__ == "__main__":
+    print("Quadratic valuation cases:", check_quadratic_valuations())
+    print("Binomial histogram:", check_binomial_histogram())
+    check_wieferich_example()
+    print("All exact checks passed.")
+\end{lstlisting}
+
+\subsection{Compact source manifest}
+
+The complete 130-entry source manifest is preserved as comments at
+the end of this TeX file. The hashes below identify the principal
+inputs; Git blob SHA-1 is used for repository identity, not as a
+mathematical validity test.
+
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Manuscript & Git blob SHA-1\\
+\midrule
+{[044]} & \texttt{26a390406cc2d22d2cae65b8b67959f8c65b0b9e}\\
+{[056]} & \texttt{6a45606058e3d5e5349119fe0c03d981b748d011}\\
+{[080]} & \texttt{b86c948fcde18e637bf7144e627005409a7956ea}\\
+{[086]} & \texttt{a0c9fb110464b1996c08f1d9d2f11216e98cf862}\\
+{[088]} & \texttt{9527133f8f4693075e6ec6f08ec19d46bf29eaa9}\\
+{[112]} & \texttt{625d08cfedfe99dff4810de08f9c632e4bb43172}\\
+{[113]} & \texttt{8335b4db16c194be3b340f4e06cf4943e5625066}\\
+{[114]} & \texttt{33f98aaff53b8512ac115ab2202fedeec83f5756}\\
+{[116]} & \texttt{179f647a09a72ed0c9052b2b1d0dc6f82347abe9}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{99}
+\raggedright
+
+\bibitem{VMRC}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus},
+130-manuscript snapshot, commit
+\texttt{c30d40119134a59eda6fa5cc6331f27c8e67d034}, accessed
+8 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{Beukers2006}
+F. Beukers, \emph{A refined version of the Siegel--Shidlovskii theorem},
+Annals of Mathematics \textbf{163} (2006), 369--379.
+\url{https://doi.org/10.4007/annals.2006.163.369}.
+
+\bibitem{Simon2021}
+T. Simon, \emph{Remark on a Mittag-Leffler function of Le Roy type},
+arXiv:2012.11018v2 (25 March 2021).
+\url{https://arxiv.org/abs/2012.11018}.
+
+\bibitem{DLMF}
+NIST, \emph{Digital Library of Mathematical Functions},
+Section 5.11, Gamma-function asymptotics.
+\url{https://dlmf.nist.gov/5.11}.
+
+\bibitem{Bell2023}
+J. P. Bell, K. Gunn, K. D. Nguyen, and J. C. Saunders,
+\emph{A general criterion for the P\'olya--Carlson dichotomy and application},
+Transactions of the American Mathematical Society \textbf{376} (2023),
+4361--4382; arXiv:2206.00862.
+\url{https://doi.org/10.1090/tran/8876}.
+
+\bibitem{Chen2022}
+S. Chen, \emph{Stability Problems in Symbolic Integration},
+ISSAC 2022, 517--524; arXiv:2202.06305.
+\url{https://doi.org/10.1145/3476446.3535502}.
+
+\bibitem{Erdos263}
+P. Erd\H{o}s and R. L. Graham, \emph{Old and New Problems and Results
+in Combinatorial Number Theory}, 1980, p. 63.
+Current problem statement and references: T. F. Bloom,
+\emph{Erd\H{o}s Problem 263}, consulted 8 November 2026.
+\url{https://www.erdosproblems.com/263}.
+
+\bibitem{Coons2011}
+M. Coons, \emph{On the rational approximation of the sum of the
+reciprocals of the Fermat numbers}, arXiv:1112.5072 (2011).
+\url{https://arxiv.org/abs/1112.5072}.
+
+\bibitem{AdamczewskiFaverjon2023}
+B. Adamczewski and C. Faverjon,
+\emph{A new proof of Nishioka's theorem in Mahler's method},
+Comptes Rendus Math\'ematique \textbf{361} (2023), 1011--1028.
+\url{https://doi.org/10.5802/crmath.458}.
+
+\bibitem{Zhu2026}
+B.-X. Zhu, \emph{Coefficientwise Hankel-total positivity from a
+universal cumulant lifting}, arXiv:2611.01172, submitted
+31 October 2026.
+\url{https://arxiv.org/abs/2611.01172}.
+
+\end{thebibliography}
+\end{document}
+
+
+% Complete audited source manifest (JSON, one entry per line):
+% {"commit": "c30d40119134a59eda6fa5cc6331f27c8e67d034", "tex_count": 130, "matching_files": 130}
+% {"file": "[001] Exponential-Integral Periods across Arithmetic, Pade, Hankel, Reciprocal Geometry, and Frobenius Framing.tex", "blob_sha1": "1a69e5b0c6a76be7feba8869c8648e006c68a3af", "matches_current_tree": true}
+% {"file": "[002] The Polyexponential Trace-Tower Program (Moving  Levels, Faber and Inverse Monodromy, Positive Spectra, and Arithmetic Barriers).tex", "blob_sha1": "92aa1c94ae6bde2047ffb2fd2c9bdffe0398ba1d", "matches_current_tree": true}
+% {"file": "[003] Integrated Structures and Boundary Spectra in Sparse Prime Codings.tex", "blob_sha1": "20bb58472842dce122595381f7a68cb5b1d9158c", "matches_current_tree": true}
+% {"file": "[004] Prime-Zeta Divisor Tomography Local Zero Processes, Frozen-Edge Rigidity, and Derivative Caustics.tex", "blob_sha1": "7f3c95325da4bb88c11c031a3e2e152c8d174f03", "matches_current_tree": true}
+% {"file": "[005] Composite Integer Parts of Powers of Algebraic Units (Pure Cubic Fields, Salem Numbers, and a K3 Application).tex", "blob_sha1": "fc8658e207fa3decd726453a8169ae6998e5670b", "matches_current_tree": true}
+% {"file": "[006] Minimal Recurrence Orders and Integral Solution Lattices for Franel Sequences.tex", "blob_sha1": "5e8cb8ae34032f7216a9abd75beb546f45b6c4fe", "matches_current_tree": true}
+% {"file": "[007] Dyadic Lucas Prime Cascades and Composite Fibonacci Shifts.tex", "blob_sha1": "11db912f05ecf71d4ba2c36c8c2f7aff0e74423b", "matches_current_tree": true}
+% {"file": "[008] Additive Clocks, Non-Reversible Recurrences, and Transcendental Prime-Representing Constants.tex", "blob_sha1": "e84bc6d81245ce037540c2b450758e3b6ff76ad2", "matches_current_tree": true}
+% {"file": "[009] Composite Terms in Sparse Cubic Pisot Floors (Alternating Shifts, 3-Adic Limits, and Projective Return).tex", "blob_sha1": "f5a1f066c98e680adbbff0c43045675527833f90", "matches_current_tree": true}
+% {"file": "[010] Arithmetic Constraints on a Hypothetically Algebraic Mills Constant (Gap Divisibility, Transcendental Exponents, and Cubic.tex", "blob_sha1": "21eeec56af5b2feec8563ff7f1e1fa5c4ad84382", "matches_current_tree": true}
+% {"file": "[011] Rational Perron Bases with Irrational Characteristic Roots (Cubic chamber moments and arithmetic barriers for Catalan approximations).tex", "blob_sha1": "5cc18d9e0af9d20e4efb48a03ecf2fc2b83f9173", "matches_current_tree": true}
+% {"file": "[012] Quantitative Word Occurrence in Lambert Constants (Programming Divisor Coefficients in Their Corresponding Radices).tex", "blob_sha1": "82db53ee8ab5b06f52bef298bb958d07b5dfbdd6", "matches_current_tree": true}
+% {"file": "[013] PROFINITE RECOGNITION OF MAHLER EQUATIONS AND D-FINITE WITT ESCAPE.tex", "blob_sha1": "6c97b2364c98068a14fa3a666b61708943f81ee9", "matches_current_tree": true}
+% {"file": "[014] ENDPOINT LOCALIZATION FOR TYPE III AND TYPE IV SALEM–BOYD INTERLACING FAMILIES.tex", "blob_sha1": "d537fbf861cee55a4de4a80500fc88c1a19aaedd", "matches_current_tree": true}
+% {"file": "[015] ONE MISSING EDGE (THE EXACT KN − e CONE, STRICT SUPPORT, AND SHARP DEFECT LAWS).tex", "blob_sha1": "5254dcdeb32304e640d62c437240a93b1dea95cc", "matches_current_tree": true}
+% {"file": "[016] UNIVERSAL WEIGHTED-LAPLACIAN CONES AND THE MAXIMAL-CUSP SPECTRAL LINK.tex", "blob_sha1": "cf0a510d0135ab281fd0b015ed5e9c42e912567a", "matches_current_tree": true}
+% {"file": "[017] FLOQUET SPARSE OBSTRUCTION (EXACT EXCLUSION THROUGH SUPPORT SIX IN THE PERIOD-THREE HAMMING FIBRE).tex", "blob_sha1": "9541ae4e1dc5e77a548627d280a1ccbf9a20930b", "matches_current_tree": true}
+% {"file": "[018] SPECTRAL ARITHMETIC SURGERY PINNED FULL–MINOR ASSIGNMENT, ALL–RANK.tex", "blob_sha1": "3707a7df26a9446ad8034045605ff02e891dfbe2", "matches_current_tree": true}
+% {"file": "[019] Euler’s Constant Complete Integrated Research Manuscript (Exponential-Integral Foundations, Positive Moments, Infinite Families, Local Arithmetic, and Transfer Obstructions).tex", "blob_sha1": "e2e470e127d7669bba05756d37e30606275d1d07", "matches_current_tree": true}
+% {"file": "[020] The Two-World Search for Euler’s Constant (Shear invariance, collision worlds, forgeries, and the map of possible worlds).tex", "blob_sha1": "c89e2f24340a9d109da43ef5672602b89d71dbc6", "matches_current_tree": true}
+% {"file": "[021] Arithmetic Alternatives for Euler’s Constant.tex", "blob_sha1": "3f786ac36a36356de35c5cc8d40fa82ec8323f78", "matches_current_tree": true}
+% {"file": "[022] Arithmetic Transcendence of Integrals, Quantiles, and Lemniscates (𝐸-functions, cyclotomic periods, local logarithms, and the obstruction at Euler’s constant ).tex", "blob_sha1": "9c86c9c5fe5aac6236da830689460d0afc294f5f", "matches_current_tree": true}
+% {"file": "[023] Explicit Transcendence Criteria for Beta-Type Integrals (Integral Quotients, Cyclotomic Fields, Statistical Quantiles, and Transfers to the Gamma Function).tex", "blob_sha1": "75c2e3a820b0e049e1819b546a003b8e01e8807f", "matches_current_tree": true}
+% {"file": "[024] Transcendence of Algebraic Arc Lengths and Inverse Periods (Division Dichotomies, Beta Quantiles, and Arithmetic Transfers).tex", "blob_sha1": "873704debce016d08bed812eccff996362bfb564", "matches_current_tree": true}
+% {"file": "[025] Gamma-Type Functions (Arithmetic and Differential Independence, Probability Laws, and Interpolation).tex", "blob_sha1": "d325b86ddcb8ff7330c16afb9b26be5c824ef153", "matches_current_tree": true}
+% {"file": "[026] Exact Orders, Shift Optimality, and Zero Asymptotics for q-Exponential Hankel Determinants.tex", "blob_sha1": "443e62b866821fc9c289d030454d71145a418859", "matches_current_tree": true}
+% {"file": "[027] Arithmetic of Ball Overlaps and Their Iterated Volume Maps.tex", "blob_sha1": "db0ae51bc2e428ac64e8c3d38b48fb7318698dd9", "matches_current_tree": true}
+% {"file": "[028] Observation and Recovery in Arithmetic and Probability (Prime Flows, Rare Events, and Infinite Mixtures).tex", "blob_sha1": "8ffba42d2165a4d8b314dcfb9cf5281cd0e79807", "matches_current_tree": true}
+% {"file": "[029] Observation and Recovery (Geometry, Mixtures, and Spectral Inversion).tex", "blob_sha1": "336b9be8f2c9d47f8b26a5b50edb201acf8bbfdb", "matches_current_tree": true}
+% {"file": "[030] Arithmetic and Observation Classifications, Recovery, and Transcendence Barriers.tex", "blob_sha1": "941b88336ccbad3c2f1553ac2d09202576ada8d8", "matches_current_tree": true}
+% {"file": "[031] Prime-Representing Constants and Related Structures (Encodings, Arithmetic, Geometry, and Modular Obstructions).tex", "blob_sha1": "da444ea874b06d10ce8ed1110cca4da8725ed619", "matches_current_tree": true}
+% {"file": "[032] Minimal Differential and Recurrence Orders (Bessel Periods, Bounded-Height Tableaux, and Banana Integrals).tex", "blob_sha1": "b926f675eb65117b85d32a515539e34ea7ed13e7", "matches_current_tree": true}
+% {"file": "[033] Euler’s Constant Arithmetic, Monodromy, and Gamma-Related Structures.tex", "blob_sha1": "58f9b37707147be1c90bae67769c9063e6e68b8b", "matches_current_tree": true}
+% {"file": "[034] Global Proof Transfers.tex", "blob_sha1": "7b6abe250b10b15d762e61fd0c9c60af617e438c", "matches_current_tree": true}
+% {"file": "[035] Proof Transfers and Global Classifications (Complete Integrated Edition Spectral Design, Statistical Recovery, Recurrences, Period Geometry, Arithmetic, and Exact Cone Gluing).tex", "blob_sha1": "1a017687873c0c4cb4a907b8da5ce23303932aa3", "matches_current_tree": true}
+% {"file": "[036] Exact Recurrences, Algebraic Independence, and Certified Statistical Recovery (Vertex balance, Bessel modules, and entropy transport).tex", "blob_sha1": "c0f4a42843922ba808a0d42409e8acecaca06f79", "matches_current_tree": true}
+% {"file": "[037] ISOTROPIC FUCHS SQUEEZES AND EXACT DIFFERENTIAL COMPLEXITY (HYPERCUBIC GREEN FUNCTIONS, REGEV SUMS, AND RANDOM WALK POLES).tex", "blob_sha1": "ae24434aa2da76f2ee53e99de05323765a772d3f", "matches_current_tree": true}
+% {"file": "[038] Arithmetic Rank and Differential Complexity of Hamiltonian Moment Integrals.tex", "blob_sha1": "a17681a076b6529d212299b1b5856398ce715366", "matches_current_tree": true}
+% {"file": "[039] Temporal Sampling and Local Nonidentifiability in Coalescent Demography.tex", "blob_sha1": "a1b55d1c380a9f61a469806cfc09104cc50cb373", "matches_current_tree": true}
+% {"file": "[040] OEIS Conjecture Hunt.tex", "blob_sha1": "2587c93cb1aa02237cff6229718fff63b96b4f46", "matches_current_tree": true}
+% {"file": "[041] Ewald points of monotone polytopes the minimum in dimension eight and branching simplex bundles.tex", "blob_sha1": "c1cf25dbd56c8016ba7707fc7da1afc9dc7ed9a9", "matches_current_tree": true}
+% {"file": "[042] Cubic Pisot Floors (Composite Windows, Sparse Exceptions, and Finite-Sieve Barriers).tex", "blob_sha1": "586b9087bd5bdc229bda403c6d068d0bd7ce022c", "matches_current_tree": true}
+% {"file": "[043] Local Certificates, Stability, and Concavity.tex", "blob_sha1": "714975ec9c589882717b657b9e619199d02ff408", "matches_current_tree": true}
+% {"file": "[044] Euler–Gompertz and Bessel Values (Joint Independence, Integral Intersections, and Critical Limits).tex", "blob_sha1": "26a390406cc2d22d2cae65b8b67959f8c65b0b9e", "matches_current_tree": true}
+% {"file": "[045] Arithmetic of Gieseking Moment Lattices (Normality, Integral Saturation, and Approximation Budgets).tex", "blob_sha1": "40271e33448645ee914fb5c2be9929c117fedf30", "matches_current_tree": true}
+% {"file": "[046] Cross-field Consequences of Bessel-Value Independence (Circular Mixtures, Random-Time Quantum Walks, and Robin Spectra).tex", "blob_sha1": "1981018c525499db9309c6a1fb480ce88d28b4dc", "matches_current_tree": true}
+% {"file": "[047] A monic resultant for Bessel derivative coefficients.tex", "blob_sha1": "6d049e577dc677ef93e05d8aba32993e6d00501e", "matches_current_tree": true}
+% {"file": "[048] Recurrences, Absolute Differences, and Collatz Orbits (Algebra, Prime Patterns, and Zero Distributions).tex", "blob_sha1": "5d262c7cdcf61493cea7be18a255b6be9200e810", "matches_current_tree": true}
+% {"file": "[049] Winding Embeddings and Prime-Power Pisot Floors (Integral Intersections, Composite Windows, and Local Obstructions).tex", "blob_sha1": "4bf8405ccbb8c097435655b4936afdf2c087f503", "matches_current_tree": true}
+% {"file": "[050] Exact Prime Covers and Arithmetic Obstructions (Salem powers, repeated blocks, Euler integrals and Lambert functions).tex", "blob_sha1": "6b266dc57fc9c3f1c5f8ef207615b399e46e3784", "matches_current_tree": true}
+% {"file": "[051] A Proof of Colton’s Conjecture on Refactorable Numbers Smooth–rough τ (decomposition, certified checkpoint chains, and a template tail).tex", "blob_sha1": "9653ed5135f2aaa296fd806e8d578e84226f75ce", "matches_current_tree": true}
+% {"file": "[052] Rooted Induced Trees and the Radius_A Proof of Conjecture 84 of Written on the Wall II.tex", "blob_sha1": "49d06a8cc337aa826c0f4980e8daef4213b5d2d3", "matches_current_tree": true}
+% {"file": "[053] RESTRICTION CLASSES AND BAKER’S QUESTION ON THE LINEAR INDEPENDENCE OF L(1, χ).tex", "blob_sha1": "ee2a75cf712b536df5ac5d6aa45e2dd5d6c11d34", "matches_current_tree": true}
+% {"file": "[054] Supportive Edges, Radius-Stable Peeling and Rooted Yang–Lu Replacement_the Randić–Radius Conjecture for Graphs of Cyclomatic Number at most 8.tex", "blob_sha1": "f9f3a09cc60f490cd1691270b8596c43b8bb68d5", "matches_current_tree": true}
+% {"file": "[055] ERDOS CONJECTURE.tex", "blob_sha1": "5b381385a365a19b510a25725f0d3b078134af56", "matches_current_tree": true}
+% {"file": "[056] SQUARE MODULI, SPARSE MASKS, AND SIGN OBSTRUCTIONS FOR VANISHING ERDOS SUMS .tex", "blob_sha1": "6a45606058e3d5e5349119fe0c03d981b748d011", "matches_current_tree": true}
+% {"file": "[057] erdos_nonsquare_moduli.tex", "blob_sha1": "64b833115332720bb714af6644051812254a3c68", "matches_current_tree": true}
+% {"file": "[058] Exact_Arithmetic_at_Small_Salem_Numbers.tex", "blob_sha1": "efe9deefa2f8e32bbdd9b34c8f14f6b4aa3c57d4", "matches_current_tree": true}
+% {"file": "[059] Integrated_Mathematical_Research_60.tex", "blob_sha1": "6d00efba2a3a1e1f855da9848647b36b5f4754c7", "matches_current_tree": true}
+% {"file": "[060] Corvaja_Zannier.tex", "blob_sha1": "ebde16141269a4937f0937a4fa138ae46b83674e", "matches_current_tree": true}
+% {"file": "[061] floquet_level.tex", "blob_sha1": "6a83cdc58b38121a03a1acea11fbef28bfa78425", "matches_current_tree": true}
+% {"file": "[062] Gamma_Derivatives_Unified_Windows_and_Counts.tex", "blob_sha1": "6b8fcae7c6f67c0b3b401e48fcd26df1e9fa9bc3", "matches_current_tree": true}
+% {"file": "[063] Stanley_Depth.tex", "blob_sha1": "e0fb4ab6432470036643ac72a514436558d699c8", "matches_current_tree": true}
+% {"file": "[064] ternary_trace_dynamics_shifted_Mills.tex", "blob_sha1": "6a7d6290c71cb93d750762df8013ea17387a6430", "matches_current_tree": true}
+% {"file": "[065] WOWII_Unified.tex", "blob_sha1": "cbf159fe07b49b73e3b96b36f6c71a7f7b142d2e", "matches_current_tree": true}
+% {"file": "[066] WOWII_Rounds_01_22_Consolidated.tex", "blob_sha1": "e933a61e830f0fa1e57d75e56474571f03cb6183", "matches_current_tree": true}
+% {"file": "[067] open_problems_transferred.tex", "blob_sha1": "7c7036ba787b6a03f98a63b6d2a1f9a779ab500f", "matches_current_tree": true}
+% {"file": "[068] orbit_constraints.tex", "blob_sha1": "64cbeaf78b260d4dfc14f1570ce41adff57760a5", "matches_current_tree": true}
+% {"file": "[069] Antisymmetric_Spectral_Invariants.tex", "blob_sha1": "d46394b864713e554e022a7fd12fb43f4063b517", "matches_current_tree": true}
+% {"file": "[070] Frobenius_Rigidity_Stabilization.tex", "blob_sha1": "4be884bc930a37beb11e753275e25bbcfd06e81b", "matches_current_tree": true}
+% {"file": "[071] Obstructions_Polytopes_Peak_Transfer.tex", "blob_sha1": "9eb017a4aa33016ca9b4579c3170eb77dc43b4de", "matches_current_tree": true}
+% {"file": "[072] unified_collatz_recurrences.tex", "blob_sha1": "5d262c7cdcf61493cea7be18a255b6be9200e810", "matches_current_tree": true}
+% {"file": "[073] Free_Spider_Counterexample.tex", "blob_sha1": "02566f6811502b05ede2bb1c426cae747bcbec58", "matches_current_tree": true}
+% {"file": "[074] Collected_Research.tex", "blob_sha1": "3a8ff2947b4259520b3e4fa8bc68f321f48b844b", "matches_current_tree": true}
+% {"file": "[075] Shifted_Mills_and_Cubic_Pisot_Traces.tex", "blob_sha1": "854a1c99c2c90b303df20a20b66f70ca773ce42d", "matches_current_tree": true}
+% {"file": "[076] T91_T95_Retry.tex", "blob_sha1": "2d6b5a6cb58a73c6194650aac44eaf93b2e4fccd", "matches_current_tree": true}
+% {"file": "[077] T96_T100 .tex", "blob_sha1": "c90c1609d9d19cffa9912aa215a7774c4aa4b052", "matches_current_tree": true}
+% {"file": "[078] mixed_mahler_congruences.tex", "blob_sha1": "c61fbd4fafa3281840f9d71fab59f8def303e2d8", "matches_current_tree": true}
+% {"file": "[079] T86_T90_Stern_Roots_and_Hankel_Recurrences.tex", "blob_sha1": "f7b19d2b2bd2f3b332e458d863bd8af15e17e6b4", "matches_current_tree": true}
+% {"file": "[080]_exponent_window_erdos265.tex", "blob_sha1": "b86c948fcde18e637bf7144e627005409a7956ea", "matches_current_tree": true}
+% {"file": "[081]_carry_forcing_trinomial_bases.tex", "blob_sha1": "2e0d9b77f5b39766536ee1f7390267ccc3f01cde", "matches_current_tree": true}
+% {"file": "[082] A252867_permutation.tex", "blob_sha1": "b189991228ebfdbe9d25524bd92060ded4ccb6a7", "matches_current_tree": true}
+% {"file": "[083] beta_curvature_paper.tex", "blob_sha1": "98cbc4a50170efadd3ef14d2b2b7ee6e9f3c2cbe", "matches_current_tree": true}
+% {"file": "[084] caporossi_hansen_randic_radius.tex", "blob_sha1": "f9f3a09cc60f490cd1691270b8596c43b8bb68d5", "matches_current_tree": true}
+% {"file": "[085] decoder_trees_5093_5107.tex", "blob_sha1": "c90188885d287c389668764273c46b2e610a8fda", "matches_current_tree": true}
+% {"file": "[086] erdos700_three_nearby_primes.tex", "blob_sha1": "a0c9fb110464b1996c08f1d9d2f11216e98cf862", "matches_current_tree": true}
+% {"file": "[087] fajtlowicz_radius_core_reduction.tex", "blob_sha1": "f969081b3dceffa08355f52059d1aebecd1724ca", "matches_current_tree": true}
+% {"file": "[088] Integer_Tail_Analytic_Attack.tex", "blob_sha1": "9527133f8f4693075e6ec6f08ec19d46bf29eaa9", "matches_current_tree": true}
+% {"file": "[089] Congruence_Compression_2026.tex", "blob_sha1": "39fbf7631948cfd85d551e600091a07aa68f961c", "matches_current_tree": true}
+% {"file": "[090] erdos_graham_tent.tex", "blob_sha1": "55a2edfa803726c7e83b37e1b70e3fd0a96e8fa0", "matches_current_tree": true}
+% {"file": "[091] symmetric_insertion_Z.tex", "blob_sha1": "8608abd73d49165a24ac06ea38016f7364ef3e98", "matches_current_tree": true}
+% {"file": "[092] kesten_fixed_start.tex", "blob_sha1": "310732f57a3642655e3d48930215840175f725db", "matches_current_tree": true}
+% {"file": "[093] pm1_vanishing_paper.tex", "blob_sha1": "17e7a423ae45f9160abcd552bbf28aea5ff58638", "matches_current_tree": true}
+% {"file": "[094] Randic_radius_bag_reduction.tex", "blob_sha1": "2f215796b32c8201d16b10903d2d8bd9f9e02280", "matches_current_tree": true}
+% {"file": "[095] Simultaneous_Fiber_Cancellation (1).tex", "blob_sha1": "23d078cc90527b883469594fbc70d770283ca233", "matches_current_tree": true}
+% {"file": "[096] arctangent_inverse_complete_monotonicity.tex", "blob_sha1": "eba1c3856741b7d87e70e354e90531e7790c4b3c", "matches_current_tree": true}
+% {"file": "[097] dirichlet_completeness_criterion.tex", "blob_sha1": "dde13dbb94a674af3900c4ff87af3d7206e86fcb", "matches_current_tree": true}
+% {"file": "[098] gamma_positive_certificates_primitive_arithmetic.tex", "blob_sha1": "6464d1de132837a4e834d05f90bfc6c8ae7d89d0", "matches_current_tree": true}
+% {"file": "[099] inverse_arctan_stieltjes.tex", "blob_sha1": "3857753333dce27696e925785d12d1fa1581fb6b", "matches_current_tree": true}
+% {"file": "[100] Sondow_Grid_Research_Checkpoint.tex", "blob_sha1": "18e800d62c676667af4780acd8bde1ace6ed0979", "matches_current_tree": true}
+% {"file": "[101] robin_convex_domain_nonconcavity.tex", "blob_sha1": "45016f5634fbbabdd138f8cddb7453c156bb7094", "matches_current_tree": true}
+% {"file": "[102] robin_dilation_nonconvexity.tex", "blob_sha1": "9df78f87a29b65b1a4f84857e517f934d1d8d1f1", "matches_current_tree": true}
+% {"file": "[103] A_Nodal_Criterion_for_Real_Zeros.tex", "blob_sha1": "06cb7cc92b7051580b469e41546f80e64c3a2af3", "matches_current_tree": true}
+% {"file": "[104] Fixed_Shifted_Mills_Minima.tex", "blob_sha1": "58312a29ce634095b21348946ca1caaf2f1e832b", "matches_current_tree": true}
+% {"file": "[105] gamma_consolidated_positive_kernels_and_arithmetic_2026_11_02.tex", "blob_sha1": "42642d5aa483cd69dc2e6c7ab33f5d4311b49185", "matches_current_tree": true}
+% {"file": "[106] Degree_Seven_and_Quantum_Path_Families_2026_11_02.tex", "blob_sha1": "a79f34a3165b883cefbdcd76e695ef657f74a375", "matches_current_tree": true}
+% {"file": "[107] Dyadic_Saturation_and_Companion_Results_2026_11_02.tex", "blob_sha1": "71a944ace908ed0fbeab9e24217e3e7d465eb7fc", "matches_current_tree": true}
+% {"file": "[108] Exact_Rook_Recurrence_Certificates_2026_11_02.tex", "blob_sha1": "591be72f1f3a85c0a82903171af2bcca002add75", "matches_current_tree": true}
+% {"file": "[109] Explicit_Order_Degree_Curves_for_Dfinite_Telescoping_2026_11_02.tex", "blob_sha1": "6296ef1874b1cef06ec3c7e4f18d8b92f8b8c8d0", "matches_current_tree": true}
+% {"file": "[110] Gamma_Mills_Integrated_2026-11-05.tex", "blob_sha1": "43c5b5b8651e32c6d499f5feaea990be8dccb074", "matches_current_tree": true}
+% {"file": "[111] Grouped_Diagonals_and_Arithmetic_Telescoper_Bounds_2026_11_02.tex", "blob_sha1": "4278eb13cb18d0f05946ad1dd1235df1912d6a09", "matches_current_tree": true}
+% {"file": "[112] Period_Obstructions_for_Weighted_Binary_Expansions_2026_11_02.tex", "blob_sha1": "625d08cfedfe99dff4810de08f9c632e4bb43172", "matches_current_tree": true}
+% {"file": "[113] Polynomial_Inverses_Counterexamples_to_Chen_Stability_2026_11_02.tex", "blob_sha1": "8335b4db16c194be3b340f4e06cf4943e5625066", "matches_current_tree": true}
+% {"file": "[114] Research_Results_2026-11-02.tex", "blob_sha1": "33f98aaff53b8512ac115ab2202fedeec83f5756", "matches_current_tree": true}
+% {"file": "[115] Ten_External_Problems_2026-11-05.tex", "blob_sha1": "cdd0e8b6be566c72538c9b320352415cac6026f8", "matches_current_tree": true}
+% {"file": "[116] Le_Roy_Positivity_Beyond_Infinite_Divisibility.tex", "blob_sha1": "179f647a09a72ed0c9052b2b1d0dc6f82347abe9", "matches_current_tree": true}
+% {"file": "[117] Mathematical_Research_Manuscript.tex", "blob_sha1": "8cca4b8fc894859f64633b226e1c6389a237243a", "matches_current_tree": true}
+% {"file": "[118] Mathematical_Research_Manuscript (1).tex", "blob_sha1": "8cca4b8fc894859f64633b226e1c6389a237243a", "matches_current_tree": true}
+% {"file": "[119] Mathematical_Research_Manuscript (2).tex", "blob_sha1": "5b4e61a6f5a996b8bc15e1d7a2a03966fa25f23a", "matches_current_tree": true}
+% {"file": "[120] Mathematical_Research_Manuscript (3).tex", "blob_sha1": "5b4e61a6f5a996b8bc15e1d7a2a03966fa25f23a", "matches_current_tree": true}
+% {"file": "[121] Mathematical_Research_Manuscript (4).tex", "blob_sha1": "5b4e61a6f5a996b8bc15e1d7a2a03966fa25f23a", "matches_current_tree": true}
+% {"file": "[122] Mean_Median_Mode_and_Gamma_Mixtures_of_Stable_Laws.tex", "blob_sha1": "c3b703923904290c5714da708226233d6b8b820e", "matches_current_tree": true}
+% {"file": "[123] Neighborhoods_Kernels_and_Fractional_Zeros.tex", "blob_sha1": "bc5f0aca1c317173ab43eb309aece88a7237d531", "matches_current_tree": true}
+% {"file": "[124] Prime_Neighbours_of_Shifted_Mills_Outputs.tex", "blob_sha1": "944fea225bce7e1b27cead74fc35efd46fbabee9", "matches_current_tree": true}
+% {"file": "[125] Prime_Outputs_and_Local_Counts.tex", "blob_sha1": "f337c8000d954b7004bc8683dabfcd5e3aef61f7", "matches_current_tree": true}
+% {"file": "[126] Real_Collisions_in_the_Gaussian_Heat_Flow.tex", "blob_sha1": "4a54065fb4388e841882ea73f847348c4f401cab", "matches_current_tree": true}
+% {"file": "[127] Restricted_Partitions_Domination_and_Kanter_Factors.tex", "blob_sha1": "9f13b57fa57230b0047babeebeee4d05e099771e", "matches_current_tree": true}
+% {"file": "[128] Shifted_Mills_Minima.tex", "blob_sha1": "4eba1d00804f2c53cc5bece049d5f03be338fe7b", "matches_current_tree": true}
+% {"file": "[129] Certified_Prime_Lifting.tex", "blob_sha1": "28dd3632367c37131e05e1b5c3efe97b98bc229b", "matches_current_tree": true}
+% {"file": "[130] Certified_Prime_Lifting_and_Sparse_Modular_Squaring.tex", "blob_sha1": "becfdd1daf545191efd7730b3097ad32b6950fd0", "matches_current_tree": true}

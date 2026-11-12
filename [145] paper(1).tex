@@ -1,0 +1,912 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,frame=single,
+        keepspaces=true,showstringspaces=false}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem*{mainA}{Theorem A}
+\newtheorem*{mainB}{Theorem B}
+\newtheorem*{mainC}{Theorem C}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\CT}{\operatorname{CT}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\Der}{\mathcal{D}}
+\newcommand{\bin}[2]{\binom{#1}{#2}}
+
+\title[Sun's conjecture for $\sum(20k+17)W_k(1,-4)$]{Sun's divisibility conjecture for
+$\sum_{k<n}(20k+17)\,W_k(1,-4)$:\\ squarefree moduli, the second layer, and a reduction\\
+via negative-index continuation}
+
+\author{QEEDDD Verifiable-Mathematical-Reasoning-Corpus project}
+\address{Drafted with Claude (Anthropic) in a Claude Code session; all computations are reproducible
+with the script in Appendix~\ref{app:script}.}
+\date{November 7, 2026}
+
+\begin{document}
+
+\begin{abstract}
+Let $a(n)=\sum_{k}(-4)^k\binom nk^2\binom{n-k}k^2=W_n(1,-4)$ and
+$S(n)=\sum_{k=0}^{n-1}(20k+17)a(k)$.
+In 2010 Z.-W.~Sun conjectured that $n\mid S(n)$ for every $n\ge 1$ (OEIS A179524); the conjecture
+is listed as open in Sun's 2019 collection of open conjectures and in the
+\texttt{formal-conjectures} database (2026).
+We prove that $\rad(n)\mid S(n)$ for every $n\ge1$; in particular \emph{the conjecture holds for
+every squarefree $n$}. The proof combines a Lucas congruence, coming from a constant-term
+representation of $a(n)$, with a \emph{reflection bridge} which converts $S(p)\bmod p$ into a
+truncation of Ramanujan's series $\sum_k(20k+3)\binom{2k}k^2\binom{4k}{2k}(-2^{10})^{-k}$, whose
+divisibility by $2h+1$ was proved by Sun using a WZ pair of Guillera and Zudilin.
+A second-order Frobenius expansion gives the \emph{second-layer reduction}
+$S(p^2m)\equiv S(p^2)\sum_{t<m}a(t)\pmod{p^2}$; together with a $p$-adic computation of
+$S(p^2)\bmod p^2$ for all primes $p\le 6000$ this proves the conjecture for every cube-free $n$
+whose square part has only prime factors $\le6000$.
+We then introduce a \emph{negative-index continuation}: in a ring of Laurent series one has
+$\sum_{n\ge1}(20n-17)\Lambda^{-n}=(3M+20)/M^2$ with $M=\Lambda-1$, which gives
+$S(N)\equiv-\CT(\Lambda^N\Psi)\pmod N$ for an explicit power series $\Psi\in\Z[[u,v]]$.
+Hence the full conjecture follows from a new two-index statement (Conjecture~B) asserting that
+$\gcd(\alpha,\beta)$ divides the coefficient of $u^\alpha v^\beta$ in $\Psi$; its diagonal is Sun's
+conjecture. Using integral changes of variables we show that Conjecture~B is equivalent to two
+explicit one-variable congruences. These statements, a Dwork-type congruence that would imply the
+conjecture, and the conjecture itself for all $n\le 10^6$ are verified by exact computation; a targeted search
+at moduli with large square part (motivated by the square-modulus counterexample to an Erd\H{o}s
+conjecture in the same corpus) found no counterexample.
+\textbf{We do not prove the conjecture for all $n$}: it remains open when $p^3\mid n$, or when
+$p^2\,\|\,n$ with $p>6000$.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+For integers $b,c$ put $W_n(b,c)=\sum_{k}\binom n{2k}^2\binom{2k}k^2b^{n-2k}c^k$. Since
+$\binom nk\binom{n-k}k=\binom n{2k}\binom{2k}k$, the sequence of OEIS A179524 is
+\begin{equation}\label{eq:a}
+a(n)=\sum_{k=0}^{\lfloor n/2\rfloor}(-4)^k\binom nk^2\binom{n-k}k^2
+      =\sum_{k}(-4)^k\binom n{2k}^2\binom{2k}k^2=W_n(1,-4),
+\end{equation}
+so $(a(n))_{n\ge0}=1,1,-15,-143,\dots$. Throughout we write
+\[
+S(n)=\sum_{k=0}^{n-1}(20k+17)\,a(k)\qquad(n\ge1).
+\]
+
+\begin{conjecture}[Z.-W. Sun, July 1, 2010]\label{conj:sun}
+For every positive integer $n$ we have $n\mid S(n)$.
+\end{conjecture}
+
+The conjecture appears as ``conjecture 4'' in the OEIS entry A179524 \cite{OEIS}, in the 2019
+edition of Sun's \emph{Open conjectures on congruences} \cite{SunOpen} (as
+$\sum_{k=0}^{n-1}(20k+17)W_k(1,-4)\equiv0\pmod n$), and as a \texttt{research open} statement in
+the Lean database \texttt{formal-conjectures} (file \url{FormalConjectures/OEIS/179524.lean},
+added on 2026-11-06) \cite{FC}. We found no published proof (see \S\ref{sec:status}); the
+companion congruence $S(p)\equiv p\,(10(\tfrac{-1}p)+7)\pmod{p^2}$ is also open.
+
+The weights $20k+17$ are rigid: among all $(\alpha,\beta)\ne(0,0)$ with $0\le\alpha\le200$ and
+$|\beta|\le400$, the only pairs with $n\mid\sum_{k<n}(\alpha k+\beta)a(k)$ for all $n\le49$ are the
+multiples $(20t,17t)$, $1\le t\le10$ (exhaustive search). Note
+$17=20-3$, and $(20,3)$ is the pair in Ramanujan's series
+\begin{equation}\label{eq:ram}
+\sum_{k\ge0}\frac{(20k+3)\binom{2k}k^2\binom{4k}{2k}}{(-2^{10})^k}=\frac8\pi .
+\end{equation}
+This ``duality'' $\alpha k+\beta=\alpha(k+1)-\beta_{\mathrm R}$ is the starting point of our
+method.
+
+\subsection*{Main results}
+Let $\rad(n)$ denote the product of the distinct primes dividing $n$.
+
+\begin{mainA}[Theorem~\ref{thm:A}]
+For every prime $p$ and every $m\ge1$ we have $p\mid S(pm)$. Consequently $\rad(n)\mid S(n)$ for
+every $n\ge1$, and Conjecture~\ref{conj:sun} holds for every squarefree $n$.
+\end{mainA}
+
+The two ingredients are a Lucas congruence $a(pm+r)\equiv a(m)a(r)\pmod p$
+(Lemma~\ref{lem:lucas}) and the prime case $p\mid S(p)$ (Proposition~\ref{prop:prime}). For the
+latter we prove a reflection congruence (Lemma~\ref{lem:bridge}) which identifies $S(p)\bmod p$,
+up to a unit, with the truncation of \eqref{eq:ram} at $k=(p-1)/2$; the needed divisibility of
+that truncation is Sun's theorem \cite[Thm.~1.2]{SunEJC}, proved with the WZ pair of
+Guillera \cite{Gu} and Zudilin \cite{Zu}.
+
+\begin{mainA}[$'$, Theorem~\ref{thm:layer2} and Corollary~\ref{cor:cubefree}]
+For every prime $p$ and $m\ge1$, $S(p^2m)\equiv S(p^2)\sum_{t<m}a(t)\pmod{p^2}$, and
+$S(p^2)\equiv-(3w_{p^2-1}+20w_{p^2-2})\pmod{p^2}$ for explicit integers $w_m$. We verified
+$p^2\mid S(p^2)$ for all primes $p\le 6000$. Consequently $n\mid S(n)$ for every cube-free
+$n$ all of whose prime factors $p$ with $p^2\mid n$ satisfy $p\le 6000$.
+\end{mainA}
+
+To go beyond these moduli we introduce the series
+\[
+\rho=\frac{uv}{1+u+v},\qquad G(w)=\sum_{l\ge0}(-4)^l\binom{2l}l^2w^{2l},\qquad
+\Psi=(3\rho+20\rho^2)\,G(uv)\in\Z[[u,v]],
+\]
+and the two-index numbers $W_{a,b}=\sum_j(-4)^j\binom{2j}j^2\binom a{2j}\binom b{2j}$
+(so $W_{k,k}=a(k)$).
+
+\begin{mainB}[Proposition~\ref{prop:neg}, Theorems~\ref{thm:red} and~\ref{thm:equiv}]
+\begin{enumerate}[label=(\roman*)]
+\item (Negative-index continuation) With $\Lambda=(1+u)(1+v)/(uv)$ one has
+$\sum_{n\ge1}(20n-17)\Lambda^{-n}=3\rho+20\rho^2$ and, for all $N\ge1$,
+$S(N)=-\CT(\Lambda^N\Psi)+20N\,\CT(\Lambda^N\rho\,G(uv))$.
+\item The following are equivalent:
+ (a) $\gcd(\alpha,\beta)\mid[u^\alpha v^\beta]\Psi$ for all $(\alpha,\beta)\ne(0,0)$;
+ (b) (Conjecture~\ref{conj:B}) $\gcd(\alpha,\beta)\mid\sum_{n\ge1}(20n-17)W_{\alpha-n,\beta-n}$ for
+ all $\alpha,\beta\ge1$;
+ (c) the one-variable congruences \textup{(I)} and \textup{(II)} of Theorem~\ref{thm:equiv}.
+\item Each of (a)--(c) implies Conjecture~\ref{conj:sun}; indeed the diagonal $\alpha=\beta=N$ of (b)
+is $N\mid S(N)$.
+\end{enumerate}
+\end{mainB}
+
+The congruences (I), (II) (one-variable sums of products of $\binom{2l}l^2$ and
+$\binom{2i}i$), Conjecture~\ref{conj:B}, and a Dwork-type congruence
+(Conjecture~\ref{conj:D}, which implies Conjecture~\ref{conj:sun} by
+Proposition~\ref{prop:D}) are supported by exact computations summarised in
+\S\ref{sec:comp}; in particular Conjecture~\ref{conj:sun} holds for all $n\le 10^6$.
+
+\subsection*{What is not proved}
+Theorems~A and~A$'$ give $v_p(S(n))\ge\min(v_p(n),1)$ for all $p$, and $v_p(S(n))\ge
+\min(v_p(n),2)$ for $p\le6000$, whereas Conjecture~\ref{conj:sun} requires $v_p(S(n))\ge v_p(n)$.
+The cases $p^3\mid n$, and $p^2\,\|\,n$ with $p>6000$, remain open. We isolate exactly what is
+missing in \S\ref{sec:layer2}, \S\ref{sec:dwork} and \S\ref{sec:outlook}.
+
+\section{Preliminaries}
+
+For a Laurent polynomial or series $F$ we write $\CT F$ for its constant term and $[x^u]F$ for the
+coefficient of $x^u$. Binomial coefficients $\binom Xb=X(X-1)\cdots(X-b+1)/b!$ are used for any
+$X$ in a ring containing $\Q$, and $\binom nb=0$ for integers $0\le n<b$.
+
+\begin{lemma}[Constant-term representation]\label{lem:ct}
+Let $\Lambda_3=(x+1-4z/x)\,(y+1+1/(yz))$, an element of $\Z[x^{\pm1},y^{\pm1},z^{\pm1}]$. Then
+$a(n)=\CT\Lambda_3^{\,n}$ for all $n\ge0$.
+\end{lemma}
+
+\begin{proof}
+For any $w$, $\CT_x(x+1+w/x)^n=\sum_j\frac{n!}{j!\,j!\,(n-2j)!}w^j=\sum_j\binom n{2j}\binom{2j}j w^j$.
+Apply this with $w=-4z$ and (in $y$) with $w=1/z$, multiply, and take $\CT_z$: only equal indices
+survive, giving $\sum_j(-4)^j\binom n{2j}^2\binom{2j}j^2=a(n)$.
+\end{proof}
+
+\begin{lemma}[Lucas property]\label{lem:lucas}
+Let $p$ be a prime, $m\ge0$ and $0\le r<p$. Then $a(pm+r)\equiv a(m)\,a(r)\pmod p$.
+\end{lemma}
+
+\begin{proof}
+Since $\Lambda_3$ has integer coefficients, $\Lambda_3(x,y,z)^p\equiv\Lambda_3(x^p,y^p,z^p)\pmod p$,
+hence $\Lambda_3^{\,pm+r}\equiv\Lambda_3(x^p,y^p,z^p)^m\,\Lambda_3^{\,r}\pmod p$. Every monomial of
+$\Lambda_3$ has exponent vector in $\{-1,0,1\}^3$, so those of $\Lambda_3^{\,r}$ lie in
+$[-r,r]^3\subset(-p,p)^3$. Therefore
+$\CT\big(\Lambda_3(x^p,y^p,z^p)^m\Lambda_3^{\,r}\big)
+=\sum_{v}[x^{pv}]\Lambda_3(x^p,y^p,z^p)^m\cdot[x^{-pv}]\Lambda_3^{\,r}$ receives a contribution only
+from $v=0$, and equals $\CT(\Lambda_3^{\,m})\CT(\Lambda_3^{\,r})$. Conclude with
+Lemma~\ref{lem:ct}.
+\end{proof}
+
+\begin{lemma}[Newton expansion]\label{lem:newton}
+Put $w_m=\sum_j(-4)^j\binom{2j}j^2\binom m{2j}\binom{2j}{m-2j}$. Then
+$a(k)=\sum_{m=0}^k\binom kmw_m$ for $k\ge0$, and for every $n\ge1$
+\begin{equation}\label{eq:Snewton}
+S(n)=\sum_{m=0}^{n-1}w_m\Big(20(m+1)\binom n{m+2}+(20m+17)\binom n{m+1}\Big).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Counting ordered pairs of $i$-subsets of $\{1,\dots,k\}$ according to the size $m$ of their union
+gives $\binom ki^2=\sum_{m}\binom mi\binom i{m-i}\binom km$; insert this with $i=2j$ into
+\eqref{eq:a}. For \eqref{eq:Snewton} use $k\binom km=(m+1)\binom k{m+1}+m\binom km$ and
+$\sum_{k=0}^{n-1}\binom kr=\binom n{r+1}$.
+\end{proof}
+
+(Inverting the binomial transform in $\CT\Lambda_3^{\,k}=\CT(1+(\Lambda_3-1))^k$ shows
+$w_m=\CT(\Lambda_3-1)^m$; since $\Lambda_3-1$ also has integer coefficients and exponents in
+$\{-1,0,1\}^3$, the proof of Lemma~\ref{lem:lucas} gives $w_{pm+r}\equiv w_mw_r\pmod p$ for
+$0\le r<p$. Lucas- and Dwork-type congruences
+for constant terms of powers of Laurent polynomials are studied systematically in \cite{MV,BV1}.
+Divisibility results of the type $n\mid\sum_{k<n}(\alpha k+\beta)u_k$ for other Ap\'ery-like
+sequences were proved, e.g., in \cite{GZ,SunEJC}.)
+
+\section{The prime case via a reflection bridge}
+
+\begin{lemma}\label{lem:elem}
+Let $p$ be an odd prime and $h=(p-1)/2$.
+\begin{enumerate}[label=(\alph*)]
+\item For $0\le i\le p-1$: $\binom{p-1}i\equiv(-1)^i$ and $\binom{p-2}i\equiv(-1)^i(i+1)\pmod p$.
+\item For $0\le a\le p-1$ and $0\le b\le p-1$: $\binom{p-1-a}b\equiv(-1)^b\binom{a+b}b\pmod p$.
+\item For $0\le j\le h$: $\binom{2j}j\equiv(-4)^j\binom hj\pmod p$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For $0\le b<p$ the polynomial $\binom Xb$ has coefficients in $\Z_{(p)}$, so $X\equiv Y\pmod p$ in
+$\Z_{(p)}$ implies $\binom Xb\equiv\binom Yb$. (a) and (b) follow from $p-1-a\equiv-1-a$ and
+$\binom{-1-a}b=(-1)^b\binom{a+b}b$ (with $a=0$, resp.\ $a=1$, for (a)). (c) follows from
+$\binom{2j}j=(-4)^j\binom{-1/2}j$ and $h\equiv-1/2\pmod p$.
+\end{proof}
+
+\begin{lemma}[Reflection bridge]\label{lem:bridge}
+Let $p$ be an odd prime and $h=(p-1)/2$. Then, modulo $p$,
+\[
+w_{p-1}\equiv(-4)^{3h}\sum_{l=0}^{h}\frac{\binom{2l}l^2\binom{4l}{2l}}{(-1024)^l},\qquad
+w_{p-2}\equiv(-4)^{3h}\sum_{l=0}^{h}\frac{l\,\binom{2l}l^2\binom{4l}{2l}}{(-1024)^l}.
+\]
+\end{lemma}
+
+\begin{proof}
+For $m\in\{p-1,p-2\}$ the sum defining $w_m$ may be taken over $0\le j\le h$ (the other terms
+vanish). Substitute $j=h-l$ with $0\le l\le h$, so that $2j=p-1-2l$. By
+Lemma~\ref{lem:elem}(a), $\binom{p-1}{2j}\equiv1$ and $\binom{p-2}{2j}\equiv2j+1\equiv-2l$.
+By (b) with $a=b=2l$, $\binom{2j}{p-1-2j}=\binom{p-1-2l}{2l}\equiv\binom{4l}{2l}$; by (b) with
+$a=2l$, $b=2l-1$ ($l\ge1$), $\binom{2j}{p-2-2j}=\binom{p-1-2l}{2l-1}\equiv-\binom{4l-1}{2l-1}
+=-\tfrac12\binom{4l}{2l}$; for $l=0$ the corresponding term of $w_{p-2}$ vanishes because
+$\binom{p-2}{p-1}=0$. Finally, (c) applied to $j$ and to $l$ gives
+$\binom{2j}j\equiv(-4)^j\binom hl\equiv(-4)^{j-l}\binom{2l}l=(-4)^{h-2l}\binom{2l}l$, whence
+$(-4)^j\binom{2j}j^2\equiv(-4)^{3h-5l}\binom{2l}l^2$. Multiplying out and using $(-4)^5=-1024$
+gives both congruences (for $w_{p-2}$ the factor is $(-2l)(-\tfrac12\binom{4l}{2l})=l\binom{4l}{2l}$).
+\end{proof}
+
+\begin{theorem}[Sun {\cite[Theorem 1.2, (1.5)]{SunEJC}}]\label{thm:sunejc}
+For every $n\ge1$,
+\[
+4(2n+1)\binom{2n}n\ \Big|\ R(n):=\sum_{k=0}^{n}(20k+3)\binom{2k}k^2\binom{4k}{2k}(-2^{10})^{n-k}.
+\]
+\end{theorem}
+
+Sun's proof uses the WZ pair of Guillera and Zudilin \cite{Gu,Zu} for \eqref{eq:ram}.
+
+\begin{proposition}[Prime case]\label{prop:prime}
+For every prime $p$ we have $p\mid S(p)$.
+\end{proposition}
+
+\begin{proof}
+For $p=2$: $S(2)=17a(0)+37a(1)=54$. Let $p$ be odd, $h=(p-1)/2\ge1$. In \eqref{eq:Snewton} with
+$n=p$ we have $p\mid\binom pr$ for $1\le r\le p-1$, $\binom pp=1$ and $\binom pr=0$ for $r>p$, so
+only $m=p-2$ (first term) and $m=p-1$ (second term) survive modulo $p$:
+\[
+S(p)\equiv20(p-1)w_{p-2}+(20(p-1)+17)w_{p-1}\equiv-(20w_{p-2}+3w_{p-1})\pmod p .
+\]
+By Lemma~\ref{lem:bridge},
+$20w_{p-2}+3w_{p-1}\equiv(-4)^{3h}(-1024)^{-h}R(h)\pmod p$, and by Theorem~\ref{thm:sunejc}
+$p=2h+1$ divides $R(h)$.
+\end{proof}
+
+\section{Proof of Theorem A}
+
+\begin{theorem}\label{thm:A}
+For every prime $p$ and every integer $m\ge1$, $p\mid S(pm)$. Hence $\rad(n)\mid S(n)$ for all
+$n\ge1$; in particular $n\mid S(n)$ for every squarefree $n$.
+\end{theorem}
+
+\begin{proof}
+Writing $k=pq+r$ ($0\le q<m$, $0\le r<p$) and using Lemma~\ref{lem:lucas} and
+$20(pq+r)+17\equiv20r+17$,
+\[
+S(pm)\equiv\sum_{q=0}^{m-1}a(q)\sum_{r=0}^{p-1}(20r+17)a(r)=S(p)\sum_{q=0}^{m-1}a(q)\equiv0
+\pmod p
+\]
+by Proposition~\ref{prop:prime}. If $p\mid n$ then $n=pm$ and $p\mid S(n)$; thus every prime
+factor of $n$ divides $S(n)$.
+\end{proof}
+
+\section{The second layer}\label{sec:layer2}
+
+In this section $\Lambda=\Lambda_3$, $p$ is a prime, $\Lambda^{(p)}=\Lambda(x^p,y^p,z^p)$ and
+$\Phi=(\Lambda^p-\Lambda^{(p)})/p$, a Laurent polynomial with integer coefficients and exponents in
+$[-p,p]^3$. For $v\in\Z^3$ and $s\ge0$ put $\beta_v(s)=[x^v]\Lambda^s$ (so $\beta_0=a$), and write
+$v_m=3w_m+20w_{m-1}$ ($w_{-1}=0$). The proof of Proposition~\ref{prop:prime} shows
+$S(p)\equiv-v_{p-1}\pmod p$, hence $p\mid v_{p-1}$.
+
+\begin{lemma}[Second-order Lucas]\label{lem:lucas2}
+\begin{enumerate}[label=(\roman*)]
+\item For $0\le r\le p-1$ and $q\ge1$:
+$a(r+pq)\equiv a(r)a(q)+pq\,\CT\big(\Lambda^r\Phi\,(\Lambda^{(p)})^{q-1}\big)\pmod{p^2}$.
+\item For $v\in\{-1,0,1\}^3$, $0\le d\le p-2$ and $t\ge0$: $\beta_v(d+pt)\equiv\beta_v(d)\,a(t)\pmod p$.
+\item If the exponents of a Laurent polynomial $F$ lie in $(-2p,2p)^3$, then for $s\ge0$
+\[\CT\big(F\,(\Lambda^{(p)})^s\big)=\sum_{v\in\{-1,0,1\}^3}[x^{-pv}]F\cdot\beta_v(s).\]
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) $(\Lambda^{(p)}+p\Phi)^q\equiv(\Lambda^{(p)})^q+pq\,\Phi(\Lambda^{(p)})^{q-1}\pmod{p^2}$, and
+$\CT\big(\Lambda^r(\Lambda^{(p)})^q\big)=a(r)a(q)$ exactly, as in the proof of Lemma~\ref{lem:lucas}.
+(ii) $\Lambda^{d+pt}\equiv\Lambda^d(\Lambda^{(p)})^t\pmod p$ and
+$[x^v]\big(\Lambda^d(\Lambda^{(p)})^t\big)=\sum_{w}[x^{v-pw}]\Lambda^d\cdot\beta_w(t)$; the exponents of
+$\Lambda^d$ lie in $[-d,d]^3$, while for $w\ne0$ some coordinate of $v-pw$ has absolute value
+$\ge p-1>d$. (iii) $[x^{pv}](\Lambda^{(p)})^s=\beta_v(s)$, and $[x^{-pv}]F=0$ unless
+$v\in\{-1,0,1\}^3$.
+\end{proof}
+
+\begin{theorem}[Second-layer reduction]\label{thm:layer2}
+For every prime $p$ and every $m\ge1$,
+\[
+S(p^2m)\equiv S(p^2)\sum_{t=0}^{m-1}a(t)\pmod{p^2},\qquad
+S(p^2)\equiv-\big(3w_{p^2-1}+20w_{p^2-2}\big)\pmod{p^2}.
+\]
+\end{theorem}
+
+\begin{proof}
+Put $\sigma_m=\sum_{t<m}a(t)$, $A_p=\sum_{r<p}a(r)$, $B_p=\sum_{r<p}r\,a(r)$,
+$Q_1=\sum_{r<p}(20r+17)\Lambda^r$ and, for $q\ge1$, $E(q)=\CT\big(Q_1\Phi(\Lambda^{(p)})^{q-1}\big)$,
+$E(0)=0$. Writing $k=r+pq$ with $0\le r<p$, $0\le q<pm$, Lemma~\ref{lem:lucas2}(i) gives
+\begin{align*}
+S(p^2m)&\equiv\sum_{q<pm}\sum_{r<p}(20r+17+20pq)\big(a(r)a(q)+pq\,\CT(\Lambda^r\Phi(\Lambda^{(p)})^{q-1})\big)\\
+&\equiv S(p)\sum_{q<pm}a(q)+20pA_p\sum_{q<pm}q\,a(q)+p\sum_{q<pm}qE(q)
+\end{align*}
+modulo $p^2$. By Lemma~\ref{lem:lucas}, $\sum_{q<pm}a(q)\equiv A_p\sigma_m$ and
+$\sum_{q<pm}q\,a(q)\equiv B_p\sigma_m\pmod p$; as $p\mid S(p)$, the first term is
+$\equiv S(p)A_p\sigma_m\pmod{p^2}$. The exponents of $Q_1\Phi$ lie in $[-(2p-1),2p-1]^3$, so by
+Lemma~\ref{lem:lucas2}(iii) $E(q)=\sum_{v}g_v\beta_v(q-1)$ with $g_v=[x^{-pv}](Q_1\Phi)$. For
+$q=r'+pt$ with $1\le r'\le p-1$ we have $q\equiv r'$ and, by Lemma~\ref{lem:lucas2}(ii),
+$\beta_v(q-1)\equiv\beta_v(r'-1)a(t)\pmod p$; the terms with $r'=0$ vanish modulo $p$. Hence
+$\sum_{q<pm}qE(q)\equiv\sigma_m\sum_vg_vC_v\pmod p$ with $C_v=\sum_{r'=1}^{p-1}r'\beta_v(r'-1)$.
+Altogether $S(p^2m)\equiv pK_p\sigma_m\pmod{p^2}$ with
+$K_p=S(p)A_p/p+20A_pB_p+\sum_vg_vC_v$ independent of $m$; $m=1$ gives $S(p^2)\equiv pK_p$.
+
+For the second congruence use \eqref{eq:Snewton} with $n=p^2$. By Kummer's theorem
+$v_p\binom{p^2}r=2-v_p(r)$ for $1\le r<p^2$, so modulo $p^2$ only $r=jp$ ($1\le j\le p$) survive.
+For $1\le j\le p-1$ the two terms with $r=jp$ give $\binom{p^2}{jp}\big(-v_{jp-1}+p\kappa_j\big)$
+($\kappa_j\in\Z$), and $v_{jp-1}\equiv w_{j-1}v_{p-1}\equiv0\pmod p$ by the Lucas property of $w$;
+these terms vanish modulo $p^2$. The terms with $r=p^2$ give
+$20(p^2-1)w_{p^2-2}+(20p^2-3)w_{p^2-1}\equiv-v_{p^2-1}\pmod{p^2}$.
+\end{proof}
+
+\begin{corollary}\label{cor:cubefree}
+Let $n\ge1$, and assume that every prime $p$ with $p^2\mid n$ satisfies $p^3\nmid n$ and
+$p^2\mid S(p^2)$. Then $n\mid S(n)$.
+\end{corollary}
+
+\begin{proof}
+If $p\,\|\,n$ use Theorem~\ref{thm:A}. If $p^2\,\|\,n$ write $n=p^2m$; then
+$S(n)\equiv S(p^2)\sigma_m\equiv0\pmod{p^2}$ by Theorem~\ref{thm:layer2}.
+\end{proof}
+
+\begin{proposition}\label{prop:psq}
+$p^2\mid S(p^2)$ for every prime $p\le 6000$. Consequently Conjecture~\ref{conj:sun} holds for every
+cube-free $n$ such that every prime $p$ with $p^2\mid n$ is at most $6000$.
+\end{proposition}
+
+\begin{proof}
+For $p\le 443$ this is contained in the exact verification of $n\mid S(n)$ for
+$n\le200\,000$ (and for $p\le997$ in the run up to $10^6$). For $449\le p\le6000$ we computed $3w_{p^2-1}+20w_{p^2-2}$ modulo $p^4$, summing the terms
+$(-4)^j\,m!\,(2j)!^2/\big(j!^4(m-2j)!^2(4j-m)!\big)$ of $w_m$ with exact $p$-adic valuations and unit
+parts modulo $p^4$ (program \texttt{ctest.c}); in every case its valuation is $\ge2$, so
+Theorem~\ref{thm:layer2} gives $p^2\mid S(p^2)$. The program was cross-checked against exact
+integer arithmetic for $17$ prime powers $p^e\le1024$ (including $p=2$). The second statement is
+Corollary~\ref{cor:cubefree}.
+\end{proof}
+
+\begin{remark}[Higher layers]\label{rem:layers}
+Numerically, $S(p^em)\equiv S(p^e)\sum_{t<m}a(t)\pmod{p^e}$ whenever $p^em\le6000$ and
+either $p\le13$, $e\le2$, or $p\le11$, $e=3$, or $p\le5$, $e=4$. Even the blockwise congruences
+$\sum_{r<p^e}(20r+17)a(r+p^et)\equiv S(p^e)a(t)\pmod{p^e}$ hold for $p\le13$, $e\le2$ and $p\le11$,
+$e=3$ (with $p^e(t+1)\le6000$), and for $(p,e)\in\{(2,5),(2,6),(3,4),(3,5),(5,3)\}$ (with
+$p^e(t+1)\le2600$). For $e\le2$ the blockwise congruence also held for the weights $1$, $r$, $r^2$
+in place of $20r+17$; for $e\ge3$ it is weight-sensitive: for $p\in\{3,7\}$, $e=3$ it fails for
+weights $\alpha r+\beta$ with $p\nmid\sum_{r<p}(\alpha r+\beta)a(r)$ and held for all tested weights
+with $p$ dividing this sum, whereas for $p=3$, $e=4$ some of the latter fail although Sun's weight
+$20r+17$ does not.
+\end{remark}
+
+\begin{conjecture}[Layer principle]\label{conj:layer}
+For every prime power $p^e$ and every $m\ge1$, $S(p^em)\equiv S(p^e)\sum_{t<m}a(t)\pmod{p^e}$.
+\end{conjecture}
+
+Under Conjecture~\ref{conj:layer}, Conjecture~\ref{conj:sun} is equivalent to $p^e\mid S(p^e)$ for all
+prime powers $p^e$: the ``bottom layer''. Theorem~\ref{thm:layer2} is the case $e=2$, and the
+bottom layer is proved for $e=1$ (Proposition~\ref{prop:prime}) and verified for $e=2$,
+$p\le6000$.
+
+\section{Negative-index continuation and a two-index generalisation}\label{sec:neg}
+
+Let $A=\Z[[u,v]]$, $B=\bigcup_{N\ge0}(uv)^{-N}A$, and let $\CT\colon B\to\Z$ be the coefficient of
+$u^0v^0$. The derivations $\theta_u=u\,\partial_u$, $\theta_v=v\,\partial_v$ act on $B$ and
+$\CT(\theta_uH)=\CT(\theta_vH)=0$ for $H\in B$. Put
+\[
+\Lambda=\frac{(1+u)(1+v)}{uv},\quad \rho=\frac{uv}{1+u+v},\quad
+\gamma_l=(-4)^l\binom{2l}l^2,
+\]
+\[
+G(w)=\sum_{l\ge0}\gamma_lw^{2l},\qquad \Psi=(3\rho+20\rho^2)G(uv).
+\]
+
+\begin{lemma}\label{lem:ct2}
+$a(k)=\CT\big(\Lambda^kG(uv)\big)$ for all $k\ge0$.
+\end{lemma}
+
+\begin{proof}
+$\CT\big((1+u)^k(1+v)^k(uv)^{2l-k}\big)=\binom k{k-2l}^2=\binom k{2l}^2$, and
+$a(k)=\sum_l\gamma_l\binom k{2l}^2$.
+\end{proof}
+
+\begin{proposition}[Negative-index continuation]\label{prop:neg}
+\begin{enumerate}[label=(\roman*)]
+\item $\Lambda-1$ is invertible in $B$ with inverse $\rho$, and
+$\sum_{n\ge1}(20n-17)\Lambda^{-n}=3\rho+20\rho^2$ in $A$.
+\item For every $N\ge1$,
+$\ S(N)=-\CT(\Lambda^N\Psi)+20N\,\CT\big(\Lambda^N\rho\,G(uv)\big).$
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) $\Lambda-1=(1+u+v)/(uv)$. With $t=\Lambda^{-1}=uv/((1+u)(1+v))\in uvA$ the series converges,
+$t/(1-t)=\rho$, and $\sum_{n\ge1}(20n-17)t^n=(3t+17t^2)/(1-t)^2=3\rho+20\rho^2$.
+(ii) In $\Z[T]$ one checks
+$(T-1)^2\sum_{k=0}^{N-1}(20k+17)T^k=(3T+17)(1-T^N)+20NT^N(T-1)$. Substitute $T=\Lambda$ and
+multiply by $\rho^2=(\Lambda-1)^{-2}$; since $(3\Lambda+17)\rho^2=(3(\Lambda-1)+20)\rho^2
+=3\rho+20\rho^2$ we get
+$\sum_{k<N}(20k+17)\Lambda^k=(3\rho+20\rho^2)(1-\Lambda^N)+20N\Lambda^N\rho$.
+Multiply by $G(uv)$, take $\CT$, and use Lemma~\ref{lem:ct2} and $\CT\Psi=0$ ($\Psi\in uvA$).
+\end{proof}
+
+Thus $3\rho+20\rho^2=-\sum_{k\le-1}(20k+17)\Lambda^k$ is Sun's weight continued to negative
+indices; Proposition~\ref{prop:neg} expresses $S(N)$ through this ``negative half''.
+
+Let $\Der_A=\theta_uA+\theta_vA$ (``formal derivatives'').
+
+\begin{lemma}\label{lem:fd}
+$F=\sum f_{\alpha\beta}u^\alpha v^\beta\in A$ lies in $\Der_A$ iff $f_{00}=0$ and
+$\gcd(\alpha,\beta)\mid f_{\alpha\beta}$ for all $(\alpha,\beta)\ne(0,0)$.
+\end{lemma}
+
+\begin{proof}
+Necessity is clear. Conversely choose integers with
+$\alpha s_{\alpha\beta}+\beta t_{\alpha\beta}=f_{\alpha\beta}$ and put
+$J_1=\sum s_{\alpha\beta}u^\alpha v^\beta$, $J_2=\sum t_{\alpha\beta}u^\alpha v^\beta$; then
+$F=\theta_uJ_1+\theta_vJ_2$.
+\end{proof}
+
+\begin{theorem}[Reduction]\label{thm:red}
+If $\Psi\in\Der_A$, then $N\mid S(N)$ for every $N\ge1$.
+\end{theorem}
+
+\begin{proof}
+Write $\Psi=\theta_uJ_1+\theta_vJ_2$ with $J_i\in A$. Then
+\[
+\CT(\Lambda^N\theta_uJ_1)=-\CT(\theta_u(\Lambda^N)J_1)=-N\,\CT(\Lambda^{N-1}\theta_u(\Lambda)J_1)\in N\Z,
+\]
+similarly for $v$, and $20N\,\CT(\Lambda^N\rho G(uv))\in N\Z$. Apply
+Proposition~\ref{prop:neg}(ii).
+\end{proof}
+
+\begin{conjecture}[Two-index generalisation]\label{conj:B}
+Let $W_{a,b}=\sum_j\gamma_j\binom a{2j}\binom b{2j}$. For all $\alpha,\beta\ge1$,
+\[
+\gcd(\alpha,\beta)\ \Big|\ \mathcal B(\alpha,\beta):=\sum_{n=1}^{\min(\alpha,\beta)}(20n-17)\,
+W_{\alpha-n,\beta-n}.
+\]
+\end{conjecture}
+
+Since $W_{k,k}=a(k)$, $\mathcal B(N,N)=\sum_{k=0}^{N-1}(20N-20k-17)a(k)\equiv-S(N)\pmod N$; so the
+diagonal of Conjecture~\ref{conj:B} is Conjecture~\ref{conj:sun}.
+
+\subsection{Integral changes of variables}
+\begin{lemma}\label{lem:inv}
+Let $P\in u\Z[[u]]$ with $P'(0)=1$ and $q\in1+u\Z[[u]]$. The substitution
+$\iota\colon\Z[[s,t]]\to A$, $F(s,t)\mapsto F(P(u),v\,q(u))$, is a ring isomorphism, and with the
+unit $c=\theta_u(\log P)=uP'/P\in1+u\Z[[u]]$ we have $\Der_A=c\cdot\iota(\Der_{\Z[[s,t]]})$.
+The same holds with the roles of $u$ and $v$ interchanged.
+\end{lemma}
+
+\begin{proof}
+$\iota$ is an isomorphism since its linear part is the identity. Put $e=\theta_u(\log q)\in u\Z[[u]]$.
+The chain rule gives, for $F\in\Z[[s,t]]$,
+$\theta_u(\iota F)=c\,\iota(\theta_sF)+e\,\iota(\theta_tF)$ and $\theta_v(\iota F)=\iota(\theta_tF)$.
+Since $c,e$ depend on $u$ only, $c\,\iota(\theta_sF)=\theta_u(\iota F)-\theta_v(e\,\iota F)$ and
+$c\,\iota(\theta_tF)=\theta_v(c\,\iota F)$, so $c\,\iota(\Der_{\Z[[s,t]]})\subset\Der_A$. Conversely,
+writing $J_i=\iota F_i$,
+$\theta_uJ_1+\theta_vJ_2=c\,\iota\big(\theta_sF_1+\theta_t(\tilde e F_1+\tilde c F_2)\big)$ with
+$\tilde e=\iota^{-1}(e/c)$, $\tilde c=\iota^{-1}(1/c)\in\Z[[s]]$ (functions of $s$ alone commute
+with $\theta_t$).
+\end{proof}
+
+\begin{theorem}[Equivalent forms]\label{thm:equiv}
+For $a\ge1$, $b\ge1$ and $0\le l\le(a-1)/2$ put $i=a-1-2l$,
+$\sigma_l(a)=\gamma_l\binom{2i}i(10i+3)$,
+\[
+Y(a)=\sum_{l=0}^{\lfloor(a-1)/2\rfloor}\sigma_l(a)
+ =\sum_{l}(-4)^l\binom{2l}l^2\big(10(a-2l)-7\big)\binom{2a-4l-2}{a-2l-1},\qquad
+T(a,b)=\sum_{l=0}^{\lfloor(b-1)/2\rfloor}\sigma_l(a).
+\]
+The following are equivalent:
+\begin{enumerate}[label=(\alph*)]
+\item $\Psi\in\Der_A$, i.e.\ $\gcd(\alpha,\beta)\mid[u^\alpha v^\beta]\Psi$ for all $\alpha,\beta\ge1$;
+\item Conjecture~\ref{conj:B};
+\item \textup{(I)} $a\mid Y(a)$ for all $a\ge1$, and \textup{(II)} $\gcd(a,b)\mid T(a,b)$ for all
+$1\le b<a$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(a)$\Leftrightarrow$(b). Let $\Psi'(U,V)=\sum_{\alpha,\beta}\mathcal B(\alpha,\beta)U^\alpha V^\beta
+=F(UV)\Gamma(U,V)$ with $F(W)=\sum_{n\ge1}(20n-17)W^n$ and
+$\Gamma=\sum_{a,b}W_{a,b}U^aV^b=\sum_j\gamma_j(UV)^{2j}((1-U)(1-V))^{-2j-1}$. Apply
+Lemma~\ref{lem:inv} twice (to $U=u/(1+u)$, then to $V=v/(1+v)$); the Jacobian factor is
+$1/((1+u)(1+v))$. Under this substitution $UV/((1-U)(1-V))=uv$, $1/(1-U)=1+u$, and
+$UV/(1-UV)=\rho$, so $F(UV)=3\rho+20\rho^2$ and $\Gamma=(1+u)(1+v)G(uv)$. Hence
+$\iota(\Psi')\cdot\frac1{(1+u)(1+v)}=\Psi$ and Lemma~\ref{lem:inv} gives
+$\Psi'\in\Der\iff\Psi\in\Der_A$; by Lemma~\ref{lem:fd} the former is (b).
+
+(a)$\Leftrightarrow$(c). Apply Lemma~\ref{lem:inv} with $P(u)=u(1+u)$, $q=(1+u)^{-1}$, i.e.\
+$\varphi=u(1+u)$, $\chi=v/(1+u)$, $c=(1+2u)/(1+u)$. Let $E(\varphi)=(1+4\varphi)^{-1/2}
+=\sum_i(-1)^i\binom{2i}i\varphi^i$ and
+\[
+\Theta(\varphi,\chi)=\varphi\chi\,\frac{10\chi+(3-7\chi)E(\varphi)}{(1+\chi)^2}\,G(\varphi\chi)
+\in\Z[[\varphi,\chi]].
+\]
+Since $1+4\varphi=(1+2u)^2$ we have $\iota(E)=1/(1+2u)$ and $\iota(\varphi\chi)=uv$; a direct
+computation (using $1+\chi=(1+u+v)/(1+u)$ and
+$10\chi+\frac{3-7\chi}{1+2u}=\frac{3(1+u)+v(3+20u)}{(1+u)(1+2u)}$) gives
+$\iota(\Theta)\,c=\frac{uv\,(3(1+u+v)+20uv)}{(1+u+v)^2}G(uv)=\Psi$. So (a) is equivalent to
+$\Theta\in\Der$. Now
+$[\varphi^i\chi^j]\frac{10\chi+(3-7\chi)E}{(1+\chi)^2}=:\kappa_{ij}$ equals $3(-1)^j$ for $i=0$ and
+$(-1)^{i+j}\binom{2i}i(10j+3)$ for $i\ge1$; hence
+$[\varphi^a\chi^b]\Theta=\sum_l\gamma_l\kappa_{a-1-2l,\,b-1-2l}$ (indices $\ge0$). Put $i=a-1-2l$,
+$j=b-1-2l$, so $j-i=b-a$ and $(-1)^{i+j}=(-1)^{a+b}$. In all cases
+$\kappa_{ij}=(-1)^{a+b}\binom{2i}i(10i+3)+10(j-i)(-1)^{a+b}\binom{2i}i[i\ge1]$. If $b\ge a$ the
+summation range is $2l+1\le a$, so $[\varphi^a\chi^b]\Theta\equiv(-1)^{a+b}Y(a)\pmod{b-a}$; if
+$b<a$ it is $2l+1\le b$, so $[\varphi^a\chi^b]\Theta\equiv(-1)^{a+b}T(a,b)\pmod{a-b}$. As
+$\gcd(a,b)$ divides $a-b$, Lemma~\ref{lem:fd} shows that $\Theta\in\Der$ iff $\gcd(a,b)\mid Y(a)$
+for $b\ge a$ (which for $b=a$ is (I) and for $b>a$ follows from (I)) and $\gcd(a,b)\mid T(a,b)$
+for $b<a$ (which is (II)).
+\end{proof}
+
+\begin{remark}
+(I) is the statement $\int_0^x(3+8t)(1-4t)^{-3/2}\,G(t)\,dt\in\Z[[x]]$, since
+$\sum_aY(a)x^{a-1}=(3+8x)(1-4x)^{-3/2}G(x)$. A search for a closed form
+$A(x)G(x)+B(x)G'(x)$ of this integral with $A,B$ in a natural class of algebraic functions, and for a
+linear relation with polynomial coefficients among the integral, $G$ and $G'$ (degree $\le30$),
+found none; the integrality appears to be of genuinely arithmetic nature.
+\end{remark}
+
+\begin{remark}[Three variables]\label{rem:three}
+With $\Lambda_3$ as in Lemma~\ref{lem:ct}, $X=1/x$, $Y=1/y$ and $M=\Lambda_3-1$, the same
+computation in $\Z[z^{\pm1}][[X,Y]]$ gives $R_0:=(3M+20)/M^2=\sum_{n\ge1}(20n-17)\Lambda_3^{-n}$ and
+$S(N)=-\CT(\Lambda_3^NR_0)+20N\,\CT(\Lambda_3^N/M)$; so $N\mid S(N)$ would also follow if all
+coefficients of $X^aY^bz^c$ in $R_0$ were divisible by $\gcd(a,b,c)$, which we checked for $a+b\le12$.
+A closely related three-index strengthening of Conjecture~\ref{conj:B} is
+\[
+\gcd(\alpha,\beta,c)\ \Big|\ \sum_{n\ge1}(20n-17)\,[z^c]\,T_{\alpha-n}(1,-4z)\,T_{\beta-n}(1,1/z)
+\qquad(\alpha,\beta\ge1,\ c\in\Z),
+\]
+where $T_m(b,c)=\sum_j\binom m{2j}\binom{2j}jb^{m-2j}c^j$ are the generalised central trinomial
+coefficients; its $z^0$-slice is exactly Conjecture~\ref{conj:B} because
+$\CT_z\,T_a(1,-4z)T_b(1,1/z)=W_{a,b}$. We verified it for $1\le\alpha,\beta\le100$, all $c$, and the
+$p$-parts of $\gcd(\alpha,\beta,c)$ for all primes $p\le47$.
+\end{remark}
+
+\section{A Dwork-type congruence}\label{sec:dwork}
+
+\begin{conjecture}\label{conj:D}
+For every prime $p$ there is $\lambda_p\in p\Z_{(p)}$ such that for all $n\ge1$
+\[
+S(pn)\equiv\lambda_p\,S(n)\pmod{p^{v_p(n)+1}}.
+\]
+\end{conjecture}
+
+Numerically one may take $\lambda_p=S(p)/17$ for $p\ne17$ and $\lambda_{17}=S(34)/S(2)$
+(\S\ref{sec:comp}); for $n=1$ the congruence is consistent with Proposition~\ref{prop:prime}.
+
+\begin{proposition}\label{prop:D}
+Conjecture~\ref{conj:D} implies Conjecture~\ref{conj:sun}.
+\end{proposition}
+
+\begin{proof}
+Fix $p$; we show $v_p(S(n))\ge v_p(n)$ by induction on $v_p(n)$, the case $v_p(n)=0$ being trivial.
+If $n=pn'$ then $v_p(S(n))\ge\min\big(v_p(n')+1,\ v_p(\lambda_p)+v_p(S(n'))\big)\ge v_p(n')+1$.
+\end{proof}
+
+By the Lucas property, Conjecture~\ref{conj:D} holds modulo $p$ (with both sides $\equiv0$); the
+content is the higher-order term. Heuristically, in the language of Beukers--Vlasenko \cite{BV1,BV3} it says that a specific
+element of a Dwork crystal has vanishing unit-root projection for every $p$, which one would expect
+to come from the CM/Ramanujan structure behind \eqref{eq:ram}; we have not made this precise.
+
+\section{Square-heavy moduli and an Erd\H{o}s analogy}\label{sec:erdos}
+
+In companion manuscripts of the same corpus \cite{Keio1,Keio2,Keio3}, Erd\H{o}s's conjecture that
+$\sum_{n\ge1}f(n)/n\ne0$ for every convergent ``Erd\H{o}s function'' $f$ modulo $q$ is shown to be
+\emph{false} for $q=105^2$ and \emph{true} for every non-square $q$; the failures are confined to
+square moduli by a $2$-adic transfer principle across the divisor layers $\gcd(n,q)=q/d$. Since
+Theorem~A covers exactly the squarefree moduli, it is natural to ask whether Sun's conjecture
+could fail at moduli with a large square part. The two problems are of different nature (vanishing of
+a linear form in logarithms, decided by parity, versus $p$-adic valuations of a binomial sum), and
+we found no way to transfer the $2$-adic argument itself. The layer viewpoint, however, led to
+Theorem~\ref{thm:layer2}, and we used the analogy to direct a counterexample search:
+\begin{enumerate}[label=(\alph*)]
+\item exact verification of $n\mid S(n)$ for all $n\le 10^6$; this includes $105^2,165^2,195^2,315^2$,
+$495^2$, $735^2$, all prime squares $p^2$ with $p<1000$ and all prime powers up to that bound;
+\item for 1175 further square-heavy $n\le10^7$ (all prime powers $p^e>2\cdot10^5$ with $e\ge2$,
+all products $p^2q^2$ with $p<200<q<2000$ in range, and squares of odd squarefree numbers such as
+$1155^2,1365^2,\dots$), the test $v_p(3w_{n-1}+20w_{n-2})\ge v_p(n)$ for every $p$ with
+$p^2\mid n$. Since $c_{n-1}=\sum_{k=1}^n(-1)^{n-k}\binom{n-1}{k-1}S(k)/k$, a failure would exhibit a
+counterexample $k\le n$.
+\end{enumerate}
+No counterexample occurred.
+
+\section{Computations}\label{sec:comp}
+All computations use exact integer arithmetic; the script is reproduced in
+Appendix~\ref{app:script} and its complete output is in the file \texttt{verify\_log.txt}.
+\begin{enumerate}[label=(\arabic*)]
+\item $n\mid S(n)$ for all $1\le n\le10^6$ (the script in Appendix~\ref{app:script} reproduces
+the range $n\le 200\,000$ in about two minutes; the larger range uses the same code). Here $a(n)$ is computed by the order-four
+recurrence $\sum_{i=0}^4p_i(n)a(n+i)=0$ listed in the script (found by linear algebra and
+cross-checked against \eqref{eq:a} for $n<400$; every division is exact).
+\item Lemmas~\ref{lem:ct}, \ref{lem:lucas} ($p<40$, $n<600$), \ref{lem:newton}, the bridge
+congruences of Lemma~\ref{lem:bridge} for all primes $3\le p<400$, and Theorem~\ref{thm:sunejc}
+for $1\le n\le150$.
+\item The identities of Proposition~\ref{prop:neg} and the coordinate identities in the proof of
+Theorem~\ref{thm:equiv} (symbolically).
+\item Theorem~\ref{thm:equiv}(a) for $1\le\alpha,\beta\le110$; Conjecture~\ref{conj:B} for
+$1\le\alpha,\beta\le120$; (I) for $a\le700$ (and, separately, $a<1500$); (II) for $1\le b<a\le160$.
+For comparison, in the three-variable check of Remark~\ref{rem:three} replacing $(20,17)$ by
+$(20,16)$ or $(1,0)$ produces $791$, resp.\ $1674$, failures among $129\,600$ coefficients, and in
+Theorem~\ref{thm:equiv}(a) replacing $(3,20)$ by $(3,19)$ fails already at $(\alpha,\beta)=(2,2)$.
+\item Conjecture~\ref{conj:D} for $3\le p\le31$ and $pn\le1500$.
+\item Theorem~\ref{thm:layer2} and Conjecture~\ref{conj:layer} as described in
+Remark~\ref{rem:layers}; Proposition~\ref{prop:psq} for $p\le6000$; the square-heavy search of
+\S\ref{sec:erdos}.
+\end{enumerate}
+
+\section{Outlook}\label{sec:outlook}
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Prime powers.} By Proposition~\ref{prop:D} and Theorem~\ref{thm:equiv}, it suffices to
+prove Conjecture~\ref{conj:D}, or the one-variable congruences (I) and (II); alternatively the layer
+principle (Conjecture~\ref{conj:layer}) together with the bottom layers $p^e\mid S(p^e)$. For $e=2$,
+numerically the analogue of Lemma~\ref{lem:bridge} with $p$ replaced by $N=p^2$ (both congruences,
+modulo $p^2$) holds for $p\in\{7,11,13,17,19,31,37\}$ but fails for $p\in\{3,5,23,29\}$; where it
+holds, Theorem~\ref{thm:sunejc} would give $p^2\mid S(p^2)$, but we have no proof of it. Both reduce, at a
+single prime, to the prime case proved here; what is missing is control of the second-order terms
+of the Lucas congruences. Two natural tools are the Dwork crystals of Beukers--Vlasenko
+\cite{BV1,BV3} and $q$-analogues with ``creative microscoping'' \cite{GZm}, which handle all
+cyclotomic factors $\Phi_d(q)$, $d\mid n$, simultaneously.
+\item \emph{OEIS A179537.} Sun's companion conjecture $n\mid\sum_{k<n}(42k+37)(-1)^kW_k(1,-16)$
+has the same shape, with Ramanujan partner $\sum(42k+5)\binom{2k}k^3/4096^k=16/\pi$, whose
+$p$-adic analogue modulo $p^4$ was proved by Hu and Mao \cite{HM}; its Lucas
+property is proved exactly as Lemma~\ref{lem:lucas}. The corresponding prime-case bridge has not
+been carried out here, so we make no claim about it.
+\end{enumerate}
+
+\section{Status of the result}\label{sec:status}
+We record, as precisely as we can, what has and has not been achieved.
+\begin{itemize}
+\item \emph{Named prior problem:} Conjecture~\ref{conj:sun} is Sun's conjecture of 2010 (OEIS
+A179524), stated in the original form.
+\item \emph{Open status:} it is listed as open in \cite{SunOpen} (2019) and in \cite{FC}
+(November 2026); the OEIS-Open paper \cite{OO} (August 2026), which reports language-model
+resolutions of $147$ OEIS conjectures, does not mention A179524 or A179537. Literature searches (arXiv, journal databases reachable to us) found no proof.
+Absence of evidence is not proof of priority.
+\item \emph{Completeness:} Theorem~A is an unconditional theorem for \emph{all squarefree} $n$ (more
+precisely $\rad(n)\mid S(n)$ for all $n$), and Proposition~\ref{prop:psq} extends it to cube-free $n$
+whose square part involves only primes $\le6000$. \textbf{The full conjecture is not proved}: the
+remaining cases are reduced to Conjectures~\ref{conj:D}, \ref{conj:B} and~\ref{conj:layer}, which
+remain open.
+\item \emph{Non-triviality:} the prime case is not a re-expression of a known theorem: it requires
+the reflection congruence of Lemma~\ref{lem:bridge}, which maps the Newton coefficients
+$w_{p-1},w_{p-2}$ of $a$ onto the Ramanujan truncation, combined with Sun's WZ-based divisibility.
+\end{itemize}
+
+\appendix
+\section{Verification script}\label{app:script}
+The following script (also distributed as \texttt{verify.py}) performs all checks of
+\S\ref{sec:comp}; run \texttt{python3 verify.py 200000}.
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+"""Verification script for the paper
+"Sun's divisibility conjecture for sum_{k<n}(20k+17) W_k(1,-4): the squarefree case
+ and a reduction via negative-index continuation".
+All checks use exact integer arithmetic.  Usage:  python3 verify.py [NMAX]
+"""
+import sys, time
+from math import comb, gcd
+import sympy as sp
+
+NMAX = int(sys.argv[1]) if len(sys.argv) > 1 else 50000
+ok_all = True
+def report(name, ok):
+    global ok_all
+    ok_all &= ok
+    print(("PASS " if ok else "FAIL ") + name, flush=True)
+
+def a_direct(n):  # a(n) = sum_k (-4)^k C(n,k)^2 C(n-k,k)^2
+    return sum((-4)**k * comb(n, k)**2 * comb(n-k, k)**2 for k in range(n//2 + 1))
+def w(m):          # Newton coefficients
+    return sum((-4)**j * comb(2*j, j)**2 * comb(m, 2*j) * comb(2*j, m-2*j)
+               for j in range(m//2 + 1) if 0 <= m-2*j <= 2*j)
+
+# 1. constant-term representation a(n) = CT(Lambda^n)
+x, y, z = sp.symbols('x y z')
+Lam = (x + 1 - 4*z/x) * (y + 1 + 1/(y*z))
+def CT(expr):
+    p = sp.Poly(sp.expand(expr * (x*y*z)**40), x, y, z)
+    return p.coeff_monomial(x**40 * y**40 * z**40)
+report("Lemma 2.1: a(n)=CT(Lambda^n), n<=8", all(CT(Lam**n) == a_direct(n) for n in range(9)))
+
+# 2. Newton expansion and the formula for S(n)
+okN = all(a_direct(k) == sum(w(m)*comb(k, m) for m in range(k+1)) for k in range(60))
+S = lambda n: sum((20*k+17)*a_direct(k) for k in range(n))
+okS = all(S(n) == sum(w(m)*(20*(m+1)*comb(n, m+2) + (20*m+17)*comb(n, m+1)) for m in range(n))
+          for n in range(1, 60))
+report("Lemma 2.3: Newton expansion and S(n) formula (k,n<60)", okN and okS)
+
+# 3. Lucas property a(pm+r) = a(m)a(r) mod p
+A = [a_direct(n) for n in range(600)]
+okL = all((A[p*m+r] - A[m]*A[r]) % p == 0
+          for p in sp.primerange(2, 40) for m in range(600//p) for r in range(p) if p*m+r < 600)
+report("Lemma 2.2: Lucas property (p<40, n<600)", okL)
+
+# 4. bridge congruences (Lemma 3.2) and Sun's theorem (EJC 2013, Thm 1.2) and S(p)=0 mod p
+okB = True
+for p in sp.primerange(3, 400):
+    h = (p-1)//2; inv = pow(-4, -1, p); c0 = pow(-4, 3*h, p)
+    B1 = sum(c0*pow(inv, 5*l, p)*comb(2*l, l)**2*comb(4*l, 2*l) for l in range(h+1)) % p
+    B2 = sum(c0*pow(inv, 5*l, p)*l*comb(2*l, l)**2*comb(4*l, 2*l) for l in range(h+1)) % p
+    okB &= (w(p-1) - B1) % p == 0 and (w(p-2) - B2) % p == 0
+report("Lemma 3.2: bridge congruences for w_{p-1}, w_{p-2} (3<=p<400)", okB)
+R = lambda h: sum((20*l+3)*comb(2*l, l)**2*comb(4*l, 2*l)*(-1024)**(h-l) for l in range(h+1))
+report("Theorem 3.3 (Sun): 4(2h+1)C(2h,h) | R(h) (1<=h<=150)",
+       all(R(h) % (4*(2*h+1)*comb(2*h, h)) == 0 for h in range(1, 151)))
+
+# 5. partial-sum identity and negative-index continuation (symbolic)
+T, s, u, v = sp.symbols('T s u v')
+R0 = (3*T + 17)/(T - 1)**2
+okP = all(sp.simplify(sum((20*k+17)*T**k for k in range(N)) - (R0 - T**N*(R0 - 20*N/(T-1)))) == 0
+          for N in range(1, 9))
+ser = sp.expand(sp.series(R0.subs(T, 1/s), s, 0, 15).removeO())
+okNeg = all(ser.coeff(s, n) == 20*n - 17 for n in range(1, 15))
+report("Prop 6.2: partial-sum identity (N<=8) and sum_{n>=1}(20n-17)T^{-n}=R0(T)", okP and okNeg)
+
+# 6. coordinate identity of Theorem 5.4: Theta(phi(u),chi(u,v)) * (1+2u)/(1+u) = 3 rho + 20 rho^2
+phi = u*(1+u); chi = v/(1+u); E = 1/(1+2*u)
+Theta = phi*chi*(10*chi + (3 - 7*chi)*E)/(1 + chi)**2
+rho = u*v/(1 + u + v)
+report("Thm 6.7 proof: coordinate identity for (phi,chi)", sp.simplify(Theta*(1+2*u)/(1+u) - (3*rho + 20*rho**2)) == 0
+       and sp.expand(1 + 4*phi - (1+2*u)**2) == 0)
+
+# 7. Theorem 6.7(a) in (u,v)-coordinates: gcd(al,be) | [u^al v^be] Psi
+gam = [(-4)**l*comb(2*l, l)**2 for l in range(400)]
+def rho_coef(k, al, be):   # [u^al v^be] rho^k
+    if al < k or be < k: return 0
+    m = al + be - 2*k
+    return (-1)**m * comb(k + m - 1, m) * comb(m, al - k)
+def g(al, be): return 3*rho_coef(1, al, be) + 20*rho_coef(2, al, be)
+def Bcoef(al, be): return sum(gam[l]*g(al - 2*l, be - 2*l) for l in range(min(al, be)//2 + 1))
+M = 110
+report("Thm 6.7(a): gcd(al,be) | [u^al v^be]Psi for 1<=al,be<=%d" % M,
+       all(Bcoef(al, be) % gcd(al, be) == 0 for al in range(1, M+1) for be in range(1, M+1)))
+
+
+# 7b. two-index form (Conjecture 6.5): gcd(al,be) | sum_{n>=1}(20n-17) W_{al-n,be-n}
+def W2(a, b): return sum(gam[j]*comb(a, 2*j)*comb(b, 2*j) for j in range(min(a, b)//2 + 1))
+W2tab = [[W2(a, b) for b in range(121)] for a in range(121)]
+def B2(al, be): return sum((20*n - 17)*W2tab[al-n][be-n] for n in range(1, min(al, be) + 1))
+report("Conjecture 6.5 (two-index form) for 1<=al,be<=120 and diagonal = -S(N) mod N",
+       all(B2(al, be) % gcd(al, be) == 0 for al in range(1, 121) for be in range(1, 121))
+       and all((B2(N, N) + S(N)) % N == 0 for N in range(1, 60)))
+U_, V_ = sp.symbols('U V')
+# coordinate change U=u/(1+u), V=v/(1+v): Psi'(U,V) dlogU dlogV = Psi(u,v) dlogu dlogv
+rhoUV = (u/(1+u))*(v/(1+v))/(1 - (u/(1+u))*(v/(1+v)))
+GamFac = (1+u)*(1+v)      # Gamma(U,V) = G(uv)/((1-U)(1-V)) with 1/(1-U)=1+u
+report("Thm 6.7 proof: change (U,V)->(u,v) identity",
+       sp.simplify(rhoUV - u*v/(1+u+v)) == 0 and
+       sp.simplify((3*rhoUV + 20*rhoUV**2)*GamFac/((1+u)*(1+v)) - (3*rho + 20*rho**2)) == 0)
+
+# 8. one-variable congruences (I) and (II)
+def sig(a, l):
+    i = a - 2*l - 1
+    return gam[l]*comb(2*i, i)*(10*i + 3)
+Y = lambda a: sum(sig(a, l) for l in range((a-1)//2 + 1))
+Tt = lambda a, b: sum(sig(a, l) for l in range((b-1)//2 + 1))
+report("Thm 6.7 (I): a | Y(a) for a<=700", all(Y(a) % a == 0 for a in range(1, 701)))
+report("Thm 6.7 (II): gcd(a,b) | T(a,b) for 1<=b<a<=160",
+       all(Tt(a, b) % gcd(a, b) == 0 for a in range(2, 161) for b in range(1, a)))
+
+# 9. Sun's conjecture n | S(n) for n<=NMAX, using the order-4 recurrence of a(n)
+def p0(n): return -4225*(n+1)**2*(n+2)**2*(240*n**3+2160*n**2+6483*n+6490)
+def p1(n): return -2*(n+2)**2*(91680*n**5+1146000*n**4+5647266*n**3+13701286*n**2+16361708*n+7698385)
+def p2(n): return -2*(16080*n**7+289440*n**6+2219001*n**5+9390796*n**4+23689644*n**3+35620787*n**2+29562269*n+10448048)
+def p3(n): return 2*(n+3)*(480*n**6+7920*n**5+53646*n**4+190760*n**3+375516*n**2+388401*n+165272)
+def p4(n): return -(n+3)*(n+4)**3*(240*n**3+1440*n**2+2883*n+1927)
+t0 = time.time()
+win = [a_direct(n) for n in range(4)]; Ssum = 0; bad = []; okrec = True
+for n in range(1, NMAX + 1):
+    k = n - 1
+    if k >= 4:
+        m = k - 4
+        q, r = divmod(-(p0(m)*win[0] + p1(m)*win[1] + p2(m)*win[2] + p3(m)*win[3]), p4(m))
+        okrec &= (r == 0); win = win[1:] + [q]; ak = q
+        if k < 400: okrec &= (ak == A[k])
+    else:
+        ak = win[k]
+    Ssum += (20*k + 17)*ak
+    if Ssum % n: bad.append(n)
+report("Sun's conjecture n | S(n) for all n<=%d (recurrence cross-checked); %.0fs" % (NMAX, time.time()-t0),
+       okrec and not bad)
+
+
+# 9b. second-layer reduction (Theorem 5.2): S(p^2 m) = S(p^2) * sum_{t<m} a(t) mod p^2,
+#     and S(p^2) = -(3 w_{p^2-1} + 20 w_{p^2-2}) mod p^2
+NL = 4000
+AL = [a_direct(n) for n in range(4)]
+for m in range(NL):
+    q, r = divmod(-(p0(m)*AL[m] + p1(m)*AL[m+1] + p2(m)*AL[m+2] + p3(m)*AL[m+3]), p4(m)); AL.append(q)
+SL = [0]; PL = [0]
+for k in range(NL): SL.append(SL[-1] + (20*k + 17)*AL[k]); PL.append(PL[-1] + AL[k])
+okL2 = all((SL[p*p*m] - SL[p*p]*PL[m]) % (p*p) == 0
+           for p in sp.primerange(2, 64) for m in range(1, NL//(p*p) + 1) if p*p*m <= NL)
+okL2b = all((SL[p*p] + 3*w(p*p-1) + 20*w(p*p-2)) % (p*p) == 0 for p in sp.primerange(2, 24))
+report("Thm 5.2: second-layer reduction (p<64, p^2 m<=%d) and S(p^2) = -v_{p^2-1} mod p^2 (p<24)" % NL,
+       okL2 and okL2b)
+
+# 10. Dwork-type congruences (Conjecture 7.1): S(pn) = lam_p S(n) mod p^{v_p(n)+1}
+NN = 1500
+AA = [a_direct(n) for n in range(4)]
+for m in range(NN):
+    q, r = divmod(-(p0(m)*AA[m] + p1(m)*AA[m+1] + p2(m)*AA[m+2] + p3(m)*AA[m+3]), p4(m)); AA.append(q)
+SS = [0]
+for k in range(NN): SS.append(SS[-1] + (20*k + 17)*AA[k])
+def vp(x, p):
+    if x == 0: return 10**9
+    e = 0
+    while x % p == 0: x //= p; e += 1
+    return e
+okD = True
+for p in sp.primerange(3, 32):
+    base = 1 if p != 17 else 2
+    mod = p**10
+    lam = SS[p*base]*pow(SS[base], -1, mod) % mod
+    okD &= vp(lam, p) >= 1
+    okD &= all((SS[p*n] - lam*SS[n]) % p**(vp(n, p) + 1) == 0 for n in range(1, NN//p))
+report("Conjecture 7.1 (Dwork-type) numerically (3<=p<=31, pn<=%d)" % NN, okD)
+
+print("ALL CHECKS PASSED" if ok_all else "SOME CHECK FAILED")
+\end{lstlisting}
+
+\begin{thebibliography}{99}
+\bibitem{BV1} F.~Beukers and M.~Vlasenko, Dwork crystals I, \emph{Int.\ Math.\ Res.\ Not.\ IMRN}
+2021, 8807--8844.
+\bibitem{BV3} F.~Beukers and M.~Vlasenko, Dwork crystals III: from excellent Frobenius lifts towards
+supercongruences, \emph{Int.\ Math.\ Res.\ Not.\ IMRN} 2023, no.~23, 20433--20483;
+arXiv:2105.14841.
+\bibitem{FC} Google DeepMind et al., \emph{formal-conjectures}, file
+\texttt{FormalConjectures/OEIS/179524.lean}, commit of 2026-11-06,
+\url{https://github.com/google-deepmind/formal-conjectures}.
+\bibitem{Gu} J.~Guillera, Some binomial series obtained by the WZ-method,
+\emph{Adv.\ in Appl.\ Math.} 29 (2002), 599--603.
+\bibitem{GZ} V.~J.~W.~Guo and J.~Zeng, Proof of some conjectures of Z.-W.~Sun on congruences for
+Ap\'ery polynomials, \emph{J.\ Number Theory} 132 (2012), 1731--1740.
+\bibitem{GZm} V.~J.~W.~Guo and W.~Zudilin, A $q$-microscope for supercongruences,
+\emph{Adv.\ Math.} 346 (2019), 329--358.
+\bibitem{HM} D.-W.~Hu and G.-S.~Mao, On an extension of a Van Hamme supercongruence,
+\emph{Ramanujan J.} 42 (2017), 713--723.
+\bibitem{Keio1} Keio, Erd\H{o}s's conjecture on $\sum f(n)/n$ is false: a $2$-adic shadow of Okada's
+criterion and the least counterexample $q=105^2$ (24 October 2026), item [055] of the
+Verifiable-Mathematical-Reasoning-Corpus, \url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\bibitem{Keio2} Keio, Square moduli, sparse masks, and sign obstructions for vanishing Erd\H{o}s sums
+(research draft, 24 October 2026), item [056] of the same corpus.
+\bibitem{Keio3} Keio, Erd\H{o}s's conjecture on $\sum f(n)/n$ holds for every non-square modulus
+(24 October 2026), item [057] of the same corpus.
+\bibitem{MV} A.~Mellit and M.~Vlasenko, Dwork's congruences for the constant terms of powers of a
+Laurent polynomial, \emph{Int.\ J.\ Number Theory} 12 (2016), 313--321.
+\bibitem{OEIS} OEIS Foundation, The On-Line Encyclopedia of Integer Sequences, sequence A179524
+(comments by Z.-W.~Sun, July 1, 2010), \url{https://oeis.org/A179524}.
+\bibitem{OO} T.~Adamczewski, OEIS Open: How many conjectures can language models turn into
+theorems?, arXiv:2608.11941 (2026).
+\bibitem{SunEJC} Z.-W.~Sun, Products and sums divisible by central binomial coefficients,
+\emph{Electron.\ J.\ Combin.} 20(1) (2013), \#P9; arXiv:1004.4623.
+\bibitem{SunOpen} Z.-W.~Sun, Open conjectures on congruences, \emph{Nanjing Univ.\ J.\ Math.\
+Biquarterly} 36 (2019), 1--99; earlier versions arXiv:0911.5665.
+\bibitem{Zu} W.~Zudilin, Ramanujan-type supercongruences, \emph{J.\ Number Theory} 129 (2009),
+1848--1857.
+\end{thebibliography}
+
+\end{document}

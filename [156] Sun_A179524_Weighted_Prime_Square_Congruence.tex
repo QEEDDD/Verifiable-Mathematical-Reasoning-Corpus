@@ -1,0 +1,539 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm]{geometry}
+\usepackage{microtype,xcolor,listings,xurl,hyperref,fancyhdr}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black,
+pdftitle={An Elementary Proof of Sun's Weighted Prime-Square Congruence},
+pdfauthor={Research manuscript prepared with ChatGPT for Keio}}
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{Sun's weighted prime-square congruence}
+\fancyhead[R]{A finite telescoping proof}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}\newcommand{\Q}{\mathbb Q}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,
+keywordstyle=\color{blue!55!black},commentstyle=\color{gray!80!black},
+stringstyle=\color{gray!80!black},breaklines=true,columns=fullflexible,
+keepspaces=true,showstringspaces=false,frame=single,
+rulecolor=\color{gray!40},aboveskip=10pt,belowskip=10pt}
+\title{\textbf{An Elementary Proof of Sun's\\Weighted Prime-Square Congruence}\\[5pt]
+\large A reciprocal binomial sum and a reflected WZ certificate}
+\author{Research manuscript prepared with ChatGPT for Keio}
+\date{8 November 2026}
+\begin{document}\maketitle
+
+\begin{abstract}
+Let \(a_n=\sum_k(-4)^k\binom nk^2\binom{n-k}k^2\).
+We prove that, for every odd prime \(p\),
+\(\sum_{n=0}^{p-1}(20n+17)a_n\equiv
+p(7+10(\frac{-1}{p}))\pmod{p^2}\),
+the second assertion of Sun's Conjecture 5.8(ii).
+A universal congruence for sums of squared binomial coefficients
+reduces the problem to a reciprocal Ramanujan-type finite sum.
+Although its individual summands can have a factor of \(p\) in the
+denominator, an explicit rational WZ certificate transforms the total
+into integral boundary terms. The two surviving endpoints are
+congruent to 3 and 4 modulo \(p\); every other term vanishes at the
+required precision. The proof includes \(p=3\) uniformly and uses
+no other supercongruence or all-integer divisibility theorem as an
+input. We also deduce that \(p^2\) divides the original weighted sum
+if and only if \(p\in\{3,17\}\). The established WZ antecedents are
+credited, and historical priority is not asserted.
+\end{abstract}
+
+\section{The unchanged assertion}
+
+Define
+\begin{equation}\label{eq:original}
+ a_n=\sum_{k=0}^{\lfloor n/2\rfloor}
+       (-4)^k\binom nk^2\binom{n-k}k^2,
+ \qquad
+ S(N)=\sum_{n=0}^{N-1}(20n+17)a_n.
+\end{equation}
+The sequence is \(W_n(1,-4)\) in Sun's notation and OEIS A179524
+\cite{Sun2010,OEIS}. The second assertion of Conjecture 5.8(ii) in
+\cite[printed p.~33]{Sun2010} predicts
+\begin{equation}\label{eq:target}
+ S(p)\equiv p\left(7+10\left(\frac{-1}{p}\right)\right)
+          \pmod{p^2}\qquad(p\text{ odd prime}).
+\end{equation}
+Here \((\frac{-1}{p})=(-1)^{(p-1)/2}\) is the Legendre symbol.
+The sum in \eqref{eq:target} has exactly \(p\) terms.
+
+The preceding research manuscript \cite{Previous} treated the first
+assertion of Conjecture 5.8(ii), namely \(N\mid S(N)\) for every
+positive integer \(N\). The present proof of \eqref{eq:target} is
+independent of that manuscript. Its ingredients are finite binomial
+identities, an explicit rational telescoping certificate, and
+elementary prime-adic valuation estimates. In particular, every
+ingredient needed for the new conclusion is proved below.
+
+The certificate was found by reflecting familiar Ramanujan WZ
+kernels. Such kernels and the WZ method have established antecedents
+in Guillera's work \cite{Guillera}, Sun's proof of a Ramanujan
+supercongruence \cite[Section~3]{SunRefinement}, and the parameter
+pair reproduced by Hou, He, and Wang \cite[arXiv v4, (4.1)]{HHW}.
+We give the resulting rational certificate directly, so its
+validity does not require analytic continuation or convergence
+of an infinite hypergeometric series.
+
+
+
+\section{The companion congruence modulo a prime square}
+\label{sec:companion}
+
+In this section we prove the second assertion in Sun's
+Conjecture 5.8(ii). The proof uses an explicit rational telescoping
+certificate; it does not require the all-integer divisibility theorem
+or a separate Ramanujan supercongruence as an input.
+
+\begin{theorem}\label{p2:main}
+For every odd prime \(p\),
+\[
+ \sum_{n=0}^{p-1}(20n+17)a_n
+ \equiv p\left(7+10\left(\frac{-1}{p}\right)\right)
+ \pmod{p^2}.
+\]
+\end{theorem}
+
+We use congruences between rational numbers in the localization
+\(\Z_{(p)}\). Every displayed rational congruence below is justified
+by verifying the relevant denominators or by an explicit valuation.
+Write \(b_m=\binom{2m}{m}\).
+
+\subsection{A universal inner-sum congruence}
+
+\begin{lemma}\label{p2:inner}
+Let \(p\) be an odd prime and \(0\le m<p\). Then
+\[
+ \sum_{n=m}^{p-1}\binom nm^2
+ \equiv \frac{p}{(2m+1)b_m}\pmod{p^2}.
+\]
+The rational number on the right belongs to \(\Z_{(p)}\), including
+the cases in which its displayed denominator is divisible by \(p\).
+\end{lemma}
+\begin{proof}
+The product linearization and the hockey-stick identity give
+\[
+ \binom nm^2=\sum_{j=0}^m
+   \binom mj\binom{m+j}{j}\binom n{m+j},
+\qquad
+ \sum_{n=m}^{p-1}\binom nm^2
+ =\sum_{j=0}^m d_j\binom p{m+j+1},
+\]
+where \(d_j=\binom mj\binom{m+j}{j}\).
+The product linearization counts ordered pairs of \(m\)-subsets by
+the size \(m+j\) of their union.
+We compare the last sum termwise with
+\[
+             p\sum_{j=0}^m\frac{(-1)^{m+j}d_j}{m+j+1}.
+\]
+Put \(r=m+j+1\). If \(r<p\), use
+\(\binom pr\equiv(-1)^{r-1}p/r\pmod{p^2}\).
+If \(r=p\), the compared terms are exactly equal, since \(p\) is odd.
+If \(r>p\), the binomial coefficient on the left vanishes,
+whereas \(d_j\) is divisible by \(p\): indeed
+\(p\le m+j\le2p-2\) and both \(m,j<p\). Also \(p<r<2p\), so the
+compared term on the right is divisible by \(p^2\).
+
+For completeness, the required finite rational identity is
+\[
+ \sum_{j=0}^m\frac{(-1)^{m+j}}{m+j+1}
+                 \binom mj\binom{m+j}{j}
+          =\frac1{(2m+1)b_m}.
+\]
+To prove it, expand
+\[
+ \frac1{m!}\frac{d^m}{dx^m}\bigl(x^m(1-x)^m\bigr)
+       =\sum_{j=0}^m(-1)^j\binom mj\binom{m+j}{j}x^j.
+\]
+Multiply by \((-1)^mx^m\), integrate from zero to one, and integrate
+by parts \(m\) times. The boundary terms vanish, and the result is
+\(\int_0^1x^m(1-x)^m\,dx=m!^2/(2m+1)!\).
+
+Finally, \(v_p((2m+1)b_m)\le1\). For \(m<(p-1)/2\) it is zero;
+for \(m=(p-1)/2\) the factor \(2m+1=p\) contributes one; and for
+\(m>(p-1)/2\) the central binomial coefficient contributes one while
+\(2m+1\) is a unit. Thus the claimed rational congruence is well defined.
+\end{proof}
+
+\subsection{An exact rational telescoping certificate}
+
+For nonnegative integers \(n,k\), define
+\[
+ c_n=\frac{(-4)^n b_n^2}{(4n+1)b_{2n}},\qquad
+ \mathcal H(n,k)=c_n
+       \frac{(-2n-\tfrac12)_k(n+\tfrac12)_k}{(\tfrac12)_k^2},
+\]
+where \((a)_k=a(a+1)\cdots(a+k-1)\) and \((a)_0=1\). Put
+\[
+ \mathcal D(n,k)=(20n+2k+7)\mathcal H(n,k),\qquad
+ \mathcal E(n,k)=\frac{16(2n+1)^2}{4n-2k+3}\mathcal H(n,k),
+\]
+and set \(\mathcal E(-1,k)=0\).
+
+\begin{lemma}[Rational certificate]\label{p2:wz}
+For every \(n\ge0\) and every \(k\ge1\),
+\[
+ \mathcal D(n,k)-\mathcal D(n,k-1)
+      =\mathcal E(n,k)-\mathcal E(n-1,k).
+\]
+Consequently, for every positive integer \(h\),
+\begin{equation}\label{p2:rectangle}
+ \sum_{n=0}^h(20n+7)c_n
+       =\sum_{n=0}^h\mathcal D(n,h)
+                     -\sum_{k=1}^h\mathcal E(h,k).
+\end{equation}
+\end{lemma}
+\begin{proof}
+For \(n\ge1\), successive-term ratios give
+\[
+ \frac{\mathcal H(n,k-1)}{\mathcal H(n,k)}
+   =\frac{(2k-1)^2}{(2k-4n-3)(2n+2k-1)},
+\]
+\[
+ \frac{\mathcal H(n-1,k)}{\mathcal H(n,k)}
+ =-\frac{n(4n-2k-1)(4n-2k+1)}
+          {8(2n-1)^2(2n+2k-1)}.
+\]
+After division by \(\mathcal H(n,k)\), the asserted certificate is
+the rational identity
+\[
+\begin{split}
+ 20n+2k+7
+ &-\frac{(20n+2k+5)(2k-1)^2}
+          {(2k-4n-3)(2n+2k-1)}\\
+ &=\frac{16(2n+1)^2}{4n-2k+3}
+       +\frac{2n(4n-2k+1)}{2n+2k-1},
+\end{split}
+\]
+which follows by clearing the two linear denominators.
+For \(n=0\), use \(\mathcal H(0,0)=1\) and
+\(\mathcal H(0,k)=-1/(2k-1)\) for \(k\ge1\) to check the same
+identity directly with \(\mathcal E(-1,k)=0\).
+Summing over \(0\le n\le h\) and \(1\le k\le h\) gives
+\eqref{p2:rectangle}.
+\end{proof}
+
+\begin{theorem}[Reciprocal Ramanujan sum]\label{p2:reciprocal}
+For every odd prime \(p\), with \(h=(p-1)/2\),
+\[
+ R_p:=\sum_{n=0}^h
+       \frac{(20n+7)(-4)^n b_n^2}{(4n+1)b_{2n}}
+       \in\Z_{(p)},\qquad R_p\equiv7\pmod p.
+\]
+\end{theorem}
+\begin{proof}
+We evaluate the right-hand side of \eqref{p2:rectangle} modulo \(p\).
+For \(0\le n\le h\),
+\[
+ v_p(c_n)=
+ \begin{cases}
+ 0,&4n+1<p,\\
+ -1,&4n+1\ge p.
+ \end{cases}
+\]
+Indeed \(b_n\) is a unit, and exactly one factor of \(p\) occurs
+in \((4n+1)b_{2n}\) in the second range. It comes from \(4n+1\)
+when \(4n+1=p\), and from \(b_{2n}\) otherwise.
+
+For \(1\le n<h\), the product \((n+\tfrac12)_h\) contains
+exactly one factor divisible by \(p\), namely \(p/2\).
+If \(4n+1\ge p\), the other product
+\((-2n-\tfrac12)_h\) also contains exactly one such factor,
+namely \(-p/2\). If \(4n+1<p\), it contains none.
+The denominator \((\tfrac12)_h^2\) is a unit. Therefore
+\[
+ v_p(\mathcal H(n,h))=1\quad(1\le n<h),
+ \qquad \mathcal D(n,h)\in p\Z_{(p)}.
+\]
+This covers both ranges, including the possible equality \(4n+1=p\).
+
+For \(1\le k\le h\), \(c_h\) has valuation \(-1\),
+\((h+\tfrac12)_k=(p/2)_k\) has valuation one, and
+\((-2h-\tfrac12)_k=(\tfrac12-p)_k\) and \((\tfrac12)_k\)
+are units. Thus \(\mathcal H(h,k)\) is a unit. Since
+\[
+ 4h-2k+3=2p+1-2k
+\]
+lies between \(p+2\) and \(2p-1\), it is a unit as well.
+The factor \((2h+1)^2=p^2\) in \(\mathcal E(h,k)\) now gives
+\[
+                   \mathcal E(h,k)\in p^2\Z_{(p)}.
+\]
+
+Only the two endpoint terms remain. At \(n=0\),
+\[
+ \mathcal D(0,h)=-\frac{2h+7}{2h-1}
+                   =-\frac{p+6}{p-2}\equiv3\pmod p.
+\]
+Cancellation of the finite products at \(n=h\) gives the exact identity
+\[
+ \mathcal H(h,h)=4^h b_h
+                 \prod_{i=1}^{h-1}\frac{p+2i}{2i+1}.
+\]
+All denominators here are units. Also
+\[
+ \prod_{i=1}^{h-1}\frac{2i}{2i+1}
+                        =\frac{4^h}{(2h)b_h}.
+\]
+Consequently, by Fermat's little theorem,
+\[
+ \mathcal H(h,h)\equiv\frac{16^h}{p-1}\equiv-1\pmod p,
+\]
+and hence
+\[
+ \mathcal D(h,h)=(22h+7)\mathcal H(h,h)
+                 =(11p-4)\mathcal H(h,h)\equiv4\pmod p.
+\]
+Every term on the right-hand side of \eqref{p2:rectangle} is now
+\(p\)-integral, and its reduction is \(3+4=7\).
+The case \(p=3\) is included: the interior range is empty and
+the displayed endpoint denominators are still units.
+\end{proof}
+
+\subsection{Returning to the original weighted sum}
+
+\begin{proof}[Proof of Theorem~\ref{p2:main}]
+Put \(\gamma_k=(-4)^k b_k^2\) and \(h=(p-1)/2\).
+The elementary factorial identity
+\(\binom n{2k}b_k=\binom nk\binom{n-k}k\) gives
+\[
+ a_n=\sum_k\gamma_k\binom n{2k}^2.
+\]
+For \(N>m\ge0\), direct telescoping gives
+\begin{equation}\label{p2:weighted-inner}
+ \sum_{n=m}^{N-1}(2n-m+1)\binom nm^2
+                    =\frac{N^2}{m+1}\binom{N-1}m^2.
+\end{equation}
+Indeed, set \(f_m(n)=(n-m)^2\binom nm^2/(m+1)\) for \(n\ge m\).
+Then \(f_m(n+1)=(n+1)^2\binom nm^2/(m+1)\), so the summand is
+\(f_m(n+1)-f_m(n)\). The lower boundary \(f_m(m)\) is zero,
+and the upper boundary has the displayed form.
+Using \(20n+17=10(2n-2k+1)+(20k+7)\), interchange the finite sums
+and apply \eqref{p2:weighted-inner} to obtain
+\[
+\begin{split}
+ S(p)={}&10p^2\sum_{k=0}^h
+          \frac{\gamma_k}{2k+1}\binom{p-1}{2k}^2\\
+       &+\sum_{k=0}^h(20k+7)\gamma_k
+                           \sum_{n=2k}^{p-1}\binom n{2k}^2.
+\end{split}
+\]
+In the first sum, all terms with \(k<h\) vanish modulo \(p^2\).
+The remaining term is \(10p\gamma_h\). Since
+\[
+ b_h=\binom{p-1}h\equiv(-1)^h\pmod p,\qquad
+ (-4)^h\equiv(-1)^h\pmod p,
+\]
+we have \(\gamma_h\equiv(-1)^h=(\frac{-1}{p})\pmod p\).
+
+Lemma~\ref{p2:inner}, with \(m=2k\), transforms the second sum modulo
+\(p^2\) into
+\[
+ p\sum_{k=0}^h\frac{(20k+7)(-4)^k b_k^2}{(4k+1)b_{2k}}
+                      =pR_p\equiv7p\pmod{p^2}
+\]
+by Theorem~\ref{p2:reciprocal}. Combining the two contributions proves
+\[
+                    S(p)\equiv p\left(7+10\left(\frac{-1}{p}\right)\right)
+                    \pmod{p^2}.
+\]
+\end{proof}
+
+
+\section{Consequences, scope, and verification}
+
+\begin{corollary}\label{cor:exceptions}
+For an odd prime \(p\),
+\[
+ p^2\mid S(p)\quad\Longleftrightarrow\quad p\in\{3,17\}.
+\]
+For every odd prime \(p\notin\{3,17\}\), one has
+\(v_p(S(p))=1\).
+\end{corollary}
+\begin{proof}
+If \(p\equiv1\pmod4\), Theorem~\ref{p2:main} gives
+\(S(p)\equiv17p\pmod{p^2}\); this is zero precisely when \(p=17\).
+If \(p\equiv3\pmod4\), it gives
+\(S(p)\equiv-3p\pmod{p^2}\); this is zero precisely when \(p=3\).
+For every other odd prime the residue has valuation exactly one.
+\end{proof}
+
+Together with the separate all-integer divisibility argument in
+\cite{Previous}, the present theorem supplies proofs of both
+assertions in Conjecture 5.8(ii). This statement concerns the
+mathematical content of the two research manuscripts. No result
+about the three unweighted cases in Conjecture 5.8(i) is claimed
+here, and no assertion modulo \(p^3\) is inferred.
+
+The essential denominator issue is explicit in
+Theorem~\ref{p2:reciprocal}: some individual summands have valuation
+\(-1\), so termwise reduction of the original reciprocal sum modulo
+\(p\) would be invalid. The exact finite identity
+\eqref{p2:rectangle} first replaces that sum by terms in
+\(\Z_{(p)}\). The valuation estimates and the endpoint values then
+give its residue. This is the arithmetic step beyond a change of
+notation or a formal identity alone.
+
+A bounded search of the exact sequence, the unchanged weight,
+equivalent binomial notation, and the reciprocal sum did not identify
+a previous complete proof of this assertion. That search does not
+certify historical firstness. The WZ technique and the motivating
+kernels are established mathematics and are credited above; we do
+not claim to have invented that general method. This is a newly
+prepared proof manuscript, checked internally by independent
+readings and exact arithmetic. It has not undergone external peer
+review or proof-assistant verification.
+
+The program in the appendix audits the rational certificate, the
+finite telescoping identity, all boundary valuations, the universal
+inner-sum congruence, and the original weighted congruence. The
+reported run passed 81 exact certificate checks and all stated
+tests at the 25 odd primes at most 101. These finite computations
+are not assumptions of any theorem above.
+
+\appendix
+\section{Exact reproducibility checks}
+
+The following complete Python program uses only the standard
+library. It is included inside this single TEX file. It checks
+the proof's transcription using exact integers and rational
+numbers; the unbounded result is supplied by the algebraic proof.
+\begin{lstlisting}
+
+
+"""Exact checks for the all-odd-prime companion congruence.
+The proof is symbolic; these checks audit its transcription only.
+"""
+from fractions import Fraction as Q
+from math import comb, prod, isqrt
+
+
+def poch(a, k):
+    return prod((a+j for j in range(k)), start=Q(1))
+
+
+def b(n):
+    return comb(2*n, n)
+
+
+def c(n):
+    return Q((-4)**n*b(n)**2, (4*n+1)*b(2*n))
+
+
+def H(n, k):
+    return c(n)*poch(Q(-4*n-1, 2), k)*poch(Q(2*n+1, 2), k)/poch(Q(1, 2), k)**2
+
+
+def D(n, k):
+    return (20*n+2*k+7)*H(n, k)
+
+
+def E(n, k):
+    if n == -1:
+        return Q(0)
+    return Q(16*(2*n+1)**2, 4*n-2*k+3)*H(n, k)
+
+
+def vp(x, p):
+    x = Q(x)
+    if not x:
+        return float('inf')
+    ans = 0
+    n, d = abs(x.numerator), x.denominator
+    while n % p == 0:
+        n //= p
+        ans += 1
+    while d % p == 0:
+        d //= p
+        ans -= 1
+    return ans
+
+
+for n in range(9):
+    for k in range(1, 10):
+        assert D(n, k)-D(n, k-1) == E(n, k)-E(n-1, k)
+
+primes = [p for p in range(3, 102, 2)
+          if all(p % q for q in range(2, isqrt(p)+1))]
+partial = [0]
+for n in range(101):
+    a = sum((-4)**k*comb(n, k)**2*comb(n-k, k)**2
+            for k in range(n//2+1))
+    partial.append(partial[-1]+(20*n+17)*a)
+
+for p in primes:
+    h = (p-1)//2
+    R = sum((20*n+7)*c(n) for n in range(h+1))
+    assert R == sum(D(n, h) for n in range(h+1))-sum(E(h, k) for k in range(1, h+1))
+    assert vp(R-7, p) >= 1
+    assert D(0, h) == Q(-(p+6), p-2)
+    assert H(h, h) == 4**h*b(h)*prod((Q(p+2*i, 2*i+1) for i in range(1, h)), start=Q(1))
+    assert vp(H(h, h)+1, p) >= 1
+    assert all(vp(H(n, h), p) == 1 for n in range(1, h))
+    assert all(vp(E(h, k), p) == 2 for k in range(1, h+1))
+    assert partial[p] % (p*p) == p*(7+10*(-1)**h) % (p*p)
+    for m in range(p):
+        T = sum(comb(n, m)**2 for n in range(m, p))
+        assert vp(T-Q(p, (2*m+1)*b(m)), p) >= 2
+
+print('PASS: 81 exact WZ identities, including n=0 boundary')
+print('PASS: reciprocal congruence and all endpoint valuations at', len(primes), 'odd primes <= 101')
+print('PASS: original companion congruence at the same primes')
+print('PASS: every inner-sum congruence for m < p at those primes')
+
+
+\end{lstlisting}
+
+\begin{thebibliography}{9}\raggedright
+
+\bibitem{Sun2010}
+Zhi-Wei Sun,
+\emph{On Ap\'ery numbers and generalized central trinomial coefficients},
+arXiv:1006.2776v11, 19 August 2010, Conjecture 5.8(ii), printed p.~33.
+\url{https://arxiv.org/abs/1006.2776v11}.
+The specified version contains the conjecture; the subsequent
+withdrawal notice concerns reorganization into other manuscripts.
+
+\bibitem{OEIS}
+OEIS Foundation Inc.,
+\emph{The On-Line Encyclopedia of Integer Sequences}, entry A179524,
+contributed by Zhi-Wei Sun, 17 July 2010; accessed 8 November 2026.
+\url{https://oeis.org/A179524}.
+
+\bibitem{Guillera}
+Jes\'us Guillera,
+\emph{Hypergeometric identities for 10 extended Ramanujan-type series},
+Ramanujan Journal \textbf{15} (2008), 219--234.
+\url{https://doi.org/10.1007/s11139-007-9074-0}.
+Preprint: \url{https://arxiv.org/abs/1104.0396}.
+
+\bibitem{SunRefinement}
+Zhi-Wei Sun,
+\emph{A refinement of a congruence result by van Hamme and Mortenson},
+Illinois Journal of Mathematics \textbf{56} (2012), no.~3, 967--979.
+\url{https://arxiv.org/abs/1011.1902}.
+See Section~3 for the motivating WZ pair.
+
+\bibitem{HHW}
+Qinghu Hou, Haihong He, and Xiaoxia Wang,
+\emph{Ramanujan-inspired series for \(1/\pi\) involving harmonic numbers},
+Journal of Difference Equations and Applications \textbf{30} (2024),
+775--786.
+\url{https://doi.org/10.1080/10236198.2024.2325492}.
+Preprint: \url{https://arxiv.org/abs/2305.00498v4}, equation~(4.1).
+
+\bibitem{Previous}
+Research manuscript prepared with ChatGPT for Keio,
+\emph{A Proof of Sun's Divisibility Conjecture for A179524},
+unpublished research manuscript, 8 November 2026, 13 pp.
+The present paper does not use its theorem as an input.
+
+\end{thebibliography}
+\end{document}
