@@ -1,0 +1,415 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=27mm]{geometry}
+\usepackage{booktabs,array,enumitem}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{xcolor,fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Polynomial rigidity for constant terms}
+\fancyhead[R]{\small Research note}\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parskip}{4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}
+\newcommand{\CT}{\operatorname{CT}}
+\newcommand{\Newt}{\operatorname{Newt}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\lcm}{\operatorname{lcm}}
+\title{Polynomial Rigidity for Congruence-Preserving\\Constant-Term Sequences}
+\author{Research note prepared for KEIO}
+\date{November 2026}
+\hypersetup{pdftitle={Polynomial Rigidity for Congruence-Preserving Constant-Term Sequences},pdfauthor={Research note prepared for KEIO}}
+\begin{document}
+\maketitle
+\begin{abstract}
+Let an integer sequence be a finite rational linear combination of sequences
+$\CT(GF^n)$, where $F,G$ are multivariate Laurent polynomials over $\Q$.
+We prove that if $a_{n+p}\equiv a_n\pmod p$ for every $n\ge0$ and infinitely
+many primes $p$, then $a_n$ is a rational polynomial in $n$.
+The result permits polynomial weights in $n$, and has no growth hypothesis.
+The proof combines Frobenius digit factorization, finite polynomial
+interpolation, and the Duistermaat--van der Kallen constant-term theorem.
+It gives a restricted case of Ruzsa's 1971 conjecture, not its general solution.
+We also prove sharp limitations of separately uniform arithmetic and analytic
+Hankel estimates. The arguments have been internally cross-checked; external
+review and priority have not been established.
+\end{abstract}
+
+\section{The old problem and the result proved here}
+
+Ruzsa's conjecture \cite{Ruzsa,Delaygue} asserts that an integer sequence
+satisfying
+\[
+ a_{n+k}\equiv a_n\pmod k\quad(n\ge0,\ k\ge1),\qquad
+ \limsup_{n\to\infty}|a_n|^{1/n}<e
+\]
+must have the form $a_n=P(n)$ with $P\in\Q[n]$.
+Its 1971 origin meets the twenty-year age requirement. Delaygue's 2026 paper
+still treats the general case as open and proves the case of at most two
+singular directions of the generating function. The corresponding
+\emph{primary} congruences require the displayed relation only for prime $k$.
+
+For a finite Laurent polynomial $A$ in any number of variables, $\CT(A)$
+denotes the coefficient of the monomial with every exponent zero.
+Different summands below may use different sets of variables.
+
+\begin{theorem}[Polynomial rigidity]\label{thm:main}
+Suppose $a_n\in\Z$ for all $n\ge0$, and
+\begin{equation}\label{eq:representation}
+ a_n=\sum_{j=1}^s q_j(n)\CT\bigl(G_j F_j^n\bigr),
+ \qquad q_j\in\Q[n],\quad
+ F_j,G_j\in\Q[x_1^{\pm1},\ldots,x_{d_j}^{\pm1}].
+\end{equation}
+Assume that there is an infinite set of primes $\mathcal P$ such that
+\begin{equation}\label{eq:period}
+ a_{n+p}\equiv a_n\pmod p
+ \quad\text{for every }n\ge0\text{ and every }p\in\mathcal P.
+\end{equation}
+Then $a_n=P(n)$ for a polynomial $P\in\Q[n]$, for every $n\ge0$.
+No bound on the growth of $a_n$ is required.
+\end{theorem}
+
+More explicitly, define
+\[
+ b_j(m)=\CT(F_j^m),\qquad
+ J=\{j:b_j(m)=1\text{ for every }m\ge0\}.
+\]
+The proof gives the exact projection
+\begin{equation}\label{eq:projection}
+ a_n=\sum_{j\in J}q_j(n)\CT(G_jF_j^n).
+\end{equation}
+Every summand on the right is polynomial in $n$.
+The condition $j\in J$ can equivalently be expressed as
+$F_j=1$ or $0\notin\Newt(F_j-1)$.
+
+\begin{corollary}[Finite or cofinite prime periods]\label{cor:finitelymany}
+For a nonpolynomial integer sequence of the form
+\eqref{eq:representation}, only finitely many primes $p$ can satisfy
+$a_{n+p}\equiv a_n\pmod p$ for all $n\ge0$.
+For a polynomial sequence the same property holds for all but finitely many
+primes. Thus the set of such primes is always finite or cofinite in this class.
+In particular, Ruzsa's conclusion holds throughout this class, even after
+its growth hypothesis is removed.
+\end{corollary}
+
+\begin{proof}
+The nonpolynomial assertion is the contrapositive of Theorem~\ref{thm:main}.
+For a rational polynomial, reduction modulo any prime avoiding its
+coefficient denominators gives $P(n+p)=P(n)$ in $\mathbb F_p$.
+\end{proof}
+
+The quantifier ``for all $n$'' is essential. A congruence at one index,
+or a finite numerical check, is not the hypothesis of the theorem.
+
+\section{Frobenius digits and finite interpolation}
+
+\begin{lemma}[Digit factorization]\label{lem:digits}
+Fix Laurent polynomials $F,G$ over $\Q$ and fixed nonnegative integers
+$r,m_1,\ldots,m_k$. For all sufficiently large primes $p$, put
+$N_p=r+\sum_{i=1}^k m_i p^i$. Then
+\begin{equation}\label{eq:digit}
+ \CT(GF^{N_p})\equiv
+ \CT(GF^r)\prod_{i=1}^k\CT(F^{m_i})\pmod p.
+\end{equation}
+Rational coefficients are reduced only at primes avoiding their denominators.
+\end{lemma}
+
+\begin{proof}
+For such primes, Frobenius gives
+\[
+ GF^{N_p}\equiv GF^r\prod_{i=1}^k F(x_1^{p^i},\ldots,x_d^{p^i})^{m_i}
+ \pmod p.
+\]
+Choose $p$ larger than the absolute value of every coordinate of every
+exponent appearing in $GF^r$ and in the finitely many $F^{m_i}$.
+A contribution to the constant term has exponent vectors satisfying
+$v_0+p v_1+\cdots+p^k v_k=0$.
+Reduction modulo $p$ and the bound $|(v_0)_h|<p$ imply $v_0=0$.
+Divide by $p$ and repeat to obtain $v_i=0$ for every $i$.
+Thus constant terms factor. Negative Laurent exponents cause no difficulty.
+This proves \eqref{eq:digit}.
+\end{proof}
+
+This is an iterated form of the partial Lucas congruences for constant-term
+sequences; compare \cite[Lemma 3.1]{BSY}. Its proof above is included to make
+the needed hypotheses explicit.
+
+\begin{lemma}[Mixed identities]\label{lem:mixed}
+Under the hypotheses of Theorem~\ref{thm:main}, fix $r\ge0$ and set
+$c_j(r)=q_j(r)\CT(G_jF_j^r)$. For every finite list
+$m_1,\ldots,m_k\ge0$, including the empty list,
+\begin{equation}\label{eq:mixed}
+ \sum_{j=1}^s c_j(r)\prod_{i=1}^k b_j(m_i)=a_r.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Choose primes in the infinite set $\mathcal P$ large enough for
+Lemma~\ref{lem:digits}, and avoiding the fixed coefficient denominators.
+Since $N_p\equiv r\pmod p$, the global periodicity assumption gives
+$a_{N_p}\equiv a_r\pmod p$, while $q_j(N_p)\equiv q_j(r)\pmod p$.
+The digit lemma yields \eqref{eq:mixed} modulo every such prime.
+Both sides of \eqref{eq:mixed} are fixed rational numbers, independent of $p$.
+After clearing a fixed denominator, their difference is an integer divisible
+by infinitely many primes. It is therefore zero. The empty-list case is
+\eqref{eq:representation} at $n=r$.
+\end{proof}
+
+\begin{proposition}[Elimination of nonconstant components]\label{prop:elim}
+The mixed identities imply \eqref{eq:projection} for every $n\ge0$.
+\end{proposition}
+
+\begin{proof}
+If every index lies in $J$, there is nothing to prove. Otherwise enumerate
+the remaining indices as $j_1,\ldots,j_t$ and, for each $\ell$, choose
+$u_\ell\ge0$ with $b_{j_\ell}(u_\ell)\ne1$. For every $j$ write
+\[
+ x_j=(b_j(u_1),\ldots,b_j(u_t))\in\Q^t.
+\]
+Repeated digits in \eqref{eq:mixed}, followed by linearity, show that for
+every polynomial $R\in\Q[X_1,\ldots,X_t]$,
+\begin{equation}\label{eq:functional}
+ \sum_{j=1}^s c_j(r)R(x_j)=a_r R(1,\ldots,1).
+\end{equation}
+Take the explicit polynomial
+\[
+ R(X)=\prod_{\ell=1}^t
+ \frac{X_\ell-b_{j_\ell}(u_\ell)}{1-b_{j_\ell}(u_\ell)}.
+\]
+It equals $1$ at $(1,\ldots,1)$, equals $1$ at $x_j$ for $j\in J$, and
+vanishes at each $x_{j_\ell}$ because its $\ell$-th factor vanishes.
+Equation~\eqref{eq:functional} gives $a_r=\sum_{j\in J}c_j(r)$.
+The argument allows arbitrary signs, repeated components, and cancellation
+between summands. Since $r$ was arbitrary, the projection holds at every index.
+\end{proof}
+
+\section{Why the surviving components are polynomial}
+
+We use the following established theorem, including its geometric conclusion.
+
+\begin{theorem}[Duistermaat--van der Kallen, 1998]\label{thm:dvk}
+If a nonzero complex Laurent polynomial $H$ satisfies
+$\CT(H^m)=0$ for every integer $m\ge1$, then
+$0\notin\Newt(H)$, the convex hull of its exponent support.
+Consequently, for every fixed Laurent polynomial $G$,
+$\CT(GH^m)=0$ for all sufficiently large $m$.
+\end{theorem}
+
+The geometric statement is proved in \cite{DvK}. To see its displayed
+consequence, choose a real linear functional $\ell$ and $\eta>0$ with
+$\ell(v)\ge\eta$ on $\supp(H)$. Let
+$\gamma=\min\{\ell(w):w\in\supp(G)\}$ when $G\ne0$.
+Every exponent in $GH^m$ has $\ell$-value at least $\gamma+m\eta$;
+when this is positive it cannot be the zero exponent.
+
+\begin{proof}[Completion of Theorem~\ref{thm:main}]
+For $j\in J$, put $H_j=F_j-1$. Binomial expansion gives, for $m\ge1$,
+\[
+ \CT(H_j^m)=\sum_{h=0}^m(-1)^{m-h}\binom mh\CT(F_j^h)
+ =\sum_{h=0}^m(-1)^{m-h}\binom mh=0.
+\]
+If $H_j\ne0$, Theorem~\ref{thm:dvk} supplies an integer $M_j\ge0$ such that
+$\CT(G_jH_j^h)=0$ for $h>M_j$. The same conclusion is immediate when
+$H_j=0$ or $G_j=0$. Hence for every nonnegative integer $n$,
+\begin{equation}\label{eq:finitepoly}
+ \CT(G_jF_j^n)=
+ \sum_{h=0}^{M_j}\binom nh\CT(G_jH_j^h).
+\end{equation}
+Here $\binom nh$ is its usual polynomial in $n$; it vanishes for integers
+$0\le n<h$, so the formula holds also at the small indices.
+Insert \eqref{eq:finitepoly} into \eqref{eq:projection}. This is the required
+rational polynomial $P(n)$, valid for all $n\ge0$.
+\end{proof}
+
+Conversely, $0\notin\Newt(F-1)$ implies that every positive power of $F-1$
+has zero constant term, and therefore $\CT(F^m)=1$ for all $m$.
+This justifies the finite geometric test stated after the main theorem.
+
+\begin{corollary}[Pure powers]
+If $G_j=1$ for every $j$, then the conclusion is the especially explicit
+formula $a_n=\sum_{j\in J}q_j(n)$.
+For a single sequence $a_n=\CT(F^n)$, the hypothesis forces $a_n=1$ for all $n$.
+\end{corollary}
+
+\section{Scope, examples, and the remaining problem}
+
+The class in Theorem~\ref{thm:main} is closed under finite sums, termwise
+products, nonnegative index shifts, and multiplication by a rational
+polynomial in $n$. For products, use disjoint variable sets. For a shift by
+$h$, replace $G$ by $GF^h$ and $q(n)$ by $q(n+h)$.
+Polynomial weights can themselves be absorbed
+into constant terms: expand $q(n)=\sum_k d_k\binom nk$ and use
+\[
+ \binom nk\CT_x(GF^n)
+ =\CT_{x,u}\bigl(G u^{-k}[F(x)(1+u)]^n\bigr).
+\]
+Thus the formulation is equivalent to a finite rational linear combination
+of standard constant-term sequences.
+
+For example, the Franel sequence has the representation
+\[
+ \sum_{k=0}^n\binom nk^3
+ =\CT_{x,y}\!\left[\bigl((1+x)(1+y)(1+(xy)^{-1})\bigr)^n\right].
+\]
+The theorem applies to finite polynomial-weighted combinations of such
+sequences and their fixed constant-term weights. It does not assert that
+the Franel sequence itself has primary periodicity; the theorem restricts
+which combinations can have it.
+
+A simple surviving weighted component is
+\[
+ F(x)=1+x,\quad G(x)=x^{-h},\qquad
+ \CT(GF^n)=\binom nh.
+\]
+Its Newton polytope is strictly separated from zero after replacing $F$ by
+$F-1$. The conclusion allows nonconstant polynomials. The converse
+``every integer-valued polynomial is primary'' is not being asserted.
+
+\paragraph{Relation to the corpus.}
+The proof develops the constant-term and Frobenius mechanisms used in the
+corpus's Franel and lifting work. Its required arithmetic ingredient is
+proved in Lemma~\ref{lem:digits}; the substantive external theorem is
+Duistermaat--van der Kallen. No unverified assertion from a corpus draft is
+needed as a premise. Finite interpolation is the step that permits several
+different constant-term components to interact without assuming they are
+linearly independent.
+
+\paragraph{Exact limit of the result.}
+An arbitrary sequence in Ruzsa's conjecture is not known to have
+\eqref{eq:representation}. Even all rational diagonals do not belong to this
+class: Bostan--Straub--Yurkevich prove that the Fibonacci sequence is not a
+finite rational linear combination of standard constant-term sequences
+\cite{BSY}. This is a representation limitation,
+not a counterexample to Ruzsa's conjecture. A general proof still needs a
+different bridge from congruences and small growth to polynomiality.
+
+\paragraph{Status.}
+The main theorem is a complete proof for its stated class. It neither resolves
+the full 1971 conjecture nor establishes that this restricted statement was
+previously open. Targeted literature searches and internal independent
+proof audits are not substitutes for an external priority check or peer review.
+
+\appendix
+\section{A sharp arithmetic barrier for Hankel determinants}
+
+Write $H_N(a)=(a_{i+j})_{0\le i,j<N}$, and
+$D_N=\prod_{p<N}p^{N-p}$. Let $B_N$ be the positive gcd of all nonzero
+$\det H_N(a)$ over integer primary congruence-preserving sequences. Let $C_N$
+be the analogous gcd for full congruence preservation.
+
+\begin{theorem}\label{thm:gcd}
+For $N\ge2$,
+\[
+ B_N=D_N,\qquad \log C_N=\tfrac12N^2+o(N^2).
+\]
+Thus full prime-power congruences cannot improve the quadratic exponent in a
+universal divisibility bound obtained from congruences alone.
+\end{theorem}
+
+\begin{proof}
+Put $b_j=\Delta^j a_0$, so $a_m=\sum_j\binom mj b_j$.
+If $T=(\binom ij)_{0\le i,j<N}$, Vandermonde's identity gives
+$H_N(a)=T H_N(b)T^{\mathsf T}$, hence the determinants agree.
+Let $P_j=\prod_{p\le j}p$ and $L_j=\lcm(1,\ldots,j)$, with $P_0=L_0=1$.
+Primary congruences imply $P_j\mid b_j$: modulo $p$, the shift satisfies
+$E^p a=a$, so $\Delta^p a=(E-1)^p a=0$. Each row $i$ of $H_N(b)$ is
+divisible by $P_i$, giving $D_N\mid\det H_N(a)$.
+
+For a fixed prime $p<N$, choose just
+$b_{p-1}=P_{p-1}$ and $b_{N+p-1}=P_{N+p-1}$ nonzero.
+The matrix has reverse-diagonal blocks of sizes $p$ and $N-p$, with zero
+off-diagonal blocks. Its determinant has $p$-valuation exactly $N-p$.
+For $p\ge N$, use only $b_{N-1}=P_{N-1}$, obtaining a $p$-adic unit.
+These finite Newton sequences are primary: coefficients with index at least
+$p$ vanish modulo $p$, and $\binom mj$ for $j<p$ is polynomial modulo $p$.
+This proves $B_N=D_N$.
+
+For full congruences, every sequence with $L_j\mid b_j$ is admissible,
+because $L_j\binom mj$ preserves congruences. Indeed, in Vandermonde's
+formula for $\binom{m+k}{j}-\binom mj$, each term contains
+$L_j\binom ki=k(L_j/i)\binom{k-1}{i-1}$ for some $1\le i\le j$.
+The single choice $b_{N-1}=L_{N-1}$ proves
+$D_N\mid C_N\mid L_{N-1}^N$.
+When $p<N$ and $p^2>2N-2$, the preceding two-block construction with $L$
+in place of $P$ still gives $v_p(C_N)=N-p$.
+Only primes $p\le\sqrt{2N-2}$ can contribute extra valuations, and
+$v_p(C_N)\le N\lfloor\log_p(N-1)\rfloor$. Consequently
+\[
+ 0\le\log C_N-\log D_N
+ \le N\pi(\sqrt{2N-2})\log(N-1)=o(N^2).
+\]
+Finally, the prime number theorem gives
+$\log D_N=\sum_{j=0}^{N-1}\sum_{p\le j}\log p=\tfrac12N^2+o(N^2)$.
+\end{proof}
+
+The extremizing polynomials depend on $N$ and $p$. This theorem does not
+exclude stronger estimates that combine the growth and differential
+structure of one fixed nonpolynomial sequence with its congruences.
+
+\section{An exact three-direction analytic barrier}
+
+Consider
+\[
+ F(z)=(1-20z^3)^{-1/2}=\sum_{n\ge0}a_nz^n,
+ \qquad a_{3k}=5^k\binom{2k}{k},\quad a_{3k+1}=a_{3k+2}=0.
+\]
+This integer, algebraic series has three equally spaced singular directions
+and coefficient growth $20^{1/3}<e$. Nevertheless its Hankel determinants
+$\mathcal H_N=\det H_N(a)$ satisfy
+\begin{align*}
+ \mathcal H_{3m}&=(-1)^m2^{3m-1}5^{3m^2-m} &&(m\ge1),\\
+ \mathcal H_{3m+1}&=(-1)^m2^{3m}5^{3m^2+m} &&(m\ge0),\\
+ \mathcal H_{3m+2}&=0 &&(m\ge0).
+\end{align*}
+In particular $\limsup_N|\mathcal H_N|^{1/N^2}=5^{1/3}>\sqrt e$.
+
+Here is a proof of the formulas. The numbers $c_k=\binom{2k}{k}$ are the
+moments of $dx/(\pi\sqrt{x(4-x)})$ on $(0,4)$.
+The monic orthogonal polynomials are $p_0=1$ and
+$p_j(x)=2T_j((x-2)/2)$ for $j\ge1$, with squared norms $1,2,2,\ldots$.
+Thus, for $m\ge1$, $\det(c_{i+j})_{i,j<m}=2^{m-1}$.
+The standard determinant expression for a monic orthogonal polynomial,
+evaluated at zero, gives
+\[
+ p_m(0)=(-1)^m\frac{\det(c_{i+j+1})_{i,j<m}}{\det(c_{i+j})_{i,j<m}}
+ =2(-1)^m,
+\]
+so the shifted determinant is $2^m$. After replacing $c_k$ by $5^kc_k$,
+these determinants become $2^{m-1}5^{m(m-1)}$ and $2^m5^{m^2}$.
+Reorder the original Hankel rows and columns by their indices modulo three.
+The zero-residue block is the first type; the other two residue classes
+couple by the second type, with zero diagonal blocks. For $N=3m$ their sizes
+are $m,m,m$; for $N=3m+1$, they are $m+1,m,m$; for $N=3m+2$ the last two
+sizes differ and force a zero determinant. This proves the claims, with
+$N=1,2$ checked directly.
+
+This example is not a Ruzsa counterexample: $a_2=0\not\equiv a_0=1\pmod2$.
+It shows that integrality, D-finiteness, small growth, and three singular
+directions alone do not force a Hankel upper rate below $\sqrt e$.
+Together with Appendix A, it explains why a proof based on independently
+improving the two uniform bounds needs genuinely additional input.
+
+\begin{thebibliography}{9}
+\bibitem{Ruzsa} I. Z. Ruzsa, On congruence preserving functions,
+\emph{Mat. Lapok} \textbf{22} (1971), 125--134.
+\bibitem{Delaygue} E. Delaygue, On Ruzsa's conjecture on congruence preserving
+functions, \emph{Bull. London Math. Soc.} \textbf{58} (2026), e70332.
+\href{https://arxiv.org/abs/2502.13068}{arXiv:2502.13068v2}.
+\bibitem{DR} E. Delaygue and T. Rivoal, On primary pseudo-polynomials
+(Around Ruzsa's Conjecture), \emph{Int. J. Number Theory} \textbf{18} (2022),
+1613--1636. \href{https://arxiv.org/abs/2102.01534}{arXiv:2102.01534}.
+\bibitem{DvK} J. J. Duistermaat and W. van der Kallen,
+Constant terms in powers of a Laurent polynomial,
+\emph{Indag. Math. (N.S.)} \textbf{9} (1998), 221--231.
+\href{https://doi.org/10.1016/S0019-3577(98)80020-7}{doi:10.1016/S0019-3577(98)80020-7}.
+\bibitem{BSY} A. Bostan, A. Straub, and S. Yurkevich,
+On the representability of sequences as constant terms,
+\emph{J. Number Theory} \textbf{253} (2023), 235--256.
+\href{https://doi.org/10.1016/j.jnt.2023.06.015}{doi:10.1016/j.jnt.2023.06.015}.
+\end{thebibliography}
+\end{document}

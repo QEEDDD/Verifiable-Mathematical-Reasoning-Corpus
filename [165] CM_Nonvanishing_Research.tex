@@ -1,0 +1,682 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,booktabs,longtable,array}
+\usepackage[margin=1in]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\usepackage{enumitem}
+\setlist{nosep}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Hh}{\mathbb H}
+\DeclareMathOperator{\trdeg}{trdeg}
+\DeclareMathOperator{\ord}{ord}
+\title{Effective CM Nonvanishing for Products of Eisenstein Series\\[4pt]\large Infinite Weight Bands, a Finite Reduction, and a Two-Adic Obstruction}
+\author{Research note prepared for Keio}
+\date{14 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Let $F_{k,\ell}=E_kE_\ell-E_{k+\ell}$, where the Eisenstein series are normalized to have constant term one. We give an effective finite reduction for nonvanishing at each fixed principal CM point of odd discriminant $D\le-7$. A separate, reproducible interval computation and a uniform lattice estimate establish nonvanishing at all 35 principal CM points in the boundary classification whenever $\min(k,\ell)\le500$, with the identically zero weights excluded. We also prove a two-adic congruence for every even $k,\ell\ge6$ with $v_2(k)=v_2(\ell)$, excluding the CM discriminants $-7,-15$ throughout that infinite family. Given the no-Siegel-zero input used in the boundary classification, the weight-band result implies the corresponding part of Aiken--Ross--Shvydkoy--Xue Conjecture 5.2. The complete conjecture is not proved: the effective global cutoff is not evaluated or exhaustively checked here. No claim of historical priority or formal proof-assistant verification is made.
+\end{abstract}
+
+\section{Scope and external inputs}
+For an even integer $n\ge4$, put
+\[
+ E_n(z)=1+c_n\sum_{m\ge1}\sigma_{n-1}(m)q^m,
+ \qquad c_n=-\frac{2n}{B_n},\qquad q=e^{2\pi iz}.
+\]
+All weight pairs in this note are even and at least four. We exclude $k+\ell\in\{8,10,14\}$, for which $F_{k,\ell}$ is identically zero.
+
+The target conjecture states that the zeros of $F_{k,\ell}$ in the standard fundamental domain, apart from $i$ and $\rho=(-1+i\sqrt3)/2$, are transcendental \cite{ARSX}. We use the boundary-zero and CM-conjugacy results assembled in that paper. Under its no-Siegel-zero hypothesis, the only nonelliptic CM discriminants that can occur are
+\begin{align*}
+\mathcal D=\{&-7,-11,-19,-27,-43,-67,-163,\\
+&-15,-35,-51,-75,-91,-99,-115,-123,-147,-187,-235,-267,-403,-427,\\
+&-195,-315,-435,-483,-555,-595,-627,-715,-795,-1435,\\
+&-1155,-1995,-3003,-3315\}.
+\end{align*}
+There are 35 discriminants and 107 nonelliptic CM classes. Rational Fourier coefficients imply that a CM zero forces a zero at every CM point of the same discriminant. It therefore suffices to exclude the 35 principal representatives
+\[
+ \tau_D=\frac{-1+i\sqrt{|D|}}2\qquad(D\in\mathcal D).
+\]
+The fixed-point nonvanishing theorems below do not require any hypothesis about Dirichlet $L$-functions. The no-Siegel-zero input is used only to assert that this CM list is complete. In the motivating application it is supplied by the proposed input labelled 003; this note does not independently audit that input.
+
+\begin{theorem}[Certified infinite band]\label{thm:band}
+For every $D\in\mathcal D$, every admissible weight pair with $\min(k,\ell)\le500$ satisfies
+\[
+ F_{k,\ell}(\tau_D)\ne0.
+\]
+Consequently, under the complete boundary-CM classification above, Conjecture 5.2 holds for all these weight pairs.
+\end{theorem}
+
+This is an infinite family, not merely a check of total weight at most 1000: the larger weight is unrestricted. The finite triangle $k+\ell\le1000$ was already reported verified by the original authors, along with a stronger polynomial assertion. Our calculation independently checks the nonvanishing needed here; it does not independently check their irreducibility assertion. The cases with smaller weight $4,6,8$ also have a previously known lower-arc argument \cite{RVY}. They are included for completeness, not presented as new.
+
+\section{Effective reduction to finitely many weights}
+\label{sec:finite-weight-reduction}
+
+The result of this section concerns a fixed CM point and is unconditional.
+The exclusion of Siegel zeros is needed only afterwards, to replace the
+possible CM discriminants in the modular-form problem by a known finite list.
+An effectively computable bound below is not a numerical bound already
+evaluated: no assertion that it lies within the previously tested weights is
+made.
+
+\begin{theorem}[Effective finite-weight reduction]
+\label{thm:effective-finite-weight}
+Let $D\leq -7$ be an odd quadratic discriminant, and put
+\[
+ z=\frac{-1+i\sqrt{|D|}}2,\qquad
+ y=\Im z,\qquad a=\frac{|D|+1}{4},\qquad
+ r=\sqrt a,\qquad R=\sqrt{a+2}.
+\]
+There is an effectively computable integer $N_D$ such that, for even
+integers $k,\ell\geq4$,
+\[
+ \max(k,\ell)>N_D
+ \quad\Longrightarrow\quad
+ E_k(z)E_\ell(z)-E_{k+\ell}(z)\ne0.
+\]
+Here $E_n$ denotes the normalized level-one Eisenstein series with constant
+term $1$.  Thus the pairs of weights giving equality at this fixed point
+form a finite set contained in a computable box.
+\end{theorem}
+
+\subsection{The primitive lattice expansion and its error}
+
+The normalization is important.  For even $n\geq4$ one has
+\begin{equation}
+\label{eq:fr-primitive}
+ E_n(z)=\frac12\sum_{\substack{(c,d)\in\mathbb Z^2\\(c,d)=1}}
+ (cz+d)^{-n}
+ =1+\sum_{\substack{c\geq1,\ d\in\mathbb Z\\(c,d)=1}}(cz+d)^{-n}.
+\end{equation}
+The two terms $(c,d)=(1,0),(1,1)$ are respectively $z^{-n}$ and
+$\bar z^{-n}$, since $z+1=-\bar z$ and $n$ is even.  Their squared
+length is $a$.  Every other vector in the sum has squared length at least
+$a+2$.  Indeed,
+\[
+ |cz+d|^2=d^2-cd+ac^2=(d-c/2)^2+c^2(a-1/4).
+\]
+For $c=1$ the next choices $d=-1,2$ give $a+2$; for $c\geq2$,
+the lower bound $c^2(a-1/4)\geq4a-1\geq a+2$ applies.
+
+We record an explicit summable majorant.  By comparison with the integral
+of the even decreasing function $(t^2+(cy)^2)^{-2}$ on either side of its
+maximum,
+\[
+ \sum_{d\in\mathbb Z}|cz+d|^{-4}
+ \leq 2(cy)^{-4}+\int_{\mathbb R}(t^2+(cy)^2)^{-2}\,dt
+ =2(cy)^{-4}+\frac\pi2(cy)^{-3}.
+\]
+Consequently, because $y\geq\sqrt7/2>13/10$,
+\begin{equation}
+\label{eq:fr-fourth-moment}
+ \sum_{c\geq1}\sum_{d\in\mathbb Z}|cz+d|^{-4}
+ \leq 2\zeta(4)y^{-4}+\frac\pi2\zeta(3)y^{-3}
+ <\frac4{y^3}.
+\end{equation}
+For example, the last inequality follows already from
+$\zeta(4)<11/10$, $\zeta(3)<5/4$, and $\pi<22/7$.
+
+Define
+\[
+ u_n=z^{-n}+\bar z^{-n},\quad A_n=E_n(z)-1,\quad
+ B_D=\frac{4a^2}{y^3},\quad Q_D=\frac{4(a+2)^2}{y^3}.
+\]
+The norm gap and \eqref{eq:fr-fourth-moment} imply, uniformly for even
+$n\geq4$,
+\begin{equation}
+\label{eq:fr-expansion}
+ |A_n|\leq B_Dr^{-n},\qquad
+ A_n=u_n+\varepsilon_n,\qquad
+ |\varepsilon_n|\leq Q_DR^{-n}.
+\end{equation}
+This is a primitive-lattice expansion, so no factor $\zeta(n)$, or error
+arising from such a factor, is being suppressed.
+
+By symmetry we may assume $k\geq\ell$.  Put
+$F_{k,\ell}(z)=E_k(z)E_\ell(z)-E_{k+\ell}(z)$.  From
+\eqref{eq:fr-expansion},
+\begin{equation}
+\label{eq:fr-main-error}
+ F_{k,\ell}(z)=u_k+u_\ell+\mathcal R_{k,\ell},\qquad
+ |\mathcal R_{k,\ell}|
+ \leq2Q_DR^{-\ell}+(B_D^2+B_D)a^{-\ell}
+ \leq C_Db^{-\ell},
+\end{equation}
+where $b=\min(a,R)>r$ and one may take
+$C_D=2Q_D+B_D^2+B_D$.
+
+\subsection{An arithmetic obstruction to exact cancellation}
+
+Let $S_n=z^n+\bar z^n$.  Since $z^2+z+a=0$,
+\[
+ S_0=2,\qquad S_1=-1,\qquad
+ S_n=-S_{n-1}-aS_{n-2}.
+\]
+In particular, $S_n\in\mathbb Z$ and
+\begin{equation}
+\label{eq:fr-trace-congruence}
+ S_n\equiv(-1)^n\pmod a\qquad(n\geq1).
+\end{equation}
+As $u_n=S_n/a^n$, if $k>\ell$ are even then
+\[
+ a^k(u_k+u_\ell)=S_k+a^{k-\ell}S_\ell\equiv1\pmod a.
+\]
+If $k=\ell$, the same sum is $2S_\ell/a^\ell\ne0$, since
+$S_\ell\equiv1\pmod a$.  We have therefore proved
+\begin{equation}
+\label{eq:fr-main-nonzero}
+ u_k+u_\ell\ne0\qquad(k,\ell\geq4\text{ even}).
+\end{equation}
+The quantitative argument next requires precisely this exclusion of exact
+cancellation.
+
+\subsection{A uniform lower bound for the two leading terms}
+
+Set $\beta=z/\bar z$.  This algebraic number has modulus $1$ and is not
+a root of unity.  Indeed,
+\[
+ \beta+\beta^{-1}=\frac1a-2\in\mathbb Q\setminus\mathbb Z.
+\]
+If $\beta$ were a root of unity, this rational number would be an
+algebraic integer, which is impossible.
+
+We use the effective lower bound for a nonzero linear form in logarithms
+of algebraic numbers of Baker--W\"ustholz \cite{BW}.  In the present application
+there are at most three logarithms, all their arguments lie in the fixed
+quadratic field $\mathbb Q(z)$, and all have modulus $1$ in the chosen
+complex embedding.  Thus the usual modified heights can be bounded by
+constant multiples of $\max(1,h(\alpha))$, where $h$ is the absolute
+logarithmic height.  The resulting constants are effective.
+
+First apply this theorem to the logarithms of $\beta$ and $-1$.
+There are effective constants $0<c_D'\leq1$ and $A_D'>0$ such that
+\begin{equation}
+\label{eq:fr-one-trace}
+ |u_\ell|=r^{-\ell}|1+\beta^\ell|
+ \geq c_D'r^{-\ell}(\ell+2)^{-A_D'}
+ \qquad(\ell\geq4\text{ even}).
+\end{equation}
+The linear form cannot vanish, because $\beta$ is not a root of unity.
+
+Write $m=k-\ell\geq0$.  If
+\begin{equation}
+\label{eq:fr-large-gap}
+ m\geq\frac{A_D'\log(\ell+2)+\log(4/c_D')}{\log r},
+\end{equation}
+then $|u_k|\leq2r^{-k}\leq\tfrac12|u_\ell|$.  Hence
+\[
+ |u_k+u_\ell|
+ \geq\frac{c_D'}2r^{-\ell}(\ell+2)^{-A_D'}.
+\]
+
+It remains to consider gaps not satisfying \eqref{eq:fr-large-gap}.
+There is an effective constant $H_D$ such that all these gaps satisfy
+$m\leq H_D\log(\ell+2)$.  Define
+\[
+ \delta_m=\frac{1+\bar z^{-m}}{1+z^{-m}}.
+\]
+Both its numerator and denominator are nonzero.  For $m=0$ the two
+are $2$; for positive even $m$ one has
+$|1+z^{-m}|\geq1-r^{-2}\geq1/2$.  We have
+\begin{equation}
+\label{eq:fr-two-trace-factorization}
+ u_k+u_\ell
+ =z^{-\ell}(1+z^{-m})\bigl(1+\beta^\ell\delta_m\bigr).
+\end{equation}
+Here $\delta_m\in\mathbb Q(z)$ and $|\delta_m|=1$.
+Since $h(z)=\log r$, the standard height inequalities give the explicit
+estimate
+\begin{equation}
+\label{eq:fr-height}
+ h(\delta_m)\leq2m\log r+2\log2
+ =m\log a+2\log2.
+\end{equation}
+
+For completeness, take principal logarithms of the unit-modulus numbers
+$\beta$ and $\delta_m$.  Choose an odd integer $v$ so that
+\[
+ \Lambda=\ell\log\beta+\log\delta_m-v\log(-1)
+\]
+is purely imaginary with imaginary part in $[-\pi,\pi]$.
+Then $|v|\leq\ell+2$, and
+$|\exp\Lambda-1|=|1+\beta^\ell\delta_m|$.
+By \eqref{eq:fr-main-nonzero}, $\Lambda\ne0$.  An argument equal to
+$1$ can simply be omitted from the linear form.  Applying the
+three-logarithm bound, using \eqref{eq:fr-height}, and then using
+$|e^{it}-1|\geq2|t|/\pi$ for $|t|\leq\pi$, yields
+\[
+ |1+\beta^\ell\delta_m|
+ \geq \exp\{-K_D(m+1)\log(\ell+3)\}
+\]
+after increasing an effective positive constant $K_D$ if necessary.
+Together with $m\leq H_D\log(\ell+2)$ and
+\eqref{eq:fr-two-trace-factorization}, this gives an effective lower
+bound of the form
+\[
+ |u_k+u_\ell|
+ \geq c_D''r^{-\ell}
+ \exp\{-A_D''(\log(\ell+2))^2\}.
+\]
+The bound from the large-gap case is at least as strong after enlarging
+$A_D''$ and decreasing $c_D''$.  Consequently this last inequality
+holds \emph{uniformly for every even $k\geq\ell\geq4$}.
+
+Since $b/r>1$, there is an effectively computable $L_D$ such that
+\[
+ c_D''r^{-\ell}e^{-A_D''(\log(\ell+2))^2}
+ >C_Db^{-\ell}\qquad(\ell\geq L_D).
+\]
+For example, choose $L_D$ beyond a point where
+\[
+ \ell\log(b/r)-A_D''(\log(\ell+2))^2
+ +\log(c_D''/C_D)
+\]
+is positive and increasing.  Such a point can be found effectively,
+because its linear term eventually dominates its squared logarithm.
+Equation \eqref{eq:fr-main-error} now proves nonvanishing whenever
+$\min(k,\ell)\geq L_D$.
+
+\subsection{Removing the remaining infinite columns}
+
+We still must handle the finitely many even $\ell$ with
+$4\leq\ell<L_D$ and arbitrarily large $k$.  The relevant limiting
+value is $E_\ell(z)-1$, and it is essential to prove that this value
+does not vanish.
+
+The point $z$ has algebraic $j$-invariant because it is CM.  Moreover,
+$E_4(z)E_6(z)\ne0$: in the standard fundamental domain the zeros of
+$E_4$ and $E_6$ occur only at the elliptic points, whereas $\Im z>1$.
+Put
+\[
+ w=\frac{E_6(z)}{E_4(z)},\qquad
+ c=\frac{E_4(z)^3}{E_6(z)^2}
+   =\frac{j(z)}{j(z)-1728}\in\overline{\mathbb Q}^{\times}.
+\]
+Thus $E_4(z)=cw^2$ and $E_6(z)=cw^3$.  The graded-ring identity
+$M_*({\rm SL}_2(\mathbb Z);\mathbb Q)=\mathbb Q[E_4,E_6]$
+implies
+\[
+ E_\ell(z)=\lambda_\ell w^{\ell/2},\qquad
+ \lambda_\ell\in\overline{\mathbb Q}.
+\]
+If $E_\ell(z)=1$, then $\lambda_\ell\ne0$ and $w$ would be
+algebraic.  Hence $E_4(z)$ and $E_6(z)$ would both be algebraic.
+This contradicts Nesterenko's theorem \cite{Nesterenko}
+\[
+ \operatorname{trdeg}_{\mathbb Q}
+ \mathbb Q(q,E_2(z),E_4(z),E_6(z))\geq3,
+ \qquad q=e^{2\pi iz},\quad 0<|q|<1.
+\]
+We conclude that $E_\ell(z)\ne1$ for every even $\ell\geq4$.
+
+This qualitative nonvanishing suffices for effectivity.  For each of
+the finitely many $\ell<L_D$, the absolutely convergent Fourier series,
+with an explicit tail bound and certified approximations to $q$, gives
+successively smaller rational intervals for the real number
+$E_\ell(z)-1$.  Because this number is nonzero, eventually such an
+interval excludes $0$.  We thereby find a positive rational number
+$\eta_\ell<|E_\ell(z)-1|$ and a rational upper bound
+$M_\ell>|E_\ell(z)|$.
+
+Finally, \eqref{eq:fr-expansion} gives
+\[
+ \left|F_{k,\ell}(z)-(E_\ell(z)-1)\right|
+ \leq B_D(M_\ell+1)r^{-k}.
+\]
+Choose an effective $K_\ell$ such that the right-hand side is less
+than $\eta_\ell$ whenever $k\geq K_\ell$.  Taking $N_D$ to be
+an integer at least $L_D$ and at least every such $K_\ell$ proves
+Theorem~\ref{thm:effective-finite-weight}.  This is a terminating
+algorithm for a bound, even though its running time and its output may
+be very large.
+
+\subsection{Consequence for the global transcendence question}
+
+Assume the absence of Siegel zeros, and use the established boundary
+location and CM-exception results for $F_{k,\ell}$.  The nonelliptic
+CM exceptions then have one of the $35$ odd discriminants
+$D\ne-3$ whose order class group has exponent dividing $2$.
+If $F_{k,\ell}$ vanishes at any CM point of discriminant $D$, its
+rational Fourier coefficients imply that it vanishes at the principal
+representative $\tau_D$ as well.  Thus, taking
+\[
+ N=\max_{D\in\mathcal D}N_D,
+\]
+Theorem~\ref{thm:effective-finite-weight} shows that every nonelliptic
+zero is transcendental whenever $\max(k,\ell)>N$.
+The only remaining weight pairs lie in the computable finite box
+$4\leq k,\ell\leq N$ (with even weights and
+$k+\ell\notin\{8,10,14\}$).
+
+\paragraph{Scope of the conclusion.}
+The numerical value of $N$ has not been evaluated here, and the resulting
+finite box has not been exhaustively checked.  In particular, no comparison
+between $N$ and the previously reported verification range
+$k+\ell\leq1000$ is established.  This section proves an effective
+finite-weight reduction, not the complete transcendence conjecture.
+
+
+\section{An explicit infinite weight band}
+\subsection{A uniform estimate beyond the finite triangle}
+Write $R_n=E_n(\tau_D)-1$, $y=\sqrt{|D|}/2$ and $a=(|D|+1)/4$. The primitive lattice estimate proved above gives
+\begin{equation}\label{eq:bandbound}
+ |R_n|<4y^{-3}a^{2-n/2}\qquad(n\ge4).
+\end{equation}
+For $n\ge10$ and $a\ge2$, this also gives $|R_n|<1$ and hence $|E_n|<2$. If $\ell\ge10$ and $k\ge K$, then
+\begin{align}
+ |F_{k,\ell}-(E_\ell-1)|
+ &=|E_\ell R_k-R_{k+\ell}|\notag\\
+ &<12y^{-3}a^{2-k/2}
+ \le12y^{-3}a^{2-K/2}.\label{eq:domination}
+\end{align}
+For every even $10\le\ell\le496$, set $K=1000-\ell$. The certified computation verifies, separately at all 35 discriminants,
+\begin{equation}\label{eq:finitebandtest}
+ |R_\ell|>12y^{-3}a^{2-K/2}.
+\end{equation}
+There are $244\cdot35=8540$ successful tests. The smallest ratio of the left-hand side to the right-hand side occurs at $(\ell,D)=(496,-7)$ and exceeds $1.5218$. Thus \eqref{eq:domination} proves nonvanishing for every $k\ge1000-\ell$. The remaining pairs have total weight at most 1000 and are covered by the independent finite-triangle verification below. This proves the band through smaller weight 496.
+
+For the two final columns, use the same inequality with $K_{498}=508$ and $K_{500}=516$. All 70 tests pass, with ratios exceeding $1.9427$ and $1.0364$, respectively. The finite gaps outside the original triangle are exactly the nine unordered pairs
+\[
+ (498,504),\ (498,506),\quad (500,k)\quad(k=502,504,\ldots,514).
+\]
+Their 315 evaluations at the 35 points also exclude zero. Together with the known smaller weights $4,6,8$, this proves Theorem~\ref{thm:band}. The initial cutoff $K=1000-\ell$ was insufficient for these last two columns; increasing $K$ and checking the finite gaps resolves that limitation.
+
+\subsection{Certified evaluation and finite enumeration}
+The principal points have real negative $q=-r$, where $r=e^{-\pi\sqrt{|D|}}<1/4000$. For $s=w-1\ge3$, write
+\[
+ S_{s,N}(q)=\sum_{n=1}^{N}\sigma_s(n)q^n.
+\]
+The coefficients are exact integers and the Bernoulli normalization is an exact rational number. Since $\sigma_s(n)\le\zeta(s)n^s<2n^s$, the omitted tail is bounded by
+\begin{equation}\label{eq:tail}
+ \left|\sum_{n>N}\sigma_s(n)q^n\right|
+ \le\frac{2(N+1)^s r^{N+1}}{1-r((N+2)/(N+1))^s},
+\end{equation}
+provided the denominator is positive. This holds for $N=300$ and every $4\le w\le1014$ in use here; the scripts also check it by interval arithmetic.
+
+We evaluate the truncated polynomial by Horner's rule, add the symmetric interval enclosing \eqref{eq:tail}, and multiply by the exact rational $c_w$. All certification decisions use outward interval arithmetic at 400 decimal digits in \texttt{mpmath.iv}. The auxiliary ordinary multiprecision context is used only for printing and ranking, never for a nonvanishing decision. For each discriminant, cached intervals $R_w$ yield
+\[
+ F_{k,\ell}=R_k+R_\ell+R_kR_\ell-R_{k+\ell}.
+\]
+This avoids subtracting two quantities with constant term one.
+
+The finite domain is precisely
+\[
+ 4\le k\le\ell,\quad k,\ell\text{ even},\quad k+\ell\le1000,
+ \quad k+\ell\notin\{8,10,14\}.
+\]
+It contains 61,997 unordered weight pairs and therefore 2,169,895 point--pair evaluations over the 35 discriminants. The executable verifier requires each resulting interval to be strictly positive or strictly negative.
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Verification & Domain & Purpose\\
+\midrule
+Finite triangle & 2,169,895 evaluations & All total weights $\le1000$\\
+Infinite-band tests & 8,610 inequalities & All larger weights, $10\le\min\le500$\\
+Edge gaps & 315 evaluations & Nine additional weight pairs\\
+Small-column check & 2,065 evaluations & Separate check for weights 10 and 12\\
+\bottomrule
+\end{tabular}
+\end{center}
+The package contains the scripts, JSON summaries and the band-test records. Printed decimal endpoints in diagnostic JSON fields are rounded summaries; certification is performed with the internal outward intervals. Re-running the scripts reconstructs those intervals from exact integer inputs and the explicit analytic tail. This is a reproducible computational proof component with a numerical-library trust base, not a Lean certificate.
+
+% Self-contained mathematical appendix.  This file is intended to be
+% \input into a document that loads amsmath, amssymb, and amsthm.
+\section{A two-adic nonvanishing theorem for equal valuations of the weights}
+\label{sec:two-adic-equal-valuations}
+
+Write $\mathbb Z_{(2)}$ for the rational numbers with odd denominator and
+normalize the valuation by $v_2(2)=1$.  Congruences of rational numbers
+are understood in $\mathbb Q_2$; congruences of Fourier expansions are
+coefficientwise.  We use the normalization
+\[
+ E_n(q)=1+a_nS_n(q),\qquad
+ a_n=-\frac{2n}{B_n},\qquad
+ S_n(q)=\sum_{m\ge1}\sigma_{n-1}(m)q^m
+\]
+for every even $n\ge4$.  As usual,
+$\Delta=q\prod_{m\ge1}(1-q^m)^{24}$ and $j=E_4^3/\Delta$.
+
+\paragraph{Theorem.}
+Let $k,\ell\ge6$ be even integers with
+$v_2(k)=v_2(\ell)$.  Set $w=k+\ell$ and
+\[
+ G_{k,\ell}=\frac{E_kE_\ell-E_w}{a_ka_\ell}.
+\]
+Then $G_{k,\ell}$ has coefficients in $\mathbb Z_{(2)}$, and
+\begin{equation}
+ G_{k,\ell}\equiv
+ \Delta E_4^{(w-12)/4}\pmod2.
+ \label{eq:equal-v-two-congruence}
+\end{equation}
+In particular, $w$ is divisible by $4$.  If
+$N=\lfloor w/12\rfloor$ and $b=w/4-3N\in\{0,1,2\}$, then
+\[
+ G_{k,\ell}=\Delta^NE_4^bP_{k,\ell}(j)
+\]
+for a polynomial $P_{k,\ell}\in\mathbb Z_{(2)}[X]$ satisfying
+\begin{equation}
+ P_{k,\ell}(X)\equiv X^{N-1}\pmod2.
+ \label{eq:equal-v-two-j-polynomial}
+\end{equation}
+Consequently, a point $\tau$ whose algebraic $j$-invariant is a
+$2$-adic unit at at least one prime above $2$ cannot be a zero of
+$E_kE_\ell-E_w$.
+
+\paragraph{Bernoulli lemma.}
+For every even $n\ge6$, if $r=v_2(n)$, then
+\begin{equation}
+ 2B_n\equiv1+2n\pmod{2^{r+3}},\qquad
+ a_n\equiv-4n+8n^2\pmod{2^{2r+5}}.
+ \label{eq:bernoulli-two-precision}
+\end{equation}
+Here is an elementary proof of the precision needed below.  The
+duplication identity for Bernoulli polynomials gives
+\[
+ 2(1-2^n)B_n
+ =1-n+\sum_{\substack{2\le h\le n-2\\h\text{ even}}}
+       \binom nh2^hB_h.
+\]
+The von Staudt--Clausen theorem gives $v_2(B_h)=-1$ for positive even
+$h$, while
+\[
+ v_2\binom nh\ge r-v_2(h)
+\]
+follows from $\binom nh=(n/h)\binom{n-1}{h-1}$.  For every even
+$h\ge6$ the corresponding summand therefore has valuation at least
+$r+h-1-v_2(h)\ge r+4$.  Retaining $h=2,4$ yields
+\[
+ 2B_n\equiv
+ 1-n+\frac{n(n-1)}3
+ -\frac{n(n-1)(n-2)(n-3)}{45}
+ \pmod{2^{r+3}}.
+\]
+We used $n\ge r+3$ to discard the factor $2^n(2B_n)$.  The expression
+on the right equals
+\[
+ 1-\frac{6n}{5}+\frac{4n^2}{45}
+       +\frac{2n^3}{15}-\frac{n^4}{45}.
+\]
+Its difference from $1+2n$ is
+\[
+ -\frac{16n}{5}+\frac{4n^2}{45}
+       +\frac{2n^3}{15}-\frac{n^4}{45}.
+\]
+The four terms have valuations at least $r+4$, $2r+2$, $3r+1$, and
+$4r$, respectively, all at least $r+3$ because $r\ge1$.  This proves
+the first congruence in \eqref{eq:bernoulli-two-precision}.  Since
+$a_n=-4n/(2B_n)$, inversion gives the second congruence: the error
+from the first congruence has valuation at least $2r+5$, and the
+first omitted geometric-series term has valuation $3r+4\ge2r+5$.
+
+\paragraph{Proof of the Fourier congruence.}
+Put $r=v_2(k)=v_2(\ell)$, $t=v_2(w)$,
+$a=a_k$, $b=a_\ell$, and $c=a_w$.  Then $t\ge r+1$, and
+von Staudt--Clausen gives
+\[
+ v_2(a)=v_2(b)=r+2,\qquad v_2(c)=t+2.
+\]
+Applying the Bernoulli lemma to the three weights gives
+\[
+ a+b-c\equiv
+ 8(k^2+\ell^2-w^2)=-16k\ell
+ \pmod{2^{2r+5}}.
+\]
+Thus
+\begin{equation}
+ u:=\frac{a+b-c}{ab}\in\mathbb Z_{(2)}^\times,
+ \qquad u\equiv1\pmod2.
+ \label{eq:first-coeff-unit}
+\end{equation}
+The Fourier expansion is
+\[
+ G_{k,\ell}=S_kS_\ell+L,\qquad
+ [q^n]L=
+ \frac{a\sigma_{k-1}(n)+b\sigma_{\ell-1}(n)
+                    -c\sigma_{w-1}(n)}{ab}.
+\]
+
+We first take $n$ odd.  For each odd divisor $d$ of $n$,
+subtracting $(a+b-c)d^{w-1}$ from its contribution to the numerator
+leaves
+\[
+ a d^{k-1}(1-d^\ell)+b d^{\ell-1}(1-d^k).
+\]
+For any odd $d$, $d^{2^r}\equiv1\pmod{2^{r+2}}$; this is the
+usual elementary lifting-the-exponent congruence for odd integers.
+Furthermore, because $k/2^r$ and $\ell/2^r$ are both odd, the
+geometric-sum identity gives
+\[
+ \frac{d^k-1}{2^{r+2}}
+ \equiv\frac{d^\ell-1}{2^{r+2}}\pmod2.
+\]
+These quotients are integral, including for $d=1$ where both are zero.
+Since $a/2^{r+2}$ and $b/2^{r+2}$ are odd, the two displayed
+correction terms cancel modulo $2^{2r+5}$.  Dividing by $ab$ and
+using \eqref{eq:first-coeff-unit}, we find
+\begin{equation}
+ [q^n]L\equiv\sigma_{w-1}(n)\pmod2
+ \qquad(n\text{ odd}).
+ \label{eq:linear-odd-coefficients}
+\end{equation}
+
+For general $n=2^vm$ with $m$ odd, one has
+\[
+ \sigma_{j-1}(2^vm)=\sigma_{j-1}(m)
+       (1+2^{j-1}+\cdots+2^{v(j-1)}).
+\]
+The resulting corrections after division by $ab$ have valuations
+at least
+\[
+ k-r-3,\qquad \ell-r-3,\qquad w+t-2r-3,
+\]
+respectively.  All are at least $1$: for the first two use
+$k,\ell\ge6$ and $r=v_2(k)=v_2(\ell)$; for the third use
+$t\ge r+1$ and $w\ge k+6$.  Hence
+\begin{equation}
+ [q^n]L\equiv\sigma_{w-1}(m)\pmod2.
+ \label{eq:linear-all-coefficients}
+\end{equation}
+In particular every coefficient of $L$ is $2$-integral.
+
+Modulo $2$, both $S_k$ and $S_\ell$ equal the series $S$ whose
+coefficient at $n$ is $1$ exactly when the odd part of $n$ is a square.
+This is the parity formula for the number of odd divisors of $n$.
+In characteristic $2$ their product is $S^2=S(q^2)$.  Its
+coefficients cancel those of $L$ at every even index in
+\eqref{eq:linear-all-coefficients}; at odd indices only odd squares
+remain.  Therefore
+\[
+ G_{k,\ell}\equiv\sum_{h\ge0}q^{(2h+1)^2}\equiv\Delta\pmod2.
+\]
+For completeness, the last identity follows from Jacobi's identity
+\[
+ \prod_{m\ge1}(1-q^m)^3
+ =\sum_{h\ge0}(-1)^h(2h+1)q^{h(h+1)/2}.
+\]
+In characteristic $2$, substitute $q^8$ on the right and note that
+$\Delta\equiv q\prod_{m\ge1}(1-q^{8m})^3$.
+Because $E_4\equiv1\pmod2$, the congruence with equal weights is
+exactly \eqref{eq:equal-v-two-congruence}.
+
+\paragraph{Proof of the polynomial assertion and nonvanishing.}
+Write $w=4m$, $N=\lfloor m/3\rfloor$, and $b=m-3N$.
+A triangular basis for weight $4m$ modular forms is
+\[
+ E_4^{m-3h}\Delta^h,\qquad 0\le h\le N.
+\]
+Each basis vector begins with $q^h$ with coefficient $1$ and has
+integer Fourier coefficients.  Successively comparing these initial
+coefficients shows that a form with coefficients in $\mathbb Z_{(2)}$
+has basis coefficients in $\mathbb Z_{(2)}$.  For $G_{k,\ell}$ the
+coefficient at $h=0$ is zero, and
+\eqref{eq:equal-v-two-congruence} says that the coefficient at $h=1$
+is odd while those at $h\ge2$ are even.  Factoring out
+$\Delta^NE_4^b$ now gives
+\eqref{eq:equal-v-two-j-polynomial}.  If $j(\tau)$ is a unit at a
+prime above $2$, then its substitution into the reduction of $P$
+is nonzero, so $P(j(\tau))\ne0$.  Also $E_4(\tau)\ne0$, since
+$j(\tau)\ne0$, and $\Delta$ has no zero in the upper half-plane.
+This proves the theorem.
+
+\paragraph{Application to the two ordinary discriminants in the CM list.}
+The Hilbert class polynomials
+\[
+ H_{-7}(X)=X+3375,\qquad
+ H_{-15}(X)=X^2+191025X-121287375
+\]
+are monic with odd constant terms, so all of their roots are units
+at every prime above $2$.  Consequently, at every CM point of
+discriminant $-7$ or $-15$,
+\[
+ E_k(\tau)E_\ell(\tau)-E_{k+\ell}(\tau)\ne0
+\]
+for all even $k,\ell\ge6$ with $v_2(k)=v_2(\ell)$.  This includes
+the entire diagonal $k=\ell\ge6$.
+
+\paragraph{Scope.}
+This is a uniform theorem for an infinite two-parameter set of
+weights, not a finite computational verification.  The proof does
+not use the quasi-Riemann hypothesis.  Its role in the larger
+argument is to eliminate the $D=-7,-15$ cases from the finite CM
+exception list obtained using the zero-free input.  It does not
+eliminate the other $33$ discriminants, does not cover weights of
+unequal $2$-adic valuation, and does not prove the complete
+transcendence conjecture.  No priority claim is made for this
+congruence or its consequence.
+
+
+\section{What remains for the full conjecture}
+Let $N_D$ be the effective cutoff from the finite-reduction theorem, and put $N=\max_{D\in\mathcal D}N_D$. Under the complete boundary-CM classification, any still-possible counterexample must have
+\[
+ 502\le\min(k,\ell)\le\max(k,\ell)\le N,
+ \qquad k+\ell>1000.
+\]
+At the discriminants $-7,-15$, the equal-$v_2$ family proved in Section~\ref{sec:two-adic-equal-valuations} is excluded as well. Neither a numerical value of $N$ nor a verification of this remaining region is supplied here. Logarithmic-form constants may make the resulting cutoff very large. The reduction therefore proves effective finiteness, not practical tractability or emptiness of the finite remainder.
+
+Three mathematically distinct ingredients have been combined: the boundary geometry and CM classification restrict the locations; exact quadratic arithmetic prevents cancellation of the shortest-vector main term; logarithmic-form estimates make that noncancellation quantitatively stronger than the exponential lattice tail. The two-adic congruence gives a separate algebraic exclusion. None of these steps assumes the stronger irreducibility conjecture.
+
+\begin{thebibliography}{9}
+\bibitem{ARSX} D. Aiken, E. Ross, D. Shvydkoy and H. Xue,
+\emph{Transcendence of zeros of modular forms}, author-hosted preprint, submitted September 2025.
+\url{https://erick-ross.github.io/transcendence-of-zeros.pdf}.
+See Theorem 1.2, Lemma 2.2, Lemma 3.1, Corollary 5.1 and Conjecture 5.2.
+\bibitem{BW} A. Baker and G. W\"ustholz,
+\emph{Logarithmic forms and group varieties}, J. reine angew. Math. \textbf{442} (1993), 19--62.
+\url{https://doi.org/10.1515/crll.1993.442.19}.
+\bibitem{Nesterenko} Yu. V. Nesterenko,
+\emph{Modular functions and transcendence questions}, Sb. Math. \textbf{187} (1996), 1319--1348.
+\url{https://doi.org/10.1070/SM1996v187n09ABEH000158}.
+\bibitem{RVY} S. Reitzes, P. Vulakh and M. P. Young,
+\emph{Zeros of certain combinations of Eisenstein series},
+\url{https://arxiv.org/abs/1603.01306}.
+See the discussion of smaller weights $4,6,8$.
+\end{thebibliography}
+\end{document}

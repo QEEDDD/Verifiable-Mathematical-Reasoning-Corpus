@@ -1,0 +1,1128 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools,microtype}
+\ifdefined\pdfmapfile\pdfmapfile{+lm.map}\pdfmapfile{+cm.map}\pdfmapfile{+symbols.map}\fi
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{xcolor,booktabs,array,longtable,listings,fancyhdr}
+\definecolor{ink}{RGB}{24,54,75}
+\usepackage[colorlinks=true,linkcolor=ink,citecolor=ink,urlcolor=ink]{hyperref}
+\hypersetup{pdftitle={Three Proof Transfers: Graph Spectra, Bessel Ratios, and Multiplicative Density},pdfauthor={Research prepared for Keio}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Three proof transfers}
+\fancyhead[R]{\small Unified research manuscript}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\C}{\mathcal C}
+\newcommand{\dens}{\operatorname{d}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\one}{\mathbf 1}
+\numberwithin{equation}{section}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[1]
+\raggedbottom
+\setcounter{tocdepth}{1}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,
+  breaklines=true,columns=fullflexible,keepspaces=true,
+  showstringspaces=false,frame=single,rulecolor=\color{black!20},
+  xleftmargin=4pt,xrightmargin=4pt,aboveskip=9pt,belowskip=9pt}
+\title{\textbf{Three Proof Transfers}\\[6pt]
+\large Graph Spectra, Bessel Ratios, and Multiplicative Density}
+\author{Research prepared for Keio}
+\date{15 November 2026\\\small Unified analytic proof draft for independent review}
+\begin{document}
+\maketitle
+\begin{abstract}
+We assemble three complete arguments into one manuscript with common
+notation conventions, section-based theorem numbering, and a single bibliography.
+For connected simple graphs, the square-energy theorem of Liu, Tang and
+Zhang yields the strict Randi\'c bound $R>\lambda_2+1$, its two edge-count
+strengthenings, and a quadratic estimate with classified equality cases.
+For modified Bessel functions, a weighted Wronskian gives a complete
+classification of monotonicity of $I_{\nu_1}(a_1x)/I_{\nu_2}(a_2x)$
+for $\nu_1\ge\nu_2>-1$ and $0<a_1\le a_2$; a totally positive
+integral transform transfers unimodality to Nuttall $Q$ ratios.
+The distinct log-concavity clause is false and is treated separately.
+For every pairwise coprime integer triple $2\le a<b<c$, a nonnegative
+packing of directed lattice corners determines the largest natural
+density of a set avoiding $\{x,ax,bx,cx\}$ as
+$1-\min\{(ab+c)/((a+1)(b+1)(c+1)),1/(c+1)\}$.
+All original mathematical proofs are retained. External theorems are
+explicitly attributed; the two finite-check programs are included as
+supplements, not as replacements for proof. This manuscript does not
+assert historical priority, external peer review, or proof-assistant verification.
+\end{abstract}
+\tableofcontents
+
+\section{Introduction and common conventions}
+Each argument transfers a tractable comparison into a global conclusion.
+The graph argument combines squared spectral energy with a degree-weighted
+Rayleigh bound. The special-function argument converts a one-change sign
+pattern for a Wronskian derivative into unimodality and then applies a
+totally positive transform. The arithmetic argument turns an explicit
+weighted packing into a sharp logarithmic estimate and an attained
+natural density. These are three independent results; no claim that one
+of their main theorems implies either of the others is needed.
+
+Section~\ref{sec:graph} addresses Cazenave's 2026 graph conjecture using
+the explicitly cited square-energy theorem. Section~\ref{sec:bessel}
+addresses the unimodality clause of the 2025 Karp--Vishnyakova--Zhang
+conjecture and retains all parameter boundary cases.
+Section~\ref{sec:density} proves an exact density formula, without
+identifying it as the resolution of a previously named conjecture.
+Thus the original scope and provenance of the three source manuscripts
+remain distinct in this unified edition.
+
+Notation is local to each main section when a symbol has different
+standard uses: $R$ denotes the Randi\'c index in Section~\ref{sec:graph},
+$R(x)$ a Bessel ratio in Section~\ref{sec:bessel}, and $R(z)$ a packing
+tail in Section~\ref{sec:density}. All theorem-like environments share
+one counter within each section; equations and cross-references are
+numbered consistently throughout.
+
+The source manuscripts are \emph{A Square-Energy Route to Cazenave's
+Randi\'c Conjecture}, \emph{Unimodality of Modified Bessel Ratios and
+Nuttall $Q$ Ratios}, and \emph{Exact Natural Densities for Multiplicative
+Four-Point Configurations}, all dated 15 November 2026. Their full
+proofs and substantive qualifications are preserved below. Repeated
+front matter and bibliographies have been consolidated. The source
+files used for this edition were recovered from their original three-paper bundle.
+
+\section{Graph spectra and the Randi\'c index}
+\label{sec:graph}
+\subsection{Statements and scope}
+Let $G$ be a finite connected undirected simple graph, with $n\ge2$
+vertices, $m$ edges, degrees $d_v$, adjacency matrix $A$, and adjacency
+eigenvalues $L=\lambda_1\ge t=\lambda_2\ge\cdots\ge\lambda_n$.
+All edges below are unordered and are counted once. Set
+\[
+ R=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}},\qquad
+ s^\pm=\sum_{\pm\lambda_i>0}\lambda_i^2.
+\]
+Cazenave \cite[Section~7, Conjecture~1, \#643]{graph-Caz} states
+\begin{quote}$R\ge\lambda_2+1$.\end{quote}
+The same source establishes the bipartite case and leaves the
+non-bipartite case open. It also proposes the stronger assertions
+$2m\ge L^2+(t+1)^2$ and $m\ge L(t+1)$.
+
+\begin{theorem}\label{graph-thm:main}
+Every connected simple graph on at least two vertices satisfies
+\[
+ 2m>L^2+(t+1)^2,\qquad m>L(t+1),\qquad R>t+1.
+\]
+If the graph is not complete, then the quantitative estimate
+\begin{equation}\label{graph-eq:gap}
+ R-t-1\ \ge\
+ \frac{(L-t-1)^2+n-2t-2}{2L}\ >0
+\end{equation}
+also holds.
+\end{theorem}
+
+\begin{theorem}\label{graph-thm:square}
+Every connected noncomplete graph satisfies
+\begin{equation}\label{graph-eq:square}
+                R^2\ge t^2+n-1.
+\end{equation}
+Equality holds precisely for stars $K_{1,n-1}$, with $n\ge3$.
+Consequently, for every connected graph with $n\ge4$, inequality
+\eqref{graph-eq:square} holds, with equality precisely for stars and $K_4$.
+The excluded complete graphs $K_2,K_3$ do not satisfy \eqref{graph-eq:square}.
+\end{theorem}
+
+The new deduction below uses the 2026 theorem of Liu--Tang--Zhang,
+not a newly established square-energy theorem. Its proof and attribution
+are kept separate. VMRC manuscript~[161] \cite{VMRC} suggested comparing
+the same degree-weighted invariant to a global graph parameter; its
+radius theorem is not a premise here. The graph result concerns an adjacency eigenvalue; the cited corpus
+connection is methodological, not a theorem assumed in the proof.
+
+\subsection{Three ingredients}
+\begin{lemma}[Strict sign-support bound]\label{graph-lem:nodal}
+For a connected graph with $t\ge0$ and $n\ge3$,
+\[
+                          t<\frac n2-1.
+\]
+\end{lemma}
+\begin{proof}
+The Perron vector is strictly positive. An eigenvector $y$ for $t$,
+orthogonal to that vector, therefore has both positive and negative
+coordinates. Write $P=\{v:y_v>0\}$, $N=\{v:y_v<0\}$, and
+$p=|P|$, $q=|N|$.
+At a vertex $u$ maximizing $y$, the eigenvalue equation gives
+\[
+ t y_u=\sum_{v\sim u}y_v
+       \le\sum_{v\in P\cap N(u)}y_v\le(p-1)y_u.
+\]
+Applying the same argument to $-y$ gives $t\le q-1$.
+Thus $n\ge p+q\ge2(t+1)$.
+
+If equality $n=2(t+1)$ held, then $p=q=t+1$, there would be no
+zero coordinates, and both inequalities at $u$ would be equalities.
+Consequently $u$ would be adjacent to every other vertex of $P$,
+and all coordinates on $P$ would equal $y_u>0$.
+At any vertex of $P$, attaining the value $(p-1)y_u$ in its
+eigenvalue equation then requires all $p-1$ possible neighbours in
+$P$ and no neighbours in $N$. Thus no edge joins $P$ and $N$,
+contrary to connectedness. This also covers $p=1$: the equation
+with $t=0$ cannot allow a negative neighbour.
+\end{proof}
+
+\begin{lemma}[Favaron--Mah\'eo--Sacl\'e]\label{graph-lem:fav}
+One has $m\le LR$. If equality holds, $d_ud_v$ is constant over all
+edges. A connected graph with this constant-product property is either
+regular or bipartite with a constant degree on each part.
+\end{lemma}
+\begin{proof}
+Apply Rayleigh's principle to $x_v=\sqrt{d_v}$:
+\[
+ S:=\sum_{uv\in E}\sqrt{d_ud_v}\le mL.
+\]
+Cauchy--Schwarz gives $m^2\le SR\le mLR$, proving the bound.
+Equality in Cauchy--Schwarz forces $(d_ud_v)^{1/2}$ to be constant
+on edges. Along a path the degrees then alternate between two values.
+If there is an odd cycle those values agree and connectedness makes
+the graph regular. Otherwise the graph is bipartite and the degrees
+are constant separately on its two parts.
+\end{proof}
+
+\begin{lemma}[Liu--Tang--Zhang, Theorem~1.2]\label{graph-lem:energy}
+For every connected graph,
+\[
+                  \min(s^+,s^-)\ge n-1.
+\]
+\end{lemma}
+This is the principal external theorem \cite{graph-LTZ}.
+The original source supplies a matrix proof of this theorem. Its
+hypotheses are exactly
+finite, simple, undirected and connected; no bipartiteness,
+regularity or degree restriction is imposed.
+
+\subsection{Proof of the strict conjecture}
+\begin{proof}[Proof of Theorem~\ref{graph-thm:main}]
+If $G$ is complete, then $m=n(n-1)/2$, $L=n-1$, $t=-1$ and $R=n/2$.
+All three strict inequalities follow directly.
+
+Suppose $G$ is not complete. A shortest path between two nonadjacent
+vertices contains an induced $P_3$. Eigenvalue interlacing therefore
+gives $t\ge\lambda_2(P_3)=0$; in particular $n\ge3$.
+Lemma~\ref{graph-lem:energy} and $s^++s^-=2m$ give
+\begin{equation}\label{graph-eq:twoenergy}
+                2m\ge L^2+t^2+n-1.
+\end{equation}
+By Lemma~\ref{graph-lem:nodal}, $n-1>2t+1$. Hence
+\[
+ 2m>L^2+(t+1)^2\ge2L(t+1).
+\]
+Since $L>0$ and $LR\ge m$, the other two assertions follow.
+For the quantitative form, subtract $t+1$ from
+$R\ge m/L\ge(L^2+t^2+n-1)/(2L)$ and complete the square.
+The final numerator in \eqref{graph-eq:gap} is strictly positive because
+$n-2t-2>0$.
+\end{proof}
+
+When $n$ is odd and the graph is noncomplete, the sign-support proof
+also gives $t\le\min(p,q)-1\le\lfloor n/2\rfloor-1$. Therefore
+\eqref{graph-eq:gap} yields the explicit order-parity margin
+\[
+ R-t-1\ge\frac{(L-t-1)^2+1}{2L}\ge\frac1{2L}.
+\]
+
+\subsection{The quadratic strengthening and its equality cases}
+\begin{proof}[Proof of Theorem~\ref{graph-thm:square}]
+For a noncomplete graph, \eqref{graph-eq:twoenergy} implies
+\[
+ R\ge\frac mL\ge\frac{L^2+t^2+n-1}{2L}
+                \ge\sqrt{t^2+n-1},
+\]
+where the last step is the arithmetic--geometric mean inequality.
+
+Suppose equality holds. Equality throughout this chain forces
+\begin{equation}\label{graph-eq:equality}
+ R=L,\qquad m=L^2,\qquad L^2=t^2+n-1,
+ \qquad m=LR.
+\end{equation}
+By Lemma~\ref{graph-lem:fav}, there are two possibilities.
+
+If the graph is regular of degree $d$, then $L=d$ and $m=nd/2$.
+Thus $n=2d$ and $t^2=(d-1)^2$. Here $d\ge2$ and $t\ge0$, so
+$t=d-1=n/2-1$, contradicting Lemma~\ref{graph-lem:nodal}.
+
+Otherwise the graph is bipartite, with degrees $a$ on one part and
+$b$ on the other. Its positive eigenvector taking values $\sqrt a$
+and $\sqrt b$ on the respective parts shows $L=\sqrt{ab}$.
+Since $m=ab$, the part sizes are $b$ and $a$; every possible edge
+between the parts is present. Thus $G=K_{a,b}$. As $n\ge3$, its
+second eigenvalue is $t=0$, so \eqref{graph-eq:equality} gives
+$ab=a+b-1$, or $(a-1)(b-1)=0$. The graph is a star.
+Conversely, a star has $t=0$ and $R^2=n-1$.
+
+For $K_n$, \eqref{graph-eq:square} becomes $n^2/4\ge n$, which holds
+exactly when $n\ge4$ and is an equality exactly when $n=4$.
+This proves the final assertions.
+\end{proof}
+
+There is also a version involving every nonprincipal positive
+eigenvalue. The same argument, replacing $t^2$ by
+$P:=s^+-L^2\ge0$, proves for every connected graph that
+\[
+                         R^2\ge n-1+P.
+\]
+The two-eigenvalue form was singled out because it resolves the
+stated conjecture and has the elementary equality classification above.
+
+\subsection{Sharpness and research status}
+Let $B_k$ consist of two copies of $K_k$ joined by one edge, $k\ge2$.
+The degree count and the symmetric/antisymmetric quotient matrices give
+\[
+ R(B_k)=k-2+2\sqrt{1-\frac1k}+\frac1k,
+ \qquad
+ \lambda_2(B_k)=\frac{k-3+\sqrt{(k+1)^2-4}}2.
+\]
+For completeness, the two quotient matrices are
+\[
+ \begin{pmatrix}1&k-1\\1&k-2\end{pmatrix},\qquad
+ \begin{pmatrix}-1&k-1\\1&k-2\end{pmatrix}.
+\]
+Their positive roots are the largest and second-largest adjacency
+eigenvalues; all remaining eigenvalues are negative (including the
+eigenvalue $-1$ on within-clique zero-sum subspaces).
+Consequently $R(B_k)-\lambda_2(B_k)-1\to0$ as $k\to\infty$.
+Thus the strict inequality cannot be improved by any fixed positive
+additive constant uniformly over connected graphs.
+
+The literature check identified Conjecture~1 in Cazenave's original
+preprint and the square-energy theorem used above. Searches also found
+solutions of other numbered Cazenave conjectures, which are different
+statements. The check did not establish whether the particular deduction
+in this section has already appeared elsewhere. No historical-priority,
+peer-review or machine-formalization claim is made for this section.
+The proof itself is analytic and finite-dimensional; enumerating small
+graphs is not an input.
+
+\section{Modified Bessel ratios and Nuttall \texorpdfstring{$Q$}{Q} ratios}
+\label{sec:bessel}
+\subsection{The original question and the precise result}
+For real $\nu>-1$ and $z>0$, the modified Bessel function is
+\begin{equation}\label{bessel-eq:series}
+ I_\nu(z)=\sum_{k=0}^{\infty}
+ \frac{(z/2)^{2k+\nu}}{k!\Gamma(k+\nu+1)}>0.
+\end{equation}
+Karp--Vishnyakova--Zhang formulate two assertions in
+\cite[Conjecture~1]{bessel-KVZ}: unimodality of
+$I_{\nu_1}(a_1x)/I_{\nu_2}(a_2x)$ for
+$\nu_1\ge\nu_2>-1$, $0<a_1\le a_2$, and log-concavity when
+$\nu_2>0$. The parameter $b$ printed in that conjecture is absent
+from this Bessel ratio. It becomes relevant to their preceding
+Nuttall $Q$ application.
+
+Here unimodality means that the function is nondecreasing and then
+nonincreasing, allowing either part to be empty. This implies the
+authors' convention of at most one change of monotonicity.
+
+\begin{theorem}\label{bessel-thm:main}
+Suppose $\nu_1\ge\nu_2>-1$ and $0<a_1\le a_2$. Put
+\[
+ R(x)=\frac{I_{\nu_1}(a_1x)}{I_{\nu_2}(a_2x)},\qquad x>0.
+\]
+The following cases exhaust all possibilities:
+\begin{enumerate}
+\item If $\nu_1=\nu_2$ and $a_1=a_2$, then $R\equiv1$.
+\item If $\nu_1=\nu_2$ and $a_1<a_2$, then $R$ is strictly decreasing.
+\item If $\nu_1>\nu_2$ and $a_1<a_2$, then there is exactly one
+$x_*>0$ such that $R$ strictly increases on $(0,x_*)$ and strictly
+decreases on $(x_*,\infty)$.
+\item If $\nu_1>\nu_2$, $a_1=a_2$, and $\nu_1+\nu_2\ge0$,
+then $R$ is strictly increasing.
+\item If $\nu_1>\nu_2$, $a_1=a_2$, and $\nu_1+\nu_2<0$,
+then $R$ has exactly one strict maximum as in case~3.
+\end{enumerate}
+In particular, the unimodality assertion in \cite[Conjecture~1]{bessel-KVZ}
+holds throughout its stated parameter range.
+\end{theorem}
+
+The theorem proves the unimodality clause, not the false conjunction
+of unimodality and unrestricted positive-order log-concavity.
+The literature check verified the original 2025 source and examined
+later indexed discussions and related Bessel-ratio literature, including
+\cite{bessel-Segura}. It did not establish worldwide priority. An explicit
+formal counterexample to the log-concavity clause is already recorded
+in \cite{bessel-TT}; the negative conclusion below is not claimed as new.
+The proof relies on classical Bessel identities, not on the correctness
+of any unpublished corpus theorem.
+
+\subsection{A weighted Wronskian identity}
+Write
+\[
+ f(x)=I_{\nu_1}(a_1x),\quad g(x)=I_{\nu_2}(a_2x),\quad
+ d=\nu_1-\nu_2,\quad s=\nu_1+\nu_2,
+\]
+and put $B=ds=\nu_1^2-\nu_2^2$, $D=a_2^2-a_1^2\ge0$.
+Both $f$ and $g$ are strictly positive. The modified Bessel equation
+\cite[Eq.~10.25.1]{bessel-DLMF} gives
+\[
+ f''+\frac1x f'=\left(a_1^2+\frac{\nu_1^2}{x^2}\right)f,
+ \qquad
+ g''+\frac1x g'=\left(a_2^2+\frac{\nu_2^2}{x^2}\right)g.
+\]
+Define the weighted Wronskian, with the indicated sign convention,
+\begin{equation}\label{bessel-eq:W}
+ W(x)=x\bigl(f'(x)g(x)-f(x)g'(x)\bigr).
+\end{equation}
+Direct differentiation, followed by cancellation of the first-derivative
+terms, yields the exact identities
+\begin{equation}\label{bessel-eq:identity}
+ \boxed{\quad W'(x)=\left(-Dx+\frac{B}{x}\right)f(x)g(x),
+ \qquad R'(x)=\frac{W(x)}{xg(x)^2}.\quad}
+\end{equation}
+Thus the sign of $R'$ is the sign of $W$, while the sign of $W'$ is
+controlled by the elementary function $B-Dx^2$.
+
+\begin{lemma}[Endpoint information]\label{bessel-lem:endpoints}
+If $d>0$, there is $C>0$ such that, as $x\downarrow0$,
+\begin{equation}\label{bessel-eq:smallW}
+ W(x)=Cd\,x^s\bigl(1+O(x^2)\bigr)>0
+ \quad\hbox{for all sufficiently small }x>0.
+\end{equation}
+If $d=0$, then $W(x)\to0$ as $x\downarrow0$.
+When $a_1<a_2$, $W(x)<0$ for all sufficiently large $x$.
+When $a_1=a_2=a$ and $B\ne0$, the eventual sign of $W$ is the sign
+of $B$.
+\end{lemma}
+\begin{proof}
+The series \eqref{bessel-eq:series}, with its termwise derivative, gives
+\[
+ I_\nu(ax)=\frac{(a/2)^\nu}{\Gamma(\nu+1)}x^\nu
+ \left(1+\frac{a^2x^2}{4(\nu+1)}+O(x^4)\right).
+\]
+Consequently
+\[
+ \frac{f'}f-\frac{g'}g=\frac d x+O(x),\qquad
+ fg=Cx^s\bigl(1+O(x^2)\bigr),
+\]
+which proves \eqref{bessel-eq:smallW}. If $d=0$, the same formulas give
+$W=O(x^{2\nu_1+2})\to0$, since $\nu_1>-1$.
+Notice that for $d>0$ and $s<0$, $W$ diverges to $+\infty$;
+no vanishing boundary condition is imposed in that case.
+
+For large positive arguments the classical expansions, including
+their derivative expansions, give
+\begin{equation}\label{bessel-eq:largeLog}
+ \frac{d}{dx}\log I_\nu(ax)
+ =a-\frac1{2x}+\frac{4\nu^2-1}{8ax^2}+O(x^{-3}).
+\end{equation}
+See \cite[\S10.40(i), Eqs.~10.40.1 and 10.40.3]{bessel-DLMF}.
+If $a_1<a_2$, subtracting the two expansions gives the negative
+limit $a_1-a_2$. If $a_1=a_2=a$ and $B\ne0$, it gives
+\[
+ \frac{f'}f-\frac{g'}g=\frac{B}{2ax^2}+O(x^{-3}).
+\]
+Since $W=xfg(f'/f-g'/g)$, positivity of $xfg$ proves the claims.
+\end{proof}
+
+\subsection{Proof of the classification}
+\begin{proof}[Proof of Theorem~\ref{bessel-thm:main}]
+The identical-parameter case is immediate. If $d=0$ and $D>0$,
+then $B=0$ and \eqref{bessel-eq:identity} gives $W'<0$. Together with
+$W(0+)=0$ from Lemma~\ref{bessel-lem:endpoints}, this yields $W<0$ on
+$(0,\infty)$, hence strict decrease of $R$.
+
+Now assume $d>0$. By Lemma~\ref{bessel-lem:endpoints}, $W$ is positive
+near zero. First take $D>0$. If $B\le0$, then $W'<0$ everywhere.
+If $B>0$, let $x_0=\sqrt{B/D}$. Then $W'>0$ on $(0,x_0)$ and
+$W'<0$ on $(x_0,\infty)$. In particular $W(x_0)>0$.
+In either case $W$ stays positive until it enters its strictly
+decreasing region. It is negative for all sufficiently large $x$
+by Lemma~\ref{bessel-lem:endpoints}. Continuity and strict decrease give
+exactly one zero $x_*$, and its sign pattern is $(+,-)$.
+Equation~\eqref{bessel-eq:identity} transfers that pattern to $R'$.
+When $B>0$, the proof also shows $x_*>\sqrt{B/D}$.
+
+Finally take $D=0$. If $s>0$, then $B=ds>0$ and $W'>0$,
+so positivity near zero gives $W>0$ everywhere. If $s=0$, then
+$W'=0$ and \eqref{bessel-eq:smallW} gives the strictly positive constant
+$W=Cd$. These are case~4. If $s<0$, then $B<0$ and $W'<0$.
+Now $W$ is positive near zero and eventually negative by
+Lemma~\ref{bessel-lem:endpoints}. It has exactly one zero, proving case~5.
+All cases in the statement have been covered.
+\end{proof}
+
+\subsection{Transfer to Nuttall \texorpdfstring{$Q$}{Q} ratios}
+Define, whenever the integral converges,
+\begin{equation}\label{bessel-eq:Q}
+ Q_{\mu,\nu}(a,b)=\int_b^\infty
+ t^\mu e^{-(t^2+a^2)/2}I_\nu(at)\,dt.
+\end{equation}
+For $b=0$ and $\nu>-1$, convergence holds exactly when
+$\mu+\nu>-1$; for $b>0$ it holds for every real $\mu$.
+
+\begin{theorem}\label{bessel-thm:Q}
+Suppose $\nu_1\ge\nu_2>-1$, $0<a_1\le a_2$, and $b\ge0$.
+Then
+\[
+ \mu\longmapsto
+ \frac{Q_{\mu,\nu_1}(a_1,b)}{Q_{\mu,\nu_2}(a_2,b)}
+\]
+is unimodal on $(-1-\nu_2,\infty)$ if $b=0$, and on all of
+$\R$ if $b>0$. If it is nonmonotone, its pattern is increasing
+then decreasing. In particular the conclusion holds on $(0,\infty)$
+without the restriction $\nu_1-\nu_2\in2\mathbb N$ in
+\cite[Theorem~4.3]{bessel-KVZ}.
+\end{theorem}
+\begin{proof}
+We use the established integral-ratio theorem
+\cite[Theorem~2.6 and Example~1]{bessel-KVZ}: a strictly totally positive
+kernel of order~3 preserves unimodality of the numerator/denominator
+ratio under integration against a positive weight, provided both
+integrals converge uniformly on compact subsets of the parameter
+interval. The direction of a nonmonotone pattern is preserved when
+all kernel minors have positive signs.
+
+Apply this with kernel $K(\mu,t)=t^\mu$, positive weight
+$w(t)=e^{-t^2/2}$, and
+\[
+ A(t)=e^{-a_1^2/2}I_{\nu_1}(a_1t),\qquad
+ B(t)=e^{-a_2^2/2}I_{\nu_2}(a_2t).
+\]
+The Mellin kernel is strictly totally positive of every order, as
+is the exponential kernel $e^{\mu\log t}$.
+The ratio $A/B$ is a positive constant multiple of the ratio in
+Theorem~\ref{bessel-thm:main}. Its restriction to $(b,\infty)$ is still
+unimodal, with an increasing-then-decreasing pattern if it is
+nonmonotone.
+
+For completeness, the convergence condition holds uniformly on compact
+parameter intervals. At infinity, \eqref{bessel-eq:largeLog} or the standard
+Bessel asymptotic shows domination by a polynomial times
+$e^{-t^2/2+a_2t}$, which is integrable. Near zero, for a compact
+interval with lower endpoint $\mu_0>-1-\nu_2$, the integrands
+are bounded by constants times $t^{\mu_0+\nu_j}$, which are
+integrable for $j=1,2$. For $b>0$ there is no endpoint singularity.
+Both denominators are strictly positive. The cited theorem therefore
+applies on the full claimed domains.
+\end{proof}
+
+At $b=0$ one obtains the corresponding gamma--Kummer ratio directly,
+using the identity
+\[
+ Q_{\mu,\nu}(a,0)=2^{(\mu-\nu-1)/2}a^\nu e^{-a^2/2}
+ \frac{\Gamma((\mu+\nu+1)/2)}{\Gamma(\nu+1)}
+ {}_1F_1\left(\frac{\mu+\nu+1}{2};\nu+1;\frac{a^2}{2}\right).
+\]
+This identity follows by integrating \eqref{bessel-eq:series} term by term;
+all terms are nonnegative on the convergence domain.
+
+\subsection{Why the additional log-concavity clause fails}
+The positive-order log-concavity assertion must be kept separate from
+unimodality. An explicit, formally certified failure is already
+recorded in \cite{bessel-TT}. The following analytic observation explains
+a whole range of such failures.
+
+\begin{proposition}\label{bessel-prop:lc}
+For every $0<\nu<1/2$ and $0<a_1<a_2$, the function
+$I_\nu(a_1x)/I_\nu(a_2x)$ is strictly decreasing on $(0,\infty)$,
+but its logarithm is strictly convex for all sufficiently large $x$.
+In particular it is not log-concave on the entire positive half-line.
+\end{proposition}
+\begin{proof}
+Strict decrease is case~2 of Theorem~\ref{bessel-thm:main}.
+The standard differentiated Bessel expansions give, for fixed
+$a_1,a_2,\nu$,
+\[
+ \frac{d^2}{dx^2}\log\frac{I_\nu(a_1x)}{I_\nu(a_2x)}
+ =\frac{1-4\nu^2}{4x^3}
+    \left(\frac1{a_1}-\frac1{a_2}\right)+O(x^{-4}).
+\]
+For instance this follows from \eqref{bessel-eq:largeLog} and the derivative
+expansions in \cite[\S10.40(i)]{bessel-DLMF}; the Bessel differential equation
+also supplies the second derivative expansion directly.
+The leading coefficient is strictly positive under the stated
+assumptions, giving the assertion.
+\end{proof}
+
+\subsection{Scope and methodological dependencies}
+The complete result proved here is the unimodality clause of the
+2025 conjecture, together with its Nuttall $Q$ transfer and the full
+monotonicity classification in Theorem~\ref{bessel-thm:main}.
+The exact global parameter region for log-concavity is not determined.
+Neither numerical sampling nor a finite interval computation enters
+any proof. The endpoint expansions are ordinary fixed-parameter
+asymptotic theorems, used only to determine an eventual sign.
+
+The effective combination is a second-order differential equation,
+the Lagrange/weighted-Wronskian identity, endpoint asymptotics, and
+total positivity of an integral transform. These are classical tools;
+the manuscript does not claim that the identity or any foundational
+method is newly invented. Independent mathematical
+review and a fuller priority check remain appropriate before publication.
+
+There is a concrete methodological bridge to the supplied research
+corpus \cite{VMRC}. Its item~006, Section~6, eliminates two solutions
+of a second-order recurrence to obtain the discrete Abel identity
+$W_n=-(c_n/a_n)W_{n-1}$. Here the same elimination idea is applied
+to two differential equations: the common first-derivative term
+cancels and the difference of the two potentials gives
+\eqref{bessel-eq:identity}. Item~146, in its curvature-to-slope-imbalance
+lemma, transfers a controlled derivative sign to the sign of a
+comparison quantity by fixing its boundary behavior. The argument
+above similarly transfers the one-change sign pattern of $W'$ to
+the zero pattern of $W$, then to the derivative of the desired ratio.
+These are methodological correspondences; the original arithmetic
+and free-stable theorems are not assumed in this proof.
+
+\section{Exact densities for multiplicative four-point configurations}
+\label{sec:density}
+\subsection{Statement and conventions}
+For $A\subseteq\N$, write $A(X)=|A\cap[1,X]|$ and
+\[
+\underline d(A)=\liminf_{X\to\infty}\frac{A(X)}X,
+\qquad
+\overline d_{\log}(A)=\limsup_{X\to\infty}
+\frac1{\log X}\sum_{n\le X,\ n\in A}\frac1n.
+\]
+The natural density $d(A)$ is the limit of $A(X)/X$ when it exists.
+We call $A$ \emph{$(a,b,c)$-free} if there is no positive integer $x$
+for which all of $x,ax,bx,cx$ belong to $A$.
+For an integer $q\ge2$, let
+$\nu_q(n)=\max\{e\ge0:q^e\mid n\}$; primality of $q$ is not required.
+
+\begin{theorem}\label{density-thm:main}
+Let $a,b,c$ be pairwise coprime integers with $2\le a<b<c$. Put
+\[
+D(a,b,c)=
+\begin{cases}
+\displaystyle 1-\frac{ab+c}{(a+1)(b+1)(c+1)},&c\le a+b+1,\\[5pt]
+\displaystyle \frac{c}{c+1},&c\ge a+b+1.
+\end{cases}
+\]
+Every $(a,b,c)$-free set $A$ satisfies
+\[
+\sum_{n\le X,\ n\in A}\frac1n\le D(a,b,c)\log X+O_{a,b,c}(1).
+\]
+Consequently $\overline d_{\log}(A)\le D(a,b,c)$ and
+$\underline d(A)\le D(a,b,c)$. The largest attainable natural
+density equals $D(a,b,c)$.
+For $c\le a+b+1$, an extremizer is
+\[
+ A_* =\{n\ge1:
+ (\nu_a(n),\nu_b(n),\nu_c(n))\bmod2
+ \notin\{(0,0,1),(1,1,0)\}\}.
+\]
+For $c\ge a+b+1$, one may instead take
+$A_* =\{n:\nu_c(n)\text{ is even}\}$.
+\end{theorem}
+
+\begin{corollary}
+The largest natural density of a set avoiding $\{x,2x,3x,5x\}$ is
+\[
+\boxed{\frac{61}{72}=0.8472222222\ldots.}
+\]
+The same number is the largest possible lower natural density and
+upper logarithmic density. No claim about the largest upper natural
+density is made here.
+\end{corollary}
+
+\subsection{The exact weighted corner problem}
+For real $a,b,c>1$, put
+\[
+w(i,j,k)=a^{-i}b^{-j}c^{-k},\qquad
+W=\sum_{i,j,k\ge0}w(i,j,k)
+=\frac{a}{a-1}\frac{b}{b-1}\frac{c}{c-1}.
+\]
+For $e\in\Z_{\ge0}^3$, let
+$\C_e=\{e,e+e_1,e+e_2,e+e_3\}$, where the $e_i$ are the standard
+basis vectors. A transversal meets every $\C_e$.
+
+\begin{lemma}[Two parity classes]\label{density-lem:code}
+The set
+\[
+ T_* =\{(i,j,k):(i,j,k)\bmod2\in\{001,110\}\}
+\]
+meets each corner in exactly one vertex, and
+\[
+ \frac{w(T_*)}{W}
+ =\frac{ab+c}{(a+1)(b+1)(c+1)}.
+\]
+\end{lemma}
+\begin{proof}
+Modulo two, each corner is a vertex of the binary three-cube together
+with its three neighbors. The two antipodal vertices $001$ and $110$
+have disjoint radius-one Hamming balls, each of size four; these balls
+partition the cube. Hence every corner contains exactly one selected
+parity class.
+Under normalized geometric weights, the probability of an even
+exponent in base $a$ is $a/(a+1)$, and that of an odd exponent is
+$1/(a+1)$. Multiplication in the three coordinates gives the displayed
+formula.
+\end{proof}
+
+\begin{theorem}[Exact weighted optimum]\label{density-thm:weighted}
+Suppose $b\ge a+1$ and $b\le c\le a+b+1$. Then the minimum total weight of a
+transversal of all corners is
+\[
+Y=W\frac{ab+c}{(a+1)(b+1)(c+1)},
+\]
+and $T_*$ attains it.
+\end{theorem}
+\begin{proof}
+Define
+\[
+z_0=\frac1c,\qquad z_1=\frac{c-b}{(a+1)c},\qquad
+ y(i,j,k)=
+ \begin{cases}
+ w(i,j,k)z_{j\bmod2},&k\text{ even},\\
+ 0,&k\text{ odd}.
+ \end{cases}
+\]
+All these corner masses are nonnegative. The load of a vertex is
+$\ell(e)=\sum_{f:e\in\C_f}y(f)$. If $k$ is odd, the only nonzero
+contribution comes from $e-e_3$, and
+\[
+ \frac{\ell(i,j,k)}{w(i,j,k)}=c z_{j\bmod2}
+ =\begin{cases}1,&j\text{ even},\\(c-b)/(a+1),&j\text{ odd}.
+ \end{cases}
+\]
+These values are at most one. If $k$ is even, the exact formula is
+\[
+\frac{\ell(i,j,k)}{w(i,j,k)}
+=(1+a\mathbf1_{i\ge1})z_{j\bmod2}
++b\mathbf1_{j\ge1}z_{1-j\bmod2}.
+\]
+For odd $j$, the largest possible load ratio is
+$(a+1)z_1+bz_0=1$. For even $j$, it is at most
+\[
+(a+1)z_0+bz_1
+=1+\frac{(b-a-1)(c-a-b-1)}{(a+1)c}\le1.
+\]
+The last inequality uses both hypotheses. Hence every vertex load
+is at most its weight.
+This calculation includes vertices on either coordinate boundary:
+omitting an incoming corner only decreases the load.
+Moreover the load equals the vertex weight at every vertex of $T_*$.
+For class $001$, this follows from the odd-$k$, even-$j$ formula.
+For class $110$, both $i$ and $j$ are positive, so the even-$k$
+formula is exactly $(a+1)z_1+bz_0=1$.
+
+For any transversal $T$, nonnegativity and Tonelli's theorem give
+\[
+ w(T)\ge\sum_{e\in T}\ell(e)
+ =\sum_fy(f)|\C_f\cap T|\ge\sum_fy(f).
+\]
+For $T_*$ both inequalities are equalities, by the load calculation
+and Lemma~\ref{density-lem:code}. Thus
+$\sum_fy(f)=w(T_*)=Y$, proving the assertion.
+\end{proof}
+
+\begin{lemma}[Dominating last multiplier]\label{density-lem:dominant}
+For real $a,b,c>1$ satisfying $c\ge1+a+b$, the minimum transversal
+weight is $W/(c+1)$.
+\end{lemma}
+\begin{proof}
+Use $y(i,j,k)=w(i,j,k)/c$ for even $k$ and zero for odd $k$.
+At odd $k$ the load is $w$; at even $k$ the load is at most
+$w(1+a+b)/c\le w$. The odd-$k$ vertices meet every corner, and
+meet exactly once every corner assigned positive mass (those with
+even base $k$). They have total weight $W/(c+1)$. The same primal--dual argument
+proves optimality. This covers the entire second parameter region.
+\end{proof}
+
+\subsection{Transfer to arbitrary sets of positive integers}
+We give the transfer in detail because a weighted lattice optimum
+alone does not bound the upper natural density of arbitrary sets.
+For pairwise coprime $a,b,c$, define
+\[
+M=\{m\ge1:a\nmid m,\ b\nmid m,\ c\nmid m\},\qquad
+\delta=(1-a^{-1})(1-b^{-1})(1-c^{-1})=W^{-1}.
+\]
+Every positive integer has a unique representation
+$n=ma^ib^jc^k$ with $m\in M$ and $i,j,k\ge0$.
+The representation follows by repeatedly removing whole powers of
+the three pairwise coprime bases. By inclusion--exclusion,
+\begin{equation}\label{density-eq:Mh}
+ \sum_{m\le X,\ m\in M}\frac1m=\delta\log X+O_{a,b,c}(1).
+\end{equation}
+For $z\ge1$, let
+$\Lambda_z=\{(i,j,k):a^ib^jc^k\le z\}$.
+Each corner is contained in $\Lambda_z$ exactly when its base
+satisfies $a^ib^jc^k\le z/c$, since $c$ is the largest multiplier.
+Let $y$ be the packing from Theorem~\ref{density-thm:weighted} or
+Lemma~\ref{density-lem:dominant}, and write $Y=\sum_e y(e)$ and
+\[
+Y_z=\sum_{\C_e\subseteq\Lambda_z}y(e),\qquad R(z)=Y-Y_z.
+\]
+
+\begin{lemma}[Packing tail]\label{density-lem:tail}
+For a constant depending only on the three bases,
+\[
+0\le R(z)\ll_{a,b,c}\frac{(1+\log z)^2}{z}\qquad(z\ge1).
+\]
+\end{lemma}
+\begin{proof}
+The masses $y(e)$ are at most a fixed constant times $w(e)$.
+For $t\ge1$, the number of exponent triples with
+$t<a^ib^jc^k\le2t$ is $O((1+\log t)^2)$: there are
+$O((1+\log t)^2)$ possibilities for $(i,j)$, and for each pair
+at most $1+\log_c2$ possible integers $k$.
+Consequently the total weight above a threshold $u\ge1$ is bounded
+by
+\[
+\sum_{h\ge0}\frac{O((1+\log(2^{h+1}u))^2)}{2^hu}
+\ll\frac{(1+\log u)^2}{u}.
+\]
+Apply this with $u=z/c$ if $z\ge c$. The remaining bounded interval
+$1\le z<c$ is absorbed by increasing the constant.
+\end{proof}
+
+\begin{proof}[Upper bound in Theorem~\ref{density-thm:main}]
+For each $m\in M$, the exponent vectors of members of $A$ form a
+corner-free subset. Its complement in $\Lambda_{X/m}$ is therefore
+a transversal of all corners contained in that finite region.
+Restricting the nonnegative packing to these corners preserves the
+load bound. The weighted mass of $A$ in the fiber is consequently
+at most $w(\Lambda_{X/m})-Y+R(X/m)$.
+Summing over fibers yields
+\[
+\sum_{n\le X,\ n\in A}\frac1n
+\le \sum_{n\le X}\frac1n
+-Y\sum_{m\le X,\ m\in M}\frac1m
++\sum_{m\le X}\frac{R(X/m)}m.
+\]
+By Lemma~\ref{density-lem:tail}, the last term is at most a constant times
+\[
+\frac1X\sum_{m\le X}(1+\log(X/m))^2=O(1).
+\]
+For example, splitting $m$ into the intervals
+$(X2^{-h-1},X2^{-h}]$ bounds this expression by a convergent
+constant multiple of $\sum_{h\ge0}2^{-h}(h+1)^2$.
+Equation~\eqref{density-eq:Mh} now gives
+\[
+\sum_{n\le X,\ n\in A}\frac1n
+\le(1-\delta Y)\log X+O(1).
+\]
+The two weighted optimum formulas give precisely the two cases of
+$D(a,b,c)$.
+Finally partial summation shows
+$\underline d(A)\le\overline d_{\log}(A)$: if
+$A(t)\ge(d_0-\varepsilon)t$ for all sufficiently large $t$, then
+$\sum_{n\le X,n\in A}1/n\ge(d_0-\varepsilon)\log X+O(1)$.
+Taking $d_0=\underline d(A)$ proves the stated density consequences.
+\end{proof}
+
+\begin{proof}[Attainment in Theorem~\ref{density-thm:main}]
+Multiplication by each base increments exactly its own exponent,
+because the bases are pairwise coprime. Lemma~\ref{density-lem:code} thus
+shows that $A_*$ is $(a,b,c)$-free.
+For every fixed exponent triple, the integers with that triple
+have density $\delta a^{-i}b^{-j}c^{-k}$, by inclusion--exclusion.
+Summing these densities is justified uniformly: the union of triples
+with any exponent at least $L$ has upper density at most
+$a^{-L}+b^{-L}+c^{-L}$, which tends to zero.
+Therefore the complement of $A_*$ has density
+$\delta w(T_*)=(ab+c)/((a+1)(b+1)(c+1))$.
+In the dominating case the even-$\nu_c$ construction is free since
+$x$ and $cx$ cannot both belong to it, and its density is
+$(1-c^{-1})\sum_{t\ge0}c^{-2t}=c/(c+1)$.
+This also proves attainment for lower natural and upper logarithmic
+densities, since a set with natural density has the same logarithmic
+density.
+\end{proof}
+
+\subsection{The example and proof checks}
+For $(a,b,c)=(2,3,5)$ the corner masses are
+\[
+y(i,j,k)=
+\begin{cases}
+2^{-i}3^{-j}5^{-k}/5,&j,k\text{ even},\\
+2\cdot2^{-i}3^{-j}5^{-k}/15,&j\text{ odd},\ k\text{ even},\\
+0,&k\text{ odd}.
+\end{cases}
+\]
+The excluded parity classes have densities
+\[
+\Pr(001)=\frac23\frac34\frac16=\frac1{12},\qquad
+\Pr(110)=\frac13\frac14\frac56=\frac5{72}.
+\]
+Their sum is $11/72$.
+The naive even-$\nu_5$ construction has density $5/6$; the exact
+optimum exceeds it by $1/72$. Other examples are
+\[
+D(3,4,5)=\frac{103}{120},\quad
+D(3,4,7)=\frac{141}{160},\quad
+D(2,5,7)=\frac{127}{144},\quad
+D(3,5,7)=\frac{85}{96}.
+\]
+The standard-library verifier in Appendix~\ref{app:density-code} enumerates all $256$
+binary parity patterns, retaining exactly those that hit all eight
+parity corners. For every pairwise coprime integer triple
+$2\le a<b<c\le20$, it computes the least weight of every retained
+pattern with exact rational arithmetic and compares that independently
+computed value with the theorem. It also checks all boundary/parity
+load types. These checks supplement the displayed symbolic proof
+and are not a finite substitute for it.
+
+\subsection{Provenance and limits}
+The research connection is the product-weighted lattice packing
+method used in corpus item [140], combined with the elementary
+binary perfect code $\{001,110\}$. The code itself is classical.
+The general setting of extremal density and multiplicative linear
+forms appears in Graham--Spencer--Witsenhausen (1977) and
+Chung--Erd\H{o}s--Graham (2002). Veselinov (2026) considers the related
+finite and smooth-number extremal problems. The present classification
+is about the natural density of an infinite set; finite-prefix extrema
+and upper natural density are different quantities. A bounded search
+did not establish whether this exact formula had appeared previously.
+We do not label it a resolution of a named conjecture, establish priority,
+or claim external peer review. The proof is entirely elementary and
+does not depend on any unverified assertion from the corpus.
+The largest upper natural density is a different extremal problem and
+is not calculated here. No irrationality conclusion is drawn.
+
+
+\clearpage
+\section{Synthesis, dependencies, and verification}
+The common feature is a proof transfer with a controlled sign or weight:
+\begin{itemize}
+\item \textbf{Graph spectra.} The external square-energy inequality
+supplies a lower bound on spectral mass. An eigenvector sign-support
+bound makes the resulting inequality strict, and the classical
+Favaron--Mah\'eo--Sacl\'e bound transfers it to the Randi\'c index.
+\item \textbf{Special functions.} An exact differential identity controls
+the weighted Wronskian. Endpoint signs determine its zero pattern;
+the established integral-ratio theorem then transfers unimodality.
+\item \textbf{Multiplicative density.} Nonnegative corner masses give a
+dual packing bound, with equality on explicit parity classes. A tail
+estimate transfers the lattice optimum to arbitrary integer sets.
+\end{itemize}
+The graph theorem does not assume the corpus radius theorem. The Bessel
+argument does not assume the corpus Franel or free-stable conclusions.
+The density proof does not assume an unverified corpus assertion.
+The original corpus connections are methodological and remain identified
+in the relevant sections and in the consolidated reference~\cite{VMRC}.
+
+The bounds on density concern natural density, lower natural density,
+and upper logarithmic density. Maximum upper natural density is not
+determined. The Bessel classification does not supply a complete
+log-concavity parameter region. Historical priority and external
+acceptance are not established by this editorial consolidation.
+
+The original finite-check programs are reproduced in the appendices.
+The graph program uses floating-point eigenvalues and is a sanity check
+only. The arithmetic program uses exact rational arithmetic on a finite
+family. Neither is used as a premise of any theorem in this manuscript.
+The two programs were rerun for this edition; their printed results are
+recorded alongside the complete sources.
+
+\appendix
+\clearpage
+\section{Graph sanity-check program}\label{app:graph-code}
+This program requires Python, NumPy and NetworkX. It checks the connected
+graphs of orders two through seven in the NetworkX graph atlas. The
+analytic proofs in Section~\ref{sec:graph} apply to all finite orders.
+\begin{lstlisting}
+"""Floating-point sanity checks only; the manuscript contains the proof.
+
+Checks every connected graph of orders 2 through 7 in NetworkX's graph atlas.
+Dependencies: networkx and numpy. No numerical output is a proof certificate.
+"""
+import json
+import math
+import networkx as nx
+import numpy as np
+
+count = 0
+quadratic_count = 0
+equality_count = 0
+minimum_gap = float('inf')
+for graph in nx.graph_atlas_g():
+    n = len(graph)
+    if n < 2 or not nx.is_connected(graph):
+        continue
+    count += 1
+    m = graph.number_of_edges()
+    values = np.linalg.eigvalsh(nx.to_numpy_array(graph))
+    largest, second = values[-1], values[-2]
+    randic = sum(1 / math.sqrt(graph.degree(u) * graph.degree(v))
+                 for u, v in graph.edges())
+    assert randic > second + 1 + 1e-9
+    assert 2*m > largest**2 + (second+1)**2 + 1e-9
+    minimum_gap = min(minimum_gap, randic-second-1)
+    if n >= 4 or m < n*(n-1)//2:
+        quadratic_count += 1
+        gap = randic**2-second**2-n+1
+        assert gap > -1e-8
+        star = sorted(dict(graph.degree()).values()) == [1]*(n-1)+[n-1]
+        complete_four = n == 4 and m == 6
+        expected_equality = star or complete_four
+        assert (abs(gap) < 1e-8) == expected_equality
+        equality_count += int(expected_equality)
+print(json.dumps({'status':'PASS (floating-point sanity checks, not proof)',
+                  'connected_graphs':count,
+                  'quadratic_bound_graphs':quadratic_count,
+                  'predicted_equality_graphs':equality_count,
+                  'smallest_observed_randic_minus_lambda2_minus_one':minimum_gap},
+                 indent=2))
+\end{lstlisting}
+\noindent\textbf{Recorded output.}
+\begin{lstlisting}[language={}]
+{
+  "status": "PASS (floating-point sanity checks, not proof)",
+  "connected_graphs": 995,
+  "quadratic_bound_graphs": 993,
+  "predicted_equality_graphs": 6,
+  "smallest_observed_randic_minus_lambda2_minus_one": 0.23427568761990858
+}
+\end{lstlisting}
+
+\clearpage
+\section{Exact arithmetic verification program}\label{app:density-code}
+This standard-library Python program checks parity covers and the
+packing loads, including coordinate boundaries, for the coprime triples
+in the displayed finite range. Section~\ref{sec:density} supplies the
+symbolic proof for all admissible triples.
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact independent finite checks for the all-triples density theorem.
+
+No packages required. This is a sanity check supplementing the symbolic proof,
+not a proof by checking finitely many integer triples.
+"""
+from fractions import Fraction as Q
+from itertools import combinations, product
+from math import gcd
+
+vertices=list(product(range(2),repeat=3))
+corners=[sum(1<<u for u in (v,v^4,v^2,v^1)) for v in range(8)]
+feasible=[mask for mask in range(256) if all(mask&corner for corner in corners)]
+code=(1<<1)|(1<<6)
+assert code in feasible
+assert all((code&corner).bit_count()==1 for corner in corners)
+
+triples=loads=0
+for a,b,c in combinations(range(2,21),3):
+    if any(gcd(u,v)>1 for u,v in combinations((a,b,c),2)):
+        continue
+    triples+=1
+    den=(a+1)*(b+1)*(c+1)
+    weights=[Q(a**(1-i)*b**(1-j)*c**(1-k),den) for i,j,k in vertices]
+    assert sum(weights)==1
+    brute=min(sum(weights[v] for v in range(8) if mask>>v&1)
+              for mask in feasible)
+    code_mass=Q(a*b+c,den)
+    parity_mass=Q(1,c+1)
+    predicted=min(code_mass,parity_mass)
+    assert brute==predicted,(a,b,c,brute,predicted)
+    assert (code_mass<=parity_mass)==(c<=a+b+1)
+
+    def w(i,j,k):return Q(1,a**i*b**j*c**k)
+    def y(i,j,k):
+        if min(i,j,k)<0 or k%2:return Q(0)
+        if c<=a+b+1:
+            z=Q(1,c) if j%2==0 else Q(c-b,(a+1)*c)
+        else:z=Q(1,c)
+        return w(i,j,k)*z
+    for i,j,k in product(range(3),repeat=3):
+        loads+=1
+        load=y(i,j,k)+y(i-1,j,k)+y(i,j-1,k)+y(i,j,k-1)
+        assert 0<=load<=w(i,j,k),(a,b,c,i,j,k,load,w(i,j,k))
+        selected=((i%2,j%2,k%2) in ((0,0,1),(1,1,0))
+                  if c<=a+b+1 else k%2==1)
+        if selected:assert load==w(i,j,k)
+
+examples={(2,3,5):Q(61,72),(3,4,5):Q(103,120),
+          (3,4,7):Q(141,160),(2,5,7):Q(127,144),(3,5,7):Q(85,96)}
+for (a,b,c),expected in examples.items():
+    actual=1-min(Q(a*b+c,(a+1)*(b+1)*(c+1)),Q(1,c+1))
+    assert actual==expected
+    print('D',a,b,c,'=',actual)
+print('PASS:',len(feasible),'admissible parity patterns;',triples,
+      'coprime triples;',loads,'exact boundary/parity load checks')
+\end{lstlisting}
+\noindent\textbf{Recorded output.}
+\begin{lstlisting}[language={}]
+D 2 3 5 = 61/72
+D 3 4 5 = 103/120
+D 3 4 7 = 141/160
+D 2 5 7 = 127/144
+D 3 5 7 = 85/96
+PASS: 183 admissible parity patterns; 297 coprime triples; 8019 exact boundary/parity load checks
+\end{lstlisting}
+
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}\small\raggedright
+\bibitem{graph-Caz}
+T.~Cazenave,
+\emph{Lemmas and Conjectures in Spectral Graph Theory},
+arXiv:2611.03879v1 (2026), Section~7, Conjecture~1 (\#643),
+and Section~2.2, Theorem~2.
+\url{https://arxiv.org/html/2611.03879v1}.
+
+\bibitem{graph-LTZ}
+Y.~Liu, Q.~Tang and S.~Zhang,
+\emph{The positive and negative square-energy conjecture},
+arXiv:2607.18031v1 (2026), Theorems~1.2 and~2.1.
+\url{https://arxiv.org/html/2607.18031v1}.
+
+\bibitem{graph-FMS}
+O.~Favaron, M.~Mah\'eo and J.-F.~Sacl\'e,
+\emph{Some eigenvalue properties in graphs (conjectures of Graffiti II)},
+Discrete Mathematics \textbf{111} (1993), 197--220.
+
+\bibitem{bessel-KVZ}
+D. Karp, A. Vishnyakova and Y. Zhang,
+\emph{Unimodality Preservation by Ratios of Functional Series and
+Integral Transforms}, Results Math. \textbf{80}, 112 (2025).
+\href{https://doi.org/10.1007/s00025-025-02431-4}{doi:10.1007/s00025-025-02431-4}.
+Author preprint \href{https://arxiv.org/html/2408.01755v2}{arXiv:2408.01755v2};
+Theorems~2.6 and~4.3, Example~1, Conjecture~1.
+
+\bibitem{bessel-DLMF}
+NIST Digital Library of Mathematical Functions,
+\href{https://dlmf.nist.gov/10.25}{\S10.25} and
+\href{https://dlmf.nist.gov/10.40}{\S10.40}.
+
+\bibitem{bessel-Segura}
+J. Segura, \emph{Monotonicity Properties for Ratios and Products of
+Modified Bessel Functions and Sharp Trigonometric Bounds},
+Results Math. (2021).
+\href{https://doi.org/10.1007/s00025-021-01531-1}{doi:10.1007/s00025-021-01531-1}.
+The adjacent-order Riccati framework is related background.
+
+\bibitem{bessel-TT}
+Trureturing, \emph{A modified Bessel ratio need not be log-concave},
+formal proof record, consulted 15 November 2026.
+\url{https://www.trureturing.org/research/karp-vishnyakova-zhang-2025-bessel-ratio-log-concavity/}.
+This source concerns the negative log-concavity clause, not the
+positive unimodality proof above.
+
+\bibitem{density-GSW}
+R. L. Graham, J. H. Spencer and H. S. Witsenhausen,
+\emph{On extremal density theorems for linear forms}, in
+Number Theory and Algebra, Academic Press, 1977, pp. 103--109.
+
+\bibitem{density-CEG}
+F. Chung, P. Erd\H{o}s and R. Graham,
+\emph{On sparse sets hitting linear forms}, in
+Number Theory for the Millennium, Vol. I, 2002, pp. 257--272.
+
+\bibitem{density-Ves}
+N. Veselinov, \emph{Extremal densities for forbidden
+configurations in $S$-smooth numbers}, arXiv:2604.15515v1 (2026),
+\url{https://arxiv.org/abs/2604.15515}.
+
+\bibitem{VMRC}
+\emph{Verifiable Mathematical Reasoning Corpus}, research drafts (2026).
+Methodological references in this manuscript: item~006,
+\emph{Minimal Recurrence Orders and Integral Solution Lattices for Franel Sequences};
+item~140, \emph{Erd\H{o}s--Graham Density, Parity Packings};
+item~146, \emph{Perfect Skewness of Free Stable Densities}; and
+item~161, \emph{Randi\'c Index and Vertex Radius}.
+The density source cites repository snapshot
+\texttt{38348353416f1f7fc50cecb93c3b554a00260c13}.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,2442 @@
+\documentclass[11pt,a4paper]{article}
+% Build twice with XeLaTeX (Latin Modern and Noto Serif CJK KR).
+% pdfLaTeX also builds the English paper without the Korean reader's guide.
+\usepackage{iftex}
+\ifXeTeX
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+\setmonofont{Latin Modern Mono}
+\newfontfamily\korean{Noto Serif CJK KR}
+\else
+\usepackage[T1]{fontenc}\usepackage{lmodern}
+\fi
+\usepackage{microtype,amsmath,amssymb,amsthm,mathtools,booktabs,tabularx,array,geometry,xcolor,fancyhdr,hyperref}
+\geometry{left=26mm,right=26mm,top=25mm,bottom=24mm,headheight=15pt}
+\definecolor{ink}{HTML}{18394B}\definecolor{teal}{HTML}{12655E}
+\hypersetup{colorlinks=true,linkcolor=teal,citecolor=teal,urlcolor=teal,pdftitle={Arithmetic transfers for Euler's constant and generalized Stieltjes constants},pdfauthor={Keio and Shaitetsu research notes},bookmarksnumbered=true}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\sffamily\color{ink}Euler and Stieltjes constants}\fancyhead[R]{\small\sffamily\color{ink}Arithmetic transfers}\fancyfoot[C]{\small\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Q}{\mathbb Q}\newcommand{\Z}{\mathbb Z}\newcommand{\R}{\mathbb R}\newcommand{\N}{\mathbb N}
+\setlength{\emergencystretch}{2em}\allowdisplaybreaks[1]\setcounter{tocdepth}{1}
+\begin{document}
+\thispagestyle{empty}
+{\sffamily\color{teal} REVISED RESEARCH PAPER \hfill 15 NOVEMBER 2026}\par\vspace{1.5em}
+{\sffamily\bfseries\color{ink}\fontsize{24}{28}\selectfont\raggedright Arithmetic transfers for Euler's constant and generalized Stieltjes constants\par}
+\vspace{.65em}{\large Finite-difference zeros, limiting slopes and arithmetic tests for Euler's constant\par}
+\vspace{.9em}{\sffamily Keio and Shaitetsu research notes}\par\vspace{1.15em}
+\noindent\textbf{Abstract.}
+The expression in the opening question evaluates to Euler's constant $\gamma$. A related expression in the same quarter-argument values is irrational. For each $k\ge1$ the $(k+1)$st forward difference of the first generalized Stieltjes constant has a unique positive zero $a_k$. We prove that every $a_k$ is transcendental and that each difference is transcendental at every positive algebraic argument. The proof combines Baker's theorem with a prime-divisor bound for products of shifted algebraic integers. Varying the step size produces a limiting slope function whose iterated zero slopes we classify. A separate construction with square roots gives eventually nested intervals with transcendental endpoints and intersection $\{\gamma\}$. For each fixed order $m$ the linear rank over the algebraic numbers at exact prime-power denominators tends to infinity. Interpolation bounds the lower density of transcendental values among all reduced rational inputs by a quantity of order at least $m^{-3}$. We prove irrationality of six plastic-base values, examine decimal masks at fixed and moving inputs, and determine the fields of normalized Sondow integral differences and ratios. We also obtain sharp error and denominator estimates for rational bounds on $\gamma$. Nonvanishing at sufficiently small height on infinitely many blocks remains open.
+\par\medskip\noindent\textbf{Conventions.} All logarithms of positive real quantities are natural. Irrationality means exclusion from $\mathbb Q$. Transcendence means exclusion from its algebraic closure $\overline{\mathbb Q}$. A proportion is taken with the ordering specified in its statement.
+\vspace{.5em}
+\par\medskip
+\ifXeTeX
+{\korean\XeTeXlinebreaklocale "ko"\XeTeXlinebreakskip=0pt plus 0.8pt
+\noindent{\large\bfseries 한국어 해설}\par\smallskip
+처음 이미지의 식을 끝까지 계산하면 오일러–마스케로니 상수 $\gamma$가 된다. 이 수의 무리성은 여전히 미해결이다. 같은 반사 공식에 등장하는 $X=(\pi\gamma+\gamma_1(1/4)-\gamma_1(3/4))/\pi^2$의 무리성은 증명할 수 있다.\par\smallskip
+$\Delta f(x)=f(x+1)-f(x)$라 놓자. 제\ref{sec:zeros}절에서 찾은 $\Delta^{k+1}\gamma_1(x)$의 유일한 양의 영점 $a_k$에 대해, 제\ref{sec:rev-all}절은 모든 정수 $k\ge1$에서 $a_k$가 초월수임을 증명한다. 모든 양의 대수적 입력에서 차분값 자체도 초월수다.\par\smallskip
+제\ref{sec:rev-slopes}절은 간격별 기울기를 구하고, 제\ref{sec:rev-branches}절은 그 기울기 함수에서 다시 영점을 고르는 과정을 분류한다. 제\ref{sec:rev-brackets}절에서는 $a_{2^r}$에서 제곱근 연산으로 초월수인 양 끝점을 구한다. 충분히 큰 $r$에서 이 구간들은 엄밀히 중첩되고 교집합은 $\{\gamma\}$다. 같은 연산으로 유리수에 수렴하는 반례도 제시한다.\par\smallskip
+$1/48$은 기약분수를 분모 순으로 모았을 때 $\gamma_1(a/q)$가 초월수인 입력의 비율에 대한 하한이다. 제\ref{sec:layers}절은 이 하한을 $3/(4\pi^2)$로 올리고 더 높은 차수도 다룬다. 두 인수를 쓰는 $q$-스틸체스 상수에서는 $\rho^3=\rho+1$을 만족하는 $\rho>1$에 대해 $\gamma_0(\rho,1)$ 등 여섯 값을 각각 무리수로 판정한다.\par\smallskip
+유리수의 소수 전개에서 소수 숫자만 남기면 주기성이 유지된다. 따라서 소수 숫자가 무한히 등장하면서 한 번도 등장하지 않는 구간의 길이도 한없이 커진다면 원래 수가 무리수다. $\gamma$의 첫 백만 자리 안에서 확인한 최장 공백은 소수 숫자 기준 28자리, 홀수 소수 숫자 기준 39자리다. 고정된 $\gamma$에서 두 조건이 무한히 성립하는지는 미해결이다.\par}
+\else
+Section~\ref{sec:zeros} tests recovery at an individual zero. Section~\ref{sec:layers} counts rational inputs with transcendental Stieltjes values. Section~\ref{sec:plastic} treats the two-argument $q$-analogue. Section~\ref{sec:decimal-orbits} examines digit masks on fixed inputs.
+\fi
+
+
+\clearpage
+\tableofcontents
+\medskip
+\noindent\textbf{How the zero constructions fit together.}\quad
+Write $\Delta_h f(x)=f(x+h)-f(x)$ and $f(x)=\log(x)/x$. The following results concern three different sequences.
+\begin{itemize}
+\item At unit mesh the order $k$ varies. The zero $a_k$ of $\Delta^k f$ is transcendental at every order (Theorem~\ref{th:zero}).
+\item At each fixed mesh $h$, taking an order limit gives $S(h)$. A second zero-slope operation on the whole function $S$ has explicit branches (Theorem~\ref{thm:rev-branch-spec}).
+\item Starting anew at $a_{2^r}$ for each $r$, two chains of square roots give endpoints $L_{2^r},U_{2^r}$. Their limits coincide; their finite values and errors are treated in Theorem~\ref{thm:rev-bracket}.
+\end{itemize}
+\clearpage
+\section{The quarter identity and the denominator question}
+We write $\gamma=\lim_{n\to\infty}(H_n-\log n)$ and use the convention
+\begin{equation}\label{eq:hurwitz}
+\zeta(1+t,x)=\frac1t+\sum_{m\ge0}\frac{(-1)^m}{m!}\gamma_m(x)t^m,\qquad x>0 .
+\end{equation}
+Thus $\gamma_0(1)=\gamma$, $\gamma_m(1)=\gamma_m$, and $\gamma_0(x)=-\psi(x)$.
+The base-dependent coefficient $\gamma_0(q,x)$ in Section~\ref{sec:plastic} has two arguments and a different defining function.
+
+\begin{theorem}[The image and its irrational normalized companion]\label{thm:quarter}
+Put $S=\gamma_1(1/4)-\gamma_1(3/4)$ and $X=(\pi\gamma+S)/\pi^2$. Then
+\[
+4\log\!\left(2\int_0^\infty e^{-x^4}\,dx\right)-3\log\pi-
+\frac1\pi\sum_{n=0}^{\infty}
+\left(\frac{\log(n+1/4)}{n+1/4}-\frac{\log(n+3/4)}{n+3/4}\right)=\gamma.
+\]
+The three numbers $\pi,e^\pi,e^{\pi X}$ are algebraically independent over $\Q$. In particular $X=-0.3357177066831101661552317803\ldots$ is irrational.
+\end{theorem}
+\begin{proof}
+The series is $S$ by subtracting the two defining limits; its summands are $O((1+\log n)/n^2)$. The Malmsten reflection identity at $1/4$ gives
+\[
+S/\pi=2\log[\Gamma(1/4)/\Gamma(3/4)]-\gamma-\log(8\pi)
+\]
+by \cite[formula (16)]{Blagouchine}. Euler's reflection formula gives $\Gamma(1/4)\Gamma(3/4)=\pi\sqrt2$. Hence
+$Y:=e^{\pi X}=\Gamma(1/4)^4/(16\pi^3)$. Substitution $u=x^4$ proves the displayed image identity. Nesterenko's theorem \cite{Nesterenko} gives algebraic independence of $\pi,e^\pi,\Gamma(1/4)$. The last number is algebraic over $\Q(\pi,e^\pi,Y)$, so the latter field has transcendence degree three. If $X=a/b$ with $b>0$, the relation $Y^b=(e^\pi)^a$ contradicts that independence.
+\end{proof}
+More generally $\pi,\log\pi,\pi X$ are linearly independent over $\Q$. Indeed an integer relation exponentiates to a multiplicative relation among $e^\pi,\pi,Y$. Consequently $\pi X/(u\pi+v\log\pi)$ is irrational for every nonzero rational pair $(u,v)$. These claims identify particular irrational expressions while the arithmetic classification of the original image remains the open classification of $\gamma$.
+
+\subsection{The Gaussian number field and an ordinary zeta series}
+Let $K=\Q(i)$ and write $\gamma_K$ for its Euler--Kronecker constant, defined by $\zeta_K'(s)/\zeta_K(s)=-(s-1)^{-1}+\gamma_K+O(s-1)$. The Gaussian factorization $\zeta_K(s)=\zeta(s)\beta(s)$, with the Dirichlet beta function $\beta$, yields $\gamma_K=\gamma+\beta'(1)/\beta(1)$. The Hurwitz representation
+\[
+ \beta(s)=4^{-s}\{\zeta(s,1/4)-\zeta(s,3/4)\}
+\]
+and $\beta(1)=\pi/4$ give $\beta'(1)/\beta(1)=-\log4-S/\pi$. In the notation of Theorem~\ref{thm:quarter}, this gives a second explicitly irrational quotient,
+\[
+ \frac{2\gamma-\gamma_K}{\pi}
+ =\frac{1}{\pi}\log\!\left(\frac{\Gamma(1/4)^4}{4\pi^3}\right)\notin\Q.
+\]
+Indeed its rationality $a/b$ would imply $(4Y)^b=(e^\pi)^a$, contradicting the same algebraic independence.
+
+For an ordinary zeta series without Hurwitz arguments, apply the Taylor series for $\log\Gamma(1+z)$ at $z=-3/4$ and $z=1/4$. Their difference is $\log4$ by the gamma recurrence. Consequently
+\[
+ \gamma=\log 4-\sum_{n=2}^{\infty}
+          \frac{(3^n-(-1)^n)\zeta(n)}{n4^n}.
+\]
+All terms in the sum are positive. After $n=N\ge2$, the omitted sum is bounded by $\{8(3/4)^{N+1}+(8/3)(1/4)^{N+1}\}/(N+1)$ using $\zeta(n)<2$. The resulting interval for $\gamma$ is independent of any assertion about the arithmetic of its individual summands.
+
+\subsection{What a billion-digit denominator bound measures}
+A finite list of certified simple continued-fraction terms gives a conditional lower bound for the denominator of a rational number with that prefix. If the list has $L$ terms including $a_0$, its last convergent denominator is at least $F_L$ by $q_j=a_jq_{j-1}+q_{j-2}$ for $j\ge1$. Truncating a few terminal terms makes either convention for rational endpoints harmless. A direct proof of the rough bound $F_L\ge 2^{\lfloor(L-2)/2\rfloor}$ is obtained by iterating $F_{j+2}\ge2F_j$.
+
+The record credited to Syed Fahad lists $16\,695\,279\,010$ terms for $\gamma$ \cite{Fahad}. Even after discarding the last two terms, the rough bound exceeds $10^{1\,000\,000\,000}$, since $\log_{10}2>0.3$. Thus the billion-exponent statement follows from the reported continued-fraction prefix. We have not independently rerun that record. A decimal-digit record alone requires a further rational-interval or continued-fraction check. The finite computations reproduced later in this paper use a separate million-digit enclosure. None of these lower bounds implies that $\gamma$ is rational: the implication begins with the hypothesis $\gamma=a/b$.
+
+\section{What a transcendental zero can recover}\label{sec:zeros}
+\begin{lemma}[Arithmetic transfer at a single point]
+If $T$ is transcendental and $R\in\overline{\Q}(z)$ is nonconstant, then $R(T)$ is transcendental. More generally if $P\in\overline{\Q}[X,Y]$, $P(T,c)=0$, and $P(X,c)$ is not the zero polynomial, then $c$ is transcendental whenever algebraicity of $c$ would make the coefficients of $P(X,c)$ algebraic.
+\end{lemma}
+\begin{proof}
+Write $R=A/B$. The relation $A(T)-cB(T)=0$ with algebraic $c$ would contradict transcendence, since $A-cB$ is nonzero. The polynomial version is the same substitution.
+\end{proof}
+An analytic recovery at every zero has a different consequence. For example every zero of $e^z-2$ is transcendental by Hermite--Lindemann, yet $e^z/2=1$ at every such zero. Restricting the recovery map to a nonconstant rational function over $\overline{\Q}$ is an arithmetic hypothesis.
+
+\paragraph{A Bessel recovery at each positive zero.}
+With $J_0,Y_0$ in their customary Bessel notation, let
+\[
+B(z)=\sum_{j\ge1}(-1)^{j-1}H_j(z/2)^{2j}/(j!)^2.
+\]
+The classical series $\pi Y_0(z)/2=(\log(z/2)+\gamma)J_0(z)+B(z)$ is valid for $z>0$ \cite{DLMF}. At a positive zero $u$ of $J_0$, uniqueness for Bessel's equation gives $J_0'(u)\ne0$, and differentiation gives
+\[
+\gamma=\frac{\pi Y_0'(u)/2-B'(u)}{J_0'(u)}-\log(u/2).
+\]
+Siegel's theorem on the nonzero zeros of $J_0$ gives transcendence of $u$ \cite{SiegelBessel}; the recovered expression still contains analytic function values and a logarithm.
+
+\paragraph{A one-zero test with an algebraic recovery.}
+The equation $v\tanh v=1$ has exactly one positive solution $v>1$, since the left side increases strictly from zero to infinity. It gives
+$e^{2v}=(v+1)/(v-1)$, so Hermite--Lindemann forces $v$ transcendental. Both the Laplace limit $1/\sinh v=\sqrt{v^2-1}$ and the one-dimensional Bratu fold $8(v^2-1)$ are transcendental. For the latter identification the Dirichlet branch on $[0,1]$ is $u(x)=2\log\{\cosh v/\cosh(2v(x-1/2))\}$: substitution gives $-u''=\lambda e^u$, $\lambda=8v^2/\cosh^2v$, whose maximum occurs precisely at $v\tanh v=1$. For Kepler's equation $E-e\sin E=M$ at $M=\pi/2$, the branch $E=\pi/2+iv$ gives $e=iv/\cosh v$. Its critical modulus is the maximum of $v/\cosh v$, attained at $v\tanh v=1$ and equal there to $1/\sinh v$.
+
+\paragraph{A family involving Gompertz's constant.}
+Put $\delta=\int_0^\infty e^{-t}/(1+t)\,dt$, $E=e$, and $U=\operatorname{Ein}(1)=\int_0^1(1-e^{-t})\,dt/t=\gamma+\delta/e$ \cite{Rivoal}. The $E$-function specialization theorem gives algebraic independence of $E,U$ \cite{Rivoal}. For $r\in\overline{\Q}$ put $C_r=EU/(E+r)$. Each $C_r$ is transcendental. For $r\ne s$ the ratio $C_r/C_s=(E+s)/(E+r)$ recovers $E$ rationally, and then $C_r$ recovers $U$. Thus $C_r,C_s$ are algebraically independent. These examples specify exactly where a second functional value disappears in a successful transfer.
+
+\subsection{The positive derivative zeros of the first Stieltjes constant}
+\begin{theorem}\label{thm:derivative}
+For each integer $m\ge1$ the function $\gamma_1^{(m)}(x)$ has exactly one positive zero $z_m$. Let $c=e^\gamma$ and $\mu=(e^{1/c}-1)^{-1}$. Then
+\[
+z_m=c m+\frac c2-\mu+o(1),\qquad \frac c2-\mu=-0.43708050678\ldots .
+\]
+In particular $\log(z_m/m)\to\gamma$.
+\end{theorem}
+\begin{proof}
+Differentiation of $\partial_x^m\zeta(s,x)=(-1)^m(s)_m\zeta(s+m,x)$ at $s=1$ shows that the zero equation is
+\[
+f_m(x):=\frac{\sum_{n\ge0}(x+n)^{-m-1}\log(x+n)}
+{\sum_{n\ge0}(x+n)^{-m-1}}=H_m.
+\]
+For the probability measure on $n$ proportional to $(x+n)^{-m-1}$, the derivative of this mean is
+$\mathbb E[(x+n)^{-1}]-(m+1)\operatorname{Cov}(\log(x+n),(x+n)^{-1})>0$.
+The covariance is nonpositive since its arguments are oppositely ordered. The mean tends to $-\infty$ at zero and is bounded below by $\log x$ at infinity. This proves uniqueness.
+
+Fix a real $t$ and set $x=c m+t$. The weights normalized to their $n=0$ value are $(1+n/x)^{-m-1}\to e^{-n/c}$. They and their first moments are summably dominated for large $m$: expanding $(1+n/x)^{m+1}$ through degree four gives a lower bound $C(1+n^4)$ with $C>0$ independent of $m$. Also $m\log(1+n/x)\le C'n$. Dominated convergence therefore gives
+\[
+f_m(c m+t)=\log(cm)+\frac{t+\mu}{cm}+o(m^{-1}).
+\]
+Since $H_m=\log m+\gamma+1/(2m)+O(m^{-2})$, the sign of $f_m(cm+t)-H_m$ agrees eventually with that of $t+\mu-c/2$ whenever the latter is nonzero. Bracketing the unique zero between $cm+c/2-\mu\pm\varepsilon$ proves the assertion.
+\end{proof}
+The limit uses a sequence of analytic zeros; the arithmetic nature of a specified $z_m$ does not follow from this asymptotic. The fraction $1/48$ discussed in connection with these zeros concerns a density of rational arguments of $\gamma_1$, established and sharpened in Section~\ref{sec:layers}.
+\subsection{An individual transcendental zero of a finite difference}\label{sec:third-difference}
+Write $\Delta F(x)=F(x+1)-F(x)$. A third finite difference of the first Stieltjes constant has a zero whose arithmetic nature can be determined individually.
+\begin{theorem}\label{thm:third-difference}
+There is exactly one positive real $a$ such that $\Delta^3\gamma_1(a)=0$. This number is transcendental and satisfies
+\[
+ 3.6102667177991990 < a < 3.6102667177991991.
+\]
+\end{theorem}
+\begin{proof}
+The Hurwitz shift gives $\Delta\gamma_1(x)=-f(x)$, where $f(x)=\log(x)/x$. Thus the equation is $\Delta^2 f(a)=0$. Twice applying the fundamental theorem of calculus expresses $\Delta^2 f(x)$ as the integral of $(2\log v-3)/v^3$ with $v=x+s+t$ over $[0,1]^2$. Normalize the positive weight $v^{-3}\,ds\,dt$ to a probability measure and set $M(x)=\mathbb E_x\log v$. Then
+\[
+ M'(x)=\mathbb E_x(1/v)-3\operatorname{Cov}_x(\log v,1/v)>0.
+\]
+The covariance is nonpositive since its arguments vary in opposite orders. The signs of $\Delta^2 f$ at $3$ and $4$ follow respectively from $3^{20}5^{12}<4^{30}$ and $4^{30}6^{20}>5^{48}$. Monotonicity of $M$ gives uniqueness. The displayed finer bracket can be checked entirely in rational arithmetic: for each rational $v=a_0+i$ at an indicated endpoint $a_0$, $i=0,1,2$, use $z=(v-1)/(v+1)$ and approximate $\log v$ by $2\sum_{j=0}^{159}z^{2j+1}/(2j+1)$. The omitted tail lies in $[0,2z^{321}/(321(1-z^2))]$. The resulting endpoint intervals for $10^{19}\Delta^2 f$ lie in $(-2.62,-2.61)$ and $(2.30,2.31)$, respectively.
+
+Suppose first that $a=u/v$ is rational in lowest terms. Clearing the common denominator in $\Delta^2 f(a)=0$ gives
+\[
+ A\log a+B\log(a+1)+C\log(a+2)=0,
+\quad (A,B,C)=\big((a+1)(a+2),-2a(a+2),a(a+1)\big).
+\]
+Here $A+B+C=2$. If a prime $p$ divides $v$, then the $p$-adic valuations of $a,a+1,a+2$ all equal $-\operatorname{ord}_p v$. After multiplying the coefficients by $v^2$ and exponentiating, the total valuation would be $-2v^2\operatorname{ord}_p v\ne0$. Hence $v=1$, impossible since $3<a<4$.
+
+Now suppose that $a$ is algebraic of degree $d\ge2$. Put $r=\dim_{\Q}\langle\log a,\log(a+1),\log(a+2)\rangle$. A rational basis selected from these logarithms is still linearly independent over $\overline{\Q}$ by Baker's theorem \cite{Baker}. The $r$ rational coordinate rows of the three logarithms in that basis are linearly independent and annihilate the column $(A,B,C)$. Therefore
+\[
+ r\le 3-\dim_{\Q}\langle A,B,C\rangle.
+\]
+The three defining quadratics for $A,B,C$ form a basis for $\Q[X]_{\le2}$ (their coefficient determinant has absolute value $4$). If $d\ge3$ the right side is zero, contradicting $a>3$. If $d=2$, it is one, so all three positive logarithms are rationally proportional. There exist $g>1$ in $\Q(a)$ and positive integers $n_i$ such that $a+i=g^{n_i}$, $0\le i\le2$. Indeed choose the primitive positive integer vector proportional to the log vector and apply B\'ezout to its entries to express $g$ as an integer monomial in the $a+i$.
+
+Let $b$ and $g'$ be the images of $a$ and $g$ under the nonidentity embedding of this real quadratic field. Set $t=\log|g'|/\log g$. Conjugation gives $|b+i|=(a+i)^t$. If $t\le0$, all three absolute values are at most $1$. Their endpoints differ by $2$ before taking absolute values, forcing $b=-1$, which is impossible. If $t>0$, all three absolute values exceed $1$ and increase. The numbers $b,b+1,b+2$ must therefore all be positive: they cannot change sign while advancing by unit steps outside $[-1,1]$, and three negative terms would have decreasing absolute values. Thus the three numbers $(a+i)^t$ form an arithmetic progression. Strict concavity for $0<t<1$ and strict convexity for $t>1$ force $t=1$. This gives $b=a$, contradicting distinct conjugates. All algebraic possibilities have been exhausted.
+\end{proof}
+\subsection{Irrational zeros at every difference order}\label{sec:all-finite-difference}
+\begin{theorem}\label{thm:all-finite-difference}
+For every $k\ge1$, $\Delta^{k+1}\gamma_1$ has exactly one positive zero $a_k$. It is irrational, with
+\[
+ e^{H_k}-k/2<a_k<e^{H_k}.
+\]
+The numbers $a_1$ and $a_2$ are transcendental. For $k\ge3$, if $a_k$ is algebraic then its degree lies between $2$ and $k-1$ inclusive.
+\end{theorem}
+\begin{proof}
+By induction $f^{(k)}(v)=(-1)^k k!(\log v-H_k)/v^{k+1}$ for $f(v)=\log(v)/v$. Repeated integration over $[0,1]^k$ expresses $\Delta^k f(x)$ as the integral of $f^{(k)}(x+s_1+\cdots+s_k)$. With $v=x+\sum s_j$ normalize the weight $v^{-k-1}$ over the cube and put $M_k(x)=\mathbb E_x\log v$. The same covariance differentiation as above gives $M_k'(x)>0$. For the uniform law on the cube, $\log v$ and $v^{-k-1}$ have negative covariance. Jensen's inequality thus gives
+\[
+ \log x<M_k(x)<\log(x+k/2).
+\]
+Evaluating these strict bounds at $x=e^{H_k}-k/2$ and $x=e^{H_k}$ proves existence, location and uniqueness of the solution of $M_k(x)=H_k$. The lower endpoint is greater than $k$ since $H_k-\log k>\gamma>\log(3/2)$. The last inequality also follows from $\gamma>H_3-\log4$ and $e^{11/6}>6$, for example by the exponential series.
+
+At a rational root $a=u/v$ in lowest terms the logarithm relation has rational coefficients $c_j=(-1)^j\binom{k}{j}/(a+j)$ for $0\le j\le k$. Their sum is $\int_0^1 t^{a-1}(1-t)^k\,dt>0$. If $p\mid v$, all $a+j$ have valuation $-\operatorname{ord}_p v$ and exponentiating after clearing the coefficients' denominators contradicts this nonzero sum. Hence $a$ is an integer and $a>k$. By the \href{https://doi.org/10.1112/jlms/s1-9.4.282}{Sylvester--Schur theorem}, the product $(a+1)\cdots(a+k)$ has a prime divisor $p>k$. It divides exactly one of $a,a+1,\ldots,a+k$, contradicting the same exponentiated relation since every coefficient is nonzero.
+
+If $a=a_k$ is algebraic of degree $d$, multiply the $c_j$ by $\prod_{i=0}^k(a+i)$. The resulting polynomials in $a$ arise by evaluating a basis of $\Q[X]_{\le k}$, as is seen by substituting $X=-i$ for $0\le i\le k$. Their rational rank is $\min(d,k+1)$. Baker's theorem, applied as in Theorem~\ref{thm:third-difference}, bounds the rational rank $r$ of the logarithms by $k+1-\min(d,k+1)$. Thus $d\le k$ since $r\ge1$, which settles $k=1$. The case $k=2$ is Theorem~\ref{thm:third-difference}.
+
+For $k\ge3$ suppose $d=k$. Then $r=1$, so all $a+i$ are positive powers of one $g>1$ in $\Q(a)$, as in the preceding proof. Take any distinct conjugate $b$ of $a$, with corresponding conjugate $g'$ of $g$. For $i=0,1,2,3$,
+\[
+ (a+i)^s=|b+i|^2=i^2+2\operatorname{Re}(b)i+|b|^2,
+ \qquad s=2\log|g'|/\log g.
+\]
+The third finite difference of the quadratic on the right vanishes. Applied to the power function on the left, its integral representation has the constant strict sign of $s(s-1)(s-2)$ unless $s\in\{0,1,2\}$. The second finite difference on the right is $2$, excluding $s=0,1$. For $s=2$, coefficient comparison gives $\operatorname{Re}(b)=a$ and $|b|^2=a^2$, forcing $b=a$. This contradicts the choice of embedding and eliminates degree $k$.
+\end{proof}
+\begin{corollary}[Recovering Euler's constant from the finite-difference zeros]\label{cor:fd-asymptotic}
+Let $\theta=e^{-\gamma}$ and $\mu=(e^\theta-1)^{-1}$. Then
+\[
+ a_k=\mu k+\mu+\frac{1-e^\gamma}{2}+o(1),\qquad
+ \gamma=-\log\log\left(1+\frac{1}{\lim_{k\to\infty}a_k/k}\right).
+\]
+\end{corollary}
+\begin{proof}
+Laplace transformation gives $f(x)=\int_0^\infty e^{-xt}(-\gamma-\log t)\,dt$. Hence $a_k$ solves $\mathbb E\log T=-\gamma$ for the density proportional to $e^{-xt}(1-e^{-t})^k$, $t>0$. At $x=\mu k+b$ the density is proportional to $e^{-k\phi(t)}w(t)$ with
+\[
+ \phi(t)=\mu t-\log(1-e^{-t}),\qquad w(t)=e^{-bt}.
+\]
+Its unique stationary minimum is at $t=\theta$, where $A=\phi''(\theta)=\mu(1+\mu)$ and $\phi'''(\theta)=-A(1+2\mu)$. For fixed $b$ the elementary Laplace expansion of the normalized integral gives, with $g(t)=\log t$ and all derivatives evaluated at $\theta$,
+\[
+ \mathbb E g(T)=g(\theta)+\frac1k\left(\frac{g''}{2A}
+ +\frac{g'w'}{Aw}-\frac{g'\phi'''}{2A^2}\right)+o(k^{-1}).
+\]
+Indeed, putting $y=\sqrt{k}(t-\theta)$ and expanding $g-g(\theta)$, $w$ and $e^{-k\phi}$ leaves the Gaussian moments $\mathbb E y^2=1/A$ and $\mathbb E y^4=3/A^2$. Taylor expansion on $|y|\le k^{1/12}$ has integrably dominated remainders at the stated order. The complementary part in a fixed neighborhood is bounded by a Gaussian tail using $\phi(t)-\phi(\theta)\ge c(t-\theta)^2$. Outside that neighborhood the minimum is separated, and $e^{-k_0\phi(t)}w(t)(1+|\log t|)$ is integrable for sufficiently large fixed $k_0$, which bounds the remainder exponentially. The coefficient of $1/k$ reduces to
+\[
+ \frac{(1+2\mu-1/\theta)/2-b}{A\theta}.
+\]
+Finally $\partial_x\mathbb E\log T=-\operatorname{Cov}(T,\log T)<0$. Taking $b$ on opposite sides of $(1+2\mu-1/\theta)/2$ brackets the unique zero and proves the expansion. Inversion of $\mu=(e^{e^{-\gamma}}-1)^{-1}$ gives the recovery formula.
+\end{proof}
+\begin{theorem}[Integral degree obstruction and five individual transcendence results]\label{thm:five-zeros}
+All five numbers $a_1,a_2,a_3,a_4,a_5$ are transcendental. At any order $k$, an algebraic zero $a=a_k$ must be an algebraic integer satisfying
+\[
+ 2\le [\Q(a):\Q]\le\lfloor k/3\rfloor.
+\]
+At least one of $a,a+1,\ldots,a+k$ must then be a nonunit. Every prime ideal dividing one of them lies above an odd prime $p\le k/[\Q(a):\Q]$.
+\end{theorem}
+\begin{proof}
+Put $d=[\Q(a):\Q]$ and retain $c_j=(-1)^j\binom{k}{j}/(a+j)$. The previous theorem settles $k\le2$ and gives $2\le d\le k-1$ otherwise. Any additive homomorphism $v$ on the multiplicative group generated by the positive algebraic numbers $a+j$, with values in $\Q$, satisfies
+\[
+ \sum_{j=0}^k c_j v(a+j)=0.
+\]
+Indeed, their real logarithms embed that group in its rational linear span. The map $v$ extends to this rational span, and every rational coordinate of $\sum_j c_j\log(a+j)$ separately vanishes by Baker's theorem. Apply this observation to each prime ideal valuation in $\Q(a)$. A negative value $v(a)$ would equal $v(a+j)$ for all $j$, contradicting $\sum c_j>0$. This proves integrality.
+
+If $v$ lies over $p$ and some $v(a+j)>0$, the nonzero terms have indices in a single residue class modulo $p$. At $p=2$ all their coefficients have the same sign, which is impossible. In any support of size $s\le d$, the numbers $1/(a+j)$ are rationally independent: clearing their denominators gives a polynomial of degree $\le s-1<d$ vanishing at $a$, and evaluating the identically zero polynomial at the distinct $-j$ gives zero for each coefficient. Thus the support must have at least $d+1$ elements, forcing $p d\le k$.
+
+Suppose all the shifts are units. Then the monic polynomial $P(X)=N_{\Q(a)/\Q}(a+X)$ takes only the values $\pm1$ at $0,\ldots,k$. If $d\ge4$, its $d$th forward difference is $d!$, whereas the binomial formula gives absolute value at most $2^d<d!$. If $d=3$, then $k\ge4$, and the sum of its first two third differences is $12$. The coefficients of that sum on $P(0),\ldots,P(4)$ are $(-1,2,0,-2,1)$, with absolute sum $6$, again impossible. Finally if $d=2$ and $b$ is the other conjugate, the unit norms imply $|b|=1/a$ and $|b+1|=1/(a+1)$. Their sum is less than $1$ since $a>k\ge3$, contradicting the triangle inequality. Thus a nonunit occurs. Its supporting prime has $3\le p\le k/d$, proving $d\le\lfloor k/3\rfloor$ and excluding every algebraic degree at orders up to five.
+\end{proof}
+\begin{corollary}\label{cor:eight-zeros}
+Each of $a_1,\ldots,a_8$ is transcendental.
+\end{corollary}
+\begin{proof}
+For $6\le k\le8$, the only possible degree is $d=2$ and the only possible supporting prime is $p=3$. The monic quadratic $P(X)=N(a+X)$ misses at least one residue class $r$ among its roots modulo $3$, where $0\le r\le2$. Both $a+r$ and $a+r+3$ are then units. Their conjugates satisfy
+\[
+ 3\le |b+r|+|b+r+3|=\frac1{a+r}+\frac1{a+r+3}<1,
+\]
+since $a>k$. This excludes the last possible degree.
+\end{proof}
+\begin{corollary}[Ten individually transcendental zeros]\label{cor:ten-zeros}
+Each of $a_1,\ldots,a_{10}$ is transcendental. For every putative algebraic $a_k$ of degree $d$, at most $d-1$ of the $k+1$ shifts $a_k+j$ can be units.
+\end{corollary}
+\begin{proof}
+Write $a=a_k$ and $P(X)=N_{\Q(a)/\Q}(a+X)$. Suppose $j_1<\cdots<j_d$ are distinct unit indices, so $|P(j_i)|=1$. For $V(X)=\prod_i(X-j_i)$, Lagrange interpolation of $P-V$ gives
+\[
+ \frac{P(X)}{V(X)}=1+\sum_{i=1}^d\frac{P(j_i)}{(X-j_i)V'(j_i)}.
+\]
+At $X=-a$ the left side is zero, whereas the absolute value of the sum is at most
+\[
+ \frac1a\sum_{i=1}^d\frac1{(i-1)!(d-i)!}
+ =\frac{2^{d-1}}{a(d-1)!}\le\frac2a<1.
+\]
+This proves the unit bound. For $k=9,10$, the degree obstruction leaves $d=2,3$. If $d=3$, the only eligible prime is $3$, and a supporting residue class must contain at least four of $0,\ldots,k$. For both $k=9,10$ the class $2\bmod3$ has only the three members $2,5,8$. These are therefore three unit nodes, a contradiction. If $d=2$ the only eligible prime at $k=9$ is $3$, and its residue classes on which $P$ vanishes number at most two. A missing class supplies at least three unit nodes. At $k=10$ the additional prime $5$ can occur only in class $0\bmod5$, since this is the only class with at least three indices. A class missing from the roots of $P$ modulo $3$ has at least three elements. Removing the candidates $0,5,10$ deletes only one member of that class, leaving at least two unit nodes.\end{proof}
+At $k=11,d=3$ the count alone first becomes inconclusive. The classes $0,1,2\bmod3$ each have four representatives among $0,\ldots,11$, so these necessary local conditions allow every index to be covered. The norm estimate in Section~\ref{sec:rev-all} resolves this case and all subsequent orders.
+\section{Transcendence of the finite-difference zeros at every order}\label{sec:rev-all}
+Use $\Delta f(x)=f(x+1)-f(x)$ and the Laurent convention
+$\zeta(1+t,x)=t^{-1}+\gamma_0(x)-\gamma_1(x)t+O(t^2)$.
+Write $N_{K/\Q}$ for the field norm and $H_k=\sum_{j=1}^k1/j$.
+\begin{theorem}\label{th:prime}
+Let $k\ge1$ be an integer. Suppose $a>32k/25$ is a real algebraic integer of degree $d\ge2$, and every conjugate $b$ satisfies $|b|\ge a$.
+Some rational prime $p$ dividing
+\[
+ \left|N_{\Q(a)/\Q}\!\left(\prod_{j=0}^{k}(a+j)\right)\right|
+\]
+satisfies $p=2$ or $p>k/d$. If the displayed integer is odd it has a prime factor exceeding $k/d$.
+\end{theorem}
+\begin{theorem}\label{th:zero}
+For every $k\ge1$ there is exactly one positive $a_k$ with $\Delta^{k+1}\gamma_1(a_k)=0$, and $a_k$ is transcendental. For every real algebraic $\alpha>0$ and every $k\ge1$, $\Delta^{k+1}\gamma_1(\alpha)$ is transcendental.
+\end{theorem}
+The classical Sylvester--Schur theorem concerns a product of consecutive rational integers \cite{Erdos}. Theorem~\ref{th:prime} has an explicit conjugate-size hypothesis and a cutoff depending on the field degree. No priority claim is made for this formulation.
+\subsection{Location, conjugates and prime support of a zero}
+Set $f(x)=\log(x)/x$ for $x>0$. The Hurwitz shift identity gives $\Delta\gamma_1=-f$, so positive zeros in Theorem~\ref{th:zero} solve $\Delta^k f=0$. Differentiating gives
+\[
+ f^{(k)}(v)=(-1)^k k!(\log v-H_k)v^{-k-1}.
+\]
+Repeated integration of this derivative over $v=x+s_1+\cdots+s_k$, with independent uniform $s_i\in[0,1]$, expresses $\Delta^k f(x)$ as a cube integral. Normalize the weight $v^{-k-1}$ to a probability measure with expectation $E_x$. Its logarithmic mean $M(x)=E_x\log v$ has derivative $E_x(v^{-1})-(k+1)\operatorname{Cov}_x(\log v,v^{-1})>0$. With the unweighted law on the cube, the opposite monotonicities of $\log v$ and $v^{-k-1}$ and strict Jensen give
+\[
+ \log x < M(x) < \log(x+k/2).
+\]
+The unique solution of $M(x)=H_k$ therefore satisfies
+\[
+ e^{H_k}-k/2<a_k<e^{H_k},\qquad a_k>(32/25)k .
+\]
+Indeed $H_k-\log k>\gamma>\log(89/50)$, where the latter follows, for instance, from $H_{1000}-\log(1001)>\log(89/50)$ by elementary log bounds. This also proves existence by evaluating the strict bounds at the two displayed endpoints.
+\paragraph{Rational candidates.}
+Put $a=a_k$, $c_j=(-1)^j\binom{k}{j}/(a+j)$. We have
+\begin{equation}\label{eq:rev-zero-log}
+ \sum_{j=0}^k c_j\log(a+j)=0,\qquad
+ \sum_{j=0}^k c_j=\int_0^1 t^{a-1}(1-t)^k\,dt>0.
+\end{equation}
+If $a=u/v$ in lowest terms and $p\mid v$, applying the ordinary $p$-adic valuation to \eqref{eq:rev-zero-log} after clearing denominators and exponentiating gives
+$-\operatorname{ord}_p(v)\sum c_j=0$, a contradiction. If $a$ is an integer then $a>k$. Sylvester--Schur \cite{Erdos} gives a prime $p>k$ dividing the product $(a+1)\cdots(a+k)$. This prime divides just one of $a,\ldots,a+k$, another contradiction to \eqref{eq:rev-zero-log}.
+\paragraph{Separation by Baker's theorem.}
+Suppose $a$ is algebraic of degree $d\ge2$ and put $K=\Q(a)$. Select a rational basis $\ell_1,\ldots,\ell_r$ of the span of the real logarithms in \eqref{eq:rev-zero-log}, from the logarithms themselves. Write $\log(a+j)=\sum_i u_{ij}\ell_i$ with $u_{ij}\in\Q$. Baker's homogeneous theorem preserves independence over $\overline{\Q}$ \cite{Baker}. Thus $\sum_j u_{ij}c_j=0$ for every $i$. Two consequences will be used.
+\begin{enumerate}
+\item For any prime-ideal valuation $v$ of $K$ we have $\sum_j c_jv(a+j)=0$. Multiplicative relations among the $a+j$ are exactly the integer linear relations among their real logarithms, and $v$ is additive on multiplication. Hence it defines a rational linear functional on the logarithm span, to which the coordinate equations apply.
+\item For every conjugate $b$ of $a$, $\sum_j(-1)^j\binom{k}{j}\log(a+j)/(b+j)=0$. Apply the embedding $a\mapsto b$ to each coordinate equation and recombine them with the \emph{original real} $\ell_i$. The denominators are nonzero since $a$ is irrational.
+\end{enumerate}
+A negative $v(a)$ would force all $v(a+j)$ equal to it, contrary to \eqref{eq:rev-zero-log} and the first consequence. Thus $a$ is integral. If $v$ above $p$ divides any $a+j$, the indices with $v(a+j)>0$ lie in one residue class modulo $p$. At $p=2$ all terms of $\sum_j c_jv(a+j)$ on that support have the same sign. For any $p$, a support of at most $d$ is impossible. Indeed, any $s\le d$ reciprocals $1/(a+j)$ with distinct indices are rationally independent. Clearing denominators of a putative relation gives a polynomial of degree $\le s-1<d$ vanishing at $a$. Evaluating the zero polynomial at the negatives of the indices kills each coefficient individually. Thus the support contains $d+1$ indices at mutual spacing at least $p$, and $pd\le k$.
+\paragraph{The Newton interpolant.}
+Let $P$ be the degree-$\le k$ polynomial with $P(-j)=\log(a+j)$ for $0\le j\le k$. Its Lagrange form and the second consequence give $P(b)=0$ for every conjugate $b$, including $a$. Indeed, after factoring $\prod_{j=0}^k(b+j)/k!$ from the interpolation formula one obtains exactly the vanishing sum. Newton's form gives
+\[
+ P(z)=\log a-\sum_{r=1}^k u_r z(z+1)\cdots(z+r-1),\qquad
+ u_r=\frac{(-1)^{r-1}\Delta^r\log(a)}{r!}>0.
+\]
+Here $\Delta^r\log(a)$ means the difference of the function $x\mapsto\log x$ at $a$. Its sign follows by integrating its $r$th derivative over the $r$-cube. For $|z|<a$ the triangle inequality bounds the sum strictly below its value at $a$, which is $\log a$. Thus $|b|\ge a$ for every conjugate. Theorem~\ref{th:prime} now contradicts the support restriction above. Finally, at algebraic $\alpha>0$ the difference is an algebraic linear form in $\log(\alpha+j)$ and is nonzero by uniqueness of the positive zero. Baker's inhomogeneous theorem makes it transcendental \cite{Baker}. This proves Theorem~\ref{th:zero}, subject to the arithmetic estimate below.
+\subsection{Opposing bounds for the norm product}
+To prove Theorem~\ref{th:prime}, take any real algebraic integer $a$ under its hypotheses. Suppose that every prime divisor of the norm product is odd and at most $k/d$. Set $t=32/25$, so $a>tk$. Write $y=k/d$ and $n(y)=\#\{p\le y:p\text{ an odd prime}\}$. If $y<3$, every shift is a unit. Already $|N(a)|\ge a^d>1$ contradicts this. Hence $y\ge3$ and $k\ge6$.
+
+For each prime ideal dividing any shift, set aside one index where its valuation is maximal. The union of the set-aside indices has at most $m=dn(y)$ elements. If necessary add further indices until exactly $m$ indices have been set aside. This is possible since $n(y)\le y/2$. Let $R\subseteq\{0,\ldots,k\}$ be the remaining indices and put $M=\prod_{j\in R}|N(a+j)|$. For an ideal $\mathfrak p$ with chosen index $j_*$, each retained valuation is at most $v_{\mathfrak p}(j-j_*)$ by the ultrametric inequality. Moreover $\prod_{j\ne j_*}|j-j_*|=j_*!(k-j_*)!$ divides $k!$. Taking rational norms and using $\sum_{\mathfrak p\mid p}e_{\mathfrak p}f_{\mathfrak p}=d$ yields
+\[
+ M^{1/d}\le\prod_{\substack{p\le y\\p\ \mathrm{odd\ prime}}}p^{v_p(k!)},
+ \qquad \frac{\log M}{kd}\le S(y):=
+ \sum_{\substack{p\le y\\p\ \mathrm{odd\ prime}}}\frac{\log p}{p-1}.
+\]
+
+The actual real conjugate contributes $a+j>tk+j$, and every other conjugate satisfies $|b+j|\ge|b|-j\ge a-j>tk-j$. Consequently
+\[
+ \frac{\log M}{d}>
+ \sum_{j\in R}\log(tk-j)+\frac1d\sum_{j\in R}\log\frac{tk+j}{tk-j}.
+\]
+As $u\mapsto\log(tk-u)$ decreases, the sum on $j=0,\ldots,k-1$ dominates its integral over $[0,k]$. The additional term at $k$ is positive. Deleting $m$ terms costs at most $m\log(tk)$. Also $\log[(1+x)/(1-x)]\ge2x$ for $0\le x<1$ and $\sum_{j\in R}j\ge(k-m)^2/2$. With $h=m/k=n(y)/y$ this gives
+\begin{align*}
+ \frac{\log M}{kd}
+ &>(1-h)\log k+I(t)-h\log t+\frac{(1-h)^2}{td},\\
+ I(t)&=\int_0^1\log(t-u)\,du
+ =t\log t-(t-1)\log(t-1)-1>-0.34,\qquad \log t<0.25 .
+\end{align*}
+Positivity of the following expression is sufficient for a contradiction, with direct product comparisons available at the remaining pairs. Put
+\[
+ F(y,d)=(1-h)\log(dy)-0.34-\frac h4
+       +\frac{25(1-h)^2}{32d}-S(y).
+\]
+
+\paragraph{The range $y\ge100$.}
+The explicit prime estimates of Rosser and Schoenfeld \cite[(3.6), (3.23)]{RS} give
+\[
+ \pi(y)<1.25506\,y/\log y,qquad
+ \sum_{p\le y}\frac{\log p}{p}<\log y+E+1/\log y .
+\]
+Here $E=-\gamma-\sum_p(\log p)/(p(p-1))$. The second bound applies already at $y\ge32$. Adding the correction from $1/p$ to $1/(p-1)$ and subtracting the complete term $\log2$ of the prime $2$ gives
+\[
+ S(y)<\log y-\gamma-\log2+1/\log y<\log y-1.04
+ \quad (y\ge100).
+\]
+Also $h\log y<1.256$ and $h<0.273$. Thus
+\[
+ F(y,d)>0.727\log d-0.62425+0.40/d>0
+ \qquad(d\ge2).
+\]
+The last expression is positive at $d=2$ and increasing thereafter.
+
+\paragraph{The range $3\le y<100$.}
+Between consecutive odd primes $n(y)$ and $S(y)$ are constant, $h$ decreases, and $F(y,d)$ increases for fixed $d$. For fixed $y$, the derivative in $d$ is
+\[
+ \frac{1-h}{d}\left(1-\frac{25(1-h)}{32d}\right)>0.
+\]
+At the 24 odd primes $p<100$, $F(p,2)>0.023$ except for $p=7,13,19$. At each of these three primes both $F(p,3)>0.009$ and $F(p+1/2,2)>0.009$. The exact rational verification below certifies these inequalities. Since $k$ and $d$ are integers, only $(k,d)=(14,2),(26,2),(38,2)$ remain. For those three pairs, omitting the largest $m$ factors gives
+\[
+ M^{1/d}>\prod_{j=m}^k(tk-j).
+\]
+The integer parts of this product divided by the factorial prime-product upper bound for $M^{1/d}$ are respectively $242,7915,91912$. This completes the proof of Theorem~\ref{th:prime}.
+
+\paragraph{Exact certificate for the finite range.}
+The following Python code uses only rational arithmetic and integer operations. For $0\le z\le1/3$, truncating $2\sum_{j\ge0}z^{2j+1}/(2j+1)$ after $j=19$ incurs an error at most $2z^{41}/(41(1-z^2))$. Reducing each logarithm argument to $[1,2)$ makes this applicable throughout.
+\begingroup\small
+\begin{verbatim}
+from fractions import Fraction as F
+from functools import lru_cache
+from math import isqrt, prod
+def series(z):
+    u = z
+    s = F(0)
+    for j in range(20):
+        s += 2*u/(2*j+1)
+        u *= z*z
+    return s, s+2*u/(41*(1-z*z))
+@lru_cache(None)
+def log_bounds(x):
+    e = 0
+    while x >= 2:
+        x /= F(2)
+        e += 1
+    assert 1 <= x < 2
+    l, h = series((x-1)/(x+1))
+    l2, h2 = series(F(1,3))
+    return l+e*l2, h+e*h2
+harmonic = sum((F(1,j) for j in range(1,1001)), F(0))
+assert harmonic > log_bounds(F(1001*89,50))[1]
+def margin(y,d,n,H):
+    h = n/y
+    l, _ = log_bounds(d*y)
+    return (1-h)*l-F(34,100)-h/4+25*(1-h)**2/(32*d)-H
+H = F(0)
+n = 0
+for p in range(3,100,2):
+    if any(p%u == 0 for u in range(3,isqrt(p)+1,2)):
+        continue
+    n += 1
+    H += log_bounds(F(p))[1]/(p-1)
+    if p in (7,13,19):
+        assert margin(F(p),3,n,H) > F(9,1000)
+        assert margin(F(p)+F(1,2),2,n,H) > F(9,1000)
+    else:
+        assert margin(F(p),2,n,H) > F(23,1000)
+assert n == 24
+def vp(k,p):
+    v = 0
+    while k:
+        k //= p
+        v += k
+    return v
+for k,m,b in [(14,6,242),(26,10,7915),(38,14,91912)]:
+    ps = [p for p in range(3,k//2+1,2)
+          if all(p%u for u in range(3,isqrt(p)+1,2))]
+    w = prod(p**vp(k,p) for p in ps)
+    z = prod(32*k-25*j for j in range(m,k+1))
+    assert z//(25**(k+1-m)*w) == b
+\end{verbatim}
+\endgroup
+\subsection{A beta integral at algebraic shape parameters}
+For $\alpha>0$ put $B=B(\alpha,k+1)$ and let $U$ have the beta density $u^{\alpha-1}(1-u)^k/B$, $0<u<1$. Then
+\[
+ B\big(\gamma+\mathbb{E}\log(-\log U)\big)
+   =-\sum_{j=0}^k(-1)^j\binom{k}{j}
+                     \frac{\log(\alpha+j)}{\alpha+j}.
+\]
+To verify it, substitute $u=e^{-t}$, expand $(1-e^{-t})^k$, and differentiate $\int_0^\infty e^{-xt}t^{s-1}dt=\Gamma(s)x^{-s}$ at $s=1$. For every real algebraic $\alpha>0$ and $k\ge1$ the right-hand side is transcendental by Theorem~\ref{th:zero}. Since $B=k!/[\alpha(\alpha+1)\cdots(\alpha+k)]$ is nonzero and algebraic, the quantity $\gamma+\mathbb{E}\log(-\log U)$ is individually transcendental for each such pair. The argument controls the sum appearing in the identity. Euler's constant by itself is the subject of a separate open irrationality problem \cite{Lagarias}.
+
+\section{Variable meshes and zeros formed from the limiting slopes}
+\label{sec:rev-slopes}
+
+Put $f(x)=\log(x)/x$ for $x>0$, write $\Delta_h f(x)=f(x+h)-f(x)$ for $h>0$, and put $\theta=e^{-\gamma}$. At unit mesh the equation $\Delta^k f(x)=0$ is the zero equation for $\Delta^{k+1}\gamma_1$ by the unit Hurwitz shift. We vary the mesh in the equation for $f$.
+
+\begin{theorem}[The limiting slope at every positive mesh]
+\label{thm:rev-mesh}
+For each $h>0$ and $k\ge1$, $\Delta_h^k f$ has exactly one positive zero $a_k(h)$. In particular $a_k(1)=a_k$. The slope and its continuous value at mesh zero are
+\[
+ S(h):=\lim_{k\to\infty}\frac{a_k(h)}{k}
+       =\frac{h}{e^{\theta h}-1},\qquad
+ S(0):=\lim_{h\downarrow0}S(h)=\frac1\theta=e^\gamma .
+\]
+\end{theorem}
+\begin{proof}
+The integral $f(x)=\int_0^\infty e^{-xt}(-\gamma-\log t)\,dt$ follows by differentiating the gamma integral. For fixed $x,h,k$ let $T$ have probability density proportional to $e^{-xt}(1-e^{-ht})^k$ on $t>0$. The equation $\Delta_h^k f(x)=0$ is equivalent to $\mathbb E_x\log T=-\gamma$. This mean is strictly decreasing in $x$ since its derivative is $-\operatorname{Cov}_x(T,\log T)<0$. Differentiation under the integral is justified locally at each $x>0$ by exponential decay. To see the endpoint values, set $u=xt$. As $x\downarrow0$ the unnormalized density in $u$ becomes $e^{-u}(1-e^{-hu/x})^k\to e^{-u}$. As $x\to\infty$, multiplication by $(x/h)^k$ gives the limit $e^{-u}u^k$. In both cases the corresponding limit also holds for the integrals weighted by $|\log u|$, by domination by $e^{-u}(1+u^k)(1+|\log u|)$. Thus $\mathbb E_x\log T=\mathbb E_x\log u-\log x$ ranges from $+\infty$ to $-\infty$, proving existence and uniqueness.
+
+At $x=ks$ with $s>0$ fixed, the density is proportional to
+$\exp(k\phi_s(t))$, where $\phi_s(t)=\log(1-e^{-ht})-st$. This strictly concave function has its unique maximum at $t_s=h^{-1}\log(1+h/s)$. Its log moment tends to $\log t_s$. Indeed, outside any fixed neighborhood of the maximum the exponent is separated from its maximum, and $e^{\phi_s(t)}(1+|\log t|)$ is integrable. Comparing this tail with the integral on a smaller neighborhood with strictly larger exponent makes its normalized contribution exponentially small. Continuity of $\log t$ on the remaining neighborhood proves the limit. Thus $\log t_s$ is greater than $-\gamma$ for $s<h/(e^{\theta h}-1)$ and smaller for $s>h/(e^{\theta h}-1)$. Monotonicity in $x$ brackets $a_k(h)/k$ between any such lower and upper values for large $k$. The value at zero follows by expansion of the exponential.
+\end{proof}
+
+\subsection{A product whose zeros are the slopes}
+For integer $j\ge1$ the value $S(j)=j/[(1+1/S(1))^j-1]$ is a rational function of $S(1)$. Incommensurable mesh ratios give a different arithmetic test.
+
+\begin{theorem}[Squarefree index classes]
+\label{thm:rev-squarefree}
+The function
+\[
+ \mathcal P(z)=\prod_{n=1}^{\infty}
+                 \left(1-\frac{S(\sqrt n)}{z}\right),
+ \qquad z\in\mathbb C\setminus\{0\},
+\]
+is holomorphic on its domain and has exactly the simple zeros $z_n=S(\sqrt n)$.
+The set of indices of its algebraic zeros is empty or is exactly
+$\{Dm^2:m\ge1\}$ for a single squarefree positive integer $D$.
+Consequently at least $N-\lfloor\sqrt N\rfloor$ of its first $N$ zeros
+are transcendental.
+\end{theorem}
+\begin{proof}
+The function $h/(e^{\theta h}-1)$ strictly decreases since $1-e^{-\theta h}<\theta h$.
+Also $S(\sqrt n)\sim\sqrt n\,e^{-\theta\sqrt n}$, a summable bound up to a constant (group the integers between successive squares). The product therefore converges locally uniformly away from zero. Its tails are nonzero there away from the indicated factors, by convergence of their logarithms. Strict decrease gives the simplicity of each zero.
+
+Write $A(h)=1+h/S(h)=e^{\theta h}>1$. For positive algebraic $h$, the numbers $S(h)$ and $A(h)$ are algebraic simultaneously. If $h,h'$ are positive algebraic meshes and $A(h),A(h')$ are both algebraic, the identity $A(h')=A(h)^{h'/h}$ and the Gelfond--Schneider theorem force $h'/h\in\Q$. Conversely, taking a positive rational power preserves algebraicity. Thus the positive algebraic meshes with algebraic slope form either the empty set or a single class under multiplication by positive rationals. For $h=\sqrt n$ this equivalence class consists of the integers $n$ with one fixed squarefree part, which gives the count. 
+\end{proof}
+The enumeration itself has $z_n/n\to0$. Its exponential decay still determines the Euler parameter, since $-\log(z_n/\sqrt n)/\sqrt n\to\theta$. The theorem leaves the arithmetic type of a prescribed $S(\sqrt n)$ open whenever the exceptional class has not been excluded.
+
+\subsection{A specific zero of the slope function's fourth derivative}
+\begin{theorem}\label{thm:rev-fourth}
+There is a unique $h_*>0$ with $S^{(4)}(h_*)=0$. Both $h_*/S(0)$ and $S(h_*)/h_*$ are transcendental. Numerically,
+\[
+ h_*\simeq3.81833267865,\qquad h_*/S(0)\simeq2.14383909384,
+ \qquad S(h_*)/h_*\simeq0.13276456140 .
+\]
+\end{theorem}
+\begin{proof}
+Set $x=\theta h$, $y=e^x$, and $g(x)=x/(e^x-1)$, so $S(h)=g(x)/\theta$.
+With $H(x)=1/(e^x-1)$ one has $g^{(4)}=xH^{(4)}+4H^{(3)}$, and $H^{(4)}>0$ by its exponential series. Direct differentiation with $d/dx=y\,d/dy$ gives the equivalent equation
+\[
+ x=R(y):=
+ \frac{4(y-1)(y^2+4y+1)}{y^3+11y^2+11y+1}.
+\]
+On putting $w=\tanh(x/2)\in(0,1)$ this becomes $F(w)=0$ with
+\[
+ F(w)=\operatorname{arctanh}w-\frac{w(3-w^2)}{3-2w^2},
+ \qquad F'(w)=\frac{w^4(2w^2-1)}{(1-w^2)(3-2w^2)^2}.
+\]
+The function starts at zero, decreases until $w=1/\sqrt2$, then increases to $+\infty$. This proves uniqueness. At its positive solution, algebraicity of $y$ would imply algebraicity of $x=R(y)>0$, contradicting the Hermite--Lindemann theorem for $e^x=y$. The nonconstant rational functions $R(y)$ and $1/(y-1)$ of this transcendental $y$ are transcendental. These are exactly $h_*/S(0)$ and $S(h_*)/h_*$. The quotients retain the same values if any positive scale $\theta$ is used.
+\end{proof}
+
+\section{Iteration of the zero-slope operation}\label{sec:rev-branches}
+
+For the zeros $z_n$ of the product in Theorem~\ref{thm:rev-squarefree}, exponential decay recovers $\theta=e^{-\gamma}$ although $z_n/n\to0$. We now take high forward differences of the entire slope function $S$ and compute the full list of positive limiting slopes.
+
+For a profile $F$ on $(0,\infty)$ and a fixed $h>0$, write $x_{k,r}(F;h)$ for the $r$th largest distinct positive zero of $\Delta_h^k F(x)$, when it exists. Define
+\[
+ (T_r F)(h)=\lim_{k\to\infty}\frac{x_{k,r}(F;h)}{k}.
+\]
+In the families below every fixed rank exists for all sufficiently large $k$, and each limit is positive. For integers $1\le p<q$ put
+\begin{align*}
+ S_p(h)&=\frac{h}{e^{p\theta h}-1},\qquad S=S_1,\\
+ C_{p,q}(h)&=\frac{1}{(q-p)\theta}
+       \log\frac{1-e^{-q\theta h}}{1-e^{-p\theta h}}
+       =\frac{1}{q-p}\int_p^q\frac{h}{e^{v\theta h}-1}\,dv .
+\end{align*}
+In particular, $S_q(h)<C_{p,q}(h)<S_p(h)$.
+
+\begin{theorem}[Positive slope branches]\label{thm:rev-branch-spec}
+For $p,j\ge1$ the two ranks $2j-1,2j$ at $S_p$ give
+\[
+ T_{2j-1}S_p=S_{jp},\qquad T_{2j}S_p=C_{jp,(j+1)p}.
+\]
+For $p<q\le2p$ let $\Lambda_{p,q}=p\mathbb N\cup q\mathbb N$, with $\mathbb N=\{1,2,\ldots\}$, listed in increasing order. Give the frequency $n\in\Lambda_{p,q}$ the sign of
+$p\mathbf 1_{p\mid n}-q\mathbf 1_{q\mid n}$. The positive slopes at $C_{p,q}$, in decreasing order, are exactly $C_{u,v}$ for adjacent $u<v$ in this list whose signs differ. Each listed slope in either family has one simple nearby zero for all sufficiently large $k$, in the variable $s=x/k$. These lists exhaust all positive accumulation values of $x/k$ for zeros, allowing the selected zero to vary with $k$.
+\end{theorem}
+
+\begin{proof}
+Fix $h$ and set $A_n=1-e^{-n\theta h}$ and $\ell_n(s)=\log A_n-n\theta s$. The expansion $S_p(x)=x\sum_{j\ge1}e^{-jp\theta x}$ gives the exact formula
+\[
+ \frac{(-1)^k}{k}\Delta_h^k S_p(ks)
+   =\sum_{n\in p\mathbb N}e^{k\ell_n(s)}\bigl(s-S_n(h)\bigr).
+\]
+For the other family, expanding the logarithms gives
+\[
+ (-1)^k\Delta_h^k C_{p,q}(ks)
+   =\sum_{n\in\Lambda_{p,q}}d_n e^{k\ell_n(s)},\qquad
+ d_n=\frac{p\mathbf 1_{p\mid n}-q\mathbf 1_{q\mid n}}
+                  {(q-p)\theta n}.
+\]
+These expansions are absolutely convergent at every positive argument. For successive frequencies $u<v$ in either support,
+\[
+ \ell_v(s)-\ell_u(s)=(v-u)\theta\bigl(C_{u,v}(h)-s\bigr).
+\]
+Strict concavity of $v\mapsto\log(1-e^{-v\theta h})$ shows that these successive crossing slopes decrease strictly to zero as the frequencies increase. Thus a single exponent is maximal between crossings. At a crossing precisely its two adjacent exponents are maximal.
+
+The dominance is uniform on compact subintervals of $s>0$ away from the crossings. Indeed, on $s\ge\delta>0$ one has $\ell_n(s)\le-n\theta\delta$. After dividing by the largest exponential, the omitted tail on a compact interval is bounded by a geometric series, exponentially small in $k$. The same bound holds with a polynomial factor in $k,n$ after differentiation. More explicitly, truncate the frequencies where $-n\theta\delta$ falls below the minimum dominant exponent by at least $1$; the rest of the tail then decays in geometric ratio at most $e^{-k\theta\delta}$ in this bound. Each of the finitely many remaining nondominant frequencies has a uniform gap. In a small closed neighborhood of a crossing the same argument works after retaining both adjacent exponentials and dividing by their maximum.
+
+On an interval of single dominance the normalized leading term is either $s-S_n(h)$ or the nonzero constant $d_n$. In the first case $S_n(h)$ is strictly inside the frequency's interval of dominance, by the integral formula for the crossings on both sides (with no upper crossing at the first frequency). Uniform convergence of the normalized expression and its derivative yields one simple zero near $S_n(h)$, and rules out any others in a compact subinterval away from crossings.
+
+At $s_*=C_{u,v}(h)$ both leading coefficients are nonzero: in the first family they satisfy $s_*-S_u(h)<0<s_*-S_v(h)$. In the second family they are $d_u,d_v$. Denote their values at $s_*$ by $a,b$. Set $s=s_*+w/k$ and divide by $e^{k\ell_u(s)}$. On bounded $w$-intervals the result and its derivative with respect to $w$ converge to those of
+\[
+ a+b\exp\bigl(-(v-u)\theta w\bigr).
+\]
+This expression has a single simple zero precisely when $ab<0$. To see that the scaling captures every nearby zero, choose a small neighborhood where each leading coefficient stays bounded and bounded away from zero. For $|w|$ sufficiently large the smaller leading exponential is uniformly negligible relative to the larger one. The omitted modes are exponentially small relative to their maximum throughout the neighborhood. Consequently all zeros there have bounded $w$, and the stated simple-zero test is exhaustive.
+
+These local arguments exhaust every compact interval of positive slopes whose endpoints avoid the listed values. In the $S_p$ family positivity of all terms for $s\ge S_p(h)$ bounds the uppermost zero. For $C_{p,q}$ the first frequency dominates uniformly above its first crossing plus any fixed $\varepsilon>0$, since each remaining exponential ratio decreases with $s$. There are infinitely many sign changes in its ordered coefficient list: the periodic sign pattern on the support contains both the positive entry at $p$ and the negative entry at $q$. This proves existence and the asserted ordering at every fixed rank.
+\end{proof}
+
+\begin{corollary}[Infinite branch selection]\label{cor:rev-branch-limit}
+Start at $S_1$ and at each step choose an arbitrary finite rank, using that same rank at every $h>0$ for the given step. Each path either becomes constant after finitely many steps or converges uniformly to zero on $(0,\infty)$. In particular $T_1 S_1=S_1$.
+\end{corollary}
+\begin{proof}
+A path in the $S_p$ family retains $p$ or replaces it by an integer multiple, until it enters the $C$ family if it ever does. Every reached $C_{p,q}$ has $p<q\le2p$. In its frequency list the first two entries $p,q$ have opposite signs, so its first branch returns $C_{p,q}$. Any later branch has smaller endpoint index $u>p$ and larger endpoint $v\le u+p\le2u$, since all multiples of $p$ are in the support. Thus it stays in the same family and increases the minimum frequency index. Infinitely many changes force that index to tend to infinity. The uniform bounds $0<C_{p,q}(h)<S_p(h)\le1/(p\theta)$ finish the proof.
+\end{proof}
+
+\paragraph{Repeated selection of the second-largest zero.}
+The first profiles are
+\[
+ S_1,\quad C_{1,2},\quad C_{2,3},\quad C_{3,4},\quad
+ C_{4,6},\quad C_{6,8},\quad\ldots .
+\]
+For $p<q<2p$, the first three frequencies $p,q,2p$ have signs $+,-,+$, so $T_2 C_{p,q}=C_{q,2p}$. Applying this twice gives $C_{2p,2q}(h)=C_{p,q}(2h)/2$. At $q=2p$ the first three frequencies are $p,2p,3p$, again with signs $+,-,+$. Hence the stated two-step rescaling holds along the example starting at $C_{2,3}$. The fixed profiles and the collapse under repeated changes hold for every real $\theta>0$; selecting $\theta=e^{-\gamma}$ fixes the numerical scale.
+
+\section{Dyadic radical brackets for Euler's constant}\label{sec:rev-brackets}
+
+The positive zero $a_n$ of $\Delta^n(\log x/x)$ supplies a new input at each order $n$. We now turn its limiting slope into a sequence of algebraic operations. For any integer $n\ge1$ set
+\begin{equation}\label{eq:rev-radical}
+ Y_n=1+\frac{n}{a_n},\qquad
+ V_n=n(Y_n^{1/n}-1),\qquad
+ U_n=n(1-V_n^{1/n}),\qquad L_n=U_n-\frac{U_n^2}{2n}.
+\end{equation}
+Here $Y_n>1$ and $V_n>0$, so both roots are taken on the positive real branch. At $n=2^r$ each radical is a chain of $r$ square roots. Each new order uses its own zero $a_n$; the rational inverse below recovers the zero of the same order.
+
+\begin{proposition}[Finite-stage recovery]\label{prop:rev-recovery}
+Every $Y_n,V_n,U_n,L_n$ is transcendental. The value of $U_n$ and the integer $n$ determine the input $a_n$ by rational operations:
+\[
+ a_n=\frac{n}{\bigl[1+(1-U_n/n)^n/n\bigr]^n-1}.
+\]
+\end{proposition}
+\begin{proof}
+From $U_n$ recover successively $V_n=(1-U_n/n)^n$, $Y_n=(1+V_n/n)^n$, and $a_n=n/(Y_n-1)$. If any of the first three quantities in \eqref{eq:rev-radical} were algebraic, these identities would make $a_n$ algebraic, contrary to Theorem~\ref{th:zero}. Algebraicity of $L_n$ would give the same conclusion from $U_n^2-2nU_n+2nL_n=0$. On the branch $U_n<n$, even this last step is reversible with one positive square root.
+\end{proof}
+
+\begin{theorem}[Eventually nested dyadic brackets]\label{thm:rev-bracket}
+Write $\theta=e^{-\gamma}$, $\mu=(e^\theta-1)^{-1}$ and $b=\mu+(1-1/\theta)/2$. With
+\[
+ C=\frac{b}{\theta\mu(1+\mu)}-\frac{\theta+\gamma^2}{2},
+\]
+the two approximants satisfy
+\[
+ U_n=\gamma+\frac{C}{n}+o(n^{-1}),\qquad
+ L_n=\gamma+\frac{C-\gamma^2/2}{n}+o(n^{-1}).
+\]
+For all sufficiently large $n$ one has
+\[
+ L_n<L_{2n}<\gamma<U_{2n}<U_n,\qquad U_n-L_n=\frac{U_n^2}{2n}.
+\]
+In particular the closed dyadic intervals are eventually strictly nested and their intersection over any such tail is $\{\gamma\}$.
+\end{theorem}
+\begin{proof}
+Corollary~\ref{cor:fd-asymptotic} gives $a_n=\mu n+b+o(1)$. Taylor expansion then gives
+\[
+ \log Y_n=\theta-\frac{b}{\mu(1+\mu)n}+o(n^{-1}),\qquad
+ V_n=\theta+\frac{D}{n}+o(n^{-1}),\quad
+ D=\frac{\theta^2}{2}-\frac{b}{\mu(1+\mu)}.
+\]
+Using $U_n=-\log V_n-(\log V_n)^2/(2n)+o(n^{-1})$ yields the stated $C$. Substitution in $L_n$ gives its expansion.
+
+For explicit sign margins one obtains
+\[
+ 0.092<C<0.094,\qquad -0.075<C-\gamma^2/2<-0.072.
+\]
+Here is one reproducible enclosure. Put $N=1000$ and $G=H_N-\log N$. The decrement of $H_k-\log k$ equals $\int_0^1(1-t)/[(k+t)(k+1)]\,dt$. It lies between $1/[2(k+1)(k+2)]$ and $1/[2k(k+1)]$. Summation gives $G-1/(2N)<\gamma<G-1/(2N+2)$. Evaluating $\theta$, $\mu$, $b$, $C$ in that order on this interval, with outward rounding at 320 binary digits, gives the margins above. Finally $U_n-U_{2n}=C/(2n)+o(n^{-1})$, and $L_{2n}-L_n=(\gamma^2/2-C)/(2n)+o(n^{-1})$. The width is exact by definition.
+\end{proof}
+
+\begin{center}
+\begin{tabular}{r@{\qquad}r@{\qquad}r@{\qquad}r}
+\toprule
+$n$ & $a_n$ & $L_n$ & $U_n$\\
+\midrule
+2 & 3.61026672 & 0.50682877 & 0.59547698\\
+4 & 6.25777090 & 0.54942860 & 0.59345171\\
+8 & 11.56348217 & 0.56556443 & 0.58710791\\
+16 & 22.18177609 & 0.57198753 & 0.58259428\\
+32 & 43.42225359 & 0.57475447 & 0.58001092\\
+\bottomrule
+\end{tabular}
+\end{center}
+The entries are certified nearest multiples of $10^{-8}$. For each listed $n$, the signs of $\sum_{j=0}^n(-1)^j\binom nj\log(x+j)/(x+j)$ at $x=n,3n$ were respectively negative and positive. Bisection for 75 steps at 320-bit ball precision decided every midpoint sign. Evaluation of \eqref{eq:rev-radical} on the final interval placed each entry in a unique rounding cell. The asymptotic proof does not specify the first order from which nesting persists.
+
+\begin{proposition}[A rational limit with the same radical operations]\label{prop:rev-rational}
+For every nonzero rational $q$ there are positive transcendental inputs $c_n$ for all sufficiently large $n$ such that substituting $c_n$ for $a_n$ in \eqref{eq:rev-radical} yields eventually nested dyadic brackets with intersection $\{q\}$.
+\end{proposition}
+\begin{proof}
+Set $\eta=q^2/(10\pi)$, $u_n=q+\eta/n$, and define
+\[
+ c_n=\frac{n}{[1+(1-u_n/n)^n/n]^n-1}.
+\]
+For large $n$ we have $1-u_n/n>0$, so $c_n>0$ and the positive radicals in \eqref{eq:rev-radical} recover $U_n=u_n$. Since $u_n$ is transcendental, an algebraic $c_n$ is impossible. The resulting lower endpoints satisfy
+\[
+ L_n=q+\frac{\eta-q^2/2}{n}+O(n^{-2}).
+\]
+Since $0<\eta<q^2/2$, the same doubling comparison gives $L_n<L_{2n}<q<U_{2n}<U_n$ eventually. The inputs even have a limiting slope $c_n/n\to(e^{e^{-q}}-1)^{-1}$, by taking the two elementary exponential limits in their definition.
+\end{proof}
+
+\begin{corollary}[Exact denominator test]\label{cor:rev-lattice}
+Choose $r_0$ so that Theorem~\ref{thm:rev-bracket} gives nested brackets for $n=2^r$, $r\ge r_0$. Then $\gamma$ is irrational if and only if for every $d\ge1$ there exists $r\ge r_0$ with
+\[
+ \left\lceil d L_{2^r}\right\rceil>\left\lfloor d U_{2^r}\right\rfloor.
+\]
+\end{corollary}
+\begin{proof}
+The inequality says that the bracket contains no point of $d^{-1}\mathbb Z$. If $\gamma$ is irrational its distance from this closed lattice is positive for each fixed $d$. Convergence of both endpoints then gives the inequality. If $\gamma=p/d$, the integer $p$ lies between the two scaled endpoints at every stage.
+\end{proof}
+In particular, a width less than $1/d$ leaves at most one candidate numerator. Excluding that candidate for every denominator requires additional information about the finite-difference inputs. Proposition~\ref{prop:rev-rational} shows that reversibility, finite-stage transcendence, and strict nesting permit a rational limit.
+
+% Embedded reproducibility check for the bracket table (Python 3, python-flint).
+% Copy the following commented block without the first two characters.
+% from math import comb
+% from flint import arb, ctx
+% ctx.prec=320
+% g=arb.const_euler()
+% N=1000
+% q=sum(1/arb(t) for t in range(1,N+1))-arb(N).log()
+% Gb=(q-1/arb(2*N)).union(q-1/arb(2*N+2))
+% t=(-Gb).exp()
+% mu=1/t.expm1()
+% b=mu+(1-1/t)/2
+% c=b/(t*mu*(1+mu))-(t+Gb*Gb)/2
+% print(Gb,c, c-Gb**2/2)
+% assert c>arb(92)/1000 and c<arb(94)/1000 and (c-Gb**2/2)<-arb(72)/1000 and (c-Gb**2/2)>-arb(75)/1000
+% for n in (2,4,8,16,32):
+%  lo=arb(n);hi=3*lo
+%  def eq(a):
+%   return sum((-1)**j*comb(n,j)*(a+j).log()/(a+j) for j in range(n+1))
+%  # (-1)^k in Δ cancels leading sign (-1)^k so sum sign is sign of mean-H_n.
+%  assert eq(lo)<0 and eq(hi)>0
+%  for _ in range(75):
+%   mid=(lo+hi)/2;v=eq(mid)
+%   if v<0:lo=mid
+%   elif v>0:hi=mid
+%   else:raise RuntimeError('insufficient precision')
+%  a=lo.union(hi)
+%  v=n*((n/a).log1p()/n).expm1()
+%  u=-n*(v.log()/n).expm1();l=u-u*u/(2*n)
+%  print(n,*[str((10**8*x+arb(1)/2).floor().unique_fmpz()) for x in (a,l,u)])
+% End of bracket check.
+
+\section{Two applications of algebraic recovery}\label{sec:period-examples}
+The first example recovers two Eisenstein series from data at a single
+stationary point. The second recovers an elliptic period and a power of
+$\pi$ from observables on one infinite network. All independence statements
+are over $\Q$.
+
+\subsection{A stationary point of the modular discriminant}
+Let $\Delta(q)=q\prod_{n\ge1}(1-q^n)^{24}$, $0<q<1$, and normalize the
+Eisenstein series $E_2,E_4,E_6$ to have constant coefficient $1$, using the
+nome $q=e^{2\pi i\tau}$. Write $\theta=q\,d/dq$.
+\begin{proposition}\label{prop:peak-triple}
+The unique maximizer $q_*$ of $\Delta$, the peak height $D=\Delta(q_*)$,
+and $C=-\Delta''(q_*)$ are algebraically independent. The derivative is
+with respect to the real variable $q$.
+\end{proposition}
+\begin{proof}
+Logarithmic differentiation gives
+$\theta\Delta/\Delta=E_2=1-24\sum_{n\ge1}n q^n/(1-q^n)$.
+This continuous function decreases strictly from $1$ to $-\infty$. Thus its
+unique zero is the maximizer. Nesterenko's theorem gives transcendence
+degree at least three for the quadruple $q,E_2(q),E_4(q),E_6(q)$ at every
+$0<|q|<1$. At $q_*$ its second entry vanishes, so the other three are
+algebraically independent. The identities $12\theta E_2=E_2^2-E_4$ and
+$1728\Delta=E_4^3-E_6^2$ give
+\[
+ E_4(q_*)=12q_*^2 C/D,\qquad E_6(q_*)^2=E_4(q_*)^3-1728D.
+\]
+Consequently $\Q(q_*,E_4(q_*),E_6(q_*))$ is contained in an algebraic
+extension of $\Q(q_*,D,C)$, proving the claim. The specialization input is
+\href{https://doi.org/10.1070/SM1996v187n09ABEH000158}{Nesterenko,
+\emph{Modular functions and transcendence questions}, Theorem~1}.
+\end{proof}
+
+\subsection{Return to the origin and two cubic-lattice resistances}
+Consider the walk on $\Z^3$ taking each of its six nearest-neighbour steps
+with probability $1/6$, and put a resistor of resistance $1$ on each
+unoriented nearest-neighbour edge. Let $p_3$ denote the probability of
+returning to the origin at strictly positive time. Write $A,B$ for the
+effective resistances from the origin to $(1,1,0)$ and $(1,1,1)$ respectively.
+
+\begin{theorem}\label{thm:cubic-period-recovery}
+Both triples $(p_3,\pi,e^{\pi\sqrt6})$ and $(A,B,e^{\pi\sqrt6})$ are
+algebraically independent. There is an exact dependence among the three
+lattice quantities:
+\[
+ (9A+6B)(1-p_3)=4.
+\]
+\end{theorem}
+\begin{proof}
+With $g$ in the unnormalized Green-function convention, the expected number
+of visits to the origin, including time zero, is
+\[
+ 3g,\qquad g=\frac1{\pi^3}\int_{[0,\pi]^3}
+ \frac{du\,dv\,dw}{3-\cos u-\cos v-\cos w}.
+\]
+Indeed, summing the Fourier transforms of the transition probabilities with
+a factor $z^n$ gives the integrand $(1-z(\cos u+\cos v+\cos w)/3)^{-1}$.
+As $z\uparrow1$ this converges under the integral: the denominator has at
+worst an integrable inverse-square singularity at the origin, and the part
+with negative cosine sum is uniformly bounded. Renewal at the first return
+now gives $p_3=1-1/(3g)$.
+
+Set $k=(2-\sqrt3)(\sqrt3-\sqrt2)$ and
+$K(k)=\int_0^{\pi/2}(1-k^2\sin^2 t)^{-1/2}dt$. Watson's evaluation in
+\href{https://doi.org/10.1088/0305-4470/33/28/306}{Glasser and Boersma,
+\emph{Exact values for the cubic lattice Green functions}, equation~(2)}, is
+\[
+ g=4(18+12\sqrt2-10\sqrt3-7\sqrt6)\,K(k)^2/\pi^2.
+\]
+Here $k$ is the sixth elliptic singular modulus, so
+$K(\sqrt{1-k^2})/K(k)=\sqrt6$; see also the
+\href{https://www.davidhbailey.com/dhbpapers/tenproblems.pdf}{description
+following equation~(36) in Bailey et al.} The Legendre elliptic curve with
+this algebraic modulus has algebraic invariants and complex multiplication
+by an order in $\Q(\sqrt{-6})$. Its real period is a nonzero algebraic
+multiple of $K(k)$. Apply
+\href{https://doi.org/10.1070/SM1996v187n09ABEH000158}{Nesterenko,
+Corollary~4}, with the field element $i\sqrt6/2$: its exponential
+$e^{2\pi i(i\sqrt6/2)}=e^{-\pi\sqrt6}$ is the reciprocal of the third
+quantity in the theorem. This gives independence of $\pi,e^{\pi\sqrt6},K(k)$.
+Watson's formula expresses $K(k)$ algebraically over the field generated
+by $g,\pi$ and the algebraic numbers. Substituting $p_3$ for $g$ is an
+invertible rational transformation, proving the first assertion.
+
+Put $h=1/(\pi^2g)$. The evaluated Green functions and unit-network formula
+of Glasser and Boersma, equation~(29) and the two evaluations immediately
+after it, give
+\[
+ A=\tfrac7{12}g+\tfrac12h,\qquad B=\tfrac98g-\tfrac34h.
+\]
+The determinant is $-1$. Thus $\Q(A,B)=\Q(g,h)$ and $\pi^2=1/(gh)$.
+The field generated by $A,B,e^{\pi\sqrt6}$ has transcendence degree three
+by the first part. Finally $g=3A/4+B/2$ and $3g(1-p_3)=1$, which gives
+the stated relation.
+\end{proof}
+
+In fact the same arithmetic argument applies to every simple cubic resistance
+whose Green-function coefficients are known. The rational recurrence and
+normalization in Glasser and Boersma, equations~(14) and~(29), give
+$R(0,v)=a_v g+b_v h+c_v$ with rational coefficients. Independence of $g,h$
+shows that this resistance is rational exactly when $a_v=b_v=0$, and is
+transcendental otherwise. For two sites, their resistances and
+$e^{\pi\sqrt6}$ are algebraically independent exactly when the two rows
+$(a_v,b_v)$ have nonzero determinant: invert the two affine equations, or
+use their affine dependence when the determinant vanishes.
+\section{Distribution in rational arguments and algebraic linear rank}\label{sec:layers}
+For an integer $b\ge2$ define $M_b f(x)=b^{-1}\sum_{r=0}^{b-1} f((x+r)/b)$ and $\Delta_b=M_b-I$.
+Regrouping the Dirichlet series gives $M_b\zeta(1+t,x)=e^{t\log b}\zeta(1+t,x)$ and $M_bM_c=M_{bc}$. Meromorphic continuation and coefficient comparison justify every finite difference below \cite{Blagouchine,Coffey}.
+For $m\ge0$, $p$ prime and $j\ge0$, write $P_{m,x}(j)=M_{p^j}\gamma_m(x)$ with $M_1=I$. Then
+\begin{align}\label{eq:polyaverage}
+P_{m,x}(j)
+ &=\sum_{\ell=0}^m \binom{m}{\ell}\gamma_{m-\ell}(x)(-j\log p)^\ell+
+ \frac{(-1)^m}{m+1}(j\log p)^{m+1},\\
+\Delta_{b_1}\cdots\Delta_{b_{m+1}}\gamma_m(x)
+ &=(-1)^m m!\prod_{i=1}^{m+1}\log b_i .\label{eq:mixed}
+\end{align}
+For \eqref{eq:mixed}, multiply the Laurent expansion by $\prod_i(e^{t\log b_i}-1)$ and extract its coefficient of $t^m$. The $m+1$ identical factors with $b_i=p$ give a nonzero transcendental right-hand side.
+
+\begin{theorem}[Exact prime-power levels]\label{thm:layers}
+For a fixed prime $p$ and a fixed order $m\ge0$, let $A_k$ count the integers $1\le a<p^k$ coprime to $p$ for which $\gamma_m(a/p^k)$ is transcendental. Then $A_k\to\infty$. For every $h\ge1$,
+\[
+\max_{0\le i\le m+1}\frac{A_{h+i}}{\varphi(p^{h+i})}\ge (1+p+\cdots+p^{m+1})^{-1}.
+\]
+\end{theorem}
+\begin{proof}
+The leading coefficient of the polynomial \eqref{eq:polyaverage} is transcendental by Hermite--Lindemann. Algebraic values at $m+2$ distinct integer indices would give algebraic coefficients by interpolation. Fix a denominator $p^h$. The finitely many reduced points $a/p^h$ have only finitely many exceptional depths altogether. For all sufficiently large depths $j$, every such parent therefore has a descendant of transcendental value. Its reduced denominator is $p^{h+j}$, and its numerator retains the residue $a$ modulo $p^h$. The descendant sets are disjoint. This gives $A_{h+j}\ge\varphi(p^h)$ eventually, for each $h$. For the second claim, \eqref{eq:mixed} supplies at least one hit at one of the first $m+2$ depths from each parent; sum the layer counts and divide by the sum of their sizes.
+\end{proof}
+
+For $m=1,p=2$ the identity is
+\[
+\gamma_1(x)-\sum_{r=0}^{1}\gamma_1((x+r)/2)+\tfrac14\sum_{r=0}^{3}\gamma_1((x+r)/4)=-(\log2)^2.
+\]
+The proportion is at least $1/7$ in one of every three successive dyadic levels. At $x=1$ it gives $3\gamma_1(1/2)-\gamma_1(1/4)-\gamma_1(3/4)-\gamma_1(1)=4(\log2)^2$.
+Also
+\begin{equation}\label{eq:Dhalf}
+D:=\gamma_1(1/2)-\gamma_1(1)=-2\gamma\log2-(\log2)^2.
+\end{equation}
+If $D$ were algebraic, $\gamma$ would be transcendental, since otherwise $\log 2$ would satisfy a quadratic over $\overline{\Q}$. This is a conditional transfer for the ordinary constant.
+
+\begin{corollary}[Two transcendental entries at explicit arguments]
+At least two entries of $\gamma,\gamma_1(1),\gamma_1(1/2),\gamma_1(1/4),\gamma_1(3/4)$ are transcendental.
+\end{corollary}
+\begin{proof}
+Put $A=\gamma_1(1)$, $B=\gamma_1(1/2)$, $C=(\gamma_1(1/4)+\gamma_1(3/4))/2$, and $L=\log2$. The formulas above give $B=A-2\gamma L-L^2$ and $C=A-3\gamma L-7L^2/2$. If $\gamma$ is algebraic, each difference between two of $A,B,C$ is a degree-two polynomial in the transcendental number $L$ with algebraic coefficients. Thus at least two of $A,B,C$ are transcendental. If $C$ is transcendental, at least one of its two summands is transcendental. If $\gamma$ is transcendental, the identity $3B-2C-A=4L^2$ forces at least one further transcendental entry.
+\end{proof}
+\begin{theorem}[Growth of the algebraic linear rank at each sufficiently deep level]\label{thm:rankdeep}
+Let $W_{m,k}$ be the $\overline{\Q}$-span of all the individual $\gamma_m(a/p^k)$ with $p\nmid a$, $0<a<p^k$. Then $\dim W_{m,k}\longrightarrow\infty$ for every fixed $p,m$. More precisely, fix $h$ with $q=p^h>2$, and put $r=\varphi(q)/2-1$. At most $mr$ nonnegative depths $j$ can violate $\dim W_{m,h+j}\ge r$.
+\end{theorem}
+\begin{proof}
+Use the $r$ even nonprincipal characters $\chi\bmod q$. The weighted trace $V_\chi(j)=\sum_{a\in(\Z/q\Z)^\times}\chi(a)P_{m,a/q}(j)$ lies in $W_{m,h+j}$. By character orthogonality the pole term cancels in \eqref{eq:polyaverage}. The leading coefficient, at degree $m$, is $(-\log p)^m q L(1,\chi)$, since $q^{-s}\sum_a\chi(a)\zeta(s,a/q)=L(s,\chi)$. The $L(1,\chi)$ are linearly independent over $\overline{\Q}$ by the even-character theorem of Okada, as recalled by Murty and Saradha \cite[p.~354]{MurtySaradha}. Form the exterior product of the $r$ vector-valued polynomials over $\overline{\Q}$ in the finite-dimensional space spanned by their coefficients. Its leading coefficient is the nonzero wedge of the $r$ leading vectors. A coordinate is a nonzero polynomial of degree at most $mr$. Outside its roots the vectors are independent. Letting $h$ increase proves the limit. At most one dimension is lost on passing to the quotient by $\overline{\Q}\cdot1$, so arbitrarily large subsets independent together with $1$ exist in every sufficiently deep level.
+\end{proof}
+
+\begin{theorem}[Simultaneous rank in the Farey fractions]\label{thm:farey}
+Let $\mathcal F(Q)$ be the reduced rationals $0<x\le1$ of denominator at most $Q$. For each fixed $m\ge0$ one can choose a subset $U_m(Q)$ such that $1$ and the values $\gamma_m(x)$, $x\in U_m(Q)$, are linearly independent over $\overline{\Q}$, and
+\[
+\liminf_{Q\to\infty}\frac{|U_m(Q)|}{|\mathcal F(Q)|}\ \ge\ \frac{3}{4^m\pi^2}.
+\]
+In particular for $m=1$ the proportion is at least $3/(4\pi^2)=0.07599\ldots$, which implies the earlier $1/48$ lower bound.
+\end{theorem}
+\begin{proof}
+Set $T=\lfloor Q/2^m\rfloor$. The coefficient of $t^m$ in $(2^t-1)^m\zeta(1+t,x)$ gives
+\[
+\Delta_2^m\gamma_m(x)=(-1)^m m!\left((\log2)^m\gamma_0(x)+\tfrac m2(\log2)^{m+1}\right).
+\]
+All arguments on the left belong to $\mathcal F(Q)$ whenever $x\in\mathcal F(T)$. Multiply by a primitive nonprincipal even character of conductor $q\le T$ and sum over $x=a/q$. The constant disappears and the resulting expression is a nonzero algebraic multiple of $(\log2)^m L(1,\chi)$.
+
+All these $L$-values are simultaneously linearly independent over $\overline{\Q}$. To see why the varying conductors cause no loss, lift every character to modulus $\operatorname{lcm}(1,\ldots,T)$. The lifts remain distinct and each $L$-value at $1$ is multiplied by a nonzero algebraic Euler factor. Apply the same fixed-modulus even-character theorem \cite{MurtySaradha}. For counting, if $E(q)$ counts even characters mod $q$, then $E(q)=\varphi(q)/2$ except at $q=1,2$. Unique primitive conductors give the primitive-even sequence $\mu*E$. Here $\mu$ denotes the M\"obius function. Using $\sum_{q\le t}\varphi(q)=3t^2/\pi^2+O(t\log(2t))$ and $\sum\mu(d)d^{-2}=1/\zeta(2)$, one obtains
+\[
+\sum_{q\le T}(\mu*E)(q)=\frac{9}{\pi^4}T^2+O(T\log^2(2T)).
+\]
+Removing the trivial primitive character costs one. Extracting individual constants independent together with $1$ costs at most one further dimension. Division by $|\mathcal F(Q)|\sim3Q^2/\pi^2$ proves the claim.
+\end{proof}
+At the elementary level one can obtain $1/48$ for $m=1$ directly. Use every parent in $\mathcal F(\lfloor Q/4\rfloor)$ in the seven-term identity. Each transcendental argument at height at most $Q$ can be a descendant of at most three parents, given by $y$, $2y$, $4y$ reduced modulo one with zero represented by one. Thus at least $|\mathcal F(\lfloor Q/4\rfloor)|/3$ arguments have transcendental value. This counts rational inputs, and makes no assertion about the zeros of $\gamma_1(x)$.
+
+\begin{corollary}[Polynomial dependence on the Stieltjes order]
+\label{cor:farey-polynomial-order}
+For each integer $m\ge1$, the lower density of transcendental
+$\gamma_m(x)$ among reduced rational arguments $0<x\le1$, ordered
+by denominator, is at least
+\[
+ \frac{3}{\pi^2}\max\left\{4^{-m},\frac{1}{m(m+1)^2}\right\}.
+\]
+\end{corollary}
+\begin{proof}
+Only the second entry in the maximum requires proof. Let
+$A_k f(x)=k^{-1}\sum_{j=0}^{k-1}f((x+j)/k)$ and $t_k=\log k$.
+The Hurwitz multiplication formula gives
+\[
+ A_k\gamma_m(x)=\sum_{r=0}^m\binom mr(-t_k)^r
+                 \gamma_{m-r}(x)+\frac{(-1)^m t_k^{m+1}}{m+1}.
+\]
+Take the $m+1$ distinct nodes $t_k$ for $k=1,\dots,m+1$, and put
+$w_k=\prod_{j\ne k}(t_k-t_j)^{-1}$, with the product over the same
+nodes. Taking leading coefficients in Lagrange interpolation gives
+$\sum_k w_k t_k^r=0$ for $0\le r<m$ and $1$ for $r=m$. Thus
+$\sum_k w_k A_k\gamma_m(x)=(-1)^m\gamma_0(x)+c_m$ with $c_m$
+independent of $x$.
+
+Write $W$ for the $\overline{\Q}$-linear span of the values of
+$\gamma_m$ at reduced denominators at most $(m+1)T$, and $C(T)$
+for the number of nontrivial primitive even characters with conductor
+at most $T$. For each such character $\chi$ of conductor $q$, sum
+the last identity at $x=a/q$ with coefficients $\chi(a)$. The
+constant disappears, and its right side becomes $(-1)^m qL(1,\chi)$.
+All these independent values belong to $\sum_k w_kW$. The weights
+may be transcendental, but $\sum_k w_k=0$ and consequently this sum
+of subspaces has dimension at most $m\dim W$. Thus
+$\dim W\ge C(T)/m$. The algebraic members of $W$ span at most one
+dimension. Using $C(T)\sim T^2/(4\zeta(2)^2)$ and
+$\sum_{q\le (m+1)T}\varphi(q)\sim(m+1)^2T^2/(2\zeta(2))$
+proves the second bound. For arbitrary real cutoffs $Q$, take
+$T=\lfloor Q/(m+1)\rfloor$.
+\end{proof}
+
+\subsection{Recovery from either parity of the ordinary Stieltjes sequence}
+\begin{proposition}\label{prop:hankel}
+For a real sequence $(a_j)_{j\ge0}$ define $T_n=n!(1-\sum_{j=0}^n a_j/j!)$.
+Assume for each $d$ the Hankel matrices satisfy
+\[
+0\preceq (T_{i+j})_{0\le i,j\le d}\preceq ((i+j)!)_{0\le i,j\le d}.
+\]
+If $a_j=\gamma_j$ for all sufficiently large even $j$, or for all sufficiently large odd $j$, then $a_j=\gamma_j$ for every $j$.
+\end{proposition}
+\begin{proof}
+The quadratic form on real polynomials associated with $T$ is positive and bounded by the $L^2(e^{-u}du)$ norm squared on $[0,\infty)$. Equivalently, extend the two positive Hankel functionals by the Hamburger moment theorem to measures $\nu$ and $\nu'$ on $\R$. Their sum has moments $n!$; Carleman's criterion gives the unique measure $\mathbf1_{u\ge0}e^{-u}du$ with these moments. Thus $d\nu=h(u)e^{-u}du$ for a measurable $0\le h\le1$. The fractional part $h_0(u)=\{e^u\}$ represents the choice $a_j=\gamma_j$, by the integral
+\[
+\zeta(s)=\frac{s}{s-1}-s\int_1^\infty \{v\}v^{-s-1}\,dv.
+\]
+Indeed at $s=1-z$, subtraction of the pole gives $\sum_j\gamma_j z^j/j!=1-(1-z)\int h_0(u)e^{(z-1)u}du$, initially for $|z|<1$. The same algebra from $T_n$ applies to $a_j$. Therefore their difference generates
+\[
+D(z)=-(1-z)\int_0^\infty(h-h_0)(u)e^{(z-1)u}\,du,\quad \Re z<1 .
+\]
+It satisfies $|D(z)|\le |1-z|/(1-\Re z)$ there. Agreement of an eventual parity gives $D(z)\pm D(-z)=P(z)$ on the strip $|\Re z|<1$, for a polynomial $P$. Reflection extends $D$ to an entire function. It is $O(1+|z|)$ on the left half-plane and polynomially bounded on the right by reflection. Cauchy's estimates make $D$ a polynomial. It stays bounded on the negative real axis, hence is constant, say $d$. Laplace uniqueness now gives $h=h_0-d$ almost everywhere. Since $\{e^u\}$ has essential infimum $0$ and supremum $1$, positivity and $h\le1$ force $d=0$. This proves uniqueness.
+\end{proof}
+This is determination by infinitely many coefficients and inequalities. No algebraicity assumption on a particular missing coefficient follows.
+\section{Six irrational plastic-base values and reconstruction of Euler's constant}
+\label{sec:plastic}
+For $q>1$ and $x>0$ we use the convention of \cite{qZeta}
+\[
+ [t]_q=\frac{q^t-1}{q-1},\qquad
+ Z_q(s,x)=\sum_{n=0}^\infty\frac{q^{n+x}}{[n+x]_q^s}
+ =\frac{q-1}{(s-1)\log q}+\gamma_0(q,x)+O(s-1).
+\]
+The ordinary Laurent constant is $\gamma_0(1)=\gamma$ for the classical Hurwitz zeta function. The symbol $\gamma_0(q,x)$ here has two arguments and depends on the displayed normalization.
+
+Let $L_q(z)=\sum_{n\ge1}z^n/(q^n-1)$ for $|z|<q$.
+Expanding $(1-q^{-(n+x)})^{-s}$ and summing in $n$ gives, initially when $\Re s>1$,
+\[
+ Z_q(s,x)=(q-1)^s\sum_{r\ge0}\frac{(s)_r}{r!}
+      \frac{q^{-x(r+s-1)}}{1-q^{-(r+s-1)}}.
+\]
+Only $r=0$ contributes to the pole at $s=1$. The other terms converge locally uniformly there and give
+\begin{equation}\label{eq:qplastic0}
+ \frac{\gamma_0(q,x)}{q-1}
+ =L_q(q^{1-x})+\frac{\log(q-1)}{\log q}+\frac12-x .
+\end{equation}
+
+\begin{theorem}\label{thm:plastic-six}
+Let $\rho>1$ solve $\rho^3=\rho+1$, set $K=\Q(\rho)$, and write
+$G=\gamma_0(\rho,1)$ and $G_j=\gamma_0(\rho^5,j/5)$ $(1\le j\le5)$.
+Each of $G,G_1,\ldots,G_5$ lies outside $K$. The same conclusion holds after increasing its second argument by any nonnegative integer. The six values satisfy
+\begin{equation}\label{eq:plastic-distribution}
+ \sum_{j=1}^5\frac{G_j}{\rho^5-1}=\frac{G}{\rho-1}+8 .
+\end{equation}
+\end{theorem}
+\begin{proof}
+The cubic gives $\rho-1=\rho^{-4}$, $\rho^5-1=\rho^4$, and $\rho=\rho^5/(\rho^5-1)$. Thus $\Q(\rho^5)=K$ and the two logarithmic quotients in \eqref{eq:qplastic0} are $-4$ and $4/5$. Both $\rho$ and $\rho^5$ are Pisot numbers: the other two conjugates of $\rho$ have modulus $\rho^{-1/2}$. Corollary~1.2 of \cite{DKP} gives $L_q(\alpha)\notin\Q(q)$ whenever $q$ is Pisot, $\alpha$ is a nonzero algebraic integer of $\Q(q)$, and
+\[
+ \min(1,|\alpha|)\prod_{\sigma:\Q(q)\hookrightarrow\mathbb C}
+             \max(1,|\sigma\alpha|)<q .
+\]
+The left side is $1$ for $(q,\alpha)=(\rho,1)$ and is $\rho^{5-j}<\rho^5$ for $(q,\alpha)=(\rho^5,\rho^{5-j})$. Formula \eqref{eq:qplastic0} proves the first claim. Removing the first summand of $Z_q$ gives
+$\gamma_0(q,x+1)-\gamma_0(q,x)=-q^x/[x]_q\in K$ at every argument under consideration. Finally, for each $n\ge1$,
+$\sum_{j=1}^5\rho^{(5-j)n}/(\rho^{5n}-1)=1/(\rho^n-1)$.
+The remaining elementary terms on the two sides of \eqref{eq:plastic-distribution} differ by $8$.
+\end{proof}
+
+\subsection{Two exact reconstructions and a finite accuracy check}
+Write $h=\log\rho$, $D(h)=L_{e^h}(1)=\sum_{n\ge1}d(n)e^{-nh}$, where $d(n)$ counts positive divisors. Thus
+$G=(\rho-1)(D(h)-9/2)=0.75089283851682551127\ldots$.
+Define $F(u)=\cosh(u)\operatorname{Chi}(u)-\sinh(u)\operatorname{Shi}(u)$, with the usual real hyperbolic cosine and sine integrals. Corollary~2.10 of \cite{DKK} yields
+\begin{equation}\label{eq:plastic-wigert}
+ \gamma=h\left(\frac{G}{\rho-1}+\frac{17}{4}\right)+\log h+
+ 4\sum_{n\ge1}d(n)F(4\pi^2n/h).
+\end{equation}
+The series converges absolutely since $F(u)=O(u^{-2})$ as $u\to+\infty$.
+There is also a reconstruction without hyperbolic integrals. Put
+$f(t)=(e^t-1)^{-1}-e^{-t}/t$ and $B_1^*(t)=\{t\}-1/2$. Then
+\begin{equation}\label{eq:plastic-euler}
+ \gamma=h\frac{G}{\rho-1}-\frac{h}{4}
+              -h\int_0^\infty B_1^*(t/h)f'(t)\,dt .
+\end{equation}
+Indeed, $f(0)=1/2$ by continuation and $\int_0^\infty f=\gamma$ by the small-argument expansion of the exponential integral. Euler summation gives
+$\int f=h\sum_{n\ge1}f(nh)+hf(0)/2-h\int B_1^*(t/h)f'(t)\,dt$.
+Here $\sum f(nh)=D(h)+h^{-1}\log(1-e^{-h})=D(h)-5$. Both identities retain an analytic correction whose arithmetic type is undetermined.
+
+For a reproducible finite check define
+\[
+ S_{70}=h\bigl(D(h)-1/4\bigr)+\log h+
+ \sum_{k=1}^{70}\frac{B_{2k}^2h^{2k}}{(2k)(2k)!}.
+\]
+Directed ball arithmetic gives
+\[
+ 1.98759\cdot10^{-62}<S_{70}-\gamma<1.98760\cdot10^{-62}.
+\]
+Use 120 decimal digits of Arb working precision and the real cube roots
+$\rho=((9+\sqrt{69})/18)^{1/3}+((9-\sqrt{69})/18)^{1/3}$.
+With $x=1/\rho$, sum $x^n/(1-x^n)$ for $1\le n\le1000$ and add the interval
+$[0,x^{1001}/((1-x)(1-x^{1001}))]$ for the omitted tail.
+Evaluate the Bernoulli terms and subtract Arb's ball for $\gamma$.
+This checks one finite approximation independently of any estimate for a divergent asymptotic series.
+
+\subsection{Algebraic approximants on both sides}
+For each positive integer $m$, let $q_m>1$ solve $q_m^m(q_m-1)=1$.
+Write $d=q_m-1$, $s=\log(1+d)$ and $C_m=\gamma_0(q_m,1)=d(D(s)-m-1/2)$.
+The unique root has $d\to0$ as $m\to\infty$. With
+\[
+ P(d)=1-\tfrac12 d+\tfrac13 d^2,\qquad
+ Q(d)=-\tfrac14d+\tfrac{13}{144}d^2,
+\]
+form the algebraic numbers
+\[
+ \beta_{m,k}=P(d)d\left(\sum_{j=1}^{km}\frac{1}{q_m^j-1}
+                                  -m-\frac12\right)+Q(d).
+\]
+\begin{theorem}\label{thm:plastic-sandwich}
+For all sufficiently large $m$,
+$\beta_{m,3}<\gamma<\beta_{m,4}$. More precisely, writing $A=\gamma/4+7/144$,
+\[
+ \beta_{m,3}-\gamma=(A-1)d^3+O(d^4),\qquad
+ \beta_{m,4}-\gamma=A d^3+O(d^4).
+\]
+\end{theorem}
+\begin{proof}
+Mellin inversion for $D(s)$ has kernel $\Gamma(z)\zeta(z)^2s^{-z}$. Shifting the contour from $\Re z>1$ to $-7/2$ crosses the double pole at $1$ and simple poles at $0,-1,-3$; Stirling's formula controls the shifted integral. Consequently
+$sD(s)=\gamma-\log s+s/4-s^2/144+O(s^4)$.
+Use $ms=-\log d$ to write
+\[
+ C_m=\frac{d}{s}\left(\gamma+\log(d/s)\right)-\frac d4-\frac{ds}{144}+O(ds^3).
+\]
+Expansion of $s=\log(1+d)$ gives $C_m=\gamma+(\gamma/2+1/4)d+O(d^2)$, and through third order gives $P(d)C_m+Q(d)=\gamma+Ad^3+O(d^4)$.
+For each fixed $k\ge1$, $d\sum_{j>km}q_m^{-j}=q_m^{-km}=d^k$.
+Replacing $q_m^{-j}$ by $q_m^{-j}/(1-q_m^{-j})$ changes this tail by a relative $O(d^k)$, uniformly for $j>km$. This proves the two expansions. Finally $0<\gamma<1$ implies $0<A<1$.
+\end{proof}
+The approximants in this theorem belong to varying algebraic number fields. A contradiction under the hypothesis $\gamma\in\Q$ would additionally require bounds on degrees, denominators and conjugates strong enough to control their norms.
+\section{Decimal masks, dilations, and moving prime shifts}\label{sec:decimal-orbits}
+For a real number $x$ write $\{x\}=x-\lfloor x\rfloor$ and use the decimal
+expansion of $\{x\}$ that ends in zeros if it terminates. Its $n$th digit is
+$d_n(x)=\lfloor10\{10^{n-1}x\}\rfloor$, $n\ge1$. For a set
+$A\subseteq\{1,\ldots,9\}$ define
+\[
+ M_A(x)=\sum_{n\ge1}d_n(x)\,\mathbf1_{d_n(x)\in A}10^{-n},\qquad
+ B_A(x)=\sum_{n\ge1}\mathbf1_{d_n(x)\in A}10^{-n}.
+\]
+The two masks below use $P=\{2,3,5,7\}$ and $O=\{3,5,7\}$. They test the
+\emph{digit} at position $n$. For example, $M_P(0.5359135)=0.5350035$.
+
+\begin{proposition}\label{prop:mask-gap}
+Suppose digits from $A$ occur infinitely often in $x$ and the lengths of runs
+avoiding $A$ are unbounded. Then $x$, $M_A(x)$ and $B_A(x)$ are irrational.
+For $A=P$ or $O$, an irrational input alone implies neither condition.
+The two conditions for $P$ do not imply the two conditions for $O$.
+\end{proposition}
+\begin{proof}
+A rational number has an eventually periodic decimal expansion. Applying a
+letter-by-letter map preserves eventual periodicity. In an eventually periodic
+word with infinitely many marked positions, the gap between consecutive marks
+is bounded by the period throughout the periodic tail. This proves the first
+claim for the indicator and retained-digit words, as well as their input.
+To see the other assertions, the number $\sum_{j\ge2}10^{-j!}$ has only
+zero and one digits and is irrational by this same gap argument with $A=\{1\}$.
+The irrational number $1/3+\sum_{j\ge2}2\cdot10^{-j!}$ has only $3$ and $5$
+as digits, with no carries. Finally, $2\sum_{j\ge2}10^{-j!}$ meets both
+conditions for $P$, while its $O$-mask is identically zero. Conversely, if the
+conditions for $P$ hold and digits from $O$ occur infinitely often, then the
+same unbounded gaps work for $O$, since $O\subset P$.
+\end{proof}
+
+\paragraph{A transfer from the prime-coding corpus.}
+The project's \href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/38348353416f1f7fc50cecb93c3b554a00260c13}{Verifiable Mathematical Reasoning Corpus}, manuscript 003, uses the cumulative word $b_n=\pi(n)\bmod 2$. Its increment $b_{n-1}\mathbin{\mathrm{XOR}}b_n$ equals $1$ exactly at prime indices. This operation supplies a position filter. It can be multiplied by the indicator of $d_n(x)\in A$. The resulting gaps follow from composite indices. By contrast, a gap for the digit-only mask requires information about the input $x$. The following proposition identifies exactly what the position filter transfers.
+\begin{proposition}\label{prop:prime-position}
+Let $A=P$ or $O$. Keep a digit in position $n$ only if $n$ itself is prime
+and $d_n(x)\in A$. The resulting decimal is irrational if and only if infinitely
+many positions survive. When only finitely many survive it terminates.
+\end{proposition}
+\begin{proof}
+The consecutive composite integers $m!+2,\ldots,m!+m$ give zero blocks of
+arbitrary length. If infinitely many nonzero digits survive, eventual
+periodicity is impossible. These masks contain no digit $9$, so their displayed
+expansions are canonical. For $x=1/3$ every prime position survives. Thus this
+\emph{position-dependent} operation can produce an irrational number from a
+rational input.
+\end{proof}
+
+\subsection{Exact rational obstructions on a multiplicative orbit}
+Let $S=\{3^a10^b:a,b\in\Z_{\ge0}\}$, let $S-S$ be its difference set,
+and let $v_{11}$ denote the usual valuation. Write $\|t\|=\min_{m\in\Z}|t-m|$.
+If $x=A/q$ in lowest terms, then for any integer $D$ the fraction $\{Dx\}$
+lies on the grid $q^{-1}\Z$. If $v_{11}(D)\ge v_{11}(q)$, the reduced
+denominator of $Dx$ divides $q'=q/11^{v_{11}(q)}$. Thus $\{Dx\}$ cannot
+equal $1/33$, and
+\begin{equation}\label{eq:grid11}
+ \|Dx-1/33\|\ge \frac{1}{\operatorname{lcm}(33,q')}
+ =\frac{\gcd(33,q')}{33q'}.
+\end{equation}
+Indeed, the distance between unequal rationals with denominators dividing
+$33$ and $q'$ is at least the reciprocal of their least common multiple.
+
+\begin{theorem}\label{thm:circle-target}
+For a real number $x$ the following conditions are equivalent.
+\begin{enumerate}
+\item $x$ is irrational.
+\item For every $j\ge1$ and every open interval $I$ of $\R/\Z$ there is a
+positive $D\in S-S$ with $v_{11}(D)=j$ and $Dx\bmod1\in I$.
+\item There are integers $D_j$ with $v_{11}(D_j)\to\infty$ and
+$\|D_jx-1/33\|\to0$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Put $H_j=100^{11^{j-1}}-1$. Since $v_{11}(100-1)=1$, expansion of
+$(1+11^ku)^{11}$ at an $11$-adic unit $u$ gives $v_{11}(H_j)=j$.
+For irrational $x$, $H_jx$ is irrational. Furstenberg's density theorem for
+two multiplicatively independent generators gives density of $S H_jx$ on the
+circle \cite{Furstenberg}. Each multiplier $D=sH_j$ is positive and equals
+$s100^{11^{j-1}}-s\in S-S$, with valuation $j$. This gives the second
+condition. Shrinking intervals on either side of $1/33$ give the third.
+Equation~\eqref{eq:grid11} excludes the third condition for every rational $x$.
+\end{proof}
+
+A decimal cylinder for a word of length $L$ is the half-open interval
+$[w10^{-L},(w+1)10^{-L})$, with the integer $w$ padded with leading zeros.
+The same one-dimensional density theorem puts $3^a10^b x$ in its interior
+for every irrational $x$. Thus some $3^a x$ displays the word at position
+$b+1$. One may require $a,b$ to exceed prescribed bounds by applying the
+theorem to an initial dilation. This argument allows $a$ to depend on the word.
+It does not establish that every such word occurs in the digits of $x$.
+
+\begin{proposition}\label{prop:rational-surrogate}
+There is a fixed rational $x_0$ with the same first nine decimal digits as
+$\gamma$ for which every exact valuation level $j\ge1$ realizes the closest
+possible grid point to $1/33$. Specifically, set
+\[
+ q=3^{21}=10460353203,\qquad A=6037879729,\qquad
+ x_0=A/q,\qquad r=316980400.
+\]
+Then for every $j\ge1$ there is a positive $D\in S-S$ with $v_{11}(D)=j$ and
+$\{Dx_0\}=r/q=1/33-1/(11q)$.
+\end{proposition}
+\begin{proof}
+Here $q=33r+3$, so $r/q$ is the unique nearest grid point. The integer
+$b=1049820305$ satisfies $10^bA\equiv r\pmod q$, a small modular
+exponentiation. Put $m=2\cdot3^{19}11^{j-1}$ and $h=10\cdot11^j$.
+Then $10^m\equiv1\pmod q$ since $v_3(10^m-1)=2+v_3(m)$, and
+$3^h\equiv0\pmod q$. Moreover $v_{11}(10^m-1)=j$ while
+$v_{11}(3^h-1)\ge j+1$ by Fermat's theorem and binomial expansion.
+If $10^m$ needs enlargement, multiply the exponent $m$ by any sufficiently
+large positive integer prime to $11$; both congruences and its exact valuation
+persist. Thus $D=10^b(10^m-3^h)>0$ does the job. Ordinary long division gives
+$\lfloor10^9 x_0\rfloor=577215664$, the first nine digits of $\gamma$.
+\end{proof}
+
+\subsection{Simultaneous targets using signed smooth integers}
+Write $\mathbb T^d=(\R/\Z)^d$. A vector $V$ in this torus is totally irrational
+if $1,V_1,\ldots,V_d$ are linearly independent over $\Q$ for any real lift.
+
+\begin{theorem}\label{thm:signed-smooth-target}
+Let $V\in\mathbb T^d$ be totally irrational. For every $j\ge1$ and nonempty
+open $U\subset\mathbb T^d$ there is a signed sum $D$ of at most $2d$ elements
+of $S$ with $v_{11}(D)=j$ and $DV\in U$. In dimension two this takes the
+form $s_1-s_2+s_3-s_4$, and $s_4=100^{11^{j-1}}$ can be fixed in advance.
+\end{theorem}
+\begin{proof}
+Fix $e=\varphi(11^{j+1})$ and put $S_e=\langle3^e,10^e\rangle$,
+$C=\overline{S_eV}$. We first show $dC-(d-1)C=\mathbb T^d$, where sums
+of compact sets are Minkowski sums. For $d=1$ this is Furstenberg's theorem.
+In all dimensions $C$ is infinite since the multiples $3^{ek}V$ are distinct.
+Choose nonzero differences $z_i\in C-C$ tending to zero, with local lifts
+$\tilde z_i/|\tilde z_i|\to v$, $|v|=1$. For each $t>0$ we can find
+$s_i\in S_e$ with $s_i|\tilde z_i|\to t$. Indeed, the gaps in $\log S_e$ tend
+to zero at infinity. For any $\varepsilon>0$ finitely many nonnegative
+multiples of $e\log3$ are $\varepsilon$-dense modulo $e\log10$; adding
+nonnegative multiples of $e\log10$ now approximates every sufficiently large
+real number within $\varepsilon$. Thus $tv\bmod\Z^d\in C-C$ by invariance and
+compactness. The closure of this ray is the closed connected subgroup generated
+by the line (arbitrarily large positive multiples return arbitrarily close
+to zero). It is a subtorus $H$ of dimension at least one.
+
+If $H$ is the full torus the claim follows. Otherwise project to
+$\mathbb T^d/H$, a torus of dimension $d'<d$. Total irrationality persists
+because a nontrivial character of the quotient pulls back to a nontrivial
+integer character of the original torus. Induction shows that
+$d'C-(d'-1)C$ projects onto the quotient. Adding $H\subset C-C$ fills the
+whole torus. If necessary add cancelling copies of $C-C$ to obtain the
+claimed number of summands. Finite sums of the orbit points are dense in
+the corresponding compact sums. Subtracting $s_0V$, where
+$s_0=100^{11^{j-1}}$, therefore preserves density. The resulting integer
+multiplier satisfies $D\equiv1-s_0\pmod{11^{j+1}}$ since every element of
+$S_e$ is $1$ modulo $11^{j+1}$. Its valuation is exactly $j$.
+\end{proof}
+For example the two logarithmic phases
+\[
+ T_1=\frac{41}{72}-\frac12\log3,\qquad
+ T_2=\frac{259}{720}+\frac9{20}\log2+\frac{19}{60}\log3-\frac{19}{30}\log5
+\]
+satisfy the hypothesis. An integer relation among $1,T_1,T_2$, after
+clearing denominators, would equate the logarithm of a positive rational to
+a rational number. Hermite--Lindemann forces that rational to be zero.
+Unique factorization at $5$ first eliminates $T_2$, and at $3$ eliminates
+$T_1$. Thus one may impose simultaneously $0<\{DT_1\}<\varepsilon$ and
+$0<\{DT_2\}-1/33<\varepsilon$ at every valuation level.
+
+\begin{corollary}\label{cor:smooth-refinements}
+In dimension two, enlarging $S$ to $S'=\langle2,3,5\rangle$ allows a single
+difference $D\in S'-S'$ at every exact valuation $j$. In dimension one, for
+either of the displayed phases $T_i$ and each fixed $j$, there exists
+$\kappa>0$ depending only on the generators such that for all sufficiently
+large $N$ there are $a,b\le N$ with $D=H_j3^a10^b$ and
+\[
+ 0<\{DT_i\}-1/33<4(\log\log N)^{-\kappa}.
+\]
+\end{corollary}
+\begin{proof}
+For the first statement, Han Yu's theorem on the $\times2,\times3,\times5$
+orbit of a totally irrational pair applies directly to $H_jV$ (Theorem~1.7
+of \href{https://arxiv.org/abs/2009.00441}{arXiv:2009.00441}). The resulting
+$D=sH_j$ lies in $S'-S'$ and has valuation $j$. For the quantitative assertion,
+each $T_i$ is a rational affine transform with nonzero slope of the logarithm
+of a positive rational different from $1$. Mahler's theorem gives finite
+irrationality exponent for such logarithms (\emph{On the approximation of
+logarithms of algebraic numbers},
+\href{https://doi.org/10.1098/rsta.1953.0001}{Philos. Trans. Roy. Soc. A
+245 (1953), 371--398}). Rational affine transformations preserve this
+property, hence it holds for $H_jT_i$. Bourgain, Lindenstrauss, Michel and
+Venkatesh, \emph{Some effective results for $\times a\times b$},
+\href{https://math.stanford.edu/~akshay/research/blmv.pdf}{Theorem~1.8},
+therefore give $\varepsilon=(\log\log N)^{-\kappa}$ density of the orbit
+with $0\le a,b\le N$. Approximate $1/33+2\varepsilon$ to within
+$\varepsilon$. The threshold for $N$ may depend on $i$ and $j$.
+\end{proof}
+
+\subsection{Prescribing words by shifting the harmonic sum}
+For a prime $p$, put $\delta_p=\log p/(p-1)$ and
+\[
+ C_p=\lim_{N\to\infty}\left(
+  \frac{p}{p-1}\sum_{\substack{1\le k\le N\\p\nmid k}}\frac1k-\log N\right)
+ =\gamma+\delta_p.
+\]
+Indeed, the sum before normalization is $H_N-p^{-1}H_{\lfloor N/p\rfloor}$.
+For two distinct primes $p,q$, the difference $\delta_p-\delta_q$ is the
+logarithm of a positive algebraic number different from $1$, by unique
+factorization after clearing $p-1,q-1$. It is transcendental. At most one
+of the constants $C_p$ can therefore be algebraic. More generally, fix a
+prime $p_0$. The numbers $C_p-C_{p_0}$ for $p\ne p_0$, together with $1$,
+are linearly independent over the algebraic numbers. Indeed, Baker's theorem
+makes $1$ and the logarithms of distinct primes linearly independent over
+that field: the required rational independence of the logarithms follows
+from unique factorization. Comparing the coefficient of $\log p$ for each
+$p\ne p_0$ proves the assertion. This gives no designation of an exceptional
+prime.
+
+\begin{theorem}\label{thm:moving-prime-words}
+For every real $x$, every sufficiently large $n$, and every decimal word $w$
+of length $L=\lfloor19n/40\rfloor$, there is a prime $p\asymp n10^n$ such
+that $x+\delta_p$ displays $w$ starting at position $n+1$. The threshold
+and implicit constants are uniform in $x$ and $w$.
+\end{theorem}
+\begin{proof}
+Set $Q=10^n$, let $z$ be the midpoint of the cylinder for $w$, and choose
+$y\in[1,2)$ with $Qx+y\equiv z\pmod1$. The function $f(u)=\log u/(u-1)$
+is strictly decreasing from $1$ to $0$ on $(1,\infty)$. The unique solution
+$Qf(u)=y$ has $u\asymp Q\log Q$ uniformly. This follows, for example, by
+evaluating $Q f(cQ\log Q)\to c^{-1}$ at $c=1/4$ and $c=2$.
+By Baker--Harman--Pintz there is a prime $p\in[u-u^{21/40},u]$ for all
+large $u$ \cite[Theorem~1]{BHP}. Since $|f'(v)|\ll(\log u)/u^2$ throughout
+this interval,
+\[
+ Q|f(p)-f(u)|\ll Q\log(u)u^{-59/40}
+     \ll Q^{-19/40}(\log Q)^{-19/40}=o(10^{-L}).
+\]
+This is less than the half-width $10^{-L}/2$ for all sufficiently large $n$,
+so $\{Q(x+\delta_p)\}$ lies in the desired cylinder.
+\end{proof}
+In particular $C_p$ realizes every such block as $p$ varies. The same statement
+holds for $x=0$. A consequence for any one constant requires a theorem that
+fixes the prime while the positions tend to infinity.
+\subsection{A reproducible finite computation for Euler's constant}\label{subsec:finite-orbit-cert}
+All positions in this subsection are one-based. Set $N=10^6$, $B=10^N$,
+and $A=\lfloor B\gamma\rfloor$. GNU MPFR~4.2.2 provides the correctly
+rounded constant through \texttt{mpfr\_const\_euler}. At precision
+$\lceil (N+25)\log_2 10\rceil=3322012$ bits, compute separate downward
+and upward rounded endpoints. Convert each positive endpoint to $N$ decimal
+significand digits with rounding toward zero, using \texttt{mpfr\_get\_str}.
+The returned exponents are zero and the two digit strings agree. Monotonicity
+of decimal truncation certifies the integer $A$; the guard precision alone
+would not establish the claim. The SHA-256 of the $N$ ASCII digits in order,
+with no sign, decimal point, whitespace, or line terminator, is the concatenation
+\begin{center}\ttfamily\small
+f94f0a985277533d11ffe68547169bfb\\[-2pt]
+5a0e964658488ec627e00ae8471bcc33
+\end{center}
+
+
+\begin{center}\small
+\begin{tabular}{lrrrr}
+Digit set & Hits & Longest gap & First position & Last position\\ \hline
+$\{2,3,5,7\}$ &399782&28&623001&623028\\
+$\{3,5,7\}$   &299986&39&730088&730126
+\end{tabular}
+\end{center}
+Scan left to right: increment a running length at a rejected digit, save a
+new maximum when reached, and reset the length to zero at an accepted digit.
+Both longest gaps occur just once. Their strings, in table order, are
+\begin{center}\ttfamily\small
+8106600144966666094890169696\\
+118226648006198916940246816162012694811
+\end{center}
+
+A period $k$ of a finite word $u_1\cdots u_m$ means that $u_i=u_{i+k}$
+for $1\le i\le m-k$; $k=m$ is allowed. The following entries give the least
+such periods for the entire word and for positions $500001$ through $10^6$.
+\begin{center}\small
+\begin{tabular}{lrr}
+Word & Whole prefix & Second half \\ \hline
+Indicator of $P$ &999999&499998\\
+Retained digits of $P$ &1000000&500000\\
+Indicator of $O$ &1000000&499999\\
+Retained digits of $O$ &1000000&499999
+\end{tabular}
+\end{center}
+To reproduce the table, subtract the longest proper border length from the
+word length. A border is a prefix equal to a suffix; a period $k$ corresponds
+exactly to a border of length $m-k$. For a linear-time calculation, initialize
+$b_1=0$. For position $i\ge2$ set $h=b_{i-1}$, replace $h$ by $b_h$ while
+$h>0$ and $u_{h+1}\ne u_i$, then set $b_i=h+\mathbf1_{u_{h+1}=u_i}$.
+The first $h$ that extends gives the longest proper border by the nesting of
+borders. The indicator of $P$ has a shortest unique terminal word of length
+23, namely \texttt{00000000001010011011101}, at position $999978$. Its
+22-letter suffix already occurs at positions $479556$--$479577$. This is
+verified by looking for each terminal word in the prefix ending at $999999$.
+A future periodic tail remains compatible with every number in these tables.
+
+\paragraph{A smooth difference at level eleven.}
+Take
+\[
+ D=3^{1029504}10^{392605}-3^{7559}10^{660785}>0.
+\]
+Binary powering modulo $11^{12}$ yields $D\equiv1711870023666=6\cdot11^{11}$.
+For $U=DA\bmod B$ in $[0,B)$, exact integer division verifies $U+D<B$ and
+\[
+ \left\lfloor\frac{10^{40}U}{B}\right\rfloor=
+ \left\lfloor\frac{10^{40}(U+D)}{B}\right\rfloor
+ =303030303327741989285853315788808142305.
+\]
+Thus $\{D\gamma\}$ begins with the 40 digits
+\texttt{0303030303327741989285853315788808142305}, and
+$2.97438\cdot10^{-11}<\{D\gamma\}-1/33<2.97440\cdot10^{-11}$.
+The error is nonzero by interval comparison. In particular, if $\gamma$
+is rational then this witness alone is compatible with the positive lower
+bound in \eqref{eq:grid11}.
+
+The same calculation gives a substantially stronger \emph{finite} denominator
+bound by using the whole interval $[U/B,(U+D)/B]$. Its simplest fraction
+$P_0/Q_0$ has a $58099$-digit denominator beginning
+\texttt{20251268394130050163}. One reproducible check is to compute the
+simplest fraction in the interval by the continued-fraction algorithm
+(FLINT's \texttt{fmpq\_simplest\_between} suffices). Set
+$v=P_0^{-1}\bmod Q_0$ in $[1,Q_0)$, $w=Q_0-v$,
+$u=(P_0v-1)/Q_0$, $z=P_0-u$. Integer cross-multiplication gives
+\[
+ u/v<U/B<P_0/Q_0<(U+D)/B<z/w,
+ \qquad zv-uw=1,\quad v+w=Q_0 .
+\]
+Every fraction strictly between $u/v$ and $z/w$ has denominator at least
+$v+w$, by writing its positive cross-determinants with both endpoints.
+Consequently, rationality of $\gamma$ would imply a denominator at least
+$Q_0$ since the reduced denominator of $\{D\gamma\}$ divides that of
+$\gamma$. This certificate uses the million digits above and is independent
+of larger continued-fraction records.
+
+\paragraph{A scaled difference at level one thousand.}
+For positions indexed by shifts, put $n=384310$, $m=655834$ and
+$E=10^n-10^m$. The $28$ digits following these shifts are respectively
+\begin{center}\ttfamily\small
+3146612315924829684450341763\\
+2843582010867036711291534146
+\end{center}
+Here $m-n=2\cdot11^3\cdot102$, so $v_{11}(E)=4$. These blocks alone give
+$2.02748\cdot10^{-10}<\{E\gamma\}-1/33<2.02750\cdot10^{-10}$.
+A larger integer multiplier can make an individually certified error much
+smaller. To specify it without printing thousands of digits, set $B_0=10^{3000}$
+and subtract the $3000$-digit integer after shift $m$ from the one after
+shift $n$, obtaining $V$. Thus
+$E\gamma\equiv(V+\eta)/B_0\pmod1$ with $|\eta|<1$.
+Set $W=11^{996}$, $Y=(WV\bmod B_0)/B_0$, and take the $1835$th convergent
+$P_1/Q_1$ of $Y$ \emph{after} its zeroth convergent $0/1$. Define
+\[
+ H=W\left[\left(\lfloor Q_1/33\rfloor+1\right)P_1^{-1}\bmod Q_1\right],
+\]
+using the least nonnegative residue. $H$ has $1987$ digits and $v_{11}(H)=996$.
+For a direct check, let $R$ be the representative of $33HV-B_0$ modulo
+$33B_0$ nearest zero. The following exact tests use only the prefix and
+Euclidean divisions:
+\[
+ R<-33H,\qquad
+ \left\lfloor\frac{10^{954}(|R|-33H)}{33B_0}\right\rfloor=
+ \left\lfloor\frac{10^{954}(|R|+33H)}{33B_0}\right\rfloor=3422.
+\]
+They prove $v_{11}(HE)=1000$ and
+\[
+3422\cdot10^{-954}<1/33-\{HE\gamma\}<3423\cdot10^{-954}.
+\]
+Here $H$ is an unrestricted integer. Membership of $HE$ in $S-S$ is not
+needed and has not been established. Neither finite certificate gives a
+sequence whose error tends to zero at unbounded valuation.
+\section{Transcendence and exact spans of normalized Sondow integrals}
+\label{sec:unified-baker}
+
+For this section write
+\[
+ B_n=\binom{2n}{n},\qquad Y_n=I_n/B_n,\qquad
+ R_n=B_n^{-1}\sum_{i=0}^{n}\binom ni^2H_{n+i}
+ \quad(n\ge1),
+\]
+where $H_0=0$ and $H_j=\sum_{i=1}^j1/i$. Normalization removes the binomial coefficient multiplying $\gamma$ in Sondow's identity. With $v_p$ the usual prime valuation, put
+\begin{align}
+ c_{nj}&=\frac2{B_n}\sum_{i=0}^{\min(j-1,n-j)}
+            \binom ni^2(H_{n-i}-H_i),\quad 1\le j\le n,
+ \label{eq:ub-c}\\
+ v_{np}&=\sum_{j=1}^n c_{nj}v_p(n+j),\qquad
+ u_n=\prod_{p\le 2n}p^{v_{np}}. \label{eq:ub-v}
+\end{align}
+All powers and logarithms are real. Each $c_{nj}$ is positive,
+$v_{np}\ge0$, and $u_n>1$ is algebraic. Sondow's integral evaluation
+\cite{Sondow} and its integral representation give
+\begin{equation}
+ Y_n=\gamma+\log u_n-R_n,\qquad
+ I_n=\int_0^1\!\int_0^1
+ \frac{[x(1-x)y(1-y)]^n}{(1-xy)(-\log(xy))}\,dx\,dy .
+ \label{eq:ub-decomp}
+\end{equation}
+We use Baker's linear-independence theorem \cite{Baker} in the
+following form. For any finite set of primes $P$, the numbers $1$
+and $\log p$ for $p\in P$ are linearly independent over
+$\overline{\Q}$. Indeed, the prime logarithms are linearly
+independent over $\Q$ by unique factorization, so the stated
+inhomogeneous form of Baker's theorem applies.
+
+\subsection{A coupling and the order of chord slopes}
+
+\begin{lemma}
+\label{lem:ub-coupling}
+For $n\ge1$, let $h_n=R_{n+1}-R_n$ and $T_n=Y_n-Y_{n+1}$. Then
+\[
+ \frac1{2n+1}\le h_n\le\frac2{n+1},\qquad
+ 0<Y_{n+1}<Y_n/16,\qquad 0<T_{n+1}<T_n/15 .
+\]
+The sequence $T_n/h_n$ is strictly decreasing. The sequence $u_n$
+is strictly increasing.
+\end{lemma}
+
+\begin{proof}
+Let $K_n$ have probabilities $w_n(j)=\binom nj^2/B_n$ at
+$0\le j\le n$, using Vandermonde's identity. On that support the
+ratio
+\[
+ \frac{w_{n+1}(j)}{w_n(j)}
+   =\frac{B_n}{B_{n+1}}\left(\frac{n+1}{n+1-j}\right)^2
+\]
+increases in $j$. The mass difference $w_{n+1}-w_n$ therefore
+changes sign at most once from negative to positive, including
+$j=n+1$. Its total is zero. Thus the distribution functions satisfy
+$F_{n+1}(j)\le F_n(j)$. Symmetry about $n/2$ and $(n+1)/2$ gives
+$F_n(j-1)\le F_{n+1}(j)$ as well. Applying the two inverse
+distribution functions to a common uniform random variable yields
+\[
+ K_n\le K_{n+1}\le K_n+1
+ \quad\text{almost surely}.
+\]
+Consequently the index $n+K_n$ increases by one or two at each
+step. The first new harmonic summand is at least $1/(2n+1)$,
+and each new summand is at most $1/(n+1)$. Taking expectations and
+using $R_n=\mathbb E H_{n+K_n}$ proves the bounds for $h_n$.
+
+The extra factor in the integrand for $I_{n+1}$ is at most $1/16$
+and is strictly smaller almost everywhere. Since $B_{n+1}>B_n$,
+the stated inequality for $Y_{n+1}$ follows. Then
+$T_n>15Y_n/16$ and $T_{n+1}<Y_{n+1}<Y_n/16$. In particular
+\[
+ \frac{T_{n+1}/h_{n+1}}{T_n/h_n}
+  <\frac{2(2n+3)}{15(n+1)}<1.
+\]
+Finally $Y_1=\gamma+\log2-5/4<1/4$. Indeed
+$H_j-\log j$ decreases to $\gamma$ and its value at $j=2$ is
+$3/2-\log2$. Thus
+$T_n<Y_n<1/(4\cdot16^{n-1})<1/(2n+1)\le h_n$.
+Equation~\eqref{eq:ub-decomp} gives
+$\log u_{n+1}-\log u_n=h_n-T_n>0$.
+\end{proof}
+
+For integers $1\le a<b$, denote the positive difference of two
+normalized integrals by $D_{ab}=Y_a-Y_b$, and set
+$C_{ab}=R_b-R_a>0$. Then
+\begin{equation}
+ D_{ab}=C_{ab}+\sum_p(v_{ap}-v_{bp})\log p .
+ \label{eq:ub-chord}
+\end{equation}
+
+\begin{theorem}
+\label{thm:ub-chords}
+Every $D_{ab}$ is transcendental. For any two integer intervals
+$[a,b]$ and $[c,d]$ with $a<b$ and $c<d$, the quotient $D_{ab}/D_{cd}$ is
+algebraic exactly when
+\begin{equation}
+ C_{cd}(v_{ap}-v_{bp})=C_{ab}(v_{cp}-v_{dp})
+ \quad\text{for every }p\le 2\max(b,d).
+ \label{eq:ub-criterion}
+\end{equation}
+In that event the quotient equals $C_{ab}/C_{cd}\in\Q$. In
+particular, if $a\le c$ and $b\le d$ with at least one strict
+inequality, the quotient is transcendental. This includes overlapping
+intervals, adjacent intervals, and intervals sharing either endpoint.
+\end{theorem}
+
+\begin{proof}
+Strict increase of $u_n$ shows that the logarithmic part in
+\eqref{eq:ub-chord} is nonzero. Its sum with a rational number is
+transcendental by Baker's theorem. If $D_{ab}/D_{cd}=t$ is
+algebraic, apply the independence of $1$ and the prime logarithms to
+$D_{ab}-tD_{cd}=0$. Its constant coefficient gives
+$t=C_{ab}/C_{cd}$, and the other coefficients give
+\eqref{eq:ub-criterion}. Conversely these equalities imply
+$C_{cd}D_{ab}=C_{ab}D_{cd}$.
+
+The quotient $D_{ab}/C_{ab}$ is the average of $T_j/h_j$ over
+$a\le j<b$ with positive weights $h_j$. Moving either endpoint to
+the right strictly lowers this average, whenever both the original
+and new interval are nonempty. This follows by deleting a first term
+or appending a last term of a strictly decreasing sequence.
+For $a\le c$, $b\le d$, one can first append the terms up to $d-1$
+and then delete the terms up to $c-1$. Thus distinct ordered intervals
+have $D_{ab}/C_{ab}>D_{cd}/C_{cd}$, which excludes the required
+rational quotient.
+\end{proof}
+
+\begin{corollary}
+\label{cor:ub-triple}
+For every $a<b<c$, both $Y_a-Y_b$ and
+$(Y_a-Y_b)/(Y_b-Y_c)$ are transcendental. At most one member of
+$(Y_n)_{n\ge1}$ can be algebraic. If $Y_a/Y_b$ is algebraic for
+any $a<b$, then $\gamma$ is transcendental.
+\end{corollary}
+
+\begin{proof}
+The differences and adjacent quotients are covered by
+Theorem~\ref{thm:ub-chords}. The difference of two algebraic
+numbers would be algebraic. For the last assertion put $t=Y_a/Y_b>1$.
+From \eqref{eq:ub-decomp},
+\[
+ (1-t)\gamma=t\log u_b-\log u_a+R_a-tR_b .
+\]
+Here $t\log u_b-\log u_a>0$ because $u_b>u_a>1$. When $t$ is
+algebraic, Baker's theorem makes this nonzero logarithmic form
+transcendental. Adding the algebraic number $R_a-tR_b$ and dividing
+by $1-t$ preserve transcendence.
+\end{proof}
+
+For instance, direct substitution into \eqref{eq:ub-c}--\eqref{eq:ub-v}
+gives
+\begin{align*}
+ D_{12}&=\frac{41}{72}-\frac12\log3,\\
+ D_{23}&=\frac{259}{720}+\frac9{20}\log2
+           +\frac{19}{60}\log3-\frac{19}{30}\log5 .
+\end{align*}
+In particular $D_{12}/D_{23}=90.84933312580047559508\ldots$ has
+an unconditional transcendence proof.
+
+\subsection{Linear spans, prime logarithms and fields of chord ratios}
+
+Put $X_n=Y_n-Y_1$ for $n\ge2$, and let
+$\pi(t)=\#\{p\le t:p\text{ prime}\}$. The following assertions about
+linear spans concern ordinary rational linear combinations, without
+taking products or limits.
+
+\begin{theorem}
+\label{thm:ub-rank}
+For every $N\ge5$,
+\begin{align*}
+ \operatorname{span}_{\Q}\{1,X_2,\ldots,X_N\}
+  &=\operatorname{span}_{\Q}\bigl(\{1\}\cup\{\log p:p\le2N\}\bigr),\\
+ \Q(X_2,\ldots,X_N)&=\Q(\log p:p\le2N),\\
+ \Q(Y_1,\ldots,Y_N)&=\Q(\gamma,\log p:p\le 2N).
+\end{align*}
+For $N\ge8$, the first span equality holds even after deleting
+$1$ on its left. For all $N\ge2$,
+\begin{equation}
+ \dim_{\Q}\operatorname{span}_{\Q}\{X_2,\ldots,X_N\}
+    =\min\{N-1,\,1+\pi(2N)\}.
+ \label{eq:ub-dim}
+\end{equation}
+The same dimension formula holds over $\overline{\Q}$. In
+particular, for $N\ge8$,
+\begin{equation}
+ \Q\left(\frac{X_3}{X_2},\ldots,\frac{X_N}{X_2}\right)
+     =\Q(\log p:p\le 2N).
+ \label{eq:ub-projective}
+\end{equation}
+Every displayed generator on the left of \eqref{eq:ub-projective}
+is individually transcendental.
+\end{theorem}
+
+\begin{proof}
+The coefficients of the logarithms in $X_n$ are $v_{np}-v_{1p}$.
+For rows $n=2,3,4,5$ and columns $p=2,3,5,7$ their matrix is
+\[
+ \begin{pmatrix}
+ 0&1/2&0&0\\
+ -9/20&11/60&19/30&0\\
+ -8/21&37/84&5/84&37/84\\
+ 100/189&523/1080&137/7560&881/3780
+ \end{pmatrix},
+ \qquad \det=-\frac{511039}{5080320}.
+\]
+Hence $1,X_2,\ldots,X_5$ span $1,\log2,\log3,\log5,\log7$.
+On passing from $n-1$ to $n\ge6$, the only possible new prime is
+$p=2n-1$. If it is prime, earlier rows have zero in that column,
+whereas $v_{np}=c_{n,n-1}>0$. This proves the first span equality by
+induction. All changes of coordinates use rational coefficients, so
+the first field equality follows. The identity
+$Y_1=\gamma+\log2-5/4$ yields the second.
+
+To dispense with adjoining $1$, form the matrix with rows
+\[
+ (R_1-R_n,\ v_{n2}-v_{12},\ v_{n3}-v_{13},\ldots,\
+                  v_{n,13}-v_{1,13}),\qquad 2\le n\le8,
+\]
+where the logarithm columns, in order, are indexed by $2,3,5,7,11,13$.
+All denominators are invertible modulo $101$. Evaluation of
+\eqref{eq:ub-c}--\eqref{eq:ub-v} gives the following short
+certificate in $\Z/101\Z$:
+\[
+ \begin{pmatrix}
+ 85&0&51&0&0&0&0\\
+ 34&45&49&4&0&0&0\\
+ 47&91&81&71&81&0&0\\
+ 42&70&32&38&98&0&0\\
+ 11&33&18&59&1&92&0\\
+ 100&9&49&52&14&74&49\\
+ 11&96&100&75&86&86&45
+ \end{pmatrix},
+ \qquad \det\equiv68\pmod{101}.
+\]
+The seven rows are independent over $\Q$ and hence all their
+initial subfamilies are independent. From $N=8$ onwards the same
+new-prime induction proves that the $X_n$ alone span $1$ and all
+prime logarithms through $2N$. Applying Baker's theorem to the
+ambient coordinate family yields \eqref{eq:ub-dim} over either
+coefficient field.
+
+In particular $1=\sum_{n=2}^N a_n X_n$ for rational $a_n$.
+Dividing by $X_2\ne0$ shows that $1/X_2$ belongs to the field on the
+left of \eqref{eq:ub-projective}. That field then recovers each
+$X_n$, proving the equality. Since $X_n/X_2=D_{1n}/D_{12}$ for
+$n\ge3$, individual transcendence follows by applying
+Theorem~\ref{thm:ub-chords} to the reciprocal.
+\end{proof}
+
+\begin{corollary}
+\label{cor:ub-chordclasses}
+Among all intervals $[c,d]$ with $1\le c<d$, at most
+$\lfloor(a+b-1)/2\rfloor$ have $D_{cd}/D_{ab}$ algebraic, counting
+$[a,b]$ itself. Every such quotient is rational. For the shortest
+initial chord, $D_{ab}/D_{12}$ is transcendental for every
+$[a,b]\ne[1,2]$.
+\end{corollary}
+
+\begin{proof}
+Commensurability of positive chords is an equivalence relation.
+By Theorem~\ref{thm:ub-chords}, any two distinct intervals in one
+class have oppositely ordered endpoints. They therefore form a chain
+under strict containment, with both endpoints changing at each step.
+At most $a-1$ intervals in this chain properly contain $[a,b]$,
+since their left endpoints are distinct and less than $a$. At most
+$\lfloor(b-a-1)/2\rfloor$ intervals lie properly inside it, since
+the positive integer length drops by at least two at each step.
+Adding $[a,b]$ proves the bound. For $[1,2]$ the bound is one.
+\end{proof}
+
+The first five normalized integrals also recover $\gamma$ without
+any logarithm. Exact elimination in the first coefficient matrix gives
+\begin{align*}
+ 2555195\gamma={}&2490937Y_1+1807430Y_2-74820Y_3\\
+                  &+1874768Y_4-3543120Y_5+\frac{8969752951}{6300}.
+\end{align*}
+For verification, the first five rational coordinates are
+\[
+ (R_1,R_2,R_3,R_4,R_5)=
+ \left(\frac54,\frac{131}{72},\frac{523}{240},\frac{143657}{58800},\frac{168401}{63504}\right).
+\]
+The coefficient of every $\log p$ vanishes in this identity. The
+identity alone places no arithmetic restriction on $\gamma$.
+
+\subsection{Exponential relations}
+
+\begin{proposition}
+\label{prop:ub-exponentials}
+For $n\ge2$, let $E_n=e^{X_n}$ and $b_n=u_n/u_1$. For a fixed
+$N\ge2$, choose an integer $H\ge1$ such that
+$k_n=H(R_n-R_1)\in\Z$ for $2\le n\le N$. A polynomial
+$F(X)=\sum_{\nu} c_\nu X^\nu$ in variables indexed by $2,\ldots,N$,
+with algebraic coefficients, vanishes at $(E_2,\ldots,E_N)$ if and
+only if
+\[
+ \sum_{\nu:\,\sum_{n=2}^N k_n\nu_n=j}
+          c_\nu\prod_{n=2}^N b_n^{\nu_n}=0
+ \qquad\text{for each integer }j .
+\]
+In particular $1,E_2,\ldots,E_N$ are linearly independent over
+$\overline{\Q}$ and
+$\overline{\Q}(E_2,\ldots,E_N)$ has transcendence degree one.
+The infinite family $e^\gamma,e^{Y_1},e^{Y_2},\ldots$ is also
+linearly independent over $\overline{\Q}$.
+\end{proposition}
+
+\begin{proof}
+Set $z=e^{-1/H}$. The transcendence of $e$ implies that $z$ is
+transcendental. Equation~\eqref{eq:ub-decomp} gives
+$E_n=b_nz^{k_n}$. Grouping equal powers of $z$ in $F(E)$ yields the
+criterion. The weights $0,k_2,\ldots,k_N$ are distinct since $R_n$
+strictly increases. Each $E_n$ is transcendental, while $z$ is
+algebraic over $\overline{\Q}(E_2)$, which proves the field assertion.
+For the final claim divide any proposed finite linear relation by
+$e^\gamma$. Its entries become $1$ and $u_ne^{-R_n}$ with distinct
+positive rational exponents $R_n$. Clearing their denominators again
+gives a polynomial with algebraic coefficients in a transcendental
+rational power of $e$. Its coefficients must all vanish.
+\end{proof}
+
+\begin{corollary}
+\label{cor:ub-exp-gamma}
+For each $a<b$, the algebraic closure of
+$\overline{\Q}(e^{Y_a},e^{Y_b})$ in $\mathbb C$ is the algebraic
+closure of $\overline{\Q}(e,e^\gamma)$ in $\mathbb C$. In particular
+\[
+ \gamma\in\Q\quad\Longleftrightarrow\quad
+ e^{Y_1}/2\ \text{and}\ e^{Y_2}/(2\sqrt3)
+ \ \text{are multiplicatively dependent}.
+\]
+\end{corollary}
+
+\begin{proof}
+The quotient $e^{Y_a}/e^{Y_b}$ is a nonzero algebraic multiple of
+$e^{R_b-R_a}$, where $R_b-R_a\in\Q_{>0}$. Hence $e$ is algebraic over
+the field of the two exponentials. The identity
+$e^\gamma=e^{Y_a}e^{R_a}/u_a$ proves one inclusion of algebraic
+closures, and \eqref{eq:ub-decomp} proves the other. For the last
+equivalence the indicated positive numbers are
+$e^{\gamma-R_1}$ and $e^{\gamma-R_2}$. An integer multiplicative
+relation gives $(h+k)\gamma=hR_1+kR_2$, and $h+k=0$ would force
+$h=k=0$ because $R_1\ne R_2$. Conversely rational $\gamma$ gives
+rational exponents and hence a nontrivial integer relation.
+\end{proof}
+\section{Signed relations and positive rational bounds for Euler's constant}
+\label{sec:ku-den}
+Write $d_m=\operatorname{lcm}(1,\ldots,m)$, $H_m=\sum_{s=1}^m1/s$,
+$H_0=0$, and $\operatorname{den}(x)$ for the reduced positive denominator
+of a rational number. The Sondow integral and its coefficients are
+\[
+ z=x(1-x)y(1-y),\qquad d\mu=\frac{dx\,dy}{(1-xy)(-\log(xy))}.
+\]
+\begin{equation}
+ I_n=\int_{(0,1)^2}z^n\,d\mu
+     =Q_n\gamma-A_n+\sum_{p\le2n}\lambda_{p,n}\log p,
+ \label{eq:ku-son}
+\end{equation}
+\[
+ Q_n=\binom{2n}{n},\qquad A_n=\sum_{i=0}^n\binom ni^2 H_{n+i},
+\]
+\[
+ w_{j,n}=2\sum_{i=0}^{\min(j-1,n-j)}\binom ni^2(H_{n-i}-H_i),\qquad
+ \lambda_{p,n}=\sum_{j=1}^nw_{j,n}\operatorname{ord}_p(n+j).
+\]
+Throughout this section $p$ runs over primes. Coefficients are extended by
+zero outside their indicated range. The identity is Sondow's
+\cite[Theorem~1]{Sondow}. His asymptotic formula and the maximum of $z$ give
+\begin{equation}
+ I_n\sim\frac{\pi}{6\log2}\frac{16^{-n}}{n},
+ \qquad 0<I_{n+1}< I_n/16 .
+ \label{eq:ku-lap}
+\end{equation}
+The strict inequality follows because $0<z\le1/16$ with equality only at
+one point. In particular $I_n=O(16^{-n})$ for all $n\ge1$.
+
+\begin{lemma}[Coefficient bounds]\label{lem:ku-weights}
+The weights $w_{j,n}$ are positive, symmetric in $j,n+1-j$, unimodal, and
+sum to $Q_n$. Each $\lambda_{p,n}$ is positive for $p\le2n$, and
+\[
+ d_{2n}A_n,\ d_{2n}\lambda_{p,n}\in\Z,\qquad
+ \sum_p\lambda_{p,n}\le Q_n\log_2(2n).
+\]
+\end{lemma}
+\begin{proof}
+The zero-index summand makes every weight at least $2H_n$. All summands
+in its range are nonnegative, which also proves unimodality and symmetry.
+Sondow's equivalent formula \cite[(11) and the proof of Lemma~2]{Sondow} is
+\[
+ w_{j,n}=2\sum_{0\le a<j\le b\le n}
+          \frac{(-1)^{a+b-1}}{b-a}\binom na\binom nb .
+\]
+Summing over $j$ cancels $b-a$. Expanding
+$(\sum_a(-1)^a\binom na)^2=0$ now gives $\sum_jw_{j,n}=\sum_a\binom na^2=Q_n$.
+Every $p\le2n$ has a multiple in $(n,2n]$. Finally
+$\sum_p\operatorname{ord}_p(n+j)\le\log_2(2n)$, and multiplication by
+$d_{2n}$ clears every harmonic denominator in \eqref{eq:ku-son}.
+\end{proof}
+
+\subsection{Short signed relations and their possible vanishing}
+For $N\le j\le2N$ put $D_j=d_{2j}$,
+$a_j=D_jQ_j$, $b_j^*=D_jA_j$, and $E_{p,j}=D_j\lambda_{p,j}$
+for $p\le4N$. These are integers. For an integral vector $c$ with
+$Ec=0$ define $U(c)=\sum c_ja_j$ and $V(c)=\sum c_jb_j^*$. Then
+\begin{equation}
+ F(c)=U(c)\gamma-V(c)=\sum_{j=N}^{2N}c_jD_j I_j .
+ \label{eq:ku-signed}
+\end{equation}
+
+\begin{theorem}[Size, zero relations, and a nonvanishing criterion]
+\label{thm:ku-siegel}
+Every sufficiently large block has a nonzero integral $c$ with $Ec=0$ and
+$\|c\|_\infty\le\exp(O(N/\log N))$. One can impose $U(c)=V(c)=0$
+with the same bound. Conversely, every $c$ in the logarithmic kernel
+of this height satisfies
+\[
+ |F(c)|\le\exp\bigl(- (\log16-2)N+o(N)\bigr).
+\]
+More generally a sequence of integral kernel vectors with
+$\limsup N^{-1}\log\|c\|_\infty<\log16-2$ and $F(c)\ne0$ on infinitely
+many blocks implies $\gamma\notin\Q$. Two such vectors on each of
+infinitely many blocks with independent coefficient pairs $(U,V)$ suffice.
+If $\gamma=s/t$ in lowest terms, every vector satisfying the stated subexponential height bound in a
+sufficiently late block has $F(c)=0$ exactly. A family with $F(c)=0$
+and a nonzero coefficient pair then has $(U,V)$ on the single rational
+line $tV=sU$.
+\end{theorem}
+\begin{proof}
+Even after including the rows $a,b^*$ there are at most
+$R=\pi(4N)+2=O(N/\log N)$ rows, $m=N+1$ columns, and maximum absolute
+entry $L=\exp(O(N))$, by Lemma~\ref{lem:ku-weights} and
+$\log d_k\sim k$ \cite{PNT}. A box $\{0,\ldots,B\}^m$ has
+$(B+1)^m$ points with at most $(2mLB+1)^R$ images. Choosing
+$B=\lceil\exp(CN/\log N)\rceil$ for a sufficiently large fixed $C$ gives
+a collision and subtracting the inputs proves both existence assertions.
+The prime number theorem gives $D_j=\exp(2j+o(N))$ uniformly in the
+block. Insert this and \eqref{eq:ku-lap} in \eqref{eq:ku-signed} and sum
+the geometric bound. A rational $\gamma=s/t$ would make
+$tF(c)\in\Z$, impossible for nonzero values tending to zero. Two
+independent coefficient pairs cannot both vanish at the same real number.
+\end{proof}
+
+There is also a raw-moment formulation. Fix $1<\beta<\log(16)/2$ and use
+the columns $(\lambda_{p,j})_p$, $N\le j\le T=\lfloor\beta N\rfloor$.
+Clearing all rows with $d_{2T}$ and repeating the box argument gives
+nonzero logarithmic relations of height $\exp(O_\beta(N/\log N))$,
+even after imposing $\sum c_jQ_j=\sum c_jA_j=0$.
+For every such short logarithmic relation,
+\[
+ d_{2T}\left|\sum_j c_j I_j\right|
+ \le\exp\bigl(- (\log16-2\beta)N+o(N)\bigr).
+\]
+Indeed there are $(\beta-1)N+O(1)$ columns and the same order of row
+count and height as before. This version uses raw coefficients and a single
+denominator. The preceding theorem uses a separate clearing factor at
+each column and also covers the full dyadic block.
+
+\begin{proposition}[A sign test on separated raw indices]\label{prop:ku-dominance}
+Let $m=m_0<m_1<\cdots<m_s$ and let $t_i\in\R$ with $t_0\ne0$.
+If
+\[
+ \sum_{t_it_0<0}|t_i|16^{-(m_i-m)}\le |t_0|,
+\]
+then $\sum_i t_iI_{m_i}$ has the strict sign of $t_0$. In particular
+this holds if $m_i-m_{i-1}\ge g\ge1$ and
+$\max_{i\ge1}|t_i|\le(16^g-1)|t_0|$.
+\end{proposition}
+\begin{proof}
+Multiplying all coefficients by $-1$ if needed, suppose $t_0>0$.
+On $0<z<1/16$ the negative terms in
+$t_0+\sum_{i\ge1}t_i z^{m_i-m}$ have total absolute value strictly
+smaller than $t_0$, unless there are none, in which case the conclusion
+holds directly. Integrate against $z^m\,d\mu$. The gap version uses
+$\sum_{i=1}^s16^{-ig}<1/(16^g-1)$.
+\end{proof}
+For example, an integral raw logarithmic relation with every coefficient
+of magnitude at most $15$ automatically has nonzero moment. Existence
+of relations meeting this height bound on growing short blocks would
+supply the missing nonvanishing in the raw common-denominator argument.
+
+\begin{proposition}[Finite positive certificates]\label{prop:ku-examples}
+There are logarithm-free combinations of raw Sondow moments satisfying
+\[
+ 76655850\gamma-\frac{8969752951}{210}>0,\qquad
+ -1053631207267830\gamma+\frac{11013825532138877353}{6435}>0 .
+\]
+\end{proposition}
+\begin{proof}
+Use $c=(37364055,9037150,-112230,803472,-421800)$ for indices
+$1$ through $5$. In prime order $2,3,5,7$ the raw coefficient matrix is
+\[
+ \begin{pmatrix}
+ 2&6&11&130/3&1156/3\\
+ 0&3&11/3&185/6&3661/30\\
+ 0&0&38/3&25/6&137/30\\
+ 0&0&0&185/6&881/15
+ \end{pmatrix}.
+\]
+It annihilates $c$. The polynomial $\sum_{j=1}^5c_j z^{j-1}$ on
+$[0,1/16]$ is bounded below by
+\[37364055-112230/16^2-421800/16^4>0.\] Integrating against $z\,d\mu$
+and substituting \eqref{eq:ku-son} gives the first inequality.
+For the second certificate the raw coefficients for indices $1$ through
+$8$ are the successive entries of
+\[
+ \begin{aligned}
+ (&27478913842731750,-11604900524544435,-1476303275096295,\\
+  &-16910838942606,0,62091106751100,-4329737667150,141044717800).
+ \end{aligned}
+\]
+Here are explicit arithmetic checks using the displayed definition of $w$.
+For each $p=2,3,5,7,11,13$, sum the integers
+$\sum_{j=1}^8 c_j\sum_{a=1}^j (d_{16}w_{a,j})\operatorname{ord}_p(j+a)$.
+In the indicated prime order the six totals are $(0,0,0,0,0,0)$.
+Also $\sum c_jQ_j=-1053631207267830$ and
+$\sum c_jA_j=-11013825532138877353/6435$.
+Every negative entry has absolute value less than $c_1$, so on the
+same interval $\sum c_jz^{j-1}\ge c_1(1-\sum_{h\ge1}16^{-h})>0$.
+\end{proof}
+
+\subsection{Rational bounds with independent exponents at every prime}
+Write
+\[
+ b_m=2H_m-\frac1m,\qquad K_m=2\gamma+2\log m-b_m,\qquad
+ \epsilon_m=K_m/2.
+\]
+Here $b_m$ is rational, and $K_m$ is the asymmetric moment. These quantities remove prime logarithms
+in the joint construction \cite{Joint,JointRevised}. The integral form of this remainder is
+\[
+ \epsilon_m=\int_0^\infty e^{-mt}
+   \left(\frac{1}{1-e^{-t}}-\frac1t-\frac12\right)\,dt .
+\]
+Indeed the kernel equals $\tfrac12\coth(t/2)-1/t$, is positive for
+$t>0$, and is $O(t)$ at zero and bounded at infinity. The integral
+tends to zero with $m$. Its difference at $m,m+1$ is
+$1/(2m)+1/(2(m+1))-\log(1+1/m)$ by Frullani's identity, exactly the
+difference of $\epsilon_m,\epsilon_{m+1}$, with the same limiting value
+zero. In particular $K_m$ is
+strictly positive, strictly decreasing, and
+$\epsilon_m=1/(12m^2)+O(m^{-4})$. Indeed
+$K_m-K_{m+1}=1/m+1/(m+1)-2\log(1+1/m)>0$ by strict convexity of the
+reciprocal function, and $K_m\to0$. The stated asymptotic follows from
+Euler--Maclaurin applied to $H_m$. In particular $0<\epsilon_m\le C/m^2$
+with an absolute constant $C$.
+
+Choose integers $k_p\ge1$ independently at all primes $p\le2n$.
+Set $u_p=p^{k_p}$, $v_p=p^{k_p+1}$, $M_-=\max_pv_p$, and
+\begin{equation}
+ \ell=\frac{A_n-\tfrac12\sum_p\lambda_{p,n}(b_{v_p}-b_{u_p})}{Q_n}.
+ \label{eq:ku-lower}
+\end{equation}
+For $n\ge2$ set $\alpha=16^{1-n}$, $c_p=\lambda_{p,n}-\alpha\lambda_{p,1}$,
+$M_+=\max_pu_p$, and
+\begin{equation}
+ q=2\alpha-Q_n+\sum_p\frac{c_p}{k_p},\qquad
+ h=\frac{5\alpha/2-A_n+\tfrac12\sum_p(c_p/k_p)b_{u_p}}{q}
+ \quad (q\ne0).
+ \label{eq:ku-upper}
+\end{equation}
+All $c_p$ are positive. For $p=2$ we have $\lambda_{2,n}\ge2H_n$
+and $\lambda_{2,1}=2$; for $p>2$ the assertion follows from
+Lemma~\ref{lem:ku-weights}. Direct substitution gives
+\begin{align}
+ Q_n(\gamma-\ell)&=I_n+\sum_p\lambda_{p,n}
+          (\epsilon_{u_p}-\epsilon_{v_p}),\label{eq:ku-lerr}\\
+ q(\gamma-h)&=\alpha I_1-I_n+\sum_p(c_p/k_p)\epsilon_{u_p}.
+ \label{eq:ku-uerr}
+\end{align}
+In particular $\ell<\gamma$, and $h>\gamma$ whenever $q<0$.
+The latter identity uses $I_1=2\gamma-5/2+2\log2$ and
+$\alpha I_1-I_n\ge\alpha(I_1-16I_2)>0$ by \eqref{eq:ku-lap}.
+These identities give the width by summing their positive right-hand
+sides divided respectively by $Q_n$ and $|q|$.
+
+\begin{theorem}[Reduced denominators for independent prime exponents]
+\label{thm:ku-den}
+For every choice of the integers $k_p=k_{p,n}\ge1$,
+\[
+ \log\operatorname{den}(\ell)\sim M_-,\qquad
+ \log\bigl(\operatorname{den}(\ell)(\gamma-\ell)\bigr)\sim M_- .
+\]
+If $M_+\ge n^2$ and $q\ne0$ eventually, then
+$\log\operatorname{den}(h)\sim M_+$. When $q<0$ eventually, under this
+same size assumption, $\log(\operatorname{den}(h)(h-\gamma))\sim M_+$.
+All equivalences hold along any sequence satisfying the stated conditions.
+\end{theorem}
+\begin{proof}
+Let $d=d_{2n}$ and fix an integer $R\ge2$. The largest prime $P\le2n$
+exceeds $n$ for $n\ge2$. Thus $M_-=\max v_p\ge P^2>n^2$.
+In either argument we write $M$ for the relevant maximum.
+Every prime $r\in(M/R,M]$ eventually satisfies $r>2n$ and $r^2>M$.
+In the localization of $\Z$ at $r$ we have
+\begin{equation}
+ rH_u\equiv H_{\lfloor u/r\rfloor}\pmod r,\qquad u\le M .
+ \label{eq:ku-local}
+\end{equation}
+The terms with denominators divisible by $r$ give the right hand side
+and all the other terms disappear. For $u$ a power of a prime at most
+$2n$, one also has $r/u\equiv0\pmod r$.
+
+For the lower endpoint define
+\[
+ C_-(r)=d_Rd\sum_p\lambda_{p,n}
+       (H_{\lfloor v_p/r\rfloor}-H_{\lfloor u_p/r\rfloor}).
+\]
+This is a positive integer. Every summand is nonnegative, and for the
+prime attaining $v_p=M$, writing $a=\lfloor M/r\rfloor\ge1$ gives
+$\lfloor u_p/r\rfloor=\lfloor a/p\rfloor<a$. Also $r\nmid Q_ndd_R$
+for large $n$, since the prime divisors of $Q_n$ are at most $2n$.
+By \eqref{eq:ku-local}, if $r$ is missing from the reduced denominator of
+$\ell$, then $r\mid C_-(r)$. Every floor function changes at most $R$ times,
+so there are only $O_R(\pi(2n))$ distinct integer values of $C_-(r)$.
+Each has logarithm $O_R(n)$ by Lemma~\ref{lem:ku-weights}. The sum of
+$\log r$ over missing primes in $(M/R,M]$ is therefore
+$O_R(n^2/\log n)=o(M)$. Consequently
+\[
+ \log\operatorname{den}(\ell)\ge\vartheta(M)-\vartheta(M/R)-o_R(M),
+ \qquad \operatorname{den}(\ell)\mid 2Q_ndd_M,
+\]
+where $\vartheta(t)=\sum_{p\le t}\log p$. By the prime number theorem
+$\vartheta(t)\sim t$ and $\log d_{\lfloor t\rfloor}\sim t$ \cite{PNT}.
+First take the limit inferior, then send $R\to\infty$. This proves the
+denominator equivalent. Formula \eqref{eq:ku-lerr} and
+\eqref{eq:ku-lap} bound the error from below by $I_n/Q_n$ and from
+above by $I_n/Q_n+\epsilon_1\log_2(2n)$, so
+$|\log(\gamma-\ell)|=O(n)=o(M)$.
+
+For the upper endpoint, let $L=\max_p k_p\le\log_2M$ and choose
+$T=2\cdot16^{n-1}d\,d_L$. Then $Tq$, $T(5\alpha/2-A_n)$ and
+$T c_p/(2k_p)$ are integers. We have
+\[
+ \log T=O(n+\log M),\quad
+ 1\le |Tq|\le\exp(O(n+\log M)),\quad
+ \operatorname{den}(h)\mid |Tq| d_M .
+\]
+The log bound on $|Tq|$ follows from
+$|q|\le Q_n(1+\log_2(2n))+2$.
+Discard primes dividing $Tq$, of total log weight $O(n+\log M)$.
+For the others, absence from the reduced denominator implies divisibility
+of the positive integer
+\[
+ C_+(r)=d_R\sum_p\frac{T c_p}{k_p}H_{\lfloor u_p/r\rfloor}.
+\]
+Indeed $(Tq)h$ is integral at $r$ if $h$ is, and \eqref{eq:ku-local}
+computes its residue after multiplication by $r$. The term $u_p=M$
+guarantees positivity. There are $O_R(\pi(2n))$ possible integers,
+each with logarithm $O_R(n+\log M)$. The lost prime mass is therefore
+$O_R(n(n+\log M)/\log n)=o(M)$ uniformly for $M\ge n^2$:
+$\log M/M$ is decreasing there. The same lower and upper bounds
+as above prove the equivalent. For $q<0$, \eqref{eq:ku-uerr} gives
+a lower bound $\alpha(I_1-16I_2)/|q|\ge\exp(-O(n))$. Its positive
+numerator is at most $\exp(O(n))$ and $|q|\ge1/T$. Hence
+$|\log(h-\gamma)|=O(n+\log M)=o(M)$, as required.
+\end{proof}
+\subsection{Sharp errors for the common exponent $3n$}
+\begin{lemma}[The even-prime coefficient]\label{lem:ku-two}
+For each fixed prime $p$,
+\[
+ \frac{\lambda_{p,n}}{Q_n}=\frac{1}{p-1}
+       +O_p\!\left(\frac{\log n}{\sqrt n}\right).
+\]
+\end{lemma}
+\begin{proof}
+If $X$ has distribution $\Pr(X=i)=\binom ni^2/Q_n$, then $X$ is the
+number of marked objects in $n$ draws without replacement from a set of
+$2n$ with $n$ marked objects. Thus $\mathbb EX=n/2$ and
+$\operatorname{Var}X=n^2/[4(2n-1)]$, by summing the indicator
+variances and covariances. By the positive formula in \eqref{eq:ku-son},
+\[
+ \frac{\max_j w_{j,n}}{Q_n}
+ \le 2\mathbb E[(H_{n-X}-H_X)\mathbf{1}_{X\le n/2}]
+ = O(n^{-1/2}).
+\]
+Indeed, on $n/4\le X\le n/2$ the difference is at most
+$4(n-2X)/n$, whose truncated mean is $O(n^{-1/2})$ by Cauchy--Schwarz.
+On $X<n/4$ its size is $O(\log n)$ and Chebyshev's inequality gives
+probability $O(1/n)$.
+For every integer $d\ge2$ the prefix sums of
+$\mathbf{1}_{d\mid n+j}-1/d$ have absolute value at most one.
+Summation by parts and unimodality give
+\[
+ Q_n^{-1}\sum_{j=1}^nw_{j,n}\mathbf{1}_{d\mid n+j}
+    =d^{-1}+O(n^{-1/2})
+\]
+uniformly in $d$. Apply this to $d=p^a$, $1\le a\le\log_p(2n)$,
+sum, and bound the tail of the geometric series by $O_p(1/n)$.
+\end{proof}
+
+\begin{theorem}[Sharp endpoint errors and width]\label{thm:ku-sharp}
+Let every $k_p=k=3n$ and let $P$ be the largest prime at most $2n$.
+For $n\ge2$ the endpoints satisfy $\ell<\gamma<h$, and
+\begin{align*}
+ \gamma-\ell&\sim \frac1{16}\,64^{-n},&
+ h-\gamma&\sim 16I_1\sqrt{\pi n}\,64^{-n},&
+ h-\ell&\sim 16I_1\sqrt{\pi n}\,64^{-n}.
+\end{align*}
+The positive reduced denominators satisfy
+\[
+ \log\operatorname{den}(\ell)\sim P^{3n+1},\qquad
+ \log\operatorname{den}(h)\sim P^{3n},\qquad
+ \log\operatorname{den}(h-\ell)\sim P^{3n+1}.
+\]
+In fact, for each endpoint and for all sufficiently large $n$, every
+prime in $(M/P,M]$ occurs to exponent one in its reduced denominator,
+where $M=P^{3n+1}$ for $\ell$ and $M=P^{3n}$ for $h$.
+\end{theorem}
+\begin{proof}
+For $n\ge2$ the inequalities $2^n\ge2n$ and
+$2\alpha<Q_n/6$ yield
+$q\le2\alpha-Q_n+Q_n\log_2(2n)/(3n)<-Q_n/2$.
+Also $|q|/Q_n\to1$ by Lemma~\ref{lem:ku-weights}. From
+\eqref{eq:ku-lap} and $Q_n\sim4^n/\sqrt{\pi n}$ we have
+$I_n/Q_n=O(64^{-n}/\sqrt n)$. The $p=2$ term in
+\eqref{eq:ku-lerr} after division by $Q_n$ is asymptotic to
+\[
+ \frac{1-2^{-2}}{12}\,2^{-2k}=\frac{64^{-n}}{16},
+\]
+by Lemma~\ref{lem:ku-two}. All $p\ge3$ together contribute
+$O(\log(2n)\,3^{-2k})$. This gives the lower error. In
+\eqref{eq:ku-uerr}, $I_n=o(\alpha)$, and the contribution of the
+harmonic remainders after division by $|q|$ is
+$O((\log(2n)/k)2^{-2k})$. Therefore the upper error is asymptotic to
+$\alpha I_1/Q_n=16I_1\sqrt{\pi n}\,64^{-n}(1+o(1))$.
+Adding the two errors proves the width equivalent.
+
+For the local assertion in Theorem~\ref{thm:ku-den} take $R=P$.
+For the upper endpoint use $T=2k\,16^{n-1}d_{2n}$, now sufficient
+because all $k_p$ agree. Both local positive integers $C_\pm(r)$ and
+$|Tq|$ are at most $\exp(O(n))$, since $\log d_P=O(n)$ and
+$H_P=O(\log n)$. This is less than every $r>M/P$ for large $n$.
+Thus none is divisible by $r$. The harmonic denominators contain $r$
+to power at most one, and formula \eqref{eq:ku-local} now proves that
+it occurs exactly once in the relevant reduced denominator.
+For $M=P^{3n+1}$ and $r>M/P=P^{3n}$, the upper endpoint is integral
+at $r$ by its upper denominator bound. Thus the full interval of primes
+surviving for $\ell$ also survives in $h-\ell$. Its Chebyshev mass
+is asymptotic to $M$. The denominator of the difference divides the
+product of the two reduced denominators, whose logarithm is $(1+o(1))M$.
+\end{proof}
+
+\section{Arithmetic tests on the logarithmic kernel}\label{sec:parity}
+
+Let $a,b\in\Z^m$, $E\in\Z^{r\times m}$ and $h_i\in\Q_{>0}$ be known. Suppose that a real number $x$ and some $\theta\in\R^r$ satisfy
+\[
+ e=ax-b+E^{\mathsf T}\theta,\qquad |e_i|<h_i\quad(1\le i\le m).
+\]
+Let $u\in\{0,1\}^m$ represent $b\bmod2$. Write $K=\ker E\cap\Z^m$. Form $C$ with a $\Z$-basis of $K$ as its rows, write $s=\operatorname{rank} K$, and let
+\[
+ \mathcal Z=C\prod_{i=1}^m(-h_i,h_i)\subset\R^s.
+\]
+This is the image of an open box, the relative interior of a zonotope. Define
+\[
+ \delta=\inf_{y\in\R^r,\,z\in\Z^m}
+       \max_i\frac{|u_i-(E^{\mathsf T}y)_i-2z_i|}{h_i}.
+\]
+
+\begin{theorem}
+If $x=P/Q$, $Q>0$, and $2Q\mid a_i$ for every $i$, then $\delta<1$.
+Precisely,
+\[
+ \delta<1\quad\Longleftrightarrow\quad
+ (Cu+2\Z^s)\cap\mathcal Z\ne\varnothing.
+\]
+Consequently, emptiness excludes every denominator $Q$ satisfying this divisibility condition. Infinitely many empty blocks imply irrationality whenever every fixed $2Q$ eventually divides all the $a_i$ in the blocks.
+\end{theorem}
+
+\begin{proof}
+For a rational target with the stated divisibility, $ax\in2\Z^m$. Taking $y=\theta$ and $2z=u-b+ax$ gives residual $-e$. For the equivalence, $K$ is primitive because $\Z^m/K$ embeds in $\Z^r$. Hence its basis extends to an integral basis of $\Z^m$, so $C\Z^m=\Z^s$. Also $\ker_{\R}C=\operatorname{im}_{\R}E^{\mathsf T}$. Applying $C$ to a point of the open box proves the forward implication. Conversely if $Ct=Cu-2v$ for $|t_i|<h_i$, lift $v=Cz$ with $z$ integral. Then $u-2z-t\in\ker_{\R}C$, as required.
+\end{proof}
+\subsection{Dyadic congruences}
+
+Write $d_m=\operatorname{lcm}(1,\ldots,m)$, $D_k=d_{2k}$ and $H_n=\sum_{i=1}^n1/i$ with $H_0=0$. Sondow's product and integral give
+\[
+ D_k I_k=a_k\gamma-b_k+\sum_{p\le 2k}v_p(S_k)\log p,
+ \quad a_k=D_k\binom{2k}{k},\quad
+ b_k=D_k\sum_{i=0}^k\binom{k}{i}^2H_{k+i}.
+\]
+Here $v_p$ is the prime valuation. Set $h=2^s\le k<2h$, $r=k-h$, and let $u\preceq v$ mean that every 1-bit of $u$ occurs in $v$.
+\begin{theorem}
+For every $k\ge1$, $4\mid v_2(S_k)$, and
+\[
+ b_k- v_2(S_k)/4\equiv {\bf1}_{\{2,4,8,\ldots\}}(k)\pmod2.
+\]
+Consequently, every finite integral relation $\prod_k S_k^{c_k}=1$ satisfies
+$\sum_k c_k b_k\equiv\sum_{j\ge1}c_{2^j}\pmod2$.
+\end{theorem}
+\begin{proof}
+In $D_kH_{k+i}$ the only contributing denominator modulo two is $2h$, when $k+i\ge2h$. Since $\binom{k}{i}^2\equiv\binom{k}{i}$ and the total binomial sum is even, Pascal's identity gives
+\[
+ b_k\equiv\binom{k-1}{2h-k-1}\pmod2.
+\]
+The lower index is the bitwise complement of $k$ in $s+1$ bits. By Lucas's theorem the result is odd exactly when the 1-bits of $k$ are one uninterrupted block.
+
+Put $M_j=\min(j-1,k-j)$. In Sondow's product $S_k=\prod_{j=1}^k(k+j)^{E_j}$ we have
+\[
+ E_j=2\sum_{i=0}^{M_j}\binom{k}{i}^2\sum_{m=i+1}^{k-i}D_k/m .
+\]
+Every $E_j$ is divisible by four. In $E_j/4$ only $m=h$ can contribute modulo two. Since $M_j<h$, Lucas's theorem reduces the possible $i$ to $i\preceq r$, all of which are at most $r$ and hence satisfy $i<h\le k-i$. Thus $E_j/4$ has the parity of the number of $i\preceq r$ with $i\le M_j$.
+
+For $r=0$ all $E_j/4$ are odd, so $v_2(S_k)/4\equiv v_2((2h)!/h!)=h\pmod2$. This proves the dyadic case including $k=1$.
+For $r>0$, Pascal's identity gives $E_j/4\equiv\binom{r-1}{M_j}\pmod2$. Pairing $j=a+1$ with $j=k-a$ for the contributing $a\preceq r-1$ shows that $v_2(S_k)/4$ has the parity of $v_2(U)$, where
+\[
+ U=\prod_{a\preceq r-1}(k+a+1)(2k-a).
+\]
+The two occurrences are distinct because $r-1<(k-1)/2$.
+
+For each $d=2^j\le h$, $j\ge1$, count factors of $U$ divisible by $d$. If $r>d$, toggling a bit of $r-1$ in position $j$ or higher pairs the submasks in each relevant residue class. If $1\le r\le d$, the two candidate residues for $a$ are $-r-1$ and $2r$ modulo $d$. When $r=d$ both qualify. For $r<d$, put $t=v_2(r)$. The $j$-bit complement of $r$ is a submask of $r-1$ exactly when the bits of $r$ from $t$ through $j-1$ are all ones. The shifted residue $2r\bmod d$ qualifies under the same condition, since each set bit forces its next higher bit to be set whenever that bit remains below position $j$. Thus every such $d$ contributes an even count.
+
+All factors are smaller than $4h$. At $d=2h$ only $k+a+1=2h$ is possible, with $a=h-r-1$. It qualifies precisely when $h-r-1\preceq r-1$, equivalently when the bits of $r$ from $v_2(r)$ through $s-1$ are all ones. This is exactly the condition for $b_k$ to be odd. Finally, summing the congruence against $c_k$ eliminates the valuation term, since $\sum_kc_kv_2(S_k)=0$.
+\end{proof}
+
+For instance on $[30,60]$ the unprojected parity support is $30,31,32,48,56,60$. On the logarithmic kernel the parity equals $c_{32}$. Every interval omitting the powers $2,4,8,\ldots$ is therefore excluded from this parity argument, for all heights. If $W=\sum_k|c_k|D_k16^{-k}\le1$ and the dyadic sum is odd, then every denominator $Q$ with $2Q\mid a_k$ throughout the support is excluded. Indeed the error is then strictly smaller than one in absolute value, and rationality with that denominator would make it an odd integer. The infinitude of such certificates remains open.
+
+\subsection{Uniform nonvanishing in a harmonic-number construction}
+Fix an integer $N\ge1$, put $T=10N+10$, and use the indices $N\le k\le T$. Define an integral lattice $L_N$ by
+\[
+ \sum_k c_k v_p(k)=0\quad(p\le T\text{ prime}),\qquad
+ \sum_k\frac{c_k}{k+j}=0\quad(0\le j<N).
+\]
+Write $A(c)=\sum c_k$ and $B(c)=\sum c_k H_{k-1}$.
+\begin{theorem}
+For every $N$, the pairs $(A(c),B(c))$, $c\in L_N$, span $\Q^2$. For every such $c$ one also has
+\[
+ |A(c)\gamma-B(c)|\le\frac{\|c\|_1}{N\binom{2N}{N}}.
+\]
+In particular at least one of any two forms with independent coefficient pairs is nonzero at the actual value of $\gamma$.
+\end{theorem}
+\begin{proof}
+If the image had dimension below two, some rational $(u,v)\ne(0,0)$ would annihilate it. The integral kernel spans the rational kernel by denominator clearing. The rational annihilator of that kernel is the row space. Thus
+\[
+ u+vH_{k-1}=f(k)+R(k),\quad
+ f(k)=\sum_{p\le T}y_pv_p(k),\quad R(x)=\sum_{j=0}^{N-1}\frac{r_j}{x+j}
+\]
+throughout the block. Comparing $k$ with $2k$ uses $f(2k)-f(k)=f(2)$. A further forward difference in $k$ gives, for $Q(x)=R(2x)-R(x)$,
+\[
+ Q(k+1)-Q(k)=\frac{v}{2k(2k+1)}.
+\]
+Indeed the corresponding difference of $H_{2k-1}-H_{k-1}$ is $1/[2k(2k+1)]$. There are $4N+5$ positive integer inputs from $N$ to $\lfloor T/2\rfloor-1$. The difference of the two rational functions has at most $4N+2$ simple poles and is $O(x^{-2})$ at infinity. Its numerator has degree at most $4N$, so equality holds identically.
+
+The sum of residues of a rational forward difference over each orbit of poles modulo $\Z$ is zero, by telescoping. The two poles $0$ and $-1/2$ on the right belong to distinct orbits, with residues $v/2$ and $-v/2$. Hence $v=0$. A periodic rational function tending to zero at infinity vanishes. First $Q=0$, then $R(x)=R(2^j x)\to0$ for $x>0$. It follows that $f(2)=0$ and $f(k)=u$ on the block. The block contains a power of two, so $u=0$, a contradiction.
+
+To bound the error put $w(x)=1/(1-x)+1/\log x$ on $0<x<1$. Its moments are
+\[
+ \int_0^1 x^{k-1}w(x)\,dx=\gamma-H_{k-1}+\log k .
+\]
+For $k=1$, integrate $1/(1-x)$ and $1/\log x$ together, or use the argument below. Successive differences are $-1/k+\log((k+1)/k)$ by Frullani's integral. The moments tend to zero since $0<w(x)\le1$, and $H_{k-1}-\log k\to\gamma$, fixing the constant. To see the bound and the required polynomial approximation, set $s=1-x$. Then
+\[
+ w(1-s)=\frac{1-\int_0^1(1-s)^u\,du}{s}
+        =\sum_{j\ge0}q_{j+1}s^j,\quad
+ q_j\ge0,\quad\sum_{j\ge1}q_j=1 .
+\]
+The positivity follows from the binomial series for $0<u<1$. The coefficient sum follows by letting $s\uparrow1$ and monotone convergence. After the first $N$ terms the remainder is at most $s^N$. For $P(x)=\sum c_kx^{k-1}$ the Cauchy constraints give $\int_0^1x^jP(x)\,dx=0$ for $0\le j<N$. The valuation constraints give $\sum c_k\log k=0$. Subtracting the degree $N-1$ approximation of $w(x)$ and integrating now gives
+\[
+ |A\gamma-B|\le\|c\|_1\int_0^1x^{N-1}(1-x)^N\,dx
+ =\frac{\|c\|_1}{N\binom{2N}{N}} .
+\]
+\end{proof}
+For two independent pairs to settle irrationality, it suffices that the maximum of $\operatorname{den}(B(c))\|c\|_1$ for the two corresponding vectors be $o(N\binom{2N}{N})$ along infinitely many blocks. Here $\operatorname{den}$ is the reduced positive denominator. Under $\gamma=P/Q$, multiplying a nonzero form by $Q\operatorname{den}(B(c))$ would give a nonzero integer of absolute value tending to zero. The rank theorem alone gives no such height bound. The naive denominator $d_{T-1}=\exp(10N+o(N))$ already exceeds this sufficient budget.
+
+\subsection{A signed integral calculation in the original block}
+Use $z=x(1-x)y(1-y)$ and $w_2=1/[(1-xy)(-\log(xy))]$ on the unit square, so $I_k=\int z^k w_2\,dx\,dy$. For $N\le k\le2N$ let $q_i=c_{N+i}D_{N+i}$ and $P(z)=\sum_{i=0}^Nq_i z^i$. By $-\log(xy)\ge1-xy$ and $(1-xy)^2\ge(1-x)(1-y)$, Cauchy--Schwarz with measure $z^N\,dx\,dy$ gives, for $N\ge2$,
+\[
+ \left|\sum_k c_kD_k I_k\right|^2
+ \le \mathrm B(N+1,N-1)^2
+ \sum_{i,j=0}^N q_iq_j\,\mathrm B(N+i+j+1,N+i+j+1)^2
+ = W_2^2 .
+\]
+Here $\mathrm B$ is the beta function. Indeed the second moment of $w_2$ for this measure is at most $\mathrm B(N+1,N-1)^2$ by the displayed weight bound. All entries are rational and signed products are retained. One can take the smaller of $W_2$ and the previous termwise bound $W_1=\sum |c_k|D_k16^{-k}$ on each block.
+
+For $N=30$ with $k=30,\ldots,60$ the integral logarithmic kernel has rank one. The following instructions reproduce the calculation. Factor each $k+j$ into primes and compute $E_{p,k}=\sum_j E_jv_p(k+j)$ using the exponents displayed above. Let $c$ be the primitive generator obtained from the zero row of the row Hermite form of $E^{\mathsf T}$ with its unimodular transformation. The sign of $c$ is immaterial. Form $A=\sum c_ka_k$, $B=\sum c_k b_k$ and $W_2^2$ as above. Exact comparison gives $11<W_1/W_2<12$. The following two fractions bound the entire error interval $[B/A-W_2/|A|,B/A+W_2/|A|]$ strictly:
+\[
+ \frac{89341795653239106820596473}{154780615090340473039841749},
+ \qquad
+ \frac{117485015246252354878041231}{203537468558297195843374666}.
+\]
+To check this with rational arithmetic, compare the center with each endpoint and compare their squared distances with $W_2^2/A^2$. The two fractions have cross determinant of absolute value one. Their mediant has squared distance from $B/A$ strictly below $W_2^2/A^2$. Thus the smallest reduced denominator in this interval is exactly
+\[
+ 358\,318\,083\,648\,637\,668\,883\,216\,415 .
+\]
+This is a finite check of error cancellation in one fixed construction. Brent and McMillan obtained a much larger bound on any rational denominator of $\gamma$ by continued fractions. Neither calculation removes all denominators.
+
+\subsection{The ternary support of the rational coefficient}
+
+\begin{theorem}
+For every $k\ge1$, $3\nmid b_k$ exactly when no zero lies to the left
+of a two in the ordinary ternary expansion of $k$. In particular
+\[
+ \#\{1\le k<3^m:3\nmid b_k\}=m2^m \qquad (m\ge1).
+\]
+\end{theorem}
+\begin{proof}
+Let $q=3^{\lfloor\log_3(2k)\rfloor}$ and let $D'=D_k/q$, a unit
+modulo $3$. Among the terms $D_k/j$ in $D_kH_z$, only multiples of
+$q$ can contribute modulo $3$. Hence
+\[
+ (D')^{-1}D_kH_z\equiv H_{\lfloor z/q\rfloor}\pmod3
+ \qquad(0\le z\le2k).
+\]
+In the residue field, $H_0,H_1,H_2$ have values $0,1,0$. Thus
+$b_k/D'$ modulo $3$ is the total weight $\binom{k}{i}^2$ of the
+indices satisfying $q\le k+i<2q$.
+
+For $k=q+r$ we have $0\le r<q/2$. By Lucas's theorem, a contributing
+index has the form $i=j$ with each ternary digit $j_d\le r_d$.
+Indeed the indices $i=q+j$ of nonzero weight give $k+i\ge2q$.
+The total weight is
+$\prod_d\sum_{j=0}^{r_d}\binom{r_d}{j}^2
+=\prod_d\binom{2r_d}{r_d}$.
+It is nonzero modulo $3$ exactly when all $r_d\le1$. If $r$,
+written with $\log_3 q$ digits, contains a two, its being smaller than
+$q/2$ forces a zero before the first two. This follows by comparison
+with the string of ones representing $(q-1)/2$. The threshold also
+allows equality with that string, which contains no two.
+
+For $k=r<q$ we have $q/2\le r<q$, and the qualifying indices are
+exactly those for which $r+i\ge q$. Read the digits $d$ of $r$ from
+right to left. At each position let $T$ be the total weight of all
+choices of lower digits of $i$, and let $U$ be the weight of choices
+that send a carry to this position in $r+i$. Start with $(T,U)=(1,0)$.
+Lucas's theorem gives the following updates modulo $3$ by enumerating
+the possible new digit $j\le d$ of $i$ with weight $\binom{d}{j}^2$.
+\[
+\begin{array}{c|ccc}
+ d&0&1&2\\ \hline
+ (T,U)\text{ after update}
+ &(T,0)&(2T,U)&(0,2T+U)
+\end{array}
+\]
+The first two encountered from the right makes $U\ne0$ and $T=0$.
+A subsequent zero kills $U$ permanently. This branch necessarily
+contains a two since a word of the same length with digits at most
+one is at most $(q-1)/2$. Thus the final $U$ is nonzero exactly for
+the words in the claim.
+
+Among words of length $\ell$ without a leading zero, $2^{\ell-1}$
+have no two. For each specified position of the rightmost two, the
+digits above it are chosen from $1,2$, and the digits below it from
+$0,1$. This gives another $\ell2^{\ell-1}$ words. Summing
+$(\ell+1)2^{\ell-1}$ for $1\le\ell\le m$ proves the formula.
+\end{proof}
+
+The same kernel computation works modulo $3$. For a dependence among
+the rows modulo $3$, normalize one participating coefficient to $1$.
+Take the linear combination with coefficient representatives $0,1,2$
+and replace the chosen row by this vector divided by its content.
+The content is divisible by $3$ and the normalized coefficient makes
+the new lattice index drop by that content. Once the rows are
+independent modulo $3$, adjoining $b$ tests whether
+$c\cdot b\not\equiv0\pmod3$ occurs for an integral $c\in\ker E$.
+The corresponding exact block tests are
+\[
+\begin{array}{r|rrrrrr}
+ N&24&32&40&64&128&256\\ \hline
+ c\cdot b\not\equiv0\pmod2&\mathrm{no}&\mathrm{yes}&\mathrm{no}&\mathrm{no}&\mathrm{yes}&\mathrm{yes}\\
+ c\cdot b\not\equiv0\pmod3&\mathrm{no}&\mathrm{no}&\mathrm{yes}&\mathrm{yes}&\mathrm{yes}&\mathrm{yes}
+\end{array}
+\]
+These tests decide existence in the whole integral kernel. They impose
+no height bound on the vector. In particular the blocks $40$ and $64$
+admit a nonzero residue modulo three although every integral relation
+has even rational coefficient.
+\section{What remains to establish for the ordinary constants}\label{sec:questions}
+\begin{enumerate}
+\item \textbf{One zero.} Theorem~\ref{th:zero} proves transcendence of every unit-mesh zero $a_k$. Corollary~\ref{cor:fd-asymptotic} recovers $\gamma$ from their limiting slope. Transferring transcendence to $\gamma$ by the single-point argument requires a nondegenerate algebraic relation over $\overline{\Q}$ between $\gamma$ and a specified transcendental zero. The integral and limiting formulas retain operations outside that class.
+\item \textbf{Nested radical brackets.} Corollary~\ref{cor:rev-lattice} gives an exact irrationality criterion: each fixed denominator lattice must miss some bracket in the nested tail. The comparison $U_n-L_n=U_n^2/(2n)$ controls its width. Proving avoidance for every denominator remains open. Proposition~\ref{prop:rev-rational} realizes the same width and strict nesting with a rational limiting value.
+\item \textbf{A fixed rational argument.} A growing linear rank guarantees many transcendental values, even within each deep prime-power level. Determining whether the specific ordinary value $\gamma_m(1)$ is irrational requires an argument that singles out $x=1$. At $m=0$ this is the original Euler question.
+\item \textbf{Plastic-base approximants.} Theorem~\ref{thm:plastic-sandwich} brackets $\gamma$ by algebraic numbers. To exclude a fixed rational $r/s$, a norm argument must also bound every conjugate and clear denominators in the varying fields.
+\item \textbf{Decimal words at fixed input.} Infinitely many prime-digit hits and unbounded prime-digit-free gaps in $\gamma$ remain unproved here for both alphabets. A prime shift that varies with the word leaves this fixed-input question open. Section~\ref{sec:decimal-orbits} gives counterexamples to transfer between the two alphabets.
+\item \textbf{Eliminating logarithms.} Short integer vectors in the homogeneous Sondow kernel exist on all sufficiently large blocks. Theorem~\ref{thm:ku-siegel} still requires infinitely many sufficiently small vectors with a nonzero error. The separate harmonic-number lattice has independent coefficient pairs on every block. There one still needs a bound simultaneously controlling vector height and reduced denominator for those pairs.
+\item \textbf{Integral and coefficient data.} Equation~\eqref{eq:ub-projective} determines the field of chord quotients. Proposition~\ref{prop:hankel} determines the ordinary Stieltjes sequence from either eventual parity and two Hankel inequalities. The arithmetic of an individual ordinary coefficient remains open.
+\end{enumerate}
+\noindent\textit{Scope.} This paper arranges the mathematical questions, counterexamples, computations and proofs from the discussion by topic. The references supply the external transcendence and analytic inputs. Historical priority of the deductions has not been established. The billion-exponent denominator bound depends on the reported continued-fraction computation.
+
+\phantomsection\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+\bibitem{Baker} A. Baker, Linear forms in the logarithms of algebraic numbers, \emph{Mathematika} \textbf{13} (1966), 204--216, and part III, \textbf{14} (1967), 220--228.
+\href{https://doi.org/10.1112/S0025579300003971}{Part I}.
+\href{https://doi.org/10.1112/S0025579300003843}{Part III}.
+\bibitem{Erdos} P. Erd\H{o}s, A theorem of Sylvester and Schur, \emph{J. London Math. Soc.} s1-9 (1934), 282--288. \href{https://doi.org/10.1112/jlms/s1-9.4.282}{Article}.
+\bibitem{Lagarias} J. C. Lagarias, Euler's constant: Euler's work and modern developments, \emph{Bull. Amer. Math. Soc.} 50 (2013), 527--628. \href{https://arxiv.org/abs/1303.1856}{Author's version}.
+\bibitem{RS} J. B. Rosser and L. Schoenfeld, Approximate formulas for some functions of prime numbers, \emph{Illinois J. Math.} 6 (1962), 64--94. \href{https://doi.org/10.1215/ijm/1255631807}{Article}.
+\bibitem{BHP} R. C. Baker, G. Harman and J. Pintz, The difference between consecutive primes, II, \emph{Proc. London Math. Soc.} \textbf{83} (2001), 532--562. \href{https://doi.org/10.1112/plms/83.3.532}{Publisher}.
+\bibitem{Blagouchine} I. V. Blagouchine, A theorem for the closed-form evaluation of the first generalized Stieltjes constant at rational arguments and some related summations, \emph{J. Number Theory} \textbf{148} (2015), 537--592, with erratum in vol.~151, 276--277. \href{https://arxiv.org/abs/1401.3724}{Author's version}.
+\bibitem{qZeta} N. Kurokawa and M. Wakayama, On $q$-analogues of the Euler constant and Lerch's limit formula, \emph{Proc. Amer. Math. Soc.} \textbf{132} (2004), 935--943. \href{https://doi.org/10.1090/S0002-9939-03-07025-4}{Publisher}. T. Chatterjee and S. Garg, On arithmetic nature of $q$-analogue of the generalized Stieltjes constants, \emph{Integral Transforms Spec. Funct.}, online 2026. \href{https://doi.org/10.1080/10652469.2026.2650678}{Publisher}. \href{https://arxiv.org/abs/2404.08025}{Author's version}.
+\bibitem{Coffey} M. W. Coffey, Functional equations for the Stieltjes constants, 2014. \href{https://arxiv.org/abs/1402.3746}{arXiv:1402.3746}.
+\bibitem{DKP} A. B. Dixit, V. Kumar and S. S. Pathak, Linear independence of values of the $q$-exponential and related functions, \emph{Bull. Aust. Math. Soc.} \textbf{109} (2024), 453--463, Corollary 1.2. \href{https://doi.org/10.1017/S0004972723001028}{Publisher}.
+\bibitem{DKK} A. Dixit, A. Kesarwani and R. Kumar, Explicit transformations of certain Lambert series, Corollary 2.10. \href{https://doi.org/10.1007/s40687-022-00331-5}{Publisher}. \href{https://arxiv.org/abs/2012.12064}{arXiv:2012.12064}.
+\bibitem{Fahad} S. Fahad, Continued fraction for Euler's constant, computation of 29 April 2021 recorded in OEIS A002852. The author's dated note in A033091 also identifies the length of his computed prefix. \href{https://oeis.org/A002852}{A002852}. \href{https://oeis.org/A033091}{A033091}.
+\bibitem{Furstenberg} H. Furstenberg, Disjointness in ergodic theory, minimal sets, and a problem in Diophantine approximation, \emph{Math. Systems Theory} \textbf{1} (1967), 1--49. \href{https://doi.org/10.1007/BF01692494}{Article}.
+\bibitem{MurtySaradha} T. Okada, Dirichlet series with periodic algebraic coefficients, \emph{J. London Math. Soc.} (2) \textbf{33} (1986), 13--21. \href{https://doi.org/10.1112/jlms/s2-33.1.13}{Publisher}. See also M. R. Murty and N. Saradha, Transcendental values of the $p$-adic digamma function, \emph{Acta Arith.} \textbf{133} (2008), 349--362, p.~354, for the explicit independence statement used here. \href{https://www.impan.pl/shop/publication/transaction/download/product/82486}{Article}.
+\bibitem{Nesterenko} Yu. V. Nesterenko, Modular functions and transcendence questions, \emph{Sb. Math.} \textbf{187} (1996), 1319--1348. \href{https://doi.org/10.1070/SM1996v187n09ABEH000158}{Publisher}.
+\bibitem{DLMF} NIST Digital Library of Mathematical Functions, \S10.8, Power series for Bessel functions. \href{https://dlmf.nist.gov/10.8}{DLMF}.
+\bibitem{PNT} NIST Digital Library of Mathematical Functions, \S27.12, Asymptotic formulas for primes. \href{https://dlmf.nist.gov/27.12}{DLMF}.
+\bibitem{Rivoal} T. Rivoal, On the arithmetic nature of the values of the gamma function, Euler's constant, and Gompertz's constant, \emph{Michigan Math. J.} \textbf{61} (2012), 239--254. \href{https://doi.org/10.1307/mmj/1339011525}{Publisher}.
+\bibitem{SiegelBessel} C. L. Siegel, \"Uber einige Anwendungen diophantischer Approximationen, \emph{Abh. Preuss. Akad. Wiss., Phys.-Math. Kl.} (1929), no.~1, 1--70.
+\bibitem{Sondow} J. Sondow, Criteria for irrationality of Euler's constant, \emph{Proc. Amer. Math. Soc.} \textbf{131} (2003), 3335--3344. \href{https://arxiv.org/abs/math/0209070}{Author's version}.
+\bibitem{Joint} Keio research archive, joint construction of two families of rational bounds, working manuscript, September 2026. Private research notes. The construction used here is stated in full in the text.
+\bibitem{JointRevised} Keio research archive, revised working manuscript on the joint construction of rational bounds, 2026. Private research notes.
+\end{thebibliography}
+\end{document}

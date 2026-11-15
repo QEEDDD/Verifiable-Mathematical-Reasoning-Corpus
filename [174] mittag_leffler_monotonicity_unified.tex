@@ -1,0 +1,1179 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=26mm]{geometry}
+\usepackage{microtype,booktabs,array,xcolor,listings,hyperref}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\definecolor{navy}{RGB}{25,48,69}
+\hypersetup{colorlinks=true,linkcolor=navy,urlcolor=navy,citecolor=navy,
+  pdftitle={Parameter Monotonicity of Mittag-Leffler Functions: the Conjecture on (2,4) and the Sharp Range},
+  pdfauthor={Prepared for Keio}}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\C}{\mathbb C}
+\DeclareMathOperator{\Log}{Log}
+\DeclareMathOperator{\Res}{Res}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,
+  breaklines=true,showstringspaces=false,frame=single,framerule=0.3pt,rulecolor=\color{gray},
+  upquote=true,tabsize=4,xleftmargin=2pt,xrightmargin=2pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks
+
+\title{\color{navy}Parameter Monotonicity of Mittag--Leffler Functions:\\
+the Conjecture on $(2,4)$ and the Sharp Range $(0,\alpha^*]$}
+\author{Prepared for Keio\thanks{Section~\ref{sec:A} reproduces the computer-assisted draft
+\emph{Parameter monotonicity of Mittag--Leffler functions on $(0,4]$} (14 November 2026); its
+certificate was re-implemented independently for this version. Sections~\ref{sec:B}
+and~\ref{sec:sharp} and the unified presentation were prepared with AI assistance
+(Claude, Anthropic) on 15 November 2026. No external review has taken place.}}
+\date{15 November 2026\\\small Unified computer-assisted proof draft for independent review}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+For $x>0$ put $U_\alpha(x)=E_\alpha(x^\alpha)$, where $E_\alpha$ is the Mittag--Leffler
+function. Ferreira and Simon proved that $\alpha\mapsto U_\alpha(x)$ decreases on $(0,2)$,
+expected the decrease to persist on $(2,4)$, and showed that it fails for some large $\alpha$.
+We prove the conjecture on $[2,4]$ twice. Both proofs start from the same Laplace kernel
+$K_\alpha(s)=s^{\alpha-1}\Log s/(s^\alpha-1)^2$ and differ in where its Bromwich contour is moved.
+Proof~A shifts the line to $\Re s=1/2$ and certifies a compact rectangle. Proof~B rotates the
+contour onto two rays in the left half-plane, keeps the residues at $e^{\pm2\pi i/\alpha}$, and
+needs only a one-dimensional certificate. Combining the two techniques, we determine the maximal
+range: for every $x>0$ the map $\alpha\mapsto U_\alpha(x)$ is strictly decreasing on
+$(0,8.8033]$, while $\partial_\alpha U_\alpha(x)>0$ at $(\alpha,x)=(8.8034,10.7539)$. Hence the
+threshold $\alpha^*$ satisfies $8.8033\le\alpha^*<8.8034$; numerically
+$\alpha^*=8.80337769817\ldots$. Consequences include strict monotonicity of
+$E_{\alpha,\beta}(x^\alpha)$ for every $\beta\ge1$ on $(0,8.8033]$ and two-sided bounds by
+elementary functions. All finite verifications use Arb ball arithmetic, and the programs are
+reproduced in the appendix. No claim of external acceptance or of historical priority is made.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+\subsection{Background}
+For $\alpha,\beta>0$ let
+\[
+ E_{\alpha,\beta}(z)=\sum_{n=0}^{\infty}\frac{z^n}{\Gamma(\beta+\alpha n)},\qquad
+ E_\alpha=E_{\alpha,1},\qquad U_\alpha(x)=E_\alpha(x^\alpha)\quad(x>0).
+\]
+The scaling $x^\alpha$ puts all orders on one exponential scale: $U_\alpha(x)\sim e^x/\alpha$
+as $x\to\infty$, and
+\[
+ U_1(x)=e^x,\quad U_2(x)=\cosh x,\quad
+ U_3(x)=\tfrac13\bigl(e^x+2e^{-x/2}\cos\tfrac{\sqrt3\,x}{2}\bigr),\quad
+ U_4(x)=\tfrac12(\cosh x+\cos x).
+\]
+Equivalently, $U_\alpha$ solves the Caputo problem $D^\alpha u=u$, $u(0)=1$,
+$u^{(j)}(0)=0$ for $1\le j<\lceil\alpha\rceil$ \cite{GKMR}. Monotonicity in $\alpha$ therefore
+compares solutions of fractional growth equations of different orders.
+
+Ferreira and Simon \cite[Theorem~A]{FS} proved that $\alpha\mapsto U_\alpha(x)$ decreases on
+$(0,2)$ for every $x>0$, through convex ordering of an associated family of random variables.
+In \cite[Remark~1(a)]{FS} they discuss larger orders. They expect, supported by simulations, that
+the decrease persists on $(2,4)$, and they check $U_4<U_3<U_2$ from the closed forms above. They
+also explain why their probabilistic argument does not reach $\alpha>2$, and observe numerically
+that $U_{25}(30)<U_{26}(30)$, so monotonicity fails for some large $\alpha$. Two questions remain:
+the conjecture on $(2,4)$, and the exact range of $\alpha$ on which the decrease holds for all $x>0$.
+
+\subsection{Main results}
+Write $H_\alpha(x)=-\partial_\alpha U_\alpha(x)$ and $\psi=\Gamma'/\Gamma$.
+
+\begin{theorem}\label{thm:24}
+For every $x>0$ and every $\alpha\in[2,4]$, $H_\alpha(x)>0$. In particular
+$\alpha\mapsto E_\alpha(x^\alpha)$ is strictly decreasing on $[2,4]$, and the conjecture of
+\cite[Remark~1(a)]{FS} holds.
+\end{theorem}
+
+\begin{theorem}\label{thm:sharp}
+\begin{enumerate}
+ \item[(i)] For every $x>0$, the map $\alpha\mapsto E_\alpha(x^\alpha)$ is strictly decreasing on
+ $(0,8.8033]$.
+ \item[(ii)] $\partial_\alpha E_\alpha(x^\alpha)>0$ at $(\alpha,x)=(8.8034,\,10.7539)$.
+\end{enumerate}
+Consequently the threshold
+\[
+ \alpha^*:=\sup\bigl\{A>0:\ \alpha\mapsto E_\alpha(x^\alpha)\ \text{is non-increasing on }(0,A]
+ \text{ for every }x>0\bigr\}
+\]
+satisfies $8.8033\le\alpha^*<8.8034$. Numerically $\alpha^*=8.80337769817\ldots$, attained at
+$x^*=10.7538996\ldots$ (Section~\ref{subsec:critical}).
+\end{theorem}
+
+\begin{corollary}\label{cor:beta}
+For every $\beta\ge1$ and $x>0$, the map $\alpha\mapsto E_{\alpha,\beta}(x^\alpha)$ is strictly
+decreasing on $(0,8.8033]$.
+\end{corollary}
+
+\begin{corollary}\label{cor:bounds}
+For every $x>0$,
+\begin{gather*}
+ \frac{\cosh x+\cos x}{2}<E_\alpha(x^\alpha)<\cosh x\qquad(2<\alpha<4),\\
+ E_8(x^8)<E_\alpha(x^\alpha)<\frac{\cosh x+\cos x}{2}\qquad(4<\alpha<8),
+\end{gather*}
+where
+$E_8(x^8)=\tfrac14\bigl(\cosh x+\cos x+2\cos\tfrac{x}{\sqrt2}\cosh\tfrac{x}{\sqrt2}\bigr)$.
+\end{corollary}
+
+\subsection{Structure of the proofs}
+Every argument below uses the Laplace transform of $H_\alpha$,
+\[
+ K_\alpha(s)=\frac{s^{\alpha-1}\Log s}{(s^\alpha-1)^2}\qquad(\Re s>1),
+\]
+and its Bromwich inversion (Lemmas~\ref{lem:laplace} and~\ref{lem:inversion}); the proofs differ
+in where the contour is moved.
+\begin{itemize}
+ \item Proof~A (Section~\ref{sec:A}) shifts the vertical line to $\Re s=1/2$. This crosses only
+ the pole at $s=1$, but the remainder is of size $e^{x/2}$, so a compact rectangle in $(\alpha,x)$
+ is certified.
+ \item Proof~B (Section~\ref{sec:B}) rotates the contour onto two rays in the left half-plane and
+ keeps the residues at $e^{\pm2\pi i/\alpha}$ explicitly. The remainder then stays bounded in $x$,
+ and the certified part is one-dimensional.
+ \item For $\alpha>4$ more residues enter (Section~\ref{sec:sharp}). The rays of Proof~B are then
+ combined with a two-dimensional certificate in the style of Proof~A, which is needed only near the
+ critical point.
+\end{itemize}
+Small $x$ is handled in every case by termwise positivity of the series for $H_\alpha$
+(Lemma~\ref{lem:small}). Table~\ref{tab:cert} lists the finite certified computations.
+
+\begin{table}[ht]\centering\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llll}
+\toprule
+Step & Region & Certificate & Certified margin\\
+\midrule
+Lemma~\ref{lem:certA} (Proof A) & $[2,4]\times[\frac52,16]$ & 2-D, 16{,}749 rectangles &
+ $e^{-x}H_{\alpha,24}>10^{-5}$\\
+Lemma~\ref{lem:certB} (Proof B) & $\alpha\in[2,4]$ & 1-D, 2{,}000 intervals & $G\le0.1999$\\
+Lemma~\ref{lem:tail16} & $\alpha\in[4,8.8033]$, $x\ge16$ & 1-D, 960 intervals & $G\le0.5005$\\
+Lemma~\ref{lem:middle} & $\alpha\in[4,8.8033]$, $e^{\psi(1+\alpha)}\le x\le16$ & 2-D, 385 boxes &
+ $Q\ge1.21\cdot10^{-5}$\\
+Lemma~\ref{lem:witness} & $(\alpha,x)=(8.8034,10.7539)$ & single point &
+ $\partial_\alpha U_\alpha\ge0.00396$\\
+\bottomrule
+\end{tabular}
+\caption{Finite certified computations. All use Arb ball arithmetic \cite{Arb} through
+python-flint~0.9.0 \cite{flint}; the programs are listed in Appendix~\ref{app:code}. Here
+$G<1$ and $Q>0$ are the sufficient conditions of Lemma~\ref{lem:bounds}.}\label{tab:cert}
+\end{table}
+
+\subsection{Status}
+This is a draft for independent mathematical and software review. The certified steps are
+ball-arithmetic evaluations of elementary functions and of $\Gamma$, $\log\Gamma$ and $\psi$; they
+are not formalized in a proof assistant. The literature check was limited: as of
+15 November 2026 we located \cite{FS} (version~1, without journal reference) and no published
+resolution of the questions above. This does not establish priority.
+
+\section{Analytic preliminaries}\label{sec:prelim}
+Throughout, $\Log s$ and $s^\beta=e^{\beta\Log s}$ are principal branches on
+$\C\setminus(-\infty,0]$.
+
+\begin{lemma}[derivative series; small $x$]\label{lem:small}
+For $x>0$ and $\alpha>0$,
+\begin{equation}\label{eq:series}
+ H_\alpha(x)=\sum_{n=1}^{\infty}\frac{n\,x^{\alpha n}}{\Gamma(1+\alpha n)}
+ \bigl(\psi(1+\alpha n)-\log x\bigr),
+\end{equation}
+with locally uniform convergence in $(\alpha,x)$. If $0<x\le e^{\psi(1+\alpha)}$, every term is
+nonnegative and every term with $n\ge2$ is positive; hence $H_\alpha(x)>0$.
+\end{lemma}
+\begin{proof}
+The series for $U_\alpha$ and its termwise $\alpha$-derivative converge locally uniformly because
+$\Gamma(1+\alpha n)$ grows faster than any exponential in $n$, and
+$\partial_\alpha\bigl[x^{\alpha n}/\Gamma(1+\alpha n)\bigr]
+ =n\,x^{\alpha n}\bigl(\log x-\psi(1+\alpha n)\bigr)/\Gamma(1+\alpha n)$.
+Since $\psi'(y)=\sum_{j\ge0}(y+j)^{-2}>0$, we have
+$\psi(1+\alpha n)\ge\psi(1+\alpha)\ge\log x$ for $n\ge1$, with strict first inequality for $n\ge2$.
+\end{proof}
+
+For $\alpha\in[2,8.8033]$ the threshold $e^{\psi(1+\alpha)}$ increases from
+$e^{\psi(3)}=2.5162\ldots$ to $e^{\psi(9.8033)}=9.3077\ldots$; at $\alpha=4$ it equals
+$e^{\psi(5)}=4.5091\ldots$.
+
+\begin{lemma}[Laplace transform]\label{lem:laplace}
+For $\alpha\ge2$ and $\Re s>1$, $\displaystyle\int_0^\infty e^{-sx}H_\alpha(x)\,dx=K_\alpha(s)$.
+\end{lemma}
+\begin{proof}
+Let $c=\Re s>1$, $n\ge1$ and $y=1+\alpha n\ge1+2n$. If $Y$ has the gamma law of shape $y$ and unit
+rate, the substitution $x=u/c$ gives
+\begin{align*}
+ \int_0^\infty e^{-cx}\frac{n\,x^{\alpha n}}{\Gamma(1+\alpha n)}\bigl|\psi(y)-\log x\bigr|\,dx
+ &=n\,c^{-y}\,\E\bigl|\psi(y)-\log Y+\log c\bigr|\\
+ &\le n\,c^{-1-2n}\bigl(\psi(y)+y+(y-1)^{-1}+\log c\bigr),
+\end{align*}
+using $0<\psi(y)=\E\log Y$ and $\E|\log Y|\le\E(Y+Y^{-1})=y+(y-1)^{-1}$. The bound is
+$O(n^2c^{-2n})$ locally uniformly in $\alpha$, hence summable, and termwise integration is
+justified. Differentiating $\int_0^\infty e^{-sx}x^\nu\,dx=\Gamma(\nu+1)s^{-\nu-1}$ in $\nu$ gives
+$\int_0^\infty e^{-sx}x^\nu\bigl(\psi(\nu+1)-\log x\bigr)dx/\Gamma(\nu+1)=s^{-\nu-1}\Log s$.
+With $\nu=\alpha n$ and $|s^{-\alpha}|<1$,
+$\sum_{n\ge1}n\,s^{-1-\alpha n}\Log s=s^{\alpha-1}\Log s/(s^\alpha-1)^2$.
+\end{proof}
+
+\begin{lemma}[inversion]\label{lem:inversion}
+For $\alpha\ge2$, $c>1$ and $x>0$,
+\[
+ H_\alpha(x)=\frac{1}{2\pi i}\int_{c-i\infty}^{c+i\infty}e^{xs}K_\alpha(s)\,ds,
+\]
+and the integral converges absolutely.
+\end{lemma}
+\begin{proof}
+On $\Re s=c$ we have $|K_\alpha(c+it)|=O(|t|^{-\alpha-1}\log|t|)$, so $t\mapsto K_\alpha(c+it)$ is
+integrable. By Lemma~\ref{lem:laplace} it is the Fourier transform of
+$f(x)=e^{-cx}H_\alpha(x)\mathbf 1_{x>0}\in L^1(\R)$. Fourier inversion recovers $f$ almost
+everywhere; both sides are continuous on $(0,\infty)$.
+\end{proof}
+
+\begin{lemma}[poles and residues]\label{lem:poles}
+On $\C\setminus(-\infty,0]$, $K_\alpha$ is meromorphic, with poles exactly at $w_k=e^{iu_k}$,
+$u_k=2\pi k/\alpha$, $k\in\Z$, $|u_k|<\pi$. The pole $w_0=1$ is simple, the others are double, and
+\[
+ \Res_{s=w_k}e^{xs}K_\alpha(s)=\frac{e^{xw_k}}{\alpha^2}\bigl(1+iu_k\,x\,w_k\bigr).
+\]
+\end{lemma}
+\begin{proof}
+$s^\alpha=1$ if and only if $\alpha\Log s\in2\pi i\Z$, and these zeros are simple because
+$(s^\alpha)'=\alpha s^{\alpha-1}\ne0$. Put $g(s)=e^{xs}s^{\alpha-1}\Log s$ and $F(s)=s^\alpha-1$.
+At a simple zero $p$ of $F$, $\Res(g/F^2)=g'(p)/F'(p)^2-g(p)F''(p)/F'(p)^3$. With $p^\alpha=1$,
+$F'(p)=\alpha/p$, $F''(p)=\alpha(\alpha-1)/p^2$ and $\Log p=iu_k$, this equals
+$e^{xp}(1+x\,p\Log p)/\alpha^2$. At $p=1$ the zero of $\Log s$ cancels one order and the same
+formula gives $e^x/\alpha^2$.
+\end{proof}
+
+\begin{lemma}[rotated rays]\label{lem:rays}
+Let $\alpha\ge2$, $x>0$ and $\varphi\in(\pi/2,\pi)$ with $\alpha\varphi\notin2\pi\Z$, and put
+$K_\varphi=\#\{k\ge1:u_k<\varphi\}$. Then
+\begin{equation}\label{eq:rays}
+ H_\alpha(x)=\frac{e^x+S_\varphi(\alpha,x)}{\alpha^2}+J_\varphi(\alpha,x),
+\end{equation}
+where
+\[
+ S_\varphi(\alpha,x)=\sum_{k=1}^{K_\varphi}2e^{x\cos u_k}
+ \Bigl[\cos(x\sin u_k)-u_kx\,\sin(x\sin u_k+u_k)\Bigr],
+\]
+\[
+ J_\varphi(\alpha,x)=\frac1\pi\,\Im\int_0^\infty e^{xre^{i\varphi}}\,r^{\alpha-1}e^{i\alpha\varphi}\,
+ \frac{\log r+i\varphi}{\bigl(r^\alpha e^{i\alpha\varphi}-1\bigr)^2}\,dr .
+\]
+\end{lemma}
+\begin{proof}
+Let $\Gamma_\varphi$ run from $\infty e^{-i\varphi}$ to $0$ and on to $\infty e^{i\varphi}$, and
+consider the region $\{|\arg s|<\varphi,\ \Re s<c\}$ between $\Gamma_\varphi$ and the line of
+Lemma~\ref{lem:inversion}; the whole line lies in the sector because $|\arg(c+it)|<\pi/2$.
+$K_\alpha$ has no pole on $\Gamma_\varphi$, since $s^\alpha=1$ on $\arg s=\pm\varphi$ would force
+$\alpha\varphi\in2\pi\Z$. On arcs $|s|=R$ with $\Re s\le c$ we have $|e^{xs}|\le e^{cx}$ and
+$|K_\alpha(s)|=O(R^{-\alpha-1}\log R)$, so these arcs contribute nothing as $R\to\infty$. Near
+$s=0$, $|K_\alpha(s)|=O(|s|^{\alpha-1}|\log|s||)$, so a small arc around the origin also
+contributes nothing. Every pole has modulus $1<c$, so the residue theorem gives
+\[
+ H_\alpha(x)=\sum_{|u_k|<\varphi}\Res_{s=w_k}e^{xs}K_\alpha(s)
+ +\frac1{2\pi i}\int_{\Gamma_\varphi}e^{xs}K_\alpha(s)\,ds .
+\]
+By Lemma~\ref{lem:poles} the residues at $w_{\pm k}$ are complex conjugate, and their sum is the
+$k$-th term of $S_\varphi/\alpha^2$. Since $K_\alpha(\bar s)=\overline{K_\alpha(s)}$, the ray
+integral equals $J_\varphi$. The argument stays inside the open sector $|\arg s|<\varphi<\pi$ and
+never meets the branch cut, so it holds for even integer $\alpha$ as well.
+\end{proof}
+
+\begin{lemma}[explicit bounds]\label{lem:bounds}
+In the setting of Lemma~\ref{lem:rays} put $\lambda=-x\cos\varphi>0$ and $\gamma=\alpha\varphi$,
+and let $m^2=1$ if $\cos\gamma\le0$ and $m^2=\sin^2\gamma$ otherwise. Then
+$|J_\varphi(\alpha,x)|\le B_\varphi(\alpha,x)$, where
+\[
+ B_\varphi(\alpha,x)=\frac{1}{\pi m^2}\Bigl[\frac{\Gamma(\alpha)}{\lambda^\alpha}
+ \bigl(\varphi+(\psi(\alpha)-\log\lambda)_+\bigr)
+ +2\min\Bigl(\frac1{\alpha^2},\frac{\Gamma(\alpha-1)}{e\,\lambda^{\alpha-1}}\Bigr)\Bigr],
+\]
+and $|e^{-x}S_\varphi(\alpha,x)|\le\sum_{k=1}^{K_\varphi}2e^{-x(1-\cos u_k)}(1+u_kx)$.
+Consequently
+\[
+ \alpha^2e^{-x}H_\alpha(x)\ \ge\ Q_\varphi(\alpha,x):=1+e^{-x}S_\varphi(\alpha,x)
+ -\alpha^2e^{-x}B_\varphi(\alpha,x)\ \ge\ 1-G_\varphi(\alpha,x),
+\]
+\[
+ G_\varphi(\alpha,x):=\sum_{k=1}^{K_\varphi}2e^{-x(1-\cos u_k)}(1+u_kx)
+ +\alpha^2e^{-x}B_\varphi(\alpha,x).
+\]
+In particular $H_\alpha(x)>0$ whenever $Q_\varphi(\alpha,x)>0$, and in particular whenever
+$G_\varphi(\alpha,x)<1$.
+\end{lemma}
+\begin{proof}
+On $s=re^{\pm i\varphi}$ we have $|e^{xs}|=e^{-\lambda r}$, $|s^{\alpha-1}|=r^{\alpha-1}$,
+$|\log r\pm i\varphi|\le|\log r|+\varphi$ and
+$|r^\alpha e^{\pm i\gamma}-1|^2=(r^\alpha-\cos\gamma)^2+\sin^2\gamma\ge m^2$. Hence
+$|J_\varphi|\le(\pi m^2)^{-1}\int_0^\infty e^{-\lambda r}r^{\alpha-1}(|\log r|+\varphi)\,dr$. Write
+$|\log r|=\log r+2\log(1/r)\mathbf 1_{r<1}$ and use
+$\int_0^\infty e^{-\lambda r}r^{\alpha-1}\log r\,dr=\Gamma(\alpha)\lambda^{-\alpha}(\psi(\alpha)-\log\lambda)$.
+The remaining integral $L=\int_0^1e^{-\lambda r}r^{\alpha-1}\log(1/r)\,dr$ is at most
+$\int_0^1r^{\alpha-1}\log(1/r)\,dr=\alpha^{-2}$, and, since $\log(1/r)\le 1/(er)$, at most
+$\Gamma(\alpha-1)/(e\lambda^{\alpha-1})$. Finally
+$|e^{xw}(1+iuxw)|\le e^{x\cos u}(1+ux)$ for $w=e^{iu}$.
+\end{proof}
+
+\begin{lemma}[monotonicity in $x$]\label{lem:mono}
+Let $2\le\alpha\le8.8034$ and let $\varphi$ be as in Lemma~\ref{lem:rays}. Then
+$x\mapsto G_\varphi(\alpha,x)$ is strictly decreasing on $[4.1,\infty)$, and on $[1,\infty)$ if
+$\alpha\le4$.
+\end{lemma}
+\begin{proof}
+For $c=\cos u$, the derivative of $e^{-x(1-c)}(1+ux)$ is $e^{-x(1-c)}\bigl(u-(1-c)(1+ux)\bigr)$,
+which is negative for $x>(1-c)^{-1}-u^{-1}$. Here $u\ge u_1=2\pi/\alpha\ge0.7137$, so
+$1-c\ge1-\cos0.7137>0.244$ and $(1-c)^{-1}<4.1$; if $\alpha\le4$ then $c\le0$ and $(1-c)^{-1}\le1$.
+In $B_\varphi$, $\lambda$ is proportional to $x$, and the functions $\lambda^{-\alpha}$,
+$\lambda^{-\alpha}(\psi(\alpha)-\log\lambda)_+$ (derivative
+$-\lambda^{-\alpha-1}[1+\alpha(\psi(\alpha)-\log\lambda)]<0$ where it is positive) and the minimum are
+nonincreasing in $\lambda$. The factor $e^{-x}$ makes $e^{-x}B_\varphi$ strictly decreasing.
+\end{proof}
+
+\section{Proof A of Theorem~\ref{thm:24}: the line \texorpdfstring{$\Re s=1/2$}{Re s = 1/2}}\label{sec:A}
+This section follows the draft of 14 November 2026. Its compact certificate was re-implemented
+independently (Appendix~\ref{app:A}) and reproduces the draft's data exactly.
+
+\begin{lemma}\label{lem:line}
+Uniformly for $\alpha\in[2,4]$ and $x>0$, $\bigl|H_\alpha(x)-e^x/\alpha^2\bigr|<100\,e^{x/2}$.
+In particular $H_\alpha(x)>0$ for $x\ge16$.
+\end{lemma}
+\begin{proof}
+For $\alpha\in[2,4]$ the only pole of $K_\alpha$ in $\Re s>0$ is $s=1$: there
+$|\arg s|<\pi/2$, so $\alpha\arg s$ cannot be a nonzero multiple of $2\pi$. At $\alpha=4$ the
+further roots $\pm i$ lie to the left of both lines below. Moving the line of
+Lemma~\ref{lem:inversion} to $\Re s=1/2$ crosses only $s=1$, and the horizontal segments vanish by
+the decay of $K_\alpha$. Hence
+\[
+ H_\alpha(x)=\frac{e^x}{\alpha^2}+\frac1{2\pi}\int_{-\infty}^{\infty}
+ e^{(1/2+it)x}K_\alpha\bigl(\tfrac12+it\bigr)\,dt .
+\]
+Let $s=\frac12+it$, $r=|s|$, and take $t\ge0$ (conjugation handles $t<0$).
+\begin{enumerate}
+ \item If $0\le t\le\frac12$: $r\le2^{-1/2}$, $|s^\alpha-1|\ge1-r^\alpha\ge\frac12$,
+ $|\Log s|\le\log2+\frac\pi4<\frac32$ and $r^{\alpha-1}\le1$, so $|K_\alpha(s)|<6$.
+ \item If $\frac12\le t\le2$: $\frac\pi4\le\arg s\le\arctan4$, and
+ $\frac\pi2\le\alpha\arg s<\frac{11\pi}6$ because $\arctan\frac14\ge\frac4{17}>\frac\pi{24}$. If
+ $\cos(\alpha\arg s)\le0$ the distance from $s^\alpha$ to $1$ is at least $1$; otherwise
+ $\alpha\arg s\in(\frac{3\pi}2,\frac{11\pi}6)$ and $|\sin(\alpha\arg s)|\ge\frac12$. Thus
+ $|s^\alpha-1|\ge\frac12$. With $r\le\sqrt{17}/2$, $r^{\alpha-1}\le\max(r,r^3)<9$ and
+ $|\Log s|<3$ we get $|K_\alpha(s)|<108<144$.
+ \item If $t\ge2$: $r^\alpha\ge4$, $|s^\alpha-1|\ge\frac34r^\alpha$, $\log(r/t)\le\frac1{8t^2}<\frac14$
+ and $|\arg s|<\frac\pi2<2$, so $|K_\alpha(s)|<2t^{-3}(\log t+\frac94)$.
+\end{enumerate}
+Therefore
+$\int_\R|K_\alpha(\frac12+it)|\,dt<2\bigl(3+216+\frac{4\log2+11}{16}\bigr)<440$, and
+$|H_\alpha(x)-e^x/\alpha^2|<\frac{440}{2\pi}e^{x/2}<100e^{x/2}$. For $x\ge16$,
+$H_\alpha(x)>e^x/16-100e^{x/2}>0$ because $e^8>1600$.
+\end{proof}
+
+\begin{lemma}\label{lem:scalar}
+$\psi(3)>\log\frac52$ and $\psi(51)>\log16$. Consequently, for $\alpha\in[2,4]$, every term
+of~\eqref{eq:series} is positive when $0<x\le\frac52$, and every term with $n\ge25$ is positive
+when $x\le16$. In particular $H_\alpha(x)\ge H_{\alpha,24}(x)$ for $x\in[\frac52,16]$, where
+\[
+ H_{\alpha,24}(x)=\sum_{n=1}^{24}\frac{n\,x^{\alpha n}}{\Gamma(1+\alpha n)}
+ \bigl(\psi(1+\alpha n)-\log x\bigr).
+\]
+\end{lemma}
+\begin{proof}
+Arb gives $\psi(3)-\log\frac52\in[0.00649360\pm3.3\cdot10^{-9}]$ and
+$\psi(51)-\log16\in[1.14940\pm10^{-6}]$ (Appendix~\ref{app:A}); note $\psi(3)=\frac32-\gamma_E$.
+The rest follows from $1+\alpha n\ge3$, from $1+\alpha n\ge51$ for $n\ge25$, and from the
+monotonicity of $\psi$.
+\end{proof}
+
+\begin{lemma}[compact certificate]\label{lem:certA}
+For every $(\alpha,x)\in[2,4]\times[\frac52,16]$, $e^{-x}H_{\alpha,24}(x)>10^{-5}$.
+\end{lemma}
+\begin{proof}
+The program of Appendix~\ref{app:A} starts from the exact rational rectangle
+$[2,4]\times[\frac52,16]$. On each rectangle it encloses
+\[
+ \sum_{n=1}^{24}n\exp\bigl(nA\log X-\log\Gamma(1+nA)-X\bigr)\bigl(\psi(1+nA)-\log X\bigr)
+\]
+in 96-bit Arb ball arithmetic, with $A$ and $X$ balls containing the parameter intervals, and
+accepts the rectangle if the lower end of the ball exceeds the exact rational $10^{-5}$.
+Otherwise it bisects $\alpha$ when eight times its width exceeds the $x$-width, and $x$ otherwise.
+All endpoints are exact rationals, each split replaces a rectangle by two with the same union, and
+a depth guard can only cause failure. The run terminates with an empty stack after
+33{,}497 evaluations and accepts 16{,}749 rectangles of total exact area $27$, with maximum depth
+$16$ (so $33497=2\cdot16749-1$). The smallest certified lower bound is $1.1489\cdot10^{-5}$.
+\end{proof}
+
+The draft reported the same rectangle data from its own program, together with a replay at 160
+bits using direct powers and gamma values (34{,}246 subrectangles in 51{,}743 evaluations). That
+replay is not part of this bundle.
+
+\begin{proof}[Proof A of Theorem~\ref{thm:24}]
+For $0<x\le\frac52$ use Lemma~\ref{lem:scalar}. For $x\in[\frac52,16]$, Lemmas~\ref{lem:scalar}
+and~\ref{lem:certA} give $H_\alpha(x)\ge H_{\alpha,24}(x)>0$. For $x\ge16$ use
+Lemma~\ref{lem:line}. These three ranges cover $x>0$ uniformly in $\alpha\in[2,4]$.
+\end{proof}
+
+\begin{remark}
+The constant in Lemma~\ref{lem:line} is coarse. Numerically,
+$\int_\R|K_\alpha(\frac12+it)|\,dt\le1.73$ for $\alpha\in[2,4]$, with the maximum at $\alpha=2$.
+With this value and the $\alpha$-dependent threshold of Lemma~\ref{lem:small}, the ratio of the
+remainder bound to $e^x/\alpha^2$ at $x=e^{\psi(1+\alpha)}$ is at most $0.31$. A certified version of
+this one-dimensional integral bound would therefore remove the compact certificate from Proof~A.
+This observation is not used.
+\end{remark}
+
+\section{Proof B of Theorem~\ref{thm:24}: rotated rays}\label{sec:B}
+Use Lemma~\ref{lem:rays} with
+\[
+ \varphi=\tfrac{7\pi}{10}\ \text{on }[2,\tfrac52]\ (K_\varphi=0),\qquad
+ \varphi=\tfrac{9\pi}{10}\ \text{on }[\tfrac52,4]\ (K_\varphi=1).
+\]
+On the first range $u_1=2\pi/\alpha\ge\frac{4\pi}5>\varphi$, so no residue besides $s=1$ enters. On
+the second, $u_1\le\frac{4\pi}5<\varphi$, while $u_2=4\pi/\alpha\ge\pi$ is not a pole. In both
+ranges $\alpha\varphi\notin2\pi\Z$, and $m^2\ge\frac12$ because $\gamma=\alpha\varphi$ lies in
+$[1.4\pi,1.75\pi]$ and in $[2.25\pi,3.6\pi]$, respectively.
+
+\begin{lemma}[one-dimensional certificate]\label{lem:certB}
+Split $[2,\frac52]$ into $500$ and $[\frac52,4]$ into $1500$ equal intervals $[a,a']$. For each,
+let $X$ be a certified lower bound of $e^{\psi(1+a)}$. Then
+$\sup_{\alpha\in[a,a']}G_\varphi(\alpha,X)<1$. The largest certified upper bounds are $0.199825$
+(on $[2.499,2.5]$) and $0.182407$ (on $[3.999,4]$).
+\end{lemma}
+\begin{proof}
+The program of Appendix~\ref{app:B} evaluates $G_\varphi$ with $\alpha$ a ball containing $[a,a']$,
+in 128-bit Arb arithmetic, with a certified lower bound of $m^2$. On every interval it also
+asserts that $u_1$ lies on the stated side of $\varphi$ and that $X>1$.
+\end{proof}
+
+\begin{proof}[Proof B of Theorem~\ref{thm:24}]
+Let $\alpha\in[2,4]$ and $x>0$. If $x\le e^{\psi(1+\alpha)}$, use Lemma~\ref{lem:small}. Otherwise,
+for the interval $[a,a']\ni\alpha$ of Lemma~\ref{lem:certB}, monotonicity of $\psi$ gives
+$x\ge e^{\psi(1+\alpha)}\ge X>2.5$. Lemmas~\ref{lem:mono} and~\ref{lem:certB} give
+$G_\varphi(\alpha,x)\le G_\varphi(\alpha,X)<1$, and Lemma~\ref{lem:bounds} gives $H_\alpha(x)>0$.
+\end{proof}
+
+\begin{remark}
+Proofs~A and~B share only Lemmas~\ref{lem:small}--\ref{lem:inversion}; their contour shifts,
+bounds and certificates are independent. As a non-rigorous cross-check, formula~\eqref{eq:rays}
+agrees with the series~\eqref{eq:series} to relative error at most $9.6\cdot10^{-41}$ in $36$ cases
+($\alpha\in\{2.1,2.3,2.7,3,3.4,3.9\}$, $x\in\{0.7,2.5,6\}$, $\varphi\in\{0.75\pi,0.92\pi\}$,
+40-digit arithmetic).
+\end{remark}
+
+\section{The sharp range: proof of Theorem~\ref{thm:sharp}}\label{sec:sharp}
+By \cite[Theorem~A]{FS} and Theorem~\ref{thm:24}, it remains to treat $\alpha\in[4,8.8033]$ and to
+certify the witness of part~(ii).
+
+\subsection{Ray angles}
+For $\alpha>4$ the poles $w_{\pm1}$ move into the right half-plane, and further poles $w_{\pm2}$,
+$w_{\pm3}$, $w_{\pm4}$ appear on the principal sheet as $\alpha$ passes $4$, $6$ and $8$. We fix one
+ray angle on each of five ranges (Table~\ref{tab:rays}).
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{lcccc}
+\toprule
+$\alpha$-range & $\varphi/\pi$ & $K_\varphi$ & last pole inside, $u_{K_\varphi}/\pi$ &
+ first pole outside, $u_{K_\varphi+1}/\pi$\\
+\midrule
+$[4,5]$ & $0.65$ & 1 & $[0.40,0.50]$ & $[0.80,1.00]$\\
+$[5,6]$ & $0.90$ & 2 & $[0.667,0.80]$ & $[1.00,1.20]$\\
+$[6,7]$ & $0.76$ & 2 & $[0.571,0.667]$ & $[0.857,1.00]$\\
+$[7,8]$ & $0.66$ & 2 & $[0.50,0.571]$ & $[0.75,0.857]$\\
+$[8,8.8033]$ & $0.83$ & 3 & $[0.682,0.75]$ & $[0.909,1.00]$\\
+\bottomrule
+\end{tabular}
+\caption{Ray angles for $\alpha\in[4,8.8033]$; $u_k=2\pi k/\alpha$. A pole with $u_k\ge\pi$ is not
+on the principal sheet.}\label{tab:rays}
+\end{table}
+
+\begin{lemma}[geometry]\label{lem:geom}
+On each range of Table~\ref{tab:rays} and for every $\alpha$ in it: $\varphi\in(\pi/2,\pi)$,
+$u_k<\varphi$ for $1\le k\le K_\varphi$, $u_{K_\varphi+1}>\varphi$, and $m^2>\frac12$. In
+particular $\alpha\varphi\notin2\pi\Z$, and Lemma~\ref{lem:rays} applies with the stated
+$K_\varphi$.
+\end{lemma}
+\begin{proof}
+The inequalities for $u_k$ are checked in ball arithmetic on each whole range, and $m^2>\frac12$
+on $400$ equal sub-intervals of each range (Appendix~\ref{app:C}). If $\alpha\varphi=2\pi k$ then
+$\varphi=u_k$, which the inequalities exclude.
+\end{proof}
+
+\begin{lemma}[large $x$]\label{lem:tail16}
+For every $\alpha\in[4,8.8033]$, $G_\varphi(\alpha,16)\le0.5005$. Hence $H_\alpha(x)>0$ for
+$x\ge16$.
+\end{lemma}
+\begin{proof}
+The bound is certified on $960$ equal sub-intervals: $200$ on each of the first four ranges and
+$160$ on $[8,8.8033]$. The largest certified upper bound is $0.50050$. The second statement
+follows from Lemmas~\ref{lem:mono} and~\ref{lem:bounds}.
+\end{proof}
+
+\begin{lemma}[middle region]\label{lem:middle}
+$Q_\varphi(\alpha,x)>0$ for $\alpha\in[4,8.8033]$ and $e^{\psi(1+\alpha)}\le x\le16$.
+\end{lemma}
+\begin{proof}
+Each of the first four ranges is cut into $20$ equal slabs and $[8,8.8033]$ into $16$ ($96$
+slabs, of width at most $0.0503$). On a slab with left end
+$a$, the $x$-interval runs from a certified lower bound of $e^{\psi(1+a)}$ to $16$. Boxes are
+bisected adaptively. On a box the program bounds $T=e^{-x}S_\varphi$ from below by the larger of a
+direct ball evaluation and the mean-value form
+\[
+ T(\alpha_c,x_c)-\sup|\partial_\alpha T|\,r_\alpha-\sup|\partial_xT|\,r_x ,
+\]
+where $(\alpha_c,x_c)$ is the centre, $r_\alpha$ and $r_x$ are the half-widths, and the suprema are
+enclosures obtained by forward-mode differentiation in ball arithmetic. It also bounds
+$\alpha^2e^{-x}B_\varphi$ from above over the box. A box is accepted when the resulting lower bound
+of $Q_\varphi$ is positive. Otherwise the direction with the larger first-order term is bisected,
+and a depth guard of $40$ can only cause failure. The run accepts $385$ boxes in $674$
+evaluations, with maximum depth $18$. The smallest certified lower bound is $1.2101\cdot10^{-5}$, on
+$\alpha\in[8.803104,8.8033]$, $x\in[10.75224,10.75883]$, next to the critical point.
+\end{proof}
+
+\begin{lemma}[witness]\label{lem:witness}
+At $\alpha=8.8034$ and $x=10.7539$,
+$\partial_\alpha E_\alpha(x^\alpha)\in[0.003968997501\pm3.5\cdot10^{-13}]$; in particular it is
+positive.
+\end{lemma}
+\begin{proof}
+Use the series of Lemma~\ref{lem:small} directly: the first $40$ terms are enclosed in Arb. For
+$n\ge41$ the $n$-th term has modulus at most $n\bigl(\log(1+\alpha n)+|\log x|\bigr)(ex/(\alpha n))^{\alpha n}$,
+by $\Gamma(1+y)\ge(y/e)^y$ and $0<\psi(y)\le\log y$. The ratio of consecutive bounds is below
+$\frac12$, so the tail is at most twice its first term, which is below $6.9\cdot10^{-392}$. This
+lemma does not use Lemma~\ref{lem:rays}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:sharp}]
+(i) On $(0,2)$ use \cite[Theorem~A]{FS}, whose proof gives strict inequalities, and on $[2,4]$
+Theorem~\ref{thm:24}. Let
+$\alpha\in[4,8.8033]$ and $x>0$. If $x\le e^{\psi(1+\alpha)}$, Lemma~\ref{lem:small} applies. If
+$e^{\psi(1+\alpha)}\le x\le16$, Lemmas~\ref{lem:middle} and~\ref{lem:bounds} give
+$\alpha^2e^{-x}H_\alpha(x)\ge Q_\varphi(\alpha,x)>0$. If $x\ge16$, use Lemma~\ref{lem:tail16}.
+Hence $H_\alpha(x)>0$ on $[2,8.8033]\times(0,\infty)$, and continuity of $\alpha\mapsto U_\alpha(x)$
+at $\alpha=2$ gives strict decrease on $(0,8.8033]$.
+
+(ii) This is Lemma~\ref{lem:witness}. By continuity, $\partial_\alpha U_\alpha(10.7539)>0$ on a
+neighbourhood of $8.8034$, so $U_\alpha(10.7539)$ increases on an interval to the left of
+$8.8034$. Hence $\alpha^*<8.8034$; part~(i) gives $\alpha^*\ge8.8033$.
+\end{proof}
+
+\subsection{The critical point}\label{subsec:critical}
+The following values are numerical (40-digit arithmetic) and are not used in the proofs. Solving
+$\partial_\alpha U_\alpha(x)=0$, $\partial_x\partial_\alpha U_\alpha(x)=0$ near the witness gives
+\[
+ \alpha^*=8.80337769817047\ldots,\qquad x^*=10.7538996236407\ldots,
+\]
+with $\partial_x^2\partial_\alpha U=-287.96\ldots<0$ and $\partial_\alpha^2U=177.97\ldots>0$ at this
+point. The first loss of monotonicity is therefore a nondegenerate fold at a moderate value of $x$.
+In terms of~\eqref{eq:rays}, the residue sum from $w_{\pm1}$, $w_{\pm2}$ and $w_{\pm3}$ cancels the
+main term $e^x$ exactly there. The natural guess that $\alpha=4$ is the boundary (where the
+corrections stop being bounded in $x$) is thus not the true threshold. Sampling on a grid of step
+$0.01$ in $\alpha$ shows a point with $\partial_\alpha U_\alpha(x)>0$ for every $\alpha\in[8.81,30]$;
+this is not certified. The example $U_{25}(30)<U_{26}(30)$ of \cite{FS} lies in this region.
+
+\section{Proofs of the corollaries}\label{sec:cor}
+\begin{proof}[Proof of Corollary~\ref{cor:beta}]
+For $\beta=1$ this is Theorem~\ref{thm:sharp}(i). For $\beta>1$, the positive series and
+$B(1+\alpha n,\beta-1)=\Gamma(1+\alpha n)\Gamma(\beta-1)/\Gamma(\beta+\alpha n)$ give
+\[
+ E_{\alpha,\beta}(x^\alpha)=\frac{1}{\Gamma(\beta-1)}\int_0^1(1-t)^{\beta-2}E_\alpha\bigl((tx)^\alpha\bigr)\,dt .
+\]
+If $0<\alpha_1<\alpha_2\le8.8033$, the integrand for $\alpha_1$ is larger than that for $\alpha_2$
+at every $t\in(0,1)$ by Theorem~\ref{thm:sharp}(i), and integration preserves the strict
+inequality. This argument is taken from the draft, where it was used on $(0,4]$.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:bounds}]
+By Theorem~\ref{thm:sharp}(i), $U_2>U_\alpha>U_4$ for $2<\alpha<4$, and $U_4>U_\alpha>U_8$ for
+$4<\alpha<8$. For an integer $n\ge1$, summing the exponential series over residue classes modulo
+$n$ gives $U_n(x)=\frac1n\sum_{k=0}^{n-1}\exp(xe^{2\pi ik/n})$. For $n=2,4,8$ this yields $\cosh x$,
+$\frac12(\cosh x+\cos x)$ and
+$\frac14\bigl(\cosh x+\cos x+2\cos\frac{x}{\sqrt2}\cosh\frac{x}{\sqrt2}\bigr)$.
+\end{proof}
+
+\section{Verification record}\label{sec:record}
+Table~\ref{tab:record} lists what each program establishes. The programs print the numbers quoted
+in Sections~\ref{sec:A}--\ref{sec:sharp}. No random samples enter any certified step.
+
+\begin{table}[ht]\centering\small\setlength{\tabcolsep}{4pt}
+\begin{tabular}{P{2.4cm}P{2.6cm}P{1.8cm}P{5.6cm}r}
+\toprule
+Claim & Program & Arithmetic & Output (abridged) & Time\\
+\midrule
+Lemmas~\ref{lem:scalar}, \ref{lem:certA} & Appendix~\ref{app:A} & Arb, 96 bits &
+ $16{,}749$ rectangles, $33{,}497$ evaluations, depth $16$, area $27$, minimum $1.149\cdot10^{-5}$ & 2.6 s\\
+Lemma~\ref{lem:certB} & Appendix~\ref{app:B} & Arb, 128 bits &
+ maxima $0.199825$ and $0.182407$ & 0.1 s\\
+Lemmas~\ref{lem:geom}--\ref{lem:witness} & Appendix~\ref{app:C} & Arb, 128 bits &
+ $G(\cdot,16)\le0.50050$; $385$ boxes, $674$ evaluations, depth $18$, minimum $Q$ $1.2101\cdot10^{-5}$;
+ witness $0.003968997501\pm3.5\cdot10^{-13}$ & 0.1 s\\
+Cross-check of \eqref{eq:rays} (not part of the proof) & Appendices~\ref{app:B} and~\ref{app:C} with \texttt{-{}-numeric} & mpmath, 40 digits &
+ $36$ and $32$ cases, relative differences $\le9.6\cdot10^{-41}$ and $\le3.5\cdot10^{-37}$ & about 2 min\\
+\bottomrule
+\end{tabular}
+\caption{Verification record (Python~3.13, python-flint~0.9.0, mpmath~1.4.1).}\label{tab:record}
+\end{table}
+
+To reproduce, install \texttt{python-flint} and \texttt{mpmath}, save the three listings of
+Appendix~\ref{app:code} under the names shown, and run
+\begin{quote}\ttfamily\small
+python3 verify\_bromwich\_certificate.py\\
+python3 verify\_rays\_2\_4.py -{}-numeric\\
+python3 verify\_sharp\_range.py -{}-numeric
+\end{quote}
+The software version matters because the certificate relies on special-function enclosures;
+the versions used are recorded above.
+
+\begin{thebibliography}{9}
+\bibitem{FS}
+R.~A.~C. Ferreira and T.~Simon, \emph{Mittag--Leffler functions and convex ordering},
+arXiv:2512.04940v1, 4 December 2025.
+\href{https://arxiv.org/abs/2512.04940v1}{arxiv.org/abs/2512.04940v1}.
+Theorem~A and Remark~1(a).
+
+\bibitem{GKMR}
+R.~Gorenflo, A.~A. Kilbas, F.~Mainardi and S.~V. Rogosin,
+\emph{Mittag--Leffler Functions, Related Topics and Applications}, 2nd ed.,
+Springer Monographs in Mathematics, Springer, Berlin, 2020.
+
+\bibitem{Arb}
+F.~Johansson, \emph{Arb: efficient arbitrary-precision midpoint-radius interval arithmetic},
+IEEE Transactions on Computers 66 (2017), 1281--1292.
+\href{https://doi.org/10.1109/TC.2017.2690633}{doi:10.1109/TC.2017.2690633}.
+
+\bibitem{flint}
+The python-flint developers, \emph{python-flint 0.9.0}, Python interface to FLINT and Arb.
+\href{https://python-flint.readthedocs.io/}{python-flint.readthedocs.io}.
+\end{thebibliography}
+
+\appendix
+\section{Programs}\label{app:code}
+\subsection{Proof A: compact certificate (\texttt{verify\_bromwich\_certificate.py})}\label{app:A}
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""
+Independent re-implementation of the compact certificate of Proof A (Bromwich-line proof),
+Lemmas 3.2-3.3 of the paper:
+
+    for every (alpha, x) in [2,4] x [5/2,16]:   e^{-x} H_{alpha,24}(x) > 1/100000,
+    H_{alpha,24}(x) = sum_{n=1}^{24} n x^{alpha n} (psi(1 + alpha n) - log x) / Gamma(1 + alpha n),
+
+together with the two scalar inequalities psi(3) > log(5/2) and psi(51) > log(16).
+
+Arb ball arithmetic (python-flint), exact rational box endpoints, adaptive bisection
+(alpha is bisected when 8 * width(alpha) > width(x), otherwise x), depth guard = failure.
+Coverage invariant: every popped box is either accepted or replaced by two halves.
+"""
+import sys
+import time
+from flint import arb, fmpq, ctx
+
+ctx.prec = 96
+THRESHOLD = arb(fmpq(1, 100000))
+
+
+def ball(lo, hi):
+    return arb(lo).union(arb(hi))
+
+
+def lower_bound(alo, ahi, xlo, xhi):
+    A = ball(alo, ahi)
+    X = ball(xlo, xhi)
+    lx = X.log()
+    s = arb(0)
+    for n in range(1, 25):
+        nA = n * A
+        s += n * (nA * lx - (1 + nA).lgamma() - X).exp() * ((1 + nA).digamma() - lx)
+    return s.lower()
+
+
+def scalar_inequalities():
+    a = arb(3).digamma() - arb(fmpq(5, 2)).log()
+    b = arb(51).digamma() - arb(16).log()
+    return a, b, (a > 0) and (b > 0)
+
+
+def certify():
+    stack = [(fmpq(2), fmpq(4), fmpq(5, 2), fmpq(16), 0)]
+    accepted = evals = maxdepth = 0
+    area = fmpq(0)
+    minlb = None
+    while stack:
+        a0, a1, x0, x1, d = stack.pop()
+        if d > 60:
+            return None
+        evals += 1
+        lb = lower_bound(a0, a1, x0, x1)
+        if lb > THRESHOLD:
+            accepted += 1
+            maxdepth = max(maxdepth, d)
+            area += (a1 - a0) * (x1 - x0)
+            if minlb is None or lb < minlb:
+                minlb = lb
+            continue
+        if 8 * (a1 - a0) > (x1 - x0):
+            am = (a0 + a1) / 2
+            stack += [(a0, am, x0, x1, d + 1), (am, a1, x0, x1, d + 1)]
+        else:
+            xm = (x0 + x1) / 2
+            stack += [(a0, a1, x0, xm, d + 1), (a0, a1, xm, x1, d + 1)]
+    return accepted, evals, maxdepth, area, minlb
+
+
+if __name__ == '__main__':
+    t0 = time.time()
+    a, b, ok = scalar_inequalities()
+    print(f'psi(3) - log(5/2) = {a.str(6)},  psi(51) - log 16 = {b.str(6)}  -> {"OK" if ok else "FAIL"}')
+    res = certify()
+    if res is None or not ok:
+        print('CERTIFICATE FAILED')
+        sys.exit(1)
+    acc, ev, md, area, mlb = res
+    print(f'accepted rectangles = {acc}, evaluations = {ev}, max depth = {md}, '
+          f'exact covered area = {area} (target 27), full binary tree: {ev == 2 * acc - 1}')
+    print(f'smallest certified lower bound of e^-x H_24 = {mlb.str(5, radius=False)}  (> 1/100000)')
+    print(f'elapsed {time.time() - t0:.1f} s')
+\end{lstlisting}
+\subsection{Proof B: one-dimensional certificate (\texttt{verify\_rays\_2\_4.py})}\label{app:B}
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""
+Proof B of Theorem 1.1 (rotated rays), computer-assisted step = Lemma 4.1 of the paper:
+for every x > 0, alpha -> E_alpha(x^alpha) is strictly decreasing on [2, 4]
+(Ferreira-Simon, arXiv:2512.04940, Remark 1(a)).
+
+Usage
+    pip install python-flint mpmath
+    python3 verify_rays_2_4.py            # rigorous check (Lemma 4.1), ~0.1 s
+    python3 verify_rays_2_4.py --numeric  # also: ray formula (Lemma 2.5) vs series, ~5 s
+
+Notation (all logs/powers principal):  theta = 2*pi/alpha,  lambda = -x*cos(phi),  gamma = alpha*phi,
+    m2 = 1 if cos(gamma) <= 0 else sin(gamma)^2,
+    B  = [ Gamma(a) lambda^-a (phi + (psi(a) - ln lambda)_+) + 2 min(1/a^2, Gamma(a-1)/(e lambda^(a-1))) ] / (pi m2),
+    G  = 1[theta < phi] * 2 exp(-x(1 - cos theta)) (1 + theta x) + a^2 e^-x B.
+Lemma 2.6: D(a,x) := d/da E_a(x^a) <= (e^x / a^2) (G - 1).   Lemma 2.7: G is decreasing in x for x >= 1.
+Lemma 4.1 (this script): on each sub-interval [a, a'] of [2, 2.5] (phi = 0.7 pi) and [2.5, 4] (phi = 0.9 pi),
+    sup_{alpha in [a,a']} G(alpha, X) < 1,  where X is a rigorous lower bound of exp(psi(1 + a)).
+All quantities are enclosed with Arb ball arithmetic (python-flint), so rounding errors are accounted for.
+"""
+import sys
+from flint import arb, ctx
+
+ctx.prec = 128
+PI = arb.pi()
+E = arb(1).exp()
+
+
+def G_upper(a_lo, a_hi, phi_frac, residue_inside):
+    """Rigorous upper bound of sup_{alpha in [a_lo, a_hi]} G(alpha, X), X <= exp(psi(1 + a_lo))."""
+    a_lo, a_hi = arb(a_lo), arb(a_hi)
+    alpha = arb(((a_lo + a_hi) / 2).mid(), ((a_hi - a_lo) / 2).upper())  # ball containing [a_lo, a_hi]
+    assert alpha.contains(a_lo) and alpha.contains(a_hi)
+    phi = PI * arb(phi_frac)
+    X = (1 + a_lo).digamma().exp().lower()          # X <= e^{psi(1+alpha)} for every alpha in the interval
+    assert X > 1                                    # needed for Lemma 2.7
+    theta = 2 * PI / alpha
+
+    term_res = arb(0)
+    if residue_inside:                              # poles e^{+-i theta} lie inside |arg w| < phi
+        assert theta < phi
+        term_res = 2 * (-(X * (1 - theta.cos()))).exp() * (1 + theta * X)
+    else:                                           # poles lie outside: no residue term
+        assert theta > phi
+
+    gam = alpha * phi
+    if gam.cos().upper() <= 0:
+        m2 = arb(1)
+    else:
+        m2 = (gam.sin() ** 2).lower()
+        assert m2 > 0
+    lam = -X * phi.cos()
+    assert lam > 0
+    lnlam = lam.log()
+    p1 = (alpha.gamma().upper() * (-(alpha * lnlam)).exp().upper()
+          * (phi.upper() + max((alpha.digamma() - lnlam).upper(), arb(0))))
+    lb = min((1 / alpha ** 2).upper(), ((alpha - 1).gamma() / (E * lam ** (alpha - 1))).upper())
+    B = (p1 + 2 * lb) / (PI.lower() * m2)
+    term_ray = (alpha ** 2).upper() * (-X).exp().upper() * B
+    return (term_res.upper() + term_ray.upper()).upper()
+
+
+def rigorous_check():
+    ok = True
+    for lo, hi, n, phi_frac, inside, name in [(2, '2.5', 500, '0.7', False, 'Range I  [2,2.5], phi=0.7pi'),
+                                               ('2.5', 4, 1500, '0.9', True, 'Range II [2.5,4], phi=0.9pi')]:
+        worst, where = arb(0), None
+        lo_, hi_ = arb(lo), arb(hi)
+        for i in range(n):
+            a0 = (lo_ + (hi_ - lo_) * i / n).mid()
+            a1 = (lo_ + (hi_ - lo_) * (i + 1) / n).mid()
+            g = G_upper(a0, a1, phi_frac, inside)
+            if not g < 1:
+                ok = False
+                print('FAIL', a0, a1, g)
+            if g > worst:
+                worst, where = g, (a0, a1)
+        print(f'{name}: {n} sub-intervals, max upper bound of G = {worst.str(6, radius=False)} '
+              f'on [{where[0].str(6, radius=False)}, {where[1].str(6, radius=False)}]')
+    print('Lemma 4.1 VERIFIED: G < 1 on all of [2,4]' if ok else 'Lemma 4.1 FAILED')
+    return ok
+
+
+def numeric_contour_check():
+    """Non-rigorous sanity check of Lemma 2.5: ray formula vs. term-wise differentiated series."""
+    import mpmath as mp
+    mp.mp.dps = 40
+
+    def D_series(a, x):
+        a, x = mp.mpf(a), mp.mpf(x)
+        lx, s, n = mp.log(x), mp.mpf(0), 1
+        while True:
+            an = a * n
+            t = mp.exp(an * lx - mp.loggamma(1 + an))
+            s += n * (lx - mp.digamma(1 + an)) * t
+            if an > x + 60 and t < mp.mpf(10) ** -50:
+                return s
+            n += 1
+
+    def D_contour(a, x, phi):
+        a, x, phi = mp.mpf(a), mp.mpf(x), mp.mpf(phi)
+        th = 2 * mp.pi / a
+        res = mp.exp(x) / a ** 2
+        if th < phi:
+            w = mp.exp(1j * th)
+            res += 2 * mp.re(mp.exp(x * w) / a ** 2 * (1 + x * w * 1j * th))
+        e, eap = mp.exp(1j * phi), mp.exp(1j * a * phi)
+        f = lambda r: mp.exp(x * r * e) * r ** (a - 1) * eap * (mp.log(r) + 1j * phi) / (r ** a * eap - 1) ** 2
+        J = mp.im(mp.quad(f, [0, 0.5, 1, 2, 5, mp.inf])) / mp.pi
+        return -res - J
+
+    worst = mp.mpf(0)
+    for a in ['2.1', '2.3', '2.7', '3.0', '3.4', '3.9']:
+        for x in ['0.7', '2.5', '6']:
+            ds = D_series(a, x)
+            for phi in [0.75 * mp.pi, 0.92 * mp.pi]:
+                worst = max(worst, abs(ds - D_contour(a, x, phi)) / abs(ds))
+    print(f'Lemma 2.5 numeric check: 36 (alpha, x, phi) cases, max relative difference = {mp.nstr(worst, 3)}')
+
+
+if __name__ == '__main__':
+    ok = rigorous_check()
+    if '--numeric' in sys.argv:
+        numeric_contour_check()
+    sys.exit(0 if ok else 1)
+\end{lstlisting}
+\subsection{Sharp range (\texttt{verify\_sharp\_range.py})}\label{app:C}
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""
+Theorem 1.2 (sharp range), computer-assisted steps = Lemmas 5.1-5.4 of the paper.
+Rigorous (Arb ball arithmetic via python-flint) certificate that
+    D(alpha, x) := d/dalpha E_alpha(x^alpha) < 0   for all alpha in [4, 88033/10000], x > 0,
+plus a certified witness D(8.8034, 10.7539) > 0.  Hence 8.8033 <= alpha* < 8.8034.
+Usage:  python3 verify_sharp_range.py [--numeric]   (~0.1 s; --numeric adds a ~2 min series cross-check)
+
+Representation used for x >= e^{psi(1+alpha)} (Lemma 2.5; cross-checked against the series by --numeric):
+    D = -(e^x + S(alpha, x)) / alpha^2 - J_phi(alpha, x),
+    S = sum_{k=1}^{K} 2 e^{x cos u_k} [cos(x sin u_k) - u_k x sin(x sin u_k + u_k)],  u_k = 2 pi k / alpha,
+    |J_phi| <= B(alpha, x)  (Lemma 2.6; m^2 > 1/2 asserted on every range below = Lemma 5.1).
+Hence D < 0 whenever Q := 1 + e^{-x} S - alpha^2 e^{-x} B > 0.
+
+Regions:  x <= e^{psi(1+alpha)}: termwise sign (no computation).
+          e^{psi(1+alpha)} <= x <= 16: 2-D adaptive certificate of Q > 0 (Lemma 5.3).
+          x >= 16: analytic bound G = sum_k 2 e^{-x(1-cos u_k)}(1 + u_k x) + alpha^2 e^{-x} B < 1,
+                   decreasing in x for x >= 16 (Lemma 2.7); certified at x = 16 on sub-intervals (Lemma 5.2).
+Witness:  series partial sum + explicit tail bound, independent of Lemma 2.5 (Lemma 5.4).
+"""
+import sys
+import time
+from flint import arb, fmpq, ctx
+
+ctx.prec = 128
+PI = arb.pi()
+E = arb(1).exp()
+X_TOP = arb(16)
+
+# (alpha_lo, alpha_hi, phi / pi, K = number of residue pairs inside |arg w| < phi)
+RANGES = [
+    (fmpq(4), fmpq(5), fmpq(13, 20), 1),
+    (fmpq(5), fmpq(6), fmpq(9, 10), 2),
+    (fmpq(6), fmpq(7), fmpq(19, 25), 2),
+    (fmpq(7), fmpq(8), fmpq(33, 50), 2),
+    (fmpq(8), fmpq(88033, 10000), fmpq(83, 100), 3),
+]
+WITNESS = (fmpq(44017, 5000), fmpq(107539, 10000))   # (alpha, x) = (8.8034, 10.7539)
+
+
+def ball(lo, hi):
+    """Ball containing the closed interval [lo, hi] (fmpq or arb endpoints)."""
+    a = lo if isinstance(lo, arb) else arb(lo)
+    b = hi if isinstance(hi, arb) else arb(hi)
+    return a.union(b)
+
+
+class Dual:
+    """Value with enclosures of the partial derivatives d/dalpha and d/dx."""
+    __slots__ = ('v', 'a', 'x')
+
+    def __init__(self, v, a=None, x=None):
+        self.v = v
+        self.a = a if a is not None else arb(0)
+        self.x = x if x is not None else arb(0)
+
+    def __add__(self, o):
+        o = lift(o)
+        return Dual(self.v + o.v, self.a + o.a, self.x + o.x)
+
+    __radd__ = __add__
+
+    def __sub__(self, o):
+        o = lift(o)
+        return Dual(self.v - o.v, self.a - o.a, self.x - o.x)
+
+    def __rsub__(self, o):
+        return lift(o) - self
+
+    def __mul__(self, o):
+        o = lift(o)
+        return Dual(self.v * o.v, self.a * o.v + self.v * o.a, self.x * o.v + self.v * o.x)
+
+    __rmul__ = __mul__
+
+    def __neg__(self):
+        return Dual(-self.v, -self.a, -self.x)
+
+
+def lift(o):
+    if isinstance(o, Dual):
+        return o
+    return Dual(o if isinstance(o, arb) else arb(o))
+
+
+def dexp(d):
+    e = d.v.exp()
+    return Dual(e, e * d.a, e * d.x)
+
+
+def dsin(d):
+    c = d.v.cos()
+    return Dual(d.v.sin(), c * d.a, c * d.x)
+
+
+def dcos(d):
+    s = d.v.sin()
+    return Dual(d.v.cos(), -s * d.a, -s * d.x)
+
+
+def dinv(d):
+    i = 1 / d.v
+    return Dual(i, -(i * i) * d.a, -(i * i) * d.x)
+
+
+def T_dual(A, X, K):
+    """e^{-x} S(alpha, x) with derivative enclosures, for alpha in A, x in X."""
+    al = Dual(A, arb(1), arb(0))
+    xx = Dual(X, arb(0), arb(1))
+    th = dinv(al) * (2 * PI)
+    tot = Dual(arb(0))
+    for k in range(1, K + 1):
+        u = th * k
+        c = dcos(u)
+        s = dsin(u)
+        e = dexp(-(xx * (1 - c)))
+        p = xx * s
+        tot = tot + e * (dcos(p) - u * xx * dsin(p + u)) * 2
+    return tot
+
+
+def m2_lower(A, phi):
+    """Lower bound of m^2 = min_r |r^alpha e^{i alpha phi} - 1|^2: 1 if cos(alpha phi) <= 0, else sin^2(alpha phi)."""
+    g = A * phi
+    if g.cos().upper() <= 0:
+        return arb(1)
+    m2 = min(arb(1), (g.sin() ** 2).lower())
+    assert m2 > 0
+    return m2
+
+
+def B_upper(A, X, phi):
+    """Upper bound of alpha^2 e^{-x} B(alpha, x) over the box."""
+    m2 = m2_lower(A, phi)
+    lam = -X * phi.cos()
+    assert lam > 0
+    lnlam = lam.log()
+    p1 = A.gamma() * (-(A * lnlam)).exp() * (phi + max((A.digamma() - lnlam).upper(), arb(0)))
+    l1 = (1 / A ** 2).upper()
+    l2 = ((A - 1).gamma() / (E * (lam ** (A - 1)))).upper()
+    B = (p1 + 2 * min(l1, l2)) / (PI.lower() * m2)
+    return ((A ** 2) * (-X).exp() * B).upper()
+
+
+def check_range_geometry(lo, hi, phi_frac, K):
+    A = ball(lo, hi)
+    phi = PI * arb(phi_frac)
+    th = 2 * PI / A
+    assert phi > PI / 2 and phi < PI
+    for k in range(1, K + 1):
+        assert k * th < phi, ('pole should be inside', k)
+    assert (K + 1) * th > phi, 'next pole must be outside the sector'
+    n = 400
+    for i in range(n):
+        Ai = ball(lo + (hi - lo) * i / n, lo + (hi - lo) * (i + 1) / n)
+        assert m2_lower(Ai, phi) > arb(1) / 2, 'rays must stay well away from the poles'
+    return phi
+
+
+def Q_lower(alo, ahi, xlo, xhi, phi, K):
+    A = ball(alo, ahi)
+    X = ball(xlo, xhi)
+    tb = T_dual(A, X, K)
+    naive = tb.v.lower()
+    ac = arb((alo + ahi) / 2)
+    xc = (xlo + xhi) / 2
+    ra = arb((ahi - alo) / 2)
+    rx = (xhi - xlo) / 2
+    tc = T_dual(ac, xc, K).v
+    centered = (tc - tb.a.abs_upper() * ra - tb.x.abs_upper() * rx).lower()
+    t_low = max(naive, centered)
+    q = (1 + t_low - B_upper(A, X, phi)).lower()
+    return q, tb.a.abs_upper() * ra, tb.x.abs_upper() * rx
+
+
+def certify_middle():
+    stats = dict(accepted=0, evals=0, maxdepth=0, minq=arb(10), minq_box=None)
+    for lo, hi, phi_frac, K in RANGES:
+        phi = check_range_geometry(lo, hi, phi_frac, K)
+        n_slabs = int(((hi - lo) * 20).floor()) or 1           # slabs of width 1/20
+        for i in range(n_slabs):
+            alo = lo + (hi - lo) * i / n_slabs
+            ahi = lo + (hi - lo) * (i + 1) / n_slabs
+            xlo = (1 + arb(alo)).digamma().exp().lower()       # <= e^{psi(1+alpha)} on the slab
+            stack = [(alo, ahi, xlo, X_TOP, 0)]
+            while stack:
+                a0, a1, x0, x1, depth = stack.pop()
+                if depth > 40:
+                    print('FAIL: depth guard at', a0, a1, x0, x1)
+                    return None
+                stats['evals'] += 1
+                q, ea, ex = Q_lower(a0, a1, x0, x1, phi, K)
+                if q > 0:
+                    stats['accepted'] += 1
+                    stats['maxdepth'] = max(stats['maxdepth'], depth)
+                    if q < stats['minq']:
+                        stats['minq'] = q
+                        stats['minq_box'] = (a0, a1, x0, x1)
+                    continue
+                if ea > ex:
+                    am = (a0 + a1) / 2
+                    stack += [(a0, am, x0, x1, depth + 1), (am, a1, x0, x1, depth + 1)]
+                else:
+                    xm = (x0 + x1) / 2
+                    stack += [(a0, a1, x0, xm, depth + 1), (a0, a1, xm, x1, depth + 1)]
+    return stats
+
+
+def certify_tail():
+    worst = arb(0)
+    for lo, hi, phi_frac, K in RANGES:
+        phi = check_range_geometry(lo, hi, phi_frac, K)
+        n = int(((hi - lo) * 200).floor()) or 1
+        for i in range(n):
+            A = ball(lo + (hi - lo) * i / n, lo + (hi - lo) * (i + 1) / n)
+            th = 2 * PI / A
+            g = arb(0)
+            for k in range(1, K + 1):
+                u = k * th
+                g += 2 * (-(X_TOP * (1 - u.cos()))).exp() * (1 + u * X_TOP)
+            G = (g.upper() + B_upper(A, X_TOP, phi)).upper()
+            assert G < 1, ('tail bound fails', i)
+            worst = max(worst, G)
+    return worst
+
+
+def numeric_representation_check():
+    """Non-rigorous sanity check of the residue + ray representation against the series (mpmath, 40 digits)."""
+    import mpmath as mp
+    mp.mp.dps = 40
+
+    def D_series(a, x):
+        a, x = mp.mpf(a), mp.mpf(x)
+        lx, s, n = mp.log(x), mp.mpf(0), 1
+        while True:
+            an = a * n
+            t = mp.exp(an * lx - mp.loggamma(1 + an))
+            s += n * (lx - mp.digamma(1 + an)) * t
+            if an > x + 60 and t < mp.mpf(10) ** -50:
+                return s
+            n += 1
+
+    def D_rep(a, x, phi):
+        a, x, phi = mp.mpf(a), mp.mpf(x), mp.mpf(phi)
+        th, S, k = 2 * mp.pi / a, mp.mpf(0), 1
+        while k * th < phi:
+            u = k * th
+            S += 2 * mp.exp(x * mp.cos(u)) * (mp.cos(x * mp.sin(u)) - u * x * mp.sin(x * mp.sin(u) + u))
+            k += 1
+        e, eap = mp.exp(1j * phi), mp.exp(1j * a * phi)
+        f = lambda r: mp.exp(x * r * e) * r ** (a - 1) * eap * (mp.log(r) + 1j * phi) / (r ** a * eap - 1) ** 2
+        J = mp.im(mp.quad(f, [0, 0.5, 1, 2, 5, 20, mp.inf])) / mp.pi
+        return -(mp.exp(x) + S) / a ** 2 - J
+
+    worst = mp.mpf(0)
+    for a, pf in [(4.5, 0.65), (5.5, 0.9), (6.0, 0.76), (6.5, 0.76), (7.5, 0.66), (8.0, 0.83), (8.5, 0.83), (8.8, 0.83)]:
+        for x in [1.5, 6.0, 10.75, 14.0]:
+            ds = D_series(a, x)
+            worst = max(worst, abs(ds - D_rep(a, x, pf * mp.pi)) / abs(ds))
+    print(f'representation check (32 cases, alpha in [4.5, 8.8]): max relative difference = {mp.nstr(worst, 3)}')
+
+
+def witness(alpha, x, N=40):
+    """Rigorous enclosure of D(alpha, x) from the series: partial sum to N plus tail bound."""
+    A = arb(alpha)
+    X = arb(x)
+    lx = X.log()
+    s = arb(0)
+    for n in range(1, N + 1):
+        an = A * n
+        s += n * (lx - (1 + an).digamma()) * (an * lx - (1 + an).lgamma()).exp()
+    # tail: |term_n| <= n (log(1+an) + |log x|) (e x / (a n))^(a n)  (Stirling: Gamma(1+y) >= (y/e)^y)
+    bnd = []
+    for n in (N + 1, N + 2):
+        an = A * n
+        bnd.append(n * ((1 + an).log() + lx.abs_upper()) * ((E * X / an) ** an))
+    ratio = (bnd[1] / bnd[0]).upper()
+    assert ratio < arb(1) / 2
+    tail = (2 * bnd[0]).upper()
+    return s, tail
+
+
+if __name__ == '__main__':
+    # optional:  --numeric (representation vs series, ~2 min)  --amax p/q  (top of the certified alpha range)   --witness p/q,r/s  (alpha, x) of the failure witness
+    args = sys.argv[1:]
+    if '--amax' in args:
+        p, q = args[args.index('--amax') + 1].split('/')
+        lo, _, ph, K = RANGES[-1]
+        RANGES[-1] = (lo, fmpq(int(p), int(q)), ph, K)
+    if '--witness' in args:
+        wa, wx = args[args.index('--witness') + 1].split(',')
+        WITNESS = tuple(fmpq(*map(int, w.split('/'))) for w in (wa, wx))
+    t0 = time.time()
+    tail_worst = certify_tail()
+    print(f'certified alpha range: [4, {float(RANGES[-1][1])}]')
+    print(f'x >= 16: analytic bound G < 1 on the whole range; max certified G(alpha,16) = {tail_worst.str(5, radius=False)}')
+    st = certify_middle()
+    if st is None:
+        print('MIDDLE REGION FAILED')
+        sys.exit(1)
+    b = st['minq_box']
+    print(f"middle region e^psi(1+a) <= x <= 16: accepted boxes = {st['accepted']}, evaluations = {st['evals']}, "
+          f"max depth = {st['maxdepth']}")
+    print(f"   smallest certified lower bound of Q = {st['minq'].str(5, radius=False)} on alpha in "
+          f"[{float(b[0]):.6f}, {float(b[1]):.6f}], x in [{float(b[2].mid()):.5f}, {float(b[3].mid()):.5f}]")
+    s, tail = witness(*WITNESS)
+    print(f'witness D({float(WITNESS[0])}, {float(WITNESS[1])}): partial sum = {s.str(10)}, tail <= {tail.str(3, radius=False)}; '
+          f'certified positive: {(s - tail) > 0}')
+    print(f'elapsed {time.time() - t0:.1f} s')
+    if '--numeric' in args:
+        numeric_representation_check()
+\end{lstlisting}
+
+
+\end{document}

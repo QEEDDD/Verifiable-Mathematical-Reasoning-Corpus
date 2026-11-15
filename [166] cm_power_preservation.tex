@@ -1,0 +1,649 @@
+\documentclass[11pt]{article}
+\ifdefined\pdfmapfile\pdfmapfile{+lm.map}\pdfmapfile{+cm.map}\pdfmapfile{+symbols.map}\fi
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,hyperref,listings,xcolor}
+\hypersetup{colorlinks=true,urlcolor=blue,citecolor=blue,linkcolor=blue}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\CM}{\mathcal{CM}}
+\newcommand{\R}{\mathbb R}
+\newcommand{\fall}[2]{#1^{\underline{#2}}}
+\lstset{basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,
+  breaklines=true,showstringspaces=false,frame=single,language=Python}
+\title{Real powers of completely monotone functions\protect\\have sharp derivative threshold twelve}
+\author{Research note}
+\date{14 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For every completely monotone function $f$ on $(0,\infty)$ and every real
+$\alpha\ge1$, we prove that $f^\alpha$ satisfies the alternating derivative
+inequalities through order twelve. The bound is sharp, as shown by an exact
+order-thirteen counterexample. The proof reduces derivatives to Stieltjes
+moment polynomials and supplies a finite certificate of nonnegativity using
+rational Bernstein coefficients. All 2048 composition monomials are covered
+by 64 groups and 145 terminal regions, with maximum subdivision depth twelve.
+The complete exact verifier is included. This determines the boundary between
+the order-seven preservation and order-thirteen obstruction documented by
+van Haeringen in 1997. The argument is computer-assisted and is not a
+proof-assistant formalization; external review is pending.
+\end{abstract}
+
+\section{Statement and historical scope}
+
+A function $f\in C^\infty(0,\infty)$ is completely monotone if
+$(-1)^jf^{(j)}(t)\ge0$ for every integer $j\ge0$ and every $t>0$.
+Write $\CM^N$ for the analogous class with only $0\le j\le N$ required.
+
+\begin{theorem}\label{thm:main}
+If $f$ is completely monotone on $(0,\infty)$ and $\alpha\ge1$, then
+\[
+(-1)^j\frac{d^j}{dt^j}f(t)^\alpha\ge0
+\qquad(t>0,\quad 0\le j\le12).
+\]
+\end{theorem}
+
+Van Haeringen's 1997 paper \cite{vH} states in its published abstract that the
+universal implication $f\in\CM\Rightarrow f^\alpha\in\CM^N$ for every
+$\alpha>1$ holds for $N\le7$ and fails for $N\ge13$.
+The order-seven inclusion is also explicitly quoted in Lemma~5.3(2) of the
+2026 preprint \cite{SW}. These are primary sources for the older question and
+its continued use. They are not an exhaustive priority search, and we do not
+attribute to van Haeringen an additional named conjecture not verified in the
+original source. The present result closes orders eight through twelve in
+that stated range and proves that twelve is the sharp universal threshold.
+It concerns powers of functions completely monotone to every order; it does
+not assert the corresponding preservation theorem for an input known only
+to lie in $\CM^{12}$.
+
+\section{Reduction to a polynomial in Stieltjes moments}
+
+If $f\equiv0$, the theorem is immediate. Otherwise Bernstein's representation
+theorem \cite[Theorem~1.4]{Bernstein} gives a positive measure $\mu$ on $[0,\infty)$ such that
+\[
+f(t)=\int_0^\infty e^{-tx}\,d\mu(x)>0.
+\]
+The measure $\mu$ need not have finite mass. Fix $t_0>0$ and form the probability
+measure
+\[
+d\nu(x)=\frac{e^{-t_0x}}{f(t_0)}\,d\mu(x),\qquad
+m_j=\int x^j\,d\nu(x)=\frac{(-1)^jf^{(j)}(t_0)}{f(t_0)}.
+\]
+All its moments are finite: for each $j$ there is a finite constant $C$ such
+that $x^je^{-t_0x}\le C e^{-t_0x/2}$, whose integral is $Cf(t_0/2)$.
+
+Let $B_{n,k}$ denote the exponential partial Bell polynomials, specified by
+\begin{equation}\label{eq:Bell}
+B_{0,0}=1,\qquad
+B_{n,k}=\sum_{i=1}^{n-k+1}\binom{n-1}{i-1}m_iB_{n-i,k-1},
+\end{equation}
+with the other boundary values $B_{n,0}=B_{0,k}=0$ for positive indices.
+The finite chain rule yields
+\begin{equation}\label{eq:derivative}
+\frac{(-1)^n(f^\alpha)^{(n)}(t_0)}{f(t_0)^\alpha}
+=D_n(\alpha;m):=\sum_{k=1}^n\fall{\alpha}{k}B_{n,k}(m_1,m_2,\ldots),
+\end{equation}
+where $\fall{\alpha}{k}=\alpha(\alpha-1)\cdots(\alpha-k+1)$.
+Every monomial in $B_{n,k}$ has weighted degree $n$ in the moments, which
+accounts for the common sign $(-1)^n$. Formula~\eqref{eq:derivative} holds for
+noninteger $\alpha$ because the scalar function $x^\alpha$ is smooth at the
+positive value $f(t_0)$. No infinite Taylor-series argument is needed.
+
+The following classical parametrization is the point at which all moment
+inequalities are incorporated, rather than merely a log-convexity condition.
+
+\begin{lemma}[Stieltjes parametrization]\label{lem:Stieltjes}
+For the moments of any probability measure on $[0,\infty)$ having all moments
+finite, there are $q_1,q_2,\ldots\ge0$ such that, as formal power series,
+\[
+\sum_{j\ge0}m_jz^j=
+\cfrac{1}{1-\cfrac{q_1z}{1-\cfrac{q_2z}{1-\cdots}}}.
+\]
+In particular, for $n\ge1$,
+\begin{equation}\label{eq:compositions}
+m_n=\sum_{\substack{e_1+\cdots+e_h=n\\e_i\ge1}}
+\left[\prod_{i=1}^{h-1}\binom{e_i+e_{i+1}-1}{e_{i+1}}\right]
+q_1^{e_1}\cdots q_h^{e_h}.
+\end{equation}
+\end{lemma}
+
+The moment/continued-fraction equivalence is Theorem~1.1(c)--(d) of
+P\'etr\'eolle--Sokal--Zhu \cite{PSZ}, which attributes it to Stieltjes (1894).
+It includes nonnegative parameters and degenerate measures. It is explicitly
+a formal-power-series statement; convergence of $\sum m_jz^j$ is unnecessary.
+The weighted Dyck-path interpretation is due to Flajolet \cite{Flajolet}.
+For completeness, a Dyck path corresponds to an ordered rooted tree. If $e_i$
+is the number of vertices at level $i$, the $e_{i+1}$ ordered children can be
+distributed among $e_i$ ordered parents in
+$\binom{e_i+e_{i+1}-1}{e_{i+1}}$ ways. Multiplying these independent counts
+proves~\eqref{eq:compositions}.
+
+There is also a direct continuity safeguard for degeneracies. Replace $\nu$ by
+$(1-\varepsilon)\nu+\varepsilon\operatorname{Exp}(1)$. All ordinary and shifted
+Hankel forms of this measure are strictly positive, because the exponential
+component integrates every nonzero polynomial square, with or without an
+extra factor $x$, to a positive number. Its moments converge to those of $\nu$.
+Any polynomial inequality proved for the strict case therefore passes to
+$\nu$. This covers point masses, an atom at zero, and vanishing Hankel
+determinants without division by a determinant equal to zero.
+
+\section{The exact order-twelve certificate}
+
+Put $\alpha=1+\beta$ and initially restrict $0\le\beta\le1$. Substitute
+\eqref{eq:compositions} into
+\[
+P_n(\beta;q)=\frac{D_n(1+\beta;m(q))}{1+\beta}.
+\]
+This is a polynomial with integer coefficients, homogeneous of degree $n$ in
+$q$. Its support consists of the $2^{n-1}$ compositions of $n$, padded by
+zeros. The exact verifier checks this support count at $n=12$. Equations
+\eqref{eq:Bell}--\eqref{eq:compositions} specify every coefficient by finite
+integer arithmetic. An equivalent first-return recurrence, used by the
+verifier, is
+\begin{equation}\label{eq:firstreturn}
+M_{h,0}=1,\qquad
+M_{h,n}=q_{h+1}\sum_{j=0}^{n-1}M_{h,j}M_{h+1,n-1-j},\qquad m_n=M_{0,n}.
+\end{equation}
+Here $M_{h,n}$ counts weighted Dyck paths based at height $h$. Both
+constructions have also been independently compared coefficient by coefficient
+for all 2048 monomials of $D_{12}$.
+
+Group monomials of $P_{12}$ by their tail $\tau=(e_7,\ldots,e_{12})$.
+There are 64 groups. We give separate certificates for the 63 nonzero tails
+and the one zero tail.
+
+\subsection{The 63 nonzero-tail groups: cubes}
+
+For each fixed nonzero tail, factor out its monomial
+$q_7^{e_7}\cdots q_{12}^{e_{12}}$ and the componentwise minimum powers
+$q_1^{a_1}\cdots q_6^{a_6}$ appearing in that group. The remaining polynomial
+has the form
+\[
+H_\tau(\beta;q_1,\ldots,q_6)=
+\sum_{|u|=d}c_u(\beta)q_1^{u_1}\cdots q_6^{u_6}.
+\]
+All removed factors are nonnegative. Homogeneity reduces nonnegativity to
+$q_1+\cdots+q_6=1$; the zero-sum case follows by continuity (or is constant
+when $d=0$). Parametrize this simplex surjectively by
+\begin{equation}\label{eq:stick}
+q_j=x_j\prod_{h<j}(1-x_h)\quad(1\le j\le5),\qquad
+q_6=\prod_{h=1}^5(1-x_h),\qquad 0\le x_j\le1.
+\end{equation}
+This covers all boundary faces as well as the interior.
+
+Write $c_u(\beta)=\sum_\ell c_{u,\ell}\beta^\ell$ and
+$K=\max_u\deg c_u$. Use the tensor Bernstein basis of degrees
+$(K,d,d,d,d,d)$ in $(\beta,x_1,\ldots,x_5)$. Put
+$s_j=\sum_{h<j}u_h$. For $0\le i\le K$ and $0\le v_j\le s_j$, the monomial
+$c_u(\beta)q^u$ contributes at index $(i,u_1+v_1,\ldots,u_5+v_5)$ the exact
+coefficient
+\begin{equation}\label{eq:cubeBernstein}
+\left[\sum_{\ell=0}^{\min(i,\deg c_u)}
+ c_{u,\ell}\frac{\binom i\ell}{\binom K\ell}\right]
+\prod_{j=1}^5\frac{\binom{s_j}{v_j}}{\binom d{u_j+v_j}}.
+\end{equation}
+Contributions sharing an index are added. Indeed, after \eqref{eq:stick},
+$q^u$ becomes
+\[
+\prod_{j=1}^5 x_j^{u_j}(1-x_j)^{d-s_j-u_j}.
+\]
+Multiplication in coordinate $j$ by
+$(x_j+(1-x_j))^{s_j}=1$ elevates its degree to $d$ and proves
+\eqref{eq:cubeBernstein}. The identity
+$\beta^\ell=\sum_{i=\ell}^K\binom i\ell\binom K\ell^{-1}
+\binom Ki\beta^i(1-\beta)^{K-i}$ gives the first factor.
+
+Nonnegative Bernstein coefficients imply nonnegativity on the entire cube,
+since its basis functions are nonnegative. For an unresolved cube, bisect one
+coordinate using midpoint de Casteljau subdivision: from a control line
+$b_0,\ldots,b_d$ form
+\begin{equation}\label{eq:decasteljau}
+b_i^{(0)}=b_i,\qquad
+b_i^{(r+1)}=\tfrac12(b_i^{(r)}+b_{i+1}^{(r)}).
+\end{equation}
+The left child coefficients are $b_0^{(r)}$ for $r=0,\ldots,d$; the right
+child coefficient of index $d-r$ is $b_{d-r}^{(r)}$. These are exact
+representations on the two half-intervals. Applying this to all parallel
+control lines gives the two child tensors. The verifier selects a coordinate
+with greatest adjacent-coefficient variation, with ties broken by coordinate
+order. All 63 groups terminate in 69 accepted boxes, with depth at most four.
+
+\subsection{The zero-tail group: interval times simplex}
+
+Let $H_0=P_{12}(\beta;q_1,\ldots,q_6,0,\ldots,0)$. Its pure $q_1^{12}$
+coefficient is $(1+\beta)^{11}$: setting all later $q$ to zero gives
+$m_n=q_1^n$ and $D_{12}(\alpha)=\alpha^{12}q_1^{12}$. Every other composition
+monomial contains $q_1q_2$. Thus
+\begin{equation}\label{eq:special}
+H_0=(1+\beta)^{11}q_1^{12}+q_1q_2R(\beta;q_1,\ldots,q_6),
+\end{equation}
+where $R$ is homogeneous of degree ten in $q$ and of degree at most ten in
+$\beta$. The verifier checks the nonnegative pure coefficient and the common
+factor. It remains to certify $R\ge0$ on
+$[0,1]\times\{q\ge0:\sum q_i=1\}$.
+
+Write $R=\sum_{|u|=10,\ell}c_{u,\ell}\beta^\ell q^u$. In the product of the
+degree-ten interval basis and the degree-ten simplex basis
+\[
+\binom{10}{i}\beta^i(1-\beta)^{10-i}
+\binom{10}{u_1,\ldots,u_6}q^u,
+\]
+the initial coefficient at $(i,u)$ is
+\begin{equation}\label{eq:simplexBernstein}
+b_{i,u}=\frac{1}{\binom{10}{u_1,\ldots,u_6}}
+\sum_{\ell=0}^{\min(i,10)}
+ c_{u,\ell}\frac{\binom i\ell}{\binom{10}\ell}.
+\end{equation}
+Absent monomials have coefficient zero. There are
+$11\binom{15}{5}=33033$ coefficients, in an $11$ by $3003$ array.
+
+A subdivision either bisects the $\beta$ interval, using
+\eqref{eq:decasteljau}, or bisects an edge of the simplex. To verify the latter
+operation explicitly, choose vertices $a,b$, and fix the other four exponents
+$\mu$. The remaining indices have $u_a+u_b=d'=10-|\mu|$. On this line, the
+simplex basis is a fixed common factor times the ordinary degree-$d'$
+Bernstein basis in $q_a/(q_a+q_b)$, because
+\[
+\binom{10}{u}q^u
+=\frac{10!}{d'!\prod\mu_h!}
+\left(\prod q_h^{\mu_h}\right)(q_a+q_b)^{d'}
+\binom{d'}{u_a}
+\left(\frac{q_a}{q_a+q_b}\right)^{u_a}
+\left(\frac{q_b}{q_a+q_b}\right)^{u_b}.
+\]
+This identity is polynomial after cancellation and extends to $q_a+q_b=0$.
+Applying \eqref{eq:decasteljau} to every such control line gives the Bernstein
+arrays on the two simplexes obtained by replacing vertex $a$ or $b$ with
+their midpoint. Those two simplexes cover the parent simplex; their
+intersection is the dividing face. More explicitly, if $\lambda$ denotes
+child barycentric coordinates, the child replacing vertex $a$ has
+$q_a=\lambda_a/2$, $q_b=\lambda_b+\lambda_a/2$ and
+$q_h=\lambda_h$ otherwise; it covers $q_a\le q_b$. The other child has
+$q_a=\lambda_a+\lambda_b/2$, $q_b=\lambda_b/2$ and covers $q_b\le q_a$.
+These maps prove complete coverage, including the dividing face. This remains
+valid after any previous affine subdivision. Each line uses its own degree $d'$, rather than the
+ambient degree ten.
+
+The deterministic subdivision choice is included completely in the verifier:
+it examines the most negative coefficient and scores the interval line and
+the fifteen edge lines through it by the minimum new control coefficient,
+then by variation. The choice affects efficiency only. A region is accepted
+solely when all exact Bernstein coefficients are nonnegative. The critical
+calculation terminates in 76 accepted regions, with depth at most twelve.
+
+\begin{proposition}[Finite polynomial certificate]\label{prop:certificate}
+For $q_1,\ldots,q_{12}\ge0$ and $0\le\beta\le1$, one has
+$D_{12}(1+\beta;m(q))\ge0$.
+\end{proposition}
+\begin{proof}
+The complete verifier in Appendix~\ref{app:code} reconstructs the polynomial
+using \eqref{eq:firstreturn} and \eqref{eq:Bell}. It reads no stored coefficient
+table. It converts coefficients by \eqref{eq:cubeBernstein} and
+\eqref{eq:simplexBernstein}, and subdivides by \eqref{eq:decasteljau}.
+Every arithmetic coefficient and comparison uses integers or Python's exact
+rational type \texttt{Fraction}; NumPy supplies object-array containers only.
+No floating-point tolerance is used. The verifier raises an exception for
+any unresolved or negative region. Its complete results are
+\[
+\begin{array}{l|rrr}
+\text{part}&\text{groups}&\text{accepted regions}&\text{maximum depth}\\\hline
+\text{nonzero tails (cubes)}&63&69&4\\
+\text{zero tail (interval--simplex)}&1&76&12\\\hline
+\text{total}&64&145&12
+\end{array}
+\]
+Every subdivision covers the parent, every terminal region has nonnegative
+coefficients, and every group is checked. The pure term in
+\eqref{eq:special} and all removed monomial factors are nonnegative. Hence
+$P_{12}\ge0$, and multiplication by $1+\beta>0$ proves the proposition.
+\end{proof}
+
+\section{Lower derivatives and all real exponents}
+
+\begin{lemma}\label{lem:descending}
+Let $g\in C^N(0,\infty)$ be bounded on every ray $[a,\infty)$ and satisfy
+$(-1)^Ng^{(N)}\ge0$. Then $(-1)^jg^{(j)}\ge0$ for $1\le j\le N$.
+\end{lemma}
+\begin{proof}
+For $N=1$ the conclusion is already the hypothesis. Otherwise descend through
+$j=N-1,\ldots,1$. If $(-1)^{j+1}g^{(j+1)}\ge0$, then
+$h=(-1)^jg^{(j)}$ is nonincreasing. Were $h(t_1)<0$ at any point, one would
+have $h(t)\le h(t_1)<0$ for $t\ge t_1$. Repeated integration $j$ times
+would force $g$ to be unbounded on that ray: the leading term has magnitude
+at least a positive constant times $(t-t_1)^j$, whereas the integration
+constants have degree at most $j-1$. This is a contradiction. Therefore
+$h\ge0$, permitting the next step. The sign of $g$ itself is separate.
+\end{proof}
+
+For $1\le\alpha\le2$, Proposition~\ref{prop:certificate},
+Lemma~\ref{lem:Stieltjes}, and~\eqref{eq:derivative} prove
+$(f^\alpha)^{(12)}\ge0$ at every positive time. Since $f$ is
+nonnegative and nonincreasing, $f^\alpha$ is bounded on every such ray.
+Lemma~\ref{lem:descending} gives every lower derivative sign, and order zero
+is its nonnegativity.
+
+For arbitrary $\alpha\ge1$, write $\alpha=k+\gamma$, where $k$ is a
+nonnegative integer and $1\le\gamma\le2$. The function $f^k$ is completely
+monotone, by repeated application of Leibniz's rule (with $f^0=1$), while
+$f^\gamma\in\CM^{12}$ by the preceding paragraph. The product of two
+$\CM^{12}$ functions lies in $\CM^{12}$, since every term of its signed
+Leibniz formula is nonnegative. Thus $f^\alpha=f^kf^\gamma\in\CM^{12}$,
+proving Theorem~\ref{thm:main}.
+
+\section{An exact obstruction at order thirteen}
+
+Take $f(t)=1+e^{-t}$, $\alpha=6/5$, and $t_0=\log(7/3)>0$.
+This $f$ is completely monotone. At $t_0$ its normalized moments satisfy
+$m_0=1$ and $m_j=3/10$ for every $j\ge1$. Therefore
+\[
+\frac{(-1)^{13}(f^{6/5})^{(13)}(t_0)}{f(t_0)^{6/5}}
+=\sum_{k=1}^{13}\left\{\!\begin{matrix}13\\k\end{matrix}\!\right\}
+\fall{(6/5)}{k}\left(\frac3{10}\right)^k
+=-\frac{6524240334632293437}{2980232238769531250}<0.
+\]
+Here the braces denote Stirling numbers of the second kind. The equality is
+an exact rational calculation, reproduced in Appendix~\ref{app:13}.
+Consequently, if $N_*$ is the largest integer such that
+$f^\alpha\in\CM^{N_*}$ for every $f\in\CM$ and every $\alpha>1$, this note proves
+\[
+N_*=12.
+\]
+The finite certificate and analytic reduction together prove this sharp
+threshold. The code is an exact computational proof, not a proof-assistant
+formalization. Independent external review and a fuller priority review remain
+appropriate before publication.
+
+\section{A consequence for discrete Hardy--Rellich--Birman weights}
+
+With the operators and weights of \v Stampach--Waclawek \cite{SW},
+Theorem~5.1(ii) extends from $3\le\ell\le7$ to
+\[
+3\le\ell\le12,\qquad p>2.
+\]
+Precisely, let $u$ and $\rho$ be the sequence and discrete $p$-polyharmonic
+weight defined in their equations (2.16)--(2.17). Then $\rho$ is a discrete
+$p$-Hardy--Rellich--Birman weight, is critical, is nonattainable on
+$H_0^\ell$, and is optimal near infinity, with these terms understood as in
+\cite{SW}. This is a corollary of their theorem and its proof, rather than
+an assertion of any stronger optimality property.
+
+Indeed, in Proposition~5.4, the proof labelled ``Ad (ii)'', the restriction
+$\ell\le7$ comes from the inclusion that the $(p-1)$st power of a completely
+monotone function belongs to $\CM^\ell$, quoted in their Lemma~5.3(2).
+Here $p-1>1$, so Theorem~\ref{thm:main} supplies that inclusion for every
+$\ell\le12$. The remaining arguments in their Proposition~5.4 and
+Theorem~5.1(ii) apply with this substitution. No claim is made here for the
+other parameter cases of their theorem.
+
+\begin{thebibliography}{9}
+\bibitem{vH} H. van Haeringen, \emph{Inequalities for real powers of completely
+monotonic functions}, Journal of Mathematical Analysis and Applications
+\textbf{210} (1997), 102--113.
+\url{https://doi.org/10.1006/jmaa.1997.5376}.
+\bibitem{SW} F. \v Stampach and J. Waclawek,
+\emph{Optimal discrete $p$-Hardy--Rellich--Birman inequalities},
+arXiv:2605.25238 (2026), Lemma~5.3.
+\url{https://arxiv.org/html/2605.25238v1}.
+\bibitem{PSZ} M. P\'etr\'eolle, A. D. Sokal, and B.-X. Zhu,
+\emph{Lattice paths and branched continued fractions: An infinite sequence of
+generalizations of the Stieltjes--Rogers and Thron--Rogers polynomials, with
+coefficientwise Hankel-total positivity}, arXiv:1807.03271v2 (2020),
+Theorem~1.1.
+\url{https://arxiv.org/abs/1807.03271}.
+\bibitem{Flajolet} P. Flajolet, \emph{Combinatorial aspects of continued
+fractions}, Discrete Mathematics \textbf{32} (1980), 125--161.
+\url{https://algo.inria.fr/flajolet/Publications/Flajolet80b.pdf}.
+\bibitem{Bernstein} R. L. Schilling, R. Song, and Z. Vondra\v cek,
+\emph{Bernstein Functions}, second edition, De Gruyter, 2012,
+Theorem~1.4 (Bernstein's representation theorem).
+\end{thebibliography}
+
+\appendix
+\section{Complete exact order-twelve verifier}\label{app:code}
+This standalone Python 3 program requires NumPy, used solely for object arrays.
+All proof arithmetic is integer or \texttt{Fraction} arithmetic. It reconstructs
+all coefficients, uses no numerical acceptance tolerance, and rejects an
+unresolved region. Copy the listing to \texttt{verify\_cm12.py} and run
+\texttt{python verify\_cm12.py}; the output ends with 64 groups, 145 leaves,
+and maximum depth twelve. Timing measurements do not enter the proof.
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact certificate: positive real powers preserve CM derivatives through 12.
+
+Every coefficient and subdivision operation is a Fraction or integer. NumPy is
+used only as an object-array container; no floating-point operations or acceptance
+tolerances occur. The accompanying proof gives the analytic moment reduction,
+Bernstein geometry, lower-derivative implication, and extension in alpha.
+"""
+import math
+from itertools import combinations
+from fractions import Fraction
+from fractions import Fraction as F
+from itertools import product
+from collections import defaultdict
+from functools import lru_cache
+from math import comb
+import numpy as np
+import sys,time
+
+NMAX=12
+zero=(0,)*NMAX
+def mul(a,b):
+ c=defaultdict(int)
+ for p,v in a.items():
+  for q,w in b.items():c[tuple(x+y for x,y in zip(p,q))]+=v*w
+ return dict(c)
+@lru_cache(None)
+def moment(h,n):
+ if n==0:return {zero:1}
+ ans=defaultdict(int)
+ for j in range(n):
+  for p,v in mul(moment(h,j),moment(h+1,n-1-j)).items():
+   q=list(p);q[h]+=1;ans[tuple(q)]+=v
+ return dict(ans)
+@lru_cache(None)
+def bell(n,k):
+ if n==k==0:return {zero:1}
+ if n==0 or k==0:return {}
+ ans=defaultdict(int)
+ for j in range(1,n-k+2):
+  for p,v in mul(moment(0,j),bell(n-j,k-1)).items():ans[p]+=comb(n-1,j-1)*v
+ return dict(ans)
+def pmul(a,b):
+ c=[0]*(len(a)+len(b)-1)
+ for i,x in enumerate(a):
+  for j,y in enumerate(b):c[i+j]+=x*y
+ return c
+fall=[[1]]
+for k in range(1,NMAX+1):fall.append(pmul(fall[-1],[2-k,1]))
+def derivative(n):
+ ans=defaultdict(lambda:[0]*(n+1))
+ for k in range(1,n+1):
+  for p,v in bell(n,k).items():
+   for j,w in enumerate(fall[k]):ans[p][j]+=v*w
+ return ans
+def div_alpha(c):
+ q=[c[0]]
+ for k in range(1,len(c)-1):q.append(c[k]-q[-1])
+ if c[-1]!=q[-1]:raise ArithmeticError('alpha division')
+ while len(q)>1 and q[-1]==0:q.pop()
+ return q
+def split(a,axis):
+ x=np.moveaxis(a,axis,0);n=x.shape[0]-1
+ l=np.empty_like(x);r=np.empty_like(x)
+ l[0]=x[0];r[n]=x[n]
+ for k in range(1,n+1):
+  x=(x[:-1]+x[1:])/F(2)
+  l[k]=x[0];r[n-k]=x[-1]
+ return np.moveaxis(l,0,axis),np.moveaxis(r,0,axis)
+def check(a,depth=0,maxdepth=12):
+ if min(a.flat)>=0:return True,1,depth
+ if max(a.flat)<0:return False,1,depth
+ if depth>=maxdepth:return None,1,depth
+ varies=[max(abs(v) for v in np.diff(a,axis=j).flat) if a.shape[j]>1 else F(0) for j in range(a.ndim)]
+ axis=max(range(a.ndim),key=lambda j:varies[j])
+ c,d=split(a,axis)
+ ok1,n1,d1=check(c,depth+1,maxdepth)
+ if ok1 is not True:return ok1,n1,d1
+ ok2,n2,d2=check(d,depth+1,maxdepth)
+ return ok2,n1+n2,max(d1,d2)
+def certify_nonzero_tails(n=12,r=6):
+ groups=defaultdict(dict)
+ coeff=derivative(n)
+ if len(coeff)!=2**(n-1):raise ArithmeticError('monomial coverage')
+ for p,c in coeff.items():groups[p[r:]][p[:r]]=div_alpha(c)
+ if len(groups)!=64:raise ArithmeticError('group count')
+ leaves=0;depth=0;fail=[];checked=0
+ for tail,poly in groups.items():
+  if not any(tail):continue
+  checked+=1
+  mins=tuple(min(e[j] for e in poly) for j in range(r))
+  D=n-sum(tail)-sum(mins);K=max(map(len,poly.values()))-1
+  arr=np.full((K+1,)+(D+1,)*(r-1),F(0),dtype=object)
+  for e,c in poly.items():
+   u=[e[j]-mins[j] for j in range(r)]
+   prefixes=[sum(u[:j]) for j in range(r-1)]
+   for vs in product(*(range(p+1) for p in prefixes)):
+    inds=tuple(u[j]+vs[j] for j in range(r-1))
+    weight=F(1)
+    for j in range(r-1):weight*=F(comb(prefixes[j],vs[j]),comb(D,inds[j]))
+    for i in range(K+1):
+     b=sum((F(c[j]*comb(i,j),comb(K,j)) for j in range(min(i,len(c)-1)+1)),F(0))
+     arr[(i,)+inds]+=b*weight
+  ok,nn,dd=check(arr);leaves+=nn;depth=max(depth,dd)
+  if ok is not True:fail.append((tail,ok,nn,dd))
+ if checked!=63:raise ArithmeticError('nonzero-tail coverage')
+ print('EXACT',n,'prefix',r,'nonzero-tail groups',checked,'leaves',leaves,'maxdepth',depth,'failed',len(fail),flush=True)
+ if fail:print(fail[:10],flush=True)
+ if fail:raise ArithmeticError('nonzero-tail certificate failed')
+ return leaves,depth
+
+@lru_cache(None)
+def weak(n,r):
+ if r==1:return ((n,),)
+ return tuple((i,)+p for i in range(n+1) for p in weak(n-i,r-1))
+
+def certify_zero_tail(n=12,r=6,maxdepth=25):
+ poly={p[:r]:div_alpha(c) for p,c in derivative(n).items() if not any(p[r:])}
+ pure=(n,)+(0,)*(r-1)
+ if min(poly[pure])<0:raise ArithmeticError('pure negative')
+ del poly[pure]
+ mins=tuple(min(p[j] for p in poly) for j in range(r))
+ if mins!=(1,1,0,0,0,0):raise ArithmeticError('special common monomial')
+ D=n-sum(mins);K=max(map(len,poly.values()))-1
+ exps=weak(D,r);loc={p:i for i,p in enumerate(exps)}
+ arr=np.full((K+1,len(exps)),Fraction(0),dtype=object)
+ for p,c in poly.items():
+  u=tuple(p[j]-mins[j] for j in range(r));mult=math.factorial(D)
+  mult=math.factorial(D)//math.prod(math.factorial(uj) for uj in u)
+  for i in range(K+1):arr[i,loc[u]]=sum((Fraction(c[j]*math.comb(i,j),math.comb(K,j)) for j in range(min(i,len(c)-1)+1)),Fraction(0))/mult
+ if not all(isinstance(v,Fraction) for v in arr.flat):raise ArithmeticError('exact coefficient types')
+ # Exact arithmetic: no normalization or tolerance.
+ lines={};lineof={}
+ for i,j in combinations(range(r),2):
+  gs=defaultdict(list)
+  for p in exps:gs[tuple(p[h] for h in range(r) if h not in(i,j))].append(p)
+  lines[(i,j)]=[np.array([loc[p] for p in sorted(g,key=lambda q:q[i])]) for g in gs.values()]
+  lineof[(i,j)]={int(v):line for line in lines[(i,j)] for v in line}
+ print('shape',arr.shape,'D,K',D,K,'mins',mins,flush=True)
+ nodes=0
+ def split_beta(a):
+  x=a.copy();left=np.zeros_like(a);right=np.zeros_like(a);left[0]=x[0];right[K]=x[-1]
+  for kk in range(1,K+1):
+   x=(x[:-1]+x[1:])/Fraction(2);left[kk]=x[0];right[K-kk]=x[-1]
+  return left,right
+ def split_edge(a,edge):
+  left=np.zeros_like(a);right=np.zeros_like(a)
+  for inds in lines[edge]:
+   x=a[:,inds];d=len(inds)-1
+   left[:,inds[0]]=x[:,0];right[:,inds[d]]=x[:,-1]
+   for kk in range(1,d+1):
+    x=(x[:,:-1]+x[:,1:])/Fraction(2)
+    left[:,inds[kk]]=x[:,0];right[:,inds[d-kk]]=x[:,-1]
+  return left,right
+ def check(a,depth=0,path=()):
+  nonlocal nodes
+  nodes+=1
+  if min(a.flat)>=0:return True,1,depth
+  if max(a.flat)<0:return False,1,depth
+  if depth>=maxdepth:
+   print('FAILPATH',path,'range',a.min(),a.max(),flush=True)
+   return None,1,depth
+  ib,jb=np.unravel_index(a.argmin(),a.shape)
+  def score(values):
+   values=values.copy();mn=min(values[0],values[-1]);variation=max(abs(np.diff(values)),default=0)
+   for kk in range(1,len(values)):
+    values=(values[:-1]+values[1:])/Fraction(2);mn=min(mn,values[0],values[-1])
+   return mn,variation
+  scores={None:score(a[:,jb])}
+  for edge in lines:scores[edge]=score(a[ib,lineof[edge][jb]])
+  edge=max(scores,key=scores.get)
+  le,ri=split_beta(a) if edge is None else split_edge(a,edge)
+  o1,n1,d1=check(le,depth+1,path+((edge,0),))
+  if o1 is not True:return o1,n1,d1
+  o2,n2,d2=check(ri,depth+1,path+((edge,1),))
+  return o2,n1+n2,max(d1,d2)
+ start=time.time();initial=[arr]
+ for lev in range(0):initial=[v for a in initial for v in split_beta(a)]
+ results=[]
+ for idx,a in enumerate(initial):
+  ans=check(a);results.append(ans)
+  print('SLICE',idx,'RESULT',ans,'nodes',nodes,'seconds',time.time()-start,flush=True)
+  if ans[0] is not True:break
+ if any(ans[0] is not True for ans in results):raise ArithmeticError('zero-tail certificate failed')
+ print('ALLRESULTS',results,flush=True)
+ return sum(ans[1] for ans in results),max(ans[2] for ans in results)
+
+if __name__=='__main__':
+ start=time.time()
+ ordinary=certify_nonzero_tails()
+ special=certify_zero_tail()
+ print('PASS: all 64 groups at order 12 have exact nonnegative Bernstein certificates.')
+ print('Total leaves:',ordinary[0]+special[0],'; maximum depth:',max(ordinary[1],special[1]))
+ print('Elapsed seconds:',time.time()-start)
+\end{lstlisting}
+
+\section{Exact order-thirteen witness}\label{app:13}
+The following standard-library-only script evaluates the rational obstruction.
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact thirteenth-derivative obstruction for powers of CM functions.
+
+f(t) = 1 + exp(-t), alpha = 6/5, t0 = log(7/3).
+At t0 the normalized derivative moments of f are m_j = 3/10 (j>=1).
+The normalized signed derivative of f**alpha is therefore the finite
+Stirling polynomial computed below. No numerical transcendental evaluation
+is needed to decide its sign.
+"""
+from fractions import Fraction as Q
+import json
+
+
+def certificate():
+    n = 13
+    alpha, p = Q(6, 5), Q(3, 10)
+    stirling = [[0] * (n + 1) for _ in range(n + 1)]
+    stirling[0][0] = 1
+    for j in range(1, n + 1):
+        for k in range(1, j + 1):
+            stirling[j][k] = stirling[j-1][k-1] + k*stirling[j-1][k]
+    falling, total = Q(1), Q(0)
+    for k in range(1, n + 1):
+        falling *= alpha-k+1
+        total += stirling[n][k] * falling * p**k
+    expected = Q(-6524240334632293437, 2980232238769531250)
+    if total != expected or total >= 0:
+        raise RuntimeError("Exact derivative obstruction failed")
+    return {"f": "1 + exp(-t)", "alpha": str(alpha),
+            "time": "log(7/3)", "derivative_order": n,
+            "normalized_signed_derivative": str(total),
+            "strictly_negative": True}
+
+
+if __name__ == "__main__":
+    print(json.dumps(certificate(), indent=2))
+\end{lstlisting}
+\end{document}

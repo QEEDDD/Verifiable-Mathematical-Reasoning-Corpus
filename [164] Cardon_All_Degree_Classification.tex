@@ -1,0 +1,557 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=26mm,headheight=14pt]{geometry}
+\usepackage{booktabs,array,enumitem,xcolor,listings,fancyhdr,needspace}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={Polynomial Exponents in a Quartic Cardon Product: An All-Degree Classification},pdfauthor={Research manuscript prepared for Keio}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Polynomial exponents in a quartic Cardon product}
+\fancyhead[R]{\small 14 November 2026}
+\fancyfoot[C]{\thepage}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{3pt}
+\allowdisplaybreaks
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}\newcommand{\C}{\mathbb C}
+\newcommand{\LP}{\mathcal{LP}}
+\newcommand{\Ph}{\Phi_p}
+\DeclareMathOperator{\Repart}{Re}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,breaklines=true,
+  columns=fullflexible,keepspaces=true,showstringspaces=false,
+  frame=single,rulecolor=\color{black!20},keywordstyle=\color{blue!45!black},
+  commentstyle=\color{black!55}}
+\title{\textbf{Polynomial Exponents in a Quartic Cardon Product}\\[6pt]
+\large An All-Degree Classification and a Prior-Art Audit}
+\author{Research manuscript prepared for Keio\\\small with ChatGPT-assisted exploration and verification}
+\date{14 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Fix $p(w)=w^4+w^2+1$ and write $p(w)=\prod_{j=1}^4(w+\alpha_j)$.
+For an arbitrary real polynomial $Q$, we prove that every coefficient in
+$\prod_j e^{Q(x+\alpha_jt)}$ is nonnegative for every real $x$ if and only
+if $Q$ is concave on $\R$ and has degree at most four. The same condition
+is equivalent to the global product inequality
+$\prod_j e^{Q(x+\alpha_jt)}\ge e^{4Q(x)}$ for real $x,t$.
+The decisive step is an explicit angular estimate excluding every even
+degree at least six; it does not assume a degree bound or rely on a
+finite computation. An entire-logarithm argument extends the
+classification to all zero-free real entire functions of finite order.
+Koide's preprint of 7 October 2026 already contains the degree-at-most-four
+classification and the counterexample to Csordas--Vishnyakova
+Conjecture 3.6 that motivated this investigation. Those results are
+credited here. Our additional conclusion removes the polynomial degree
+restriction for this fixed auxiliary polynomial. Historical priority of
+that extension is not certified. In particular, this paper is not a
+claim to have met all six requested criteria for a new resolution of
+a previously named open problem.
+\end{abstract}
+
+\section{The result and its precise scope}
+
+Let
+\begin{equation}\label{eq:p}
+ p(w)=w^4+w^2+1=\prod_{j=1}^4(w+\alpha_j),\qquad
+ \{\alpha_j\}_{j=1}^4=\{\omega,\bar\omega,-\omega,-\bar\omega\},
+ \quad \omega=e^{i\pi/3}.
+\end{equation}
+For a real entire function $f$, its Cardon product and coefficients are
+\begin{equation}\label{eq:cardon}
+ \Ph[f](z,t)=\prod_{j=1}^4 f(z+\alpha_jt)
+           =\sum_{k=0}^{\infty}A_k[f](z)t^k.
+\end{equation}
+The series converges for all complex $z,t$. The symmetry of the four
+shifts makes the product even in $t$, and conjugation shows that its
+coefficients are real on the real axis. Define the condition
+\begin{equation}\label{eq:C}
+ \mathsf C_p(f):\qquad A_k[f](x)\ge0
+       \quad\text{for every }x\in\R\text{ and every integer }k\ge0.
+\end{equation}
+The auxiliary polynomial in \eqref{eq:p} is fixed throughout the main
+theorem. In particular, no quantifier over all auxiliary polynomials is
+being substituted for the original fixed-polynomial condition.
+
+\Needspace{16\baselineskip}
+\begin{theorem}[All polynomial degrees]\label{thm:main}
+For every $Q\in\R[z]$, the following are equivalent:
+\begin{enumerate}[label=\textup{(\roman*)},itemsep=3pt]
+\item $\mathsf C_p(e^Q)$ holds.
+\item $\Ph[e^Q](x,t)\ge e^{4Q(x)}$ for every $x,t\in\R$.
+\item $Q''(x)\le0$ for every $x\in\R$, and $Q$ has degree at most four.
+\end{enumerate}
+Constants, including the zero polynomial, are included in \textup{(iii)}.
+If $q_4=[z^4]Q$, then under these equivalent conditions
+\begin{equation}\label{eq:coefficients}
+ A_{2n}[e^Q](x)=e^{4Q(x)}
+ \sum_{j=0}^{\lfloor n/2\rfloor}
+ \frac{(-Q''(x))^{n-2j}(-2q_4)^j}{(n-2j)!\,j!},
+ \qquad A_{2n+1}[e^Q](x)=0.
+\end{equation}
+The usual convention $0^0=1$ is used in this coefficient formula.
+\end{theorem}
+
+The theorem answers the auxiliary classification problem for every
+polynomial exponent, not just a bounded search of exponents. Its proof
+also shows why concavity alone is insufficient: high degree creates a
+specific direction in which the global product inequality fails.
+
+\paragraph{Relation to the literature.}
+Cardon's theorem imposes a genus-zero-or-one hypothesis after removing
+a Gaussian factor \cite{Cardon}. Csordas and Vishnyakova proposed
+discarding that hypothesis in Conjecture 3.6 \cite[p.~1649]{CV}.
+Koide subsequently supplied counterexamples and, for quartic auxiliary
+polynomials, classified exponents of degree at most four
+\cite[Section~5]{Koide}. For \eqref{eq:p}, that classification is exactly
+condition \textup{(iii)} once the degree restriction is assumed.
+The additional part proved here is that no higher-degree polynomial
+exponent can satisfy \eqref{eq:C}. The prior counterexample is not
+claimed as a discovery of this paper.
+
+\section{Power sums and a degree-exclusion estimate}
+
+Put $s_k=\sum_j\alpha_j^k$. Elementary root-of-unity summation gives
+\begin{equation}\label{eq:powers}
+ s_0=4,\qquad s_{2k+1}=0,\qquad
+ s_{2k}=\begin{cases}4,&3\mid k,\\-2,&3\nmid k.\end{cases}
+\end{equation}
+For example, $s_2=s_4=-2$ and $s_6=4$.
+For any polynomial $Q$ we therefore have the exact finite identity
+\begin{equation}\label{eq:newton}
+ \log\frac{\Ph[e^Q](x,t)}{e^{4Q(x)}}
+ =\sum_{k=1}^{\deg Q}\frac{s_k}{k!}Q^{(k)}(x)t^k.
+\end{equation}
+Here the logarithm denotes the displayed real exponent when $x,t$ are
+real, so no logarithm-branch issue is involved. In particular,
+\begin{equation}\label{eq:A2}
+ A_2[e^Q](x)=-Q''(x)e^{4Q(x)}.
+\end{equation}
+Identity \eqref{eq:newton} by itself does not bound the degree. The
+following estimate supplies that missing step.
+
+\begin{lemma}[A direction detecting every high even degree]\label{lem:ray}
+For every even integer $d\ge6$, there is $r\ge0$ such that
+\begin{equation}\label{eq:gap}
+ \Delta_d(r):=\sum_{j=1}^4(r+\alpha_j)^d-4r^d>0.
+\end{equation}
+For $d=6$ one may take $r=0$, giving $\Delta_6(0)=4$.
+For $d=2n\ge8$, the explicit choice
+\begin{equation}\label{eq:r}
+ \theta=\frac\pi n,\qquad
+ r=\frac{\sin(\pi/3-\theta)}{\sin\theta}
+\end{equation}
+satisfies the quantitative bound $\Delta_d(r)\ge4r^d>0$.
+\end{lemma}
+
+\begin{proof}
+The assertion for $d=6$ follows from \eqref{eq:powers}. Now let $n\ge4$.
+Then $0<\theta\le\pi/4<\pi/3$, so $r>0$. Since
+\[
+ r+\tfrac12=\tfrac{\sqrt3}{2}\cot\theta,
+\]
+the argument of $r+\omega$ is $\theta$. Define
+\[
+ R_+=(r^2+r+1)^{1/2},\qquad R_-=(r^2-r+1)^{1/2}.
+\]
+The two conjugate numbers $r+\omega,r+\bar\omega$ have $d$th powers
+equal to the positive real number $R_+^d$, because $d\theta=2\pi$.
+The other conjugate pair contributes at least $-2R_-^d$. Consequently
+\begin{equation}\label{eq:dominance}
+ \sum_j(r+\alpha_j)^d\ge2(R_+^d-R_-^d).
+\end{equation}
+With $a=1+r^{-2}>1$ and $b=r^{-1}>0$, the binomial theorem gives
+\begin{align}
+ \frac{R_+^d-R_-^d}{r^d}
+  &=(a+b)^n-(a-b)^n \notag\\
+  &=2\sum_{\substack{1\le j\le n\\j\ \mathrm{odd}}}
+       \binom nj a^{n-j}b^j
+   \ge 2na^{n-1}b
+   =\frac{2n}{r}(1+r^{-2})^{n-1}
+   \ge\frac{2n}{r}.\label{eq:binomial}
+\end{align}
+The intermediate expression in \eqref{eq:binomial} is simply the
+$j=1$ summand, $2na^{n-1}b$; all other displayed summands are positive.
+The elementary concavity bound $\sin u\ge2u/\pi$ for
+$0\le u\le\pi/2$ yields
+\[
+ r\le\frac1{\sin(\pi/n)}\le\frac n2.
+\]
+Combining this with \eqref{eq:dominance}--\eqref{eq:binomial} proves
+\[
+ \sum_j(r+\alpha_j)^d\ge\frac{4n}{r}r^d\ge8r^d.
+\]
+Subtracting $4r^d$ gives the claimed strict gap.
+\end{proof}
+
+\section{Proof of the classification}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Suppose \textup{(i)} holds. The odd coefficients vanish. For real $t$,
+each remaining term $A_{2k}(x)t^{2k}$ is nonnegative; convergence of the
+entire series therefore gives \textup{(ii)}.
+
+Suppose next that \textup{(ii)} holds. By conjugation, the finite sum
+$\sum_jQ(x+\alpha_jt)$ is real when $x,t$ are real. Taking logarithms
+of the positive product yields
+\begin{equation}\label{eq:global}
+ D_Q(x,t):=\sum_jQ(x+\alpha_jt)-4Q(x)\ge0
+                   \qquad(x,t\in\R).
+\end{equation}
+The expansion at $t=0$ is
+$D_Q(x,t)=-Q''(x)t^2+O(t^4)$. Dividing by $t^2$ and taking the limit
+shows that $Q''(x)\le0$ for all real $x$.
+
+If $Q$ is not affine, a polynomial nonpositive on the whole real axis
+has even degree and negative leading coefficient when nonconstant.
+Applied to $Q''$, this implies that $\deg Q=d$ is even and the leading
+coefficient $q_d$ of $Q$ is negative. This also covers the quadratic
+case, where $Q''$ is a negative constant.
+
+Assume for contradiction that $d\ge6$. Choose $r$ from
+Lemma~\ref{lem:ray} and substitute $x=Rr,t=R$ into \eqref{eq:global}.
+As $R\to+\infty$,
+\begin{equation}\label{eq:scaling}
+ D_Q(Rr,R)=q_d\Delta_d(r)R^d+O(R^{d-1}).
+\end{equation}
+The leading coefficient on the right is strictly negative. Hence
+$D_Q(Rr,R)<0$ for every sufficiently large $R$, contradicting
+\eqref{eq:global}. Thus $d\le4$, proving \textup{(iii)}.
+
+Finally assume \textup{(iii)}. Set $q_4=[z^4]Q$, with $q_4=0$ for
+lower degrees. Concavity implies $q_4\le0$. The exact identity
+\eqref{eq:newton} now reduces to
+\begin{equation}\label{eq:quartic}
+ \Ph[e^Q](x,t)=e^{4Q(x)}
+       \exp\bigl(-Q''(x)t^2-2q_4t^4\bigr).
+\end{equation}
+Both coefficients in the last exponent are nonnegative. Expanding its
+two exponential factors gives \eqref{eq:coefficients}, hence
+\textup{(i)}. This completes all implications.
+\end{proof}
+
+\begin{remark}[Where the proof adds information]
+Equation \eqref{eq:quartic} is the previously established bounded-degree
+calculation. The additional conclusion comes from
+\eqref{eq:dominance} and \eqref{eq:scaling}: a positive gap independent
+of all lower coefficients excludes every high degree. No finite degree
+cutoff, numerical sign check, or conjectural growth estimate is used.
+\end{remark}
+
+\section{Zero-free entire functions of arbitrary finite order}
+
+The order of an entire function is understood in its usual growth
+sense. In the next argument only the following consequence is needed:
+if $f$ has finite order $\rho$, then for every $\tau>\rho$ there is
+$C_\tau$ such that
+\[
+ \log|f(z)|\le C_\tau(1+|z|^\tau)\qquad(z\in\C).
+\]
+
+\begin{lemma}[Polynomial logarithm]\label{lem:log}
+Every zero-free real entire function $f$ of finite order has the form
+$f=\sigma e^Q$, where $\sigma\in\{-1,1\}$ and $Q\in\R[z]$.
+\end{lemma}
+\begin{proof}
+Since $f$ never vanishes on $\R$, its real sign $\sigma$ is constant.
+The function $f'/f$ is entire. On the simply connected plane define
+\[
+ h(z)=\log|f(0)|+\int_0^z\frac{f'(w)}{f(w)}\,dw.
+\]
+The integral is path independent, $f=\sigma e^h$, and $h$ is real on
+$\R$. Thus $\Repart h(z)=\log|f(z)|$ has the growth bound above.
+Here is the needed elementary disk form of the classical
+Borel--Carath\'eodory estimate. Put $g=h-h(0)$ and
+$M=\max_{|z|\le2R}\Repart g(z)$. If $M=0$, the maximum principle
+makes $g$ constant. If $M>0$, the analytic function
+$g/(2M-g)$ has modulus at most one on the disk and vanishes at zero.
+Schwarz's lemma bounds its modulus by $1/2$ on $|z|\le R$; hence
+$|g|\le2M$ there. The growth bound on $\Repart h$ therefore gives
+\[
+ \max_{|z|\le R}|h(z)|=O_\tau(1+R^\tau).
+\]
+For each integer $k>\rho$, choose $\rho<\tau<k$. Cauchy's estimate
+then gives
+\[
+ \frac{|h^{(k)}(0)|}{k!}=O_\tau(R^{\tau-k})\longrightarrow0.
+\]
+All such derivatives vanish. Hence $h=Q$ is a polynomial, whose
+coefficients are real because $h$ is real on $\R$.
+\end{proof}
+
+\Needspace{14\baselineskip}
+\begin{corollary}[Finite-order zero-free classification]\label{cor:entire}
+Let $f$ be a zero-free real entire function of finite order. The following
+are equivalent:
+\begin{enumerate}[label=\textup{(\roman*)},itemsep=3pt]
+\item $\mathsf C_p(f)$ holds.
+\item $\Ph[f](x,t)\ge f(x)^4$ for every real $x,t$.
+\item $f=\sigma e^Q$, where $\sigma\in\{-1,1\}$, $Q\in\R[z]$,
+$\deg Q\le4$, and $Q''\le0$ on $\R$.
+\end{enumerate}
+In particular, such a function has order at most four. Order four is
+attained, for example, by $e^{-z^4-z^2}$.
+\end{corollary}
+\begin{proof}
+Use Lemma~\ref{lem:log}. Since $\sigma^4=1$, the Cardon product is
+unchanged by $\sigma$. Apply Theorem~\ref{thm:main}.
+\end{proof}
+
+This corollary concerns zero-free functions. Neither a classification
+of functions with arbitrary zero divisors nor a classification of
+zero-free functions of infinite order is asserted.
+
+\section{Explicit certificates and the known counterexample}
+
+\begin{corollary}[Finite algebraic decision rule]\label{cor:rule}
+Write $Q=\sum_{j=0}^d q_jz^j$. Condition $\mathsf C_p(e^Q)$ holds
+exactly when all $q_j$ with $j\ge5$ vanish and one of these alternatives
+holds:
+\begin{align*}
+ &q_4=q_3=0,\qquad q_2\le0;\quad\text{or}\\
+ &q_4<0,\qquad 3q_3^2\le8q_4q_2.
+\end{align*}
+The coefficients $q_0,q_1$ are unrestricted.
+\end{corollary}
+\begin{proof}
+Theorem~\ref{thm:main} reduces the question to the nonpositivity of
+$Q''(x)=12q_4x^2+6q_3x+2q_2$. A quadratic with negative leading
+coefficient is nonpositive everywhere exactly when its discriminant
+is nonpositive. The case $q_4=0$ is the elementary linear case.
+\end{proof}
+
+For degree four this rule was already included in Koide's
+classification \cite{Koide}. Here the rule applies without an input
+degree restriction, because the theorem proves that restriction.
+Equivalently, every admissible genuine quartic exponent can be written
+\[
+ Q(z)=-a(z-h)^4-b(z-h)^2+\ell z+c,
+ \qquad a>0,\quad b\ge0,\quad h,\ell,c\in\R.
+\]
+Indeed completing the square in $Q''$ and integrating twice gives this
+normal form.
+
+\paragraph{The prior counterexample, reproduced with attribution.}
+For $Q(z)=-z^4-z^2$, equation \eqref{eq:quartic} becomes
+\begin{equation}\label{eq:known}
+ \Ph[e^{-z^4-z^2}](x,t)
+ =e^{-4x^4-4x^2}\exp\bigl((12x^2+2)t^2+2t^4\bigr).
+\end{equation}
+Consequently
+\begin{equation}\label{eq:strict}
+ A_{2n}(x)\ge e^{-4x^4-4x^2}\frac{(12x^2+2)^n}{n!}>0
+ \qquad(x\in\R,\ n\ge0).
+\end{equation}
+This exact example and its strict positivity are already in Koide's
+Section~2 \cite{Koide}; they are not new results here.
+
+For completeness there is a short independent certificate of failure
+of membership in $\LP$. If $f\in\LP$, all coefficients in
+$f(x+it)f(x-it)$ are nonnegative for real $x$: this is immediate for
+real-rooted polynomials from
+$\prod_j((x-r_j)^2+t^2)$ and passes to locally uniform limits by
+Cauchy's coefficient formula. For the function in \eqref{eq:known},
+\[
+ f(it)f(-it)=\exp(2t^2-2t^4),\qquad
+ [t^6]\exp(2t^2-2t^4)=\frac{2^3}{3!}-4=-\frac83.
+\]
+Thus this function passes every quartic Cardon inequality but fails
+one classical Laguerre inequality. The implication in the original
+2013 conjecture is false, as the prior paper already established.
+The counterexample is zero-free: the failure concerns membership in
+$\LP$, not the existence of a nonreal zero.
+
+\paragraph{An explicit high-degree failure.}
+The concave exponent $Q(z)=-z^6$ does not pass. At $x=0$,
+$\Ph[e^{-z^6}](0,t)=e^{-4t^6}$, whose $t^6$ coefficient is negative.
+For degrees $8,10,\ldots$, Lemma~\ref{lem:ray} supplies a uniform
+alternative to guessing an offending coefficient. It locates a real
+pair $(x,t)$ violating the sum inequality; the equivalence then
+guarantees a negative Taylor coefficient at that $x$.
+
+\section{Corpus synthesis, attribution, and the six criteria}
+
+The investigation used the supplied Verifiable Mathematical Reasoning
+Corpus at commit
+\texttt{38348353416f1f7fc50cecb93c3b554a00260c13} \cite{VMRC}.
+Three relevant themes were root-power traces in item [075], exponential
+coefficient positivity in item [119], and exact converses for real-zero
+criteria in item [137]. These suggested looking at finite root sums,
+positive exponential coefficients, and converse failures together.
+Every mathematical input needed for the present theorem is reproved
+above, using the standard maximum principle, Schwarz's lemma, and
+Cauchy's estimate. No unreviewed corpus
+theorem is imported as a black box.
+
+The sequence of research steps matters for attribution. The strict
+counterexample was independently reconstructed during this session.
+A subsequent primary-source check found the identical pair and formula
+in Koide's earlier public source. That candidate was therefore removed
+from the list of new conjecture resolutions. The high-degree exclusion
+was then proved separately and compared with the earlier bounded-degree
+theorem. Independence of derivation does not erase prior publication.
+
+\begin{center}
+\begin{tabular}{@{}p{0.12\textwidth}p{0.82\textwidth}@{}}
+\toprule
+Criterion & Assessment of this deliverable \\
+\midrule
+G1 & The original Conjecture 3.6 is a pre-existing named target. The
+all-degree classification proved here was not located as a previously
+named open problem. \\
+G2 & The original definitions were retained in checking the counterexample.
+The classification extension is explicitly a different auxiliary result. \\
+G3 & The original conjecture was already refuted in the inspected
+7 October 2026 preprint. Its refutation cannot be counted anew. \\
+G4 & Theorem~\ref{thm:main} and Corollary~\ref{cor:entire} are unconditional
+and cover all stated degrees, indices, and real variables. \\
+G5 & The degree-exclusion estimate is a substantive additional argument;
+the bounded-degree formula alone does not give it. \\
+G6 & The proposed counterexample has an exact prior duplicate. No exact
+duplicate of the all-degree extension was found in the bounded search,
+but this does not certify historical priority. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Outcome.}
+The simultaneous G1--G6 goal was not achieved. The deliverable is a
+complete classification theorem with an explicit extension beyond the
+inspected prior theorem, accompanied by a documented rejection of a
+duplicate conjecture claim.
+
+\clearpage
+\appendix
+\section{Exact finite verification program}\label{app:verify}
+
+The following standalone Python program uses only integer and rational
+arithmetic. It checks Newton sums, the generic quartic identity on a
+linear basis, the positive-coefficient recurrence, the ordinary negative
+Laguerre coefficient, and exact sample directions. These finite checks
+detect transcription errors; Lemma~\ref{lem:ray}, not this program,
+proves the assertion for every degree. The program can be copied from
+this single \texttt{.tex} file and run with Python 3.
+
+\begin{lstlisting}
+from fractions import Fraction as F
+from math import comb, factorial
+# Newton sums for roots of w^4+w^2+1.
+s = [4, 0, -2, 0, -2]
+for k in range(5, 101):
+    s.append(-s[k-2] - s[k-4])
+assert all(s[k] == (0 if k % 2 else
+                   (4 if k % 6 == 0 else -2))
+           for k in range(101))
+# The exponent identity is linear in Q: check the basis 1,z,...,z^4.
+# Keys are (power of x, power of t).
+for degree in range(5):
+    direct = {(degree-k, k): comb(degree, k)*s[k]
+              for k in range(degree+1) if s[k]}
+    expected = {(degree, 0): 4}
+    if degree >= 2:
+        expected[(degree-2, 2)] = -degree*(degree-1)
+    if degree == 4:
+        expected[(0, 4)] = -2
+    assert direct == expected
+# exp(u*y+v*y^2): positive explicit sum versus differential recurrence.
+comparisons = 0
+for x in map(F, [-3, -1, 0, 1, 2]):
+    u, v = 12*x*x+2, F(2)
+    c = [F(1)]
+    for n in range(1, 41):
+        c.append((u*c[n-1]+(2*v*c[n-2] if n >= 2 else 0))/n)
+    for n in range(41):
+        explicit = sum((u**(n-2*j)*v**j /
+                        (factorial(n-2*j)*factorial(j))
+                        for j in range(n//2+1)), F(0))
+        assert c[n] == explicit
+        assert c[n] >= u**n/factorial(n) > 0
+        comparisons += 1
+# Classical Laguerre coefficient at the origin.
+laguerre_3 = F(2**3, factorial(3)) + F(2)*F(-2)
+assert laguerre_3 == F(-8, 3)
+def gap(d, r):
+    return sum((F(comb(d, k))*s[k]*r**(d-k)
+                for k in range(1, d+1)), F(0))
+# Exact witnesses for initial high even degrees.
+witnesses = [(6, F(0)), (8, F(1, 2)),
+             (10, F(1, 2)), (12, F(1))]
+for d, r in witnesses:
+    assert gap(d, r) > 0
+# Quartic decision examples: (q4,q3,q2,expected).
+for q4, q3, q2, answer in [(-1,0,-1,True),
+        (-1,4,-6,True), (-1,1,0,False),
+        (0,0,-1,True), (0,1,-1,False), (1,0,-1,False)]:
+    passed = ((q4 == q3 == 0 and q2 <= 0) or
+              (q4 < 0 and 3*q3*q3 <= 8*q4*q2))
+    assert passed == answer
+print('Newton sums through 100: PASS')
+print('Quartic exponent identity: PASS')
+print('Exact coefficient comparisons:', comparisons)
+print('Classical L_3(0):', laguerre_3)
+print('Four exact high-degree witnesses: PASS')
+print('Finite algebraic decision examples: PASS')
+\end{lstlisting}
+
+\section{Reproducibility and source checks}
+
+The source of this manuscript is one self-contained \texttt{.tex} file,
+with no external bibliography, figures, or input files. Compile it twice
+with \texttt{pdflatex}. The included verifier is not required for
+compilation. The recorded exact checks completed without a failed
+assertion. Independent mathematical reviews of the angular estimate
+and finite-order extension found no gap; these are internal checks,
+not external peer review or formal proof-assistant certification.
+
+The original 2013 PDF was inspected at printed page 1649, including the
+definitions preceding Conjecture 3.6 and the different hypotheses of
+Theorem 3.5. Koide's public metadata and full \texttt{.tex} source were
+inspected: the record is dated 7 October 2026, and Sections 2 and 5
+contain the overlapping counterexample and bounded-degree theorem.
+Targeted searches included the conjecture number, authors, exact paper
+title, Cardon growth conditions, and higher-degree polynomial
+exponents. The limitations of this search are recorded in the G6 row.
+
+\begin{thebibliography}{9}
+\bibitem{Cardon}
+D.~A. Cardon,
+\emph{Extended Laguerre inequalities and a criterion for real zeros},
+in \emph{Progress in Analysis and its Applications}, World Scientific,
+2010, pp.~143--149. Preprint arXiv:0911.1122 (2009).
+\url{https://arxiv.org/abs/0911.1122}.
+Author-hosted text:
+\url{https://mathdept.byu.edu/cardon/papers/criterion_for_reality_arXiv.pdf}.
+
+\bibitem{CV}
+G.~Csordas and A.~Vishnyakova,
+\emph{The generalized Laguerre inequalities and functions in the
+Laguerre--P\'olya class}, Central European Journal of Mathematics
+\textbf{11} (2013), 1643--1650.
+\url{https://doi.org/10.2478/s11533-013-0269-x}.
+Conjecture 3.6 is on printed p.~1649.
+
+\bibitem{Koide}
+A.~Koide,
+\emph{Counterexamples and Sharp Growth Repairs for Cardon--Laguerre
+Inequalities}, public preprint, version 1, 7 October 2026.
+\url{https://doi.org/10.6084/m9.figshare.34158516.v1}.
+The public source, including Sections 2 and 5, was inspected on
+14 November 2026. This citation records a preprint, not a claim of
+peer-reviewed publication.
+
+\bibitem{VMRC}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, research drafts,
+commit \texttt{38348353416f1f7fc50cecb93c3b554a00260c13},
+retrieved 14 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+Relevant exploratory themes: [075] \emph{Shifted Mills and Cubic Pisot
+Traces}; [119] \emph{Mathematical Research Manuscript}; [137]
+\emph{A finite-difference measure converse and a Jacobi-symbol
+determinant counterexample}. The repository describes its contents as
+research drafts, not peer-reviewed or formally verified theorems.
+\end{thebibliography}
+\end{document}
