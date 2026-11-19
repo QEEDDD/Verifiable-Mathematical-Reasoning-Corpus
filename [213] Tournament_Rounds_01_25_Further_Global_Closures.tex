@@ -1,0 +1,1611 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,mathtools}
+\usepackage{geometry,microtype,booktabs,array,longtable}
+\usepackage{fancyhdr,fancyvrb,fvextra,needspace,enumitem}
+\usepackage{xcolor,hyperref,bookmark}
+\geometry{left=25mm,right=25mm,top=25mm,bottom=25mm,headheight=14pt,headsep=9mm}
+\definecolor{Ink}{HTML}{17293C}
+\definecolor{Link}{HTML}{235577}
+\hypersetup{colorlinks=true,linkcolor=Ink,citecolor=Link,urlcolor=Link,
+pdftitle={Further Global Closures from Twenty-Five Research Rounds},
+pdfauthor={Keio and Shaitetsu},bookmarksnumbered=true}
+\urlstyle{same}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\textsc{Further global closures}}
+\fancyhead[R]{\small\textsc{Rounds 1--25}}
+\fancyfoot[C]{\thepage}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{1.2em}
+\setlength{\emergencystretch}{3em}
+\setlist{itemsep=4pt,topsep=5pt}
+\setcounter{tocdepth}{1}
+\numberwithin{equation}{section}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\allowdisplaybreaks[2]
+\begin{document}
+\thispagestyle{empty}
+\begin{center}
+{\small\textsc{Research continuation \quad | \quad 20 November 2026}}\\[16pt]
+{\LARGE\bfseries Further Global Closures\\[5pt]
+from Twenty-Five Research Rounds}\\[13pt]
+{\large Graph Spectra, Trigonometric Inequalities,\\[3pt]
+and an Exact Sixth-Power Certificate}\\[18pt]
+{\large Keio and Shaitetsu}
+\end{center}
+\vspace{6pt}
+\begin{abstract}
+We complete four arguments left unfinished in a twenty-five-round
+mathematical research archive. First, we prove Cazenave's inequality
+$\mu_1^2\ge4\lambda_2+8$ for every finite simple connected graph
+of order at least two. Five explicit Rayleigh witnesses, positive
+vertex weights, and a uniform double-broom bound resolve the
+remaining subcubic case. Second, we prove the sharp strict lower
+bound $-3/8$ for every finite alternating sine sum proposed by Alzer
+and Kwong. A fixed rational interval and a choice of one geometric
+scale control the full interval and all truncation lengths. Third,
+we give the complete shape classification and sharp constants for
+the real-parameter quotient
+$(p-\sin x/\sin(x/p))/x^2$ on $0<x<\pi/2$. Its nontrivial
+transition occurs at $p_*=1.5577320374\ldots$, characterized by a
+unique scalar equation. A coefficient majorant controls the entire
+previously untreated range $p>3$; parameters with poles are identified
+explicitly. Fourth, we independently certify the endpoint of exactly
+seventy-eight positive sixth powers. An elementary three-generator
+description gives all permanent exceptions, and an exact finite
+sumset calculation, six interval extensions, and seventy-three
+explicit padding representations prove the global stabilization
+statement, using the classical theorem $g(6)=73$.
+
+The fourth result completes the archive's missing verification; the
+source paper already discusses that endpoint elsewhere despite
+retaining a conjecture label. All proofs, certificate data, and the
+standalone verifier are included in this single source file.
+\end{abstract}
+\noindent\textbf{Keywords.} Graph spectra; Laplacian eigenvalues;
+trigonometric inequalities; sharp constants;
+geometric scales; positive power series; numerical semigroups;
+positive sixth powers; exact finite certificates.
+
+\clearpage
+\tableofcontents
+\clearpage
+\section*{Scope and provenance}
+\addcontentsline{toc}{section}{Scope and provenance}
+
+This paper continues the supplied \emph{Math Tournament Rounds 01--25}
+archive after the integrated edition \emph{Global Proofs, Proof
+Candidates, and Counterexamples}. It targets unfinished arguments.
+The four principal results have the following relationship to the
+archived checkpoints.
+
+\begin{center}\small
+\begin{tabular}{L{.12\textwidth}L{.32\textwidth}L{.46\textwidth}}
+\toprule
+Checkpoint & Previous boundary & Present completion\\
+\midrule
+R12 Heisei & Nonbipartite subcubic graphs remained in Cazenave's squared spectral inequality
+& Every finite simple connected graph of order at least two, using explicit local witnesses.\\[5pt]
+R22 Taisho & Central interval and small-scale reduction for the alternating sine sum
+& Every $n\ge0$ and every $x\in[0,\pi]$; sharpness and the equality set of the infinite series.\\[5pt]
+R25 Taisho & Sine quotient classified only for $1<p\le3$
+& Full parameter range, the unique transition, and exact optimal constants.\\[5pt]
+R21 Keio & Finite interval strategy; unverified exceptional set and padding data
+& Complete semigroup proof, every finite membership check, all padding witnesses, and the global tail.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The graph and trigonometric sections contain proofs without a numerical
+sampling premise. The sixth-power section contains an exact computational component:
+its finite recurrence is proved, its complete replay program and
+witness data are printed, and separate lemmas cover the infinite
+range. The numerical value of $p_*$ is illustrative; its defining
+equation and uniqueness proof determine the constant exactly.
+
+Each principal proof was separately checked during preparation.
+These checks concern the arguments supplied here; they do not
+constitute external peer review or an exhaustive determination of
+publication priority. In particular, the provenance distinction for
+the sixth-power result is recorded in its final subsection.
+
+\paragraph{Compilation and replay.}
+This TEX file is self-contained. Compile with pdfLaTeX, repeating
+until its references stabilize. No external bibliography, image, or
+included manuscript is required. The program in Appendix~\ref{app:certificate}
+uses only the Python standard library and contains all of its data;
+Python execution is needed only to replay the finite certificate.
+\clearpage
+\section{Cazenave's adjacency--Laplacian inequality}
+\label{caz:section}
+
+Cazenave's Conjecture~6(iii)~\cite{Cazenave2026} concerns the
+second-largest adjacency eigenvalue and the largest ordinary
+Laplacian eigenvalue of an arbitrary connected simple graph. The
+Round~12 Heisei manuscript proved several cases, but left a
+nonbipartite subcubic case unresolved. We close that case by five
+small subgraph certificates, two positive vertex weightings, and an
+explicit bound for every double broom. The certificates are rational
+and are included in full below; the proof has no graph-order cap and
+no computational dependency.
+
+\begin{theorem}[Cazenave's Conjecture~6(iii)]
+\label{caz:main}
+Let $G$ be a finite simple connected undirected graph on $n\ge2$
+vertices. Write
+\[
+ \lambda_1\ge\lambda_2\ge\cdots\ge\lambda_n
+ \quad\text{and}\quad
+ \mu_1\ge\mu_2\ge\cdots\ge\mu_n=0
+\]
+for the eigenvalues, counted with multiplicity, of its adjacency
+matrix $A$ and its ordinary Laplacian $L=D-A$, respectively. Then
+\begin{equation}
+ \mu_1^2\ge4\lambda_2+8.
+ \label{caz:target}
+\end{equation}
+\end{theorem}
+
+\subsection{Variational facts and exact local certificates}
+
+We use three elementary consequences of the variational
+characterization of eigenvalues. First, if $H$ is any subgraph of
+$G$, pad $L(H)$ with zero rows and columns on the omitted vertices.
+Then
+\[
+ L(G)-L(H)=\sum_{uv\in E(G)\setminus E(H)}
+ (e_u-e_v)(e_u-e_v)^{\mathsf T}
+\]
+is positive semidefinite. Consequently,
+\begin{equation}
+ \mu_1(G)\ge\mu_1(H).
+ \label{caz:monotonicity}
+\end{equation}
+The subgraph need not be induced. In particular, the star centered
+at a vertex of maximum degree $\Delta$ gives
+\begin{equation}
+ \mu_1(G)\ge\Delta+1,
+ \qquad \lambda_2(G)\le\lambda_1(G)\le\Delta.
+ \label{caz:degree-bounds}
+\end{equation}
+Second, adjacency interlacing gives
+\begin{equation}
+ \lambda_2(G)\le\lambda_1(G-v)
+ \label{caz:interlacing}
+\end{equation}
+for every vertex $v$. Third, if a vector $w$ has strictly positive
+coordinates and $Aw\le B w$ coordinatewise, then
+\begin{equation}
+ \lambda_1(A)\le B.
+ \label{caz:positive-weights}
+\end{equation}
+For example, multiply the coordinatewise inequality by a
+nonnegative Perron eigenvector of $A$.
+
+Here are the five small graphs used in the proof. An edge written
+$ij$ denotes the unordered pair $\{i,j\}$; each displayed list is
+the complete edge set of the corresponding certificate graph:
+\begin{align*}
+ E(S)&=\{01,02,03,14,15\},
+   &&V(S)=\{0,\ldots,5\},\\
+ E(D^+)&=\{01,02,03,12,13,24\},
+   &&V(D^+)=\{0,\ldots,4\},\\
+ E(H)&=\{01,12,20,03,34,41\},
+   &&V(H)=\{0,\ldots,4\},\\
+ E(F)&=\{01,12,20,03,14,45\},
+   &&V(F)=\{0,\ldots,5\},\\
+ E(C^+)&=\{01,12,23,30,04\},
+   &&V(C^+)=\{0,\ldots,4\}.
+\end{align*}
+Thus $S$ is the double star with two adjacent degree-three centers;
+$D^+$ is a diamond $K_4-e$ with a pendant edge at a degree-two
+vertex; $H$ is the house graph; $F$ is a triangle with pendant paths
+of lengths one and two attached at different vertices; and $C^+$
+is a four-cycle with a pendant edge.
+
+\begin{lemma}[Five rational Rayleigh certificates]
+\label{caz:certificates}
+The graphs above satisfy
+\[
+ \mu_1(S),\ \mu_1(D^+),\ \mu_1(H)>\sqrt{20},
+ \qquad
+ \mu_1(F),\ \mu_1(C^+)>\sqrt{19}.
+\]
+\end{lemma}
+\begin{proof}
+For a nonzero vector $z$ indexed by a graph's vertices, its
+Laplacian Rayleigh quotient is
+\[
+ q=\frac{z^{\mathsf T}Lz}{z^{\mathsf T}z}
+   =\frac{\sum_{ij\in E}(z_i-z_j)^2}{\sum_i z_i^2}.
+\]
+In the following table, coordinates are in the vertex order
+$0,1,\ldots$. Every value follows by integer arithmetic from the
+edge sets just given.
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}clcll@{}}
+\toprule
+Graph & $z$ & $t$ & $q$ & $q^2-t$\\
+\midrule
+$S$ & $(4,-4,-1,-1,1,1)$ & $20$ & $41/9$ & $61/81$\\
+$D^+$ & $(6,6,-10,-5,3)$ & $20$ & $923/206$ & $3209/42436$\\
+$H$ & $(5,-5,0,-3,3)$ & $20$ & $157/34$ & $1529/1156$\\
+$F$ & $(-4,5,0,1,-2,1)$ & $19$ & $205/47$ & $54/2209$\\
+$C^+$ & $(-5,3,-2,3,1)$ & $19$ & $107/24$ & $505/576$\\
+\bottomrule
+\end{tabular}
+\end{center}
+All quotients and all displayed differences are positive. Since
+$\mu_1\ge q$, the claims follow.
+\end{proof}
+
+\subsection{A bound for double brooms of every length}
+
+Let $B_d$ be the tree obtained from a path of length $d\ge2$ by
+attaching two pendant leaves to each endpoint. The path endpoints
+therefore have degree three.
+
+\begin{lemma}[Uniform double-broom bound]
+\label{caz:broom}
+For every integer $d\ge2$,
+\[
+ \mu_1(B_d)>2+\sqrt5.
+\]
+\end{lemma}
+\begin{proof}
+Put
+\[
+ \tau=2+\sqrt5,
+ \qquad r=\frac{\sqrt5-1}{2}\in(0,1).
+\]
+These constants satisfy
+\begin{equation}
+ \tau=2+r+r^{-1},
+ \qquad
+ \tau=3+\frac{2}{\tau-1}+r.
+ \label{caz:broom-identities}
+\end{equation}
+Because $B_d$ is bipartite, changing the sign on one color class
+conjugates its Laplacian to $Q=D+A$. It therefore suffices to bound
+the largest eigenvalue of $Q$.
+
+Number the vertices of its central path $0,1,\ldots,d$. Define a
+strictly positive vector $x$ by
+\[
+ x_i=r^i+r^{d-i}\qquad(0\le i\le d),
+\]
+and give each pendant leaf the value of its adjacent endpoint
+divided by $\tau-1$. The first identity in
+\eqref{caz:broom-identities} gives $(Qx)_i=\tau x_i$ at every
+internal path vertex. The same equality holds at every leaf. At
+the endpoint $0$, the second identity gives
+\begin{align*}
+ (Qx)_0-\tau x_0
+ &=x_1-rx_0\\
+ &=r+r^{d-1}-r(1+r^d)\\
+ &=r^{d-1}(1-r^2)>0.
+\end{align*}
+The other endpoint has the same positive residual. Since all
+coordinates of $x$ are positive,
+$x^{\mathsf T}Qx>\tau x^{\mathsf T}x$. The Rayleigh principle proves
+the claim for every $d$.
+\end{proof}
+
+\subsection{Proof of the global inequality}
+
+\begin{proof}[Proof of Theorem~\ref{caz:main}]
+Write $\mu=\mu_1(G)$ and let $\Delta$ be the maximum degree.
+We first dispose of the degrees outside the remaining subcubic
+case, including all paths and cycles.
+
+\paragraph{Maximum degree at least four.}
+By \eqref{caz:degree-bounds},
+\[
+ \mu^2-4\lambda_2-8
+ \ge(\Delta+1)^2-4\Delta-8
+ =\Delta^2-2\Delta-7\ge1
+ \qquad(\Delta\ge4).
+\]
+
+\paragraph{Maximum degree at most two.}
+Connectedness makes $G$ a path or a cycle. On the path $P_n$,
+\[
+ \lambda_2=2\cos\frac{2\pi}{n+1},
+ \qquad
+ \mu=2+2\cos\frac{\pi}{n}.
+\]
+For $n=2$, \eqref{caz:target} is the equality $4=4$.
+For $n\ge3$, put $a=\pi/(2n)$ and $b=\pi/(2(n+1))$.
+The target becomes
+$16\cos^4a\ge16\cos^2(2b)$. Both cosine quantities are positive,
+so this is equivalent to
+\[
+ \sin a\le\sqrt2\sin b.
+\]
+Since $\sin t/t$ decreases on $(0,\pi)$,
+\[
+ \frac{\sin a}{\sin b}\le\frac ab
+ =\frac{n+1}{n}\le\frac43<\sqrt2,
+\]
+which proves the path case. For an even cycle, $\mu=4$ and
+$\lambda_2\le2$. For an odd cycle, put $c=\cos(\pi/n)>0$.
+Then
+\[
+ \mu=2+2c\ge4c,
+ \qquad
+ 4\lambda_2+8=8\cos(2\pi/n)+8=16c^2,
+\]
+and the result follows again.
+
+\paragraph{Initial subcubic reduction.}
+Assume henceforth $\Delta=3$. If $\lambda_2\le2$, the star bound
+$\mu\ge4$ proves \eqref{caz:target}. If $\mu\ge\sqrt{20}$,
+then $\lambda_2\le3$ proves it. It remains to consider
+\begin{equation}
+ \Delta=3,
+ \qquad \lambda_2>2,
+ \qquad \mu<\sqrt{20}.
+ \label{caz:residual}
+\end{equation}
+By Lemma~\ref{caz:certificates} and subgraph monotonicity, none of
+$S,D^+,H$ can occur as a subgraph.
+
+We claim that $G$ contains no diamond, even as a non-induced
+subgraph. In a diamond, two vertices already have degree three,
+so only its two degree-two tips could have neighbors outside the
+diamond. If any outside vertex exists, connectedness supplies an
+edge from a tip to an outside vertex, producing $D^+$. If there is
+no outside vertex, $G$ is the diamond or $K_4$; deleting a vertex
+and applying interlacing gives $\lambda_2\le2$, contrary to
+\eqref{caz:residual}. This proves the claim.
+
+Consequently, the triangles in $G$ are vertex-disjoint. Indeed,
+two triangles sharing just one vertex would force degree at least
+four, and two sharing an edge would contain a diamond. Moreover,
+every edge joining two degree-three vertices lies in a triangle:
+if its endpoints had no common neighbor, their four other
+neighbors would be distinct and would form the forbidden double
+star $S$ with that edge.
+
+In particular, an edge leaving a triangle has its outside endpoint
+of degree at most two. Otherwise that edge would lie in another
+triangle, contradicting vertex-disjointness. The outside endpoint
+cannot itself belong to a different triangle, because its two
+neighbors there would make its degree three.
+
+\paragraph{The band $\sqrt{19}\le\mu<\sqrt{20}$.}
+Set
+\[
+ B=1+\sqrt3,
+ \qquad c=\frac B2,
+ \qquad a=\frac3B,
+ \qquad 1<a<c.
+\]
+Give every triangle vertex weight $c$, every non-triangle vertex
+of degree three weight $a$, and every remaining vertex weight one.
+At a triangle vertex the adjacency sum divided by its own weight
+is at most
+\[
+ 2+\frac1c=B.
+\]
+At a non-triangle degree-three vertex, all neighbors are
+non-triangle vertices of degree at most two, so this ratio is
+$3/a=B$. At any remaining vertex the degree is at most two and
+all neighbor weights are at most $c$, so the ratio is at most
+$2c=B$. Equation~\eqref{caz:positive-weights} therefore yields
+\begin{equation}
+ \lambda_1(G)\le1+\sqrt3.
+ \label{caz:first-perron}
+\end{equation}
+If $\mu\ge\sqrt{19}$, then
+\[
+ \mu^2\ge19>12+4\sqrt3
+ =8+4(1+\sqrt3)\ge8+4\lambda_2.
+\]
+The strict scalar comparison follows from $7>4\sqrt3$, or
+$49>48$. This closes the whole band.
+
+\paragraph{Triangle attachments below $\sqrt{19}$.}
+It remains to assume $\mu<\sqrt{19}$, so $F$ and $C^+$ are also
+forbidden. We show that no triangle contains two degree-three
+vertices. Suppose otherwise that a triangle has vertices $u,v,w$,
+where $u,v$ have respective neighbors $a,b$ outside the triangle.
+The vertices $a,b$ are distinct, since otherwise there is a
+diamond, and both have degree at most two by the preceding
+structural reduction.
+
+If $a$ is not a leaf, let $c$ be its other neighbor. If $c$ is a
+triangle vertex, the resulting edges give a diamond (or violate
+the already specified degrees). If $c=b$, the original triangle
+and the path $u,a,b,v$ give the house $H$. If $c$ is outside
+$\{u,v,w,a,b\}$, the triangle together with the path $u,a,c$
+and the edge $v,b$ gives $F$. Each case is impossible. Thus $a$
+is a leaf, and by symmetry $b$ is a leaf.
+
+If $w$ also has degree three, repeat the same argument for the
+pair $u,w$ to show that its outside neighbor is a leaf. All edges
+leaving this triangle therefore end in leaves. Connectedness
+makes $G$ exactly a triangle with two or three pendant leaves.
+Deleting one of its degree-three triangle vertices leaves a path
+of order at most four and an isolated vertex. Its adjacency
+spectral radius is strictly less than two, so
+\eqref{caz:interlacing} contradicts $\lambda_2>2$.
+
+Thus each triangle contains at most one degree-three vertex.
+Since every edge between degree-three vertices lies in a
+triangle, the degree-three vertices form an independent set.
+Give each such vertex weight $\sqrt{3/2}$, and all other vertices
+weight one. The adjacency ratio is $3/\sqrt{3/2}=\sqrt6$ at a
+degree-three vertex, and is at most $2\sqrt{3/2}=\sqrt6$ elsewhere.
+Hence
+\begin{equation}
+ \lambda_1(G)\le\sqrt6.
+ \label{caz:second-perron}
+\end{equation}
+
+\paragraph{Finding a double broom.}
+There must be at least two degree-three vertices. If $v$ were
+the only one, every component of $G-v$ would have maximum degree
+two. A cycle component could not be connected to $v$ without
+creating another degree-three vertex. Thus all components would
+be paths, and interlacing would give
+$\lambda_2(G)\le\lambda_1(G-v)<2$, a contradiction.
+
+Choose two degree-three vertices $u,v$ at minimum mutual distance
+$d$, and a shortest path between them. Independence gives $d\ge2$;
+minimality ensures that every internal path vertex has degree two.
+Each endpoint has two other neighbors, all off the path by
+shortestness. If $d\ge3$, an off-path neighbor cannot be shared by
+the two endpoints, since it would give a path of length two.
+Thus their four off-path neighbors are distinct, producing $B_d$
+as a subgraph.
+
+If $d=2$ and the endpoints share an off-path neighbor, this
+neighbor and the internal path vertex form a four-cycle with
+$u,v$. The third neighbor of $u$ is outside this four-cycle:
+it is distinct from both common neighbors, and it cannot be $v$
+because degree-three vertices are independent. The four-cycle
+and this additional edge give $C^+$, a contradiction. Therefore
+the four off-path neighbors are distinct in this case too, and
+again $B_d$ is a subgraph. Any additional edges can simply be
+omitted when selecting that subgraph.
+
+Lemma~\ref{caz:broom} and monotonicity now give
+$\mu>2+\sqrt5$. Together with \eqref{caz:second-perron},
+\[
+ \mu^2>(2+\sqrt5)^2
+ =9+4\sqrt5
+ >8+4\sqrt6
+ \ge8+4\lambda_2.
+\]
+For the middle strict inequality, observe that
+\[
+ \sqrt6-\sqrt5=\frac1{\sqrt6+\sqrt5}<\frac14.
+\]
+This proves the remaining case and completes the global proof.
+\end{proof}
+
+\begin{remark}[Scope and priority]
+\label{caz:scope}
+The result is the full inequality of Conjecture~6(iii), for all
+permitted graph orders and all connected simple graphs. It is
+distinct from the linear-gap conjecture refuted in Round~11 and
+from Conjecture~6(ii), which concerns the second-largest Laplacian
+eigenvalue. The proof above was developed by extending the
+Round~12 reductions. The source statement was rechecked during
+this continuation; no assertion of publication priority is made.
+\end{remark}
+
+\Needspace{10\baselineskip}
+\section{A sharp lower bound for an alternating Ramanujan sum}
+\label{sec:ramanujan}
+
+Alzer and Kwong \cite[Section 4, conjecture (27)]{AlzerKwong} define
+\begin{equation}\label{eq:Vdef}
+ V_n(x)=\sum_{k=0}^{n}\frac{(-1)^k}{3^k}\sin^3(3^k x)
+ \qquad(n\in\mathbb Z_{\ge0}).
+\end{equation}
+Their conjecture asks for the strict bound below on the entire closed
+interval. The Round 22 Taisho checkpoint proved the central-interval
+case and an identity near $\pi/6$, but left an estimate across all
+geometric scales unresolved. We supply that estimate.
+
+\begin{theorem}\label{thm:ramanujan}
+For every integer $n\ge0$ and every $x\in[0,\pi]$,
+\begin{equation}\label{eq:ramanujan-main}
+ V_n(x)>-\frac38.
+\end{equation}
+The constant $-3/8$ is the largest uniform lower bound, since
+\begin{equation}\label{eq:sharpness}
+ V_n(\pi/6)=-\frac38+\frac{1}{2\cdot3^n}.
+\end{equation}
+\end{theorem}
+
+\subsection{An estimate on one fixed interval}
+
+\begin{lemma}\label{lem:one-scale}
+Put $a=51/100$ and $f(s)=(1-\cos^3s)/s$. Then
+\[
+ f(s)>\frac{13}{20}>\frac{3\sqrt3}{8}
+ \qquad\left(\frac{51}{100}\le s\le\frac{153}{100}\right).
+\]
+\end{lemma}
+
+\begin{proof}
+On $(0,\pi/2)$ the sign of $f'(s)$ is the sign of
+\[
+ q(s)=3s\cos^2s\sin s-(1-\cos^3s).
+\]
+Direct differentiation gives
+\[
+ q'(s)=3s\cos s\,(1-3\sin^2s).
+\]
+Thus $q$ strictly increases from $q(0)=0$ up to
+$s=\arcsin(1/\sqrt3)$ and then strictly decreases to
+$q(\pi/2)=-1$. Consequently $f$ first increases and then decreases.
+On any closed subinterval of $(0,\pi/2)$ its minimum is therefore
+at an endpoint. The interval $[a,3a]$ lies in $(0,\pi/2)$.
+
+The alternating Taylor bound
+\[
+ \cos s\le 1-\frac{s^2}{2}+\frac{s^4}{24}
+ \qquad(0\le s\le 153/100)
+\]
+gives the rational estimates
+\begin{align*}
+ \cos a&\le\frac{698215067}{800000000}<\frac{873}{1000},\\
+ \cos(3a)&\le\frac{46300427}{800000000}<\frac16.
+\end{align*}
+Cosine is positive at both endpoints, so cubing preserves these
+inequalities. It follows that
+\begin{align*}
+ f(a)&>\frac{1-(873/1000)^3}{51/100}
+      =\frac{334661383}{510000000}>\frac{13}{20},\\
+ f(3a)&>\frac{1-(1/6)^3}{153/100}
+      =\frac{5375}{8262}>\frac{13}{20}.
+\end{align*}
+For completeness, the differences from $13/20$ in these two rational
+bounds are $3161383/510000000$ and $47/82620$, respectively.
+Finally,
+\[
+ \left(\frac{13}{20}\right)^2-
+ \left(\frac{3\sqrt3}{8}\right)^2=\frac1{1600}>0.
+\]
+\end{proof}
+
+\subsection{The exact deficit and the scale selection}
+
+\begin{proof}[Proof of Theorem~\ref{thm:ramanujan}]
+Every frequency $3^k$ is odd, hence
+$V_n(\pi-x)=V_n(x)$. On the central interval
+$[\pi/6,5\pi/6]$, the first term is at least $1/8$, whereas
+\[
+ \sum_{k=1}^n\frac{(-1)^k}{3^k}\sin^3(3^kx)
+ \ge-\sum_{k=1}^n3^{-k}
+ =-\frac12+\frac1{2\cdot3^n}.
+\]
+This proves the desired strict inequality there. By symmetry it remains
+to consider $x\in[0,\pi/6]$. Write $x=\pi/6-t$, where
+$0\le t\le\pi/6$.
+
+For $k\ge1$ the cosine of $3^k\pi/6$ vanishes and its sine is
+$(-1)^{k+1}$. Therefore
+\begin{equation}\label{eq:exact-deficit}
+\begin{split}
+ V_n(\pi/6-t)+\frac38
+  ={}&\sin^3(\pi/6-t)-\frac18+\frac1{2\cdot3^n}\\
+     &+\sum_{k=1}^n\frac{1-\cos^3(3^kt)}{3^k}.
+\end{split}
+\end{equation}
+Every summand in the last sum is nonnegative, regardless of the size
+of $3^kt$. If $t=0$, the right side is $1/(2\cdot3^n)$.
+The case $n=0$ also follows directly from $V_0(x)=\sin^3x\ge0$.
+We may now assume $n\ge1$ and $t>0$.
+
+Let $c=3\sqrt3/8$. On $[0,\pi/6]$, the derivative of
+$\sin^3 y$ is increasing, because
+\[
+ \frac{d^2}{dy^2}\sin^3y=3\sin y\,(2-3\sin^2y)\ge0,
+\]
+and its largest value is $c$. Integrating this derivative over a
+nondegenerate interval ending at $\pi/6$ yields the strict inequality
+\begin{equation}\label{eq:initial-deficit}
+ \sin^3(\pi/6-t)-\frac18>-ct.
+\end{equation}
+
+First suppose $0<t<a=51/100$. If $3^nt<a$, then
+\[
+ \frac{1}{2\cdot3^n}>\frac{t}{2a}
+ =\frac{50}{51}t>ct.
+\]
+Equations~\eqref{eq:exact-deficit} and \eqref{eq:initial-deficit}
+already prove positivity. Otherwise choose the least integer $k\ge1$
+such that $3^kt\ge a$. It exists with $k\le n$, and minimality gives
+$a\le3^kt<3a$. Lemma~\ref{lem:one-scale} now gives
+\[
+ \frac{1-\cos^3(3^kt)}{3^k}
+ =t f(3^kt)>\frac{13}{20}t>ct.
+\]
+This single term cancels the possible initial deficit; every remaining
+term in \eqref{eq:exact-deficit} is nonnegative.
+
+Finally suppose $a\le t\le\pi/6$. Here
+$\pi/3<3a\le3t\le\pi/2$, so $0\le\cos(3t)<1/2$ and
+\[
+ \frac{1-\cos^3(3t)}3\ge\frac7{24}>\frac18.
+\]
+Since $\sin^3(\pi/6-t)-1/8\ge-1/8$, the right side of
+\eqref{eq:exact-deficit} is again positive. This exhausts all cases.
+
+At $t=0$, the same identity proves \eqref{eq:sharpness}.
+Letting $n$ tend to infinity shows that the lower bound cannot be
+increased.
+\end{proof}
+
+\begin{corollary}\label{cor:infinite-sine}
+The uniformly convergent series
+\[
+ V(x)=\sum_{k=0}^{\infty}(-1)^k3^{-k}\sin^3(3^kx)
+\]
+satisfies $V(x)\ge-3/8$ on $[0,\pi]$. Equality holds precisely
+at $x=\pi/6$ and $x=5\pi/6$.
+\end{corollary}
+
+\begin{proof}
+Uniform convergence follows from the bound $3^{-k}$ on the absolute
+value of the $k$th term. On the central interval the argument above
+gives $V(x)+3/8\ge\sin^3x-1/8$, which is strictly positive away
+from its two endpoints. On $x=\pi/6-t$ with $0<t<a$, the least
+$k$ in the preceding proof exists independently of the truncation
+length, so the limiting deficit is strictly greater than
+$(13/20-c)t>0$. The large-$t$ estimate also stays strictly positive
+in the limit. Symmetry covers the other end of the interval, and
+\eqref{eq:sharpness} gives equality at the two stated points.
+\end{proof}
+
+\Needspace{10\baselineskip}
+\section{Sharp constants for the full real-parameter sine quotient}
+\label{sec:sinequotient}
+
+Male\v sevi\'c, Mi\'covi\'c, Mihailovi\'c and Lutovac
+\cite[Section 5]{Malesevic} ask for a real-parameter extension,
+with sharp constants, of their inequality (15). The integer-parameter
+case comes from Hung and Li \cite{HungLi}. We study
+\begin{equation}\label{eq:Qdef}
+ Q_p(x)=\frac{p-\sin x/\sin(x/p)}{x^2},\qquad 0<x<\pi/2,
+\end{equation}
+where $p\ne0$ and the denominator is nonzero. For $p>1$, the
+Round 25 Taisho checkpoint established a shape classification only
+up to $p=3$. The missing unbounded parameter range is treated in
+Lemma~\ref{lem:large-p}. We also determine the unique transition
+parameter and classify the remaining real values of $p$.
+
+Define
+\begin{equation}\label{eq:endpoint-Q}
+ \begin{aligned}
+ A(p)&=\frac{p^2-1}{6p} &&(p\ne0),\\
+ B(p)&=\frac4{\pi^2}\left(p-\csc\frac{\pi}{2p}\right)
+       &&\left(p>\frac12\right).
+ \end{aligned}
+\end{equation}
+Let $p_0=\sqrt{7/3}$. A second constant $p_*$ is defined exactly
+below; its decimal value is given only for orientation.
+
+\begin{theorem}\label{thm:sine-classification}
+There is a unique $\tau\in(0,\pi/2)$ satisfying
+\begin{equation}\label{eq:tau}
+ 2+\tau\cot\tau-\pi\frac{\sin\tau}{\tau}=0.
+\end{equation}
+Set
+\[
+ p_* =\frac{\pi}{2\tau}
+       =1.5577320374007023\ldots .
+\]
+Then $p_0<p_*<2$, and for every $p>1$ the following statements
+describe the whole interval $0<x<\pi/2$.
+\begin{enumerate}[label=(\roman*)]
+\item If $1<p\le p_0$, then $Q_p$ is strictly increasing and
+\[
+ A(p)<Q_p(x)<B(p).
+\]
+Both constants are sharp.
+\item If $p_0<p<p_*$, then $Q_p$ strictly decreases to one
+interior minimum and then strictly increases. Let $t_p$ be the unique
+solution in $(0,\pi/(2p))$ of
+\begin{equation}\label{eq:critical-t}
+ 2\left(p-\frac{\sin(pt)}{\sin t}\right)
+ +t\frac{d}{dt}\left(\frac{\sin(pt)}{\sin t}\right)=0.
+\end{equation}
+The best lower and upper constants are
+\[
+ M(p)=\frac{p-\sin(pt_p)/\sin t_p}{p^2t_p^2},
+ \qquad \max\{A(p),B(p)\},
+\]
+and the precise sharp inequality is
+\[
+ M(p)\le Q_p(x)<\max\{A(p),B(p)\}.
+\]
+Equality in the lower bound holds exactly at $x=pt_p$.
+\item If $p\ge p_*$, then $Q_p$ is strictly decreasing and
+\[
+ B(p)<Q_p(x)<A(p).
+\]
+Both constants are sharp. In particular, the original orientation
+of inequality (15) holds precisely for $p\ge p_*$ among $p>1$.
+\end{enumerate}
+\end{theorem}
+
+\subsection{Positive coefficient bounds and a cosine kernel}
+
+For $p>0$ write
+\[
+ T=\frac{\pi}{2p},\quad u=t^2,\quad
+ R_p(t)=\frac{\sin(pt)}{\sin t},\quad
+ H_p(u)=\frac{p-R_p(\sqrt u)}{u}.
+\]
+Then $Q_p(x)=p^{-2}H_p(x^2/p^2)$. For $0\le q\le1$ put
+\[
+ J_q(u)=\frac{R_q(\sqrt u)-q}{u},
+\]
+using continuous values at $u=0$ and $J_0=J_1=0$.
+
+\begin{lemma}\label{lem:J}
+For $0\le q\le1$, all Taylor coefficients of $J_q$ at zero
+are nonnegative, and the series converges for $|u|<\pi^2$.
+For $0<q<1$ they are strictly positive. Moreover,
+\begin{equation}\label{eq:J-deriv}
+ 0\le J_q'(u)\le\frac{1}{36(1-u/6)^2}\le\frac1{25}
+ \qquad(0\le u\le1).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Euler's sine product gives, with locally uniform convergence,
+\begin{equation}\label{eq:euler-ratio}
+ R_q(\sqrt u)
+ =q\prod_{n=1}^{\infty}
+  \left(1+\frac{(1-q^2)u}{\pi^2n^2-u}\right).
+\end{equation}
+All coefficients in each factor are nonnegative. If $0<q<1$,
+any single factor contributes a strictly positive coefficient at
+every positive degree. Normal convergence on circles of radius
+less than $\pi^2$ justifies coefficient passage to the product.
+
+Write $r_j=[u^j]R_q(\sqrt u)$. Coefficientwise, the product
+in \eqref{eq:euler-ratio} is bounded by
+\[
+ q\prod_{n=1}^{\infty}(1-w_nu)^{-1},
+ \qquad w_n=\frac1{\pi^2n^2},\qquad \sum_{n\ge1}w_n=\frac16.
+\]
+The coefficient of degree $j$ in this last product is $q h_j(w)$,
+where $h_j$ is the complete homogeneous symmetric sum. Its monomials
+occur with coefficient at least one in $(\sum_nw_n)^j$, so
+\[
+ 0\le r_j\le qh_j(w)\le q6^{-j}\le6^{-j}.
+\]
+The argument can first be made for finitely many factors and then
+passed to the limit. Termwise differentiation now yields
+\[
+ J_q'(u)=\sum_{j\ge2}(j-1)r_j u^{j-2}
+ \le\sum_{j\ge2}(j-1)6^{-j}u^{j-2}
+ =\frac{1}{36(1-u/6)^2}.
+\]
+At $u\le1$ this is at most $1/25$.
+\end{proof}
+
+\begin{lemma}\label{lem:K}
+For $a>0$ define
+\[
+ K_a(u)=\frac{1-\cos(a\sqrt u)}{u}
+       =a^2\int_0^1(1-v)\cos(av\sqrt u)\,dv.
+\]
+Whenever $0<a\sqrt u<\pi/2$, one has
+\[
+ K_a'(u)<0,\qquad K_a''(u)>0,\qquad
+ -K_a'(u)\ge\frac{a^4}{12\pi}.
+\]
+\end{lemma}
+
+\begin{proof}
+The integral identity follows by direct integration. Differentiation
+under this integral is legitimate on compact positive $u$-intervals,
+and also extends continuously to $u=0$ by the power series. In
+particular,
+\[
+ -K_a'(u)=\frac{a^3}{2\sqrt u}
+  \int_0^1v(1-v)\sin(av\sqrt u)\,dv>0.
+\]
+The concavity bound $\sin z\ge2z/\pi$ for $0\le z\le\pi/2$
+gives the stated lower bound, since
+$\int_0^1v^2(1-v)\,dv=1/12$.
+For $b>0$ and $z=b\sqrt u$,
+\[
+ \frac{d^2}{du^2}\cos(b\sqrt u)
+ =\frac{b}{4u^{3/2}}(\sin z-z\cos z)>0
+ \qquad(0<z<\pi/2),
+\]
+because the expression in parentheses has derivative $z\sin z>0$
+and vanishes at zero. Integrating proves strict convexity of $K_a$.
+\end{proof}
+
+\subsection{The unbounded parameter range}
+
+The elementary subtraction identity
+\begin{equation}\label{eq:recurrence-R}
+ R_p(t)=2\cos((p-1)t)+R_{p-2}(t)
+\end{equation}
+holds for every real $p$ whenever $\sin t\ne0$.
+
+\begin{lemma}\label{lem:large-p}
+For every real $p\ge2$, the function $H_p$ is strictly decreasing
+on $0<u<T^2$.
+\end{lemma}
+
+\begin{proof}
+For $2\le p\le3$, equation~\eqref{eq:recurrence-R} gives
+\[
+ H_p=2K_{p-1}-J_{p-2}.
+\]
+Lemma~\ref{lem:K} and coefficient positivity in Lemma~\ref{lem:J}
+show that its derivative is strictly negative.
+
+For $p\ge3$, choose the integer $m\ge1$ so that
+$p=2m+q$ with $-1<q\le1$. Iterating
+\eqref{eq:recurrence-R} yields
+\[
+ R_p(t)=2\sum_{j=0}^{m-1}\cos(a_jt)+R_q(t),
+ \qquad a_j=p-1-2j.
+\]
+The smallest frequency is $q+1>0$, the largest is $p-1$, and
+$a_jt<pt<\pi/2$. If $q\ge0$, then
+\[
+ H_p=2\sum_{j=0}^{m-1}K_{a_j}-J_q,
+\]
+whose derivative is strictly negative. If $q=-\beta<0$, oddness
+of $R_q$ in $q$ instead gives
+\[
+ H_p=2\sum_{j=0}^{m-1}K_{a_j}+J_\beta,
+ \qquad 0<\beta<1.
+\]
+Here $u<T^2\le\pi^2/36<1$. The largest frequency alone controls
+the possibly positive last derivative:
+\[
+ H_p'(u)\le-\frac{(p-1)^4}{6\pi}+\frac1{25}
+ <-\frac23+\frac1{25}<0.
+\]
+We used $p-1\ge2$ and $\pi<4$ in the strict middle inequality.
+This completes the proof for all real $p\ge2$.
+\end{proof}
+
+\subsection{The unique transition and the sharp constants}
+
+For $1<p<2$, equation~\eqref{eq:recurrence-R} gives
+\begin{equation}\label{eq:small-p-convex}
+ H_p=2K_{p-1}+J_{2-p}.
+\end{equation}
+Thus $H_p$ is strictly convex on $[0,T^2]$. Its endpoint values
+and slopes, obtained by Taylor expansion and direct differentiation,
+are
+\begin{align}
+ H_p(0)&=L:=\frac{p(p^2-1)}6,
+ &H_p(T^2)&=U:=\frac{p-\csc T}{T^2},\label{eq:H-endpoints}\\
+ H_p'(0)&=-\frac{p(p^2-1)(3p^2-7)}{360},
+ &H_p'(T^2)&=\frac{T\csc T\cot T-2(p-\csc T)}{2T^4}.
+ \label{eq:H-slopes}
+\end{align}
+Indeed,
+\[
+ R_p(t)=p-\frac{p(p^2-1)}6t^2
+ +\frac{p(p^2-1)(3p^2-7)}{360}t^4+O(t^6),
+\]
+and $R_p'(T)=-\csc T\cot T$.
+
+\begin{lemma}\label{lem:transition}
+The function $g(t)=2+t\cot t-\pi\sin t/t$ has exactly one zero
+$\tau$ in $(0,\pi/2)$. It is negative on $(0,\tau)$ and positive
+on $(\tau,\pi/2)$. The number $p_*=\pi/(2\tau)$ satisfies
+$\sqrt{7/3}<p_*<2$.
+\end{lemma}
+
+\begin{proof}
+The sine product and its logarithmic derivative give, for $|t|<\pi$,
+\[
+ g(t)=3-\pi+\sum_{k\ge1}c_kt^{2k},\qquad
+ c_k=\frac{(-1)^{k+1}\pi}{(2k+1)!}
+       -\frac{2\zeta(2k)}{\pi^{2k}}.
+\]
+Here $c_1=\pi/6-1/3>0$, and $c_k<0$ for all $k\ge2$.
+For even $k$ this is immediate. For odd $k\ge3$ it suffices to
+prove $\pi^{2k+1}<2(2k+1)!$, because $\zeta(2k)>1$.
+At $k=3$, the inequalities $\pi<4$ and $\pi^2<10$ give
+$\pi^7<4000<10080=2\cdot7!$. Incrementing $k$ multiplies the
+left side by $\pi^2<10$ and the right side by
+$(2k+2)(2k+3)>10$, proving the claim by induction.
+
+It follows that $G(u)=g(\sqrt u)$ is strictly concave on
+$[0,\pi^2/4]$. At the endpoints,
+\[
+ G(0)=3-\pi<0,\qquad g(\pi/2)=0,
+ \qquad g'(\pi/2)=\frac4\pi-\frac\pi2<0.
+\]
+Thus $G$ is positive just to the left of its right endpoint and
+has a zero in its interior. Strict concavity and $G(0)<0$ give
+uniqueness and the asserted signs. More explicitly, $G'$ strictly
+decreases, so $G$ increases to one maximum and then decreases;
+there can be only the stated interior crossing before the endpoint
+zero.
+
+The second slope in \eqref{eq:H-slopes} has the sign of $g(T)$,
+since
+\[
+ H_p'(T^2)=\frac{g(T)}{2T^4\sin T}.
+\]
+At $p=p_0=\sqrt{7/3}$, strict convexity and $H_p'(0)=0$
+force $H_p'(T^2)>0$. At $p=2$ one has $H_2=2K_1$, with
+$H_2'(T^2)<0$. Hence $p_0<p_*<2$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:sine-classification}]
+For $1<p<2$, strict convexity makes $H_p'$ strictly increasing.
+Its initial value in \eqref{eq:H-slopes} is nonnegative precisely
+when $p\le p_0$. In this range every interior derivative is
+positive. If $p_0<p<p_*$, the initial derivative is negative and
+the final derivative is positive by Lemma~\ref{lem:transition}.
+There is exactly one critical point, and it is a strict minimum.
+If $p_*\le p<2$, the final derivative is nonpositive, so every
+interior derivative is strictly negative. Lemma~\ref{lem:large-p}
+treats $p\ge2$.
+
+The strictly increasing change of variable $u=x^2/p^2$ transfers
+these shape assertions to $Q_p$. The endpoint limits are exactly
+$A(p)=L/p^2$ and $B(p)=U/p^2$. Strict convexity in the middle
+case puts all interior values below the larger endpoint value,
+and differentiation gives equation~\eqref{eq:critical-t} for its
+unique minimum. The endpoint limits establish sharpness of all
+endpoint constants. For $p<p_*$, either the orientation is reversed
+or an interior minimum is smaller than both endpoints, so the
+original double inequality cannot hold throughout the interval.
+\end{proof}
+
+\subsection{All other real parameters and the domain of finite bounds}
+
+\begin{proposition}\label{prop:other-p}
+The remaining parameter values in \eqref{eq:Qdef} have the following
+complete description.
+\begin{enumerate}[label=(\roman*)]
+\item If $1/2<p<1$, then $Q_p$ is strictly decreasing and
+$B(p)<Q_p(x)<A(p)$, with sharp endpoint constants.
+\item $Q_1$ and $Q_{-1}$ vanish identically.
+\item $Q_{1/2}$ is strictly decreasing with
+$\sup Q_{1/2}=-1/4$ and $\inf Q_{1/2}=-\infty$.
+\item If $0<p<1/2$, the interval contains a pole, and $Q_p$ is
+unbounded in both directions on its domain.
+\item All negative parameters follow from $Q_{-p}(x)=-Q_p(x)$;
+in particular the roles of lower and upper bounds are reversed.
+The value $p=0$ does not define \eqref{eq:Qdef}.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+For $1/2\le p<1$, one has $0<t<T\le\pi$, so
+$H_p=-J_p$ has strictly negative derivative by
+Lemma~\ref{lem:J} and its coefficient argument on the full interval
+$0<u<\pi^2$. For $p>1/2$ the limits in
+\eqref{eq:H-endpoints} are finite. At $p=1/2$, the limit at
+$x\uparrow\pi/2$ is $-\infty$, whereas the limit at zero is
+$A(1/2)=-1/4$. For $0<p<1/2$, the denominator $\sin(x/p)$
+has a simple zero at the interior point $x=\pi p$, and the
+numerator $\sin x$ is positive there. The two sides of this pole
+give both infinite signs. Oddness in $p$ and direct substitution
+at $p=1$ prove the other assertions.
+\end{proof}
+
+\Needspace{10\baselineskip}
+\section{Exactly seventy-eight positive sixth powers}
+\label{war:section}
+
+Benfield and Lippard ask for the integers representable as a sum of exactly
+seventy-eight positive sixth powers in \cite[Conjecture~6.4]{BenfieldLippard}.
+The Round~21 Keio checkpoint reduced this question to a finite interval
+calculation and a padding construction, but did not independently verify the
+permanent exceptional set or the padding representations. We give a complete
+certificate for these missing inputs and an elementary description of the
+exceptional set. The infinite part of the proof uses Pillai's theorem
+$g(6)=73$ \cite{Pillai1940}.
+
+For a subset $E$ of the nonnegative integers, write $jE$ for its $j$-fold
+sumset, and put $0E=\{0\}$. Define
+\begin{equation}\label{war:def}
+ D=\{a^6-1:a\in\mathbb Z_{\geq1}\},\qquad
+ S=\bigcup_{j\geq0}jD,\qquad
+ B^6=\mathbb Z_{\geq0}\setminus S.
+\end{equation}
+The translation by $j$ records the requirement that all $j$ powers be
+positive: for $n\geq j$,
+\begin{equation}\label{war:translation}
+ n\text{ is a sum of exactly }j\text{ positive sixth powers}
+ \quad\Longleftrightarrow\quad n-j\in jD.
+\end{equation}
+
+\begin{theorem}\label{war:main}
+The numerical semigroup $S$ satisfies
+\[
+ S=\langle63,728,117648\rangle=78D.
+\]
+Its complement has cardinality $355825$ and largest element $711649$.
+For every integer $j\geq78$, a positive integer $n$ is a sum of exactly $j$
+positive sixth powers if and only if $n\geq j$ and $n-j\notin B^6$.
+Moreover, $77D\ne S$, so $78$ is the least stabilization index.
+\end{theorem}
+
+\subsection{The permanent exceptional set}
+
+The semigroup computation can be made entirely elementary. In particular,
+the proof does not assume the correctness of a remotely stored list of
+$355825$ exceptional integers.
+
+\begin{lemma}\label{war:semigroup}
+Let $S_0=\langle63,728,117648\rangle$. Its least representatives modulo $63$
+are the $63$ integers
+\begin{equation}\label{war:apery}
+ d(y,z)=728y+117648z,
+ \qquad 0\leq y\leq8,\quad 0\leq z\leq6.
+\end{equation}
+Consequently
+\begin{equation}\label{war:gaps}
+ \max(\mathbb Z_{\geq0}\setminus S_0)=711649,
+ \qquad
+ |\mathbb Z_{\geq0}\setminus S_0|=355825.
+\end{equation}
+Furthermore, $S=S_0$.
+\end{lemma}
+
+\begin{proof}
+The identities
+\[
+ 9\cdot728=104\cdot63,
+ \qquad 7\cdot117648=13072\cdot63
+\]
+show that any nonnegative combination of the three generators can be written
+as $63x+d(y,z)$ with $x\geq0$ and with $y,z$ in the ranges
+\eqref{war:apery}. The reduction of $y$ and $z$ increases $x$, so it
+preserves its nonnegativity.
+
+The $63$ numbers in \eqref{war:apery} have distinct residues modulo $63$.
+Indeed, $728\equiv0\pmod7$ and $117648\equiv-1\pmod7$, so a residue fixes
+$z$ uniquely in $\{0,\ldots,6\}$. Once $z$ is fixed, the value of $y$ is
+fixed modulo $9$ because $728/7=104\equiv5\pmod9$ is invertible modulo
+$9$. Thus the numbers in \eqref{war:apery} are exactly the least
+representatives of $S_0$ in their respective residue classes. Denote by $d_r$
+the representative congruent to $r$, where $0\leq r<63$. We have the exact
+membership criterion
+\begin{equation}\label{war:membership}
+ m\in S_0\quad\Longleftrightarrow\quad m\geq d_{m\bmod63}
+ \qquad(m\in\mathbb Z_{\geq0}).
+\end{equation}
+The largest missing integer is therefore
+\[
+ \max_r d_r-63
+ =8\cdot728+6\cdot117648-63=711649.
+\]
+In residue class $r$, the number of missing nonnegative integers is
+$(d_r-r)/63$. Summing gives
+\begin{align*}
+ |\mathbb Z_{\geq0}\setminus S_0|
+ &=\frac{1}{63}\sum_{y=0}^{8}\sum_{z=0}^{6}
+       (728y+117648z)-\frac{1}{63}\sum_{r=0}^{62}r\\
+ &=\frac{7\cdot728\cdot36+9\cdot117648\cdot21}{63}-31
+ =355825.
+\end{align*}
+
+The three generators of $S_0$ belong to $D$, so $S_0\subseteq S$.
+For the reverse inclusion, every $a\geq10$ satisfies
+$a^6-1\geq999999>711649$, and hence $a^6-1\in S_0$. Among the remaining
+values, $a=1$ gives zero, $a=2,3,7$ give the three generators, and
+\begin{align*}
+ 4^6-1&=65\cdot63,&
+ 5^6-1&=248\cdot63,&
+ 6^6-1&=64\cdot728+63,\\
+ 8^6-1&=4161\cdot63,&
+ 9^6-1&=730\cdot728.
+\end{align*}
+Thus every generator of $S$ belongs to $S_0$, proving equality.
+\end{proof}
+
+\subsection{A finite sumset certificate}
+
+Set $H=3500000$. Every set $jD\cap[0,H]$ can be computed with exact integer
+arithmetic. The key point is that the recurrence below is exact at every
+stage, since all summands are nonnegative; it is not an approximation to
+the infinite sumset.
+
+\begin{proposition}[Finite certificate]\label{war:finite}
+For $V_j=jD\cap[0,H]$, the missing integers in $[0,H]$ have the counts and
+largest elements shown in Table~\ref{war:finite-table}. In particular,
+\begin{equation}\label{war:finite-consequences}
+ [746111,H]\subseteq40D,
+ \qquad V_{78}=S\cap[0,H],
+ \qquad 715744\notin77D.
+\end{equation}
+\end{proposition}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{r|r|r}
+$j$ & Number of missing integers in $[0,H]$ & Largest missing integer\\
+\hline
+40 & 360244 & 746110\\
+77 & 355826 & 715744\\
+78 & 355825 & 711649
+\end{tabular}
+\caption{Exact finite sixth-power difference sumsets, with $H=3500000$.}
+\label{war:finite-table}
+\end{table}
+
+\begin{proof}[Exact computational proof]
+Starting with $V_0=\{0\}$, compute
+\begin{equation}\label{war:recurrence}
+ V_{j+1}=
+ \left(\bigcup_{\substack{c\in D\\c\leq H}}(V_j+c)\right)\cap[0,H].
+\end{equation}
+If a nonnegative sum is at most $H$, all its summands and every partial sum
+are at most $H$. This proves \eqref{war:recurrence} in both directions.
+The finite set of shifts is
+\[
+ D\cap[0,H]=\{a^6-1:1\leq a\leq12\}.
+\]
+Represent $V_j$ by the nonnegative integer
+$v_j=\sum_{m\in V_j}2^m$, and put $M=2^{H+1}-1$. Then
+\eqref{war:recurrence} is implemented exactly by
+\[
+ v_0=1,\qquad
+ v_{j+1}=M\mathbin{\&}
+       \left(\mathop{\mathrm{OR}}_{c\in D\cap[0,H]}(v_j\ll c)\right),
+\]
+where $\ll$, $\mathbin{\&}$ and $\mathrm{OR}$ denote integer left shift,
+bitwise AND and bitwise OR. The missing-set encoding is $M\mathbin{\oplus}v_j$,
+so its population count gives the second column of
+Table~\ref{war:finite-table}, and its bit length minus one gives the third.
+
+The standalone Python certificate printed in the appendix performs these
+operations for $1\leq j\leq78$. It also constructs independently the exact
+membership encoding specified by \eqref{war:membership} and compares it,
+bit for bit, with $v_{78}$. Thus the second assertion in
+\eqref{war:finite-consequences} is checked by equality of complete finite
+sets, in addition to the count and maximum checks. At row $77$ the code
+explicitly checks that bit $715744$ is zero. The execution returns all three
+rows in the table and passes every assertion. This finite certificate
+establishes \eqref{war:finite-consequences}.
+\end{proof}
+
+\subsection{Extending the certified interval}
+
+\begin{lemma}[Interval extension]\label{war:interval}
+Suppose that $[L,U]\cap\mathbb Z\subseteq jD$. If $a$ is a positive integer
+such that
+\begin{equation}\label{war:overlap}
+ a^6-(a-1)^6\leq U-L+1,
+\end{equation}
+then
+\[
+ [L,U+a^6-1]\cap\mathbb Z\subseteq(j+1)D.
+\]
+\end{lemma}
+
+\begin{proof}
+For each $1\leq b\leq a$, append $b^6-1\in D$ to the representations of
+all integers in $[L,U]$. This gives the interval
+$[L+b^6-1,U+b^6-1]\cap\mathbb Z$ inside $(j+1)D$.
+The consecutive shift differences $b^6-(b-1)^6$ increase with $b$ and are
+bounded by \eqref{war:overlap}. Hence these integer intervals overlap or
+touch. Their union contains every integer from $L$ to $U+a^6-1$.
+\end{proof}
+
+Starting with $j=40$, $L=746111$ and $U=H$, apply
+Lemma~\ref{war:interval} six times, using respectively
+$a=14,18,24,33,48,74$. Table~\ref{war:bridge-table} records the resulting
+intervals. The standalone certificate checks every overlap inequality
+\eqref{war:overlap} and every displayed endpoint using integer arithmetic.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{r|r|r|r}
+New $j$ & $a$ & Lower endpoint $L$ & New upper endpoint $U$\\
+\hline
+41 & 14 & 746111 & 11029535\\
+42 & 18 & 746111 & 45041758\\
+43 & 24 & 746111 & 236144733\\
+44 & 33 & 746111 & 1527612701\\
+45 & 48 & 746111 & 13758203164\\
+46 & 74 & 746111 & 177964693339
+\end{tabular}
+\caption{Six exact extensions of the row-$40$ interval.}
+\label{war:bridge-table}
+\end{table}
+
+Since $0\in D$, each $jD$ is contained in $(j+1)D$. Consequently the last
+interval in Table~\ref{war:bridge-table} is contained in $78D$.
+It overlaps $[0,H]$, so Proposition~\ref{war:finite} proves
+\begin{equation}\label{war:bridge}
+ S\cap[0,177964693339]\subseteq78D.
+\end{equation}
+
+\subsection{A padding certificate for every larger integer}
+
+\begin{lemma}[Padding representations]\label{war:padding}
+The integer $P=41253168892$ is a sum of exactly $s$ positive sixth powers
+for every integer $5\leq s\leq77$.
+\end{lemma}
+
+\begin{proof}[Exact certificate]
+The standalone certificate contains $73$ explicit rows, one for each
+$s=5,\ldots,77$. A row lists pairs $a:c_a$ of positive integers and is
+checked by the two identities
+\begin{equation}\label{war:padding-check}
+ \sum_a c_a=s,\qquad \sum_a c_a a^6=P.
+\end{equation}
+For example, the first two rows are
+\begin{align*}
+ P&=10^6+13^6+45^6+47^6+53^6,\\
+ P&=11^6+23^6+25^6+32^6+42^6+57^6.
+\end{align*}
+All $73$ rows pass \eqref{war:padding-check} exactly. The rows were
+constructed independently by forming the finite table of sums of four
+positive sixth powers with bases at most $58$, then searching descending
+bases for the remaining summands. The proof needs only the explicitly
+stored witnesses and their integer sums; it does not rely on the
+completeness of that search or on an external data file.
+\end{proof}
+
+\begin{lemma}[Infinite tail]\label{war:tail}
+Every integer $n>P$ is a sum of exactly $78$ positive sixth powers.
+\end{lemma}
+
+\begin{proof}
+Pillai's theorem $g(6)=73$ states that every positive integer is a sum of
+at most $73$ positive sixth powers \cite{Pillai1940}. Apply it to $n-P>0$.
+After omitting zero summands if the theorem is formulated with nonnegative
+bases, there are $t$ positive summands, where $1\leq t\leq73$.
+By Lemma~\ref{war:padding}, $P$ has a representation with exactly $78-t$
+positive summands, because $5\leq78-t\leq77$.
+Adding the two representations gives exactly $78$ positive sixth powers.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{war:main}]
+Lemma~\ref{war:semigroup} proves the asserted description and cardinality
+of $B^6$. The containment $78D\subseteq S$ follows from the definition.
+To prove the reverse containment, let $m\in S$ and put $n=m+78$.
+If $n\leq P$, then
+\[
+ 0\leq m\leq P-78=41253168814<177964693339,
+\]
+so \eqref{war:bridge} gives $m\in78D$. If $n>P$,
+Lemma~\ref{war:tail} expresses $n$ as exactly $78$ positive sixth powers,
+and \eqref{war:translation} again gives $m\in78D$. Therefore $78D=S$.
+
+For every $j\geq78$, the inclusion $0\in D$ implies
+$S=78D\subseteq jD\subseteq S$, hence $jD=S$. The representation
+criterion follows from \eqref{war:translation}; if $n<j$, positivity of
+each summand makes representation impossible.
+
+Finally, Proposition~\ref{war:finite} gives $715744\notin77D$.
+But $715744>711649$, so Lemma~\ref{war:semigroup} gives $715744\in S$.
+Thus $77D\ne S$. Since $jD\subseteq77D$ for every $j\leq77$, no smaller
+index can stabilize the sumsets. This proves sharpness.
+\end{proof}
+
+\begin{remark}[Scope and provenance]\label{war:provenance}
+The argument is global: the finite calculation is connected to the entire
+infinite tail by explicit overlapping intervals and Pillai's unconditional
+theorem. No conjectural bound for sufficiently large sixth-power
+representations is used.
+
+The source's status descriptions are inconsistent. Its Section~6 labels the
+endpoint $78$ as Conjecture~6.4 and states Theorem~6.3 for $j\geq79$,
+whereas its Table~1 labels $g(1,6)=78$ a theorem and its Section~11 sketches
+stabilization at $78$ \cite{BenfieldLippard}. Accordingly, the contribution
+here is an independently reproducible completion of the Round~21 archive's
+unverified dependencies, together with the elementary semigroup proof above.
+It should not be presented as a priority claim for an entirely new Waring
+theorem. The certificate is self-contained apart from the cited classical
+theorem: its complete program embeds all $73$ padding witnesses and reads
+no external files.
+\end{remark}
+
+\Needspace{10\baselineskip}
+\section{Boundaries of this continuation}
+\label{sec:boundaries}
+
+The four completed arguments above do not settle every unfinished
+target in the twenty-five-round archive. The following boundaries
+record what remains unproved by this continuation; they are not
+claims about the current status of the entire published literature.
+
+\begin{itemize}
+\item For the Round 5 Heisei target, Zhi-Wei Sun's Conjecture 5.8(i),
+the attempted transfer to a known hypergeometric evaluation still
+requires a uniform harmonic congruence. Finite prime checks do not
+supply that missing identity.
+\item For the Gaussian-binomial infinite coefficientwise
+log-concavity target, finite iterates do not establish positivity
+at every iteration. No invariant covering arbitrary iteration
+depth has been proved here.
+\item The q-Fibonomial unimodality target remains outside the
+restricted parameter families already handled in the archive.
+\item For the Round 22 Reiwa root-monotonicity target, limits and
+eventual monotonicity do not establish the statement at every
+genus. The initial unrestricted range is not closed here.
+\item For the Round 24 Reiwa multiset Schett target, the archived
+real-rootedness argument treats repetitions of the smallest label
+with the other labels occurring once. The required extension to
+other repeated blocks remains unproved here.
+\end{itemize}
+
+These items are excluded from the completed-result count. The
+present additions consist of three full extensions of previously
+partial arguments and one independent completion of missing exact
+certificates for the sixth-power theorem. The earlier integrated
+collection remains the record of the other complete proofs,
+candidates, and counterexamples.
+
+\clearpage\appendix
+\section{Standalone exact sixth-power certificate}
+\label{app:certificate}
+This complete Python program proves the finite statements used in
+Section~\ref{war:section}. In the embedded data, a pair $a:c$ means
+that the positive sixth power $a^6$ occurs with multiplicity $c$.
+All seventy-three rows are present. Integer bit operations encode
+the full finite sets; no floating-point arithmetic is used.
+
+\begin{Verbatim}[fontsize=\footnotesize,breaklines,breakanywhere]
+#!/usr/bin/env python3
+"""Replay all finite certificates for exactly 78 positive sixth powers.
+
+Python 3.10+; standard Python only; no input files or downloads.
+Run normally (without -O) so every assertion is active.
+The infinite proof additionally uses the classical theorem g(6)=73.
+A row s lists base:multiplicity pairs for a representation of P.
+"""
+
+P = 41_253_168_892
+H = 3_500_000
+WITNESSES = {
+    5: "10:1 13:1 45:1 47:1 53:1",
+    6: "11:1 23:1 25:1 32:1 42:1 57:1",
+    7: "7:1 13:1 24:1 25:1 36:1 49:1 54:1",
+    8: "21:2 36:1 37:1 38:1 44:1 48:1 49:1",
+    9: "7:1 9:1 11:1 24:1 28:1 30:1 39:1 42:1 56:1",
+    10: "3:1 6:1 7:1 11:1 21:1 28:1 36:2 42:1 56:1",
+    11: "3:1 6:1 14:3 21:2 39:1 42:1 44:1 54:1",
+    12: "5:1 12:3 18:1 19:1 23:1 24:2 27:1 36:1 58:1",
+    13: "2:1 8:1 14:1 17:2 19:1 22:3 26:1 31:1 34:1 58:1",
+    14: "2:2 4:2 5:1 7:1 8:2 9:1 14:1 16:1 23:1 38:1 58:1",
+    15: "3:2 5:1 7:3 10:1 13:5 23:1 38:1 58:1",
+    16: "2:1 3:1 6:2 7:1 8:1 11:2 14:3 16:2 22:1 38:1 58:1",
+    17: "2:1 6:2 7:2 8:1 10:1 12:1 13:1 14:3 15:1 16:1 22:1 38:1 58:1",
+    18: "1:3 2:2 3:2 4:1 7:4 9:1 10:1 21:2 38:1 58:1",
+    19: "3:6 6:2 9:5 12:2 16:1 23:1 38:1 58:1",
+    20: "1:2 3:3 4:1 5:3 6:3 7:1 8:2 9:1 17:1 23:1 38:1 58:1",
+    21: "1:2 3:7 4:3 5:1 6:1 7:1 10:1 14:1 16:1 23:1 38:1 58:1",
+    22: "1:1 3:6 5:2 6:3 7:2 8:3 14:1 16:1 23:1 38:1 58:1",
+    23: "1:2 2:5 5:4 6:1 7:4 8:3 17:1 23:1 38:1 58:1",
+    24: "2:3 3:6 4:1 6:4 7:4 9:1 14:1 16:1 23:1 38:1 58:1",
+    25: "1:1 2:8 4:1 5:2 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    26: "1:4 2:7 3:3 4:2 5:3 6:1 8:1 10:1 17:1 23:1 38:1 58:1",
+    27: "2:1 3:1 4:15 6:4 7:1 10:1 17:1 23:1 38:1 58:1",
+    28: "1:2 2:5 3:5 4:4 5:1 6:1 7:2 8:4 17:1 23:1 38:1 58:1",
+    29: "1:8 2:4 3:7 4:2 7:3 10:1 17:1 23:1 38:1 58:1",
+    30: "1:4 2:5 3:6 4:1 5:3 6:1 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    31: "2:4 3:6 5:7 6:3 7:5 8:2 17:1 23:1 38:1 58:1",
+    32: "1:11 2:1 4:1 5:8 7:6 9:1 17:1 23:1 38:1 58:1",
+    33: "1:9 2:6 3:9 4:1 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    34: "1:2 2:6 3:9 4:2 5:6 6:3 7:1 10:1 17:1 23:1 38:1 58:1",
+    35: "1:4 2:17 3:2 4:1 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    36: "1:6 2:9 4:8 6:4 7:3 8:1 9:1 17:1 23:1 38:1 58:1",
+    37: "1:9 2:4 3:12 6:2 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    38: "1:11 2:8 3:1 4:3 6:5 7:5 9:1 17:1 23:1 38:1 58:1",
+    39: "1:4 2:15 3:5 5:2 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    40: "1:7 2:14 3:8 4:1 5:3 6:1 8:1 10:1 17:1 23:1 38:1 58:1",
+    41: "1:7 2:5 3:15 4:1 5:3 6:4 7:1 10:1 17:1 23:1 38:1 58:1",
+    42: "1:21 2:1 3:9 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    43: "1:11 2:11 3:12 4:1 7:3 10:1 17:1 23:1 38:1 58:1",
+    44: "1:28 2:1 3:1 4:2 6:2 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    45: "1:9 2:16 4:3 5:3 6:4 7:5 9:1 17:1 23:1 38:1 58:1",
+    46: "1:8 2:14 3:3 4:8 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    47: "1:12 2:13 3:14 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    48: "1:14 2:17 3:3 4:3 6:5 7:1 10:1 17:1 23:1 38:1 58:1",
+    49: "1:7 2:24 3:7 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    50: "1:30 2:8 3:1 4:3 7:3 10:1 17:1 23:1 38:1 58:1",
+    51: "1:26 2:9 4:2 5:3 6:1 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    52: "1:14 2:15 3:6 4:2 6:5 7:5 9:1 17:1 23:1 38:1 58:1",
+    53: "1:16 2:10 3:10 4:3 5:1 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    54: "1:31 2:10 3:3 4:2 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    55: "2:40 3:1 4:3 6:5 7:1 10:1 17:1 23:1 38:1 58:1",
+    56: "1:2 2:35 3:5 4:4 5:1 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    57: "1:14 2:18 3:17 7:3 10:1 17:1 23:1 38:1 58:1",
+    58: "1:31 2:8 3:6 4:1 6:2 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    59: "2:38 3:4 4:2 6:5 7:5 9:1 17:1 23:1 38:1 58:1",
+    60: "1:2 2:33 3:8 4:3 5:1 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    61: "1:17 2:33 3:1 4:2 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    62: "1:17 2:24 3:8 4:2 6:5 7:1 10:1 17:1 23:1 38:1 58:1",
+    63: "1:43 2:5 3:3 4:1 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    64: "1:33 2:15 3:6 4:2 7:3 10:1 17:1 23:1 38:1 58:1",
+    65: "1:17 2:31 3:4 4:1 6:2 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    66: "1:17 2:22 3:11 4:1 6:5 7:5 9:1 17:1 23:1 38:1 58:1",
+    67: "1:43 2:3 3:6 5:2 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    68: "1:34 2:17 3:8 4:1 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    69: "1:3 2:47 3:6 4:2 6:5 7:1 10:1 17:1 23:1 38:1 58:1",
+    70: "1:29 2:28 3:1 4:1 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+    71: "1:19 2:38 3:4 4:2 7:3 10:1 17:1 23:1 38:1 58:1",
+    72: "1:3 2:54 3:2 4:1 6:2 7:4 8:1 9:1 17:1 23:1 38:1 58:1",
+    73: "1:36 2:19 4:3 6:5 7:5 9:1 17:1 23:1 38:1 58:1",
+    74: "1:29 2:26 3:4 5:2 6:2 7:6 9:1 17:1 23:1 38:1 58:1",
+    75: "1:20 2:40 3:6 4:1 6:2 8:1 10:1 17:1 23:1 38:1 58:1",
+    76: "1:53 2:5 3:4 4:3 6:5 7:1 10:1 17:1 23:1 38:1 58:1",
+    77: "1:46 2:12 3:8 5:2 6:2 7:2 10:1 17:1 23:1 38:1 58:1",
+}
+
+# Elementary Apery representatives of <63,728,117648>, modulo 63.
+assert 9 * 728 == 104 * 63
+assert 7 * 117648 == 13072 * 63
+least = [None] * 63
+for y in range(9):
+    for z in range(7):
+        d = 728 * y + 117648 * z
+        r = d % 63
+        assert least[r] is None
+        least[r] = d
+assert all(d is not None for d in least)
+assert least[0] == 0
+largest_gap = max(least) - 63
+number_of_gaps = sum((d - r) // 63 for r, d in enumerate(least))
+assert largest_gap == 711649
+assert number_of_gaps == 355825
+# All generators a^6-1 with a>=10 exceed the Frobenius number.
+assert 10**6 - 1 > largest_gap
+# Every remaining sixth-power difference is already in this semigroup.
+assert all(a**6 - 1 >= least[(a**6 - 1) % 63]
+           for a in range(1, 10))
+print("Permanent gaps:", number_of_gaps, "largest:", largest_gap)
+
+# Truncated nonnegative sumsets: exact membership, not an approximation.
+mask = (1 << (H + 1)) - 1
+coins = [a**6 - 1 for a in range(1, 13)]
+assert coins[-1] <= H < 13**6 - 1
+v = 1
+recorded = {}
+for j in range(1, 79):
+    w = 0
+    for c in coins:
+        w |= v << c
+    v = w & mask
+    if j in (40, 77, 78):
+        gaps = mask ^ v
+        recorded[j] = (gaps.bit_count(), gaps.bit_length() - 1)
+        print("Row", j, "missing count and largest:", recorded[j])
+    if j == 77:
+        assert not ((v >> 715744) & 1)
+assert recorded == {
+    40: (360244, 746110),
+    77: (355826, 715744),
+    78: (355825, 711649),
+}
+
+# Independently form all semigroup membership bits and compare every bit.
+semigroup = bytearray((H + 8) // 8)
+for d in least:
+    for n in range(d, H + 1, 63):
+        semigroup[n >> 3] |= 1 << (n & 7)
+assert int.from_bytes(semigroup, "little") == v
+assert 715744 >= least[715744 % 63]
+print("Every membership bit at row 78 agrees with the semigroup.")
+print("715744 belongs to the semigroup but does not belong to 77D.")
+
+# Six exact interval extensions, starting from row 40.
+lo, hi = 746111, H
+expected_ends = (
+    11029535, 45041758, 236144733,
+    1527612701, 13758203164, 177964693339,
+)
+for j, a, expected in zip(
+        range(41, 47), (14, 18, 24, 33, 48, 74), expected_ends):
+    assert a**6 - (a - 1)**6 <= hi - lo + 1
+    hi += a**6 - 1
+    assert hi == expected
+    print("Interval", j, "largest appended base", a, ":", lo, hi)
+assert lo <= H and hi >= P - 78
+
+# Every embedded padding certificate is checked by exact integer sums.
+assert set(WITNESSES) == set(range(5, 78))
+for s, encoded in WITNESSES.items():
+    pairs = [tuple(map(int, item.split(":")))
+             for item in encoded.split()]
+    assert all(len(pair) == 2 for pair in pairs)
+    assert all(a > 0 and count > 0 for a, count in pairs)
+    assert len({a for a, count in pairs}) == len(pairs)
+    assert sum(count for a, count in pairs) == s
+    assert sum(count * a**6 for a, count in pairs) == P
+print("All 73 embedded padding representations passed exact verification.")
+print("PASS: all finite certificates for the global proof are verified.")
+\end{Verbatim}
+
+\clearpage
+\section{Archive locations and reproducibility record}
+\label{app:archive}
+The source checkpoints are the following files in the supplied
+archive, relative to its expanded root. Their earlier
+limitations are stated in their own prose.
+\begin{itemize}\small\raggedright
+\item Round 12: \path{Tournament_Round_12/heisei/manuscript.tex}.
+\item Round 22: \path{Tournament_Round_22_Final/Tournament_Round_22/round22/taisho/taisho.tex}.
+\item Round 25: \path{Tournament_Round_25_Final/Tournament_Round_25/round25/taisho/paper.tex}.
+\item Round 21: \path{Tournament_Round_21_Final/Tournament_Round_21/round21/keio/paper.tex}.
+\end{itemize}
+The exact verifier reports the finite rows
+$(360244,746110)$, $(355826,715744)$ and $(355825,711649)$
+at indices $40,77,78$, respectively; compares every membership
+bit at index $78$; verifies all six interval extensions; and
+verifies all seventy-three padding identities. These are the
+finite premises used in the proof.
+
+The analytic scale lemma uses the rational margins
+$3161383/510000000$ and $47/82620$ above $13/20$.
+The sine-quotient proof uses the uniform derivative estimate
+$J_q'\le1/25$ only on $u\le1$, where its majorant converges.
+No empirical cutoff is used to infer an infinite analytic claim.
+
+\Needspace{10\baselineskip}
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{9}
+\bibitem{Cazenave2026}
+T. Cazenave,
+\emph{Lemmas and Conjectures in Spectral Graph Theory},
+arXiv:2611.03879v1, 2 November 2026.
+\url{https://arxiv.org/abs/2611.03879v1}.
+Section 7, Conjecture 6(iii).
+
+\bibitem{AlzerKwong}
+H. Alzer and M. K. Kwong,
+\emph{On a Sine Series of Ramanujan},
+Axioms \textbf{15} (2026), no. 11, article 859.
+\href{https://doi.org/10.3390/axioms15110859}{doi:10.3390/axioms15110859}.
+Section 4, conjecture (27).
+
+\bibitem{Malesevic}
+B. Male\v sevi\'c, M. Mi\'covi\'c, B. Mihailovi\'c and T. Lutovac,
+\emph{A new approach to selecting constants for some analytic inequalities},
+Journal of Mathematical Inequalities \textbf{19} (2025), 223--245.
+\href{https://doi.org/10.7153/jmi-2025-19-15}{doi:10.7153/jmi-2025-19-15}.
+Equation (15) and Section 5.
+
+\bibitem{HungLi}
+L.-C. Hung and P.-Y. Li,
+\emph{On generalization of D'Aurizio--S\'andor inequalities involving a parameter},
+Journal of Mathematical Inequalities \textbf{12} (2018), 853--860.
+\href{https://doi.org/10.7153/jmi-2018-12-63}{doi:10.7153/jmi-2018-12-63}.
+
+\bibitem{BenfieldLippard}
+B. Benfield and O. Lippard,
+\emph{Integers that are not the Sum of Positive Powers},
+arXiv:2404.08193v2, 31 March 2025.
+\url{https://arxiv.org/abs/2404.08193v2}.
+Conjecture 6.4, Table 1, and Section 11.
+
+\bibitem{Pillai1940}
+S. S. Pillai,
+\emph{On Waring's problem $g(6)=73$},
+Proceedings of the Indian Academy of Sciences, Section A
+\textbf{12} (1940), 30--40.
+\href{https://doi.org/10.1007/BF03170721}{doi:10.1007/BF03170721}.
+\end{thebibliography}
+\end{document}

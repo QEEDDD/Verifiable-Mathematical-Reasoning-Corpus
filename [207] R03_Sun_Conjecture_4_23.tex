@@ -1,0 +1,331 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{booktabs,array,fancyhdr,listings,xcolor}
+\usepackage[hyphens]{url}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\Li}{\operatorname{Li}_2}
+\numberwithin{equation}{section}
+\setlength{\emergencystretch}{3em}
+\allowdisplaybreaks
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Reiwa / Round 3}
+\fancyhead[R]{\small Explicit certificate / submitted for review}
+\fancyfoot[C]{\thepage}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,frame=single,rulecolor=\color{gray!30},showstringspaces=false}
+\hypersetup{pdftitle={A Beta--Dilogarithm Certificate for a Reciprocal Binomial Series},pdfauthor={Reiwa}}
+\title{A Beta--Dilogarithm Certificate\\for a Reciprocal Binomial Series\\[5pt]\large A complete argument for the identity appearing as\\Sun's Conjecture 4.23, submitted for independent review}
+\author{Reiwa}
+\date{Round 3 research manuscript / 16 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We present an explicit integral certificate for a reciprocal-binomial harmonic series with proposed value $-\pi^2/4$. The displayed series is the entire assertion of Sun's Conjecture 4.23 in arXiv:2307.03086v10. A beta derivative converts the series to a logarithm--dilogarithm integral. Its integrand is the derivative of an explicit function with zero limits at both endpoints, plus $3\log(1-x)/(2-x)$. Every interchange, domain restriction, endpoint cancellation, and rational differential identity is specified. Exact symbolic checks and a separately coded numerical verification accompany the argument but are not substitutes for it. This manuscript is a proof candidate submitted for independent review, not a declaration of a newly solved open problem or priority. The beta-integral framework is classical, and the bounded prior-art search cannot certify novelty.
+\end{abstract}
+
+\section{The exact statement}
+Let $H_0=0$ and $H_n=\sum_{j=1}^n1/j$ for positive integers $n$. Put
+\[
+ P(k)=415k^2-343k+62,\qquad Q(k)=581k^2-229k-6.
+\]
+\begin{theorem}\label{thm:main}
+The series below converges absolutely and satisfies
+\begin{equation}\label{eq:target}
+ \sum_{k=1}^{\infty}
+ \frac{P(k)(H_{4k-1}-H_{k-1})-Q(k)/(4k)}
+ {k(3k-1)(3k-2)(-8)^k\binom{4k}{k}}
+ =-\frac{\pi^2}{4}.
+\end{equation}
+\end{theorem}
+The source is Sun \cite[p.~20, Conjecture 4.23, equation (4.25)]{Sun}, dated 17 February 2025, in version 10 revised 6 February 2026. The source has precisely the lower limit $k=1$, the shifts $4k-1$ and $k-1$, and the correction numerator $581k^2-229k-6$. There is no companion congruence or omitted subcase in this numbered conjecture.
+
+The following sections give the complete proposed proof of Theorem~\ref{thm:main}. The argument does not use a decimal identification, an assumed conjecture, a nonzero boundary term left unevaluated, or a restricted finite version of \eqref{eq:target}. Its independent acceptance and any claim of priority remain separate questions.
+
+\section{Beta conversion and a justified interchange}
+For $a,b>0$, write
+\[
+ B(a,b)=\int_0^1x^{a-1}(1-x)^{b-1}\,dx
+       =\frac{\Gamma(a)\Gamma(b)}{\Gamma(a+b)}.
+\]
+The factorial identity
+\begin{equation}\label{eq:beta}
+ \frac{1}{k(3k-1)(3k-2)\binom{4k}{k}}
+ =\frac{3}{4k(k+1)}B(3k-2,k+2)
+\end{equation}
+is valid for every integer $k\ge1$. Differentiating the beta integral with respect to its second parameter gives
+\begin{align}
+ &\int_0^1x^{3k-3}(1-x)^{k+1}\bigl(-\log(1-x)\bigr)\,dx\notag\\
+ &\hspace{20mm}=B(3k-2,k+2)\bigl(H_{4k-1}-H_{k+1}\bigr).
+ \label{eq:beta-log}
+\end{align}
+For fixed $k$, differentiation is legitimate, for example on parameter perturbations $|\delta|<1/2$, by domination with a constant times
+$x^{3k-3}(1-x)^{k+1/2}|\log(1-x)|$. This is integrable at both endpoints. The gamma derivative formula, or the elementary integer digamma difference, gives the harmonic difference in \eqref{eq:beta-log}.
+
+For $0<x<1$ set
+\begin{equation}\label{eq:variables}
+ u=-\frac{x^3(1-x)}8,\quad
+ w=\frac{3(1-x)}{4x^3},\quad
+ M=\log(1-x),\quad L=\log(1-u),\quad D=\Li(u).
+\end{equation}
+Here $\Li(u)=\sum_{n\ge1}u^n/n^2$ is defined by its convergent real power series. We have
+\begin{equation}\label{eq:domain}
+ -r\le u<0,\qquad r=\frac{27}{2048}<1,
+\end{equation}
+since the maximum of $x^3(1-x)$ on $[0,1]$ is $27/256$. All logarithms and the dilogarithm in this argument therefore have unambiguous real values. There is no branch continuation across a cut.
+
+Combining \eqref{eq:beta}--\eqref{eq:beta-log} and
+$H_{k+1}-H_{k-1}=1/k+1/(k+1)$, the left side of \eqref{eq:target} becomes
+\begin{equation}\label{eq:sum-integral}
+ \int_0^1w\sum_{k\ge1}u^k\left\{
+ -\frac{P(k)}{k(k+1)}M+
+ \frac{P(k)(1/k+1/(k+1))-Q(k)/(4k)}{k(k+1)}
+ \right\}\,dx.
+\end{equation}
+Here and below an expression involving $u^{-1}$ is used only on $0<x<1$; endpoint limits are taken afterwards.
+
+\paragraph{Absolute convergence and Fubini.}
+The two rational coefficients inside braces are bounded in absolute value by $3000$ for $k\ge1$. This follows directly, or from the partial fractions below. The sum of the absolute values of the integrands in \eqref{eq:sum-integral} is at most
+\begin{equation}\label{eq:majorant}
+ \frac{3000w|u|}{1-r}(1+|M|)
+ =\frac{9000}{32(1-r)}(1-x)^2\bigl(1+|\log(1-x)|\bigr).
+\end{equation}
+This is integrable on $[0,1]$. Thus the original series is absolutely convergent, termwise integration is justified by absolute convergence, and the summation can be performed inside the integral.
+
+The relevant partial fractions are
+\begin{align}
+ \frac{P(k)}{k(k+1)}&=415+\frac{62}{k}-\frac{820}{k+1},\label{eq:pf1}\\
+ \frac{P(k)(1/k+1/(k+1))-Q(k)/(4k)}{k(k+1)}
+ &=\frac{972}{k+1}-\frac{820}{(k+1)^2}
+   -\frac{1149}{4k}+\frac{127}{2k^2}.
+ \label{eq:pf2}
+\end{align}
+Using the geometric, logarithmic, and dilogarithmic power series gives
+\begin{align}
+ A(u)&=\sum_{k\ge1}\frac{P(k)}{k(k+1)}u^k
+ =\frac{415u}{1-u}+820+\left(\frac{820}{u}-62\right)L,
+ \label{eq:A}\\
+ B_*(u)&=\sum_{k\ge1}
+ \frac{P(k)(1/k+1/(k+1))-Q(k)/(4k)}{k(k+1)}u^k\notag\\
+ &=-152+\left(\frac{1149}{4}-\frac{972}{u}\right)L
+         +\left(\frac{127}{2}-\frac{820}{u}\right)D.
+ \label{eq:B}
+\end{align}
+Consequently the desired sum is
+\begin{equation}\label{eq:integrand}
+ S=\int_0^1 I(x)\,dx,\qquad
+ I(x)=w\bigl(-A(u)M+B_*(u)\bigr).
+\end{equation}
+
+\section{An explicit differential certificate}
+Define the rational functions
+\begin{align}
+ V&=\frac{381}{8x}-\frac{381}{16x^2}-\frac{984}{x^5},&
+ W&=\frac{93}{2x}-\frac{93}{4x^2}-\frac{984}{x^5},\label{eq:VW}\\
+ J&=\frac{72}{x}-\frac{72}{x^2}-\frac{576}{x^5},&
+ E&=-\frac{123}{x}+\frac{123}{x^2},&
+ K&=\frac{51}{x}-\frac{51}{x^2}.
+ \label{eq:JEK}
+\end{align}
+Put
+\begin{equation}\label{eq:Phi}
+ \Phi(x)=\left(V+\frac3{16}\right)D
+        +\left(W+\frac34\right)ML+JL+EM+K.
+\end{equation}
+\begin{lemma}\label{lem:certificate}
+For every real $x$ with $0<x<1$,
+\begin{equation}\label{eq:certificate}
+ I(x)=\Phi'(x)+\frac{3\log(1-x)}{2-x}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Everything is differentiable on this open interval. In particular,
+\begin{equation}\label{eq:derivatives}
+ M'=-\frac1{1-x},\qquad L'=-\frac{u'}{1-u},\qquad
+ D'=-L\frac{u'}u,\qquad \frac{u'}u=\frac3x-\frac1{1-x}.
+\end{equation}
+We give the finite rational identities needed to check the certificate, so that its validity does not depend on trusting a symbolic integrator:
+\begin{align}
+ V'&=w\left(\frac{127}{2}-\frac{820}{u}\right),\label{eq:check1}\\
+ W'&=-w\left(\frac{820}{u}-62\right),\label{eq:check2}\\
+ R:=w\left(\frac{1149}{4}-\frac{972}{u}\right)
+        +V\frac{u'}u+\frac{W}{1-x}
+ &=J'+\frac9{16}\left(\frac1{x-1}-\frac1x\right),\label{eq:check3}\\
+ T:=-w\left(\frac{415u}{1-u}+820\right)
+          +W\frac{u'}{1-u}
+ &=\frac34L'-\frac3{x-2}+E',\label{eq:check4}\\
+ -152w+J\frac{u'}{1-u}+\frac{E}{1-x}&=K'.\label{eq:check5}
+\end{align}
+All five equations follow by substituting \eqref{eq:variables}, \eqref{eq:VW}, and \eqref{eq:JEK} and clearing denominators. For additional transparency, the nontrivial intermediate rational expressions are
+\begin{align*}
+ R&=\frac9{16(x-1)}-\frac9{16x}-\frac{72}{x^2}
+                  +\frac{144}{x^3}+\frac{2880}{x^6},\\
+ T&=\frac{3(3x^2+2x+2)}{4(x^3+x^2+2x+4)}
+            -\frac9{4(x-2)}+\frac{123}{x^2}-\frac{246}{x^3},\\
+ -152w+J\frac{u'}{1-u}+\frac{E}{1-x}
+   &=-\frac{51}{x^2}+\frac{102}{x^3}.
+\end{align*}
+For \eqref{eq:check4}, one may use
+$1-u=(2-x)(x^3+x^2+2x+4)/8$ to express $L'$.
+
+Expanding \eqref{eq:integrand} and applying \eqref{eq:check1}--\eqref{eq:check2} gives
+\[
+ I=(VD+WML)'+RL+TM-152w.
+\]
+Now use \eqref{eq:check3}--\eqref{eq:check5}, the product rule, and
+\[
+ \frac9{16}\left(\frac1{x-1}-\frac1x\right)
+       +\frac{3}{4(1-x)}=-\frac3{16}\frac{u'}u.
+\]
+The coefficient on the right, multiplied by $L$, is $3D'/16$. Thus
+\[
+ I=\left[(V+\tfrac3{16})D+(W+\tfrac34)ML+JL+EM+K\right]'
+       -\frac{3M}{x-2},
+\]
+which is \eqref{eq:certificate}.
+\end{proof}
+
+\paragraph{Poles and regularity.}
+The rational coefficients of $\Phi$ have no poles in $(0,1)$. The factors $1-u$ and $2-x$ are positive there; also $x^3+x^2+2x+4>0$. The displayed expression for $u'/u$ has only endpoint singularities; no division by $u'$ is made, so $x=3/4$ causes no problem. The singularities of the individual summands of $\Phi$ at $0$ must not be evaluated separately as finite limits. Their cancellation is verified next.
+
+\section{Both endpoint limits and the final evaluation}
+\begin{lemma}\label{lem:endpoints}
+The limits of \eqref{eq:Phi} satisfy
+\begin{equation}\label{eq:limits}
+ \lim_{x\to0^+}\Phi(x)=\lim_{x\to1^-}\Phi(x)=0.
+\end{equation}
+\end{lemma}
+\begin{proof}
+As $x\to0^+$, $u=-x^3(1-x)/8$, and
+\[
+ D=u+O(x^6),\qquad L=-u+O(x^6),\qquad
+ M=-x-\frac{x^2}{2}+O(x^3).
+\]
+The worst rational pole in \eqref{eq:Phi} is of order five. The stated remainders therefore suffice, and direct expansion gives
+\begin{align*}
+ (V+\tfrac3{16})D&=\frac{123}{x^2}-\frac{123}{x}+O(x),\\
+ (W+\tfrac34)ML&=\frac{123}{x}-\frac{123}{2}+O(x),\\
+ JL&=-\frac{72}{x^2}+\frac{72}{x}+O(x),\\
+ EM&=-\frac{123}{x}+\frac{123}{2}+O(x),\\
+ K&=-\frac{51}{x^2}+\frac{51}{x}.
+\end{align*}
+The coefficients of $x^{-2}$, $x^{-1}$, and $x^0$ all cancel, leaving $\Phi(x)=O(x)$.
+
+For $x\to1^-$, put $v=1-x$. Then $u=O(v)$, $L,D=O(v)$, $M=\log v$, and $V,W,J$ are bounded. Furthermore
+\[
+ E=\frac{123(1-x)}{x^2}=O(v),\qquad
+ K=-\frac{51(1-x)}{x^2}=O(v).
+\]
+Thus each term of \eqref{eq:Phi} tends to zero, with the potentially logarithmic terms bounded by a constant times $v|\log v|$. This proves \eqref{eq:limits}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+The absolute majorant \eqref{eq:majorant} proves the convergence assertion and gives \eqref{eq:integrand}. Integrate \eqref{eq:certificate} first over $[\varepsilon,1-\delta]$, where it is an ordinary identity of smooth functions. Then let $\varepsilon,\delta\to0^+$, using Lemma~\ref{lem:endpoints}. The remaining logarithmic integral is integrable, and the result is
+\[
+ S=3\int_0^1\frac{\log(1-x)}{2-x}\,dx
+  =3\int_0^1\frac{\log y}{1+y}\,dy.
+\]
+Finally,
+\[
+ \int_0^1\frac{\log y}{1+y}\,dy
+ =-\sum_{n=1}^{\infty}\frac{(-1)^{n-1}}{n^2}
+ =-\frac12\zeta(2)=-\frac{\pi^2}{12}.
+\]
+Termwise integration here is justified because the sum of the absolute integrals is $\sum_{n\ge1}n^{-2}<\infty$. This yields \eqref{eq:target}.
+\end{proof}
+
+\section{Verification and limitations of the originality claim}
+\subsection{Checks that do not replace the proof}
+The supplied \texttt{verify\_certificate.py} treats $L,M,D$ as independent symbols and applies the derivative rules \eqref{eq:derivatives}. The exact rational residual of \eqref{eq:certificate} is zero. It also checks both partial fractions and the canceled left-endpoint expansion.
+
+A separately coded script, \texttt{independent\_check.py}, does not import that symbolic implementation. It checks the factorial conversion and the harmonic shift with exact rational arithmetic for $1\le k\le50$. It then computes the integral kernel from its original power series and compares it with a numerical derivative of \eqref{eq:Phi} at $x=0.1,0.2,0.5,0.8,0.9$. At 100-digit precision the discrepancies are below $10^{-90}$. This is an independent implementation check, not an independent human review.
+
+A third script directly sums 100 literal summands at 120-digit precision. Its value begins
+\[
+ -2.467401100272339654708622749969037783828424851810197656603337344055,
+\]
+and agrees numerically with $-\pi^2/4$. None of these finite checks is used as the logical step identifying the constant; the integral evaluation above supplies that step.
+
+\subsection{Primary-source and overlap review}
+The review was made on 16 November 2026. Sun's original source \cite{Sun} already develops beta-integral evaluations for related \emph{harmonic-free} reciprocal-binomial series. In particular, its Theorem 1.3 proves the same $P(k)$-weighted series without the harmonic factor or correction term, with value $-3\log2$. The beta-integral framework must therefore not be claimed as a new method introduced here.
+
+Jiang--Sun \cite{JS} has a closely related title and proves several direct-binomial harmonic series. Its introductory mention of the polynomial $415k^2-343k+62$ refers to that harmonic-free result. No proof of the exact identity \eqref{eq:target} was located there. The papers of Zhou \cite{Zhou}, Au \cite{Au}, and Kruchinin--Kruchinin \cite{KK}, together with Sun's newer collection \cite{SunNew}, were inspected for relevant statements, distinctive coefficients, and related methods. These provide substantial existing context for parameter derivatives, harmonic series, generating functions, logarithms, and dilogarithms. No exact matching global evaluation or this certificate was located in the bounded review.
+
+The requested corpus \cite{Corpus} was checked in its 190-TEX snapshot. Searches for the source ID, conjecture label, coefficient combinations, and reciprocal-binomial/beta-integral terms did not locate an exact treatment of \eqref{eq:target}. A raw coefficient search hit encoded nonmathematical data, which was not counted as overlap. General beta-integral methods do occur in the corpus and are not claimed as new.
+
+\paragraph{Six-gate disposition, before independent adjudication.}
+\begin{center}
+\begin{tabular}{p{.08\linewidth}p{.82\linewidth}}
+\toprule
+G1 & Named target identified: Sun Conjecture 4.23 (2025-02-17).\\
+G2 & Exact original formula preserved, including all signs and index shifts.\\
+G3 & Original source still labels it conjectural; no later exact proof found in this bounded search. Not an exhaustive unresolved-status certificate.\\
+G4 & A complete unconditional argument for the displayed identity is supplied for independent checking. No weaker target is substituted.\\
+G5 & An explicit cancellation certificate was developed in this work. The framework is classical; substantive method novelty and priority are \emph{not certified}.\\
+G6 & Source and corpus overlap review performed, with the stated limitations. No claim of exhaustive literature coverage.\\
+\bottomrule
+\end{tabular}
+\end{center}
+This submission should be evaluated as a concrete proof manuscript, not automatically counted as a newly solved open conjecture. Mathematical verification of the argument, historical unresolved status, and novelty are distinct issues.
+
+\appendix
+\section{A short exact certificate checker}
+This self-contained TEX file contains all mathematical definitions and proofs. The following optional Python/SymPy code checks the central differential identity by rational algebra; it performs no integration or numerical guessing.
+\begin{lstlisting}[language=Python]
+import sympy as s
+x,L,M,D = s.symbols('x L M D')
+u = -x**3*(1-x)/8
+w = s.Rational(3,4)*(1-x)/x**3
+A = 415*u/(1-u)+820+(820/u-62)*L
+B = -152+(s.Rational(1149,4)-972/u)*L \
+    +(s.Rational(127,2)-820/u)*D
+I = w*(-A*M+B)
+V = s.Rational(381,8)/x-s.Rational(381,16)/x**2-984/x**5
+W = s.Rational(93,2)/x-s.Rational(93,4)/x**2-984/x**5
+J = 72/x-72/x**2-576/x**5
+E = -123/x+123/x**2
+K = 51/x-51/x**2
+Phi = (V+s.Rational(3,16))*D+(W+s.Rational(3,4))*M*L \
+      +J*L+E*M+K
+Dp = s.diff(Phi,x) \
+     -s.diff(Phi,L)*s.diff(u,x)/(1-u) \
+     -s.diff(Phi,M)/(1-x) \
+     -s.diff(Phi,D)*L*s.diff(u,x)/u
+assert s.factor(I-Dp-3*M/(2-x)) == 0
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{Sun}
+Z.-W. Sun, \emph{New series involving binomial coefficients (II)}, arXiv:2307.03086v10, 6 February 2026. Conjecture 4.23, p.~20, equation (4.25); also Theorem 1.3 and its beta-integral proof.
+\url{https://arxiv.org/abs/2307.03086v10}.
+
+\bibitem{JS}
+B. Jiang and Z.-W. Sun, \emph{On series identities involving $\binom{4k}{k}$ and harmonic numbers}, arXiv:2601.18645v1, 26 January 2026.
+\url{https://arxiv.org/abs/2601.18645v1}.
+
+\bibitem{Zhou}
+Y. Zhou, \emph{Notes on certain binomial harmonic sums of Sun's type}, arXiv:2503.05599v2, 12 February 2026; Ramanujan Journal \textbf{69}, article 83 (2026).
+\url{https://arxiv.org/abs/2503.05599v2}.
+
+\bibitem{Au}
+K. C. Au, \emph{Discovering hypergeometric series with harmonic numbers via Wilf--Zeilberger seeds}, arXiv:2602.08721v4, 9 November 2026.
+\url{https://arxiv.org/abs/2602.08721v4}.
+
+\bibitem{KK}
+D. Kruchinin and V. Kruchinin, \emph{A Family of Generating Functions for Reciprocal Binomial Coefficients and Its Applications}, arXiv:2602.07822v1, 8 February 2026.
+\url{https://arxiv.org/abs/2602.07822v1}.
+
+\bibitem{SunNew}
+Z.-W. Sun, \emph{Various conjectural series identities}, arXiv:2603.29973v3, 13 April 2026.
+\url{https://arxiv.org/abs/2603.29973v3}.
+
+\bibitem{Corpus}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, 190-TEX snapshot, commit
+\texttt{5887cdea4898f0a3aa5bf7a8e0829697bd2b0f4b}, consulted 16 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\end{thebibliography}
+\end{document}

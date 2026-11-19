@@ -1,0 +1,835 @@
+% !TeX program = pdflatex
+% Self-contained source. Compile twice with pdflatex.
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,booktabs,tabularx}
+\usepackage[margin=25mm,top=24mm,bottom=25mm,headheight=14pt]{geometry}
+\usepackage{xcolor,fancyhdr,listings,enumitem}
+\usepackage[colorlinks=true,linkcolor=black!55!teal,citecolor=black!55!teal,urlcolor=black!55!teal]{hyperref}
+\definecolor{forest}{HTML}{165154}
+\definecolor{softgray}{HTML}{F4F6F5}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{problem}[theorem]{Problem}
+\renewcommand{\sectionautorefname}{Section}
+\setlength{\emergencystretch}{2em}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{2pt}
+\raggedbottom
+\setlist{topsep=3pt,itemsep=2pt}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\sffamily\small Degree differences and log-concavity}
+\fancyhead[R]{\sffamily\small Research manuscript}
+\fancyfoot[L]{\sffamily\footnotesize 15 November 2026}
+\fancyfoot[R]{\sffamily\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\lstset{basicstyle=\ttfamily\footnotesize,columns=fullflexible,keepspaces=true,showstringspaces=false,breaklines=true,backgroundcolor=\color{softgray},frame=single,framerule=0pt,framesep=5pt,aboveskip=9pt,belowskip=9pt}
+\hypersetup{pdftitle={Antiregular graphs maximize every increasing concave degree-difference sum},pdfsubject={Extremal graph theory, chromatic polynomials and binomial inequalities}}
+\begin{document}
+\thispagestyle{plain}
+\noindent{\sffamily\small\bfseries\color{forest} RESEARCH MANUSCRIPT\hfill 15 NOVEMBER 2026}\par
+\vspace{9pt}
+\noindent{\sffamily\bfseries\fontsize{24}{28}\raggedright\selectfont Antiregular graphs maximize every \mbox{increasing} concave degree-difference sum\par}
+\vspace{7pt}
+\noindent{\large Extremal chemical graphs, iterated log-concavity and two binomial sequences}\par
+\vspace{11pt}
+\noindent\textbf{Abstract.}
+Among simple graphs of a given order, the same antiregular graph maximizes
+the sum of any nondecreasing discretely concave function of the absolute
+difference of two vertex degrees. A supporting line chosen by the difference
+of the two \emph{ranks} gives the result and an optimal stability bound.
+This proves Problems 5 and 6 of Knor, \v{S}krekovski, Filipovski and
+Dimitrov. A separate integer inequality settles their Conjecture 10 for
+chemical graphs, including the three residue classes outside the scope
+of the authors' 2026 follow-up.
+We also disprove Amdeberhan and Moll's Conjecture 21 and classify the
+cycle lengths with infinitely log-concave chromatic coefficients.
+For two binomial sums we prove Brian Yi Sun's Conjecture 4.7,
+give an opposite-sign theorem for his Conjecture 4.8, and prove
+Zhi-Wei Sun's scalar log-convexity conjecture for all its exponents.
+The algebraic certificates use exact arithmetic. The main graph
+inequalities are proved without computation.
+\vspace{5pt}
+\section*{Original questions and outcomes}
+\small
+\renewcommand{\arraystretch}{1.16}
+\begin{tabularx}{\linewidth}{@{}p{.30\linewidth}X@{}}
+\toprule
+\textbf{Source} & \textbf{Outcome established here}\\
+\midrule
+Knor et al., Problems 5, 6 & The two antiregular graphs maximize at $p=1/n$ and at every $0<p<1$. They are the only maximizers up to isomorphism.\\
+Knor et al., Conjecture 10 & Exact degree multiplicities for every connected chemical graph extremizer of every order $n\ge7$ at $p=1/n$.\\
+Amdeberhan--Moll, Conj. 21 & False. Every cycle of order at least $17$ fails by the third iterate. With zero extension the full cutoff for infinite log-concavity is $n\le11$.\\
+Brian Yi Sun, Conjs. 4.7, 4.8 & The successive ratios satisfy the first conjecture strictly. The second fails at its first interior index and satisfies the opposite inequality throughout its tail.\\
+Zhi-Wei Sun, scalar conjecture & Strict log-convexity for all required $m\ge5$ at $q=1$, inside a larger region of real parameters.\\
+\bottomrule
+\end{tabularx}
+\normalsize
+\vspace{6pt}
+\noindent The source and priority comparison is in Section~\ref{sec:status}.
+The two Sun entries concern different authors and different sequences.
+\clearpage
+\section{A common maximizer for nondecreasing concave weights}
+\label{sec:general}
+Label the vertices of a finite simple undirected graph $G$ so that
+$d_1\le\cdots\le d_n$. For $f\colon\{0,\ldots,n-1\}\to\mathbb R$ set
+\[
+ I_f(G)=\sum_{i<j} f(d_j-d_i),\qquad I_p(G)=\sum_{i<j}(d_j-d_i)^p
+ \quad(p>0).
+\]
+Write $A_n$ for the graph on $1,\ldots,n$ having edge $ij$ ($i<j$)
+exactly when $i+j\ge n+1$. Its increasing degree list is
+\begin{equation}\label{eq:rankgap}
+ d_i^*=i-\mathbf1_{\{2i\ge n+1\}},\qquad
+ d_j^*-d_i^*\in\{j-i-1,j-i\}.
+\end{equation}
+Indeed, the potential neighbors of $i$ are the $i$ ranks at least $n+1-i$,
+and its own rank must be excluded if it lies among them. There are $n-1$
+distinct degrees, with exactly one repetition. Such a graph is called
+antiregular.
+
+\paragraph{The auxiliary question.}
+Can one choose a linear upper bound for the contribution of each ranked
+pair before any edges of the competing graph are known, and have every
+bound be attained on the same graph? This asks for more than
+an optimizer for a particular power. For an arbitrary nondecreasing
+discretely concave $f$, the following choice answers the question.
+
+\begin{lemma}[Support by rank difference]\label{lem:rank}
+Set $s_r=f(r)-f(r-1)$ for $1\le r\le n-1$, with
+$s_1\ge\cdots\ge s_{n-1}\ge0$. Put $b_r=f(r)-r s_r$ and
+$g_i=f(i-1)-f(n-i)$. Then
+\[
+ I_f(G)\le \sum_{i<j} b_{j-i}
+                +\sum_{\{i,j\}\in E(G)}(g_i+g_j).
+\]
+The graph $A_n$ attains equality in this bound and also maximizes its
+right-hand side over all simple graphs with ranks $1,\ldots,n$.
+\end{lemma}
+\begin{proof}
+For an integer $t$ in the domain,
+\[
+ f(t)\le b_r+s_r t .
+\]
+At $r-1$ and $r$ this is equality. To the left sum slope increments
+at least $s_r$, and to the right sum increments at most $s_r$.
+Use the inequality at $r=j-i$, $t=d_j-d_i$. By
+\eqref{eq:rankgap} all inequalities are equalities for $A_n$.
+The coefficient of $d_i$ in the linear part is
+\[
+  \sum_{r=1}^{i-1}s_r-\sum_{r=1}^{n-i}s_r
+   = f(i-1)-f(n-i)=g_i .
+\]
+Counting edge endpoints rewrites the linear part as the displayed edge
+sum. The sequence $g_i$ is nondecreasing and $g_{n+1-i}=-g_i$.
+Consequently $g_i+g_j$ is nonnegative for $i+j\ge n+1$ and nonpositive
+for $i+j\le n+1$. The graph $A_n$ includes every positive-weight edge
+and no negative-weight edge. This proves the last assertion, including
+rank ties and zero-weight edges.
+\end{proof}
+
+\begin{theorem}[Extremality and sharp stability]\label{thm:rank}
+Let $n\ge4$. Let $f$ be nondecreasing and discretely concave, and put
+$\kappa=2f(1)-f(0)-f(2)$. If $x_d$ denotes the multiplicity of degree
+$d$ in $G$, then
+\begin{equation}\label{eq:stability}
+ I_f(A_n)-I_f(G)\ \ge \kappa\left(\sum_d\binom{x_d}{2}-1\right).
+\end{equation}
+When $\kappa>0$, equality of the two scores occurs precisely for $A_n$
+and its complement, up to isomorphism. The coefficient in
+\eqref{eq:stability} is optimal uniformly in the graph order.
+\end{theorem}
+\begin{proof}
+The function $u(t)=\min(t,1)$ counts pairs of unequal degrees.
+Subtracting $\kappa u$ from $f$ changes only the first slope, replacing
+it by $s_2$. The remaining function is still nondecreasing and
+discretely concave, so Lemma~\ref{lem:rank} applies. The difference
+between the two $I_u$ scores is exactly the bracket in
+\eqref{eq:stability}. Some degree must repeat, since a vertex of degree
+zero and one of degree $n-1$ cannot coexist. If scores tie and
+$\kappa>0$, precisely one pair has equal degrees.
+
+For completeness the last condition characterizes the two claimed
+graphs. If a graph with one repeated pair has an isolated vertex, pass
+to its complement, which has none and has the same score. All degrees
+$1,\ldots,n-1$ now occur. For $n\ge4$ its leaf forces its universal
+vertex to be unique. Two leaves would exclude degree $n-2$, since a
+vertex of that degree would miss both leaves. Thus the leaf is unique.
+Deleting the leaf and the universal vertex reduces every remaining
+degree by one. The remaining graph has all degrees $1,\ldots,n-3$.
+Induction with base graphs $K_2,P_3$ and reversal of this construction
+gives $A_n$, which has the stated degrees by \eqref{eq:rankgap}.
+The two graphs attain the same score by invariance of absolute
+degree differences.
+
+For sharpness compare $A_4$ (a triangle with one pendant vertex) with $K_{1,3}$. Their counts at
+differences $(0,1,2)$ are $(1,4,1)$ and $(3,0,3)$. The left side
+of \eqref{eq:stability} is $2\kappa$ and the bracket equals $2$.
+\end{proof}
+
+\begin{corollary}[Problems 5 and 6 of Knor et al.]\label{cor:powers}
+For each $n\ge4$ and every $0<p<1$ the only maximizers of $I_p$
+are the two antiregular graphs. This includes $p=1/n$ for every $n$.
+The stability coefficient is $2-2^p$.
+\end{corollary}
+\begin{proof}
+The successive differences of $t^p$ are positive and decreasing and
+$2-2^p>0$. Apply Theorem~\ref{thm:rank}.
+\end{proof}
+For $p=1$ the antiregular graph is a maximizer, as already proved
+with the full equality classification by Abdo, Brandt and Dimitrov
+\cite{abd}. The star calculation above gives a tie when $p=1$ and
+a strict reversal for every $p>1$. Thus among positive powers, $(0,1]$
+is the exact range for which $A_n$ maximizes at \emph{every} order.
+A useful equivalent formulation of the common maximization result is
+that it holds for each cap $f_k(t)=\min(t,k)$. These functions generate
+the nondecreasing concave functions, up to constants, by summing
+successive slope differences. The argument uses no asymptotic passage
+as $p$ tends to zero.
+\section{The chemical graph conjecture at exponent \texorpdfstring{$1/n$}{1/n}}
+\label{sec:chem}
+
+Knor, \v{S}krekovski, Filipovski and Dimitrov
+\cite[Theorem~9 and Conjecture~10]{ksfd} prescribe the multiplicities of
+degrees $1,2,3,4$ maximizing
+\[
+ I_p(G)=\sum_{\{u,v\}\subseteq V(G)}|d(u)-d(v)|^p
+\]
+among connected chemical graphs. A chemical graph is connected and simple and has maximum
+degree at most four. Their conjecture takes $p=1/n$ for $n\ge7$.
+The following argument gives a sufficient interval of exponents.
+
+\begin{theorem}\label{thm:chem}
+Suppose $n\ge7$, $p>0$ and $3^p-1<4/(3n)$. Write $n=4k+r$, with
+$0\le r\le3$. The maximizing degree multiplicity vectors are exactly
+$k(1,1,1,1)+s$ for the following offsets:
+\[
+\begin{array}{c|l}
+r&s\\ \hline
+0&(0,0,0,0)\\
+1&(0,0,0,1)\\
+2&(0,1,0,1),\ (1,0,1,0)\\
+3&(1,0,1,1).
+\end{array}
+\]
+In particular the conclusion holds at $p=1/n$.
+\end{theorem}
+
+\begin{proof}
+Write $x=(x_1,x_2,x_3,x_4)$ for a nonnegative integer multiplicity vector
+with total $n$. First allow all such vectors, without imposing graphicality.
+Its objective is
+\[
+ I_p(x)=\tfrac12(n^2-\textstyle\sum_i x_i^2)+H(x),\qquad
+ H(x)=A(x_1x_3+x_2x_4)+B x_1x_4,
+ \quad A=2^p-1,\quad B=3^p-1.
+\]
+Here $0<A<B$. Put $k=\lfloor n/4\rfloor$ and write $x=k\mathbf{1}+z$, so
+$\sum_i z_i=r$. Fix one displayed vector $y=k\mathbf{1}+s$ of the same
+residue class. Let
+\[
+ Q=\sum_i z_i^2,\quad D=(Q-r)/2,\quad E(z)=z_1+z_4,qquad
+ H(z)=A(z_1z_3+z_2z_4)+Bz_1z_4.
+\]
+The identical quadratic notation $H$ applies also to signed offsets.
+Since $j(j-1)$ is a nonnegative even integer for every integer $j$,
+$D\ge0$ is integral, and $D=0$ precisely when each $z_i$ is zero or
+one. An exact expansion gives
+\begin{equation}\label{eq:chem-margin}
+ I_p(x)-I_p(y)=-D+kB(E(z)-E(s))+H(z)-H(s).
+\end{equation}
+We consider only the necessary parity condition $z_1+z_3$ even.
+
+First, $E(z)-E(s)\le D$. To see this, subtract one from coordinates
+1 and 4 of $z$. The resulting integer vector $w$ has sum $r-2$,
+$w_1+w_3$ odd, and squared norm $Q-2E(z)+2$. The minimum possible norm
+squared is at least $2,1,2,1$ for $r=0,1,2,3$, respectively. In the
+first, second, and fourth cases use $\sum_i w_i^2\ge|\sum_i w_i|$.
+In the third case a zero-sum vector with the required odd parity is
+nonzero and therefore has squared norm at least two.
+Translating $s$ in the same way attains the stated lower bound in every
+case. Comparing its squared norm with that of $w$ gives the desired
+inequality.
+
+For every signed $z$,
+$H(z)\le BQ$ by $2|uv|\le u^2+v^2$ and $A\le B$; each coordinate
+belongs to at most two of the three pairs. Also $H(s)\ge0$. For
+$D\ge1$ and $n\ge10$, this gives
+\[
+ H(z)-H(s)\le B(r+2D)\le (r+2)BD\le (n/2)BD.
+\]
+When $n=8$ or $9$, the last inequality also holds since $r=0$ or $1$.
+When $n=7$, $r=3$ and $H(s)=A+B\ge B$, so that
+$H(z)-H(s)\le(2+2D)B\le4BD$.
+Consequently for $n\ge8$ the positive terms in
+\eqref{eq:chem-margin} are bounded above by
+$(k+n/2)BD\le(3n/4)BD<D$. For $n=7$ the bound is $(1+4)BD<D$,
+since $B<4/21$. Every unbalanced admissible vector is thus strictly
+worse than $y$.
+
+When $D=0$, the coordinates of $z$ are zeros and ones. In residue $0$
+there is only one choice. In residue $1$ parity allows the additional
+unit at degree $2$ or $4$, and the second choice wins by $kB>0$.
+In residue $3$ parity allows omission of degree $2$ or $4$. Both
+offsets have the $A$-pair $(1,3)$; omission of $2$ gains $(k+1)B$.
+In residue $2$ parity leaves precisely $\{1,3\}$ or $\{2,4\}$ for
+the two extra units. They give equal values by direct substitution.
+
+It remains to realize the degree lists. The original
+proof of \cite[Theorem~9]{ksfd} verifies their graphicality for $n\ge7$.
+All entries are positive, and each displayed list has degree sum at least
+$2(n-1)$ (substitution gives $10k,10k+4,10k+4$ or $10k+6$,
+and $10k+8$ in the four residues).
+Among all simple realizations take one with the fewest components.
+If it has two or more, some component contains a cycle, since a forest
+with at least two components has at most $n-2$ edges. Remove a cycle edge
+$uv$ there and any edge $ab$ in another component, and insert $ua,vb$.
+This preserves every degree and joins the two components, proving
+connected realizability.
+
+Finally $(3^t-1)/t$ is increasing for $t>0$ by convexity of $3^t$.
+Hence $n(3^{1/n}-1)\le7(3^{1/7}-1)<4/3$ for $n\ge7$.
+The final strict inequality follows from
+$(1+4/21)^7\ge1+7(4/21)+21(4/21)^2>3$.
+\end{proof}
+\section{Which cycles have infinitely log-concave chromatic coefficients?}
+\label{sec:cycles}
+For a finite coefficient sequence $a$, extend it by zero and put
+$(\mathcal La)_k=a_k^2-a_{k-1}a_{k+1}$. Infinite log-concavity requires
+every entry of every positive iterate to be nonnegative. Huh proved
+the first-iterate inequality for the absolute coefficients of every
+chromatic polynomial \cite{huh}. Amdeberhan and Moll asked whether it
+persists at every iterate \cite[Conjecture 21]{am}. The same question
+is Problem~5 in the report of the 2022 BIRS workshop \cite{birs}.
+
+\begin{theorem}\label{thm:cycle}
+For $n\ge3$, the sequence of absolute coefficients of the chromatic
+polynomial of $C_n$ is infinitely log-concave if and only if $n\le11$.
+For every $n\ge17$ its third iterate is negative at degree $2$.
+In particular Amdeberhan and Moll's conjecture is false.
+\end{theorem}
+\begin{proof}
+The chromatic polynomial of a cycle is
+$(q-1)^n+(-1)^n(q-1)$ \cite{am}. Hence $a_0=0$, $a_1=n-1$, and
+$a_k=\binom nk$ for $2\le k\le n$. Only five nonconstant
+coefficients can affect the third iterate at index two. Applying
+$\mathcal L$ twice to these gives
+\begin{align*}
+ (\mathcal L^2a)_1&=(n-1)^4,\\
+ (\mathcal L^2a)_2&=n^2(n-1)^4(n+2)/16,\\
+ (\mathcal L^2a)_3&=n^3(n-2)^2(n-1)^4(n+1)(n^2+n+18)/51840 .
+\end{align*}
+The next subtraction factors as
+\begin{align}
+ (\mathcal L^3a)_2&=-\frac{n^3(n-1)^8(n+4)}{103680}\,P(n),\label{eq:cycle}\\
+ P(n)&=2n^4-12n^3-327n^2-412n+36.\nonumber
+\end{align}
+For $n=17+h$ this quartic is
+$2h^4+124h^3+2529h^2+17370h+6615$, positive for all $h\ge0$.
+A witness small enough to check by hand is
+\[
+ (\mathcal L^3 a(C_{17}))_2
+ =22491136^2-65536\cdot8150077440
+ =-28272276537344 .
+\]
+If iteration is defined only at strictly interior indices and both
+endpoints are discarded after each step, take the graph
+$C_{17}\sqcup 2K_1$. Its chromatic polynomial is shifted by $q^2$.
+The same witness is at index four and depends only on original
+indices one through seven, all interior. This gives a counterexample
+under that interpretation as well.
+
+To classify the smaller cycles, let $\rho=(3+\sqrt5)/2$.
+If a nonnegative sequence $a$ satisfies $a_i^2\ge\rho a_{i-1}a_{i+1}$
+throughout, then $b=\mathcal La$ satisfies it as well
+\cite[Lemma 2.1]{mcs}. Indeed
+$(1-1/\rho)a_i^2\le b_i\le a_i^2$ and $(\rho-1)^2=\rho$.
+For each short cycle the table gives either an iterate in this
+invariant region (with all earlier iterates nonnegative), or an
+iterate with a negative entry at index two. The displayed integer
+checks verify every entry needed for the table.
+\[
+\begin{array}{c|ccccc|cc}
+ n&3,4&5&6,7,8,9,10&11&&12&13,14,15,16\\ \hline
+ \text{iterate}&0&1&2&3&&5&4\\
+ \text{test}&\multicolumn{4}{c}{\text{invariant region}}&&
+ \multicolumn{2}{c}{\text{negative at index two}}
+\end{array}
+\]
+\begin{lstlisting}[language=Python]
+from math import comb
+def step(a):
+    b = [0] + a + [0]
+    return [y*y-x*z for x,y,z in zip(b,b[1:],b[2:])]
+def in_region(a):
+    for x,y,z in zip(a,a[1:],a[2:]):
+        v = 2*y*y - 3*x*z
+        if v < 0 or v*v < 5*(x*z)**2:
+            return False
+    return min(a) >= 0
+for n, depth in zip(range(3,17), (0,0,1,2,2,2,2,2,3,5,4,4,4,4)):
+    a = [0] + [comb(n,k)-int(k==1) for k in range(1,n+1)]
+    for t in range(depth):
+        assert min(a) >= 0
+        a = step(a)
+    if n <= 11:
+        assert in_region(a)
+    else:
+        assert a[2] < 0
+\end{lstlisting}
+The invariant-region implication covers arbitrarily many future
+iterations for $n\le11$. Equation~\eqref{eq:cycle} covers the
+unbounded range of lengths.
+\end{proof}
+
+\subsection{A local obstruction that survives attaching a clique}
+The exact quartic also has a structural explanation. Suppose $a^{(n)}$
+are sequences extended by zero, with zero constant term. If for some
+$c>0$ and positive $s_n$ one has
+$a^{(n)}_j/s_n^j\to c/j!$ for $1\le j\le5$, then
+\[
+ s_n^{-16}(\mathcal L^3a^{(n)})_2\longrightarrow-c^8/51840.
+\]
+Indeed, the operation is local and polynomial. Multiplying $a_j$ by
+$s^j$ multiplies its $t$th iterate at $j$ by $s^{2^t j}$.
+For the limiting input $u_0=0$, $u_j=1/j!$ for $1\le j\le5$,
+the entries at $1,2,3$ of $\mathcal L^2u$ are $1,0,1/51840$.
+The vanishing central entry leaves a strictly negative third iterate.
+This provides an obstruction for a neighborhood of the rescaled
+coefficient profile.
+
+For instance, fix $m\ge3$ and identify an edge of $C_n$ with
+an edge of $K_m$. Once the colors of the two shared vertices
+are given, the remaining clique vertices can be colored in
+$(q-2)\cdots(q-m+1)$ ways. Alternating signs turn multiplication
+by this factor into convolution of the absolute coefficients with
+those of $\prod_{j=2}^{m-1}(z+j)$. These coefficients are fixed
+and its constant term is $(m-1)!$. At indices $1\le j\le5$,
+division by $n^j$ leaves the limit $(m-1)!/j!$.
+Thus the third iterate fails for all sufficiently large $n$ for
+each $m$. The two graphs being glued remain connected upon deleting
+any one vertex, and they retain a shared vertex after any single
+deletion. The resulting graphs are therefore 2-connected. They have
+chromatic number $m$ because $m\ge3$ and a proper cycle coloring
+extends across the shared edge to a coloring of the clique.
+\section{A simultaneous certificate for Sun's two conjectures}
+\label{sec:sun}
+For $n\ge0$ let
+\[
+ R_n=\sum_{k=0}^n\binom nk\binom{n+k}{k}\frac1{2k-1},
+ \qquad r_n=R_{n+1}/R_n\quad(n\ge1).
+\]
+Here $R_n>0$ for $n\ge1$, since the terms at $k=0,1$ sum to
+$n(n+1)-1>0$, and the remaining summands are positive.
+In the 2015 preprint and its 2018 published version, Brian Yi Sun
+asks in Conjecture 4.7 whether $(r_n)_{n\ge4}$ is log-concave.
+Conjecture 4.8 asks whether $(R_n^2-R_{n-1}R_{n+1})_{n\ge6}$
+is infinitely log-concave \cite{bysun}. These questions follow the main
+theorem of that paper, which establishes monotonicity of $r_n$ and a
+separate inequality for roots of $R_n$.
+\begin{theorem}\label{thm:sun-ratio}
+For all $n\ge5$ one has $r_n^2>r_{n-1}r_{n+1}$.
+At $n=4$ the inequality reverses. In particular, Conjecture 4.7
+holds strictly at every interior index of its stated sequence.
+\end{theorem}
+\begin{theorem}\label{thm:sun-minor}
+Put $V_n=R_{n-1}R_{n+1}-R_n^2$. For every $n\ge6$,
+\[
+                V_{n-1}V_{n+1}>V_n^2 .
+\]
+The inequality reverses at $n=5$.
+Conjecture 4.8 as stated is false, with failure of its first required
+log-concavity inequality already at the interior index $n=7$.
+\end{theorem}
+Indeed, letting $D_n=-V_n$ gives
+$(D_6,D_7,D_8)=(-127448,-1712480,-25704608)$ and
+$D_7^2-D_6D_8=-343413129984$. This test is independent of the convention
+for the first endpoint of a one-sided sequence.
+
+\subsection{The auxiliary enclosure problem}
+We seek one pair of bounds narrow enough to decide independently both
+the ratio curvature and the curvature of its first determinant.
+For the recurrence normalization put
+$t=3-2\sqrt2$ and $\lambda=t^{-1}=3+2\sqrt2$.
+Generating the binomial sum, as a formal power series, gives
+\[
+ G(z)=\sum_{n\ge0}R_nz^n
+     =-\frac{\sqrt{1-6z+z^2}}{(1-z)^2}.
+\]
+In fact summation over $n\ge k$ at fixed $k$ yields
+$\binom{2k}k z^k/(1-z)^{2k+1}$ before the factor $(2k-1)^{-1}$.
+The remaining sum follows from
+$\sum_{k\ge0}\binom{2k}k w^k/(2k-1)=-\sqrt{1-4w}$.
+Differentiation gives
+$(1-z)(1-6z+z^2)G'=(z^2-8z-1)G$, whence
+\[
+ (n+3)R_{n+3}=(7n+13)R_{n+2}-(7n+15)R_{n+1}+(n+1)R_n.
+\]
+The starting values are $(-1,1,7)$. Thus $y_n=t r_n$ obeys
+$y_{n+2}=F_n(y_n,y_{n+1})$, where
+\[
+ F_x(a,v)=\frac{(7x+13)t-(7x+15)t^2/v+(x+1)t^3/(av)}{x+3}.
+\]
+For $x\ge24$, $a>1/2$, $v>0$, the map decreases in $a$ and
+increases in $v$. For the second assertion use
+$(7x+15)a>(x+1)t$.
+
+Define the constants and two polynomials
+\[
+ b=\frac{84-39\sqrt2}{32},\qquad
+ c=\frac{-537+273\sqrt2}{64},\qquad
+ d=\frac{108996-83715\sqrt2}{4096},
+\]
+\[
+ H_\pm(x)=x^5-\tfrac32x^4+b x^3+c x^2+d x\pm20.
+\]
+One can derive the center by substituting
+$S(n)=1+\sum_{j=1}^4a_j n^{-j}$ into
+\begin{align*}
+ &(1+3/n) S(n)S(n+1)S(n+2)-(7+13/n)t S(n)S(n+1)\\
+ &\hspace{20mm}+(7+15/n)t^2 S(n)-(1+1/n)t^3 .
+\end{align*}
+Setting the coefficients of $n^{-1},\ldots,n^{-4}$ to zero gives
+$(-3/2,b,c,d)$ successively. The coefficient of the new unknown at
+each step is $3-14t+7t^2>0$. The proof below establishes the error
+bound from the recurrence itself. The use of ratio enclosures has
+precedents in both Sun's interlacing argument and the work of
+Hou and Zhang on $r$-log-convexity \cite{bysun,houzhang}.
+
+\begin{lemma}\label{lem:sun-tube}
+For every $n\ge24$, one has
+$H_-(n)/n^5<y_n<H_+(n)/n^5$.
+\end{lemma}
+\begin{proof}
+Put $x=24+h$ and write $d_i=(x+i)^5$, $l_i=H_-(x+i)$,
+$u_i=H_+(x+i)$. For $a,b',c'$ in the polynomial ring
+$\mathbb{Q}(\sqrt2)[h]$ define
+\begin{align*}
+ P(a,b',c')={}&(7x+13)t ab'd_2-(7x+15)t^2 a d_1d_2\\
+               &+(x+1)t^3d_0d_1d_2-(x+3)ab'c'.
+\end{align*}
+The remaining polynomial certificates are
+\begin{align*}
+ A&=l_1d_0-u_0d_1,& B&=l_3d_2-u_2d_3,& E&=u_2d_1-l_1d_2,\\
+ Q&=l_1^2d_0d_2-u_0u_2d_1^2,&
+ T&=l_2ABd_1-u_0 E^2d_3 .
+\end{align*}
+The exact expansion checks in Appendix~\ref{app:ratio} give strictly
+positive coefficients in every degree from zero through the degree shown:
+\[
+\begin{array}{c|rrrrrrr}
+ \text{polynomial}& l_0-d_0/2&P(u_0,l_1,l_2)&-P(l_0,u_1,u_2)& Q&A&B&T\\
+ \hline
+ \text{degree}&5&11&11&17&8&8&24
+\end{array}
+\]
+Each polynomial is positive for every real $h\ge0$. In particular,
+$l_i/d_i>1/2$. By clearing positive denominators, the two signs of $P$
+give
+\[
+ F_x(u_0/d_0,l_1/d_1)>l_2/d_2,\qquad
+ F_x(l_0/d_0,u_1/d_1)<u_2/d_2.
+\]
+The initial tests at indices $24,25$ use respectively
+$R_{24}=8492182185653327$, $R_{25}=46471113779766769$ and
+$R_{26}=254949930551822839$. Monotonicity of $F_x$ on this
+rectangle then proves the assertion by induction.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:sun-ratio}]
+The sign of $Q$ gives
+$(l_1/d_1)^2>(u_0/d_0)(u_2/d_2)$ for $x\ge24$. The lemma proves the
+assertion for centers $n=x+1\ge25$.
+For $5\le n\le24$ the recurrence gives
+$R_{n+1}^3R_{n-1}-R_n^3R_{n+2}>0$.
+At $n=4$ this integer equals $-4623352$.
+Appendix~\ref{app:ratio} gives the finite arithmetic in full.
+\end{proof}
+\begin{proof}[Proof of Theorem~\ref{thm:sun-minor}]
+Write $V_n=\lambda R_{n-1}R_n(y_n-y_{n-1})$.
+On cancelling positive factors, the sign of $V_{n-1}V_{n+1}-V_n^2$
+is the sign of
+\[
+ y_n(y_{n-1}-y_{n-2})(y_{n+1}-y_n)
+               -y_{n-2}(y_n-y_{n-1})^2 .
+\]
+Take $x=n-2\ge24$. The positive numerators $A$ and $B$ bound the two factors in the first product from below by
+$A/(d_0d_1)$ and $B/(d_2d_3)$. Applying the same $A$ bound at
+$x+1$ shows that $0<y_n-y_{n-1}<E/(d_1d_2)$.
+The entire expression therefore exceeds
+$T/(d_0d_1^2d_2^2d_3)>0$. Direct recurrence evaluation gives the
+same sign for $6\le n\le25$, and gives $-16234176$ at $n=5$.
+The explicit test at $n=7$ above concludes the disproof.
+\end{proof}
+\section{A scalar conjecture of Zhi-Wei Sun}
+\label{sec:sunbin}
+
+Set
+\[
+ S_n^{(m)}(q)=\sum_{k=0}^n\binom{n+k}{k}^{m}q^k,\qquad n\ge0.
+\]
+On 25 July 2026 Sun conjectured that $(S_n^{(m)}(1))_{n\ge0}$
+is log-convex for all integers $m\ge5$, in a comment following Zhou's
+counterexample to the earlier coefficientwise assertion \cite{zwsun}.
+We prove strict inequalities on a continuous set of parameters.
+
+\begin{theorem}\label{thm:sunbin}
+If $m\ge1$ is real and $q\ge 2^{2-m}$, then for every $n\ge1$,
+\[
+ S_{n-1}^{(m)}(q) S_{n+1}^{(m)}(q)>\bigl(S_n^{(m)}(q)\bigr)^2 .
+\]
+In particular Sun's scalar conjecture holds for every specified exponent.
+\end{theorem}
+
+Our auxiliary problem asks how much the sum of the terms measured
+relative to the last term can increase in one step. The estimate below
+combines a product telescope with a differentiated geometric series.
+These tools also occur in the counting comparison and the weighted
+length sums of VMRC manuscript [043] \cite{vmrc}. Here the factor
+difference must retain its order $n^{-2}$ to compete with the curvature
+of the central binomial coefficient.
+
+\begin{lemma}\label{lem:sunbin-drift}
+Let $B_n=\binom{2n}{n}$, $a=2^{-m}/q$ and
+$H_n=S_n^{(m)}(q)/(q^n B_n^m)$, with $m\ge1$ and $0<a<1$.
+Then $H_n$ is nondecreasing and for $n\ge2$,
+\[
+ 0\le\frac{H_n}{H_{n-1}}-1
+ \le \frac{2ma^2}{(1-a)^3(1+a)(n+1)(n-1)}.
+\]
+\end{lemma}
+\begin{proof}
+Reversing the summation index with $j=n-k$ gives
+\[
+ H_n=\sum_{j=0}^n a^j
+     \left(\prod_{i=0}^{j-1}u_i(n)\right)^m,\qquad
+ u_i(n)=\frac{2(n-i)}{2n-i}=1-\frac{i}{2n-i}.
+\]
+For $n\ge2$ compare the sums at $n$ and $n-1$, including a zero term
+of index $j=n$ at $n-1$ by using $u_{n-1}(n-1)=0$. For $0\le i<j\le n$
+all factors lie in $[0,1]$, and
+\[
+ 0\le u_i(n)-u_i(n-1)
+ =\frac{2i}{(2n-i)(2n-2-i)}
+ \le\frac{2i}{(n+1)(n-1)}.
+\]
+Telescoping the products bounds their difference by the sum of the
+factor differences. Taking the $m$th power multiplies the bound by
+at most $m$, by the mean-value theorem on $[0,1]$. The difference at
+index $j$ is therefore at most $ma^j j(j-1)/((n+1)(n-1))$.
+Sum over $j$, use $\sum_{j\ge0}j(j-1)a^j=2a^2/(1-a)^3$, and divide
+by $H_{n-1}\ge1+a$. Finally $H_0=1$ and $H_1=1+a$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:sunbin}]
+The hypothesis gives $a\le1/4$. Because $a^2/(1+a)$ and
+$(1-a)^{-3}$ are increasing,
+$2a^2/((1-a)^3(1+a))\le 32/135<1/3$. Since
+$(n-1)/(2n-1)\ge1/3$ for $n\ge2$, the lemma gives
+\[
+ \frac{H_n}{H_{n-1}}<
+ 1+\frac{m}{(n+1)(2n-1)}
+ \le\left(1+\frac{1}{(n+1)(2n-1)}\right)^m
+ =\left(\frac{B_{n-1}B_{n+1}}{B_n^2}\right)^m.
+\]
+The second inequality is Bernoulli's inequality. At $n=1$ the same
+strict comparison follows from $H_1/H_0=1+a\le5/4<1+m/2\le(3/2)^m$.
+Multiplication by $H_{n+1}/H_n\ge1$ now gives the result because the
+factors $q^n$ cancel.
+\end{proof}
+
+\begin{proposition}\label{prop:sun-small-q}
+For each real $m\ge48$ the choice $q=3^{-m}$ gives
+$S_2^{(m)}(q)S_4^{(m)}(q)<S_3^{(m)}(q)^2$.
+\end{proposition}
+\begin{proof}
+Let $M_r=\max_{0\le k\le r}\binom{r+k}{k}/3^k$.
+The ratio of consecutive terms is $(r+k+1)/(3(k+1))$, so that
+$M_2=1$, $M_3=4/3$, and $M_4=5/3$. By bounding a sum by its number
+of terms times its maximum and retaining one term at $r=3$ we obtain
+\[
+ \frac{S_2^{(m)}(q) S_4^{(m)}(q)}{S_3^{(m)}(q)^2}
+ \le 15\left(\frac{M_2M_4}{M_3^2}\right)^m
+ =15(15/16)^m<1.
+\]
+Indeed $(16/15)^{12}\ge1+12/15+66/225>2$.
+\end{proof}
+\section{Relation to the corpus and the priority record}\label{sec:status}
+We used the repository snapshot \texttt{5887cde} of 15 November 2026
+\cite{vmrc}. We screened the catalog of 190 TeX files and searched their text for source identifiers and subject terms. Two specific transfers can be checked in the repository.
+Manuscript [179], in the proof of its harmonic defect transfer, separates
+a baseline degree score from a nonnegative remainder and rewrites an edge
+sum by counting its endpoints. Lemma~\ref{lem:rank} instead starts with
+ranks of vertex pairs and produces a signed linear edge score whose
+optimizer is explicit. Manuscript [043] bounds a product by telescoping
+one changed factor at a time in its counting-bound lemma and sums
+length-dependent losses by differentiating a geometric series in its
+two-sided operator comparison. Lemma~\ref{lem:sunbin-drift} adapts these
+steps to an endpoint-normalized binomial sum. No graph or arithmetic
+claim from a draft in the corpus is needed as an unproved premise here.
+
+\paragraph{Graph extremality.}
+The original graph paper records a proof over a smaller exponent range
+and a computational check through $n=11$ at $1/n$ \cite{ksfd}. The
+linear objective, sorted degrees and antidiagonal graph were already
+studied in \cite{abd}; fixed-size variants of the linear problem are
+also known \cite{adr}. The two-point contact in
+\eqref{eq:rankgap} gives simultaneous optimality for all nondecreasing concave
+weights and a sharp loss for repeated degrees. The 2026 chemical
+paper proves the case $n\equiv0\pmod4$ at $1/n$ and also gives
+counterexamples to the separate constant-exponent chemical conjecture
+\cite{dfks}. Its divisible-by-four theorem allows a larger
+constant in the numerator of $p=c/n$ than our all-residue bound.
+The parity argument in Section~\ref{sec:chem} supplies the other
+three classes.
+
+\paragraph{Chromatic and binomial coefficients.}
+Huh's first-iterate theorem and the McNamara--Sagan criterion predate
+this work. The additional input in Section~\ref{sec:cycles} is the
+local third-iterate obstruction and its explicit sign along cycles.
+The BIRS report also states the precise question
+\cite{birs}. For the $R_n$ sequence, the generating function and
+recurrence are inputs to an all-index comparison. The exact polynomial
+enclosures implement earlier ideas about ratio inequalities for
+P-recursive sequences \cite{bysun,houzhang}. For Zhi-Wei Sun's sum,
+the coefficientwise claim has a published online counterexample
+\cite{zwsun}; the author separately formulated the scalar question
+at $q=1$ after that counterexample.
+
+\paragraph{Scope of the historical claims.}
+For G1 and G2, each target is specified in the listed source and is
+answered at its original quantifiers. For G3 the source papers,
+the authors' follow-up and the workshop report document the original
+status and the partial results described above. Searches using problem
+numbers, author names, DOIs, sequence identifiers, degree differences,
+higher iterates, and equivalent inequalities did not identify prior
+full solutions to the remaining targets. For G4 the proofs give either
+all allowed parameters or an admissible counterexample. For G5 the
+rank support bound, the parity estimate, the signed quartic, and
+the quantitative binomial bounds provide substantive additional
+conclusions. For G6, priority and the historical novelty of a general
+method require independent comparison. The mathematical statements
+above carry no assumption of historical priority or peer review.
+
+\appendix
+\section{Exact certificate for the ratio recurrence}\label{app:ratio}
+The following Python code uses SymPy polynomial arithmetic in
+$\mathbb Q(\sqrt2)[h]$. All sign tests compare rational numbers or their
+squares. The degree checks cover every coefficient position, including
+a zero if one were present. Together with the interval induction in
+Section~\ref{sec:sun}, they certify the unbounded range.
+\begin{lstlisting}[language=Python]
+from sympy import QQ, sqrt
+from sympy.polys import ring
+
+K = QQ.algebraic_field(sqrt(2))
+s = K.from_sympy(sqrt(2))
+lam, t = 3 + 2*s, 3 - 2*s
+ring_h, h = ring('h', K)
+b = (84 - 39*s)/32
+c = (-537 + 273*s)/64
+d = (108996 - 83715*s)/4096
+
+def H(x, sign):
+    return x**5 - (K(3)/2)*x**4 + b*x**3 + c*x**2 + d*x + sign*20
+
+def positive(q):
+    # In K the internal coefficients are in descending powers of sqrt(2).
+    coeff = q.to_list()
+    if len(coeff) <= 1:
+        return bool(coeff and coeff[0] > 0)
+    u, v = coeff                 # u*sqrt(2) + v
+    if u*v >= 0:
+        return (u > 0 or v > 0)
+    if v > 0:
+        return v*v > 2*u*u
+    return 2*u*u > v*v
+
+x = 24 + h
+D = [(x+i)**5 for i in range(4)]
+l = [H(x+i, -1) for i in range(4)]
+u = [H(x+i, 1) for i in range(4)]
+def residual(a, b, c):
+    return ((7*x+13)*t*a*b*D[2] - (7*x+15)*t**2*a*D[1]*D[2]
+            + (x+1)*t**3*D[0]*D[1]*D[2] - (x+3)*a*b*c)
+A = l[1]*D[0] - u[0]*D[1]
+B = l[3]*D[2] - u[2]*D[3]
+E = u[2]*D[1] - l[1]*D[2]
+tests = [l[0] - D[0]/2, residual(u[0],l[1],l[2]),
+         -residual(l[0],u[1],u[2]), l[1]**2*D[0]*D[2]-u[0]*u[2]*D[1]**2,
+         A, B, l[2]*A*B*D[1] - u[0]*E**2*D[3]]
+for p, degree in zip(tests, [5,11,11,17,8,8,24]):
+    assert p.degree() == degree
+    assert all(positive(p.get((j,), K.zero)) for j in range(degree+1))
+
+R = [-1, 1, 7]
+for n in range(26):
+    q, rem = divmod((7*n+13)*R[-1]-(7*n+15)*R[-2]+(n+1)*R[-3], n+3)
+    assert rem == 0
+    R.append(q)
+for n in (24,25):
+    m = K(n)
+    v = m**5 * R[n+1]
+    assert positive(v-lam*R[n]*H(m,-1))
+    assert positive(lam*R[n]*H(m,1)-v)
+def ratio_delta(n):
+    return R[n+1]**3*R[n-1]-R[n]**3*R[n+2]
+def V(n):
+    return R[n-1]*R[n+1]-R[n]**2
+def minor_delta(n):
+    return V(n-1)*V(n+1)-V(n)**2
+assert ratio_delta(4) == -4623352
+assert all(ratio_delta(n)>0 for n in range(5,25))
+assert minor_delta(5) == -16234176
+assert all(minor_delta(n)>0 for n in range(6,26))
+assert minor_delta(7) == 343413129984
+print("All exact checks passed.")
+\end{lstlisting}
+\begin{thebibliography}{99}
+\bibitem{ksfd} M. Knor, R. \v{S}krekovski, S. Filipovski and D. Dimitrov,
+Extremizing antiregular graphs by modifying total $\sigma$-irregularity.
+\emph{Appl. Math. Comput.} \textbf{490} (2025), 129199.
+Preprint 3 November 2024. \href{https://arxiv.org/html/2411.01530v1}{Preprint},
+\href{https://doi.org/10.1016/j.amc.2024.129199}{journal}.
+\bibitem{dfks} D. Dimitrov, S. Filipovski, M. Knor and R. \v{S}krekovski,
+Modified total sigma-irregularity in chemical graphs.
+\emph{Discrete Math. Lett.} \textbf{18} (2026), 1--7.
+\href{https://doi.org/10.47443/dml.2026.041}{doi:10.47443/dml.2026.041}.
+\bibitem{abd} H. Abdo, S. Brandt and D. Dimitrov, The total irregularity
+of a graph. \emph{Discrete Math. Theor. Comput. Sci.} \textbf{16} (2014),
+201--206. \href{https://doi.org/10.46298/dmtcs.1263}{Article}.
+\bibitem{adr} H. Abdo, D. Dimitrov and G. Rote, Graphs of prescribed order
+and size with maximal total irregularity. Manuscript, November 2025.
+\href{https://page.mi.fu-berlin.de/rote/Papers/abstract/Graphs+of+prescribed+order+and+size+with+maximal+total+irregularity.html}{Author's record}.
+\bibitem{am} T. Amdeberhan and V. H. Moll, Infinite log-convexity.
+\emph{Online J. Anal. Comb.} \textbf{17}, paper 6, 1--10, Conjecture 21.
+\href{https://combinatorialpress.com/article/ojac/vol17/305.pdf}{Journal PDF}.
+\bibitem{birs} M. B\'ona, R. G\'omez, M. D. Ward and C. Mailler,
+\emph{Analytic and Probabilistic Combinatorics}, BIRS workshop 22w5004,
+13--18 November 2022, open problem session, Problem~5, p.~6.
+\href{https://www.birs.ca/workshops/2022/22w5004/report22w5004.pdf}{Workshop report}.
+\bibitem{huh} J. Huh, Milnor numbers of projective hypersurfaces and
+the chromatic polynomial of graphs. \emph{J. Amer. Math. Soc.} \textbf{25}
+(2012), 907--927. \href{https://doi.org/10.1090/S0894-0347-2012-00731-0}{Article}.
+\bibitem{mcs} P. R. W. McNamara and B. E. Sagan, Infinite log-concavity:
+developments and conjectures. \emph{Adv. Appl. Math.} \textbf{44} (2010),
+1--15. \href{https://arxiv.org/abs/0808.1065}{Preprint}.
+\bibitem{bysun} B. Y. Sun, On a ratio monotonicity conjecture of a new kind
+of numbers. \emph{J. Inequal. Appl.} (2018), paper 24, Conjectures 4.7--4.8.
+\href{https://arxiv.org/abs/1512.01008}{2015 preprint},
+\href{https://doi.org/10.1186/s13660-018-1614-1}{journal}.
+\bibitem{houzhang} Q.-H. Hou and Z.-R. Zhang, Asymptotic $r$-log-convexity
+and P-recursive sequences. \href{https://arxiv.org/abs/1609.07840}{arXiv:1609.07840}.
+\bibitem{zwsun} Z.-W. Sun, On the polynomials
+$\sum_{k=0}^n\binom{n+k}{k}^m q^k$. MathOverflow question 479301,
+21 September 2024; answer of Q. Zhou, 24 July 2026; scalar conjecture in
+Sun's comment of 25 July 2026.
+\href{https://mathoverflow.net/questions/479301/}{Original question, answer and comment}.
+\bibitem{vmrc} QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus},
+manuscripts [043] and [179], snapshot \texttt{5887cde}.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/5887cdea4898f0a3aa5bf7a8e0829697bd2b0f4b}{Versioned repository}.
+\end{thebibliography}
+\end{document}

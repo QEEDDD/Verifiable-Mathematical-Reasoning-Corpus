@@ -1,0 +1,399 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=24mm,headheight=16pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,enumitem,xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,citecolor=blue!45!black]{hyperref}
+\usepackage{fancyhdr}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\footnotesize Compensated pair kernels and line graphs}
+\fancyhead[R]{\footnotesize Research manuscript, 17 November 2026}
+\fancyfoot[C]{\thepage}
+\setlength{\parskip}{3pt}
+\setlist[itemize]{topsep=3pt,itemsep=2pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{problem}[theorem]{Auxiliary Problem}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\LL}{L}
+\newcommand{\dd}{\mathrm{d}}
+\newcommand{\Def}{\mathfrak D}
+\newcommand{\Sl}{\mathfrak S}
+\newcommand{\Ag}{\mathfrak A}
+\newcommand{\Var}{\mathfrak V}
+\newcommand{\MM}{\mathsf M}
+\newcommand{\HH}{\mathsf H}
+\title{\textbf{Compensated Pair Kernels and Exact Defect Decompositions for the Zhang--Wu Line-Graph Randi\'c Conjecture}\\[6pt]
+\large A self-contained global proof, quantitative strengthening, and independent certificate}
+\author{Research manuscript prepared for mathematical verification}
+\date{17 November 2026\quad $\vert$\quad MSC 2020: 05C09, 05C76, 05C35}
+\begin{document}
+\maketitle
+\begin{abstract}
+Zhang and Wu formulated in 2022 the conjecture that the ordinary Randi\'c index of a connected simple graph of minimum degree at least two never decreases under formation of its line graph, with equality only for cycles. We preserve the original statement and give a fully quantified proof by solving an auxiliary rational-inequality problem. A two-variable endpoint principle yields nonnegative local pair-kernel defects; the apparently nonlocal first-order terms cancel antisymmetrically across the original edges. We obtain the exact decomposition
+\[
+ R(L(G))-R(G)=\Def(G)+\Sl(G)+\Ag(G)+\Var(G),
+ \quad \Def(G)=\frac12\sum_{v\in V(G)}\frac{d_G(v)-2}{d_G(v)+2},
+\]
+with each term explicitly nonnegative. An independent modified-index certificate, first set out in a separate 15 November 2026 research draft, yields the sharp global multiplier $R(L(G))\ge \delta(G)R(G)/2$. Both conclusions are proved here without conditional assumptions or finite-order cutoffs. An exact-arithmetic computation independently checks all 583 connected simple graphs on at most seven vertices having minimum degree two. The manuscript does not assert historical first priority: the literature and earlier research-draft comparison provide evidence but not exhaustive verification of novelty.
+\end{abstract}
+\noindent\textbf{Keywords.} Randi\'c index; harmonic index; line graph; local certificate; antisymmetric cancellation; exact defects; graph invariants; research priority.
+
+\section{The pre-existing named conjecture and proof objectives}
+Let $G=(V,E)$ be a finite simple graph, $n=|V|$, and write $d_v=d_G(v)$. For a graph $F$ with no isolated vertices define the ordinary Randi\'c and harmonic indices
+\begin{equation}\label{eq:indices}
+ R(F)=\sum_{xy\in E(F)}\frac1{\sqrt{d_F(x)d_F(y)}},\qquad
+ \HH(F)=\sum_{xy\in E(F)}\frac2{d_F(x)+d_F(y)}.
+\end{equation}
+The line graph $L(G)$ has vertex set $E(G)$, with two vertices adjacent precisely when the corresponding distinct edges share an endpoint. In particular,
+\begin{equation}\label{eq:line-degree}
+ D_{uv}:=d_{L(G)}(uv)=d_u+d_v-2\quad(uv\in E(G)).
+\end{equation}
+Zhang and Wu stated the following as \emph{Conjecture 5} in their 2022 paper \cite{ZW22}.
+\begin{quote}\itshape
+If $G$ is a connected graph of order $n\ge3$ with $\delta(G)\ge2$, then $R(L(G))\ge R(G)$, with equality if and only if $G\cong C_n$.
+\end{quote}
+The target of this manuscript is exactly the displayed original assertion, not an equivalent-looking redefinition. The 2023 works \cite{LW23,WWW23} establish important related restricted and tree/unicyclic cases, but their published statements do not provide this unrestricted conclusion. The 2024 modified-index paper \cite{ZZ24} addresses the tree case. Our proof is algebraic and does not depend on computer experiments.
+
+The research route is: (i) pose a separate nonlinear kernel problem; (ii) prove a pointwise nonnegative certificate with an explicit residual; (iii) transfer it to all the cliques of $L(G)$; (iv) cancel the alternating degree terms, proving the unmodified named conjecture; and (v) compare it with an earlier independent modified-index certificate. Selected methodological material in the Verifiable Mathematical Reasoning Corpus \cite{VMRC} motivated the local-certificate/transfer viewpoint, but no unverified result from that corpus is used as an axiom.
+
+\section{A new auxiliary problem and an exact endpoint certificate}
+\begin{problem}[Compensated pair kernel]\label{prob:kernel}
+For each integer $d\ge2$ and arbitrary real numbers $a_1,\ldots,a_d\ge d$, bound from below the functional
+\begin{equation}\label{eq:Pd}
+ P_d(a_1,\ldots,a_d):=\sum_{1\le i<j\le d}\frac2{a_i+a_j}
+ -d\sum_{i=1}^d\frac1{a_i+2}+\frac{d-1}{2}.
+\end{equation}
+The sought certificate must hold for all real parameters in the specified orthant and retain a positive degree-dependent defect when $d>2$.
+\end{problem}
+
+For an integer $d\ge2$, set
+\begin{equation}\label{eq:E}
+ E_d(a,b):=\frac2{a+b}+\frac1d-\frac{d}{d-1}\left(\frac1{a+2}+\frac1{b+2}\right),\qquad
+ c_d:=\frac{d-2}{d(d-1)(d+2)}.
+\end{equation}
+
+\begin{lemma}[Exact nonnegative pair decomposition]\label{lem:pair}
+For $d\ge2$ and $a=d+x$, $b=d+y$ with $x,y\ge0$, the following rational identity holds:
+\begin{align}\label{eq:pair-decomp}
+ E_d(d+x,d+y)=c_d
+ &+\frac{(d-2)(x+y+2)}{(d-1)(2d+x+y)(d+x+y+2)}\\
+ &+\frac{dxy\,[2(d+2)+x+y]}{(d-1)(d+2)(d+x+2)(d+y+2)(d+x+y+2)}.\notag
+\end{align}
+Consequently $E_d(a,b)\ge c_d$. It is strict for $d>2$; for $d=2$ equality holds if and only if $\min(a,b)=2$.
+\end{lemma}
+\begin{proof}
+The identity may be verified by putting all summands over their positive common denominator. A more structural derivation explains its sign. Set $S=a+b$ and $t=S-d\ge d$. Since $f(z)=1/(z+2)$ is strictly convex on $z>-2$, its maximum under $a,b\ge d$ and fixed $a+b=S$ is attained at $(d,t)$ or $(t,d)$. Thus
+\[
+ \frac1{a+2}+\frac1{b+2}\le\frac1{d+2}+\frac1{t+2}.
+\]
+Direct factorization gives
+\begin{equation}\label{eq:endpoint}
+ E_d(d,t)=c_d+\frac{(d-2)(t-d+2)}{(d-1)(d+t)(t+2)}.
+\end{equation}
+Writing $a=d+x$, $b=d+y$, the difference between the endpoint sum and the original sum is exactly
+\[
+ \frac1{d+2}+\frac1{d+x+y+2}-\frac1{d+x+2}-\frac1{d+y+2}
+ =\frac{xy[2(d+2)+x+y]}{(d+2)(d+x+2)(d+y+2)(d+x+y+2)}.
+\]
+Substitute this difference and $t=d+x+y$ into \eqref{eq:endpoint}, yielding \eqref{eq:pair-decomp}. All denominators are positive. If $d>2$, the second term in \eqref{eq:pair-decomp} is strictly positive. If $d=2$, only the final term remains, and it vanishes exactly when $xy=0$.
+\end{proof}
+
+\begin{theorem}[Solution of the auxiliary problem]\label{thm:kernel}
+For every choice in Problem~\ref{prob:kernel},
+\begin{equation}\label{eq:Pd-bound}
+ P_d(a_1,\ldots,a_d)\ge\frac{d-2}{2(d+2)}.
+\end{equation}
+More precisely, with $x_i=a_i-d\ge0$,
+\begin{equation}\label{eq:Pd-exact}
+ P_d(a_1,\ldots,a_d)=\frac{d-2}{2(d+2)}
+ +\sum_{1\le i<j\le d}\bigl[E_d(a_i,a_j)-c_d\bigr],
+\end{equation}
+and every bracket has the explicitly nonnegative form \eqref{eq:pair-decomp} with $c_d$ subtracted. The inequality is strict when $d>2$.
+\end{theorem}
+\begin{proof}
+Every $1/(a_i+2)$ appears exactly $d-1$ times in the sum of $E_d(a_i,a_j)$ over unordered pairs, so the identity
+\[
+ \sum_{i<j}E_d(a_i,a_j)=\sum_{i<j}\frac2{a_i+a_j}
+ +\binom d2\frac1d-d\sum_{i=1}^d\frac1{a_i+2}=P_d(a_1,\ldots,a_d)
+\]
+is exact. By Lemma~\ref{lem:pair}, subtracting $\binom d2c_d=(d-2)/(2(d+2))$ leaves only nonnegative terms. This proves all assertions.
+\end{proof}
+
+\section{Antisymmetric transfer to the line graph}
+For $v\in V(G)$, let $N(v)$ be its original neighborhood and define the harmonic mass of the clique of line-graph vertices incident with $v$ by
+\begin{equation}\label{eq:Cv}
+ C_v:=\sum_{\{u,w\}\subset N(v)}\frac2{d_u+d_w+2d_v-4}.
+\end{equation}
+Every edge of $L(G)$ is owned by exactly one shared endpoint $v$ of two distinct edges in a simple graph. Therefore
+\begin{equation}\label{eq:sumCv}
+ \HH(L(G))=\sum_{v\in V(G)}C_v.
+\end{equation}
+
+\begin{proposition}[Local defect identity]\label{prop:local}
+Suppose $\delta(G)\ge2$. For a vertex $v$ of degree $d=d_v$, put $a_u=d+d_u-2$ and define
+\[
+ \sigma_v:=\sum_{\{u,w\}\subset N(v)}\bigl[E_d(a_u,a_w)-c_d\bigr]\ge0.
+\]
+Then the following identity holds:
+\begin{equation}\label{eq:local-exact}
+ C_v=\frac12+\frac12\sum_{u\in N(v)}\frac{d_v-d_u}{d_v+d_u}
+ +\frac{d_v-2}{2(d_v+2)}+\sigma_v.
+\end{equation}
+If $d_v>2$, then $\sigma_v>0$.
+\end{proposition}
+\begin{proof}
+The minimum-degree hypothesis gives $a_u\ge d$. The definition \eqref{eq:Pd} and Theorem~\ref{thm:kernel} yield
+\[
+ C_v=d\sum_{u\in N(v)}\frac1{d+d_u}-\frac{d-1}{2}
+ +\frac{d-2}{2(d+2)}+\sigma_v.
+\]
+For each neighbor $u$, the identity $d/(d+d_u)=1/2+(d-d_u)/(2(d+d_u))$ applies. Summing over the $d$ neighbors gives \eqref{eq:local-exact}. By Lemma~\ref{lem:pair}, every summand defining $\sigma_v$ is strictly positive if $d>2$.
+\end{proof}
+
+\begin{theorem}[Global harmonic stability with exact residual]\label{thm:harmonic}
+For every finite simple graph $G$ (connected or not) with $\delta(G)\ge2$,
+\begin{equation}\label{eq:H-exact}
+ \HH(L(G))=\frac n2+\underbrace{\frac12\sum_{v\in V(G)}\frac{d_v-2}{d_v+2}}_{\displaystyle\Def(G)}
+ +\underbrace{\sum_{v\in V(G)}\sigma_v}_{\displaystyle\Sl(G)}.
+\end{equation}
+Thus $\HH(L(G))\ge n/2+\Def(G)\ge n/2$. Equality in either inequality occurs precisely when every connected component of $G$ is a cycle.
+\end{theorem}
+\begin{proof}
+Sum \eqref{eq:local-exact} over all vertices, and use \eqref{eq:sumCv}. The first-order terms cancel \emph{exactly}, edge by edge:
+\begin{equation}\label{eq:antisym}
+ \sum_{v\in V(G)}\sum_{u\in N(v)}\frac{d_v-d_u}{d_v+d_u}
+ =\sum_{uv\in E(G)}\left(\frac{d_v-d_u}{d_v+d_u}
+ +\frac{d_u-d_v}{d_u+d_v}\right)=0.
+\end{equation}
+This proves \eqref{eq:H-exact}. The two remaining contributions are nonnegative. If some $v$ has $d_v>2$, then both its explicit vertex defect and $\sigma_v$ are positive; hence $\HH(L(G))>n/2+\Def(G)$. Conversely, if all degrees are two, $G$ is a disjoint union of cycles and $L(G)\cong G$. Then $\HH(L(G))=n/2$, while both defects vanish. This proves equality in each bound.
+\end{proof}
+
+\section{Exact gap decomposition and the unchanged Zhang--Wu conjecture}
+For a finite graph $F$ without isolated vertices, AM--GM gives $R(F)\ge\HH(F)$ and, more precisely,
+\begin{equation}\label{eq:AG}
+ R(F)-\HH(F)=\sum_{xy\in E(F)}\frac{(\sqrt{d_F(x)}-\sqrt{d_F(y)})^2}
+ {\sqrt{d_F(x)d_F(y)}\,[d_F(x)+d_F(y)]}\ge0.
+\end{equation}
+A second exact degree-variance identity is
+\begin{equation}\label{eq:variance}
+ \frac n2-R(G)=\frac12\sum_{uv\in E(G)}
+ \left(\frac1{\sqrt{d_u}}-\frac1{\sqrt{d_v}}\right)^2\ge0,
+\end{equation}
+using $\sum_{uv\in E(G)}(1/d_u+1/d_v)=n$.
+
+\begin{theorem}[Four-term nonnegative decomposition]\label{thm:four}
+For every finite simple graph $G$ with $\delta(G)\ge2$, write
+\begin{align*}
+ \Ag(G)&:=\sum_{xy\in E(L(G))}\frac{(\sqrt{d_{L(G)}(x)}-\sqrt{d_{L(G)}(y)})^2}
+ {\sqrt{d_{L(G)}(x)d_{L(G)}(y)}\,[d_{L(G)}(x)+d_{L(G)}(y)]},\\
+ \Var(G)&:=\frac12\sum_{uv\in E(G)}\left(\frac1{\sqrt{d_u}}-\frac1{\sqrt{d_v}}\right)^2.
+\end{align*}
+Then
+\begin{equation}\label{eq:main-exact}
+ \boxed{R(L(G))-R(G)=\Def(G)+\Sl(G)+\Ag(G)+\Var(G).}
+\end{equation}
+Each term is nonnegative. Hence the quantitative stability theorem
+\begin{equation}\label{eq:main-lower}
+ \boxed{R(L(G))-R(G)\ge\frac12\sum_{v\in V(G)}\frac{d_v-2}{d_v+2}
+ +\frac12\sum_{uv\in E(G)}\left(\frac1{\sqrt{d_u}}-\frac1{\sqrt{d_v}}\right)^2}
+\end{equation}
+holds without an order bound. Equality in \eqref{eq:main-exact} being zero, or in \eqref{eq:main-lower} being zero, occurs if and only if $G$ is a disjoint union of cycles. If at least $k$ vertices have degree at least three, then
+\begin{equation}\label{eq:kbound}
+ R(L(G))-R(G)\ge \frac{k}{10}+\Var(G).
+\end{equation}
+\end{theorem}
+\begin{proof}
+Insert the intermediate quantities $R(L(G))$, $\HH(L(G))$, $n/2$, and $R(G)$ into the telescoping identity
+\[
+ R(L(G))-R(G)=[R(L(G))-\HH(L(G))]
+ +[\HH(L(G))-n/2]+[n/2-R(G)].
+\]
+Equation \eqref{eq:AG} identifies the first bracket with $\Ag(G)$, Theorem~\ref{thm:harmonic} identifies the second with $\Def(G)+\Sl(G)$, and \eqref{eq:variance} identifies the third with $\Var(G)$. This proves \eqref{eq:main-exact} and \eqref{eq:main-lower}. The function $(x-2)/[2(x+2)]$ increases for $x\ge2$, and at $x=3$ has value $1/10$, proving \eqref{eq:kbound}. If $G$ has a vertex of degree at least three, its defect is positive; all terms vanish for disjoint unions of cycles.
+\end{proof}
+
+\begin{corollary}[Zhang--Wu Conjecture 5 in its original form]\label{cor:ZW}
+If $G$ is connected, has $n\ge3$ vertices, and $\delta(G)\ge2$, then
+\[
+ \boxed{R(L(G))\ge R(G),\qquad
+ R(L(G))=R(G)\iff G\cong C_n.}
+\]
+\end{corollary}
+\begin{proof}
+This follows directly from \eqref{eq:main-exact}. A connected graph all of whose degrees equal two is a cycle, and every cycle is isomorphic to its line graph.
+\end{proof}
+
+\section{An independent sharp certificate from the preceding research note}
+A distinct proof route was formulated in a separate 15 November 2026 internal note, \emph{Sharp Line-Graph Growth and a Gaussian Discrete Laguerre Inequality} \cite{Earlier}. We reproduce its graph argument to preserve a standalone manuscript and to distinguish the contribution of the current degree-antisymmetric method from an earlier approach to the same named conjecture.
+
+Define the modified Randi\'c index of $F$ by
+\begin{equation}\label{eq:M}
+ \MM(F):=\sum_{xy\in E(F)}\frac1{\max\{d_F(x),d_F(y)\}}.
+\end{equation}
+Termwise, $\MM(F)\le\HH(F)\le R(F)$.
+\begin{theorem}[Optimal minimum-degree multiplier]\label{thm:multiplier}
+Let $G$ be a connected finite simple graph on $n\ge3$ vertices with minimum degree $\delta\ge2$. Then
+\begin{equation}\label{eq:multiplier}
+ \MM(L(G))\ge\frac{\delta n}{4},\qquad
+ R(L(G))\ge\frac{\delta}{2}R(G).
+\end{equation}
+The coefficient $\delta/2$ is best possible for each integer $\delta\ge2$, and equality in the second inequality occurs exactly for regular $G$.
+\end{theorem}
+\begin{proof}
+For $uv\in E(G)$ write $D_{uv}=d_u+d_v-2$ and $x_{vu}=1/D_{uv}$. For each vertex $v$, all $x_{vu}$ lie in $(0,c_v]$, where $c_v=1/(d_v+\delta-2)$. For $x,y\le c_v$,
+\[
+ \min(x,y)=x+y-\max(x,y)\ge x+y-c_v.
+\]
+Every edge of $L(G)$ belongs to the clique corresponding to exactly one original vertex $v$, so
+\begin{align*}
+ \MM(L(G))
+ &=\sum_v\sum_{\{u,w\}\subset N(v)}\min(x_{vu},x_{vw})\\
+ &\ge\sum_v\left((d_v-1)\sum_{u\in N(v)}\frac1{D_{uv}}
+ -\binom{d_v}{2}\frac1{d_v+\delta-2}\right).
+\end{align*}
+The first term telescopes: each original edge $uv$ contributes $(d_v-1+d_u-1)/(d_u+d_v-2)=1$. Thus it totals $|E(G)|=\frac12\sum_vd_v$, giving
+\begin{equation}\label{eq:M-middle}
+ \MM(L(G))\ge\frac{\delta-1}{2}\sum_v\frac{d_v}{d_v+\delta-2}.
+\end{equation}
+For $d_v\ge\delta\ge2$, cross-multiplication yields
+$\frac{d_v}{d_v+\delta-2}\ge\frac{\delta}{2\delta-2}$, so \eqref{eq:M-middle} implies the first bound in \eqref{eq:multiplier}. Using $R(L(G))\ge\MM(L(G))$ and $R(G)\le n/2$ yields the second bound.
+
+If equality holds in the second bound, it holds in $R(G)\le n/2$, and \eqref{eq:variance} forces equal degrees across every edge. Connectedness implies regularity. Conversely, if $G$ is $r$-regular, then $R(G)=n/2$, and $L(G)$ is $(2r-2)$-regular with $nr/2$ vertices, so $R(L(G))=nr/4=(r/2)R(G)$. This shows both the equality statement and optimality at $r=\delta$.
+\end{proof}
+
+\begin{corollary}[Two independent global certificates]\label{cor:hybrid}
+For connected $G$ with minimum degree $\delta\ge2$,
+\begin{equation}\label{eq:hybrid}
+ R(L(G))\ge \max\left\{\frac{\delta n}{4},\ \frac n2+\Def(G)+\Sl(G)\right\},
+\end{equation}
+and
+\[
+ R(L(G))-R(G)\ge
+ \max\left\{\frac{\delta n}{4}-R(G),\ \Def(G)+\Var(G)\right\}.
+\]
+The full exact identity \eqref{eq:main-exact} yields the stronger second-route bound $\Def(G)+\Sl(G)+\Ag(G)+\Var(G)$ when desired.
+\end{corollary}
+\begin{proof}
+The first display combines Theorems~\ref{thm:harmonic} and \ref{thm:multiplier} with $R(L(G))\ge\HH(L(G))$. The second follows by subtracting $R(G)$ and using Theorem~\ref{thm:four}.
+\end{proof}
+
+\section{Iteration, extremal families, and sharpness}
+\begin{corollary}[Strict increase under every line-graph iteration]\label{cor:iteration}
+Let $G_0=G$ be connected with $\delta(G)\ge2$ and set $G_{j+1}=L(G_j)$ for all $j\ge0$. Then $R(G_{j+1})\ge R(G_j)$ for every $j$. If $G$ is not a cycle every inequality is strict; for a cycle all are equalities.
+\end{corollary}
+\begin{proof}
+Equation \eqref{eq:line-degree} shows $\delta(G_{j+1})\ge2$ whenever $\delta(G_j)\ge2$, and line graphs of connected graphs with at least two edges remain connected. If any $G_j$ has a vertex $v$ of degree at least three, every line-graph vertex corresponding to an edge incident with $v$ has degree at least $d_{G_j}(v)\ge3$. Hence the next iterate is not a cycle. Apply Corollary~\ref{cor:ZW} at each stage; cycles are fixed up to isomorphism.
+\end{proof}
+
+\begin{proposition}[Exact regular and complete-bipartite families]\label{prop:families}
+If $G$ is $r$-regular of order $n$, $r\ge2$, then
+\begin{equation}\label{eq:regular}
+ R(G)=\frac n2,\qquad R(L(G))=\HH(L(G))=\frac{nr}{4},\qquad
+ R(L(G))-R(G)=\frac{n(r-2)}4.
+\end{equation}
+For $G=K_{s,t}$ with $s,t\ge2$,
+\begin{equation}\label{eq:completebipartite}
+ R(K_{s,t})=\sqrt{st},\qquad R(L(K_{s,t}))=\HH(L(K_{s,t}))=\frac{st}{2}.
+\end{equation}
+\end{proposition}
+\begin{proof}
+The line graph of an $r$-regular graph is $(2r-2)$-regular on $nr/2$ vertices. For $K_{s,t}$ every vertex of the line graph has degree $s+t-2$, and there are $st$ such vertices. The formulas follow from the definitions.
+\end{proof}
+
+\begin{remark}[Necessity of the domain]
+The assumption $\delta(G)\ge2$ cannot be dropped. For $n\ge5$, $L(P_n)\cong P_{n-1}$ and the known formula $R(P_n)=(n-3)/2+\sqrt2$ gives $R(L(P_n))=R(P_n)-1/2$.
+\end{remark}
+
+\section{Exact computational recomputation}
+The algebraic proof has no computational hypotheses. As an independent sanity test, all nonisomorphic connected simple graphs on at most seven vertices in \texttt{networkx.graph\_atlas\_g()} were filtered for minimum degree at least two. Exact \texttt{fractions.Fraction} arithmetic recomputes $\HH(L(G))$ via \eqref{eq:Cv} and checks the rational stability bound $\HH(L(G))\ge n/2+\Def(G)$. Results are:
+\begin{center}
+\begin{tabular}{rrrrrrr}\toprule
+$n$ & 3 & 4 & 5 & 6 & 7 & Total \\\midrule
+Connected $G$ with $\delta\ge2$ & 1 & 3 & 11 & 61 & 507 & 583 \\
+Equality $\HH(L(G))=n/2$ & 1 & 1 & 1 & 1 & 1 & 5 \\\bottomrule
+\end{tabular}
+\end{center}
+All 583 tests passed. Equality in the $n/2$ bound occurred exactly on $C_3,\ldots,C_7$; the smallest positive exact residual $\HH(L(G))-[n/2+\Def(G)]$ among the other 578 graphs was $1/6$. Appendix~\ref{app:code} contains a reproducible program. The separate symbolic identity \eqref{eq:pair-decomp} was also checked by clearing denominators.
+
+\section{Source comparison and the G1--G6 research gates}
+The original Zhang--Wu statement is explicit \cite{ZW22}. Liang--Wu \cite{LW23} prove the ordinary index comparison under $\Delta(G)\le\delta(G)^2-2\delta(G)+2$, as well as related inequalities for other exponents. Wang--Wu--Wang \cite{WWW23} prove $\HH(L(T))>n/4$ for trees and the analogous bound for unicyclic graphs; Zou--Zhong \cite{ZZ24} develop the modified-index tree inequality. These located statements do not subsume Theorem~\ref{thm:four}. Nevertheless, a limited bibliographic search is not proof of historical non-duplication, and another published or preprint argument might exist.
+
+In addition, the same Zhang--Wu target was addressed in an internal 15 November 2026 draft \cite{Earlier}, using modified-index allocation rather than the kernel regularization and antisymmetric cancellation of this manuscript. Accordingly, the present work \emph{cannot} be advertised as the first solution discovered within the user's research collection. Its distinguishing mathematical statement is the exact four-term decomposition \eqref{eq:main-exact}. Attribution of historical novelty and the claim of a completely unprecedented underlying principle require separate specialist review.
+
+\medskip
+\small
+\begin{longtable}{@{}p{0.07\linewidth}p{0.31\linewidth}p{0.54\linewidth}@{}}
+\toprule
+Gate & Required criterion & Current evidence and status \\\midrule
+G1 & A pre-existing named problem & \textbf{Met.} Conjecture 5 is explicitly stated in Zhang--Wu (2022). \\
+G2 & Unchanged original proposition & \textbf{Met.} Corollary~\ref{cor:ZW} retains the domain, inequality, and cycle equality case. \\
+G3 & Genuine previously unresolved status & \textbf{Evidence, not definitive certification.} The 2022 proposal was open as stated; selected later work covers restricted situations. A complete historical search is unfinished. \\
+G4 & Unconditional complete proof & \textbf{Met by the written mathematics, pending external refereeing.} Theorems~\ref{thm:kernel}--\ref{thm:four} quantify over every allowed finite graph. No conjectural lemma or numerical exhaustion is used. \\
+G5 & Substantive mechanism, not rewording & \textbf{Mathematical strengthening established.} Lemma~\ref{lem:pair} yields positive rational pair residuals, and \eqref{eq:antisym} cancels the nonlocal drift. The independent previous method differs. \\
+G6 & No essentially identical previous result/proof & \textbf{Not verified.} Some relevant publications and one earlier internal draft were compared. Searches cannot establish universal historical priority or absence of equivalent proofs. \\
+\bottomrule
+\end{longtable}
+\normalsize
+
+The six gates should be treated conjunctively. On current evidence, claiming that \emph{all six} have been independently certified would be unjustified. In contrast, the stated algebraic results form complete arguments and can be reviewed line by line by a specialist.
+
+\section{Conclusion}
+The novel auxiliary formulation is a compensated many-variable rational pair-kernel functional. An explicit nonnegative two-variable decomposition controls every incident-edge pair in a line graph. The induced linear terms are antisymmetric in endpoint degrees and disappear under summation, giving a global harmonic stability formula with an exact nonnegative remainder. Together with two standard degree-variance identities, this yields a four-term equality for the original Randi\'c gap and establishes the unchanged Zhang--Wu Conjecture 5 for all connected simple graphs of minimum degree at least two. A separate optimal modified-index certificate supplies an independent proof and a sharp multiplier. Mathematical completeness should not be confused with certification of first historical priority; the latter remains open to audit.
+
+\appendix
+\section{Executable exact-arithmetic verification}\label{app:code}
+\begin{verbatim}
+from collections import Counter
+from fractions import Fraction as Q
+from itertools import combinations
+import networkx as nx
+
+counts = Counter()
+cycles = 0
+min_gap = None
+for G in nx.graph_atlas_g():
+    n = len(G)
+    if n < 3 or not nx.is_connected(G):
+        continue
+    deg = dict(G.degree())
+    if min(deg.values()) < 2:
+        continue
+    counts[n] += 1
+    harmonic_line = Q(0)
+    for v in G:
+        for u, w in combinations(G.neighbors(v), 2):
+            harmonic_line += Q(
+                2, deg[u] + deg[w] + 2 * deg[v] - 4
+            )
+    bound = Q(n, 2) + sum(
+        (Q(deg[v] - 2, 2 * (deg[v] + 2)) for v in G),
+        Q(0)
+    )
+    assert harmonic_line >= bound
+    if all(deg[v] == 2 for v in G):
+        cycles += 1
+        assert harmonic_line == Q(n, 2)
+    else:
+        assert harmonic_line > bound
+        gap = harmonic_line - bound
+        if min_gap is None or gap < min_gap:
+            min_gap = gap
+print(dict(sorted(counts.items())))
+print(sum(counts.values()), cycles, min_gap)
+# {3: 1, 4: 3, 5: 11, 6: 61, 7: 507}
+# 583 5 1/6
+\end{verbatim}
+
+\begin{thebibliography}{99}
+\bibitem{ZW22} J. Zhang and B. Wu, ``Randi\'c Index of a Line Graph,'' \emph{Axioms} \textbf{11} (2022), no.~5, article 210. \url{https://doi.org/10.3390/axioms11050210}.
+\bibitem{LW23} Y. Liang and B. Wu, ``General Randi\'c indices of a graph and its line graph,'' \emph{Open Mathematics} \textbf{21} (2023), article 20220611. \url{https://doi.org/10.1515/math-2022-0611}.
+\bibitem{WWW23} T. Wang, B. Wu and T. Wang, ``Harmonic index of a line graph,'' \emph{Discrete Applied Mathematics} \textbf{325} (2023), 284--296. \url{https://doi.org/10.1016/j.dam.2022.10.021}.
+\bibitem{ZZ24} Z. Zou and L. Zhong, ``A lower bound on the modified Randi\'c index of line graphs,'' \emph{Discrete Applied Mathematics} \textbf{345} (2024), 136--140. \url{https://doi.org/10.1016/j.dam.2023.11.050}.
+\bibitem{Earlier} \emph{Sharp Line-Graph Growth and a Gaussian Discrete Laguerre Inequality}, independent internal research note dated 15 November 2026. Unreviewed draft, included in the user's research Library (not a published priority claim).
+\bibitem{VMRC} QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, research drafts and methodological index, accessed 17 November 2026. \url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+\end{thebibliography}
+\end{document}
