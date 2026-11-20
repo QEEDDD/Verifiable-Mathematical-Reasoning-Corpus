@@ -1,0 +1,3177 @@
+% Standalone manuscript: no external inputs, bibliography, or figure files.
+% The two Python certificates are embedded verbatim in the appendices.
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=24mm,headheight=15pt]{geometry}
+\usepackage{booktabs,array,xcolor,fancyhdr,titlesec,xurl,listings}
+\usepackage[colorlinks=true,linkcolor=teal!65!black,citecolor=teal!65!black,urlcolor=teal!65!black,bookmarksnumbered=true]{hyperref}
+\definecolor{ink}{HTML}{15364A}
+\definecolor{accent}{HTML}{007C78}
+\definecolor{muted}{HTML}{566875}
+\definecolor{pale}{HTML}{EEF6F5}
+\titleformat{\section}{\Large\sffamily\bfseries\color{ink}}{\thesection}{.55em}{}
+\titleformat{\subsection}{\large\sffamily\bfseries\color{accent}}{\thesubsection}{.55em}{}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newcommand{\R}{\mathbb R}\newcommand{\Z}{\mathbb Z}
+\newcommand{\C}{\mathbb C}\newcommand{\N}{\mathbb N}
+\newcommand{\one}{\mathbf1}
+\DeclareMathOperator{\dist}{dist}
+\numberwithin{equation}{section}
+\allowdisplaybreaks[2]
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\sffamily Prime phases, polygons, and Nyman approximation}
+\fancyhead[R]{\small\sffamily Further transfers}
+\fancyfoot[L]{\footnotesize\sffamily Prepared for Keio | 20 November 2026}
+\fancyfoot[R]{\small\thepage}
+\renewcommand{\headrulewidth}{.3pt}
+\setlength{\parindent}{1.1em}\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}\raggedbottom
+\setcounter{tocdepth}{1}
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\color{accent}\bfseries,commentstyle=\color{muted},
+  stringstyle=\color{ink},showstringspaces=false,columns=fullflexible,
+  keepspaces=true,breaklines=true,breakatwhitespace=false,
+  frame=single,rulecolor=\color{accent!25},framesep=5pt,
+  numbers=left,numberstyle=\tiny\color{muted},numbersep=8pt,
+  xleftmargin=12pt,aboveskip=8pt,belowskip=8pt}
+\hypersetup{pdftitle={Prime Phase Rigidity, Polygon Positivity, and an Exact Nyman Cone Projection},pdfauthor={Shaitetsu; research manuscript prepared for Keio},pdfsubject={Complete further closure attempts from VMRC 200; no proof of RH claimed}}
+\begin{document}
+\begin{titlepage}
+\noindent{\sffamily\small\bfseries\color{accent} GEOMETRY OF NUMBERS \;|\; ANALYTIC NUMBER THEORY}\par
+\vspace{9mm}
+\noindent{\sffamily\bfseries\fontsize{25}{29}\selectfont\color{ink}\raggedright
+Prime Phase Rigidity,\\
+Polygon Positivity,\\
+and an Exact Nyman\\
+Cone Projection\par}
+\vspace{5mm}
+\noindent{\large\sffamily Further closure attempts from lattice covering flows}\par
+\vspace{7mm}
+\noindent Shaitetsu\quad$\cdot$\quad Research manuscript prepared for Keio\par
+\noindent 20 November 2026\par
+\vspace{6mm}
+\begingroup\small
+\noindent\textbf{Abstract.}
+We continue three exact transfers from the positive fractional-part
+flow of VMRC [200] to questions equivalent to the Riemann hypothesis.
+For the original reciprocal-prime phases, we certify a common arc
+of length less than $0.49$ and solve the integer-lift minimization
+in every dimension: the closest quotient-lattice vector is uniquely
+zero. Both cubic losses become explicit weighted pair sums.
+The upper bound retaining all jump-midpoint corrections still
+diverges unconditionally on the actual prime data.
+
+For Li curvature, a verified zero height $H$ yields positive
+Toeplitz matrices in every dimension after damping by
+$\exp(-|n|\operatorname{arsinh}(1/(2H^2)))$.
+Two populated bands of verified zeros also give strict positivity
+of the original undamped Fejer polynomials for every degree
+$M\le H/10$. Published inputs imply this for $M\le3\cdot10^{11}$.
+Radial projection, finite angular averaging, and minimal damping
+are examined with their exact limitations.
+
+We determine the full nonnegative Nyman cone projection using
+exactly the eight indices $\{2,3,4,5,7,11,13,17\}$.
+Its squared distance is enclosed by
+$0.0273089278984818<\mathcal E_+<0.0273089278984835$.
+A finite integer-interval certificate and a monotone analytic tail
+certify all infinitely many excluded generators.
+Signed approximants satisfy explicit negative-mass laws.
+A positive event lift is constructed, and a relaxed zero-error
+limit is shown to violate the original finite divisor support.
+\par\endgroup
+\vfill
+\noindent\fcolorbox{accent!35}{pale}{\begin{minipage}{.94\textwidth}
+\textbf{What is closed}\par\smallskip
+The prime closest-point choice in every dimension; a large finite
+range of original polygon positivity; every degree after explicit
+damping; and the entire nonnegative Nyman cone optimization.\par\medskip
+\textbf{What remains}\par\smallskip
+Uniform prime variance, positivity at all original polygon orders,
+and vanishing signed Nyman error remain unproved.
+No proof or disproof of the Riemann hypothesis is claimed.
+\end{minipage}}
+\end{titlepage}
+
+\tableofcontents
+\medskip
+\noindent\textbf{Reading guide.}
+Sections~\ref{r5p:section}--\ref{r5p:losssection} treat the actual
+prime phases and the cubic losses.
+Section~\ref{r5l:section} establishes both positive regularization
+and a finite undamped range.
+Section~\ref{r5g:section} closes the global nonnegative cone problem.
+Section~\ref{r5n:sec} quantifies signed cancellation and analyzes
+positive lifts.
+The appendices include the analytic prime criterion and complete
+integer-arithmetic verifiers. This single source file compiles
+without external figures, inputs, or bibliography files.
+\clearpage
+
+\section{The three transfers and the scope of this continuation}
+\label{r5:intro}
+
+The objective is to push the preceding lattice-to-zeta transfers
+past a change of notation and prove concrete estimates for the
+actual arithmetic objects. This manuscript contains the complete
+proofs and certificates of the present research batch. It is a
+separate continuation of \cite{TransferZeta}, not a reprint of
+every earlier manuscript.
+The corpus sources [149] and [200] were checked at revision
+\texttt{ac1492a50784be919fe0b5e8f19f96f8d221a22e}
+\cite{PrimeCircles,VMRC200}.
+
+The conclusions concern specified geometric and approximation
+problems. They do not assert historical priority or resolve the
+unrestricted arithmetic statements merely by transporting them.
+Classical analytic inputs, including the strong
+B\'aez-Duarte theorem, positive-real moment criteria, verified
+zero height, and explicit zero counting, are cited where used.
+
+\subsection{The positive-flow mechanism of corpus [200]}
+
+For positive integers $r_j$, positive real weights $c_j$, and real
+phases $t_j$, set
+\[
+ H_t(s)=\sum_jc_j\{t_j+r_js\},\qquad C=\sum_jr_jc_j>0.
+\]
+At each event $e$, let $J_e>0$ be the total downward jump and
+$H_t(e)$ its post-event value. Then
+\[
+ \int_0^1H_t(s)\,ds=\frac12\sum_jc_j,\qquad
+ \sum_eJ_e=C.
+\]
+Balancing the continuous derivative and jumps of $H_t^2$ gives
+\[
+ 0=2C\int_0^1H_t(s)\,ds
+       -2\sum_eJ_eH_t(e)-\sum_eJ_e^2.
+\]
+The positivity of every event weight therefore proves the central
+inequality of \cite{VMRC200}:
+\begin{equation}\label{r5:flow}
+ \min_sH_t(s)\le
+ \frac12\sum_jc_j-\frac{\sum_jr_jc_j^2}{2C}.
+\end{equation}
+For coincident events, expanding $J_e^2$ only adds nonnegative
+cross terms. The positive slope and positive averaging weights
+are the features that must be tracked in every proposed transfer.
+
+\subsection{Prime circles and their actual lattice points}
+
+Let $p_n$ be the $n$th prime. The actual data of \cite{PrimeCircles}
+are
+\[
+ \theta_n=\sum_{p\le p_n}\frac1p-\log\log p_n,\quad
+ w_n=p_{n+1}-p_{n-1}\quad(n\ge2).
+\]
+With $W_N=\sum_{n=2}^Nw_n$, define
+\[
+ Q_N=\min_s\sum_{n=2}^Nw_n\|\theta_n+s\|_{\Z}^2,\qquad
+ D_N=W_N-\left|\sum_{n=2}^Nw_ne^{2\pi i\theta_n}\right|.
+\]
+The elementary chord bounds
+$16\|t\|_{\Z}^2\le4\sin^2(\pi t)\le4\pi^2\|t\|_{\Z}^2$
+and minimization over a unit circle direction give
+\begin{equation}\label{r5:primecomparison}
+ 8Q_N\le D_N\le2\pi^2Q_N.
+\end{equation}
+Appendix~\ref{r4a:appendix} proves the analytic equivalence
+\[
+ \mathrm{RH}\quad\Longleftrightarrow\quad
+ \sup_ND_N<\infty
+ \quad\Longleftrightarrow\quad \sup_NQ_N<\infty.
+\]
+The main new geometric step below computes the minimizer in $Q_N$
+for every $N$. The required uniform bound on its value is separate.
+
+\subsection{Zero moments and exact finite polygon tests}
+
+Write $\xi(s)=\frac12s(s-1)\pi^{-s/2}\Gamma(s/2)\zeta(s)$ and
+let $\rho$ run over its zeros with multiplicity. Define
+\[
+ u_\rho=1-\rho^{-1},\qquad
+ w_\rho=[\rho(1-\rho)]^{-1},\qquad
+ a_n=\sum_\rho w_\rho u_\rho^n\quad(n\in\Z).
+\]
+These absolutely convergent sums are real and even for each fixed
+$n$. They are the second differences of the Li coefficients.
+In particular $a_0=2+\gamma_E-\log(4\pi)$.
+For $M\ge1$, put $L_M=2M+1$ and
+\begin{equation}\label{r5:polygontests}
+ \eta_{M,j}=\frac1{L_M}
+ \left[a_0+2\sum_{n=1}^M
+  \left(1-\frac n{M+1}\right)a_n
+       \cos\frac{2\pi nj}{L_M}\right],
+ \quad 0\le j<L_M.
+\end{equation}
+The exact criterion of \cite{TransferZeta} is
+\begin{equation}\label{r5:polygoncriterion}
+ \mathrm{RH}\quad\Longleftrightarrow\quad
+ \eta_{M,j}\ge0\text{ for every }M,j.
+\end{equation}
+Here is a brief independent verification. Under RH, $|u_\rho|=1$
+and $w_\rho=(1/4+(\Im\rho)^2)^{-1}>0$; the $a_n$ are moments of
+a positive circle measure, and its Fejer convolutions are
+nonnegative. Conversely, if all weights in
+\eqref{r5:polygontests} are nonnegative, they define discrete
+positive measures of mass $a_0$. For each $|n|\le M$, their
+$n$th moment is exactly $(1-|n|/(M+1))a_n$, by the finite
+Fourier identity at $2M+1$ nodes. Letting $M\to\infty$ in every
+fixed finite quadratic form makes $(a_{k-j})$ positive
+semidefinite, hence $|a_n|\le a_0$.
+
+If RH failed, zero symmetry would give a node with $|u_\rho|>1$.
+The germ
+\[
+ A(z)=\sum_{n\ge0}a_nz^n
+     =\sum_\rho\frac{w_\rho}{1-u_\rho z}
+\]
+would have an uncancelled pole at $1/u_\rho$ inside the unit
+disk. The Cayley map is injective, so only the positive integer
+multiplicity of that zero can share this pole, and its coefficient
+is nonzero. The tail is locally normally convergent away from
+poles, since $u_\rho\to1$ and $\sum_\rho|w_\rho|<\infty$.
+This contradicts bounded Taylor coefficients. The moment and
+positive-real interpretation is classical \cite{Lagarias}.
+The finite-degree theorem below proves a substantial bounded range
+of \eqref{r5:polygoncriterion}, not its universal quantifier.
+
+\subsection{The signed span and the nonnegative cone}
+
+For $n\ge2$, set
+\[
+ f_n(x)=\{1/(nx)\}-\{1/x\}/n,\qquad 0<x<1.
+\]
+The strong B\'aez-Duarte theorem gives
+\begin{equation}\label{r5:nymancriterion}
+ \mathrm{RH}\quad\Longleftrightarrow\quad
+ \delta_N:=\inf_{c_2,\ldots,c_N\in\R}
+       \left\|1-\sum_{n=2}^Nc_nf_n\right\|_{L^2(0,1)}
+       \longrightarrow0
+\end{equation}
+\cite{BaezDuarte}. To check the normalization, let
+$e_n(x)=\{1/(nx)\}$ on $(0,\infty)$.
+Each $f_n=e_n-e_1/n$ vanishes on $(1,\infty)$.
+Conversely, if $h=\sum_{n=1}^Nd_ne_n$ approximates
+$1_{(0,1)}$ there, its tail is $A/x$, where
+$A=\sum d_n/n$, so $|A|\le\|1_{(0,1)}-h\|_2$.
+Replacing $h$ by $h-Ae_1=\sum_{n=2}^Nd_nf_n$ changes the
+error by at most $|A|\|e_1\|_2$. This proves the stated
+equivalence of the two approximation normalizations.
+
+Restricting every $c_n$ to be nonnegative gives a smaller problem.
+We determine its exact global optimum in
+Theorem~\ref{r5g:global}. Its positive minimum is compatible with
+\eqref{r5:nymancriterion}, which permits signed coefficients.
+The later mass estimates quantify how much negative coefficient
+mass any successful signed sequence must develop.
+
+
+\section{The actual prime point: a unique lift in every dimension}
+\label{r5p:section}
+
+We retain exactly the phases and weights of \cite{PrimeCircles}:
+\begin{equation}\label{r5p:data}
+ \theta_n=\sum_{p\leq p_n}\frac1p-\log\log p_n,
+ \qquad w_n=p_{n+1}-p_{n-1},\qquad
+ W_N=\sum_{n=2}^Nw_n=p_N+p_{N+1}-5.
+\end{equation}
+Let $\bar\theta_N=W_N^{-1}\sum_{n=2}^Nw_n\theta_n$.
+The quotient-lattice quantity from the preceding investigation is
+\[
+ Q_N=\min_s\sum_{n=2}^Nw_n\|\theta_n+s\|_{\Z}^2
+     =\operatorname{dist}_w(\pi_w\theta,\Lambda_w)^2,
+ \quad
+ \pi_wx=x-\frac{\sum_nw_nx_n}{W_N}\mathbf1,
+ \quad \Lambda_w=\pi_w\Z^{N-1}.
+\]
+The weighted inner product is
+$\langle x,y\rangle_w=\sum_nw_nx_ny_n$.
+We first resolve its integer-lift and common-rotation minimizations
+for every original prime prefix.  We then compute both cubic losses
+explicitly and show that the entire midpoint-corrected upper bound
+still diverges on the actual prime data.
+
+\subsection{A certified arc containing all the prime phases}
+
+\begin{theorem}[Global prime-phase arc]\label{r5p:arc}
+For every prime $p\geq3$,
+\begin{equation}\label{r5p:arcinterval}
+ \frac14<\sum_{q\leq p}\frac1q-\log\log p<\frac{37}{50}.
+\end{equation}
+In particular, all real pair differences of the phases in
+\eqref{r5p:data} are strictly smaller than $49/100$ in absolute
+value.
+\end{theorem}
+
+\begin{proof}
+Write $\theta(x)=\sum_{p\leq x}p^{-1}-\log\log x$ and let
+$B_{\mathbb P}=\lim_{x\to\infty}\theta(x)$.
+Rosser--Schoenfeld \cite[Thm.~5, eqs.~(3.17)--(3.18)]{RosserSchoenfeld}
+give the unconditional estimate
+\begin{equation}\label{r5p:RS}
+ |\theta(x)-B_{\mathbb P}|<\frac1{2\log^2x}
+ \qquad(x\geq286).
+\end{equation}
+Set $T=10000$.  Eliminating $B_{\mathbb P}$ between
+\eqref{r5p:RS} at $T$ and at any $x\geq T$ gives
+\begin{equation}\label{r5p:tailarc}
+ \theta(T)-\frac1{\log^2T}
+ <\theta(x)<
+ \theta(T)+\frac1{\log^2T}.
+\end{equation}
+Thus a finite calculation suffices, with no numerical input value
+of $B_{\mathbb P}$.
+
+The exact-integer certificate described below gives the following
+enclosures.  Displayed decimal endpoints have been rounded outward.
+There are $1229$ primes up to $T$, of which $1228$ are at least $3$.
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\hline
+Quantity & Lower bound & Upper bound\\
+\hline
+Finite minimum, at $p=8597$ & $0.262115904496$ & $0.262115904497$\\
+Finite maximum, at $p=3$ & $0.739285505716$ & $0.739285505717$\\
+$\theta(10000)$ & $0.262733140865$ & $0.262733140866$\\
+All $\theta(x)$, $x\geq10000$ & $0.250944909802$ & $0.274521371929$\\
+\hline
+\end{tabular}
+\end{center}
+Both the finite enclosures and \eqref{r5p:tailarc} lie strictly in
+$(1/4,37/50)$, proving the theorem.
+
+Here are the details that make the finite step rigorous.  All
+interval endpoints are integers divided by $D=10^{18}$.
+For a rational $r\in[1,2]$, put $z=(r-1)/(r+1)\in[0,1/3]$ and use
+\begin{equation}\label{r5p:logcertificate}
+ \log r=2\sum_{j=0}^{23}\frac{z^{2j+1}}{2j+1}+R,
+ \qquad
+ 0\leq R\leq\frac9{4\cdot49\cdot3^{49}}<\frac1D.
+\end{equation}
+Round each series term downward by exact integer division.  The
+upper endpoint adds $48$ rounding units and one remainder unit.
+Reduction $r=2^km$, $1\leq m<2$, handles every positive rational
+argument, with the same enclosure for $\log2$.
+For $\log\log p$, apply monotonicity and these logarithm bounds
+to the two rational endpoints enclosing $\log p$.
+Enclose $\sum_{p\leq x}1/p$ by adding integer floors of $D/p$,
+with one upper rounding unit per prime.  Finally bound
+$1/\log^2T$ from above using the lower enclosure of $\log T$.
+An Eratosthenes sieve and these formulas require only integer
+arithmetic; the complete program in Appendix~\ref{r5:prime-code}
+records all constants and assertions. Formula \eqref{r5p:logcertificate}
+provides the explicit error bound for every transcendental operation.
+\end{proof}
+
+\subsection{A sharp short-arc rigidity inequality}
+
+For arbitrary positive weights $w_1,\ldots,w_m$, set
+\[
+ \mathcal V_w(t)=\sum_iw_i(t_i-\bar t)^2
+       =\frac1W\sum_{i<j}w_iw_j(t_i-t_j)^2,
+ \qquad \bar t=\frac{\sum_iw_it_i}{W}.
+\]
+The central Voronoi cell is denoted by
+\[
+ \operatorname{Vor}_w(\Lambda_w)
+ =\{x\in H_w:\|x\|_w\leq\|x-\lambda\|_w
+                  \text{ for every }\lambda\in\Lambda_w\},
+ \quad H_w=\{x:\textstyle\sum_iw_ix_i=0\}.
+\]
+
+\begin{theorem}[Uniform integer-lift rigidity]\label{r5p:rigidity}
+Suppose the real numbers $t_i$ have span at most $L<1/2$.
+For every $z\in\Z^m$,
+\begin{equation}\label{r5p:rigidityineq}
+ \mathcal V_w(t-z)-\mathcal V_w(t)
+       \geq(1-2L)\mathcal V_w(z).
+\end{equation}
+Consequently
+\begin{equation}\label{r5p:exactlift}
+ \min_s\sum_iw_i\|t_i+s\|_{\Z}^2=\mathcal V_w(t),
+ \qquad s=-\bar t\pmod1
+\end{equation}
+is the unique optimal common shift.  Every optimal integer lift is
+constant, and the unique closest lattice vector to $\pi_wt$ is $0$.
+Moreover,
+\begin{equation}\label{r5p:scaledVor}
+ \pi_wt\in2L\operatorname{Vor}_w(\Lambda_w).
+\end{equation}
+The factor $1-2L$ in \eqref{r5p:rigidityineq} is sharp.
+\end{theorem}
+
+\begin{proof}
+For $d=t_i-t_j$ and $k=z_i-z_j\in\Z$,
+\[
+ (d-k)^2-d^2=k^2-2dk
+       \geq k^2-2L|k|\geq(1-2L)k^2.
+\]
+Summing the pair formula proves \eqref{r5p:rigidityineq}.
+Joint minimization over $s$ and $z$ first minimizes the real
+quadratic in $s$, giving $\mathcal V_w(t-z)$.
+Since $1-2L>0$, its minimum occurs exactly when $z$ is constant.
+For those lifts the shift is $-\bar t$ modulo $1$, proving
+\eqref{r5p:exactlift} and uniqueness.
+
+For $\lambda=\pi_wz$, inequality \eqref{r5p:rigidityineq} also gives
+\[
+ 2\langle\pi_wt,\lambda\rangle_w\leq2L\|\lambda\|_w^2.
+\]
+The half-space description of the central Voronoi cell now gives
+\eqref{r5p:scaledVor}.  The case $L=0$ is immediate.
+For sharpness, take two points $t=(0,L)$ and $z=(0,1)$;
+the pair calculation is an equality for arbitrary positive weights.
+\end{proof}
+
+\begin{lemma}[Shortest nonzero quotient vector]\label{r5p:shortest}
+If $m\geq2$ and $w_{\min}=\min_iw_i$, then
+\begin{equation}\label{r5p:shortestformula}
+ \min_{0\ne\lambda\in\Lambda_w}\|\lambda\|_w^2
+       =\frac{w_{\min}(W-w_{\min})}{W}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For nonconstant $z\in\Z^m$, choose a nontrivial level cut with
+weight $A$.  The integer differences across the cut have absolute
+value at least $1$, so
+\[
+ \mathcal V_w(z)\geq\frac{A(W-A)}W
+       \geq\frac{w_{\min}(W-w_{\min})}W.
+\]
+Both sides of the cut have weight at least $w_{\min}$.
+Equality is attained by $z=e_i$ at an index of minimum weight.
+\end{proof}
+
+\begin{corollary}[The original prime closest point is known exactly]
+\label{r5p:primeclosest}
+For every $N\geq2$,
+\begin{equation}\label{r5p:primevariance}
+ \boxed{\displaystyle
+ Q_N=\sum_{n=2}^Nw_n(\theta_n-\bar\theta_N)^2
+     =\sum_{n=2}^Nw_n\theta_n^2
+          -\frac{(\sum_{n=2}^Nw_n\theta_n)^2}{W_N}.}
+\end{equation}
+The optimal shift is $-\bar\theta_N$ modulo $1$, the unique closest
+lattice vector is $0$, and
+$\pi_w\theta\in\operatorname{int}((49/50)
+\operatorname{Vor}_w(\Lambda_w))$ in the relative ambient space.
+For $N\geq3$, every nonconstant integer lift satisfies
+\begin{equation}\label{r5p:primegap}
+ \mathcal V_w(\theta-z)-Q_N
+       \geq\frac{3(W_N-3)}{50W_N}\geq\frac6{175}.
+\end{equation}
+The weighted Euclidean distance of $\pi_w\theta$ from every
+Voronoi boundary hyperplane is at least
+\begin{equation}\label{r5p:clearance}
+ \frac1{100}\sqrt{\frac{3(W_N-3)}{W_N}}
+      \geq\frac1{100}\sqrt{\frac{12}{7}}.
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+Apply Theorem~\ref{r5p:rigidity} with $L=49/100$ using
+Theorem~\ref{r5p:arc}.  The actual span is strictly smaller than
+$L$, giving the stated relative interior inclusion.
+For the prime weights, $w_2=3$ and $w_n\geq4$ for $n\geq3$.
+Also $W_N\geq7$ for $N\geq3$.
+Inequality \eqref{r5p:primegap} follows from
+\eqref{r5p:rigidityineq} and Lemma~\ref{r5p:shortest}.
+For every nonzero lattice vector $\lambda$, the distance to its
+bisector is
+\[
+ \frac{\|\lambda\|_w^2-2\langle\pi_w\theta,\lambda\rangle_w}
+      {2\|\lambda\|_w}
+ \geq\frac{\|\lambda\|_w}{100}.
+\]
+Another use of Lemma~\ref{r5p:shortest} proves the clearance bound.
+\end{proof}
+
+This resolves the lift selection for every prefix, without a
+nonresonance hypothesis about $B_{\mathbb P}$.  Weighted Cesaro
+convergence gives $\bar\theta_N\to B_{\mathbb P}$, so the optimal
+rotations tend to $-B_{\mathbb P}$ modulo $1$.
+The remaining unknown is the size of the weighted norm in
+\eqref{r5p:primevariance}.  A fixed fractional depth inside a
+growing Voronoi cell does not bound that norm uniformly.
+
+\section{The exact cubic losses and an arithmetic obstruction}
+\label{r5p:losssection}
+
+Define the weighted pairwise absolute spread
+\begin{equation}\label{r5p:Gini}
+ \mathcal A_N=\frac1{W_N}
+       \sum_{2\leq i<j\leq N}w_iw_j|\theta_i-\theta_j|.
+\end{equation}
+For this section fix $N$, suppress its index on the weights, and
+put $x_i=\theta_i-\bar\theta_N$.  Use the periodic flow
+\[
+ q_N(s)=\sum_iw_i\|x_i+s\|_{\Z}^2,
+ \quad F_N(s)=q_N'(s)/2,
+ \quad G_N(s)=q_N(s)-F_N(s)^2/W_N
+\]
+away from its crossings.  We have $q_N(0)=Q_N$ and $F_N(0)=0$.
+Let
+\[
+ R_N^2=\frac{W_N}{12}-\frac{\sum_iw_i^3}{12W_N^2}.
+\]
+At the jump of size $w_i$, write $y_i$ for the midpoint of the
+pre-jump and post-jump values of $F_N$.  Simultaneous jumps are
+resolved sequentially using formal intermediate values, as in the
+cubic jump identity.
+
+\begin{theorem}[Both losses on the actual prime arc]
+\label{r5p:losses}
+The midpoint-jump loss and the branch loss satisfy exactly
+\begin{align}
+ L_{\rm jump}
+   :=\frac1{W_N^2}\sum_iw_iy_i^2
+   &=R_N^2+Q_N-\mathcal A_N,\label{r5p:jumploss}\\
+ L_{\rm branch}
+   :=\int_0^1(G_N(s)-Q_N)\,ds
+   &=\mathcal A_N-2Q_N.\label{r5p:branchloss}
+\end{align}
+In particular, the upper bound retaining every jump-midpoint
+correction, and discarding only the branch loss, is
+\begin{equation}\label{r5p:correctedupper}
+ Q_N\leq\mathcal U_N:=R_N^2-L_{\rm jump}
+                =\mathcal A_N-Q_N.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Sort $x_1\geq\cdots\geq x_m$, and put
+$B_{i-1}=\sum_{j<i}w_j$ and
+$c_i=(B_{i-1}+w_i/2)/W_N$.
+Every $x_i$ has absolute value less than $1/2$.
+Its crossing is at $s_i=1/2-x_i\in(0,1)$, in the chosen order,
+and therefore
+\[
+ \frac{y_i}{W_N}=\frac12-c_i-x_i.
+\]
+Equal $x_i$ cause simultaneous crossings; the formula still gives
+their successive formal midpoints in any ordering of the ties.
+
+Consider the partition of $[0,1]$ into consecutive lengths
+$w_i/W_N$, with midpoints $c_i$.  Exact midpoint quadrature for
+$(u-1/2)^2$ gives
+\[
+ \sum_iw_i(1/2-c_i)^2
+       =\frac{W_N}{12}-\frac{\sum_iw_i^3}{12W_N^2}=R_N^2.
+\]
+Furthermore, $\sum_iw_ix_i^2=Q_N$ and direct summation gives
+\[
+ 2\sum_iw_ix_i(1/2-c_i)
+  =\frac1{W_N}\sum_{i<j}w_iw_j(x_i-x_j)=\mathcal A_N.
+\]
+Expanding $\sum_iw_i(1/2-c_i-x_i)^2$ proves
+\eqref{r5p:jumploss}.
+
+There is a direct pair proof of \eqref{r5p:branchloss}.
+For a pair $x_i\geq x_j$, set $d=x_i-x_j<1/2$.
+Its rounded integer difference is $1$ exactly between its two
+crossings, on an interval of length $d$, and is $0$ elsewhere.
+On that interval the increase of its squared lifted difference
+is $(d-1)^2-d^2=1-2d$.
+The weighted pair formula for $G_N$, followed by integration,
+therefore gives
+\[
+ \int_0^1(G_N(s)-Q_N)\,ds
+   =\frac1{W_N}\sum_{i<j}w_iw_j(d-2d^2)
+   =\mathcal A_N-2Q_N.
+\]
+Ties have $d=0$ and contribute zero.  Combining the two exact
+losses gives $Q_N=R_N^2-L_{\rm jump}-L_{\rm branch}$,
+and hence \eqref{r5p:correctedupper}.
+\end{proof}
+
+The next result concerns the actual prime data, not an auxiliary
+model sequence.  It shows that even the corrected upper bound
+\eqref{r5p:correctedupper} cannot itself be the desired constant
+bound.
+
+\begin{theorem}[Unconditional divergence of the corrected cubic bound]
+\label{r5p:divergence}
+For the original phases and weights,
+\begin{equation}\label{r5p:divergenceformula}
+ \mathcal A_N\longrightarrow\infty,
+ \qquad
+ \mathcal U_N\geq\frac{51}{100}\mathcal A_N
+             \longrightarrow\infty.
+\end{equation}
+Neither conclusion assumes RH or its negation.
+\end{theorem}
+
+\begin{proof}
+We first prove that
+\begin{equation}\label{r5p:sampledL1}
+ \sum_{n=2}^{\infty}w_n|E(p_n)|=\infty,
+ \qquad E(x)=\theta(x)-B_{\mathbb P}.
+\end{equation}
+Suppose the sum were finite, and write $e_n=E(p_n)$,
+$p=p_n$, $q=p_{n+1}$, and $h_n=q-p$.
+On $[p,q)$ the function $E$ is a linear interpolation in
+$\log\log x$ between $e_n$ and $e_{n+1}-1/q$, whence
+\[
+ |E(x)|\leq|e_n|+|e_{n+1}|+1/q.
+\]
+For every $\sigma>0$ the endpoint terms in
+$\int_2^\infty|E(x)|x^{-\sigma}\,dx$ are summable by the
+assumption and the identity $w_n=h_{n-1}+h_n$.
+Crucially, although the unweighted $L^1$ jump correction is not
+summable, its Mellin-weighted version is.  Bertrand's postulate gives
+\begin{equation}\label{r5p:weightedcorrection}
+ \sum_{n\geq1}\frac{h_n}{p_{n+1}p_n^\sigma}
+ \leq2^\sigma\sum_{n\geq1}\frac{h_n}{p_{n+1}^{1+\sigma}}
+ \leq2^\sigma\int_2^\infty x^{-1-\sigma}\,dx
+ =\frac1\sigma.
+\end{equation}
+Thus $F(s)=\int_2^\infty E(x)x^{-s}\,dx$ is holomorphic for
+$\Re s>0$.  For differentiation, any power of $\log x$ can be
+absorbed by taking a slightly smaller positive real exponent.
+
+The prime-square obstruction can now be applied without an
+unweighted $L^1$ sampling claim.  Put $c=\log\log2+B_{\mathbb P}$.
+For $\Re s>1$, differentiation of the prime-zeta identity gives
+\[
+ P'(s)=H(s):=F(s)+(s-1)F'(s)
+           -c(\log2)2^{1-s}-\frac{2^{1-s}}{s-1},
+ \qquad P(s)=\sum_p p^{-s}.
+\]
+Under the assumed sampled bound, $H$ is meromorphic for
+$\Re s>0$ with its only pole at $1$, of residue $-1$.
+The Euler product and meromorphic continuation give, for
+$\Re s>1/2$,
+\begin{equation}\label{r5p:squareobstruction}
+ \frac{\zeta'(s)}{\zeta(s)}
+       =H(s)+H(2s)+\sum_{k\geq3}P'(ks).
+\end{equation}
+The $k\geq3$ sum is holomorphic in a neighborhood of the real
+point $1/2$, by absolute local uniform convergence.
+As real $s\downarrow1/2$, $H(s)$ stays bounded but
+\[
+ H(2s)=-\frac1{2(s-1/2)}+O(1).
+\]
+This is impossible: $\zeta(1/2)\ne0$, since the alternating eta
+series is positive for real $0<s<1$ and
+$\zeta(s)=\eta(s)/(1-2^{1-s})<0$ there.
+Thus $\zeta'/\zeta$ is bounded near that real point.
+The contradiction proves \eqref{r5p:sampledL1}.
+This is the prime-square Mellin mechanism of \cite{PrimeCircles},
+with the weighted endpoint correction made explicit.
+
+Next, for any bounded convergent real sequence $t_i\to B$ and
+positive weights with $W_N\to\infty$, Jensen's inequality gives
+\begin{equation}\label{r5p:GiniJensen}
+ \sum_{i\leq N}w_i|t_i-\bar t_N|
+ \leq\frac1{W_N}\sum_{i,j\leq N}w_iw_j|t_i-t_j|
+ =2\mathcal A_N.
+\end{equation}
+If $\mathcal A_N$ were bounded along an infinite subsequence,
+pass to that subsequence in every fixed finite prefix of
+\eqref{r5p:GiniJensen}.  Weighted Cesaro convergence
+$\bar t_N\to B$ would imply $\sum_iw_i|t_i-B|<\infty$.
+Apply this with $t_i=\theta_i$, $B=B_{\mathbb P}$, and
+\eqref{r5p:sampledL1}.  No bounded subsequence is possible, so
+$\mathcal A_N\to\infty$.
+
+Finally, Theorem~\ref{r5p:arc} gives, term by term,
+\[
+ Q_N=\frac1{W_N}\sum_{i<j}w_iw_j(\theta_i-\theta_j)^2
+       \leq\frac{49}{100}\mathcal A_N.
+\]
+Equation \eqref{r5p:correctedupper} now proves
+\eqref{r5p:divergenceformula}.
+\end{proof}
+
+Under RH, $Q_N$ is bounded, but both
+$\mathcal U_N=\mathcal A_N-Q_N$ and
+$L_{\rm branch}=\mathcal A_N-2Q_N$ diverge.
+Their difference is exactly the bounded target.  The jump identity
+has therefore isolated an unresolved cancellation rather than
+provided its uniform estimate.
+
+\subsection{Relation to the earlier corpus and the remaining estimate}
+
+The real weighted variance in \eqref{r5p:primevariance}, its
+divergent-regime comparison with the circle deficit, and its
+comparison with the continuous prime-counting variance already
+appear in \cite{PrimeCircles}.  The new conclusion established here
+is its exact identification with the torus and quotient-lattice
+minimum for \emph{every} $N$, together with a certified lift, a
+unique closest vector, and quantitative interior bounds.
+The prime-square obstruction is also an existing analytic mechanism;
+the proof above uses its weighted discrete form to analyze the
+specific cubic upper bound.
+
+What remains unproved is
+\begin{equation}\label{r5p:remaining}
+ \sup_N\sum_{n=2}^Nw_n(\theta_n-\bar\theta_N)^2<\infty.
+\end{equation}
+The analytic bridge makes \eqref{r5p:remaining} equivalent to RH.
+All integer and rotation optimization in this expression has now
+been resolved.  The present results do not bound the remaining real
+weighted variance, and no historical-priority claim is attached to
+the auxiliary geometric formulas.
+
+\section{Li curvature: positive regularization and a finite undamped range}
+\label{r5l:section}
+
+The ordinary Li criterion and the positive-real logarithmic-derivative
+criterion are classical \cite{Lagarias}.  We retain the curvature
+normalization and exact polygon transport of \cite{TransferZeta}.
+The results below prove positivity for an explicitly damped sequence
+at every degree, and then prove positivity for the original Fejer
+polynomials through a large explicit finite degree.  The latter
+argument uses two populated bands of verified critical-line zeros
+to dominate all possible off-line contributions above the verified
+height.  Neither result establishes the infinite undamped assertion.
+
+\subsection{Normalization and the geometry of one zero pair}
+
+For nontrivial zeros, counted with multiplicity, write
+\begin{equation}\label{r5l:notation}
+ u_\rho=1-\rho^{-1},\qquad
+ w_\rho=[\rho(1-\rho)]^{-1},\qquad
+ a_n=\sum_\rho w_\rho u_\rho^n\quad(n\in\Z).
+\end{equation}
+The sum converges absolutely for every fixed $n$.  The sequence is
+real and even, and is the second difference of the ordinary Li
+coefficients, with $\lambda_0=0$ and $\lambda_{-n}=\lambda_n$.
+In particular,
+\[
+ a_0=2+\gamma_E-\log(4\pi)>0.
+\]
+The identities established in \cite{TransferZeta} are
+\begin{align}
+ A(z)&=\sum_{n\ge0}a_nz^n
+     =\sum_\rho\frac{w_\rho}{1-u_\rho z},\label{r5l:Agerm}\\
+ F(z)&=2A(z)-a_0
+     =2\frac{\xi'}{\xi}\left(\frac1{1-z}\right).
+       \label{r5l:Fgerm}
+\end{align}
+They initially hold near zero, and then by meromorphic continuation.
+The conjugate-paired Hadamard product gives
+$\xi'/\xi(s)=\lim_{T\to\infty}\sum_{|\Im\rho|\le T}(s-\rho)^{-1}$
+without an additional constant.  Its real-part series converges
+absolutely at every regular fixed $s$, which permits the horizontal
+pairing used below.
+
+We write $\mathrm{RH}(H)$ for the statement that all nontrivial zeros
+with $|\Im\rho|\le H$ have real part $1/2$.  The published
+Platt--Trudgian theorem supplies $H=3\cdot10^{12}$ by rigorous
+interval arithmetic \cite{PlattTrudgian}.
+
+\begin{lemma}[The negative disk of a horizontal pair]
+\label{r5l:pairgeometry}
+Let $\rho_\pm=1/2\pm\delta+i\gamma$, where $0<\delta<1/2$.
+For $s=1/2+x+it$, $x>0$, away from the poles,
+\begin{equation}\label{r5l:pairreal}
+ \Re\left(\frac1{s-\rho_+}+\frac1{s-\rho_-}\right)
+ =\frac{2x\{x^2+(t-\gamma)^2-\delta^2\}}
+ {\{(x-\delta)^2+(t-\gamma)^2\}
+  \{(x+\delta)^2+(t-\gamma)^2\}}.
+\end{equation}
+For $0<r<1$, the image of $|z|\le r$ under $s=1/(1-z)$
+has center and radius
+\begin{equation}\label{r5l:imagedisk}
+ c_r=\frac1{1-r^2},\qquad v_r=\frac r{1-r^2},
+ \qquad(c_r-1/2)^2-v_r^2=\frac14.
+\end{equation}
+This image is disjoint from the interior of the pair's negative
+disk if and only if
+\begin{equation}\label{r5l:disjoint}
+ \gamma^2+\frac14-\delta^2\ge2v_r\delta.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Adding the two real parts proves \eqref{r5l:pairreal}; its sign is
+the sign of $x^2+(t-\gamma)^2-\delta^2$.  The image-circle formula
+is an elementary computation.  External disjointness from the disk
+with center $1/2+i\gamma$ and radius $\delta$ is
+\[
+ \sqrt{(c_r-1/2)^2+\gamma^2}\ge v_r+\delta.
+\]
+Squaring and using \eqref{r5l:imagedisk} gives
+\eqref{r5l:disjoint}.  The image disk contains $s=1$, while the
+negative disk does not, since $\delta<1/2$; hence containment cannot
+provide another case of disjointness from its interior.
+\end{proof}
+
+\begin{proposition}[The exact Poisson threshold of one pair]
+\label{r5l:pairthreshold}
+For the Hermitian sequence
+\[
+ q_n=w_{\rho_+}u_{\rho_+}^n+w_{\rho_-}u_{\rho_-}^n,
+\]
+all finite Toeplitz matrices of $e^{-\tau|n|}q_n$ are positive
+semidefinite if and only if
+\begin{equation}\label{r5l:pairtau}
+ \tau\ge\tau(\delta,\gamma):=
+ \operatorname{arsinh}
+       \frac{\delta}{\gamma^2+1/4-\delta^2}.
+\end{equation}
+A critical-line node has threshold zero.
+\end{proposition}
+\begin{proof}
+For one zero,
+\[
+ \frac{w_\rho}{1-u_\rho z}
+ =\frac1{1-\rho}+\frac1{s(z)-(1-\rho)}.
+\]
+The Caratheodory function $q_0+2\sum_{n\ge1}q_nz^n$ is therefore
+twice the logarithmic-derivative sum for $1-\rho_+,1-\rho_-$,
+plus a purely imaginary constant.  The reflected pair has center
+$1/2-i\gamma$, so Lemma~\ref{r5l:pairgeometry} applies with the
+same condition.  For $r=e^{-\tau}$,
+\[
+ v_r=\frac1{2\sinh\tau}.
+\]
+Thus \eqref{r5l:disjoint} is exactly \eqref{r5l:pairtau}.
+The positive-real moment criterion proves sufficiency.  If the
+condition fails, there is either a pole inside the disk or a
+regular point with negative real part; both exclude a positive
+circle moment representation.  At equality the possible tangency
+is on the boundary, so positivity in the open disk, or closedness
+of each finite PSD cone, includes the endpoint.
+\end{proof}
+
+This is an optimal threshold for a single horizontal pair.  It is
+not asserted to be the optimal threshold of the full sum, where
+other pairs can compensate for a negative contribution.
+
+\subsection{An all-degree positive regularization}
+
+\begin{theorem}[Positivity from a verified height]
+\label{r5l:damped}
+Assume $\mathrm{RH}(H)$ for $H>0$, and put
+\begin{equation}\label{r5l:taudef}
+ \tau_H=\operatorname{arsinh}\frac1{2H^2},\qquad
+ r_H=e^{-\tau_H}
+     =\frac{2H^2}{\sqrt{1+4H^4}+1}.
+\end{equation}
+For every $N\ge0$, the matrix
+\begin{equation}\label{r5l:dampedmatrix}
+ T_N^{(H)}=(r_H^{|k-j|}a_{k-j})_{j,k=0}^N
+\end{equation}
+is positive definite.  Its Fejer polynomials are strictly positive
+at every angle.  Moreover, for every $n\ge0$,
+\begin{equation}\label{r5l:allnbound}
+ |a_n|\le a_0e^{n\tau_H}\le a_0e^{n/(2H^2)}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Every critical-line zero contributes a positive real part in
+$\Re s>1/2$.  An off-line pair has $|\gamma|>H$ and
+$0<\delta<1/2$.  For $r\le r_H$ we have $v_r\le H^2$, so
+\[
+ \gamma^2+1/4-\delta^2>H^2\ge2v_r\delta.
+\]
+Lemma~\ref{r5l:pairgeometry} applies strictly to each such pair.
+The absolutely convergent real-part sum therefore shows that
+$\Re F(r_Hz)>0$ on the closed unit disk.  No pole occurs there.
+The function is holomorphic on a neighborhood of that disk:
+strict disjointness and discreteness exclude nearby low zeros,
+while zeros of sufficiently large height cannot approach its
+compact image in the $s$-plane.
+
+The boundary function $\Re F(r_He^{i\theta})$ is consequently a
+strictly positive continuous density with respect to $d\theta/(2\pi)$, with moments
+$r_H^{|n|}a_n$.  Integrating $|p|^2$ proves positive definiteness
+of \eqref{r5l:dampedmatrix}.  Its Fejer convolutions are strictly
+positive as well.  The principal two-by-two minors give
+$|r_H^na_n|\le a_0$.  Finally $\operatorname{arsinh}x\le x$
+proves the last inequality.
+\end{proof}
+
+Using the established height $H=3\cdot10^{12}$ gives
+\begin{equation}\label{r5l:numerictau}
+ 0<\tau_H<\frac1{18\cdot10^{24}}
+       =5.555\ldots\cdot10^{-26}.
+\end{equation}
+This number must not be rounded to zero.  For fixed $H$ the factor
+$e^{n\tau_H}$ is unbounded as $n$ grows.
+
+For the original arithmetic sequence define
+\begin{equation}\label{r5l:fejerdef}
+ F_M(\theta)=a_0+2\sum_{n=1}^M
+    \left(1-\frac n{M+1}\right)a_n\cos(n\theta),
+ \qquad
+ \eta_{M,j}=\frac{F_M(2\pi j/(2M+1))}{2M+1}.
+\end{equation}
+\begin{corollary}[A bound for every original polygon]
+\label{r5l:polygondeficit}
+Under $\mathrm{RH}(H)$, for every $M\ge1$ and every vertex $j$,
+\begin{equation}\label{r5l:polygondeficiteq}
+ \eta_{M,j}\ge
+ -\frac{a_0\tau_He^{M\tau_H}M(M+2)}{3(2M+1)}.
+\end{equation}
+\end{corollary}
+\begin{proof}
+The damped Fejer polynomial is nonnegative.  Its difference from
+\eqref{r5l:fejerdef} has absolute value at most
+\[
+ 2a_0\sum_{n=1}^M\left(1-\frac n{M+1}\right)
+       (e^{n\tau_H}-1)
+ \le2a_0\tau_He^{M\tau_H}
+       \sum_{n=1}^M\left(1-\frac n{M+1}\right)n.
+\]
+The last sum is $M(M+2)/6$.  Division by $2M+1$ proves the bound.
+\end{proof}
+
+\subsection{A positive radial measure and its exact error}
+
+For a zero $\rho=\beta+i\gamma$ in the critical strip,
+\begin{equation}\label{r5l:positiveweights}
+ \Re w_\rho=
+ \frac{\gamma^2+\beta(1-\beta)}{|\rho(1-\rho)|^2}>0.
+\end{equation}
+Define
+\begin{equation}\label{r5l:radialmeasure}
+ \nu_{\rm rad}=\sum_\rho(\Re w_\rho)
+                     \delta_{u_\rho/|u_\rho|},
+ \qquad b_n=\int z^n\,d\nu_{\rm rad}(z).
+\end{equation}
+This is an unconditionally positive finite measure.  Its mass is
+exactly $a_0$: imaginary parts cancel under the zero symmetries,
+and taking real parts does not change the total mass.  Its moments
+are real and even.  Reciprocal-conjugate nodes have the same radial
+projection and conjugate weights, which explains this natural
+choice of projected mass.
+
+\begin{theorem}[A quantitative radial comparison]
+\label{r5l:radialbound}
+Assume $\mathrm{RH}(H)$, with $H\ge1/2$.  Put
+\[
+ W=\sum_{\Re\rho\ne1/2}\Re w_\rho\le a_0,
+ \qquad
+ d_n=\cosh(n\tau_H)-1+H^{-1}\sinh(n\tau_H).
+\]
+For all $n\ge0$,
+\begin{equation}\label{r5l:radialerror}
+ |a_n-b_n|\le Wd_n,
+ \qquad |a_n|\le a_0+Wd_n.
+\end{equation}
+The original Toeplitz matrix $T_N=(a_{k-j})_{j,k=0}^N$ obeys
+\begin{align}
+ \lambda_{\min}(T_N)
+ &\ge-2W\sum_{n=1}^Nd_n\label{r5l:radialmatrix}\\
+ &\ge-W\cosh(N\tau_H)
+ \left\{\frac{\tau_H^2N(N+1)(2N+1)}6
+              +\frac{\tau_HN(N+1)}H\right\}.
+       \label{r5l:radialmatrixexplicit}
+\end{align}
+\end{theorem}
+\begin{proof}
+In one horizontal off-line pair choose the member with $|u|>1$.
+Write
+\[
+ u=Re^{i\theta},\qquad u^*=R^{-1}e^{i\theta},\qquad
+ R=e^x>1,\qquad w=A+iB,\quad A>0.
+\]
+Its original and projected moments are respectively
+\begin{equation}\label{r5l:pairmoments}
+ 2e^{in\theta}\{A\cosh(nx)+iB\sinh(nx)\},
+ \qquad 2Ae^{in\theta}.
+\end{equation}
+Writing the corresponding zero as $\beta+i\gamma$ with
+$\beta=1/2-\delta$, one has
+\begin{equation}\label{r5l:radialestimates}
+ \sinh x=\frac{\delta}{|\rho(1-\rho)|}
+ \le\frac{\delta}{\gamma^2+1/4-\delta^2},
+ \qquad
+ \frac{|B|}{A}=
+ \frac{2\delta|\gamma|}{\gamma^2+1/4-\delta^2}
+ \le\frac1{|\gamma|}.
+\end{equation}
+Consequently $x\le\tau_H$ and $|B|/A\le1/H$.  Subtracting
+\eqref{r5l:pairmoments} bounds its error by $2A d_n$; this
+coefficient is exactly its positive radial mass.  Sum over the
+pairs with multiplicities; critical-line terms have zero error.
+This proves \eqref{r5l:radialerror}.
+
+The matrix $(b_{k-j})$ is positive semidefinite.  Bound the norm of
+its difference from $T_N$ by its maximal absolute row sum to get
+\eqref{r5l:radialmatrix}.  For $0\le t\le N\tau_H$,
+\[
+ \cosh t-1\le\tfrac12t^2\cosh(N\tau_H),
+ \qquad \sinh t\le t\cosh(N\tau_H).
+\]
+Summing $n$ and $n^2$ gives \eqref{r5l:radialmatrixexplicit}.
+\end{proof}
+
+\begin{proposition}[The first harmonic changes under radial projection]
+\label{r5l:firstmoment}
+Under the assumptions of Theorem~\ref{r5l:radialbound},
+\[
+ a_1\ge b_1,
+ \qquad a_1=b_1\quad\Longleftrightarrow\quad\mathrm{RH}.
+\]
+\end{proposition}
+\begin{proof}
+Group each off-line quartet with multiplicity $m$, and choose its
+member $\rho=\beta+i\gamma$ with $\beta<1/2$ and $\gamma>H$.
+Let $u=Re^{i\theta}$, $A=\Re w$, $S=R+R^{-1}$, and
+$D=R-R^{-1}$.  Then
+\[
+ \cos\theta=
+ \frac{\gamma^2-\beta(1-\beta)}{|\rho(1-\rho)|}>0,
+ \qquad \Im w=-D\sin\theta,
+\]
+where the second identity follows from $w=2-u-u^{-1}$.
+The quartet's exact contribution to $a_1-b_1$ is
+\begin{equation}\label{r5l:firstgap}
+ 2mA(S-2)\cos\theta+2mD^2\sin^2\theta>0.
+\end{equation}
+Critical-line terms contribute zero, and absolute convergence
+permits summation.  Hence the positive quartet contributions cannot
+cancel.
+\end{proof}
+
+This proposition concerns the specified mass-preserving projection
+\eqref{r5l:radialmeasure}.  It does not exclude another positive
+measure matching a fixed finite collection of moments.  Matching
+the entire original sequence by any positive measure remains
+equivalent to RH.
+
+\subsection{Positivity of the original polygons through an explicit degree}
+
+We now obtain actual undamped positivity, rather than an error bound,
+on a finite range.  We need the following primary zero-count input.
+Bellotti--Wong \cite[Theorem~1.1]{BellottiWong} prove, for $t\ge e$,
+\begin{equation}\label{r5l:BW}
+ |N(t)-P(t)|\le
+ 0.11200\log t+0.12567\log\log t+3.77417,
+ \qquad P(t)=\frac{t}{2\pi}\log\frac{t}{2\pi e}.
+\end{equation}
+Here $N(t)$ counts zeros with $0<\Im\rho\le t$, with multiplicity.
+In particular,
+\begin{equation}\label{r5l:coarsecount}
+ |N(t)-P(t)|\le\log t\qquad(t\ge1000).
+\end{equation}
+Indeed, with $y=\log t$, the difference
+$0.888y-0.12567\log y-3.77417$ is positive at $y=\log1000$
+and increasing thereafter.
+
+\begin{lemma}[Two populated bands and the full tail mass]
+\label{r5l:bands}
+For $L\ge2000$,
+\begin{equation}\label{r5l:bandcounts}
+ N(L)-N(L/2)\ge\frac{L\log L}{8\pi},
+ \qquad
+ N(4L)-N(2L)\ge\frac{L\log L}{2\pi}.
+\end{equation}
+For $H\ge20000$,
+\begin{equation}\label{r5l:tailmass}
+ \sum_{|\Im\rho|>H}|w_\rho|
+ \le\sum_{|\gamma|>H}\gamma^{-2}
+ <\frac{\log H}{\pi H}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Since $P'(t)=\log(t/(2\pi))/(2\pi)$,
+\eqref{r5l:coarsecount} gives
+\begin{align*}
+ N(L)-N(L/2)&\ge
+       \frac{L}{4\pi}\log\frac{L}{4\pi}-2\log L,\\
+ N(4L)-N(2L)&\ge
+       \frac{L}{\pi}\log\frac{L}{\pi}-\log(8L^2).
+\end{align*}
+For $L\ge2000$, use
+$\log(L/(4\pi))\ge(2/3)\log L$ and
+$\log(L/\pi)\ge(3/4)\log L$.  The claimed weaker bounds
+follow directly.
+
+For the tail, $|w_\rho|\le\gamma^{-2}$ and partial summation,
+including both signs of $\gamma$, gives
+\begin{align*}
+ \sum_{|\gamma|>H}\gamma^{-2}
+ &=-\frac{2N(H)}{H^2}+4\int_H^\infty\frac{N(t)}{t^3}\,dt\\
+ &\le\frac{\log(H/(2\pi))+1}{\pi H}
+             +\frac{4\log H+1}{H^2}
+ <\frac{\log H}{\pi H}.
+\end{align*}
+The last inequality follows, for example, from
+$4\log H+1\le H/5$ and $(\log(2\pi)-1)/\pi>1/5$ in this range.
+The factor $2$ in the partial summation is essential.
+\end{proof}
+
+\begin{theorem}[A finite range of original polygon positivity]
+\label{r5l:finitepositive}
+Assume $\mathrm{RH}(H)$ with $H\ge20000$.  For every integer
+$1\le M\le H/10$, put $L=\max\{M,2000\}$.  Then, for every
+real $\theta$,
+\begin{equation}\label{r5l:finitepositivemargin}
+ F_M(\theta)\ge\frac{(M+1)\log L}{5000\pi L^3}>0.
+\end{equation}
+Every original polygon weight consequently satisfies
+\begin{equation}\label{r5l:finitepositiveeta}
+ \eta_{M,j}\ge
+ \frac{(M+1)\log L}{5000\pi L^3(2M+1)}>0.
+\end{equation}
+\end{theorem}
+\begin{proof}
+We first give a uniform lower bound for the Fejer polynomial
+$F_M^b$ of the positive radial measure.  All zeros in the two
+positive-height bands
+\[
+ \mathcal I_A=(L/2,L],\qquad \mathcal I_B=(2L,4L]
+\]
+lie on the critical line, since $4L\le H$.  Their weights are
+$(1/4+\gamma^2)^{-1}$.  Lemma~\ref{r5l:bands} gives total masses
+\begin{equation}\label{r5l:bandmass}
+ W_A,W_B\ge w_L:=\frac{\log L}{40\pi L}.
+\end{equation}
+In fact the respective lower bounds $\log L/(16\pi L)$ and
+$\log L/(34\pi L)$ follow by replacing their denominators by
+$2L^2$ and $17L^2$.
+
+The Cayley angle of a critical zero at positive height $\gamma$ is
+$\phi_\gamma=2\arctan(1/(2\gamma))$.  For
+$\gamma_A\in\mathcal I_A$, $\gamma_B\in\mathcal I_B$, put
+$a=(M+1)\phi_{\gamma_A}/2$ and
+$b=(M+1)\phi_{\gamma_B}/2$.  Then
+\begin{equation}\label{r5l:angularseparation}
+ \frac{M+1}{5L}\le a-b\le\frac{M+1}{L}<\frac\pi2.
+\end{equation}
+For the lower bound, use
+$\arctan x\ge x-x^3/3$ at $x=1/(2L)$ and
+$\arctan x\le x$ at $x=1/(4L)$; the resulting difference is
+at least $1/(4L)-1/(24L^3)\ge1/(5L)$.
+The upper bound follows from $\arctan(1/L)\le1/L$, together with
+$M\le L$ and $L\ge2000$.
+
+For any real $x$ and $d=a-b$ in this range,
+\begin{equation}\label{r5l:twophases}
+ \sin^2(x-a)+\sin^2(x-b)
+ \ge1-\cos d\ge\frac{d^2}{3}
+ \ge\frac{(M+1)^2}{75L^2}.
+\end{equation}
+The middle inequality follows, for instance, from the Taylor
+upper bound $\cos d\le1-d^2/2+d^4/24$ and $d<\pi/2<2$.
+Take mass $w_L$ from each band measure and couple those equal masses
+by their normalized product measure.  This is legitimate even
+though individual zero weights are unequal.  The Fejer kernel obeys
+\[
+ K_M(y)=\frac{\sin^2((M+1)y/2)}{(M+1)\sin^2(y/2)}
+ \ge\frac{\sin^2((M+1)y/2)}{M+1},
+\]
+with the removable points interpreted by continuity.  Integrating
+\eqref{r5l:twophases} with $x=(M+1)\theta/2$ and ignoring all
+remaining positive mass gives
+\begin{equation}\label{r5l:radialfejerlower}
+ F_M^b(\theta)\ge
+ B_{M,L}:=\frac{(M+1)\log L}{3000\pi L^3}.
+\end{equation}
+
+We next control all possible off-line zeros.  Their mass $W$ is at
+most $\log H/(\pi H)$ by \eqref{r5l:tailmass}.  For
+$n\le M\le H/10$ we have $n\tau_H\le1$.  Therefore
+\[
+ d_n\le\frac{n^2}{4H^4}+\frac n{H^3},
+\]
+using $\cosh x-1\le x^2$ and $\sinh x\le2x$ for $0\le x\le1$.
+The exact sums
+\[
+ \sum_{n=1}^M\left(1-\frac n{M+1}\right)n
+       =\frac{M(M+2)}6,
+ \qquad
+ \sum_{n=1}^M\left(1-\frac n{M+1}\right)n^2
+       =\frac{M(M+1)(M+2)}{12}
+\]
+and Theorem~\ref{r5l:radialbound} now give
+\begin{align}
+ |F_M(\theta)-F_M^b(\theta)|
+ &\le W\left\{
+ \frac{M(M+1)(M+2)}{24H^4}
+       +\frac{M(M+2)}{3H^3}\right\}\nonumber\\
+ &\le\frac{\log H\,M(M+1)}{\pi H^4}.
+       \label{r5l:fejertailerror}
+\end{align}
+For the second step, $M\le H/10$ and $M\ge1$ imply
+\[
+ \frac{(M+1)(M+2)}{24H}+\frac{M+2}{3}\le M+1.
+\]
+
+Finally the ratio of \eqref{r5l:fejertailerror} to
+$B_{M,L}$ is at most
+\begin{equation}\label{r5l:marginratio}
+ 3000\frac{\log H}{\log L}\frac{ML^3}{H^4}
+ \le\frac3{10}\frac{\log H}{\log(H/10)}<\frac25.
+\end{equation}
+Indeed $M\le L\le H/10$, and $L^4/\log L$ increases for
+$L\ge2000$.  The final expression decreases for $H\ge20000$;
+at the left endpoint it is less than $2/5$.  Subtracting the
+error from \eqref{r5l:radialfejerlower} gives
+$F_M>(3/5)B_{M,L}$, proving both conclusions.
+\end{proof}
+
+\begin{corollary}[A published height gives an explicit arithmetic range]
+\label{r5l:numericrange}
+For the actual Riemann zeta function, all the original polygon
+weights in \eqref{r5l:fejerdef} are strictly positive for
+\[
+ 1\le M\le300\,000\,000\,000.
+\]
+\end{corollary}
+\begin{proof}
+Apply Theorem~\ref{r5l:finitepositive} with the established
+Platt--Trudgian height $H=3\cdot10^{12}$.
+\end{proof}
+
+This is an analytic consequence of a published finite-height
+verification and a published zero-count estimate.  We have not
+numerically inspected those polygons.  The full criterion still
+requires all $M$ without a bound.  Positivity of these Fejer tests
+also does not assert positivity of every arbitrary Toeplitz
+quadratic form through the same dimension.  At $\theta=0$ they
+include ordinary Li-coefficient positivity, but the assertion here
+is uniform in the angle.
+
+\subsection{What finite positive circle averaging cannot remove}
+
+\begin{theorem}[Finite angular averages preserve the radial obstruction]
+\label{r5l:angularnogap}
+Let $c_1,\ldots,c_J>0$ have sum one, and let
+$\theta_1,\ldots,\theta_J$ be fixed angles.  Put
+\[
+ h_n=\sum_{j=1}^Jc_je^{in\theta_j},
+ \qquad \widetilde a_n=h_na_n.
+\]
+If RH fails and $U=\max_\rho|u_\rho|>1$, then
+\begin{equation}\label{r5l:angulargrowth}
+ \limsup_{n\to\infty}|\widetilde a_n|^{1/n}=U.
+\end{equation}
+Consequently such a finite positive angular average cannot make
+all Toeplitz matrices positive semidefinite.
+\end{theorem}
+\begin{proof}
+The maximum exists because $|u_\rho|\to1$ with the height, and
+the zero symmetries supply a node outside the circle if RH fails.
+From \eqref{r5l:Agerm},
+\[
+ \widetilde A(z)=\sum_jc_jA(e^{i\theta_j}z)
+ =\sum_{j,\rho}\frac{c_jw_\rho}{1-u_\rho e^{i\theta_j}z}.
+\]
+Inside $|z|<1$ the tail is locally normally convergent away from
+its poles: $\sum|w_\rho|<\infty$, $u_\rho\to1$, and there are
+only finitely many rotations.  At a collision of poles, the
+combined coefficient has the form $\sum c_jw_\rho$.  Its real
+part is strictly positive by \eqref{r5l:positiveweights}, so no
+pole cancels.  At least one pole has modulus $U^{-1}$ and none
+has smaller modulus.  Cauchy--Hadamard proves
+\eqref{r5l:angulargrowth}.  A positive circle measure of mass
+$a_0$ would have all moments bounded by $a_0$, a contradiction.
+\end{proof}
+
+For uniform averaging over the $m$th roots of unity this gives
+$\limsup_{n\to\infty}|a_{mn}|^{1/n}=U^m$ when RH fails.
+Thus a finite cyclic group may delete many frequencies but cannot
+delete the radial exponential obstruction.  Finiteness is essential:
+uniform averaging over the entire circle deletes every nonconstant
+moment.  Continuous Poisson averaging also changes every nonconstant
+moment, as its explicit multiplier in Theorem~\ref{r5l:damped} shows.
+
+\subsection{A strict barrier at the nearest pole}
+
+Let
+\[
+ \tau_*:=\inf\{\tau\ge0:
+ (e^{-\tau|k-j|}a_{k-j})_{j,k=0}^N\succeq0
+ \text{ for every }N\}.
+\]
+The allowable set is a closed upper interval: closedness follows
+from entrywise limits of each finite matrix, and the upper-interval
+property follows by convolution with a Poisson kernel.  It is
+nonempty by Theorem~\ref{r5l:damped}.
+
+\begin{proposition}[Convergence damping is not enough]
+\label{r5l:strictbarrier}
+If RH fails, then
+\begin{equation}\label{r5l:strictbarriereq}
+ 0<\log U<\tau_*\le\tau_H.
+\end{equation}
+\end{proposition}
+\begin{proof}
+Damping less than $\log U$ leaves exponential moment growth, so
+cannot give a positive circle measure.  At $\tau=\log U$ all
+rescaled nodes $v_\rho=u_\rho/U$ have modulus at most one, with
+some node $v_0$ on the circle.  If these moments had a positive
+representing measure $\nu$, Cesaro atom extraction would give
+\begin{equation}\label{r5l:atomextract}
+ \nu(\{v_0\})=
+ \lim_{K\to\infty}\frac1{K+1}
+     \sum_{n=0}^K U^{-n}a_nv_0^{-n}.
+\end{equation}
+On the zero-sum side, using its scaled-node representation only for
+$n\ge0$, dominated convergence by $\sum|w_\rho|$
+shows that this limit is $m_0w_{\rho_0}$: the Cayley map is
+injective, so only the multiplicity at the chosen node remains.
+But $\rho_0$ is off-line and nonreal, and
+\[
+ \Im w_{\rho_0}=
+ \frac{(2\Re\rho_0-1)\Im\rho_0}
+             {|\rho_0(1-\rho_0)|^2}\ne0.
+\]
+It cannot be the mass of a positive-measure atom.  Positivity
+therefore fails at $\log U$ as well.  Closedness of the allowable
+set gives the strict inequality, and Theorem~\ref{r5l:damped}
+gives the upper bound.
+\end{proof}
+
+The proposition is a barrier, not a computation of $\tau_*$ for
+zeta.  Proposition~\ref{r5l:pairthreshold} computes the exact value
+for an individual pair and supplies a concrete model of the gap.
+There is also an elementary obstruction to reversing the smoothing
+as a universal positivity-preserving Schur operation: its inverse
+kernel would be $(r^{-|j-k|})$, whose two-by-two determinant is
+$1-r^{-2}<0$ for $r<1$.  An invertible congruence, on the other
+hand, preserves inertia rather than repairing it.
+
+\subsection{The remaining arithmetic requirement}
+
+The positive-weight flow can legitimately be applied to the positive
+regularized or projected objects established above.  Returning from
+them to all original moments requires additional arithmetic control.
+The exact first-harmonic loss under the specified radial projection,
+the pole persistence under finite angular averages, and the strict
+boundary-atom obstruction prove limitations of these particular
+operations; they do not prove that every possible method of removing
+regularization must fail.
+
+The completed undamped result is the finite interval in
+Corollary~\ref{r5l:numericrange}, with the explicit margin
+\eqref{r5l:finitepositiveeta}.  The still-open step is a bound
+uniformly over all degrees for the actual arithmetic sequence.
+No argument here sends the fixed verified height $H$ to infinity.
+No historical priority is claimed for the classical moment methods
+or for finite-height transfer in general.
+
+\section{The exact global projection onto the nonnegative Nyman cone}
+\label{r5g:section}
+
+The local constant $1/92$ from the preceding investigation does not
+claim to be the full $L^2(0,1)$ cone distance. We now solve that full
+nonnegative-coefficient problem. The result is an explicit finite
+projection, certified against all infinitely many generators. Its
+role is to close a sign-restricted auxiliary problem; it does not
+settle the signed Nyman approximation criterion.
+
+For $n\ge2$, retain
+\[
+ f_n(x)=\{1/(nx)\}-\{1/x\}/n,\qquad 0<x<1.
+\]
+Let $\mathcal C_+$ be the cone of all finite sums $\sum_{n\ge2}c_nf_n$
+with $c_n\ge0$. We use the real inner product in $L^2(0,1)$.
+Define the fixed eight-element set
+\begin{equation}\label{r5g:active}
+ \mathcal S=\{2,3,4,5,7,11,13,17\}.
+\end{equation}
+For positive integers $m,n\ge2$, put $\ell=\operatorname{lcm}(m,n)$
+and define the exact numbers
+\begin{align}
+ b_n&=\frac{\log n}{n},\label{r5g:b}\\
+ G_{mn}&=\sum_{r=1}^{\ell}
+  \frac{(r\bmod m)(r\bmod n)}{mn\ell}
+  \left[\psi\left(\frac{r+1}{\ell}\right)
+              -\psi\left(\frac r\ell\right)\right],
+ \qquad \psi=\Gamma'/\Gamma.\label{r5g:G}
+\end{align}
+In the rest of this section, $G_{\mathcal S}$ and $b_{\mathcal S}$
+mean the eight-by-eight submatrix and corresponding vector in the
+increasing order of \eqref{r5g:active}.
+
+\begin{theorem}[Global nonnegative cone optimum]\label{r5g:global}
+Set
+\begin{equation}\label{r5g:exactopt}
+ c^*=G_{\mathcal S}^{-1}b_{\mathcal S},\qquad
+ g_* =\sum_{m\in\mathcal S}c_m^*f_m,\qquad
+ \mathcal E_+=1-b_{\mathcal S}^{\mathsf T}
+                      G_{\mathcal S}^{-1}b_{\mathcal S}.
+\end{equation}
+Every entry of $c^*$ is strictly positive. The exact global minimum is
+\begin{equation}\label{r5g:globalmin}
+ \boxed{\displaystyle
+ \inf_{g\in\mathcal C_+}\|1-g\|_2^2
+ =\min_{g\in\overline{\mathcal C_+}}\|1-g\|_2^2
+ =\mathcal E_+.}
+\end{equation}
+The unique minimizing function is $g_*$. Its only finite
+nonnegative-generator representation uses precisely the indices
+in \eqref{r5g:active}, with coefficients $c^*$.
+A certified enclosure is
+\begin{equation}\label{r5g:errorinterval}
+ 0.0273089278984818<\mathcal E_+<0.0273089278984835.
+\end{equation}
+The exact answer is the finite expression \eqref{r5g:exactopt};
+\eqref{r5g:errorinterval} is a decimal enclosure, not its definition.
+\end{theorem}
+
+The proof has an infinite analytic part and a small, rigorous finite
+certificate. We give both. The certificate uses only integer arithmetic
+and explicit logarithm and digamma remainder bounds; its complete
+standard-library Python verifier is reproduced in
+Appendix~\ref{r5:cone-code}. No floating-point comparison is used to
+decide a sign. No assertion of historical priority is made for the
+Hilbert-space projection method or this restricted optimization problem.
+
+\subsection{Exact inner products}
+
+On $I_k=(1/(k+1),1/k)$,
+\[
+ f_n(x)=v_n(k):=\frac{k\bmod n}{n},\qquad |I_k|=\frac1{k(k+1)}.
+\]
+Consequently
+\begin{equation}\label{r5g:inners}
+ \langle1,f_n\rangle=b_n,
+ \qquad \langle f_m,f_n\rangle=G_{mn}.
+\end{equation}
+Here is a direct verification. For the first identity, truncate at
+$k=Jn$ and use $k\bmod n=k-n\lfloor k/n\rfloor$ to obtain
+\[
+ \sum_{k=1}^{Jn}\frac{k\bmod n}{k(k+1)}
+ =H_{Jn+1}-H_J-1+\frac{nJ}{Jn+1}\longrightarrow\log n,
+\]
+where $H_j=\sum_{r=1}^j1/r$. Division by $n$ proves the claim.
+For the second, group the absolutely convergent step sum by residues
+modulo $\ell$. Its weight at residue $r$ is
+\[
+ \sum_{j\ge0}\frac1{(j\ell+r)(j\ell+r+1)}
+ =\frac1\ell\left[\psi\left(\frac{r+1}{\ell}\right)
+                       -\psi\left(\frac r\ell\right)\right],
+\]
+by the convergent difference of digamma series. This proves
+\eqref{r5g:G}.
+
+The generators in any finite set are linearly independent. Indeed,
+if $\sum_{n=2}^Nc_nf_n=0$, let $A=\sum c_n/n$ and let $z_k$ be its
+step values. Then $z_1=A=0$, and
+\[
+ z_k-z_{k-1}=A-\sum_{\substack{n\mid k\\n\ge2}}c_n
+\]
+successively gives $c_k=0$ for $k=2,\ldots,N$. Therefore
+$G_{\mathcal S}$ is positive definite and \eqref{r5g:exactopt} is
+well defined.
+
+\subsection{A uniform analytic bound for every omitted large index}
+
+For fixed $m\ge2$ define
+\[
+ \mu_m=\frac{m-1}{2m},\qquad d_m(k)=v_m(k)-\mu_m,
+ \qquad
+ D_m=\max_{0\le j\le m}\left|\sum_{k=1}^j d_m(k)\right|.
+\]
+The sequence $d_m$ is periodic with mean zero, so all its partial
+sums have absolute value at most $D_m$. Put
+\begin{equation}\label{r5g:C}
+ C_m=\sum_{k\ge1}\frac{d_m(k)}{k+1}
+ =-\frac1m\sum_{r=1}^{m}d_m(r)
+                     \psi\left(\frac{r+1}{m}\right).
+\end{equation}
+The first series converges by summation by parts. Grouping complete
+periods and using $\sum_{r=1}^md_m(r)=0$ proves the second identity.
+
+\begin{lemma}[Uniform large-index correlation]\label{r5g:tail}
+For every $m,n\ge2$,
+\begin{equation}\label{r5g:tailbound}
+ \left|nG_{mn}-\mu_m\log n-C_m\right|
+ \le\frac{2\zeta(2)D_m}{n}<\frac{10D_m}{3n}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Subtract $\mu_m$ in the step sum and use
+$\sum_{k\ge1}(k\bmod n)/[k(k+1)]=\log n$. This gives
+\begin{equation}\label{r5g:tailidentity}
+ nG_{mn}=\mu_m\log n+C_m
+   -n\sum_{k\ge1}d_m(k)e_n(k),
+ \qquad e_n(k)=\frac{\lfloor k/n\rfloor}{k(k+1)}.
+\end{equation}
+Set $e_n(0)=0$. The sequence $e_n$ tends to zero, decreases between
+successive multiples of $n$, and jumps upward at $k=jn$.
+At each such point,
+\[
+ 0< e_n(jn)-e_n(jn-1)
+ =\frac{j(n-2)+1}{jn((jn)^2-1)}
+ \le\frac1{jn(jn+1)}\le\frac1{j^2n^2}.
+\]
+Its total variation is twice the sum of these upward jumps,
+and is at most $2\zeta(2)/n^2$.
+Summation by parts, using the bounded partial sums of $d_m$,
+therefore bounds the last sum in \eqref{r5g:tailidentity} by
+$2\zeta(2)D_m/n^2$. This also justifies convergence of the
+conditionally convergent pieces used in that identity.
+Finally,
+\[
+ \zeta(2)<\sum_{j=1}^{5}\frac1{j^2}
+                       +\int_5^\infty\frac{dt}{t^2}<\frac53.
+\]
+The displayed strict bound proves the last inequality.
+\end{proof}
+
+For any positive coefficient vector on $\mathcal S$, let
+$r=1-\sum_{m\in\mathcal S}c_mf_m$ and define
+\begin{equation}\label{r5g:abc}
+ \alpha=1-\sum_{m\in\mathcal S}c_m\mu_m,
+ \quad C_* =\sum_{m\in\mathcal S}c_mC_m,
+ \quad D_* =\sum_{m\in\mathcal S}c_mD_m.
+\end{equation}
+Lemma~\ref{r5g:tail} gives the all-index upper bound
+\begin{equation}\label{r5g:dual-tail}
+ n\langle r,f_n\rangle
+ \le\alpha\log n-C_*+\frac{10D_*}{3n}.
+\end{equation}
+If $\alpha<0$ and $D_*>0$, the right side is strictly decreasing
+as a function of real $n>0$. Thus one negative value at $n=80$
+certifies all infinitely many indices $n\ge80$.
+
+\subsection{Finite interval certificate and the global optimality proof}
+
+The integer interval computation uses scale $10^{24}$ and returns
+the following outward-rounded bounds for $c^*=G_{\mathcal S}^{-1}
+b_{\mathcal S}$:
+\begin{center}
+\begin{tabular}{@{}rll@{}}
+\toprule
+Index & Lower bound & Upper bound\\
+\midrule
+$2$ & $0.87108921237485$ & $0.87108921237486$\\
+$3$ & $0.80214904280063$ & $0.80214904280065$\\
+$4$ & $0.17794105707088$ & $0.17794105707090$\\
+$5$ & $0.53612526970594$ & $0.53612526970596$\\
+$7$ & $0.35499581802528$ & $0.35499581802529$\\
+$11$ & $0.13208178544897$ & $0.13208178544898$\\
+$13$ & $0.04868184161135$ & $0.04868184161136$\\
+$17$ & $0.03432498423950$ & $0.03432498423951$\\
+\bottomrule
+\end{tabular}
+\end{center}
+All entries are positive. For the residual $r_*=1-g_*$, the
+remaining certificate inequalities are
+\begin{align}
+ \max_{\substack{2\le n\le79\\n\notin\mathcal S}}
+           \langle r_*,f_n\rangle&<-0.0002495,
+             \label{r5g:finite-signs}\\
+ -0.017133038<\alpha&<-0.017133037,\notag\\
+ -0.025929730<C_*&<-0.025929729,\notag\\
+ 1.151255360<D_*&<1.151255361,\notag\\
+ \alpha\log80-C_*+10D_*/240&<-0.0011787.
+             \label{r5g:tail-sign}
+\end{align}
+The maximum in \eqref{r5g:finite-signs} occurs at $n=19$.
+The exact normal equation gives $\langle r_*,f_m\rangle=0$ for
+$m\in\mathcal S$, and \eqref{r5g:dual-tail}--\eqref{r5g:tail-sign}
+give strict negativity for every $n\ge80$.
+Thus the finite certificate and analytic tail together prove
+\begin{equation}\label{r5g:KKT}
+ \langle r_*,f_n\rangle
+ \begin{cases}=0,&n\in\mathcal S,\\<0,&n\notin\mathcal S.
+ \end{cases}
+\end{equation}
+
+For clarity, every transcendental error in this certificate is
+controlled as follows. For rational $1\le x\le2$, write
+$z=(x-1)/(x+1)\in[0,1/3]$. Then
+\[
+ \log x=2\sum_{j=0}^{34}\frac{z^{2j+1}}{2j+1}+R,
+ \qquad 0\le R\le\frac{2z^{71}}{71(1-z^2)}.
+\]
+Powers of two reduce arbitrary positive rationals to this range.
+All operations are rounded outwards to integer multiples of
+$10^{-24}$. For digamma values first shift the argument by $16$:
+\[
+ \psi(x)=\psi(x+16)-\sum_{j=0}^{15}\frac1{x+j}.
+\]
+For $y=x+16>16$, use the classical real-positive remainder bound
+\cite[\S5.11(ii)]{DLMF}:
+\begin{equation}\label{r5g:psi-certificate}
+ \psi(y)=\log y-\frac1{2y}
+           -\sum_{k=1}^{6}\frac{B_{2k}}{2ky^{2k}}+R_\psi,
+ \qquad -\frac1{12y^{14}}\le R_\psi\le0.
+\end{equation}
+This bound also follows by expanding
+$(y^2+t^2)^{-1}$ in Binet's positive-kernel integral for $\psi$.
+Interval Gaussian elimination has positive pivot lower bounds,
+so it encloses the exact vector $c^*$.
+The verifier then checks all $70$ excluded indices from $2$ to $79$,
+the sign in \eqref{r5g:tail-sign}, and \eqref{r5g:errorinterval}.
+
+\begin{proof}[Completion of the proof of Theorem~\ref{r5g:global}]
+For $g=\sum c_nf_n\in\mathcal C_+$, equation \eqref{r5g:KKT}
+gives $\langle r_*,g\rangle\le0$ and
+$\langle r_*,g_*\rangle=0$. Therefore
+\[
+ \|1-g\|_2^2
+ =\|r_*\|_2^2+\|g-g_*\|_2^2-2\langle r_*,g-g_*\rangle
+ \ge\|r_*\|_2^2+\|g-g_*\|_2^2.
+\]
+The same inequality holds on the norm closure by continuity.
+It proves existence and uniqueness of the minimizer and
+\eqref{r5g:globalmin}. The normal equation gives
+$\|r_*\|_2^2=1-b_{\mathcal S}^{\mathsf T}c^*$.
+Finally, equality for a finite nonnegative representation forces
+all coefficients outside $\mathcal S$ to vanish by the strict signs
+in \eqref{r5g:KKT}; independence of the remaining generators then
+forces $c=c^*$. The interval evaluation supplies
+\eqref{r5g:errorinterval}.
+\end{proof}
+
+This closes the entire nonnegative cone problem, including its
+infinite set of possible generators. The signed approximation
+space is larger, and the theorem does not give a positive lower
+bound for that space. In particular, it does not contradict the
+Nyman--Beurling equivalence with RH.
+
+% Round-5 manuscript fragment. No preamble or bibliography.
+% Labels: r5n:.
+% Bibliography keys: BaezDuarte, Balazard, TaoMobius,
+% GallardoSeco2025, TransferZeta, VMRC200.
+
+\section{Cancellation budgets and positive lifts of Nyman flows}
+\label{r5n:sec}
+
+We quantify the negative coefficients required by a small signed
+Nyman approximation error. The underlying coefficient-recovery
+identity is the established Vasyunin--Balazard biorthogonal
+construction \cite[Sections~1--2]{Balazard}. Aggregating its finite
+functionals gives an explicit obstruction to bounded-mass,
+coefficient-preserving positive lifts. We also construct a positive
+lift after refining the event set, compute its optimal auxiliary
+slope, and exhibit an exact relaxation whose error tends to zero
+although none of its members is a finite Nyman combination.
+These statements do not establish convergence of the Nyman distances,
+and no claim of historical priority is made.
+
+\subsection{The signed approximation and its arithmetic coordinates}
+\label{r5n:subsec-setup}
+
+For integers \(n\ge2\), put
+\[
+ f_n(x)=\left\{\frac1{nx}\right\}
+        -\frac1n\left\{\frac1x\right\},
+ \qquad 0<x<1.
+\]
+For a finitely supported real sequence \(c=(c_n)_{n\ge2}\), define
+\begin{equation}
+\label{r5n:eq-definitions}
+ \begin{aligned}
+ g_c&=\sum_{n\ge2}c_nf_n,
+ &E(c)&=\|1-g_c\|_{L^2(0,1)}^2,\\
+ B_0(c)&=\sum_{n\ge2}c_n^-,
+ &B_1(c)&=\sum_{n\ge2}\frac{c_n^-}{n},
+ \qquad c_n^-=\max\{-c_n,0\}.
+ \end{aligned}
+\end{equation}
+The strong B\'aez-Duarte criterion \cite{BaezDuarte}, with the
+tail cancellation recalled in \cite{TransferZeta}, gives
+\[
+ \mathrm{RH}
+ \quad\Longleftrightarrow\quad
+ \delta_N:=\inf_{c_2,\ldots,c_N}\sqrt{E(c)}
+                   \longrightarrow0.
+\]
+This is established input. The problem is to prove an unconditional
+upper bound tending to zero; the necessary mass bounds below
+should not be confused with such an upper bound.
+
+On \(I_k=(1/(k+1),1/k)\), cancellation of the continuous fractional
+parts gives
+\[
+ f_n(x)=\frac{k\bmod n}{n}.
+\]
+Write
+\begin{equation}
+\label{r5n:eq-residues}
+ z_k=\sum_{n\ge2}c_n\frac{k\bmod n}{n},
+ \qquad z_0=0,\qquad w_k=\frac1{k(k+1)}.
+\end{equation}
+The exact norm is
+\begin{equation}
+\label{r5n:eq-step-error}
+ E(c)=\sum_{k\ge1}w_k(z_k-1)^2.
+\end{equation}
+Every finite coefficient vector has \(E(c)>0\): if \(L\) is a
+common multiple of its support indices, then \(z_L=0\), and the
+term \(k=L\) in \eqref{r5n:eq-step-error} is positive.
+
+Let \(\mu\) denote the M\"obius function. The coefficient-recovery
+identity \cite[Section~2]{Balazard} is
+\begin{equation}
+\label{r5n:eq-recovery}
+ c_n=-\sum_{d\mid n}\mu(n/d)(z_d-z_{d-1}),
+ \qquad n\ge2.
+\end{equation}
+For completeness, put \(A=\sum c_n/n\). Then
+\[
+ z_k-z_{k-1}
+ =A-\sum_{\substack{n\mid k\\n\ge2}}c_n.
+\]
+M\"obius inversion proves \eqref{r5n:eq-recovery}, since the
+constant \(A\) has zero divisor sum for \(n>1\).
+For the formal target \(z_k=1\) when \(k\ge1\), with \(z_0=0\),
+the recovered value is \(-\mu(n)\).
+
+\subsection{An aggregate finite cancellation certificate}
+\label{r5n:subsec-aggregate}
+
+\begin{proposition}[Aggregate coefficient recovery]
+\label{r5n:prop-aggregate}
+Fix an integer \(X\ge2\) and nonnegative weights \(a_n\ge0\) for
+\(2\le n\le X\). Set
+\[
+ \begin{aligned}
+ T_a&=\sum_{n=2}^Xa_n\mu(n),\\
+ b_d&=\sum_{\substack{2\le n\le X\\d\mid n}}a_n\mu(n/d)
+            \quad(1\le d\le X),\qquad b_{X+1}=0,\\
+ \lambda_k&=b_{k+1}-b_k,\qquad
+ K_a=\sum_{k=1}^X k(k+1)\lambda_k^2.
+ \end{aligned}
+\]
+For every finitely supported signed \(c\), without any restriction
+on its support relative to \(X\),
+\begin{equation}
+\label{r5n:eq-aggregate-identity}
+ \sum_{n=2}^Xa_nc_n
+ =-T_a+\sum_{k=1}^X\lambda_k(z_k-1).
+\end{equation}
+Consequently,
+\begin{equation}
+\label{r5n:eq-aggregate-bound}
+ \sum_{n=2}^Xa_nc_n^-\ge T_a-\sqrt{K_aE(c)}.
+\end{equation}
+If \(T_a>B\ge0\) and the left side of
+\eqref{r5n:eq-aggregate-bound} is at most \(B\), then
+\begin{equation}
+\label{r5n:eq-aggregate-error}
+ E(c)\ge\frac{(T_a-B)^2}{K_a}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Multiply \eqref{r5n:eq-recovery} by \(a_n\), sum over \(n\le X\),
+and collect the terms according to \(d\mid n\):
+\[
+ \sum_{n=2}^Xa_nc_n
+ =-\sum_{d=1}^Xb_d(z_d-z_{d-1})
+ =\sum_{k=1}^X(b_{k+1}-b_k)z_k.
+\]
+The coefficient sum is \(-b_1=-T_a\), proving
+\eqref{r5n:eq-aggregate-identity}. Weighted Cauchy--Schwarz and
+\eqref{r5n:eq-step-error} give
+\[
+ \left|\sum_{k=1}^X\lambda_k(z_k-1)\right|
+ \le\sqrt{K_aE(c)}.
+\]
+Since \(-\sum a_nc_n\le\sum a_nc_n^-\), this proves
+\eqref{r5n:eq-aggregate-bound}.
+Under \(T_a>B\), its rearrangement gives
+\eqref{r5n:eq-aggregate-error}; in this case \(K_a>0\), since
+\(K_a=0\) would force \(b_1=T_a=0\).
+Only finitely many residue cells were used, so coefficients beyond
+\(X\) are fully allowed.
+\end{proof}
+
+The exact quantity \(K_a\), rather than the upper bounds used below,
+is available from a finite divisor calculation. Thus
+\eqref{r5n:eq-aggregate-bound} is an explicit finite certificate
+for any proposed approximation.
+
+\subsection{Unweighted negative mass}
+\label{r5n:subsec-unweighted}
+
+Define
+\[
+ Q_0(X)=\#\{2\le n\le X:\mu(n)=1\}.
+\]
+Choose \(a_n=1_{\{\mu(n)=1\}}\) in
+Proposition~\ref{r5n:prop-aggregate}. Then \(T_a=Q_0(X)\) and
+\[
+ |b_d|\le\left\lfloor\frac Xd\right\rfloor\le\frac Xd.
+\]
+Therefore
+\begin{align}
+\label{r5n:eq-unweighted-dual}
+ K_a
+ &\le X^2\sum_{k=1}^X k(k+1)
+          \left(\frac1k+\frac1{k+1}\right)^2 \notag\\
+ &=X^2\left(4X+1-\frac1{X+1}\right)
+ <X^2(4X+1).
+\end{align}
+Writing \(u_+=\max\{u,0\}\), we obtain the unconditional finite bound
+\begin{equation}
+\label{r5n:eq-unweighted-finite}
+ \boxed{
+ E(c)\ge
+ \frac{(Q_0(X)-B_0(c))_+^2}{X^2(4X+1)}
+ \qquad(X\ge2).}
+\end{equation}
+No asymptotic theorem is needed for this inequality.
+
+\begin{theorem}[Reciprocal-error negative-mass law]
+\label{r5n:thm-unweighted-mass}
+For every sequence \(c^{(j)}\) of finitely supported signed
+coefficients with \(E_j:=E(c^{(j)})\to0\), one has
+\(B_j:=B_0(c^{(j)})\to\infty\), and
+\begin{equation}
+\label{r5n:eq-unweighted-asymptotic}
+ \liminf_{j\to\infty}B_jE_j\ge\frac1{\pi^6}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The elementary squarefree count and the established prime number
+theorem give
+\begin{equation}
+\label{r5n:eq-positive-mobius-count}
+ \begin{aligned}
+ Q_0(X)
+ &=\frac12\sum_{n\le X}\mu(n)^2
+    +\frac12\sum_{n\le X}\mu(n)-1\\
+ &=\frac3{\pi^2}X+o(X).
+ \end{aligned}
+\end{equation}
+In particular, \(Q_0(X)\to\infty\). If \(B_j\) had a bounded
+subsequence, choose a fixed \(X\) for which \(Q_0(X)\) exceeds
+that bound. Equation~\eqref{r5n:eq-unweighted-finite} would give
+a fixed positive lower bound for the corresponding \(E_j\),
+a contradiction. Hence \(B_j\to\infty\).
+
+Take \(X_j=\lfloor\pi^2B_j\rfloor\). By
+\eqref{r5n:eq-positive-mobius-count},
+\[
+ Q_0(X_j)-B_j=2B_j+o(B_j),\qquad
+ X_j^2(4X_j+1)=4\pi^6B_j^3(1+o(1)).
+\]
+Substitution in \eqref{r5n:eq-unweighted-finite} proves
+\eqref{r5n:eq-unweighted-asymptotic}.
+\end{proof}
+
+\begin{remark}[The unconditional input and the constant]
+\label{r5n:rem-pnt}
+The squarefree count follows from
+\(\mu(n)^2=\sum_{d^2\mid n}\mu(d)\) and
+\(\sum\mu(d)/d^2=1/\zeta(2)\). The remaining input in
+\eqref{r5n:eq-positive-mobius-count} is
+\(\sum_{n\le X}\mu(n)=o(X)\), an established equivalent of PNT,
+not an RH assumption. The distinction between PNT and the
+elementary bounded harmonic sum used next is recalled in
+\cite{TaoMobius}. No rate for PNT is needed here.
+The constant \(\pi^{-6}\) is a proved lower bound; its global
+optimality is not asserted.
+\end{remark}
+
+\subsection{Harmonic negative mass and positive frequency budgets}
+\label{r5n:subsec-harmonic}
+
+The weighting \(1/n\) is directly relevant to the flow in
+\cite{VMRC200}, because the frequency associated with \(c_n\)
+is proportional to \(1/n\). Define
+\[
+ Q_1(X)=\sum_{\substack{2\le n\le X\\\mu(n)=1}}\frac1n.
+\]
+Use \(a_n=1_{\{\mu(n)=1\}}/n\) in
+Proposition~\ref{r5n:prop-aggregate}. With
+\(H_m=\sum_{j=1}^m1/j\),
+\begin{equation}
+\label{r5n:eq-harmonic-bd}
+ |b_d|\le\frac1dH_{\lfloor X/d\rfloor}
+       \le\frac{1+\log(X/d)}d.
+\end{equation}
+Consequently,
+\begin{align}
+\label{r5n:eq-harmonic-dual}
+ K_a
+ &\le2\sum_{k=1}^X k(k+1)(b_k^2+b_{k+1}^2)
+   =4\sum_{d=1}^Xd^2b_d^2 \notag\\
+ &\le4\sum_{d=1}^X(1+\log(X/d))^2 \notag\\
+ &\le4\int_0^X(1+\log(X/t))^2\,dt
+   =20X.
+\end{align}
+The equality includes the endpoint \(d=1\), and \(b_{X+1}=0\).
+The integral inequality follows because its nonnegative integrand
+is decreasing; substitution \(t=Xu\) gives the integral \(5X\).
+We have proved the explicit estimate
+\begin{equation}
+\label{r5n:eq-harmonic-finite}
+ \boxed{B_1(c)\ge Q_1(X)-\sqrt{20XE(c)}
+       \qquad(X\ge2).}
+\end{equation}
+
+\begin{lemma}[Elementary harmonic abundance]
+\label{r5n:lem-harmonic-abundance}
+One has
+\begin{equation}
+\label{r5n:eq-harmonic-abundance}
+ Q_1(X)=\frac3{\pi^2}\log X+O(1).
+\end{equation}
+This estimate requires neither PNT nor RH.
+\end{lemma}
+
+\begin{proof}
+For an integer \(X\ge1\), the divisor identity gives
+\[
+ 1=\sum_{n\le X}\mu(n)\lfloor X/n\rfloor
+  =X\sum_{n\le X}\frac{\mu(n)}n
+    -\sum_{n\le X}\mu(n)\{X/n\}.
+\]
+The \(n=1\) fractional part is zero; the remaining at most \(X-1\)
+terms have absolute value at most one. Hence
+\begin{equation}
+\label{r5n:eq-elementary-mobius-harmonic}
+ \left|\sum_{n\le X}\frac{\mu(n)}n\right|\le1.
+\end{equation}
+This elementary inequality is classical; the proof and extensions
+are recorded in \cite[Equation~(1.3)]{TaoMobius}.
+
+Also,
+\begin{align}
+\label{r5n:eq-squarefree-harmonic}
+ \sum_{n\le X}\frac{\mu(n)^2}{n}
+ &=\sum_{d\le\sqrt X}\frac{\mu(d)}{d^2}
+                         H_{\lfloor X/d^2\rfloor}\notag\\
+ &=\frac{\log X}{\zeta(2)}+O(1).
+\end{align}
+Indeed, use
+\(H_{\lfloor y\rfloor}=\log y+\gamma+O(1/y)\) uniformly for
+\(y\ge1\), together with the absolute convergence of
+\(\sum d^{-2}\) and \(\sum(\log d)d^{-2}\).
+Truncating the coefficient of \(\log X\) contributes
+\(O((\log X)/\sqrt X)\), and the summed harmonic-number error
+is \(O(X^{-1/2})\). Thus the bounded remainder requires no PNT.
+Finally,
+\[
+ Q_1(X)
+ =\frac12\sum_{n\le X}\frac{\mu(n)^2}{n}
+  +\frac12\sum_{n\le X}\frac{\mu(n)}n-1.
+\]
+Equations~\eqref{r5n:eq-elementary-mobius-harmonic} and
+\eqref{r5n:eq-squarefree-harmonic}, with
+\(\zeta(2)=\pi^2/6\), prove the result.
+\end{proof}
+
+\begin{theorem}[Logarithmic frequency-mass law]
+\label{r5n:thm-harmonic-mass}
+There is an absolute constant \(C\) such that every finitely
+supported signed approximation with \(0<E(c)\le1/2\) satisfies
+\begin{equation}
+\label{r5n:eq-harmonic-asymptotic}
+ B_1(c)\ge\frac3{\pi^2}\log\frac1{E(c)}-C.
+\end{equation}
+In particular, for every sequence with \(E_j\to0\),
+\begin{equation}
+\label{r5n:eq-harmonic-liminf}
+ \liminf_{j\to\infty}
+ \frac{B_1(c^{(j)})}{\log(1/E_j)}\ge\frac3{\pi^2}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Choose \(X=\lfloor1/E(c)\rfloor\). Then \(X\ge2\),
+\(XE(c)\le1\), and \(X\ge1/(2E(c))\). By
+Lemma~\ref{r5n:lem-harmonic-abundance} and
+\eqref{r5n:eq-harmonic-finite},
+\[
+ \begin{aligned}
+ B_1(c)
+ &\ge\frac3{\pi^2}\log X-C_0-\sqrt{20}\\
+ &\ge\frac3{\pi^2}\log\frac1{E(c)}
+       -C_0-\sqrt{20}-\frac3{\pi^2}\log2.
+ \end{aligned}
+\]
+This proves \eqref{r5n:eq-harmonic-asymptotic}.
+Dividing by \(\log(1/E_j)\) proves
+\eqref{r5n:eq-harmonic-liminf}.
+\end{proof}
+
+Equation~\eqref{r5n:eq-harmonic-finite} gives a fully finite
+version with no unspecified constant. Its right side uses only
+M\"obius values up to the chosen \(X\).
+Optimality of the global logarithmic coefficient is not asserted.
+
+\subsection{An exactly sharp local budget curve}
+\label{r5n:subsec-local}
+
+The previous note \cite{TransferZeta} determined the local value
+\(1/92\) for nonnegative coefficients. The full local
+negative-budget curve also has a closed form.
+
+\begin{proposition}[Six-cell budget interpolation]
+\label{r5n:prop-local-budget}
+For every \(B\ge0\),
+\begin{equation}
+\label{r5n:eq-local-b0}
+ \inf_{\substack{c\ \mathrm{finitely\ supported}\\B_0(c)\le B}}
+ \int_{1/7}^1|1-g_c(x)|^2\,dx
+ =\frac{(1-B)_+^2}{92}.
+\end{equation}
+Likewise, for every \(b\ge0\),
+\begin{equation}
+\label{r5n:eq-local-b1}
+ \inf_{\substack{c\ \mathrm{finitely\ supported}\\B_1(c)\le b}}
+ \int_{1/7}^1|1-g_c(x)|^2\,dx
+ =\frac{(1-6b)_+^2}{92}.
+\end{equation}
+These are local statements.
+\end{proposition}
+
+\begin{proof}
+Equation~\eqref{r5n:eq-recovery} at \(n=6\) gives
+\[
+ c_6=z_3+z_5-z_6-2z_1.
+\]
+The squared dual norm on the first six weighted cells is
+\[
+ 4\cdot2+12+30+42=92.
+\]
+Consequently,
+\begin{equation}
+\label{r5n:eq-six-functional}
+ |c_6+1|^2
+ \le92\sum_{k=1}^6\frac{(z_k-1)^2}{k(k+1)}.
+\end{equation}
+If \(B_0(c)\le B\le1\), then \(c_6\ge-B\), proving the lower
+bound in \eqref{r5n:eq-local-b0}. If \(B_1(c)\le b\le1/6\),
+then \(c_6\ge-6b\), proving the lower bound in
+\eqref{r5n:eq-local-b1}.
+
+For sharpness, use the nonnegative endpoint from
+\cite{TransferZeta}:
+\[
+ \begin{aligned}
+ c^{(0)}_2&=21/23,&c^{(0)}_3&=19/23,&c^{(0)}_4&=4/23,\\
+ c^{(0)}_5&=29/46,&c^{(0)}_6&=0,&c^{(0)}_7&=133/345,
+ \end{aligned}
+\]
+with all other coefficients zero. Direct substitution gives
+\[
+ (z_1,\ldots,z_6)
+ =\left(\frac{22}{23},1,\frac{26}{23},
+                1,\frac{61}{46},\frac{25}{46}\right).
+\]
+Its residual is proportional to the dual vector of
+\eqref{r5n:eq-six-functional}, and its local squared error is
+\(1/92\).
+
+The second endpoint is the exact six-cell interpolant
+\[
+ \begin{aligned}
+ c^{(1)}_2&=1,&c^{(1)}_3&=1,&c^{(1)}_4&=0,\\
+ c^{(1)}_5&=1,&c^{(1)}_6&=-1,&c^{(1)}_7&=14/15,
+ \end{aligned}
+\]
+with all other coefficients zero. Here \(\sum c_n^{(1)}/n=1\).
+The divisor-difference identity gives
+\(z_1=\cdots=z_6=1\).
+
+For \(0\le t\le1\), take
+\(c^{(t)}=(1-t)c^{(0)}+tc^{(1)}\). All its coefficients except
+\(c_6=-t\) are nonnegative. Therefore
+\[
+ B_0(c^{(t)})=t,\qquad B_1(c^{(t)})=t/6.
+\]
+Its local residual is \(1-t\) times that of \(c^{(0)}\), so its
+local squared error is \((1-t)^2/92\).
+This proves sharpness in both ranges. For larger budgets,
+\(c^{(1)}\) has local error zero.
+\end{proof}
+
+\subsection{Coefficient-preserving positive lifts}
+\label{r5n:subsec-coordinate-lift}
+
+Let \(L\) be a common multiple of all support indices, and put
+\[
+ A=\sum_n\frac{c_n}{n},\qquad
+ H(s)=\sum_nc_n\{(L/n)s\}-A\{Ls\}.
+\]
+This is the signed zero-slope flow of \cite{TransferZeta};
+the square-jump calculation comes from \cite{VMRC200}.
+Its arithmetic step values agree with those of \(g_c\).
+
+If \(c_n=p_n-q_n\) with \(p_n,q_n\ge0\), every such
+coefficient-preserving split satisfies
+\begin{equation}
+\label{r5n:eq-splitting-budget}
+ \sum_nq_n\ge B_0(c),\qquad
+ \sum_n\frac{q_n}{n}\ge B_1(c).
+\end{equation}
+Thus Theorems~\ref{r5n:thm-unweighted-mass} and
+\ref{r5n:thm-harmonic-mass} constrain every such split, not
+only the minimal Jordan decomposition.
+
+For the minimal split, write
+\[
+ P=\sum_n\frac{c_n^+}{n},\qquad
+ Q=\sum_n\frac{c_n^-}{n}=B_1(c),\qquad A=P-Q.
+\]
+Then \(H=H_+-H_-\), where
+\[
+ \begin{aligned}
+ H_+(s)&=\sum_nc_n^+\{(L/n)s\}+A^-\{Ls\},\\
+ H_-(s)&=\sum_nc_n^-\{(L/n)s\}+A^+\{Ls\}.
+ \end{aligned}
+\]
+After deleting zero-weight terms, both coordinates have positive
+jump weights and the same continuous slope
+\begin{equation}
+\label{r5n:eq-positive-slopes}
+ C_+=C_-=L\max\{P,Q\}.
+\end{equation}
+The signed output functional \((u,v)\mapsto u-v\) annihilates
+this common slope. Projecting its square identity therefore
+returns to the zero-slope identity, not to the positive averaging
+step of \cite{VMRC200}.
+
+More generally, a nonconstant zero-slope scalar flow represented
+as a linear functional of positive fractional-part flows, each
+with positive continuous slope, requires both signs in the
+output functional. A nonzero nonnegative functional would have
+strictly positive slope. This statement concerns the specified
+linear lifts; it does not exclude every nonlinear construction.
+
+The first residue cell has weight \(1/2\) and value \(z_1=A\),
+so
+\begin{equation}
+\label{r5n:eq-first-cell}
+ |A-1|\le\sqrt{2E(c)}.
+\end{equation}
+For \(E(c)<1/2\), one has \(A>0\), hence
+\begin{equation}
+\label{r5n:eq-normalized-positive-slope}
+ \begin{aligned}
+ C_+/L=C_-/L
+ &=P=A+B_1(c)\\
+ &\ge1-\sqrt{2E(c)}
+       +\frac3{\pi^2}\log\frac1{E(c)}-C.
+ \end{aligned}
+\end{equation}
+Thus the positive slopes normalized by \(L\) must diverge
+logarithmically in this coefficient-preserving lift.
+A uniformly bounded auxiliary frequency budget cannot suffice
+within this construction. An unbounded-budget lift remains
+possible, but its cancellation still requires a separate estimate.
+
+Replacing the signed coefficients by their absolute values does
+not restore that estimate. Adding the same positive flow to both
+coordinates preserves their difference while increasing their
+positive sizes. Moreover, a phase minimizing one positive
+coordinate need not minimize the other or the arithmetic weighted
+\(L^2\) residual.
+
+\subsection{An exact positive lift after refining the event set}
+\label{r5n:subsec-event-lift}
+
+The preceding budgets concern the original indexed generators.
+A different positive lift has a different auxiliary cost.
+
+\begin{proposition}[Event-refined positive lift and its optimal slope]
+\label{r5n:prop-event-lift}
+Let \(H\) be a one-periodic right-continuous real step function with possible jumps
+at \(s=k/L\), \(1\le k\le L\). Write
+\[
+ K_k=H(k/L-)-H(k/L)
+\]
+for its downward jumps. For any \(\alpha_k\ge|K_k|\), define
+\begin{equation}
+\label{r5n:eq-event-lift}
+ F_\pm(s)=\sum_{k=1}^L
+        \frac{\alpha_k\pm K_k}{2}\{s-k/L\}.
+\end{equation}
+These have nonnegative weights, integral frequency one, and the
+same continuous slope
+\[
+ C_+=C_-=\frac12\sum_{k=1}^L\alpha_k.
+\]
+They satisfy
+\begin{equation}
+\label{r5n:eq-event-difference}
+ F_+-F_-=H-\int_0^1H(s)\,ds.
+\end{equation}
+Among all nonnegative two-flow lifts at the fixed events with
+these jump differences, the least common slope is exactly
+\begin{equation}
+\label{r5n:eq-minimal-event-slope}
+ C_{\min}=\frac12\sum_k|K_k|.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Periodicity gives \(\sum K_k=0\), so the two slopes in
+\eqref{r5n:eq-event-lift} coincide. Their difference has the same
+jumps and continuous slope as \(H\). Every fractional part in
+the sum has mean \(1/2\); hence their difference has mean zero.
+This proves \eqref{r5n:eq-event-difference}.
+Two nonnegative weights with difference \(K_k\) have sum at least
+\(|K_k|\). Summing gives the lower bound in
+\eqref{r5n:eq-minimal-event-slope}, attained by
+\(\alpha_k=|K_k|\).
+Zero-weight terms may be deleted. If strict positivity at every
+label is required before deleting terms, the same value is the
+infimum, approached by increasing each \(\alpha_k\) slightly.
+\end{proof}
+
+For a constant envelope \(\alpha_k=J\ge\max_k|K_k|\), with
+\(J>0\), put \(A=F_++F_-\) and center \(H\) as in
+\eqref{r5n:eq-event-difference}. Then
+\[
+ A(s)=J\left(\frac{L-1}{2}+\{Ls\}\right).
+\]
+The flow \(A\) has slope \(LJ\), jump \(J\), and constant event
+midpoint \(a=LJ/2\). If
+\(h=(H^-+H^+)/2\) and \(K=H^--H^+\) at an event, direct
+expansion gives
+\begin{align}
+\label{r5n:eq-mixed-cubic}
+ \Delta(AH^2)
+ &=(a-J/2)(h-K/2)^2-(a+J/2)(h+K/2)^2\notag\\
+ &=-2ahK-Jh^2-JK^2/4.
+\end{align}
+Between events, \((AH^2)'=LJH^2\). Since
+\[
+ \sum_k h_kK_k
+ =\frac12\sum_k\bigl((H(k/L-))^2-(H(k/L))^2\bigr)=0,
+\]
+summing \eqref{r5n:eq-mixed-cubic} over the period gives exactly
+\begin{equation}
+\label{r5n:eq-step-quadrature}
+ \int_0^1H(s)^2\,ds
+ =\frac1L\sum_{k=1}^L
+       \left(h_k^2+\frac{K_k^2}{4}\right)
+ =\frac1L\sum_{k=1}^LH(k/L)^2.
+\end{equation}
+Thus the mixed balance is the ordinary step quadrature.
+It does not add an upper bound on the particular arithmetic
+step values.
+
+There is also a measure distinction.
+Equation~\eqref{r5n:eq-step-quadrature} uses uniform phase measure,
+whereas the Nyman error uses \eqref{r5n:eq-step-error}.
+For an \(L\)-periodic residue sequence, the latter has residue
+weights
+\[
+ W_{L,r}=\sum_{m\ge0}
+       \frac1{(mL+r)(mL+r+1)},\qquad 1\le r\le L.
+\]
+If the step intervals are reparametrized to have these lengths,
+the midpoints \(a_k\) of \(A\) vary. The term
+\(\sum_k2a_kh_kK_k\) in \eqref{r5n:eq-mixed-cubic} no longer
+telescopes away; it retains the missing weighted information.
+
+\subsection{A sharp relaxed countermodel and the finite-support constraint}
+\label{r5n:subsec-relaxation}
+
+The next lemma identifies exactly why a convenient positive-flow
+relaxation is larger than the set of finite Nyman combinations.
+
+\begin{lemma}[Period and finite index support]
+\label{r5n:lem-period-support}
+Suppose
+\[
+ z_k=\sum_{n\ge2}c_n\frac{k\bmod n}{n}
+\]
+has finite coefficient support and is \(L\)-periodic in the
+integer \(k\). Then every index with \(c_n\ne0\) divides \(L\).
+\end{lemma}
+
+\begin{proof}
+Suppose otherwise, and choose a largest support index \(n\)
+not dividing \(L\). Let \(Q\) be a common period of \(L\) and
+all support indices. Inspect the discrete Fourier coefficient
+at frequency \(1/n\), averaged over \(Q\) terms.
+An \(m\)-periodic sequence contributes zero unless \(n\mid m\):
+the sum over its repeated blocks is otherwise a vanishing
+geometric sum.
+
+A support index \(m>n\) divisible by \(n\) would also fail to
+divide \(L\), contrary to the choice of \(n\).
+Thus only the \(n\)-th generator can contribute.
+Its coefficient is
+\[
+ \frac1{n^2}\sum_{k=0}^{n-1}k e^{-2\pi i k/n}
+ =-\frac1{n(1-e^{-2\pi i/n})}\ne0.
+\]
+But an \(L\)-periodic sequence has zero coefficient at frequency
+\(1/n\) when \(n\nmid L\). This contradicts \(c_n\ne0\).
+\end{proof}
+
+\begin{proposition}[Vanishing relaxed error at auxiliary slope one]
+\label{r5n:prop-relaxed-countermodel}
+For every prime \(p\ge3\), the \(p\)-periodic pattern
+\[
+ z_k^{(p)}=1_{\{p\nmid k\}},\qquad z_0^{(p)}=0,
+\]
+has a positive event-refined lift with minimal common slope
+exactly one. Its arithmetic weighted error is
+\begin{equation}
+\label{r5n:eq-relaxed-error}
+ E_p=\sum_{k\ge1}
+       \frac{|1-z_k^{(p)}|^2}{k(k+1)}
+     =\sum_{m\ge1}\frac1{mp(mp+1)}
+     \le\frac{\pi^2}{6p^2}.
+\end{equation}
+None of these patterns is a finite Nyman combination.
+Moreover, the least asymptotic auxiliary slope in the unrestricted
+periodic residue relaxation with \(z_0=0\) and error tending to
+zero is exactly one.
+\end{proposition}
+
+\begin{proof}
+The pattern has only two nonzero cyclic jumps, one \(+1\) and one
+\(-1\). Proposition~\ref{r5n:prop-event-lift} gives \(C_{\min}=1\).
+Only multiples of \(p\) contribute to the error, proving the
+identity in \eqref{r5n:eq-relaxed-error}; the bound follows from
+\(mp(mp+1)\ge m^2p^2\) and \(\sum m^{-2}=\pi^2/6\).
+
+By Lemma~\ref{r5n:lem-period-support}, a finite Nyman representation
+of this \(p\)-periodic pattern would use only \(f_p\).
+Its values would be proportional to
+\[
+ 1/p,\ 2/p,\ \ldots,\ (p-1)/p,\ 0,
+\]
+not to \(1,1,\ldots,1,0\).
+The values at \(k=1,2\) already give a contradiction for \(p\ge3\).
+
+Finally, any periodic real residue pattern with \(z_0=z_L=0\)
+and error \(E\) satisfies \(|z_1-1|\le\sqrt{2E}\).
+Its cyclic total variation is at least \(2|z_1|\), so
+\begin{equation}
+\label{r5n:eq-relaxed-slope-lower}
+ C_{\min}\ge|z_1|\ge1-\sqrt{2E}.
+\end{equation}
+This lower bound and the family \eqref{r5n:eq-relaxed-error}
+prove the claimed sharp asymptotic value one.
+\end{proof}
+
+Thus an event-refined positive lift can have bounded auxiliary
+mass while the relaxed error tends rapidly to zero.
+This does not contradict Theorem~\ref{r5n:thm-harmonic-mass}:
+the relaxed examples are outside the finite Nyman span.
+Their convergence removes the original divisor-compatible
+generator constraint. No universal growing-mass obstruction is
+being asserted for every conceivable event-refined lift.
+
+\subsection{The arithmetic descent estimate that remains}
+\label{r5n:subsec-descent}
+
+We record the standard Hilbert-space mechanism to identify the
+remaining estimate precisely; its Schur-complement algebra is
+not a new result.
+Let \(P_N\) be orthogonal projection onto
+\(\operatorname{span}(f_2,\ldots,f_N)\), let \(r_N=1-P_N1\),
+and append the block \(N<n\le2N\). Put
+\[
+ u_n=(I-P_N)f_n,\qquad
+ S_{mn}=\langle u_m,u_n\rangle,\qquad
+ s_n=\langle r_N,u_n\rangle=\langle r_N,f_n\rangle.
+\]
+The generators are linearly independent, as follows from
+\eqref{r5n:eq-recovery}, so \(S\) is positive definite.
+Orthogonal least squares gives
+\begin{equation}
+\label{r5n:eq-schur-descent}
+ \delta_N^2-\delta_{2N}^2=s^{\mathsf T}S^{-1}s.
+\end{equation}
+For \(e_n(x)=\{1/(nx)\}\) on \((0,\infty)\),
+\[
+ 0\le f_n\le e_n\quad\hbox{on }(0,1),\qquad
+ \|e_n\|_{L^2(0,\infty)}^2=\frac{\|e_1\|_2^2}{n}\le\frac2n.
+\]
+The last bound follows from \(e_1\le1\) on \((0,1)\) and
+\(e_1(x)=1/x\) on \((1,\infty)\). Consequently,
+\[
+ \operatorname{tr}S
+ \le\sum_{n=N+1}^{2N}\|f_n\|_2^2
+ \le2\sum_{n=N+1}^{2N}\frac1n
+ \le2\log2.
+\]
+Since the largest eigenvalue of \(S\) is at most its trace,
+\begin{equation}
+\label{r5n:eq-block-descent}
+ \delta_N^2-\delta_{2N}^2
+ \ge\frac1{2\log2}
+       \sum_{n=N+1}^{2N}|\langle r_N,f_n\rangle|^2.
+\end{equation}
+
+Suppose one could prove explicit numbers \(\alpha_j\ge0\) such
+that
+\begin{equation}
+\label{r5n:eq-missing-frame}
+ \sum_{n=2^j+1}^{2^{j+1}}
+       |\langle r_{2^j},f_n\rangle|^2
+ \ge\alpha_j\delta_{2^j}^2,
+ \qquad \sum_j\alpha_j=\infty.
+\end{equation}
+Then \eqref{r5n:eq-block-descent} would give
+\[
+ \delta_{2^J}^2
+ \le\delta_{2^{j_0}}^2
+       \prod_{j=j_0}^{J-1}
+          \left(1-\frac{\alpha_j}{2\log2}\right)
+ \longrightarrow0.
+\]
+The factors lie in \([0,1]\) whenever
+\eqref{r5n:eq-missing-frame} holds, by
+\eqref{r5n:eq-block-descent}. A zero factor gives the conclusion
+immediately; otherwise the divergent sum makes the product zero.
+Monotonicity would then imply \(\delta_N\to0\).
+
+These correlations are the arithmetic sums
+\begin{equation}
+\label{r5n:eq-arithmetic-correlations}
+ \langle r_N,f_n\rangle
+ =\sum_{k\ge1}\frac{r_N|_{I_k}}{k(k+1)}
+                        \frac{k\bmod n}{n}.
+\end{equation}
+No divergent lower bound in \eqref{r5n:eq-missing-frame} has
+been established here. The positive jump identities and the
+negative-mass bounds constrain possible successful approximants;
+they do not produce the cancellations in
+\eqref{r5n:eq-arithmetic-correlations}.
+
+\begin{remark}[Attribution and scope]
+\label{r5n:rem-scope}
+The fixed coefficient limit \(-\mu(n)\), the step-space framework,
+and the biorthogonal recovery mechanism are established results
+\cite{Balazard,GallardoSeco2025}. The density and inverse issues
+in Noor-type formulations are not reclassified as new results
+here. The local nonnegative endpoint \(1/92\) and the signed
+zero-slope representation come from \cite{TransferZeta};
+Proposition~\ref{r5n:prop-local-budget} supplies its budget
+interpolation. The elementary harmonic M\"obius bound is
+separate from the stronger PNT input \cite{TaoMobius}.
+The conclusions proved here are necessary cancellation budgets,
+an exact positive lift and its cost, and a precise relaxed
+countermodel. They do not establish an unconditional upper
+bound \(\delta_N\le f(N)\to0\).
+\end{remark}
+
+\section{The three estimates that still require arithmetic closure}
+\label{r5:targets}
+
+The preceding results complete several auxiliary problems in their
+full stated domains. Their remaining arithmetic requirements can
+be written without an unspecified coordinate change:
+\begin{align}
+ &\sup_N\sum_{n=2}^Nw_n(\theta_n-\bar\theta_N)^2<\infty,
+        \label{r5:target-prime}\\
+ &\eta_{M,j}\ge0\quad\hbox{for every }M\ge1,\ 0\le j\le2M,
+        \label{r5:target-li}\\
+ &\inf_{c_2,\ldots,c_N\in\R}
+      \left\|1-\sum_{n=2}^Nc_nf_n\right\|_2\longrightarrow0.
+        \label{r5:target-nyman}
+\end{align}
+Each statement is equivalent to RH by the exact bridges recorded
+in Section~\ref{r5:intro}.
+
+For \eqref{r5:target-prime}, every integer lift and common rotation
+has been determined, with a uniform separation from alternative
+integer lifts. The unbounded corrected cubic upper bound proves
+that this particular estimate does not close the target. Its
+remaining branch loss must participate quantitatively.
+
+For \eqref{r5:target-li}, the original weights are strictly positive
+through degree $3\cdot10^{11}$, and an explicitly damped sequence
+is positive at all degrees. Neither assertion removes damping
+uniformly over all degrees. The radial first-harmonic discrepancy,
+finite-rotation pole persistence, and boundary-atom barrier specify
+why the particular inverse operations studied here do not do so.
+
+For \eqref{r5:target-nyman}, the entire nonnegative cone has now
+been projected exactly. Signed approximation remains a different
+space. The coefficient-preserving lift requires growing negative
+budgets, while event refinement permits bounded auxiliary slope
+only by allowing patterns outside the original finite span.
+An actual divergent lower bound on the residual correlations in
+\eqref{r5n:eq-missing-frame} would supply a sufficient descent
+mechanism; it is not proved here.
+
+The exact statements proved in this manuscript are independently
+checkable mathematical results. They neither certify the full
+corpus nor establish a publication-level novelty claim. The two
+finite computations are rigorous sign certificates with complete
+code, and the infinite tails are handled analytically rather than
+discarded by a cutoff.
+
+
+\appendix
+\clearpage
+
+\section{Analytic verification of the original prime-circle criterion}
+\label{r4a:appendix}
+
+This appendix verifies the criterion from \cite{PrimeCircles}
+independently of the quotient-lattice calculation.  The external
+inputs are Mertens' theorem, the prime number theorem, Bertrand's
+postulate, the Euler product and functional equation of $\zeta$, and
+the following conditional mean-square estimate of Cram\'er
+\cite{Cramer}:
+\begin{equation}\label{r4a:cramer}
+ \mathrm{RH}\quad\Longrightarrow\quad
+ \int_X^{2X}(\psi(t)-t)^2\,dt\ll X^2,
+ \qquad
+ \psi(x)=\sum_{p^r\leq x}\log p.
+\end{equation}
+The exact form \eqref{r4a:cramer} is stated in
+\cite[eq.~(1)]{BrentPlattTrudgian}; their Theorem~1 supplies an
+explicit constant.  The pointwise RH estimate for $\psi(x)-x$
+alone does not imply \eqref{r4a:cramer}.
+
+All logarithms are natural.  Let
+\[
+ S(x)=\sum_{p\leq x}\frac1p,
+ \qquad E(x)=S(x)-\log\log x-B_{\mathbb P},
+ \qquad u_\infty=e^{2\pi iB_{\mathbb P}},
+\]
+where $B_{\mathbb P}=\lim_{x\to\infty}(S(x)-\log\log x)$.
+Mertens' theorem gives $E(x)\to0$.  For $n\geq2$ set
+\[
+ U_n=e^{2\pi i(S(p_n)-\log\log p_n)},\qquad
+ w_n=p_{n+1}-p_{n-1},
+\]
+and let $W_N=\sum_{n=2}^Nw_n$, $M_N=\sum_{n=2}^Nw_nU_n$,
+and $D_N=W_N-|M_N|$.
+
+\begin{theorem}\label{r4a:criterion}
+The following statements are equivalent:
+\begin{equation}\label{r4a:chain}
+ \begin{aligned}
+ \mathrm{RH}
+ &\quad\Longleftrightarrow\quad E\in L^2([2,\infty),dx)\\
+ &\quad\Longleftrightarrow\quad
+ \sum_{n=2}^{\infty}w_n|U_n-u_\infty|^2<\infty\\
+ &\quad\Longleftrightarrow\quad \sup_ND_N<\infty.
+ \end{aligned}
+\end{equation}
+Under these equivalent conditions,
+\begin{equation}\label{r4a:limit}
+ 2\lim_{N\to\infty}D_N
+     =\sum_{n=2}^{\infty}w_n|U_n-u_\infty|^2.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+\textit{1. RH and the continuous quadratic energy.}
+Assume RH, put $\vartheta(x)=\sum_{p\leq x}\log p$, and write
+\[
+ R(x)=\vartheta(x)-x,\qquad f(x)=\frac{R(x)}{x\log x}.
+\]
+The elementary estimate
+$\psi(x)-\vartheta(x)=O(\sqrt{x})$ follows by summing the
+prime-power terms and using $\vartheta(y)\ll y$.
+Thus \eqref{r4a:cramer} also holds with $R$ in place of $\psi-t$.
+Consequently
+\[
+ \int_X^{2X}f(x)^2\,dx\ll\frac1{\log^2X}.
+\]
+Summing over dyadic intervals proves $f\in L^2([2,\infty))$.
+Partial summation, with the constant fixed by Mertens' limit, gives
+\begin{equation}\label{r4a:hardy}
+ E(x)=f(x)-\int_x^\infty
+        \frac{f(t)}{t}\left(1+\frac1{\log t}\right)\,dt.
+\end{equation}
+For completeness, partial summation first gives
+\[
+ S(x)=\frac{\vartheta(x)}{x\log x}
+       +\int_2^x\frac{\vartheta(t)(1+\log t)}{t^2\log^2t}\,dt.
+\]
+Subtracting its limit after removing $\log\log x$ yields
+\eqref{r4a:hardy}.  Here $f(x)\to0$ by the prime number theorem,
+and the tail involving $f$ is absolutely convergent by
+Cauchy--Schwarz.
+
+The operator $Hg(x)=\int_x^\infty g(t)\,dt/t$ satisfies
+$\|Hg\|_2\leq2\|g\|_2$ on $[2,\infty)$.
+Indeed, for compactly supported real $g$, integration by parts gives
+\[
+ \|Hg\|_2^2=-2(Hg(2))^2+2\int_2^\infty(Hg)(x)g(x)\,dx
+       \leq2\|Hg\|_2\|g\|_2;
+\]
+truncation proves the general case.  Since $1+1/\log t$ is bounded
+on this interval, \eqref{r4a:hardy} proves $E\in L^2$.
+
+Conversely, suppose $E\in L^2$.  Then
+\[
+ F(s)=\int_2^\infty E(x)x^{-s}\,dx
+\]
+is holomorphic for $\Re s>1/2$.  Cauchy--Schwarz gives absolute
+convergence uniformly on compact sub-half-planes, also after any
+number of differentiations, since
+$\int_2^\infty x^{-2\sigma}(\log x)^{2j}\,dx<\infty$ for
+$\sigma>1/2$.
+For $\Re s>1$ let $P(s)=\sum_p p^{-s}$ and
+$c=\log\log2+B_{\mathbb P}$.  Stieltjes integration gives
+\[
+ P(s)=(s-1)F(s)+c\,2^{1-s}
+          +\int_2^\infty\frac{x^{-s}}{\log x}\,dx.
+\]
+Differentiating and using the Euler product yields
+\begin{equation}\label{r4a:logderivative}
+ \begin{aligned}
+ \frac{\zeta'(s)}{\zeta(s)}
+   ={}&F(s)+(s-1)F'(s)-c(\log2)2^{1-s}\\
+      &\hspace{1em}-\frac{2^{1-s}}{s-1}
+       +\sum_{k\geq2}P'(ks).
+ \end{aligned}
+\end{equation}
+The last sum is holomorphic for $\Re s>1/2$: on every compact
+sub-half-plane it is absolutely dominated by
+\[
+ \sum_p\frac{(\log p)p^{-2\sigma}}{1-p^{-\sigma}}<\infty,
+ \qquad \sigma>1/2.
+\]
+Thus the right side of \eqref{r4a:logderivative} is meromorphic
+there with its only possible pole at $s=1$.  By meromorphic
+continuation it equals $\zeta'/\zeta$ throughout that half-plane.
+A zero of $\zeta$ would produce an additional pole of its
+logarithmic derivative, which is impossible.  The functional
+equation now gives RH.  No continuation to the boundary
+$\Re s=1/2$ is used.
+
+\medskip
+\textit{2. Sampling with the actual prime-gap weights.}
+Put $h_n=p_{n+1}-p_n$, $e_n=E(p_n)$, and
+$b_n=E(p_{n+1}^{-})=e_{n+1}-1/p_{n+1}$.
+On $[p_n,p_{n+1})$,
+\[
+ E(x)=e_n-(\log\log x-\log\log p_n).
+\]
+The change of variable
+$y=(\log\log x-\log\log p_n)/
+       (\log\log p_{n+1}-\log\log p_n)$
+makes this $(1-y)e_n+yb_n$.  Bertrand's postulate gives a
+maximum-to-minimum ratio less than $4$ for $dx/dy$, because
+\[
+ \frac{p_{n+1}\log p_{n+1}}{p_n\log p_n}<4.
+\]
+Since $\int_0^1(dx/dy)\,dy=h_n$, we have $dx/dy\geq h_n/4$.
+Using
+$\int_0^1((1-y)a+yb)^2dy=(a^2+ab+b^2)/3
+ \geq(a^2+b^2)/6$
+and the pointwise upper bound by $a^2+b^2$, we obtain
+\begin{equation}\label{r4a:gap}
+ \frac{h_n}{24}(e_n^2+b_n^2)
+  \leq\int_{p_n}^{p_{n+1}}E(x)^2\,dx
+  \leq h_n(e_n^2+b_n^2).
+\end{equation}
+The jump correction has finite weighted square:
+\[
+ \sum_{n\geq1}\frac{h_n}{p_{n+1}^2}
+ \leq\int_2^\infty\frac{dx}{x^2}=\frac12.
+\]
+Hence replacing $b_n$ by $e_{n+1}$ in the sum of
+\eqref{r4a:gap} preserves convergence.  Regrouping its endpoint
+terms gives weights $h_{n-1}+h_n=w_n$ for $n\geq2$; the initial
+endpoint is finite.  Therefore
+\[
+ E\in L^2\quad\Longleftrightarrow\quad
+ \sum_{n\geq2}w_ne_n^2<\infty.
+\]
+Finally, $e_n\to0$ and
+$|U_n-u_\infty|^2=4\sin^2(\pi e_n)\sim4\pi^2e_n^2$,
+proving the middle equivalence in \eqref{r4a:chain}.
+
+\medskip
+\textit{3. Removing the limiting direction from the statistic.}
+Let $J_N=\sum_{n=2}^Nw_n|U_n-u_\infty|^2$.
+Weighted Cesaro convergence gives $M_N/W_N\to u_\infty$, since
+$U_n\to u_\infty$ and $W_N\to\infty$.
+For all sufficiently large $N$, $M_N\ne0$, and its unit direction
+$v_N=M_N/|M_N|$ tends to $u_\infty$.  Direct minimization over a
+unit vector gives
+\begin{equation}\label{r4a:unitminimum}
+ 2D_N=\min_{|v|=1}\sum_{n=2}^Nw_n|U_n-v|^2
+     =\sum_{n=2}^Nw_n|U_n-v_N|^2
+     \leq J_N.
+\end{equation}
+Thus finite $J_\infty$ bounds $D_N$.  Conversely, if $D_N\leq C$,
+then for every fixed $K$ and all sufficiently large $N\geq K$,
+\[
+ \sum_{n=2}^K w_n|U_n-v_N|^2\leq2C.
+\]
+First let $N\to\infty$ and then $K\to\infty$ to obtain
+$J_\infty\leq2C$.  This proves the last equivalence.
+The triangle inequality makes $D_N$ nondecreasing.  The same
+finite-prefix argument with $2D_N$ on the right gives
+$J_\infty\leq2D_\infty$ whenever these quantities are finite;
+the reverse inequality follows from \eqref{r4a:unitminimum}.
+This proves \eqref{r4a:limit}.
+\end{proof}
+
+The theorem validates the analytic criterion used in the main text.
+It leaves the assertion $\sup_ND_N<\infty$ unproved, since that
+assertion is precisely the equivalent RH target.
+
+\clearpage
+\section{Complete prime-arc integer certificate}
+\label{r5:prime-code}
+
+The following complete Python 3.9+ program uses only the standard library.
+Save the listing as a Python file and execute it normally, without the
+optimization flag that disables assertions. A successful run prints a
+JSON report recording successful assertions; an assertion failure invalidates
+the certificate. Decimal formatting is used only for reporting the
+integer bounds. The analytic infinite-tail argument is in the main text.
+
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact integer-arithmetic certificate for the actual prime phase arc.
+
+No floating-point calculations and no numerical special-function library.
+Every bound is an integer multiple of 10^{-18}.  The only infinite-prime
+input used after this finite calculation is Rosser--Schoenfeld (1962),
+Theorem 5, equations (3.17)--(3.18).
+"""
+
+from math import gcd, isqrt
+from pathlib import Path
+import json
+
+SCALE = 10**18
+TERMS = 24
+CUTOFF = 10_000
+
+
+def log_unit_bounds(numerator, denominator):
+    """Bounds for log(numerator/denominator), when 1 <= ratio <= 2.
+
+    With z=(ratio-1)/(ratio+1), 0 <= z <= 1/3, use
+      log(ratio)=2 sum_{j=0}^{K-1} z^{2j+1}/(2j+1) + R,
+      0 <= R <= 9/[4(2K+1)3^{2K+1}] < 1/SCALE.
+    Every series term is rounded down using integer division.  The upper
+    bound budgets both the 2K rounding units and one tail unit.
+    """
+    assert 0 < denominator <= numerator <= 2 * denominator
+    z_num, z_den = numerator - denominator, numerator + denominator
+    common = gcd(z_num, z_den)
+    z_num //= common
+    z_den //= common
+    z_num2, z_den2 = z_num**2, z_den**2
+    num_power, den_power = z_num, z_den
+    rounded_sum = 0
+    for j in range(TERMS):
+        rounded_sum += SCALE * num_power // ((2*j + 1) * den_power)
+        num_power *= z_num2
+        den_power *= z_den2
+    assert 9 * SCALE < 4 * (2*TERMS + 1) * 3**(2*TERMS + 1)
+    lower = 2 * rounded_sum
+    upper = lower + 2 * TERMS + 1
+    return lower, upper
+
+
+LOG2_LO, LOG2_HI = log_unit_bounds(2, 1)
+
+
+def log_bounds(numerator, denominator=1):
+    """Rigorous fixed-point bounds for log of any positive rational."""
+    assert numerator > 0 and denominator > 0
+    exponent = numerator.bit_length() - denominator.bit_length()
+    if exponent >= 0:
+        norm_num, norm_den = numerator, denominator << exponent
+    else:
+        norm_num, norm_den = numerator << (-exponent), denominator
+    while norm_num < norm_den:
+        norm_num *= 2
+        exponent -= 1
+    while norm_num >= 2 * norm_den:
+        norm_den *= 2
+        exponent += 1
+    lower, upper = log_unit_bounds(norm_num, norm_den)
+    if exponent >= 0:
+        return lower + exponent * LOG2_LO, upper + exponent * LOG2_HI
+    return lower + exponent * LOG2_HI, upper + exponent * LOG2_LO
+
+
+def loglog_bounds(integer):
+    ln_lo, ln_hi = log_bounds(integer)
+    assert ln_lo > 0
+    return log_bounds(ln_lo, SCALE)[0], log_bounds(ln_hi, SCALE)[1]
+
+
+def decimal(integer):
+    sign = "-" if integer < 0 else ""
+    integer = abs(integer)
+    return f"{sign}{integer // SCALE}.{integer % SCALE:018d}"
+
+
+def main():
+    sieve = bytearray(b"\x01") * (CUTOFF + 1)
+    sieve[:2] = b"\x00\x00"
+    for p in range(2, isqrt(CUTOFF) + 1):
+        if sieve[p]:
+            sieve[p*p:CUTOFF+1:p] = b"\x00" * ((CUTOFF-p*p)//p + 1)
+    primes = [p for p in range(2, CUTOFF+1) if sieve[p]]
+    reciprocal_lo = 0
+    rows = []
+    for count, p in enumerate(primes, 1):
+        reciprocal_lo += SCALE // p
+        reciprocal_hi = reciprocal_lo + count
+        if p == 2:
+            continue
+        ll_lo, ll_hi = loglog_bounds(p)
+        theta_lo = reciprocal_lo - ll_hi
+        theta_hi = reciprocal_hi - ll_lo
+        assert theta_lo * 4 > SCALE
+        assert theta_hi * 50 < 37 * SCALE
+        rows.append((p, theta_lo, theta_hi))
+
+    llT_lo, llT_hi = loglog_bounds(CUTOFF)
+    thetaT_lo = reciprocal_lo - llT_hi
+    thetaT_hi = reciprocal_lo + len(primes) - llT_lo
+    logT_lo, _ = log_bounds(CUTOFF)
+    # delta >= 1/log(T)^2 = 2 epsilon_T.
+    denominator = logT_lo**2
+    delta = (SCALE**3 + denominator - 1) // denominator
+    tail_lo, tail_hi = thetaT_lo - delta, thetaT_hi + delta
+    assert tail_lo * 4 > SCALE
+    assert tail_hi * 50 < 37 * SCALE
+
+    min_row = min(rows, key=lambda row: row[1])
+    max_row = max(rows, key=lambda row: row[2])
+    assert min_row[0] == 8597
+    assert max_row[0] == 3
+    # Also certify that the indicated extrema really are unique.
+    assert all(row[1] > min_row[2] for row in rows if row[0] != min_row[0])
+    assert all(row[2] < max_row[1] for row in rows if row[0] != max_row[0])
+
+    result = {
+        "method": "exact integer arithmetic; atanh logarithm series with rigorous tail",
+        "fixed_point_denominator": SCALE,
+        "series_terms": TERMS,
+        "prime_cutoff": CUTOFF,
+        "prime_count_including_2": len(primes),
+        "finite_phase_count": len(rows),
+        "finite_minimum": {"prime": min_row[0], "lower": decimal(min_row[1]), "upper": decimal(min_row[2])},
+        "finite_maximum": {"prime": max_row[0], "lower": decimal(max_row[1]), "upper": decimal(max_row[2])},
+        "theta_at_cutoff": [decimal(thetaT_lo), decimal(thetaT_hi)],
+        "tail_phase_enclosure_RS": [decimal(tail_lo), decimal(tail_hi)],
+        "all_prime_phase_interval": ["1/4", "37/50"],
+        "all_prime_phase_width_strict_upper": "49/100",
+        "certificate_passed": True,
+    }
+    output = Path(__file__).with_suffix(".json")
+    output.write_text(json.dumps(result, indent=2) + "\n")
+    print(json.dumps(result, indent=2))
+
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\clearpage
+\section{Complete global cone integer-interval certificate}
+\label{r5:cone-code}
+
+The following complete Python 3.9+ program uses only the standard library.
+Save the listing as a Python file and execute it normally, without the
+optimization flag that disables assertions. A successful run prints a
+JSON report recording successful assertions; an assertion failure invalidates
+the certificate. Decimal formatting is used only for reporting the
+integer bounds. The analytic infinite-tail argument is in the main text.
+
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Integer-interval certificate for a global nonnegative Nyman cone projection.
+Only Python's standard library is used. No floating-point decision occurs.
+"""
+from functools import lru_cache
+from fractions import Fraction
+from math import gcd, lcm
+from decimal import Decimal, localcontext
+import json
+import time
+
+SCALE = 10**24
+class I:
+    __slots__ = ('lo','hi')
+    def __init__(self, lo, hi=None):
+        self.lo=int(lo); self.hi=int(lo if hi is None else hi)
+        assert self.lo <= self.hi
+    @classmethod
+    def rat(cls,p,q=1):
+        assert q != 0
+        return cls(p*SCALE//q, -((-p*SCALE)//q))
+    def __add__(self,b):
+        if not isinstance(b,I): b=I.rat(b)
+        return I(self.lo+b.lo,self.hi+b.hi)
+    __radd__=__add__
+    def __neg__(self): return I(-self.hi,-self.lo)
+    def __sub__(self,b): return self+(-b if isinstance(b,I) else -I.rat(b))
+    def __rsub__(self,b): return I.rat(b)+(-self)
+    def __mul__(self,b):
+        if not isinstance(b,I): b=I.rat(b)
+        v=[x*y for x in (self.lo,self.hi) for y in (b.lo,b.hi)]
+        return I(min(v)//SCALE,-((-max(v))//SCALE))
+    __rmul__=__mul__
+    def __truediv__(self,b):
+        if not isinstance(b,I): b=I.rat(b)
+        assert not (b.lo <= 0 <= b.hi)
+        lows=[x*SCALE//y for x in (self.lo,self.hi) for y in (b.lo,b.hi)]
+        highs=[-((-x*SCALE)//y) for x in (self.lo,self.hi) for y in (b.lo,b.hi)]
+        return I(min(lows),max(highs))
+    def report(self):
+        with localcontext() as ctx:
+            ctx.prec=40
+            return [str(Decimal(self.lo)/Decimal(SCALE)),str(Decimal(self.hi)/Decimal(SCALE))]
+
+def log_unit(p,q):
+    """log(p/q), 1 <= p/q <= 2, using atanh and a positive tail bound."""
+    assert q <= p <= 2*q
+    z=I.rat(p-q,p+q); z2=z*z; power=z; value=I.rat(0)
+    terms=35
+    for j in range(terms):
+        value=value+power/(2*j+1)
+        power=power*z2
+    tail=(2*power)/((2*terms+1)*(1-z2))
+    return 2*value+I(0,tail.hi)
+LOG2=log_unit(2,1)
+@lru_cache(None)
+def lograt(p,q=1):
+    assert p>0 and q>0
+    d=gcd(p,q);p//=d;q//=d
+    k=0
+    while p>=2*q: q*=2;k+=1
+    while p<q: p*=2;k-=1
+    return k*LOG2+log_unit(p,q)
+
+BERNOULLI=((1,6),(-1,30),(1,42),(-1,30),(5,66),(-691,2730))
+@lru_cache(None)
+def psi_reduced(p,q):
+    """Digamma at p/q; six-term Binet expansion with signed remainder."""
+    assert p>0 and q>0
+    shift=16
+    xp=p+shift*q
+    inv=I.rat(q,xp); inv2=inv*inv
+    value=lograt(xp,q)-inv/2
+    power=inv2
+    for j,(bn,bd) in enumerate(BERNOULLI,1):
+        value=value-I.rat(bn,bd*(2*j))*power
+        power=power*inv2
+    # B_14/(14*x^14) = 1/(12*x^14); the omitted first term is negative.
+    rem=power/12
+    value=value+I(-rem.hi,0)
+    for j in range(shift): value=value-I.rat(q,p+j*q)
+    return value
+
+def psi(p,q):
+    d=gcd(p,q)
+    return psi_reduced(p//d,q//d)
+
+@lru_cache(None)
+def gram(m,n):
+    if m>n: return gram(n,m)
+    period=lcm(m,n); value=I.rat(0)
+    for r in range(1,period+1):
+        num=(r%m)*(r%n)
+        if num:
+            weight=(psi(r+1,period)-psi(r,period))/period
+            value=value+I.rat(num,m*n)*weight
+    return value
+
+def solve(A,b):
+    A=[row[:]+[v] for row,v in zip(A,b)];n=len(b)
+    for k in range(n):
+        pivot=A[k][k]
+        assert pivot.lo>0
+        for j in range(k+1,n+1): A[k][j]=A[k][j]/pivot
+        A[k][k]=I.rat(1)
+        for i in range(n):
+            if i==k: continue
+            factor=A[i][k]
+            for j in range(k+1,n+1): A[i][j]=A[i][j]-factor*A[k][j]
+            A[i][k]=I.rat(0)
+    return [row[-1] for row in A]
+
+def run():
+    start=time.monotonic()
+    active=(2,3,4,5,7,11,13,17)
+    G=[[gram(m,n) for n in active] for m in active]
+    b=[lograt(n)/n for n in active]
+    c=solve(G,b)
+    assert all(v.lo>0 for v in c)
+    margins={}
+    for n in range(2,80):
+        if n not in active:
+            v=lograt(n)/n-sum((cm*gram(m,n) for m,cm in zip(active,c)),I.rat(0))
+            assert v.hi<0,(n,v.report())
+            margins[n]=v
+    C=[];D=[];means=[]
+    for m in active:
+        mean=Fraction(m-1,2*m);means.append(I.rat(mean.numerator,mean.denominator))
+        ck=I.rat(0);partial=Fraction(0);maxpartial=Fraction(0)
+        for r in range(1,m+1):
+            dk=Fraction(r%m,m)-mean
+            ck=ck-I.rat(dk.numerator,dk.denominator)*psi(r+1,m)/m
+            partial+=dk;maxpartial=max(maxpartial,abs(partial))
+        assert partial==0
+        C.append(ck);D.append(I.rat(maxpartial.numerator,maxpartial.denominator))
+    alpha=1-sum((v*w for v,w in zip(c,means)),I.rat(0))
+    sc=sum((v*w for v,w in zip(c,C)),I.rat(0))
+    sd=sum((v*w for v,w in zip(c,D)),I.rat(0))
+    tail80=alpha*lograt(80)-sc+I.rat(10,3)*sd/80
+    assert alpha.hi<0 and sd.lo>0 and tail80.hi<0
+    error=1-sum((v*w for v,w in zip(c,b)),I.rat(0))
+    assert error.lo>0
+    worst=max(margins,key=lambda n:margins[n].hi)
+    assert all(margins[worst].lo>v.hi for n,v in margins.items() if n!=worst)
+    assert all(v.hi<I.rat(-2495,10**7).lo for v in margins.values())
+    assert tail80.hi<I.rat(-11787,10**7).lo
+    assert error.lo>I.rat(273089278984818,10**16).hi
+    assert error.hi<I.rat(273089278984835,10**16).lo
+    result={
+      'status':'PASS','arithmetic':'outward-rounded integer intervals, scale 10^24',
+      'active':active,'coefficient_intervals':{str(n):v.report() for n,v in zip(active,c)},
+      'squared_distance_interval':error.report(),
+      'inactive_range':[2,79], 'inactive_count':len(margins),
+      'largest_inactive_gradient_index':worst,
+      'largest_inactive_gradient_interval':margins[worst].report(),
+      'all_inactive_gradient_intervals':{str(n):v.report() for n,v in margins.items()},
+      'alpha_interval':alpha.report(),'weighted_C_interval':sc.report(),
+      'weighted_D_interval':sd.report(),'tail_bound_at_80_interval':tail80.report(),
+      'log_algorithm':'35 atanh terms plus exact geometric tail upper bound',
+      'psi_algorithm':'shift 16; B_2 through B_12; negative B_14 remainder bound',
+      'elapsed_seconds':round(time.monotonic()-start,3),
+    }
+    print(json.dumps(result,indent=2))
+
+if __name__=='__main__': run()
+\end{lstlisting}
+
+\clearpage
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}
+
+\bibitem{VMRC200}
+Shaitetsu,
+\emph{Weighted fractional-part flows and sharp lattice covering bounds},
+Verifiable Mathematical Reasoning Corpus, manuscript [200],
+18 November 2026. Checked repository revision
+\texttt{ac1492a50784be919fe0b5e8f19f96f8d221a22e}.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+
+\bibitem{PrimeCircles}
+\emph{Prime Reciprocal Circles and the Riemann Zeta Function:
+A Unified Energy, Operator, and Sign Theory},
+research synthesis prepared for Keio,
+Verifiable Mathematical Reasoning Corpus, manuscript [149],
+9 November 2026. Same checked repository revision as [200].
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+
+\bibitem{BaezDuarte}
+L.~B\'aez-Duarte,
+A strengthening of the Nyman--Beurling criterion for the Riemann hypothesis,
+\emph{Rend. Lincei Mat. Appl.} (9) \textbf{14} (2003), no.~1, 5--11.
+Checked preprint: arXiv:math/0202141v2.
+\url{https://arxiv.org/abs/math/0202141}.
+
+
+\bibitem{Balazard}
+M.~Balazard,
+\emph{An arithmetical function related to B\'aez-Duarte's criterion
+for the Riemann hypothesis}, arXiv:1812.04309v1 (2018),
+especially Sections~1--2 and the attribution there to V.~I.~Vasyunin.
+\url{https://arxiv.org/abs/1812.04309}.
+
+
+\bibitem{Lagarias}
+J.~C.~Lagarias,
+On a positivity property of the Riemann $\xi$-function,
+\emph{Acta Arith.} \textbf{89} (1999), no.~3, 217--234,
+\url{https://doi.org/10.4064/aa-89-3-217-234};
+with correction, \emph{Acta Arith.} \textbf{116} (2005), 293--294.
+The positive-real criterion is stated in the original introduction
+and credited there to earlier work of A.~Hinkkanen.
+Author version:
+\url{https://websites.umich.edu/~lagarias/doc/positivity.pdf}.
+The results here do not use the corrected Lemma~3.1.
+
+
+\bibitem{BrentPlattTrudgian}
+R.~P.~Brent, D.~J.~Platt, and T.~S.~Trudgian,
+The mean square of the error term in the prime number theorem,
+\emph{J. Number Theory} \textbf{238} (2022), 740--762.
+\url{https://doi.org/10.1016/j.jnt.2021.09.016}.
+The qualitative conditional input used here is equation~(1), p.~741.
+Author-hosted published version:
+\url{https://maths-people.anu.edu.au/~brent/pd/rpb274-final.pdf}.
+
+
+\bibitem{Cramer}
+H.~Cram\'er,
+Ein Mittelwertsatz in der Primzahltheorie,
+\emph{Math. Z.} \textbf{12} (1922), 147--153.
+\url{https://doi.org/10.1007/BF01482072}.
+The precise dyadic form used here was checked in
+Brent--Platt--Trudgian, cited above.
+
+
+\bibitem{TransferZeta}
+Shaitetsu,
+\emph{Lattice Covering Flows and the Riemann Zeta Function:
+Exact Quadratic Coverings, Polygon Positivity, and Signed Approximation},
+research manuscript prepared for Keio, 20 November 2026.
+Preceding 28-page research batch, source file
+\texttt{vmrc200\_zeta\_circle\_transfers.tex}.
+Its principal criteria and normalizations are restated here.
+
+\bibitem{RosserSchoenfeld}
+J.~B. Rosser and L. Schoenfeld,
+Approximate formulas for some functions of prime numbers,
+\emph{Illinois J. Math.} \textbf{6} (1962), no.~1, 64--94.
+\url{https://doi.org/10.1215/ijm/1255631807}.
+Theorem~5, equations~(3.17)--(3.18), p.~70.
+Checked original scan:
+\url{https://denisevellachemla.eu/Rosser-Schoenfeld-1962.pdf}.
+
+\bibitem{PlattTrudgian}
+D.~Platt and T.~Trudgian,
+The Riemann hypothesis is true up to $3\cdot10^{12}$,
+\emph{Bull. London Math. Soc.} \textbf{53} (2021), no.~3, 792--797.
+\url{https://doi.org/10.1112/blms.12460}.
+Checked author preprint: \url{https://arxiv.org/abs/2004.09765}.
+
+\bibitem{BellottiWong}
+C.~Bellotti and P.-J.~Wong, with an appendix by A.~Fiori,
+Improved estimates for the argument and zero-counting function
+of the Riemann zeta-function,
+\emph{Math. Comp.}, published electronically 14 November 2025.
+\url{https://doi.org/10.1090/mcom/4133}.
+Checked author version: arXiv:2412.15470v2, 7 July 2025,
+Theorem~1.1, second estimate.
+\url{https://arxiv.org/abs/2412.15470}.
+
+\bibitem{TaoMobius}
+T.~Tao,
+A remark on partial sums involving the M\"obius function,
+\emph{Bull. Aust. Math. Soc.} \textbf{81} (2010), 343--349.
+\url{https://doi.org/10.1017/S0004972709000884}.
+Equation~(1.3) recalls the classical elementary harmonic bound;
+the stronger PNT equivalence is distinguished in the introduction.
+
+\bibitem{GallardoSeco2025}
+E.~A. Gallardo-Guti\'errez and D.~Seco,
+Zero-Free Regions of the Riemann Zeta Function and Approximation
+in Weighted Dirichlet Spaces,
+\emph{Complex Anal. Oper. Theory} \textbf{19} (2025), Article~38.
+\url{https://doi.org/10.1007/s11785-025-01661-2}.
+Referenced for context and prior coefficient-limit formulations;
+its generator normalization differs from the one used here.
+
+\bibitem{DLMF}
+NIST Digital Library of Mathematical Functions,
+\S5.9, equation~5.9.15, and \S5.11(ii), error bounds for the
+real-positive digamma asymptotic expansion.
+\url{https://dlmf.nist.gov/5.9};
+\url{https://dlmf.nist.gov/5.11}.
+The sign and magnitude of the first omitted term are used in
+the integer-interval certificate.
+
+
+\end{thebibliography}
+\end{document}

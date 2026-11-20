@@ -1,0 +1,1184 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\title{Discrepancy of De Bruijn Cycles:\\ Extremal Tours, Probability, and Greedy Constructions}
+\author{Taisho, Round 125, and subsequent extensions}
+\date{20 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We determine the maximum discrepancy of a de Bruijn cycle over
+any alphabet, including cycles that cover every word with the
+same multiplicity. For ordinary cycles, we characterize and count
+maximizers at even order over any alphabet and at odd order in
+binary. Under the uniform cycle law, we determine the exponential
+scale of exact and near attainment and give a high-probability
+lower bound on discrepancy. For binary greedy cycles, we prove
+Gabric--Sawada Conjecture~3.2 and the Prefer-same clause of
+Conjecture~3.1. In fact the Prefer-opposite discrepancy is
+\(n^2/2+O(n)\); explicit prefix witnesses establish the quarter-square
+expression from the source's experiments as a lower bound for every
+\(n\ge10\). Its matching exact upper bound and the Lex-comp clause
+are not claimed. Independent computational checks are embedded.
+\end{abstract}
+
+\section{Maximum discrepancy}
+\label{sec:maximum}
+
+Let a cyclic word \(C\) contain each of the \(q^n\) length-\(n\) words
+exactly \(\lambda\ge1\) times, counted by cyclic start positions.
+Its discrepancy is the maximum, over cyclic factors and distinct
+symbols \(a,b\), of the absolute difference in their counts.
+The case \(\lambda=1\) is the ordinary de Bruijn case. This is the
+arbitrary-alphabet discrepancy used in \cite{ABM}. We treat the
+maximum side of the extension proposed in \cite[Section 7, item 5]{GabricSawada}.
+
+\begin{theorem}\label{thm:maximum}
+For integers \(q\ge2\), \(n\ge1\), and \(\lambda\ge1\), the maximum
+possible discrepancy is
+\[
+\lambda\bigl([z^0]+[z^1]\bigr)(z+z^{-1}+q-2)^{n-1}
++\left\lfloor \frac n2\right\rfloor.
+\]
+Here \([z^j]\) extracts the coefficient of \(z^j\).
+\end{theorem}
+
+\begin{proof}
+Choose distinct symbols \(a,b\) with weights \(+1,-1\), respectively;
+all other symbols have weight zero. Write \(\omega(u)\) for the sum
+of letter weights in \(u\), \(h=\lfloor n/2\rfloor\), and \(B\) for
+the displayed sum of coefficients. The total weight over \(C\)
+is zero since each symbol occurs \(\lambda q^{n-1}\) times, by
+counting first letters of its length-\(n\) windows. Hence the
+signed prefix sum \(F\), indexed so that a factor starting at \(i\)
+has weight \(F(i+\ell)-F(i)\) for length \(\ell\), extends
+periodically to all integer indices. Let \(F(s)\) be a minimum
+and \(F(t)\) a maximum, with \(0\le t-s<\lambda q^n\). The largest
+absolute factor weight for this pair is \(D=F(t)-F(s)\).
+By cancellation and the unit step bound,
+\begin{align*}
+ \sum_{s-h\le i<t-h}\bigl(F(i+n)-F(i)\bigr)
+ &=\sum_{j=-h}^{n-h-1}\bigl(F(t+j)-F(s+j)\bigr)\\
+ &\ge nD-2\sum_{j=-h}^{n-h-1}|j|
+  = nD-2\lfloor n^2/4\rfloor .
+\end{align*}
+Each term on the left is a window weight at a distinct cyclic
+position. Thus the sum is at most
+\(\lambda\sum_{\omega(u)>0,\ |u|=n}\omega(u)\).
+By symmetry of the positions this latter sum without the
+\(\lambda\) equals \(n\) times the sum of the first-letter weights
+over all words of nonnegative weight. For a fixed suffix \(v\)
+of length \(n-1\), the contribution of \(a\) is \(+1\) when
+\(\omega(v)\ge-1\) and the contribution of \(b\) is \(-1\) when
+\(\omega(v)\ge1\); other letters contribute zero. This counts
+suffixes of weights \(-1\) and \(0\), hence of weights \(1\) and \(0\)
+by exchanging \(a,b\). The sum is \(nB\). Integrality and
+\(\lfloor 2\lfloor n^2/4\rfloor/n\rfloor=h\) yield
+\(D\le\lambda B+h\).
+
+For equality, in the de Bruijn directed multigraph take
+\(\lambda\) copies of the edge for each length-\(n\) word, from
+its length-\((n-1)\) prefix to its suffix. Partition the edges
+into nonnegative-weight and negative-weight parts. In each
+part indegree equals outdegree: at any vertex the same set of
+letters can be prepended or appended. From any active vertex
+in the nonnegative part, appending \(a\) gives an admissible edge
+since \(a\) has largest weight. This does not decrease the vertex
+weight, so one can continue until reaching \(a^{n-1}\).
+Likewise one can append \(b\) repeatedly in the negative part
+and reach \(b^{n-1}\). Thus each part is connected when edge
+directions are ignored and isolated vertices discarded, and
+admits an Euler circuit.
+
+Start both circuits at \(v=b^h a^{n-1-h}\). Its weight is zero
+for odd \(n\) and \(-1\) for even \(n\); appending \(a\) or \(b\)
+gives edges of the respective parts. Concatenate the nonnegative
+circuit and then the negative circuit, reading the first letter
+of each traversed edge to obtain a cyclic word. Successive
+prefix-suffix overlaps, including across the join and cyclic cut,
+make each edge word the length-\(n\) window at its position.
+The first circuit contributes a contiguous block of total
+weight \(\lambda B\), by the same first-letter sum as above.
+Its first \(h\) letters are all \(b\) because its starting
+vertex is \(v\). There are enough edges in the block: for \(n\ge2\),
+the all-\(a\) word and all \(n\) words with exactly one \(b\) and
+otherwise \(a\)'s belong to the nonnegative part; for \(n=1\)
+we have \(h=0\). Dropping those first \(h\) letters leaves a
+factor of weight \(\lambda B+h\).
+\end{proof}
+
+\paragraph{Binary and ternary examples.}
+
+For \(q=2\), only one of the coefficients at degrees \(0,1\)
+is nonzero, and its value is \(\binom{n-1}{\lfloor n/2\rfloor}\).
+This gives the formula
+\[
+ D_{\max}(2,n)=\binom{n-1}{\lfloor n/2\rfloor}+\lfloor n/2\rfloor.
+\]
+The particular construction \(\mathcal{DB}_{\max}(n)\) of Gabric
+and Sawada is also extremal: their Theorem 5.3 proves the matching
+lower bound for it. Thus the universal bound and the assertion
+about the named construction both follow, exactly as in
+Conjecture 5.5 of \cite{GabricSawada}. This was Taisho's original Round 125
+result. The linear and cyclic definitions of absolute discrepancy
+agree: a wrapped factor has a nonwrapped complement of opposite
+signed weight, since the full cycle has weight zero.
+For \(q=3,\lambda=1\), the first six maxima are \(1,3,6,15,37,99\).
+No priority claim is made.
+
+\section{Structure and enumeration of maximizers}
+
+Fix \(a,b\) as before and let \(\lambda=1\). The following
+describes maximizers for the prescribed pair, not the union
+over pairs when \(q>2\).
+
+\begin{theorem}
+Let \(n=2h\) and let \(u=b^ha^{h-1}\), \(v=a^hb^{h-1}\).
+A de Bruijn cycle attains \(D_{\max}(q,n)\) for the pair \(a,b\)
+if and only if its tour can be cut into a trail \(u\to v\)
+containing every strictly positive edge and no strictly
+negative edge, and a complementary trail \(v\to u\).
+The two cuts are unique.
+\end{theorem}
+\begin{proof}
+For an extremizer, choose a minimum \(F(s)\) and a maximum
+\(F(t)\) cyclically after it. The centered-window lower bound
+is \(nD-2h^2=M\), so the interval of starts \([s-h,t-h)\)
+contains every positive edge and no negative edge. All the
+unit-step inequalities used at the two ends are equalities.
+The first \(h\) letters at \(s-h\) are therefore \(b\), and the
+next \(h-1\) are \(a\); at \(t-h\) the signs are reversed.
+These are the two required vertices.
+
+Conversely, given such trails, let \(x,y\) be their respective
+start positions. Set \(s=x+h,\ t=y+h\). The vertices \(u,v\)
+force equality in the unit-step inequalities at \(s,t\) for
+all offsets \(-h,\ldots,h-1\). The first trail sums to \(M\),
+so the centered-window identity gives
+\(n(F(t)-F(s))-2h^2=M\) and hence \(F(t)-F(s)=D_{\max}(q,n)\).
+The \(u\)-trail must begin with \(ua\), the only nonnegative
+edge out of \(u\), since \(\omega(u)=-1\). The \(v\)-trail
+must begin with \(vb\), the only nonpositive edge out of \(v\),
+since \(\omega(v)=1\). Each such edge appears only once in the
+tour, proving uniqueness.
+\end{proof}
+
+\paragraph{Exact counts.}
+For even \(n\), allocate each zero edge to one of the trails,
+forming \(H_+\) and \(H_-\) by adjoining the corresponding
+strict sign edges. Retain allocations with the needed degree
+imbalances and weak connectivity on their incident vertices.
+For a graph \(H\) with open Euler trails from \(s\) to \(t\),
+their number is
+\[
+ T(H;s,t)=\tau_t(H)
+ \prod_{w\in V(H)}(d^+_H(w)-1+\mathbf 1_{w=t})!,
+\]
+where \(\tau_t\) counts spanning directed in-arborescences
+rooted at \(t\). To see this, add an edge \(t\to s\)
+and prescribe it as the first edge in the resulting Euler
+circuit; the last-exit tree and the orders of the remaining
+departures give the displayed formula. The directed
+matrix-tree theorem computes \(\tau_t\) as the principal
+minor of the outdegree Laplacian. The exact answer is
+\(\sum T(H_+;u,v)T(H_-;v,u)\) over the retained allocations.
+Uniqueness of the cuts means each extremizing cycle is counted
+once, with rotations identified and letters labeled.
+
+For \(q=2\), every vertex incident to a zero edge has exactly
+one incoming and one outgoing zero edge. Thus the zero edges
+form rotation cycles of balanced binary words. The cycle
+through \(u,v\) is the rotation cycle of \(a^hb^h\).
+The strict sign subgraphs are balanced. Consequently, the
+directed zero arc \(u\to v\) must go to \(H_+\), its reverse
+complementary arc \(v\to u\) to \(H_-\), and each other
+rotation cycle is assigned whole to either trail. These
+assignments give connected supports: positive edges connect
+to \(a^{n-1}\) by appending \(a\), and negative edges connect
+to \(b^{n-1}\) by appending \(b\); each other balanced cycle
+visits a vertex of each sign, and each distinguished arc
+touches its corresponding support at an endpoint. Both
+terminal vertices have exactly one outgoing edge in their
+respective trail graphs. Other vertices have outdegree at
+most two. All factorial factors are thus one, giving a
+determinant product for each allocation. This yields
+\[
+\begin{array}{c|rrrr}
+ n&2&4&6&8\\ \hline
+ \#\text{ binary maximizers}&1&8&688128&13597685034110153948947021824.
+\end{array}
+\]
+
+\paragraph{Odd-order defect criterion.}
+If \(n=2h+1\), take any cyclic cuts at \(x,y\), with the interval
+\(I=[x,y)\) of length less than \(q^n\), and put \(s=x+h,\ t=y+h\).
+For \(-h\le j\le h\), define
+\[
+ L_s(j)=|j|-\bigl(F(s+j)-F(s)\bigr),\qquad
+ L_t(j)=|j|-\bigl(F(t)-F(t+j)\bigr).
+\]
+These terms are nonnegative; they depend only on the two
+length-\((n-1)\) boundary words. Set
+\[
+ \Omega=M-\sum_{i\in I}W_i+\sum_{j=-h}^{h}(L_s(j)+L_t(j)).
+\]
+The centered-window identity gives exactly
+\(\Omega=h+n(D_{\max}-[F(t)-F(s)])\). Thus an odd-order cycle
+maximizes discrepancy for the pair precisely when it admits
+cuts with \(\Omega=h\). This criterion does not imply uniqueness
+or yield the even-order determinant count in odd order.
+
+\subsection{All binary maximizers at odd order}
+Now assume \(q=2\) and \(n=2h+1\ge3\), using \(a=1\) and \(b=0\).
+Let \(P,N_-\) denote the strict positive and strict negative edge
+sets, respectively. There are no zero edges. Both sign graphs
+are balanced by the prepend--append symmetry.
+Set \(u=0^h1^h\) and \(v=1^h0^h\). Let \(R_-\) be the
+length-\(h\) path from \(u\) to \(v\) obtained by appending
+\(h\) zeros, and \(R_+\) the analogous path from \(v\) to \(u\)
+obtained by appending \(h\) ones. Their union is the simple
+rotation cycle of \(0^h1^h\), with all edges of weights
+\(-1\) and \(1\), respectively, along the two paths.
+
+\begin{theorem}
+For any marked minimum and maximum in a maximizing binary
+cycle of order \(n=2h+1\), the corresponding centered interval
+is a trail from \(u\) to \(v\) with one of the two edge sets
+\(P\cup R_-\) and \(P\setminus R_+\).
+Conversely, a cyclic Euler tour admitting either such interval
+maximizes discrepancy. The number of distinct maximizing
+cycles, up to rotation but with the letters labeled, is
+\[
+ 2\,\tau_u(N_-\setminus R_-)
+       \left(\tau_v(P\cup R_-)-\tau_v(P\setminus R_+)\right).
+\]
+At order \(1\) the number is \(1\).
+\end{theorem}
+\begin{proof}
+Let \(H\) be the edges of a marked interval, with boundary
+vertices \(u',v'\). The odd defect identity says that the
+misplaced weight, namely the sum of \(|W|\) on the symmetric
+difference of \(H\) and \(P\), plus the local penalties,
+equals \(h\). Each wrong letter at an endpoint costs at
+least \(2\); the two nearest its center each cost \(2h\).
+Thus the center letters at \(u'\) must read \(01\), and those
+at \(v'\) must read \(10\), so \(u'\ne v'\).
+
+Make a digraph from the negative edges in \(H\) in their
+original direction and the positive edges outside \(H\) in
+reverse. Its imbalance vector is that of \(H\), since
+\(P\) is balanced. It contains a simple directed path from
+\(u'\) to \(v'\): otherwise the set reachable from \(u'\)
+would have total out-minus-in degree \(1\) but no outgoing
+edge. Write \(L\) for the length of such a path. Each edge
+has weight magnitude at least \(1\), so \(L\le h\).
+
+Place the length-\(2h\) starting word on integer coordinates.
+A forward or reversed step shifts its coordinate interval
+by \(1\) or \(-1\), respectively, preserving all letters on
+the overlap. Let \(w\) be the range of offsets attained and
+\(d\) be the final offset. The coordinates common to every
+interval number \(2h-w\), and they preserve their letters
+throughout the path. On these coordinates the ideal words
+\(u\) and \(v\), placed at offsets \(0,d\), agree only
+between their switches, in at most \(|d|\) positions. Thus
+at least \(2h-w-|d|\ge 2h-2L\) positions force a wrong
+letter in at least one endpoint. It follows that
+\(h\ge L+2(2h-2L)=4h-3L\).
+Hence \(L=h\), and the entire budget consists of the \(h\)
+path edges, each of weight magnitude \(1\). In particular
+\(u'=u,\ v'=v\), with no local penalty. This also requires
+\(w+|d|\ge2h\), hence \(|d|=h\), so the path moves only
+forward or only backward. In the forward case it is \(R_-\);
+in the backward case it reverses \(R_+\). Conversely, the
+ideal boundary words and misplaced weight exactly \(h\)
+certify equality for either allocation by the defect identity.
+
+For the count, the open-trail factorial factors are all one:
+outdegrees at nonterminals are at most two, and the terminal
+of each trail has outdegree at most one, since a degree
+imbalance of \(-1\) forces one more incoming than outgoing
+edge. The count for the first allocation is
+\(T=\tau_v(P\cup R_-)\tau_u(N_-\setminus R_-)\).
+Exchanging letters and reading the complementary trail shows
+the second allocation also gives \(T\). Each allocation
+occurs at most once in a given cycle, since a specified
+nonempty proper edge set can occur as at most one cyclic
+interval in a tour of distinct edges.
+
+If both allocations occur, the smaller interval is nested in
+the larger one, and their difference is precisely the simple
+cycle \(R_-\cup R_+\). The discarded portions at its ends
+are closed trails based at \(u\) and \(v\), respectively.
+A simple directed cycle cannot split into two nonempty closed
+trails. It must therefore occur entirely at one of the two
+ends. Conversely, insert this simple cycle at either join of
+any two complementary trails in \(P\setminus R_+\) and
+\(N_-\setminus R_-\) with endpoints \(u,v\). This produces a
+cycle counted by both allocations. The two insertion types
+are disjoint and the unique cuts recover the two base trails.
+The common count is therefore
+\(2\,\tau_v(P\setminus R_+)\tau_u(N_-\setminus R_-)\).
+Subtracting it from \(2T\) proves the formula.
+\end{proof}
+
+For example, the binary odd-order counts at orders \(1,3,5,7\)
+are \(1,2,224,573839507456\), respectively. A cycle with
+two marked pairs has either two minima and a single maximum
+or the reverse, according to the insertion site. A cycle
+with only one marked pair has one minimum and one maximum,
+where positions are counted cyclically. The odd two-allocation
+classification is binary only.
+
+\section{The upper tail for uniform cycles}
+
+Gabric and Sawada also ask about the distribution of discrepancy
+\cite[Section 7, item 6]{GabricSawada}. Here, uniform means that rotations
+are identified but letters are labeled. Let \(D_{\max}(q,n)\)
+denote the extremal value of Theorem~\ref{thm:maximum} with \(\lambda=1\).
+
+\begin{theorem}
+For each fixed \(q\ge2\), there are constants \(c_q,C_q,A_q>0\) such
+that a uniform order-\(n\) de Bruijn cycle satisfies, for sufficiently
+large \(n\),
+\[
+\begin{aligned}
+ e^{-A_q q^n/\sqrt n}
+ &\le {\mathbb P}\{\operatorname{disc}(C)=D_{\max}(q,n)\}\\
+ &\le {\mathbb P}\{\operatorname{disc}(C)\ge D_{\max}(q,n)-c_q q^n/n^{3/2}\}
+ \le e^{-C_q q^n/\sqrt n}.
+\end{aligned}
+\]
+\end{theorem}
+\begin{proof}
+Fix the ordered pair \(a,b\) and use the preceding weights.
+Let \(D\) be the discrepancy for this pair. Put \(M=nB\).
+If \(D\ge B+h-d\), the centered-window sum in the first proof
+produces a cyclic interval \(I\) of edge positions with
+\[
+ M-\sum_{i\in I} W_i
+ \le nd+2\lfloor n^2/4\rfloor-nh\le nd+h,
+\]
+where \(W_i\) is the weight of the edge at position \(i\).
+The left side is the sum of the positive weights outside \(I\)
+and the absolute negative weights inside. Thus at most \(nd+h\)
+nonzero edges lie on the wrong side. Remove the zero edges.
+After also removing the wrong-side edges, there are at most two
+changes in the resulting cyclic sign list. Reinserting a sign
+increases the count by at most two, so the original nonzero signs
+change at most \(R=2+2(nd+h)\) times.
+
+Sample an independent uniform bijection from incoming to outgoing
+edges at each vertex. Together these bijections form a permutation
+of the labeled edges. Conditional on this being a single cycle,
+it is exactly the uniform de Bruijn law: each unrooted directed
+Euler tour determines precisely one such array. There are
+\((q!)^{q^{n-1}}\) arrays, and the classical count of cyclic
+de Bruijn words is \((q!)^{q^{n-1}}/q^n\) \cite{AE}.
+Thus conditioning multiplies an upper probability bound by at
+most \(q^n\).
+
+For \(q\ge3\), and also for binary odd \(n\), take all vertices
+of weight zero. There are \(L=\Theta_q(q^{n-1}/\sqrt n)\):
+for \(q=2\) this follows from the central binomial coefficient,
+and for \(q\ge3\) the lattice local central limit theorem
+applies to the uniform letter weight (mean zero, positive
+variance \(2/q\), span one). Their independent bijections each
+send the unique positive incoming edge to the unique negative
+outgoing edge with probability \(p=1/q\). Each success gives a
+distinct sign change on a single tour.
+
+For binary even \(n\), zero-weight edges form a directed graph
+with indegree and outdegree one at every incident vertex.
+Choose the zero-weight edges whose first and last letters differ.
+They join opposite-weight vertices, and their number is
+\(2\binom{n-2}{n/2-1}\). They are loopless, and the zero-edge
+graph has undirected degree at most two counting multiplicity.
+A greedy edge selection therefore gives a vertex-disjoint
+collection of at least one third of that many edges. Denote its
+size by \(L=\Omega(2^n/\sqrt n)\). At each endpoint, the other
+incoming and outgoing edges are nonzero and have the sign of
+the vertex weight. If both bijections swap the zero and
+nonzero types, then a nonzero edge is followed by the selected
+zero edge and a nonzero edge of opposite sign. After removal
+of the zero edges, this yields a sign change. These trials
+are independent with success probability \(p=1/4\);
+the resulting changes are distinct since their entering nonzero
+edges enter distinct selected tails.
+
+In both cases select \(c_q>0\) sufficiently small so that
+\(d=c_q q^n/n^{3/2}\le pL/(8n)\) for all large \(n\).
+Since \(2+2h\le pL/4\) for all large \(n\), the event in
+question for the fixed pair requires at most \(pL/2\) successes
+in \(L\) independent Bernoulli trials. The multiplicative
+Chernoff bound is \(\exp(-pL/8)\). Multiply by \(q^n\) for
+conditioning and then by \(\binom q2\) for the union over pairs.
+Since \(L=\Omega_q(q^n/\sqrt n)\), both factors can be absorbed
+by decreasing \(C_q\).
+
+For the lower bound put \(N=q^n\), \(V=q^{n-1}\).
+Consider the arrays of local bijections that preserve the two
+classes of edges of nonnegative and negative weight.
+Such arrays form a proportion at least \((q!)^{-L_*}\) of all
+arrays, where \(L_*\) counts vertices incident to both classes.
+Indeed at any such vertex at least one allowed bijection exists
+by balance, and at all other vertices every bijection is allowed.
+A mixed vertex has weight \(-1\) or \(0\), because appending a
+letter changes the weight by at most one, and both extreme
+weights \(+1,-1\) are available. Consequently
+\(L_*=O_q(N/\sqrt n)\) by the central binomial estimate in the
+binary case and the span-one lattice local central limit theorem
+otherwise.
+
+Every array, including one that preserves the classes, has
+\(O_q(N/n)\) cycles. To see this, let \(m=\lfloor n/2\rfloor\).
+There are at most \(N/m\) cycles of length at least \(m\), since
+the cycles are disjoint on edges. A cycle of length \(\ell<m\)
+is encoded by the cyclic word of its first letters: repeating
+this word reconstructs each successive length-\(n\) edge by overlap.
+There are at most \(q^\ell\) such cycles of length \(\ell\), and
+\(\sum_{1\le\ell<m}q^\ell=O_q(q^m)=O_q(N/n)\).
+
+In a class with several cycles, two must share a vertex, because
+the class is weakly connected on active vertices. Interchanging
+the successors of two incoming edges from different cycles at
+that vertex merges the cycles without changing the class of any
+transition. Repeating in the two classes produces one cycle per
+class. The merged array differs from the starting array at at
+most \(K=O_q(N/n)\) vertices. Fix any deterministic choice of
+merges. For a given resulting array, the number of possible
+preimages is at most
+\[
+ \sum_{0\le j\le K}\binom{V}{j}(q!)^j
+ =\exp\!\bigl(O_q(N\log n/n)\bigr),
+\]
+where the bound follows from \(K/V=O_q(1/n)\) and
+\(\binom{V}{j}\le(eV/j)^j\) for \(j\ge1\).
+Finally splice the two cycles by exchanging one transition from
+each class at \(v=b^h a^{n-1-h}\). The resulting tour is the
+concatenation of the two circuits rooted at \(v\), so the
+construction in the first proof attains \(D_{\max}\).
+The splice is injective on two-cycle arrays: the resulting
+array has exactly two cross-class transitions, and exchanging
+their successors recovers the array before splicing.
+Thus the proportion of all arrays consisting of a single
+extremizing cycle is at least
+\[
+ (q!)^{-L_*}\exp\!\bigl(-O_q(N\log n/n)\bigr)
+ \ge e^{-A_q N/\sqrt n}
+\]
+for an appropriate \(A_q\). Dividing by the probability that an
+array forms a single cycle can only increase this proportion.
+\end{proof}
+
+These estimates determine the exponential scale of rarity near the
+maximum, but do not identify the constants in the exponent, a typical
+value, or the scale of fluctuations for a typical cycle.
+
+
+\section{A high-probability lower bound}
+The rare-event estimates above concern a narrow neighborhood of
+the maximum. The independent-transition model also gives a lower
+bound that holds for most cycles, rather than just extremizers.
+
+\begin{theorem}
+Fix \(q\ge2\) and \(A>0\). There exists \(c_{q,A}>0\) such that,
+for all sufficiently large \(n\), the discrepancy \(D_{ab}\) of
+a uniform de Bruijn cycle for a prescribed pair of distinct
+symbols satisfies
+\[
+ {\mathbb P}\left(D_{ab}<c_{q,A}(q^n/n)^{1/4}\right)
+ \le q^{-An}.
+\]
+In particular its median and mean are both
+\(\Omega_q((q^n/n)^{1/4})\). This is a lower bound only; it
+does not identify the order of a typical discrepancy.
+\end{theorem}
+\begin{proof}
+As above, sample independent uniform local bijections before
+conditioning on a single cycle. Write \(N=q^n\), \(V=q^{n-1}\).
+Choose an integer \(m\) with \(q/2\le m\le N\), and put
+\(K=\lfloor V/(64m^2)\rfloor\).
+Each of \(K\) trials starts from an independently uniform vertex,
+then takes a predetermined incoming edge to it. A trial follows
+the transition permutation for \(m\) steps unless its current
+vertex has already been queried. In that case it stops before
+revealing a transition. At any vertex that has not been queried,
+its bijection is independent of all the previous revelations.
+Consequently the emitted last letter of the chosen outgoing
+edge is uniform, regardless of the incoming edge. Couple each
+trial to an independent uniform word of length \(m+n-1\),
+consisting of the starting vertex and its \(m\) emissions,
+with independent filler after any abort. This word is IID
+conditional on all history before the trial.
+
+Conditional on that history in trial \(j\), the probability of
+aborting because of an earlier trial is at most
+\(m(j-1)m/V\). Indeed, in the comparison word each current
+length-\((n-1)\) window is individually uniform, and at most
+\((j-1)m\) vertices were previously queried. The probability
+of an internal collision is at most \(\binom m2/V\): any two
+windows of length \(k=n-1\) coincide with probability \(q^{-k}\).
+For overlapping windows separated by \(d<k\), equality imposes
+period \(d\) on \(k+d\) letters and hence gives the same
+probability as in the disjoint case. The combined abort
+probability is at most \(Km^2/V\le 1/64\).
+
+Let \(S\) be the signed weight of the \(m\) comparison emissions
+and \(v=2m/q\ge1\). Independence and symmetry give
+\(\mathbb E S^2=v\) and
+\(\mathbb E S^4=v+3m(m-1)(2/q)^2\le4v^2\).
+By the Paley--Zygmund inequality applied to \(S^2\),
+the probability of \(|S|\ge\sqrt{m/q}\) is at least \(1/16\).
+Thus, even after excluding aborts, every trial has success
+probability at least \(1/32\) conditional on the prior history.
+If there is a single cycle, the last-letter emissions along
+a completed trial form a genuine cyclic factor, since the
+last-letter and first-letter readings differ only by a cyclic
+shift. A success therefore proves \(D_{ab}\ge\sqrt{m/q}\).
+Iterating the failure bound before conditioning yields
+\[
+ {\mathbb P}\{D_{ab}<\sqrt{m/q}\}
+ \le N\exp(-K/32)
+\]
+under the uniform cycle law. Take
+\(m=\lfloor\sqrt{V/(2048(A+2)\log N)}\rfloor\).
+For sufficiently large \(n\), this gives the stated order
+for \(\sqrt{m/q}\) and makes the failure bound at most
+\(N^{-A}\), including the effect of rounding. The mean and
+median statements follow by taking \(A=1\).
+\end{proof}
+
+\section{Binary greedy constructions}\label{sec:greedy}
+Let \(S_n\) and \(O_n\) be the binary Prefer-same and Prefer-opposite
+cycles of order \(n\), with discrepancy \(D(S_n)\) and \(D(O_n)\).
+Unlike the preceding sections, this section concerns particular
+greedy cycles, not the maximum over all cycles or a random cycle.
+
+\subsection{Common argument}
+Use the pure run-length register \(J\), which maps
+\(x_1\cdots x_n\) to \(x_2\cdots x_n(x_1\oplus x_2\oplus x_n)\),
+and put \(m=n-1\). A state has weight \(2x_1-1\).
+Discrepancy is the range of the signed prefix sum, because
+the whole cycle is balanced. We use Theorems 21 and 25 and
+Observation 15 of \cite{SalaSawadaAlhakim} for the identification with the
+actual greedy algorithms and the nested traversal.
+Write \(\sigma\) for the run-length canonical representative
+and \(\alpha\) for the representative used in the successor.
+Write \(\widehat{x}\) for first-bit conjugation and \(\bar x\)
+for bitwise complementation. A nonroot orbit is traversed
+starting at \(J(\alpha)\), with its final own state \(\alpha\);
+each child is explored after emitting its joining state
+\(\widehat{\alpha_{\mathrm{child}}}\). The positions of joins
+are therefore indexed by the number of \(J\)-advances from
+the parent's \(\alpha\), starting at \(1\).
+
+An orbit with an even number of runs is complement-invariant
+and has at most \(2m\) states. One with an odd number of
+runs has at most \(m\) states. These facts follow by considering
+the first \(m\) symbols: one step rotates them and appends
+the first bit unchanged when \(x_n=x_1\), or complemented when
+\(x_n\ne x_1\). In the even case, \(J^m\) complements all bits;
+in the odd case \(J^m\) is the identity. Hence even orbits
+have zero weight. Distinct odd orbits interchanged by complement
+have opposite weights; a fixed odd orbit has weight zero.
+
+In both trees, an odd nonconstant child and its complemented
+orbit have the same even parent. With ordinary LC or LC2
+representatives, the traversal shift defining the representative
+uses only run lengths, and the conjugated representatives
+lie in one complement-invariant even orbit. The special rules
+do not change this parent: \cite[Sections 10 and 11, Case 1,
+and Claims 30 and 33]{SalaSawadaAlhakim} identify the same parent for
+the special representative and the ordinary one. The even
+children, in turn, have zero orbit weight. The two constant
+orbits in Prefer-same have the same two-run parent. For
+Prefer-opposite, \(0^n\) is the root and \(1^n\) is a
+special leaf attached to the only two-run orbit; that orbit's
+subtree gains \(+1\), which the root's own \(-1\) cancels.
+Induction up the tree now gives subtree weight equal to
+orbit weight, apart from those stated Prefer-opposite
+exceptions. In particular every completed child subtree
+has magnitude at most \(m+1\).
+
+A prefix determines one active branch. The subtotal from
+partially traversed orbits is \(O(n^2)\), since each orbit
+has size at most \(2m\) and the branch has \(O(n)\)
+levels by run count. At odd-run levels all completed child
+subtrees weigh zero, except for the stated root exception.
+At the root, at the final level, or at a descent into
+a leaf, the completed children are bounded directly by
+\(2m(m+1)\) per such level; there are at most three of these
+levels. For all other descents from an even parent, below
+we bound the advance to the next child by a drop in a
+parameter monotone along the full branch and valued in
+\([0,n]\). Since joins occupy distinct parent states, at
+most that many completed sibling subtrees contribute.
+The sum of these advances is at most \(n\), and their
+total weight has absolute value \(O(n^2)\). These estimates
+bound every prefix, and therefore its range, by \(O(n^2)\).
+
+\subsection{Prefer-opposite}
+For a nonconstant orbit with lexicographically smallest
+canonical run-length encoding \((1,r_1,\ldots,r_k)\), use
+\(L=r_k\). An ordinary parent merges the last two parts;
+a special child of encoding \((1,x,\ldots,x,y)\) has a
+parent whose last part is \(y+x\), by \cite[Section 11,
+Cases 1 and 2]{SalaSawadaAlhakim}. Thus \(L\) decreases down the tree;
+the constant root and the exceptional \(1^n\) leaf can be
+excluded. An internal nonroot child has canonical representative
+beginning in \(0\) by Claim 31. When it has odd run count
+it is an ordinary child, so equation (4) of \cite{SalaSawadaAlhakim}
+gives the join advance \(r_{k-1}=L(\mathrm{parent})-
+L(\mathrm{child})\). This proves the required upper-bound
+charge.
+
+For the lower bound, focus on the two-run orbit, whose
+representative is \(10^m\). Its own first \(m\) emissions
+are zeros. Its nonconstant three-run children have canonical
+encodings \((1,t,m-t)\) with \(t\le m-t\): among the two
+cyclic rotations of the interior run lengths the shorter
+part comes first. For \(t<m/2\), the \(0\)-starting
+canonical word \(01^t0^{m-t}\) yields an \(m\)-state
+orbit (the rotating word has one run of each bit),
+of weight \(2t-m\). It joins at advance \(t\) by (4).
+Its complemented orbit is special and joins at advance
+\(m-t\) by \cite[Section 11, Case 1]{SalaSawadaAlhakim}. If present,
+the balanced child at \(t=m/2\) joins at \(m/2\);
+the constant leaf joins at \(m\).
+For \(j=\lfloor (m-1)/2\rfloor\), the first \(j\) emissions
+and their attached completed subtrees thus give a factor
+of weight
+\[
+ -j+\sum_{t=1}^j(2t-m)=-j(m-j).
+\]
+Its magnitude is \(\Omega(n^2)\).
+
+\subsection{Prefer-same}
+Use the number \(V\) of trailing unit parts in the
+lexicographically largest canonical run-length encoding.
+An ordinary parent decrements the last nonunit part and
+adds a trailing unit; if that part was 2, the change
+also exposes the preceding consecutive units. A special
+parent has strictly more trailing units by \cite[Section 10,
+Case 1]{SalaSawadaAlhakim}. Thus \(V\) increases down the reverse branch,
+from descendant towards root. The root is fully
+alternating. Except for a terminal descent, an odd child
+of an even parent begins canonically with \(1\) by
+Claim 28 and is not special. Its advance by equation (1)
+of \cite{SalaSawadaAlhakim} is the increase of \(V\) from child to parent:
+it is \(1\) if the last nonunit part exceeds \(2\), and
+otherwise includes the exposed units. The separate
+one-nonunit case away from the root also has advance
+one by the calculation preceding equation (1).
+Thus the general upper-bound charge applies.
+
+For the lower bound, take \(v\) odd at distance at most
+two from \(n/2\), and set \(K=n-v\ge3\) for sufficiently
+large \(n\). Use the even orbit with canonical encoding
+\((K,1^v)\). For \(a=0,\ldots,v-3\), the odd child with
+\(1\)-starting canonical encoding
+\((K,1^a,2,1^{v-2-a})\) is ordinary. Its unique largest
+run makes this rotation canonical, and its weight over
+the \(m\)-state orbit is either \(K\) or \(K-2\):
+after discarding the final repeated endpoint bit from
+the canonical word, the singled-out double run contributes
+one signed unit beyond the alternating runs. The period
+is \(m\), since the rotating word has a unique largest
+run. Equation (1) gives advance \(a+2\) for these children;
+their complemented siblings join after the first \(m\)
+advances by that same equation. There are no special
+children here, since their parents have maximum run
+size 2. Reversing the ordinary parent operation shows
+the only other possibility is \((K+1,1^{v-1})\) and its
+complement. The former, beginning with \(1\), joins at
+advance 1 with nonnegative weight; its complement joins
+in the second half, by the one-nonunit case of
+\cite[Section 10]{SalaSawadaAlhakim}. Consequently through advance
+\(v-1\) the subtree contains a factor of weight at least
+\[
+ (v-2)(K-2)-(v-1).
+\]
+This is \(\Omega(n^2)\).
+
+\paragraph{Scope.}
+The estimates above establish \(D(S_n)=\Theta(n^2)\) and
+\(D(O_n)=\Theta(n^2)\). These are the Prefer-same clause of
+Conjecture~3.1 and the entirety of Conjecture~3.2 in
+\cite{GabricSawada}. The refinement below concerns only
+Prefer-opposite. Neither the Lex-comp clause nor an equality
+with the experimental quarter-square expression is asserted.
+
+\section{The leading constant for Prefer-opposite}\label{sec:prefer-opposite-refinement}
+
+The quadratic-order conjecture of Gabric and Sawada \cite[Conjecture~3.2]{GabricSawada} is weaker than the numerical formula in their preceding table. The following strengthens the quadratic-order estimate and proves one direction of that formula.
+
+\begin{theorem}\label{thm:prefer-opposite-leading-constant}
+Let \(O_n\) be the binary Prefer-opposite cycle, with discrepancy \(D(O_n)\). For \(n\ge10\),
+\[
+  D(O_n)\ge
+  2+\left\lfloor\frac{(n-2)^2}{4}\right\rfloor
+    +\left\lfloor\frac{(n-4)^2}{4}\right\rfloor.
+\]
+In the rotation obtained by omitting the \(n-1\) seed zeros from the greedy traversal, the two signed values
+\[
+  -1-\left\lfloor\frac{(n-2)^2}{4}\right\rfloor,
+  \qquad
+  1+\left\lfloor\frac{(n-4)^2}{4}\right\rfloor
+\]
+are attained by prefixes. The minimum and maximum signed prefixes in that rotation are \(-n^2/4+O(n)\) and \(n^2/4+O(n)\), respectively. In particular,
+\[
+  D(O_n)=\frac{n^2}{2}+O(n).
+\]
+\end{theorem}
+
+\begin{proof}
+Write \(m=n-1\), assign weights \(-1,+1\) to bits \(0,1\), and use the pure run-length register
+\[
+  J(b_1\cdots b_n)=b_2\cdots b_n(b_1\oplus b_2\oplus b_n).
+\]
+The cycle tree, representatives, and visit order are those of Sala, Sawada, and Alhakim \cite[Sections~5, 7, and 11]{SalaSawadaAlhakim}. Their Theorem~25 identifies the joined traversal with the actual greedy cycle. Start its state traversal at the root state \(0^n\), and emit the last bit of every state, including the initial state. This omits the \(m\) seed zeros. More explicitly, if \(x_i\) are the cyclic first-bit emissions with \(x_0\cdots x_m=0^n\), the prefix through state \(i\) in the last-bit rotation has weight \(\sum_{j=m}^{i+m}(2x_j-1)\). This is the signed prefix convention used below.
+
+For a nonroot orbit with joining representative \(\alpha\), its own states are visited as \(J(\alpha),J^2(\alpha),\ldots,\alpha\). A child is traversed immediately after the parent emits from the state obtained by flipping the first bit of the child's joining representative. This is the nested traversal of Observation~15. The root has the unique two-run child. The constant \(1^n\) is a leaf joined at \(01^m\) in that two-run orbit.
+
+We recall the orbit weights used in this traversal. Each even-run orbit is complement-fixed, balanced, and of length at most \(2m\); an odd-run orbit has length at most \(m\). The total first-bit and last-bit weights of any full orbit coincide, since the last bit of a state becomes the first bit after \(m\) applications of \(J\). Apart from the root and the two-run orbit, every subtree has the weight of its own orbit: at an odd-run parent the even-run children have weight zero, and at an even-run parent the odd-run children pair by complementation and have opposite weights. Claim~33 gives the common parent and the order, with the zero-start minimum run encoding first, including when the other child is special. An orbit equal to its complement is itself balanced. The only nonzero extra term is \(+1\) from \(1^n\) at the two-run orbit, canceled by the root emission. These statements about subtree weights follow by induction on the height.
+
+\paragraph{Negative witness.}
+Let \(t=\lfloor(m-1)/2\rfloor\) and take the state \(u=0\,1^t0^{m-t}\).
+The zero-start three-run children of the two-run orbit, whose minimum run encoding is \((1,m)\), have minimum encodings \((1,s,m-s)\) for \(1\le s\le\lfloor m/2\rfloor\). The children with \(s<m/2\) are primitive, of weight \(2s-m\), and join at advance \(s\) by equation~(4). Their complements are special and join at advance \(m-s\) by Case~1 of Section~11. The equal split, when it occurs, is balanced and joins no earlier than advance \(m/2\). The extra singleton joins at advance \(m\).
+
+The representative of the two-run orbit is \(10^m\), so its first \(m\) last-bit emissions are ones. By the time the child with split \(t\) is entered, the signed prefix therefore equals
+\[
+   -1+t+\sum_{s=1}^{t-1}(2s-m).
+\]
+The joining representative of that child is \(1\,0^{m-t}1^t\). Its first \(m-t\) own last-bit emissions are zeros, and \(u\) is reached at the last of those advances. Any completed child subtrees along these advances are even-run and balanced. Hence the signed prefix at \(u\) is
+\[
+   -1+t+\sum_{s=1}^{t-1}(2s-m)-(m-t)
+   =-1-t(m-1-t).
+\]
+
+\paragraph{Positive witness.}
+Let \(a=\lfloor(m-3)/2\rfloor\), \(b=m-2-a\), and take
+\(w=101\,0^a1^b\).
+The branch to this state first passes through the root, the two-run orbit, the zero-start three-run orbit with minimum encoding \((1,1,m-1)\), and the four-run orbit \(C\) with minimum encoding \((1,1,1,m-2)\). These first three joins occur at the first visited state of the respective parent: for the third join, the representative \(1\,0^{m-1}1\) of the three-run orbit advances to \(0^{m-1}10\), which is the first-bit flip of the representative \(1\,0^{m-2}10\) of \(C\). The last-bit weights of the three ancestors are \(-1,+1,-1\), so their net contribution is \(-1\).
+
+The ordinary parent map in Section~11 merges the last two parts of the minimum encoding. The five-run children of \(C\) thus have minimum encodings
+\[
+  (1,1,1,s,m-2-s),\qquad 1\le s\le m-4,
+\]
+each in both polarities. Indeed the inverse splits with last part at least \(2\) are already minimum; the inverse candidate with last part \(1\) rotates to the case \(s=1\). The core \((1,1,s,m-2-s)\) is neither constant nor a square, because its last entry is at least \(2\). Hence there is no nontrivial cyclic period in the runs or the bits, and the odd-run orbit has length \(m\). The special parent formula \((1,x^{z-1},y+x)\) of Section~11 forces \(z=3\), \(x=1\), and \(y=m-3\) for this parent. Thus the only special child is the one-start version of \(s=1\).
+
+The zero-start children join at advances \(s\) and have weights \(2s-m+2\); these sum to \(-(m-4)\). The special complement joins at advance \(m-3\) and has weight \(m-4\). The other one-start children join at advances \(m+s\) and have weights \(m-2-2s\). The target state \(w\) belongs to the one-start child at \(s=a\), which is ordinary since \(m\ge9\).
+
+The first \(m\) last-bit emissions in \(C\) have weight \(m-2\): for an even-run orbit \(J^m\) complements the state, so these bits are the complement of the last \(m\) bits of \(1\,0^{m-2}10\). The next \(a\) emissions are zeros. Inside the target child, the ordinary representative is \(0\,1^b0\,1\,0^a\), and its first \(b\) own last-bit emissions are ones, with \(w\) reached at advance \(b\). Any intervening completed even-run child subtrees have weight zero. Thus the signed prefix at \(w\) is
+\[
+   -1+(m-2)-a+b+\sum_{s=2}^{a-1}(m-2-2s)
+   =1+a(m-3-a).
+\]
+The difference between the two witnessed values gives the displayed lower bound.
+
+\paragraph{Matching leading upper bound.}
+For any even-run orbit \(E\), write its minimum run encoding as
+\((1,r_1,\ldots,r_k)\), where \(k\) is odd and \(\sum_jr_j=m\). Set
+\[
+   L=r_k,\qquad B=\sum_{\substack{1\le j<k\\j\ \mathrm{odd}}}r_j.
+\]
+A zero-start odd-run child is ordinary and splits \(L\) into \((s,L-s)\); its join is at advance \(s\) by equation~(4). At most one such child can use each \(s\). Its signed orbit weight is
+\[
+   c_s[2(B+s)-m],\qquad 0<c_s\le1.
+\]
+Indeed deleting the final zero from the minimum word gives an \(m\)-bit period with \(B+s\) ones. If the primitive orbit length is \(d\mid m\), the factor is \(c_s=d/m\). Complement pairs with both children completed contribute zero; if exactly one is completed, it is the zero-start member by Claim~33. Self-complementary orbits likewise contribute zero.
+
+For any prefix cut, follow the active branch through the nested traversal. At an even orbit with a later even descendant on this branch, its active odd child is internal and has a zero-start minimum representative by Claim~31. Write \(t\) for its join advance. Completed unmatched siblings there use only indices \(B+s\) with \(s<t\). On the next two links the final part \(L\) splits into \((t,L-t)\), then \(L-t\) splits again. Thus the next even orbit has its parameter \(B\) increased by \(t\). The index bands at successive even levels are consequently disjoint. At the last even orbit the cut may be in either half of its orbit or inside a terminal odd child, but each unmatched pair still supplies a distinct index \(B+s\) at that final level. All used indices lie between \(1\) and \(m-1\).
+
+The completed-sibling contribution, excluding the isolated singleton \(1^n\), is therefore a sum of distinct entries of the list
+\[
+    2i-m,\qquad 1\le i\le m-1,
+\]
+each multiplied by a factor in \([0,1]\). Its magnitude is at most \(\lfloor(m-1)^2/4\rfloor\), the sum of the positive entries and the negative of the sum of the negative entries. There is no contribution from completed even-run siblings at odd-run levels.
+
+Finally the number of own emissions up to the join on each nonroot internal descent is the decrease of \(L\), including a descent from an odd parent to an even child, by equation~(4). These advances along the active branch total at most \(m\), apart from the root. At the terminal end of the branch there can be one remaining partial orbit or a partial orbit followed by a join into a leaf and a partial traversal of that leaf. Each such orbit piece has signed weight at most \(m\) in magnitude: an odd orbit has length at most \(m\), and a balanced even orbit of length at most \(2m\) has at most \(m\) bits of either sign. Including the root and singleton exceptions, the magnitude of any signed prefix is bounded by
+\[
+    \left\lfloor\frac{(m-1)^2}{4}\right\rfloor+3m+2.
+\]
+The range of signed prefix weights equals cyclic discrepancy because the whole sequence is balanced. The upper bound together with the two witnessed values proves the claimed asymptotics.
+\end{proof}
+
+The proof does not assert that the two exhibited prefixes are global extrema. The matching exact upper bound for the quarter-square formula remains separate.
+
+\begin{thebibliography}{4}
+\bibitem{AE} T. van Aardenne-Ehrenfest and N. G. de Bruijn, Circuits and trees in oriented linear graphs, Simon Stevin 28 (1951), 203--217. \href{https://pure.tue.nl/ws/files/3311129/597493.pdf}{Author archive}.
+\bibitem{GabricSawada} D. Gabric and J. Sawada,
+Investigating the discrepancy property of de Bruijn sequences,
+\emph{Discrete Mathematics} 345 (2022), 112780.
+\href{https://doi.org/10.1016/j.disc.2021.112780}{doi:10.1016/j.disc.2021.112780}.
+\bibitem{ABM} P. Alvarez et al.,
+De Bruijn sequences with minimum discrepancy,
+\href{https://arxiv.org/abs/2407.17367}{arXiv:2407.17367}.
+\bibitem{SalaSawadaAlhakim} E. Sala, J. Sawada and A. Alhakim, Efficient constructions
+of the Prefer-same and Prefer-opposite de Bruijn sequences.
+\href{https://arxiv.org/abs/2010.07960}{arXiv:2010.07960v2}.
+\end{thebibliography}
+
+\appendix
+\section{Embedded reproducibility script}
+The following Python~3 listing is included in both this PDF and
+its single \LaTeX{} source; no external code file is needed to
+compile. Copy from the line marked \verb|# BEGIN PYTHON| through
+\verb|# END PYTHON| to run it. In the source, these markers also
+bound the literal code inside the verbatim environment. The
+script uses only the Python standard library. It computes exact
+binary maximizer counts through order nine using integer
+determinants; independently enumerates cyclic binary words
+through order five; checks the positive window-weight identity
+through order 200; and tests the constructive theorem for 90
+triples \((q,n,\lambda)\). The finite tests are not hypotheses
+in any of the proofs.
+
+{\small
+\begin{verbatim}
+# BEGIN PYTHON
+from collections import Counter, defaultdict
+from itertools import accumulate, combinations, product
+from math import comb
+def det(a):
+    a=[list(r) for r in a]
+    n=len(a); previous=sign=1
+    if not n: return 1
+    for k in range(n-1):
+        if a[k][k]==0:
+            i=next((i for i in range(k+1,n) if a[i][k]),None)
+            if i is None: return 0
+            a[i],a[k]=a[k],a[i];sign=-sign
+        pivot=a[k][k]
+        for i in range(k+1,n):
+            for j in range(k+1,n):
+                v=a[i][j]*pivot-a[i][k]*a[k][j]
+                assert v%previous==0
+                a[i][j]=v//previous
+        for i in range(k+1,n): a[i][k]=0
+        previous=pivot
+    return sign*a[-1][-1]
+
+def trees(edges,root):
+    vertices=sorted({w for e in edges for w in (e[:-1],e[1:])}-{root})
+    ix={v:i for i,v in enumerate(vertices)}
+    A=[[0]*len(ix) for _ in ix]
+    for e in edges:
+        a,b=e[:-1],e[1:]
+        if a!=root:
+            A[ix[a]][ix[a]]+=1
+            if b!=root: A[ix[a]][ix[b]]-=1
+    return det(A)
+
+def count(n):
+    h=n//2; u=(0,)*h+(1,)*(h-1);v=(1,)*h+(0,)*(h-1)
+    words=list(product((0,1),repeat=n))
+    P=[e for e in words if sum(e)>h]
+    M=[e for e in words if sum(e)<h]
+    zero={e for e in words if sum(e)==h}
+    o={e[:-1]:e for e in zero}
+    arcplus=[];arcminus=[]
+    for a,b,arc in [(u,v,arcplus),(v,u,arcminus)]:
+        while a!=b:
+            e=o[a];arc.append(e);zero.remove(e);a=e[1:]
+    cycles=[]
+    while zero:
+        e=min(zero); cyc=[]
+        while e in zero:
+            zero.remove(e);cyc.append(e);e=o[e[1:]]
+        cycles.append(cyc)
+    ans=0
+    for signs in product((0,1),repeat=len(cycles)):
+        plus=P+arcplus+sum((c for c,b in zip(cycles,signs) if b),[])
+        minus=M+arcminus+sum((c for c,b in zip(cycles,signs) if not b),[])
+        ans+=trees(plus,v)*trees(minus,u)
+    return len(cycles),ans
+
+def odd(n):
+    if n==1: return 1
+    h=n//2; u=(0,)*h+(1,)*h;v=(1,)*h+(0,)*h
+    def path(x,a):
+        es=[]
+        for _ in range(h):
+            e=x+(a,);es.append(e);x=e[1:]
+        return es
+    rm=path(u,0);rp=path(v,1)
+    p=[];m=[]
+    for e in product((0,1),repeat=n):
+        (p if sum(e)>h else m).append(e)
+    pp=[e for e in p if e not in rp];mm=[e for e in m if e not in rm]
+    right=trees(mm,u)
+    t=trees(p+rm,v)*right
+    d=trees(pp,v)*right
+    return 2*(t-d)
+
+def cycles(n):
+    N=1<<n
+    # Every cycle has a unique rotation beginning with n zeros.
+    x=[0]*n
+    def dfs(state,used):
+        if len(x)==N+n-1:
+            if state==0 or not any(x[N:]):
+                assert not any(x[N:])
+                yield x[:N]
+            return
+        for bit in ((0,) if len(x)>=N else (0,1)):
+            nxt=((state<<1)|bit)&(N-1)
+            if (used>>nxt)&1:
+                continue
+            x.append(bit)
+            yield from dfs(nxt,used|(1<<nxt))
+            x.pop()
+    yield from dfs(0,1)
+
+def construct(q,n,m):
+    w=(1,-1)+(0,)*(q-2)
+    sides=[defaultdict(list) for _ in range(2)]
+    for x in product(range(q),repeat=n):
+        sides[sum(w[i] for i in x)<0][x[:-1]].extend([x]*m)
+    h=n//2
+    v=(1,)*h+(0,)*(n-1-h)
+    def tour(adj):
+        vertices=[v]; edges=[]; out=[]
+        while vertices:
+            if adj[vertices[-1]]:
+                e=adj[vertices[-1]].pop()
+                vertices.append(e[1:]); edges.append(e)
+            else:
+                vertices.pop()
+                if edges: out.append(edges.pop())
+        assert not any(adj.values())
+        return [e[0] for e in reversed(out)]
+    return tour(sides[0])+tour(sides[1])
+
+def actual(s,q):
+    out=0
+    for a,b in combinations(range(q),2):
+        lo=hi=p=0
+        for j in s:
+            p+=(j==a)-(j==b);lo=min(lo,p);hi=max(hi,p)
+        assert p==0
+        out=max(out,hi-lo)
+    return out
+
+def formula(q,n,m):
+    c=Counter({0:1})
+    for _ in range(n-1):
+        d=Counter()
+        for j,a in c.items():
+            d[j-1]+=a;d[j]+=a*(q-2);d[j+1]+=a
+        c=d
+    return n//2+m*(c[0]+c[1])
+
+def verify():
+    expected_counts = [1, 1, 2, 8, 224, 688128, 573839507456,
+                       13597685034110153948947021824,
+                       242932124056789082907963226271448692778404251640528896]
+    for n, expected_count in enumerate(expected_counts, 1):
+        k = odd(n) if n % 2 else count(n)[1]
+        assert k == expected_count
+        print("binary maximizers", n, k, flush=True)
+    for n in range(1, 6):
+        N = 1 << n
+        expected = comb(n-1, n//2) + n//2
+        num = extremizers = 0
+        for w in cycles(n):
+            assert len({tuple((w+w)[i:i+n]) for i in range(N)}) == N
+            H = [0, *accumulate(2*x-1 for x in w)]
+            assert H[-1] == 0
+            def F(i): return H[i % N]
+            lo, hi = H.index(min(H)), H.index(max(H))
+            hi = lo + (hi-lo) % N
+            D = F(hi)-F(lo)
+            h = n//2
+            offsets = range(-h, n-h)
+            S = [F(i+n)-F(i) for i in range(N)]
+            M = n * comb(n-1, h)
+            assert sum(max(0, v) for v in S) == M
+            T = sum(F(hi+j)-F(lo+j) for j in offsets)
+            assert T == sum(S[i % N] for i in range(lo-h, hi-h))
+            assert n*D-2*sum(map(abs, offsets)) <= T <= M
+            assert D <= expected
+            num += 1
+            extremizers += D == expected
+        assert num == 2**(2**(n-1)-n)
+        assert extremizers == expected_counts[n-1]
+        print("exhaustive", n, num, extremizers, flush=True)
+    for n in range(1, 201):
+        h = n//2
+        positive = sum((2*j-n)*comb(n,j) for j in range(h+1,n+1))
+        assert positive == n*comb(n-1,h)
+    print("Binary positive window-weight identity: orders 1--200.")
+    tested = 0
+    for q in range(2,7):
+        for n in range(1,7):
+            for m in (1,2,3):
+                s = construct(q,n,m)
+                p = len(s)
+                windows = Counter(tuple(s[(i+j) % p] for j in range(n))
+                                  for i in range(p))
+                assert p == m*q**n and len(windows) == q**n
+                assert set(windows.values()) == {m}
+                assert actual(s,q) == formula(q,n,m)
+                tested += 1
+    print("Exact coverage and extremality:", tested, "parameter triples.")
+    print("Ternary maxima:", [formula(3,n,1) for n in range(1,7)])
+
+if __name__ == "__main__":
+    verify()
+# END PYTHON
+\end{verbatim}
+}
+\subsection{Verified run output}
+{\small
+\begin{verbatim}
+binary maximizers 1 1
+binary maximizers 2 1
+binary maximizers 3 2
+binary maximizers 4 8
+binary maximizers 5 224
+binary maximizers 6 688128
+binary maximizers 7 573839507456
+binary maximizers 8 13597685034110153948947021824
+binary maximizers 9 242932124056789082907963226271448692778404251640528896
+exhaustive 1 1 1
+exhaustive 2 1 1
+exhaustive 3 2 2
+exhaustive 4 16 8
+exhaustive 5 2048 224
+Binary positive window-weight identity: orders 1--200.
+Exact coverage and extremality: 90 parameter triples.
+Ternary maxima: [1, 3, 6, 15, 37, 99]
+\end{verbatim}
+}
+
+\section{Independent greedy verification}
+The following code directly implements the two greedy rules
+in \cite[Section 1]{SalaSawadaAlhakim}, not their register successors.
+The output columns are \(n\), Prefer-same, Prefer-opposite.
+{\small
+\begin{verbatim}
+def greedy(n, same):
+    N = 1 << n
+    mask = N - 1
+    alt = sum(1 << i for i in range(1, n-1, 2))
+    root = (alt << 1) | 1 if same else 0
+    x = root
+    seen = bytearray(N)
+    H = low = high = 0
+    for i in range(N):
+        assert not seen[x]
+        seen[x] = 1
+        H += 2 * (x >> (n-1)) - 1
+        low, high = min(low,H), max(high,H)
+        b = (x & 1) if same else 1 ^ (x & 1)
+        if not same and x & (mask >> 1) == mask >> 1: b = 0 if seen[mask] else 1
+        y = ((x << 1) | b) & mask
+        x = y ^ 1 if seen[y] else y
+    assert H==0 and all(seen)
+    return high-low
+for n in (6,8,10,13,16,18):
+    print(n, greedy(n,True), greedy(n,False))
+\end{verbatim}
+\begin{verbatim}
+6 8 10
+8 14 17
+10 24 27
+13 43 52
+16 68 87
+18 88 115
+\end{verbatim}
+}
+
+\section{Exact witness and finite extremum checks}
+The following Python~3 code checks the two explicit signed witnesses
+by direct greedy generation in the original last-bit rotation.
+The final column reports whether, at that particular tested order,
+their values also equal the two global extrema. Neither the numerical
+check nor its order range is used in the proofs.
+{\small
+\begin{verbatim}
+"""Verify Prefer-opposite witnesses and extrema at finite binary orders."""
+import argparse
+
+
+def verify_order(n):
+    if n < 10:
+        raise ValueError("the witness formulas require n >= 10")
+    m = n - 1
+    t = (m - 1) // 2
+    a = (m - 3) // 2
+    b = m - 2 - a
+    u = int("0" + "1" * t + "0" * (m - t), 2)
+    w = int("101" + "0" * a + "1" * b, 2)
+
+    N = 1 << n
+    mask = N - 1
+    seen = bytearray(N)
+    state = total = lo = hi = 0
+    negative = positive = None
+    for _ in range(N):
+        if seen[state]:
+            raise ValueError(f"early repeated window at order {n}")
+        seen[state] = 1
+        total += 2 * (state & 1) - 1
+        if total < lo:
+            lo = total
+        if total > hi:
+            hi = total
+        if state == u:
+            negative = total
+        if state == w:
+            positive = total
+
+        # Visit 1^n separately after 01^(n-1); otherwise append the
+        # opposite of the current last bit when the resulting window is new.
+        if state == mask >> 1:
+            state = mask
+        else:
+            nxt = ((state << 1) & mask) | ((state & 1) ^ 1)
+            state = nxt ^ 1 if seen[nxt] else nxt
+
+    if state != 0 or total != 0:
+        raise ValueError(f"cycle failed to close or balance at order {n}")
+    target = (-1 - (n - 2) ** 2 // 4, 1 + (n - 4) ** 2 // 4)
+    if (negative, positive) != target:
+        raise ValueError(f"witness formula mismatch at order {n}")
+    return n, negative, positive, lo, hi, hi - lo, (lo, hi) == target
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("first", nargs="?", type=int, default=10)
+    parser.add_argument("last", nargs="?", type=int, default=23)
+    args = parser.parse_args()
+    if not 10 <= args.first <= args.last:
+        parser.error("require 10 <= first <= last")
+    print("n  witness-  witness+  min  max  discrepancy  match")
+    for order in range(args.first, args.last + 1):
+        print(*verify_order(order))
+\end{verbatim}
+\subsection{Verified run output}
+\begin{verbatim}
+n  witness-  witness+  min  max  discrepancy  match
+10 -17 10 -17 10 27 True
+11 -21 13 -21 13 34 True
+12 -26 17 -26 17 43 True
+13 -31 21 -31 21 52 True
+14 -37 26 -37 26 63 True
+15 -43 31 -43 31 74 True
+16 -50 37 -50 37 87 True
+17 -57 43 -57 43 100 True
+18 -65 50 -65 50 115 True
+19 -73 57 -73 57 130 True
+20 -82 65 -82 65 147 True
+21 -91 73 -91 73 164 True
+22 -101 82 -101 82 183 True
+23 -111 91 -111 91 202 True
+\end{verbatim}
+}
+
+\end{document}

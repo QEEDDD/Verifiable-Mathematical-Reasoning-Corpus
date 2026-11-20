@@ -1,0 +1,2484 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=24mm,headheight=15pt]{geometry}
+\usepackage{booktabs,array,tabularx,xcolor,fancyhdr,titlesec}
+\usepackage[colorlinks=true,linkcolor=teal!65!black,citecolor=teal!65!black,urlcolor=teal!65!black]{hyperref}
+\definecolor{ink}{HTML}{15364A}
+\definecolor{accent}{HTML}{007C78}
+\titleformat{\section}{\Large\sffamily\bfseries\color{ink}}{\thesection}{.55em}{}
+\titleformat{\subsection}{\large\sffamily\bfseries\color{accent}}{\thesubsection}{.55em}{}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\DeclareMathOperator{\conv}{conv}
+\DeclareMathOperator{\vol}{vol}
+\DeclareMathOperator{\inter}{int}
+\DeclareMathOperator{\relint}{relint}
+\newcommand{\R}{\mathbb R}\newcommand{\Z}{\mathbb Z}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\sffamily Arithmetic gaps and covering products}
+\fancyhead[R]{\small\sffamily Proof manuscript}
+\fancyfoot[L]{\footnotesize\sffamily Prepared for Keio | 20 November 2026}
+\fancyfoot[R]{\small\thepage}
+\setlength{\parindent}{1.1em}\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}\raggedbottom
+\hypersetup{pdftitle={Arithmetic Gaps, Exact Minima, and Covering Products},pdfauthor={Research manuscript prepared for Keio}}
+
+
+\begin{document}
+\thispagestyle{empty}
+\noindent{\sffamily\small\bfseries\color{accent}
+GEOMETRY OF NUMBERS | NEW TRANSFERS FROM VMRC [200]}\par\bigskip
+\noindent{\sffamily\bfseries\fontsize{25}{29}\selectfont\color{ink}\raggedright
+Arithmetic Gaps, Exact Minima,\\
+and Covering Products\par}
+\medskip
+\noindent{\large\sffamily Four additional results from the\\
+Verifiable Mathematical Reasoning Corpus}\par
+\bigskip
+\noindent Research manuscript prepared for Keio\hfill 20 November 2026
+\bigskip
+\begin{abstract}
+We transfer several elementary certificate mechanisms from the corpus
+to problems left open by the preceding lattice-covering notes.
+A residue deficit at the jump events of a fractional-part flow gives
+an arithmetic improvement involving
+$\sum_j\gcd(Q,q_j)$ for a positive simplex relation $q$.
+It proves the numerical interior-point conjecture for all non-hollow
+lattice simplices of prime normalized volume, with no collinearity
+assumption, and gives the exact radius for every relation
+$(1^k,a^\ell)$. These include infinite families in the previously
+untreated two-interior-point regime.
+For arbitrary real $0<a\le b$, $c\ge2b$, and every $n\ge2$, we
+determine $\mu_2(S_n(a,b,c,\ldots,c))$ by an explicit maximum of
+$n-1$ expressions; a circular pigeonhole argument makes this finite
+formula sharp in the given ambient dimension.
+We prove supermultiplicativity of the covering product under arbitrary
+convex coordinatewise-monotone combinations of factor gauges, extending
+both free sums and Cartesian products.
+Finally, every extremal non-hollow $d$-polytope has at most $d!$
+last-covered classes in its lattice torus, with equality precisely
+for the standard terminal simplex. Nonsimplicial polytopes have the
+sharp stronger bound $(d-1)!$. A recursive finite certificate decides
+extremality for every non-hollow lattice polytope.
+Complete proofs and explicit remaining limitations are supplied.
+\end{abstract}
+\vfill
+\noindent\begin{minipage}{\linewidth}\small
+\textbf{Status and scope.} This is a new research note, separate from
+the preceding 23-, 27-, and 15-page notes. The unrestricted numerical
+interior-point conjecture and covering-product conjecture remain
+unresolved here. The finite equality test is distinguished from a
+geometric classification, and the three-weight formula is stated with
+its actual parameter restriction. Proofs, independent mathematical
+checks, and exact arithmetic examples support the statements below;
+external specialist review and historical priority are separate matters.
+\end{minipage}
+\clearpage
+\tableofcontents
+\clearpage
+
+\section{Results, conventions, and the transfer map}
+
+For a full-dimensional compact convex body $K\subset\R^d$ and a
+full-rank lattice $\Lambda$, let
+\[
+ \mu(K,\Lambda)=\inf\{t\ge0:tK+\Lambda=\R^d\}.
+\]
+The $i$th covering minimum is the least dilation whose lattice
+translates meet every affine subspace of codimension $i$. We use
+its standard rational-quotient characterization \cite{CSS,Krivokuca}:
+\[
+ \mu_i(K,\Lambda)=\sup_A\mu(AK,A\Lambda),
+\]
+where $A$ has rank $i$ and lattice-rational kernel. All section and
+quotient lattices are the actual induced lattices. A non-hollow
+lattice polytope has at least one interior lattice point.
+
+Write $h=|\operatorname{int}P\cap\Lambda|$. The numerical part of
+Codenotti--Santos--Schymura Conjecture D is \cite{CSS}
+\begin{equation}\label{intro:D}
+ \mu(P,\Lambda)\le\frac{d-1}{2}+\frac1{h+1}.
+\end{equation}
+For a general convex body, Conjecture F is \cite{GMS,CSS}
+\begin{equation}\label{intro:F}
+ \mathcal F_d(K,\Lambda):=
+ \frac{\operatorname{vol}_d(K)}{\det\Lambda}
+       \prod_{i=1}^{d}\mu_i(K,\Lambda)
+ \ge\frac{d+1}{2^d}.
+\end{equation}
+Here $\operatorname{vol}_d/\det\Lambda$ is the ordinary
+lattice-normalized Euclidean volume. By contrast, the
+\emph{normalized volume of a lattice simplex} in the prime-volume
+result is $d!\operatorname{vol}_d/\det\Lambda$, so a unimodular
+simplex has normalized volume one.
+
+For positive real weights define
+\[
+ S_n(\omega_0,\ldots,\omega_n)=
+ \operatorname{conv}(-\omega_0\mathbf1_n,\omega_1e_1,\ldots,\omega_ne_n),
+ \qquad T_n=S_n(1,\ldots,1).
+\]
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.15\linewidth}
+ >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+Target & Result established in this note & Remaining limitation\\
+\midrule
+D & Prime-volume simplices; coprime relation numerators; exact radii for
+$(1^k,a^\ell)$ & Arbitrary polytopes and all of the two-point regime\\
+Weighted $\mu_2$ & Every $S_n(a,b,c,\ldots,c)$ with $0<a\le b$ and $c\ge2b$ &
+Arbitrary independent weights, $b<c<2b$, and higher indices\\
+F & Arbitrary monotone gauge combinations; every combination of planar
+bodies and intervals & General bodies without this structure\\
+Equality in A & Sharp deep-hole counts and a finite test for every polytope &
+A geometric list of all extremal polytopes\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Which corpus mechanisms are actually transferred}
+
+We inspected the corpus at revision
+\texttt{ac1492a50784be919fe0b5e8f19f96f8d221a22e}, also confirmed
+as its current main revision during this work. The transfers use
+specific arguments rather than assuming unrelated corpus claims.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.19\linewidth}
+ >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}X@{}}
+\toprule
+Corpus source & Mechanism read & New use here\\
+\midrule
+\texttt{[030]} & Endpoint-aware finite sawtooth distribution &
+Arithmetic deficits at the events of [200]\\
+\texttt{[029]}, \texttt{[215]} & Torus pigeonhole returns; weighted partition of phases &
+Exact two-event placement and the $n-1$ multiplicity bound\\
+\texttt{[185]}, \texttt{[123]} & Nonnegative local packing certificates; beta-integral
+and gamma-factor comparisons &
+Permutation-simplex packing and gauge-product inequalities\\
+\texttt{[041]} & Conditional finite states composed through fibers &
+Recursive lifting of extremal deep-hole states\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The finite ingredients needed in the new geometry are proved explicitly
+below. The cited corpus mechanisms are documented in
+\cite{Corpus030,Corpus029,Corpus215,Corpus185,Corpus123,Corpus041};
+their other research claims are not premises. The basic flow and
+non-hollow bound of \cite{VMRC200}, the earlier simplex congruence
+criterion, and the earlier one-small-column lemma are reproduced
+as inputs, not counted as additional results.
+
+
+\section{Covering tools used in the proofs}
+
+\begin{lemma}[Weighted fractional-part descent]\label{base:flow}
+Let $q_j$ be positive integers, $c_j>0$, and $t_j\in\R$. Put
+$C=\sum_jq_jc_j$ and $F(s)=\sum_jc_j\{t_j+sq_j\}$. Then
+\[
+ \min_s F(s)\le
+ \frac12\sum_jc_j-\frac{\sum_jq_jc_j^2}{2C}.
+\]
+\end{lemma}
+\begin{proof}
+Between its finitely many events on a period, $F$ has slope $C$;
+its mean is $\frac12\sum_jc_j$. At an event $e$ let $J_e$ be
+the total downward jump and let $F(e)$ be the post-jump value.
+Integrating the continuous derivative of $F^2$, and adding its
+jumps, gives
+\[
+ \frac1C\sum_eJ_eF(e)
+ =\frac12\sum_jc_j-\frac1{2C}\sum_eJ_e^2.
+\]
+Here $\sum_eJ_e=C$ and
+$\sum_eJ_e^2\ge\sum_jq_jc_j^2$, since simultaneous positive
+jumps only increase their squared total. The minimum is at most
+the weighted average on the left.
+\end{proof}
+
+\begin{proposition}[Primitive-direction simplex bound]\label{base:simplex}
+Let $S=\conv(v_0,\ldots,v_r)$ contain zero relatively internally,
+write $v_j=\lambda_j u_j$ with $u_j$ primitive in its ambient lattice
+and $\lambda_j>0$, and let $\alpha_j$ be the barycentric coordinates
+of zero. Then
+\[
+ \mu(S)\le\frac12\sum_{j=0}^{r}\frac{1-\alpha_j}{\lambda_j}.
+\]
+\end{proposition}
+\begin{proof}
+The integer directions have a positive integer relation $q$.
+Put $c_j=1/\lambda_j$ and $C=\sum_jq_jc_j$; then
+$\alpha_j=q_jc_j/C$. Given $x=\sum_j t_j u_j$, subtract the lattice
+vector $\sum_j\lfloor t_j+sq_j\rfloor u_j$. The remainder is
+$\sum_jc_j\{t_j+sq_j\}v_j$, a nonnegative combination of the vertices.
+Lemma~\ref{base:flow} bounds its coefficient sum by
+$\frac12\sum_j(1-\alpha_j)c_j$. This proves the covering bound.
+Only membership of the directions in the lattice is required, not
+generation of that lattice.
+\end{proof}
+
+\begin{lemma}[Section and quotient]\label{base:section}
+If $0\in\operatorname{int}K$ and $L$ is a lattice-rational linear
+subspace with quotient map $\pi$, then
+\[
+ \mu(K,\Lambda)\le
+ \mu(K\cap L,\Lambda\cap L)+\mu(\pi K,\pi\Lambda).
+\]
+\end{lemma}
+\begin{proof}
+Choose $a,b$ strictly above the two radii. For any $x$, use the
+quotient covering to find $z\in\Lambda$ and $y\in bK$ with
+$\pi(x-z)=\pi y$. Cover $x-z-y\in L$ by a translate of
+$a(K\cap L)$ with a vector $w\in\Lambda\cap L$.
+Then $x-z-w\in bK+aK=(a+b)K$. Let $a,b$ decrease to the radii.
+\end{proof}
+
+\begin{proposition}[Previously established non-hollow bound]\label{base:nonhollow}
+Every non-hollow lattice $d$-polytope satisfies $\mu(P,\Lambda)\le d/2$.
+\end{proposition}
+\begin{proof}
+Translate an interior lattice point to zero and choose a minimal set
+of vertices whose convex hull contains zero. Its hull is a simplex
+$S$ of dimension $r\ge1$ with zero in its relative interior.
+Every primitive length of its lattice vertices is at least one,
+so Proposition~\ref{base:simplex} gives $\mu(S)\le r/2$.
+If $r=d$, inclusion proves the result. Otherwise its rational span
+$L$ has section radius at most $r/2$, and the quotient $\pi P$ is
+a non-hollow lattice polytope of dimension $d-r$. Induction and
+Lemma~\ref{base:section} give $r/2+(d-r)/2$.
+\end{proof}
+
+\begin{proposition}[Established weighted terminal radius]\label{base:weighted}
+For positive real weights,
+\[
+ \mu(S_d(\omega),\Z^d)=
+ B(c):=\frac{\sum_{j<k}c_jc_k}{\sum_jc_j},
+ \qquad c_j=1/\omega_j.
+\]
+\end{proposition}
+\begin{proof}
+This is the formula of \cite[Theorem 1.4]{CSS}. For completeness,
+the directions $-\mathbf1_d,e_1,\ldots,e_d$ generate $\Z^d$ and
+have relation $(1,\ldots,1)$. The same coefficient minimization
+as in Lemma~\ref{eq:deep}, with weights $c_j$, gives the exact
+distance $\min_s\sum_jc_j\{t_j+s\}$. Its upper bound from
+Lemma~\ref{base:flow} is $B(c)$. For the reverse inequality,
+arrange its $d+1$ events in a cyclic order with a gap
+$c_j/\sum_kc_k$ preceding the jump of weight $c_j$. These gaps
+sum to one. Every rise is cancelled by the following jump, so
+all post-jump values coincide. The jump identity gives their
+common value $B(c)$, proving equality.
+\end{proof}
+
+
+\begin{lemma}[Exact flow distance in the vertex lattice]\label{base:exactflow}
+Let $u_0,\ldots,u_r$ span an $r$-dimensional space and have positive
+primitive relation $q$. Put $\Gamma=\sum_j\mathbb Zu_j$ and
+$S=\operatorname{conv}(\lambda_0u_0,\ldots,\lambda_ru_r)$,
+$\lambda_j>0$. For $x=\sum_jt_ju_j$,
+\[
+ \rho_{S,\Gamma}(x)=
+ \min_s\sum_j\lambda_j^{-1}\{t_j+sq_j\}.
+\]
+\end{lemma}
+\begin{proof}
+Rounding the coefficients down supplies the upper bound. Conversely,
+every lattice vector is $\sum_jn_ju_j$, $n_j\in\mathbb Z$, and every
+nonnegative coefficient representation of $x-\sum_jn_ju_j$ in the
+directions $u_j$ has coefficients $t_j-n_j+sq_j$. Each such
+coefficient is at least its fractional part. Dividing by $\lambda_j$
+and summing proves the lower bound.
+\end{proof}
+
+\begin{lemma}[Simplex tightness]\label{base:tight}
+Every simplex $S$ is tight for every lattice: if a convex body
+$K$ strictly contains $S$, then $\mu(K)<\mu(S)$.
+This also applies to nonlattice super-bodies.
+\end{lemma}
+\begin{proof}
+This is \cite[Lemma 2.7]{CSS}; we recall the argument.
+At any point last covered by $\mu(S)S$, each facet of the simplex
+is needed: otherwise all covering translates through that point
+would lie in the $r$ half-spaces through the point coming from
+the other facets. Their $r$ normals are independent, so these
+half-spaces cannot cover a neighborhood, a contradiction.
+Equivalently, every facet has a lattice translate whose relative
+interior contains the point.
+
+If $K$ strictly contains $S$, some facet of $S$ has its relative
+interior in the interior of $K$. Its needed translate then puts
+every old last-covered point in the interior of $\mu(S)K$.
+All other points were already interior-covered at that scale.
+Compactness of the lattice torus and continuity of the lattice
+distance therefore give $\mu(K)<\mu(S)$.
+\end{proof}
+
+
+\section{Arithmetic event deficits and new interior-point families}
+\label{cr6d:section}
+
+The transfer used here is concrete: the finite sawtooth distribution
+and residue-permutation argument in corpus \#030
+(Lemma \texttt{p10:gn:sawtooth}, also equation
+\texttt{p11:gc:sawtooth}) is applied to the \emph{values at the jump
+events} of the covering flow in corpus \#200.  No transcendence or
+formal gamma-calculus assertion from \#030 is needed.  We prove the
+finite arithmetic ingredient directly, including the endpoints.
+The result is a quantitative improvement of the unweighted covering
+bound, rather than a new name for the already established strictness
+of that bound.
+
+\begin{lemma}[A finite residue deficit]\label{cr6d:residue}
+Let $N,Q\ge1$ be integers and $g=\gcd(N,Q)$.  Suppose that real
+numbers $X_0,\ldots,X_{N-1}$ satisfy
+\[
+ X_r-X_0\equiv \frac{Qr}{N}\pmod{\mathbb Z}.
+\]
+Then
+\[
+ \sum_{r=0}^{N-1}\bigl(X_r-\min_sX_s\bigr)\ge\frac{N-g}{2}.
+\]
+Consequently the same lower bound holds with any common lower
+bound for the $X_r$ in place of their minimum.
+\end{lemma}
+\begin{proof}
+Choose $r_0$ at which the minimum is attained.  The nonnegative
+numbers $X_r-X_{r_0}$ have fractional parts
+$\{Q(r-r_0)/N\}$.  Writing $N=gN'$ and $Q=gQ'$, with
+$\gcd(N',Q')=1$, these fractional parts run through
+$0,1/N',\ldots,(N'-1)/N'$, each exactly $g$ times.
+Their sum is $g(N'-1)/2=(N-g)/2$.  A nonnegative real number
+is at least its fractional part, proving the assertion.
+\end{proof}
+
+\begin{theorem}[Arithmetic fractional-part descent]\label{cr6d:flow}
+For positive integers $q_0,\ldots,q_r$, put
+\[
+ Q=\sum_{j=0}^r q_j,\qquad
+ G(q)=\sum_{j=0}^r\gcd(Q,q_j).
+\]
+For every real phase vector $t$,
+\begin{equation}\label{cr6d:flowbound}
+ \min_{s\in\mathbb R}\sum_{j=0}^r\{t_j+q_js\}
+ \le \frac{r-1}{2}+\frac{G(q)}{2Q}.
+\end{equation}
+This includes coincident jump events.
+\end{theorem}
+\begin{proof}
+Write $F(s)=\sum_j\{t_j+q_js\}$ and $m=\min_sF(s)$.
+Let $E$ be its distinct jump events in one period, and let
+$J_e$ be the number of coordinates jumping at $e$.  Values at
+events are the right-continuous, post-jump values.
+The square-balance identity of corpus \#200 gives
+\[
+ \sum_{e\in E}J_eF(e)
+ =\frac{Q(r+1)}2-\frac12\sum_{e\in E}J_e^2,
+ \qquad \sum_{e\in E}J_e=Q.
+\]
+Therefore
+\begin{equation}\label{cr6d:balance}
+ Q\left(\frac r2-m\right)
+ =\sum_{e\in E}J_e(F(e)-m)
+   +\frac12\sum_{e\in E}J_e(J_e-1).
+\end{equation}
+
+Fix coordinate $j$.  Its $q_j$ events may be parametrized by
+$e_{j,b}=e_{j,0}+b/q_j$, for $0\le b<q_j$, with time taken
+modulo one.  Since
+$F(s)=\sum_i t_i+Qs-\sum_i\lfloor t_i+q_is\rfloor$,
+\[
+ F(e_{j,b})-F(e_{j,0})\equiv\frac{Qb}{q_j}\pmod{\mathbb Z}.
+\]
+Lemma~\ref{cr6d:residue}, and the fact that $m$ is a lower
+bound for these event values, imply
+\[
+ \sum_{b=0}^{q_j-1}(F(e_{j,b})-m)
+ \ge\frac{q_j-\gcd(Q,q_j)}2.
+\]
+Summing in $j$ counts a shared event exactly $J_e$ times, so
+the first term on the right of \eqref{cr6d:balance} is at least
+$(Q-G(q))/2$.  The second term is nonnegative.  Rearrangement
+proves \eqref{cr6d:flowbound}.
+\end{proof}
+
+\begin{corollary}[An arithmetic covering certificate]\label{cr6d:simplex}
+Let $S=\operatorname{conv}(v_0,\ldots,v_r)$ be a lattice
+$r$-simplex with $0\in\operatorname{relint}S$, in its actual
+ambient lattice.  If its primitive positive integral relation is
+$\sum_jq_jv_j=0$, then
+\begin{equation}\label{cr6d:radius}
+ \mu(S)\le\frac{r-1}{2}+\frac{G(q)}{2Q}.
+\end{equation}
+Vertex generation of the ambient lattice is not required.
+
+More generally, suppose a lattice $d$-polytope $P$ has $h\ge1$
+interior lattice points, $0\in\operatorname{int}P$, and contains
+such a simplex $S$ in a rational section through zero.  Then
+\[
+ \mu(P)\le\frac{d-1}{2}+\frac{G(q)}{2Q}.
+\]
+In particular, the numerical interior-point bound holds whenever
+\begin{equation}\label{cr6d:criterion}
+ (h+1)G(q)\le2Q.
+\end{equation}
+\end{corollary}
+\begin{proof}
+For any $x=\sum_jt_jv_j$, the vector
+$z_s=\sum_j\lfloor t_j+q_js\rfloor v_j$ belongs to the lattice.
+The relation gives
+$x-z_s=\sum_j\{t_j+q_js\}v_j\in F(s)S$.
+Theorem~\ref{cr6d:flow} proves \eqref{cr6d:radius}.
+For the section statement, apply the section--projection
+covering inequality.  The quotient is a non-hollow lattice
+polytope of dimension $d-r$, so corpus \#200 bounds its covering
+radius by $(d-r)/2$.  Adding proves the asserted bound for $P$.
+\end{proof}
+
+\begin{remark}[Rational weighted version]\label{cr6d:weighted}
+If $c_j=\kappa n_j$ with $\kappa>0$ and positive integers $n_j$,
+put $C'=\sum_jq_jn_j$, $C=\kappa C'$, and
+\[
+ B(q,c)=\frac12\sum_jc_j-\frac{\sum_jq_jc_j^2}{2C}.
+ \]
+The same proof, applied to $F/\kappa$ at coordinate $j$'s
+events and then to the weighted square-balance identity, gives
+\[
+ \min_s\sum_jc_j\{t_j+q_js\}
+ \le B(q,c)
+ -\frac{\kappa}{2C}
+   \sum_jc_j\bigl(q_j-\gcd(C',q_j)\bigr).
+\]
+Indeed $\sum_eJ_e(F(e)-m)=
+\sum_jc_j\sum_b(F(e_{j,b})-m)$, while the cross terms in
+$\sum_eJ_e^2-\sum_jq_jc_j^2$ are nonnegative.
+This arithmetic refinement is asserted for the stated
+commensurable weights; it is not an unproved extension to
+arbitrary independent real weights.
+\end{remark}
+
+\subsection{Every non-hollow lattice simplex of prime normalized volume}
+
+\begin{lemma}[An elementary interior-volume bound]\label{cr6d:volume}
+If a lattice $d$-simplex has $h$ interior lattice points, then
+its normalized volume $V$ satisfies
+\[
+ V\ge dh+1.
+\]
+\end{lemma}
+\begin{proof}
+Start with the simplex as a triangulation, and insert its $h$
+interior lattice points one at a time by stellar subdivision.
+If a new point lies in the relative interior of an $s$-face of
+the current triangulation, $1\le s\le d$, that face is internal
+because the point lies in the interior of the original simplex.
+For $s<d$ its link is a triangulated sphere of dimension
+$d-s-1$ and has at least $d-s+1$ facets.  To see the latter
+elementary bound, fix one facet: each of its codimension-one
+faces has a distinct neighboring facet.  For a zero-dimensional
+sphere the bound says that it has at least two points.
+For $s=d$ there is one incident top-dimensional simplex.
+
+Each incident top-dimensional simplex is replaced by $s+1$
+such simplices, so the number increases by at least
+$s(d-s+1)\ge d$.  Thus the final triangulation has at least
+$dh+1$ top-dimensional simplices.  All their vertices are
+lattice points, so each has normalized volume at least one.
+Adding their volumes proves the bound.  Dimension one is the
+same argument with subintervals.
+\end{proof}
+
+\begin{theorem}[Coprime barycentric numerators]\label{cr6d:coprime}
+Let $S$ be a lattice $d$-simplex with $h\ge1$ interior lattice
+points, and translate one of them to zero.  Suppose that its
+vertices generate the ambient lattice and that the primitive
+positive relation $q$ satisfies
+\[
+ \gcd(q_j,Q)=1 \quad\hbox{for every }j,\qquad Q=\sum_jq_j.
+\]
+Then
+\begin{equation}\label{cr6d:coprimebound}
+ \mu(S)\le\frac{d-1}{2}+\frac{d+1}{2Q}
+ \le\frac{d-1}{2}+\frac1{h+1}.
+\end{equation}
+If $d\ge2$ and $h\ge2$, the last inequality is strict.
+\end{theorem}
+\begin{proof}
+The first bound follows from $G(q)=d+1$.
+For a vertex-generated lattice simplex the normalized volume
+is $Q$; the cofactor relation gives the normalized volumes of
+the cones from zero as $q_0,\ldots,q_d$, and these cones
+partition the simplex.  Lemma~\ref{cr6d:volume} gives
+$Q\ge dh+1$.  Finally
+\[
+ 2(dh+1)-(d+1)(h+1)=(d-1)(h-1)\ge0.
+\]
+This proves the second bound and the claimed strictness.
+\end{proof}
+
+\begin{corollary}[Prime normalized volume]\label{cr6d:prime}
+Every non-hollow lattice simplex of prime normalized volume $p$
+satisfies the numerical interior-point conjecture.  More precisely,
+\[
+ \mu(S)\le\frac{d-1}{2}+\frac{d+1}{2p}
+ \le\frac{d-1}{2}+\frac1{h+1}.
+\]
+The comparison with the conjectured bound is strict when
+$d\ge2$ and $h\ge2$.  No collinearity assumption on the interior
+lattice points is made.
+\end{corollary}
+\begin{proof}
+After translating an interior lattice point to zero, let
+$I$ be the index of the vertex-generated lattice.  The cofactor
+relation gives $p=IQ$, where $Q=\sum_jq_j\ge d+1>1$.
+Primality forces $I=1$ and $Q=p$.  Each $q_j$ is strictly
+between zero and $p$, so it is coprime to $p$.
+Apply Theorem~\ref{cr6d:coprime}.
+\end{proof}
+
+\begin{example}[Three noncollinear interior points]\label{cr6d:example}
+Consider
+\[
+ S=\operatorname{conv}\bigl(-(1,3,6),e_1,e_2,e_3\bigr).
+\]
+Its primitive relation is $(1,1,3,6)$, of sum $11$.
+Its interior lattice points are exactly
+\[
+ (0,0,0),\qquad (0,0,-1),\qquad (0,-1,-2),
+\]
+which are noncollinear.  To check the count directly, the first
+coordinate of an interior lattice point is zero.  Write the
+other coordinates as $-u,-v$ with nonnegative integers $u,v$.
+The barycentric inequalities become
+$3+3v>8u$ and $6+6u>5v$.
+For $u=0$ they give $v=0,1$; for $u=1$ they give $v=2$;
+and $u\ge2$ is impossible.  The new certificate gives
+\[
+ \mu(S)\le1+\frac2{11}=\frac{13}{11}
+ <\frac54=\frac{3-1}{2}+\frac1{3+1}.
+\]
+All four displayed vertices are primitive.  Thus this example
+does not enter through the earlier certificate requiring
+three nonprimitive vertices.
+\end{example}
+
+\subsection{An infinite family inside the old two-point gap}
+
+\begin{theorem}[Two repeated relation weights]\label{cr6d:family}
+Let $k,\ell,a$ be positive integers, $d=k+\ell-1$, and
+\[
+ S_{k,\ell,a}=
+ \operatorname{conv}\bigl(-(1^{\,k-1},a^{\,\ell}),
+                         e_1,\ldots,e_d\bigr)
+ \subset\mathbb R^d .
+\]
+Here the superscripts indicate repeated coordinates, including
+an empty block when $k=1$.  Set $g=\gcd(k,a)$ and
+$h=\lceil a/k\rceil$.  Then
+\begin{align}
+ |\operatorname{int}S_{k,\ell,a}\cap\mathbb Z^d|&=h,
+ \label{cr6d:count}\\
+ \mu(S_{k,\ell,a})&=
+ \frac{d-1}{2}+\frac{k+\ell g}{2(k+a\ell)}
+ \le\frac{d-1}{2}+\frac1{h+1}.
+ \label{cr6d:familybound}
+\end{align}
+For $h\ge2$ equality with the conjectured bound holds exactly
+when $\ell=1$ and $k\mid a$; in particular, it is strict for
+$\ell\ge2$.  For $h=1$, equality with $d/2$ holds exactly when
+$a\mid k$.
+\end{theorem}
+\begin{proof}
+The relation has $k$ entries equal to one and $\ell$ entries
+equal to $a$, so $Q=k+a\ell$ and
+$G(q)=k+\ell\gcd(k,a)$.  This proves the asserted upper bound.
+We next construct phases attaining it, so the radius formula
+is exact.
+
+Write $\theta_b=\{kb/a\}$ and
+\[
+ N_b=\left\lfloor\frac{(b+1)k}{a}\right\rfloor
+     -\left\lfloor\frac{bk}{a}\right\rfloor
+ \qquad (0\le b<a).
+\]
+Schedule the events of the $\ell$ frequency-$a$ coordinates at
+\[
+ e_{b,j}=\frac ba+\frac jQ,
+ \qquad 0\le b<a,\quad 0\le j<\ell.
+\]
+For each fixed $j$ these are equally spaced by $1/a$, so they
+are the events of a genuine frequency-$a$ coordinate.
+In the gap after the block with index $b$, place $N_b$
+frequency-one events at
+\[
+ u_{b,p}=\frac ba+\frac{\ell-1+p-\theta_b}{Q},
+ \qquad 1\le p\le N_b .
+\]
+Their total number is $\sum_bN_b=k$.  The first is strictly
+after $e_{b,\ell-1}$ because $1-\theta_b>0$, and the last is
+strictly before $e_{b+1,0}$ because the remaining gap is
+$(1+\theta_{b+1})/Q>0$.  If $N_b=0$ there are no intervening
+unit events.  Thus this is a simple, noncoincident event
+schedule of the required coordinates.
+
+Let $M$ denote its post-jump value at $e_{0,0}=0$.
+The slope of the flow is $Q$.  Consecutive events within each
+frequency-$a$ block are separated by $1/Q$ and have jumps
+one, so their post-jump values agree.  An induction on $b$
+shows that their common value is $M+\theta_b$.
+Every intervening unit event has post-jump value $M$:
+the waiting time to its $p$th event, measured from the last
+event of the block, is $(p-\theta_b)/Q$, and exactly $p$
+unit jumps have then occurred.  The next block has value
+$M+\theta_{b+1}$ because
+$\theta_{b+1}=\theta_b+k/a-N_b$.
+Consequently the minimum of this flow is $M$.
+
+All jumps are one.  The square-balance identity gives
+\[
+ \frac{Qd}{2}
+ =\sum_{\text{all events }e}F(e)
+ =QM+\ell\sum_{b=0}^{a-1}\theta_b
+ =QM+\frac{\ell(a-g)}2.
+\]
+Hence
+\[
+ M=\frac d2-\frac{\ell(a-g)}{2Q}
+   =\frac{d-1}{2}+\frac{k+\ell g}{2Q}.
+\]
+The vertices of $S_{k,\ell,a}$ generate $\mathbb Z^d$.
+For completeness, for a point $x=\sum_jt_jv_j$ and any
+lattice vector $z=\sum_jn_jv_j$, every nonnegative
+coefficient vector representing $x-z$ has the form
+$t-n+sq$, since the kernel of the vertex map is the line
+spanned by $q$.  Its coefficient sum is at least
+$\sum_j\{t_j+sq_j\}$.  The preceding rounding argument
+gives the converse inequality.  Thus the distance of $x$
+to the lattice is exactly the minimum of its flow.
+The constructed phases therefore attain $M$, proving the
+radius equality.
+
+An interior lattice point has zero in its first $k-1$
+coordinates, since each lies strictly between $-1$ and $1$.
+Write its other coordinates as $-n_1,\ldots,-n_\ell$ with
+nonnegative integers $n_j$.  Its coefficient at the negative
+vertex is $(1+\sum_jn_j)/Q$.  Put
+$M=\max_jn_j$ and $D=\ell M-\sum_jn_j$.
+Positivity of the coefficient at a coordinate realizing $M$
+requires
+\[
+ a(1-D)>kM.
+\]
+Hence $D=0$: all $n_j$ equal $M$.  The remaining condition is
+$kM<a$.  The interior points are therefore exactly
+$(0^{k-1},-M^\ell)$ for $0\le M<h$, proving
+\eqref{cr6d:count}.
+
+For $h=1$ the desired bound is the already proved $d/2$
+bound, and also follows from $g\le a$ in
+\eqref{cr6d:familybound}.  Suppose $h\ge2$.
+Write $k=gK$, $a=gA$, and
+$A=K(h-1)+R$ with $1\le R\le K$.  Then
+\[
+ \begin{split}
+ 2(K+\ell A)-(h+1)(K+\ell)
+ &=(h-1)\bigl((2\ell-1)K-\ell\bigr)
+       +2\ell(R-1)\\
+ &=(h-1)\bigl((\ell-1)K+\ell(K-1)\bigr)
+       +2\ell(R-1)\ge0.
+ \end{split}
+ \]
+This is precisely the comparison with the conjectured bound in
+\eqref{cr6d:familybound}.  When $h\ge2$, equality in this
+nonnegative expression forces $\ell=1$, $K=1$, and $R=1$.
+These conditions are equivalent to $\ell=1$ and $k\mid a$.
+For $h=1$, the exact radius formula equals $d/2$ if and only
+if $g=a$, equivalently $a\mid k$.
+\end{proof}
+
+\begin{remark}[Why this reaches genuinely unhandled two-point cases]
+For $k<a\le2k$, the family has exactly two interior lattice
+points.  Along their line, with primitive direction
+$u=(0^{k-1},-1^\ell)$, its section is
+\[
+ S_{k,\ell,a}\cap\mathbb Ru
+ =[-\ell^{-1}u,(a/k)u].
+\]
+Thus the notation of the earlier line method is
+$\beta=1/\ell$, $\delta=(a-k)/k$.  With
+$a=k+1$, $\ell=2$, and every $k\ge2$,
+\[
+ 2\max(\beta,\delta)=1
+ <1+\min(\beta,\delta)=1+\frac1k .
+\]
+These are exactly within the previously unhandled endpoint
+regime.  Theorem~\ref{cr6d:family} now proves the conjectured
+inequality throughout this infinite family, in dimensions
+$d=k+1$.  It gives the explicit stronger estimate
+\[
+ \mu(S_{k,2,k+1})
+ = \frac{k}{2}+\frac{k+2}{2(3k+2)}.
+\]
+For example, $k=4$, $\ell=2$, $a=5$ gives a five-dimensional
+simplex of normalized volume $14$ with exactly two interior
+lattice points and
+\[
+ \mu(S_{4,2,5})=\frac{31}{14}<\frac73
+ =\frac{5-1}{2}+\frac1{2+1}.
+\]
+\end{remark}
+
+\begin{remark}[The bridge that remains open]\label{cr6d:limit}
+The arithmetic certificate \eqref{cr6d:criterion} need not
+hold for every simplex with $h$ interior points.  For example,
+the lattice triangle with relation $(1,3,4)$ has $Q=8$,
+$h=2$, and $G=1+1+4=6$.  The resulting bound is $7/8$,
+which is larger than the conjectured $5/6$.
+The planar conjecture is known by other arguments, so this
+is a failure of the present certificate, not a counterexample.
+Neither the unrestricted numerical conjecture nor the whole
+remaining two-point endpoint regime is resolved by this section.
+\end{remark}
+
+
+% New weighted result for the sixth creative-transfer round.
+% This is an include fragment. Standard notation: \R, \Z, \conv, \mu.
+% No historical-priority claim is made.
+
+\section{Three distinct weights: an exact second covering minimum}
+\label{c6w:sec}
+
+Let
+\[
+ S_n(\omega_0,\ldots,\omega_n)
+ =\conv\{-\omega_0\mathbf1_n,\omega_1e_1,\ldots,\omega_ne_n\}.
+\]
+The previous equal-pair and one-small-weight formulas do not determine
+the case of three distinct weights.  The result below closes an infinite
+family of that case, with arbitrary real overall scale and final weight.
+
+\begin{theorem}[Three real weights in every dimension]\label{c6w:main}
+Let $n\ge2$ and let $0<a\le b$, $c\ge2b$ be arbitrary real
+numbers.  Put $A=1/a$, $B=1/b$, $C=1/c$, $T=A+B$, and
+\[
+ \varepsilon_k=\min\left\{
+ A\left\{\frac{kB}{T}\right\},\;
+ B\left(1-\left\{\frac{kB}{T}\right\}\right)\right\}.
+\]
+Then
+\begin{equation}\label{c6w:answer}
+ \boxed{\displaystyle
+ \mu_2\bigl(S_n(a,b,c,\ldots,c),\Z^n\bigr)
+ =\max_{1\le k\le n-1}
+ \left\{\frac{AB}{T}
+ +\frac{C(T-\varepsilon_k)}{T+kC}\right\}.}
+\end{equation}
+Every term in the maximum is attained by an explicit rational
+rank-two quotient.  No integrality or rationality assumption is
+made on $a,b,c$.
+\end{theorem}
+
+\begin{corollary}[A closed expression for integer weight ratios]
+\label{c6w:ratio}
+Let $m\ge2$ be an integer, $a=b/m$, and $c\ge2b$.
+For every $n\ge2$ put $h=\min\{n-1,m+1\}$.  Then
+\begin{equation}\label{c6w:ratioanswer}
+ \boxed{\displaystyle
+ \mu_2\bigl(S_n(a,b,c,\ldots,c)\bigr)
+ =\max\left\{
+ \frac{a+b+c}{ab+ac+bc},\;
+ \frac{c+b+ha}{c(a+b)+hab}
+ \right\}.}
+\end{equation}
+The first expression wins when $2b\le c\le mb$; the second
+wins when $c\ge mb$.  If $n\ge m+2$, the second expression is
+\[
+ \frac1{a+b}+\frac1{b+c}.
+\]
+The same answer holds if the weights with indices
+$2,\ldots,h+1$ are kept equal to $c$ and all later weights are
+enlarged arbitrarily.  In the coordinate branch $2b\le c\le mb$,
+only the weight with index $2$ needs to remain equal to $c$.
+\end{corollary}
+
+For example,
+\[
+ \mu_2\bigl(S_n(1,2,6,\ldots,6)\bigr)=\frac{11}{24}
+ \qquad(n\ge4).
+\]
+The coordinate projection gives only $9/20$; the exact excess is
+$1/120$.  Thus the new formula is not obtained by substituting into
+the original coordinate-projection conjecture.
+
+The proof combines the jump identity of VMRC \#200 with a finite
+placement of unequal events and a circular pigeonhole argument.
+VMRC \#029, Lemma \texttt{p03:bn:returns} (``Simultaneous returns
+of finitely many phases''), supplies the elementary torus
+pigeonhole mechanism; the one-dimensional finite form needed
+here is proved explicitly below, with a bound tied to $n$.
+The methodological comparison with
+VMRC \#215 is its reduction from continuous angles to a finite
+weighted partition.  Here the continuous phase problem is reduced
+to two item placements on a cyclic grid.  The circular pigeonhole
+step bounds the needed multiplicity by the ambient dimension; for
+integer weight ratios a residue period then removes the finite
+maximum as well.  No theorem
+about matrix spectra is used as a covering theorem.
+
+\subsection{Two unequal events on a cyclic grid}
+
+For positive real numbers $A\ge B$ and $C>0$, put $T=A+B$ and,
+for each integer $k\ge1$, define
+\begin{align}
+ x_k&=\frac{kB}{T},\qquad u_k=\{x_k\},\nonumber\\
+ \varepsilon_k&=\min\{A u_k,\, B(1-u_k)\},\label{c6w:epsilon}\\
+ R_k(A,B,C)&=\frac{AB}{T}
+       +\frac{C(T-\varepsilon_k)}{T+kC}.\label{c6w:Rk}
+\end{align}
+When $u_k=0$, formula \eqref{c6w:epsilon} gives
+$\varepsilon_k=0$.
+
+\begin{lemma}[Exact two-event placement]\label{c6w:flow}
+For all $k\ge1$,
+\begin{equation}\label{c6w:floweq}
+ \max_{t_0,t_1,t_2\in\R}\min_{s\in\R}
+ \bigl(A\{t_0+s\}+B\{t_1+s\}+C\{t_2+ks\}\bigr)
+ =R_k(A,B,C).
+\end{equation}
+Equivalently, the triangle
+\[
+ P_k(a,b,c)=\conv\{(-ka,-a),(0,b),(c,0)\},
+ \qquad (A,B,C)=(a^{-1},b^{-1},c^{-1}),
+\]
+has covering radius $R_k(A,B,C)$ with respect to $\Z^2$.
+\end{lemma}
+
+\begin{proof}
+We spell out the optimization of the previously established
+ordered-partition identity.  The identity follows by recording
+individual jumps, including a fixed order for simultaneous jumps:
+if $D=T+kC$ is the slope, $M$ is the minimum, and $H_e$ the
+formal post-jump height at a jump of size $w_e$, then
+\begin{equation}\label{c6w:deficit}
+ M=\mathcal B-\frac1D\sum_e w_e(H_e-M),
+ \qquad
+ \mathcal B=\frac{AB+(k+1)CT/2}{T+kC}.
+\end{equation}
+All post-jump excesses are nonnegative.  At coincident events the
+formal intermediate state is included, so that its contribution
+accounts for the cross term in the square of the combined jump.
+
+Rotate time so that the $C$-jumps occur at $h/k$ for
+$h=0,\ldots,k-1$.  Cyclically label the interval containing the
+$A$-jump as interval zero and the interval containing the $B$-jump
+as interval $j$, where $0\le j\le k-1$.  If both lie in the same
+interval, put $A$ before $B$: an adjacent interchange shows that
+decreasing order of jump sizes minimizes the deficit.  Indeed,
+for $A\ge B$ and any level $X$,
+\[
+ A(X-A)_++B(X-A-B)_+
+ \le B(X-B)_++A(X-A-B)_+.
+\]
+
+Let $D_h=hT/k-\sum_{r<h}W_r$, where $W_r$ is the total singleton
+weight assigned to interval $r$, and set
+$Y_h=D_h-\min_{0\le r<k}D_r$.
+The least possible deficit for this assignment is
+\begin{equation}\label{c6w:cost}
+ \mathcal T_j=C\sum_{h=0}^{k-1}Y_h
+ +\sum_{\text{singleton jumps }w\text{ in a bin}}
+      w(Y_h-\text{prefix sum through }w)_+.
+\end{equation}
+For completeness, these are lower bounds on every post-jump
+excess because elapsed time only raises the level.  They can all
+be attained: beginning a bin at excess $Y_h$, prescribe successive
+excesses $Z_r=(Y_h-\text{prefix sum through }r)_+$ and wait
+$(w_r+Z_r-Z_{r-1})/D\ge0$ before each singleton.  Before the next
+distinguished jump wait $(C+Y_{h+1}-Z_{\rm last})/D>0$.
+The total waiting time is
+$(W_h+C+Y_{h+1}-Y_h)/D=1/k$.
+At least one distinguished level is zero, and the prescription
+therefore realizes an actual minimum.  These events are exactly
+the jumps of the three fractional-part coordinates.  Their mean,
+or \eqref{c6w:deficit}, determines the additive baseline.  Thus
+minimizing \eqref{c6w:cost} gives the exact maximum in
+\eqref{c6w:floweq}, rather than merely an upper bound.
+
+For $k=1$, the deficit vanishes and the claimed answer follows
+immediately.  Suppose $k\ge2$.  Directly summing the two rising
+arithmetic progressions in the $Y_h$ gives
+\begin{equation}\label{c6w:area}
+ \sum_hY_h=\frac{T(k-1)}2-\min\{Aj,B(k-j)\}.
+\end{equation}
+This also holds for $j=0$, when both singleton events occupy the
+same interval.  More explicitly, for $1\le j\le k-1$, the two
+possible minima of $D_h$ are $T/k-A$ and $(j+1)T/k-T$;
+their difference is $B-jT/k$.
+
+The right side of \eqref{c6w:area} is minimized by one of
+$j=\lfloor x_k\rfloor,\lceil x_k\rceil$.  Both choices lie in
+$\{0,\ldots,k-1\}$, except for a redundant endpoint when $k=1$.
+For these nearest choices all singleton terms in
+\eqref{c6w:cost} vanish.  If $j\le x_k$, the only potentially
+nonzero term is $A(B-(j+1)T/k)_+$; if $j\ge x_k$, it is
+$B((j-1)T/k-B)_+$.  When $j=0$ the first expression is the
+same-bin term.  Each is zero at the appropriate nearest integer.
+Consequently
+\[
+ \min_j\mathcal T_j
+ =C\left(\frac{T(k-1)}2-M_k\right),
+ \quad
+ M_k=\max_{0\le j\le k-1}\min\{Aj,B(k-j)\}.
+\]
+The two nearest integers show
+\[
+ M_k=\frac{kAB}{T}-\varepsilon_k.
+\]
+Substitution into \eqref{c6w:deficit} yields
+\[
+ R_k=\frac{AB+C(T+M_k)}{T+kC}
+ =\frac{AB}{T}+\frac{C(T-\varepsilon_k)}{T+kC}.
+\]
+Finally the integer directions $(-k,-1),(0,1),(1,0)$ generate
+$\Z^2$ and have primitive positive relation $(1,1,k)$.
+The exact gauge identity therefore identifies this flow optimum
+with the asserted covering radius.
+\end{proof}
+
+\subsection{Eliminating all other planar relations}
+
+We use the previously proved one-small-column planar result in
+the following precise form.  For lattice directions surrounding
+zero, one column scaled by $a$ and every other column scaled by
+at least $c\ge a$ give radius at most
+\[
+ \frac{C(2A+C)}{A+2C},\qquad A=1/a,\ C=1/c.
+\]
+Its proof is the planar unimodular-cone refinement and the
+three first-event inequality.  This already established result is
+only used below for triangles having at most one small column.
+Its full proof is reproduced in Appendix~\ref{app:onesmall}.
+
+\begin{theorem}[Sharp planar envelope]\label{c6w:envelope}
+Let $0<a\le b\le c$, with $c\ge2b$, and write
+$A=1/a$, $B=1/b$, $C=1/c$.  Suppose finitely many vectors of a
+planar lattice surround zero.  Scale at most one vector by $a$,
+at most one further vector by $b$, and all the others by real
+factors at least $c$.  For their convex hull $P$,
+\begin{equation}\label{c6w:envelopeeq}
+ \mu(P)\le \max_{k\ge1}R_k(A,B,C).
+\end{equation}
+The maximum exists and the bound is attained within this class
+by one of the triangles $P_k(a,b,c)$.
+\end{theorem}
+
+\begin{proof}
+Shrink all larger multipliers to $c$.  Ignore zero columns when
+choosing a positive dependence of minimal support; removing
+them does not affect origin-interiority of the convex hull of
+the remaining columns.  In the plane the chosen support is
+either an origin-containing triangle or an opposite pair.
+
+First suppose the triangle uses both small columns.  Let
+$(p,q,\ell)$ be the primitive positive integral relation between
+the unscaled directions, with $p$ attached to weight $A$ and
+$q$ to weight $B$.  The usual rounding argument bounds its
+covering radius by the maximum over phases of
+\[
+ \min_s\bigl(A\{t_0+ps\}+B\{t_1+qs\}
+                         +C\{t_2+\ell s\}\bigr).
+\]
+This upper bound does not require the three directions to
+generate the ambient lattice.
+
+For positive integers $p,q$ and $g=\gcd(p,q)$, the exact
+two-coordinate bound is
+\begin{equation}\label{c6w:twofreq}
+ \min_s\bigl(A\{t_0+ps\}+B\{t_1+qs\}\bigr)
+ \le\frac{gAB}{pA+qB}.
+\end{equation}
+Indeed the two integer directions $q/g,-p/g$ generate $\Z$;
+the corresponding interval has length
+$q/(gA)+p/(gB)$, and its covering radius is the reciprocal
+of that length.
+
+If $p\ne q$, then $p/g,q/g$ are unequal positive integers.
+As $A\ge B$,
+\[
+ \mu\le\frac{AB}{A+2B}+C\le R_2(A,B,C),
+\]
+because
+\[
+ R_2-\left(\frac{AB}{A+2B}+C\right)
+ =\frac{(B-2C)(AB+AC+2BC)}
+ {(A+2B)(A+B+2C)}\ge0.
+\]
+If $p=q=g\ge2$, primitivity implies $\gcd(g,\ell)=1$.
+Choose a time giving the first two terms at most $AB/(A+B)$.
+The shifts by $j/g$ preserve these terms and send the last
+fractional part through a complete $g$-point grid.  One value
+is at most $1/g$.  Therefore
+\[
+ \mu\le\frac{AB}{A+B}+\frac C2\le R_1(A,B,C),
+\]
+where the last difference is
+\[
+ \frac{C(A^2+B^2-C(A+B))}{2(A+B)(A+B+C)}\ge0.
+\]
+The only remaining case is $p=q=1$, precisely the exact family
+of Lemma~\ref{c6w:flow}.
+
+Write
+\[
+ E=R_1(A,B,C)=\frac{AB+AC+BC}{A+B+C}.
+\]
+A triangle with no small column has radius at most $C\le E$.
+A triangle with only one small column has radius at most
+$E(A,C,C)$ or $E(B,C,C)$ by the one-small-column result.
+The function $(XY+XZ+YZ)/(X+Y+Z)$ increases in each positive
+variable, so both bounds are at most $E(A,B,C)$.
+
+For an opposite pair, use section/projection subadditivity.
+If the pair contains both small columns, or neither, the sum of
+the one-dimensional bounds is at most
+\[
+ \frac{AB}{A+B}+\frac C2\le E.
+\]
+If the pair contains exactly one small column, that sum is at
+most
+\[
+ \frac{AC}{A+C}+\frac{BC}{B+C}\le E,
+\]
+since the difference in this case is
+\[
+ \frac{AB(AB-C^2)}{(A+C)(B+C)(A+B+C)}\ge0.
+\]
+These section lengths follow from primitivity of the line
+coordinate: nonzero projected lattice columns are integers,
+so the selected opposite pair has the sum of its two radial
+multipliers as a lower bound, and the quotient interval has
+the sum of the two smallest remaining multipliers as a lower
+bound.  Origin-interiority guarantees both signs in the quotient.
+
+We have covered every minimal positive dependence.  Finally,
+$R_k\to AB/(A+B)<R_1$ as $k\to\infty$, so the maximum is attained.
+The triangle $P_k$ attaining it belongs to the stipulated class,
+and Lemma~\ref{c6w:flow} proves sharpness.
+\end{proof}
+
+\subsection{The integer ratio removes the infinite maximum}
+
+\begin{lemma}[Residue-period reduction]\label{c6w:period}
+If $A=mB$ for an integer $m\ge1$, then for every $C>0$,
+\begin{equation}\label{c6w:periodmax}
+ \max_{k\ge1}R_k(A,B,C)
+ =\max\left\{
+ \frac{AB+AC+BC}{A+B+C},\;
+ \frac{AB}{A+B}+\frac{BC}{B+C}
+ \right\}.
+\end{equation}
+The two values are attained at $k=1$ and $k=m+1$, respectively.
+The second wins precisely when $C\le B/m$.
+\end{lemma}
+
+\begin{proof}
+Now $x_k=k/(m+1)$, so $\varepsilon_k$ is periodic with period
+$m+1$.  Write $k=t(m+1)+r$, with $1\le r\le m+1$.  The numerator
+$C(T-\varepsilon_k)$ in \eqref{c6w:Rk} is the same as for $r$
+and strictly positive, whereas its denominator is no smaller.
+Thus $R_k\le R_r$.
+
+For $1\le r\le m+1$, the optimization in the flow lemma gives
+$M_r=B(r-1)$ and hence
+\[
+ R_r=\frac{AB+C(A+rB)}{T+rC}.
+\]
+Consecutive differences are
+\[
+ R_{r+1}-R_r
+ =\frac{C(B^2-AC)}{(T+rC)(T+(r+1)C)}.
+\]
+This finite sequence is monotone.  Its endpoints are $R_1=E$
+and
+\[
+ R_{m+1}=\frac{AB}{A+B}+\frac{BC}{B+C}.
+\]
+Since $A=mB$, the latter is larger exactly when $C<B/m$;
+all members coincide at equality.
+\end{proof}
+
+\subsection{The ambient dimension bounds the multiplicity}
+
+The sharp planar envelope allows arbitrary lattice triangles.
+Quotients of $S_n$ carry additional information: their unscaled
+columns sum to zero.  Keeping this information is the step that
+turns the envelope into an exact answer in \emph{every} dimension.
+
+\begin{lemma}[A circular discrepancy bound]\label{c6w:circle}
+For every integer $N\ge1$, at least one $j\in\{1,\ldots,N\}$
+satisfies
+\[
+ \varepsilon_j\le\frac{A}{N+1}<\frac{T}{N+1}.
+\]
+\end{lemma}
+\begin{proof}
+Place the $N+1$ points
+$0,\{B/T\},\ldots,\{NB/T\}$ on the unit circle.  A repeated
+point immediately gives some $\varepsilon_j=0$.  Otherwise
+some cyclic gap has length at most $1/(N+1)$.  Its endpoint
+indices differ by an integer $j$ with $1\le j\le N$; thus
+either $\{jB/T\}$ or $1-\{jB/T\}$ is at most $1/(N+1)$.
+Since $B\le A$, the asserted bound follows from the definition
+of $\varepsilon_j$.  The strict inequality uses $B>0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{c6w:main}]
+For $n=2$, this is the known full-dimensional weighted-simplex
+formula $\mu_2=R_1$.
+Suppose $n\ge3$ and put $N=n-1$.  Take an arbitrary rational
+rank-two quotient $L$ and its lattice $\Lambda=L\Z^n$.  Write
+\[
+ u_0=L(-\mathbf1_n),\qquad u_j=Le_j\quad(1\le j\le n).
+\]
+These columns span the plane and satisfy
+\begin{equation}\label{c6w:zerosum}
+ u_0+u_1+\sum_{j=2}^n u_j=0.
+\end{equation}
+Their convex hull therefore has zero in its interior.
+
+Use the minimal-positive-dependence classification from the
+proof of Theorem~\ref{c6w:envelope}, ignoring zero columns only
+for that choice.  Retain all original $N$ large columns,
+including any zero ones, in \eqref{c6w:zerosum} and in the
+average below.  Every opposite-pair case,
+every triangle with at most one small column, and every triangle
+whose primitive relation has $p\ne q$ or $p=q\ge2$, is already
+bounded by $R_1$ or $R_2$.  Since $N\ge2$, both are allowed
+terms in the desired finite maximum.
+
+The remaining triangle uses $u_0,u_1,u_i$ with
+\[
+ u_0+u_1+\ell u_i=0
+\]
+for an integer $\ell\ge1$.  If $\ell\le N$, its radius is at
+most $R_\ell(A,B,C)$ by the rounding argument and
+Lemma~\ref{c6w:flow}.  Suppose instead that $\ell>N$.
+Equation \eqref{c6w:zerosum} yields
+\[
+ \frac1N\sum_{j=2}^n u_j=\frac\ell N u_i.
+\]
+The quotient body therefore contains the larger triangle
+\[
+ \conv\left\{a u_0,\,b u_1,\,\frac{c\ell}{N}u_i\right\}.
+\]
+The same relation remains $(1,1,\ell)$, and the reciprocal
+weight at its third vertex is now $CN/\ell$.  Consequently
+its radius is at most
+\begin{equation}\label{c6w:enlarged}
+ R_\ell(A,B,CN/\ell)
+ =\frac{AB}{T}
+  +\frac{CN(T-\varepsilon_\ell)}{\ell(T+NC)}.
+\end{equation}
+Choose $j\le N$ from Lemma~\ref{c6w:circle}.  Since
+$\ell\ge N+1$ and $\varepsilon_\ell\ge0$,
+\[
+ \frac{N(T-\varepsilon_\ell)}\ell
+ \le\frac{NT}{N+1}
+ <T-\varepsilon_j.
+\]
+Using $T+jC\le T+NC$ in \eqref{c6w:enlarged} now gives
+\[
+ R_\ell(A,B,CN/\ell)
+ <\frac{AB}{T}+\frac{C(T-\varepsilon_j)}{T+NC}
+ \le R_j(A,B,C).
+\]
+Thus no multiplicity larger than $N$ is needed.  We have proved
+the required upper bound in every rational rank-two quotient;
+the quotient characterization of covering minima proves the
+upper bound in \eqref{c6w:answer}.
+
+For each $1\le k\le N$, the surjective integer map
+\[
+ L_k(x_1,\ldots,x_n)
+ =\left(\sum_{j=2}^{k+1}x_j,\,x_1\right)
+\]
+maps the simplex exactly onto $P_k(a,b,c)$; all further columns
+map to zero.  Its exact radius is $R_k$ by
+Lemma~\ref{c6w:flow}.  Taking the largest of these quotient
+radii proves the matching lower bound.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{c6w:ratio}]
+If $A=mB$, the residue-period argument gives $R_k\le R_r$
+whenever $k=t(m+1)+r$, $1\le r\le m+1$.
+Thus the finite maximum over $k\le n-1$ reduces to
+$1\le r\le h=\min\{n-1,m+1\}$.  On this initial interval,
+\[
+ R_r=\frac{AB+C(A+rB)}{A+B+rC},
+\]
+and the consecutive differences in the proof of
+Lemma~\ref{c6w:period} show monotonicity with sign $B^2-AC$.
+The maximum is therefore $\max\{R_1,R_h\}$.  Translating from
+reciprocal weights gives \eqref{c6w:ratioanswer} and the branch
+threshold $c=mb$.  If $h=m+1$, the endpoint is
+$AB/(A+B)+BC/(B+C)$.
+
+For the extension with enlarged later weights, the universal
+planar envelope still supplies the same upper bound when
+$n-1\ge m+1$.  When $n-1<m+1$, no later weights are present
+in the stated extension.  The quotient $L_h$ keeps the same
+image and supplies the matching lower bound.  In the coordinate
+branch the global envelope is already $R_1$, and the coordinate
+quotient alone supplies the lower bound, irrespective of the
+later enlargements.
+\end{proof}
+
+\paragraph{Scope.}
+The argument settles all three-weight families
+$S_n(a,b,c,\ldots,c)$ with $c\ge2b$ and $0<a\le b$, in every
+dimension.  It also settles the displayed cases with arbitrarily
+enlarged later weights.  It does not settle arbitrary independent
+weights, the range $b<c<2b$, or higher covering indices.  No
+unrestricted weighted-conjecture resolution or historical-priority
+claim is made.
+
+
+% Fragment for the sixth research pass.  All statements below are proved here.
+% The containing document needs amsmath, amssymb, amsthm and theorem environments.
+
+\section{Covering products under arbitrary monotone gauge aggregation}
+\label{c6f:sec:aggregation}
+
+Write
+\[
+ \mathcal F_d(K,\Lambda)
+   =\frac{\operatorname{vol}_d(K)}{\det\Lambda}
+      \prod_{i=1}^d\mu_i(K,\Lambda).
+\]
+The classical covering-product conjecture asks for
+$\mathcal F_d(K,\Lambda)\ge(d+1)/2^d$ for every convex body and
+full-rank lattice.  We prove a closure principle for a class substantially
+larger than Cartesian products and free sums.  It includes arbitrary
+convex, coordinatewise monotone ways of combining the gauges of several
+bodies.  The general conjecture is not asserted.
+
+\subsection{The coefficient body and its weighted volume}
+
+Let $m\ge1$, let $d_1,\ldots,d_m$ be positive integers, and put
+$D=\sum_jd_j$.  A \emph{coefficient body} is a compact convex set
+$C\subset\mathbb R_{\ge0}^m$ which contains $[0,\epsilon]^m$ for
+some $\epsilon>0$ and is coordinatewise downward closed:
+\[
+ 0\le u_j\le t_j\ (1\le j\le m),\quad t\in C
+ \quad\Longrightarrow\quad u\in C.
+\]
+Its gauge on the positive orthant is
+\[
+ \gamma_C(t)=\inf\{\rho>0:t\in\rho C\}.
+\]
+It is continuous, positively homogeneous, convex, and coordinatewise
+nondecreasing.  Define the weighted coefficient volume
+\begin{equation}\label{c6f:eq:weighted-volume}
+ W_{\boldsymbol d}(C)
+   =\left(\prod_{j=1}^m d_j\right)
+      \int_C\prod_{j=1}^m t_j^{d_j-1}\,dt_1\cdots dt_m.
+\end{equation}
+
+For a convex body $K_j\subset E_j$ containing the origin in its
+interior, write $g_j$ for its Minkowski functional.  In the direct-sum
+space $E_1\oplus\cdots\oplus E_m$, define
+\begin{equation}\label{c6f:eq:aggregation}
+ K_C=\{(x_1,\ldots,x_m):(g_1(x_1),\ldots,g_m(x_m))\in C\}.
+\end{equation}
+This is a convex body: convexity of each $g_j$, followed by downward
+closure and convexity of $C$, proves convexity of the displayed set.
+Compactness and a neighborhood of the origin follow from the
+corresponding properties of the factors and of $C$.
+
+Radial integration gives
+\begin{equation}\label{c6f:eq:body-volume}
+ \operatorname{vol}_D(K_C)
+ =W_{\boldsymbol d}(C)\prod_{j=1}^m\operatorname{vol}_{d_j}(K_j).
+\end{equation}
+Indeed, the distribution function of $g_j$ under Lebesgue measure is
+$\operatorname{vol}_{d_j}\{g_j\le t\}
+=t^{d_j}\operatorname{vol}_{d_j}(K_j)$, so its pushforward measure
+has density $d_jt^{d_j-1}\operatorname{vol}_{d_j}(K_j)$.
+
+The choices
+\[
+ C=\{t\ge0:\textstyle\sum_jt_j\le1\},\qquad
+ C=[0,1]^m,
+\]
+give the free sum and Cartesian product, respectively.  Choosing
+$C=\{t\ge0:\sum_jt_j^r\le1\}$ gives the $\ell_r$ gauge sum.
+The coefficient body need not have one of these special forms.
+
+\subsection{A packing inequality for gauge convolutions}
+
+\begin{lemma}[Permutation-simplex packing]\label{c6f:lem:packing}
+For every $j$, let $a_{j,1},\ldots,a_{j,d_j}$ be positive real
+numbers, and set $a_{j,0}=0$.  For $1\le k\le D$ define
+\begin{equation}\label{c6f:eq:convolution}
+ c_k=\max_{\substack{0\le i_j\le d_j\ (1\le j\le m)\\
+                     i_1+\cdots+i_m=k}}
+         \gamma_C(a_{1,i_1},\ldots,a_{m,i_m}).
+\end{equation}
+Then
+\begin{equation}\label{c6f:eq:packing-bound}
+ W_{\boldsymbol d}(C)\prod_{k=1}^D c_k
+   \ge\prod_{j=1}^m\prod_{i=1}^{d_j}a_{j,i}.
+\end{equation}
+No monotonicity of the input sequences is needed.
+\end{lemma}
+
+\begin{proof}
+Use $D$ auxiliary nonnegative coordinates, partitioned into blocks of
+sizes $d_j$.  In block $j$, let
+$x_{j,(1)}\ge\cdots\ge x_{j,(d_j)}\ge0$ denote the coordinates
+in decreasing order, with $x_{j,(d_j+1)}=0$.  Set
+\begin{align*}
+ f_j(x_j)
+  &=\sum_{i=1}^{d_j}a_{j,i}
+           (x_{j,(i)}-x_{j,(i+1)})\\
+  &=\sum_{i=1}^{d_j}(a_{j,i}-a_{j,i-1})x_{j,(i)}.
+\end{align*}
+Although $f_j$ need not be convex on the whole positive orthant, it
+is linear on each region with a fixed coordinate order.  It is
+continuous, positively homogeneous and strictly positive away from
+zero, since the first expression uses positive $a_{j,i}$ and
+nonnegative consecutive differences.
+
+Let $Q_j=\{x_j\ge0:f_j(x_j)\le1\}$.  In the ordered region
+$x_{j,1}\ge\cdots\ge x_{j,d_j}\ge0$, make the triangular change
+of variables $y_i=x_{j,i}-x_{j,i+1}$.  It has determinant one and
+turns $Q_j$ in this region into
+$\{y\ge0:\sum_i a_{j,i}y_i\le1\}$.  Hence that region has
+volume $1/(d_j!\prod_i a_{j,i})$.  The $d_j!$ coordinate-order
+regions have disjoint interiors, so
+\begin{equation}\label{c6f:eq:aux-volume}
+ \operatorname{vol}_{d_j}(Q_j)=\frac1{\prod_i a_{j,i}}.
+\end{equation}
+
+Now form the auxiliary set
+\[
+ A=\{x\in\mathbb R_{\ge0}^{D}:
+                (f_1(x_1),\ldots,f_m(x_m))\in C\}.
+\]
+The radial integration argument proving
+\eqref{c6f:eq:body-volume} only needs homogeneity and the volume of
+the unit sublevel set; it does not need global convexity.  Therefore
+\begin{equation}\label{c6f:eq:A-volume}
+ \operatorname{vol}_D(A)
+   =\frac{W_{\boldsymbol d}(C)}
+          {\prod_{j,i}a_{j,i}}.
+\end{equation}
+
+Fix a permutation $\sigma$ of all $D$ coordinates and let
+$\mathcal O_\sigma=\{x_{\sigma(1)}\ge\cdots\ge
+x_{\sigma(D)}\ge0\}$.  On this cone every $f_j$ is linear,
+because the relative order of all coordinates within each block is
+fixed.  Consequently $A\cap\mathcal O_\sigma$ is convex: it is
+the intersection of a convex cone with the inverse image of $C$
+under a linear map.
+
+Let $S_k=\{\sigma(1),\ldots,\sigma(k)\}$ and let $i_j(k)$ be
+the number of these coordinates in block $j$.  For the indicator
+vector $\mathbf1_{S_k}$,
+\[
+ f_j(\mathbf1_{S_k}\vert_{E_j})=a_{j,i_j(k)}.
+\]
+The definition of $c_k$ thus implies
+$v_k=\mathbf1_{S_k}/c_k\in A\cap\mathcal O_\sigma$.
+It follows by convexity within this cone that
+\[
+ \Delta_\sigma=\operatorname{conv}(0,v_1,\ldots,v_D)
+       \subset A\cap\mathcal O_\sigma.
+\]
+The columns $\mathbf1_{S_k}$ form a triangular matrix of
+determinant $\pm1$ after reordering the coordinates.  Thus
+\[
+ \operatorname{vol}_D(\Delta_\sigma)
+       =\frac1{D!\prod_{k=1}^D c_k}.
+\]
+The interiors of the $D!$ simplices are disjoint, because they lie
+in the interiors of distinct coordinate-order cones.  Adding their
+volumes gives $\operatorname{vol}_D(A)\ge1/\prod_kc_k$.
+Together with \eqref{c6f:eq:A-volume}, this is exactly
+\eqref{c6f:eq:packing-bound}.
+\end{proof}
+
+\subsection{The covering-product closure theorem}
+
+\begin{lemma}[Block quotient lower bound]\label{c6f:lem:quotient}
+Let $\Lambda_j$ be a full-rank lattice in $E_j$, and put
+$\Lambda=\bigoplus_j\Lambda_j$.  Set
+$a_{j,i}=\mu_i(K_j,\Lambda_j)$ and $a_{j,0}=0$.
+Then the body \eqref{c6f:eq:aggregation} satisfies
+\begin{equation}\label{c6f:eq:mu-lower}
+ \mu_k(K_C,\Lambda)\ge c_k,
+\end{equation}
+where $c_k$ is given by \eqref{c6f:eq:convolution}.
+\end{lemma}
+
+\begin{proof}
+For each $j$ choose a rational quotient $A_j:E_j\to E'_j$ of
+rank $i_j$.  A rank-zero quotient is interpreted as a point with
+gauge and covering radius zero.  Write $L_j=A_jK_j$ and
+$\Gamma_j=A_j\Lambda_j$ in positive rank.  The quotient gauge is
+\[
+ g_{L_j}(u)=\min_{A_jx=u}g_j(x).
+\]
+The minimum is attained, since $g_j$ has compact sublevel sets.
+Downward closure of $C$ consequently shows that the block quotient
+$A=\bigoplus_jA_j$ satisfies $A(K_C)=(L_1,\ldots,L_m)_C$.
+
+For a point $u=(u_j)$, minimize its gauge distance to
+$\bigoplus_j\Gamma_j$.  Since $\gamma_C$ is coordinatewise
+nondecreasing and each factor-lattice minimum is attained, the
+minimum is
+\[
+ \gamma_C\left(
+     \min_{z_1\in\Gamma_1}g_{L_1}(u_1-z_1),\ldots,
+     \min_{z_m\in\Gamma_m}g_{L_m}(u_m-z_m)\right).
+\]
+Taking the supremum over the product of the factor tori gives the
+exact covering-radius identity
+\begin{equation}\label{c6f:eq:radius}
+ \mu((L_1,\ldots,L_m)_C,\bigoplus_j\Gamma_j)
+   =\gamma_C(\mu(L_1,\Gamma_1),\ldots,
+                  \mu(L_m,\Gamma_m)).
+\end{equation}
+One may use maximizing points on the compact factor tori, or use
+independent approximating sequences and continuity of $\gamma_C$.
+
+Covering minima are the suprema of covering radii over rational
+quotients of the appropriate rank.  Taking quotients $A_j$ whose
+covering radii approach $a_{j,i_j}$ therefore proves
+$\mu_k(K_C,\Lambda)\ge\gamma_C(a_{1,i_1},\ldots,a_{m,i_m})$
+whenever $\sum_ji_j=k$.  Maximizing over these indices proves
+\eqref{c6f:eq:mu-lower}.
+\end{proof}
+
+\begin{theorem}[Arbitrary monotone gauge aggregation]
+\label{c6f:thm:aggregation}
+Under the preceding hypotheses,
+\begin{equation}\label{c6f:eq:supermultiplicativity}
+ \boxed{\quad
+ \mathcal F_D(K_C,\bigoplus_j\Lambda_j)
+       \ge\prod_{j=1}^m\mathcal F_{d_j}(K_j,\Lambda_j).
+ \quad}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Divide \eqref{c6f:eq:body-volume} by
+$\det\Lambda=\prod_j\det\Lambda_j$, and multiply by all the
+covering minima.  Lemmas~\ref{c6f:lem:quotient}
+and~\ref{c6f:lem:packing} give
+\begin{align*}
+ \mathcal F_D(K_C,\Lambda)
+ &\ge W_{\boldsymbol d}(C)\prod_kc_k
+       \prod_j\frac{\operatorname{vol}_{d_j}(K_j)}{\det\Lambda_j}\\
+ &\ge\prod_j\left(
+       \frac{\operatorname{vol}_{d_j}(K_j)}{\det\Lambda_j}
+         \prod_{i=1}^{d_j}\mu_i(K_j,\Lambda_j)\right).
+\end{align*}
+No exact formula for the intermediate covering minima of $K_C$
+is assumed or needed.
+\end{proof}
+
+\begin{corollary}[Closure of the conjectural class]
+\label{c6f:cor:Fclosure}
+If every factor satisfies
+$\mathcal F_{d_j}(K_j,\Lambda_j)\ge(d_j+1)/2^{d_j}$, then
+\[
+ \mathcal F_D(K_C,\bigoplus_j\Lambda_j)
+   \ge\frac{\prod_j(d_j+1)}{2^D}
+   \ge\frac{D+1}{2^D}.
+\]
+The last inequality is strict when $m\ge2$.
+\end{corollary}
+
+\begin{proof}
+Expand $\prod_j(1+d_j)$.  Its constant and linear terms sum to
+$1+D$, and every higher-degree term is nonnegative.  For $m\ge2$
+at least one quadratic term is positive.
+\end{proof}
+
+\begin{corollary}[Arbitrary aggregation of planar bodies and intervals]
+\label{c6f:cor:planar-factors}
+Suppose that each factor has dimension one or two, with $q$ planar
+factors and any number of interval factors.  Then
+\[
+ \mathcal F_D(K_C,\bigoplus_j\Lambda_j)\ge(3/4)^q.
+\]
+In particular, for every planar convex body $K$, every interval
+$I$ containing zero in its interior, and every two-dimensional
+coefficient body $C$, the three-dimensional body
+\[
+ P=\{(x,t):(g_K(x),g_I(t))\in C\}
+\]
+satisfies $\mathcal F_3(P)\ge3/4>1/2$ for the product lattice.
+\end{corollary}
+
+\begin{proof}
+An interval has covering product one, and Schnell's planar theorem
+gives covering product at least $3/4$ for every planar convex body.
+Apply Theorem~\ref{c6f:thm:aggregation}.  In arbitrary dimension,
+$3^q2^{D-2q}\ge D+1$ also follows from
+Corollary~\ref{c6f:cor:Fclosure}.
+\end{proof}
+
+For example, take any planar convex body containing zero in its
+interior, an interval $[-a,b]$ with $a,b>0$, and a continuous concave
+nonincreasing profile $\phi:[0,T]\to\mathbb R_{\ge0}$ with
+$\phi(0)>0$.  Provided the region below the profile has nonempty
+interior, the body
+\[
+ P=\{(x,t):0\le g_I(t)\le T,\quad
+                         g_K(x)\le\phi(g_I(t))\}
+\]
+is covered by the corollary.  Its cross-sections are homothetic
+copies of the arbitrary planar body $K$.  Nonlinear profiles give
+families beyond Cartesian cylinders and free-sum bipyramids.
+
+\subsection{A quantitative refinement for \texorpdfstring{$\ell_r$}{ell-r} gauge sums}
+
+\begin{proposition}\label{c6f:prop:lp}
+Let $p,q\ge1$, and let $K\subset\mathbb R^p$ and
+$L\subset\mathbb R^q$ contain zero in their interiors.  For
+$1\le r<\infty$ put
+\[
+ K\oplus_rL=\{(x,y):g_K(x)^r+g_L(y)^r\le1\}.
+\]
+For product lattices,
+\begin{equation}\label{c6f:eq:lp-refinement}
+ \mathcal F_{p+q}(K\oplus_rL)
+ \ge C_r(p,q)\mathcal F_p(K)\mathcal F_q(L),
+\end{equation}
+where
+\begin{equation}\label{c6f:eq:gamma-constant}
+ C_r(p,q)=
+ \frac{\Gamma(1+p/r)\Gamma(1+q/r)}{\Gamma(1+(p+q)/r)}
+         \binom{p+q}{p}^{1/r}.
+\end{equation}
+The constant equals one at $r=1$, exceeds one for $1<r<\infty$,
+and tends to one as $r\to\infty$.  At $r=\infty$ the body is
+$K\times L$ and \eqref{c6f:eq:lp-refinement} holds with
+$C_\infty(p,q)=1$.
+\end{proposition}
+
+\begin{proof}
+Let $a_i=\mu_i(K)$ and $b_j=\mu_j(L)$, with $a_0=b_0=0$.
+Lemma~\ref{c6f:lem:quotient} gives
+\[
+ \mu_k(K\oplus_rL)^r\ge
+       \max_{i+j=k}(a_i^r+b_j^r).
+\]
+For positive sequences $u_i,v_j$ with $u_0=v_0=0$, their
+maximum-sum convolution $w_k=\max_{i+j=k}(u_i+v_j)$ obeys
+\begin{equation}\label{c6f:eq:maxplus}
+ \prod_{k=1}^{p+q}w_k\ge\binom{p+q}{p}
+                           \prod_{i=1}^p u_i\prod_{j=1}^q v_j.
+\end{equation}
+For completeness, induct on $N=p+q$, allowing empty sequences at
+the boundary.  Deleting either last input bounds
+$\prod_{k<N}w_k$ below by
+\[
+ \left(\prod_i u_i\prod_jv_j\right)
+ \max\left\{\frac{\binom{N-1}{p-1}}{u_p},
+             \frac{\binom{N-1}{p}}{v_q}\right\}.
+\]
+Multiply by $w_N=u_p+v_q$ and use
+$\max(p/u_p,q/v_q)\ge N/(u_p+v_q)$.
+This proves \eqref{c6f:eq:maxplus}.
+Apply it with $u_i=a_i^r$ and $v_j=b_j^r$ and then take the
+$r$th root.  The volume factor in \eqref{c6f:eq:body-volume} is
+\[
+ W_{(p,q)}(\{s,t\ge0:s^r+t^r\le1\})
+  =\frac{\Gamma(1+p/r)\Gamma(1+q/r)}
+          {\Gamma(1+(p+q)/r)},
+\]
+as follows by $u=s^r,v=t^r$ and the beta integral.  This proves
+\eqref{c6f:eq:lp-refinement} with the stated constant.
+
+Here is a complete check of its sign.  Put
+\[
+ h(t)=\log\Gamma(1+t(p+q))
+        -\log\Gamma(1+tp)-\log\Gamma(1+tq),\quad t\ge0.
+\]
+We claim that $h$ is strictly convex.  For $x>0$, the trigamma
+integral implies
+\[
+ x\psi'(1+x)=\int_0^\infty xe^{-xs}\frac{s}{e^s-1}\,ds.
+\]
+The function $s/(e^s-1)$ is strictly decreasing.  If $E$ is an
+exponential random variable of mean one, the integral is
+$\mathbb E[(E/x)/(e^{E/x}-1)]$ and is therefore strictly
+increasing in $x$.  Hence
+$G(x)=x^2\psi'(1+x)$ is strictly superadditive on positive
+arguments: $G(x+y)>G(x)+G(y)$.  Consequently, for $t>0$,
+\[
+ h''(t)=\frac{G(t(p+q))-G(tp)-G(tq)}{t^2}>0.
+\]
+Since $h(0)=0$, strict convexity gives $h(t)<th(1)$ for
+$0<t<1$.  Now
+\[
+ \log C_r(p,q)=r^{-1}h(1)-h(r^{-1}),
+\]
+which proves the strict assertion.  Both endpoint assertions
+follow from the explicit gamma formula.  For $r=\infty$, use
+Theorem~\ref{c6f:thm:aggregation} with $C=[0,1]^2$.
+\end{proof}
+
+In the three-dimensional quadratic case the numerical constant is
+particularly simple.  For every planar $K$ and interval $I$ as above,
+\[
+ \mathcal F_3(K\oplus_2 I)
+     \ge\frac{2\sqrt3}{3}\,\frac34
+     =\frac{\sqrt3}{2}>\frac12.
+\]
+This is a lower bound, not a claimed optimal constant for that family.
+
+\subsection{Exact spectrum preservation by asymmetric orthant changes}
+
+\begin{proposition}\label{c6f:prop:asymmetric}
+Let $C\subset\mathbb R_{\ge0}^d$ be any coefficient body and let
+$a_i,b_i>0$.  Define
+\[
+ \eta_i(x)=\begin{cases}x/b_i,&x\ge0,\\-x/a_i,&x\le0,
+                    \end{cases}
+ \qquad
+ K=\{x:(\eta_1(x_1),\ldots,\eta_d(x_d))\in C\}.
+\]
+Put $s_i=a_i+b_i$ and
+\[
+ U=\{x:(2|x_1|/s_1,\ldots,2|x_d|/s_d)\in C\}.
+\]
+With respect to $\mathbb Z^d$,
+\begin{equation}\label{c6f:eq:spectrum}
+ \operatorname{vol}_d(K)=\operatorname{vol}_d(U),\qquad
+ \mu_k(K)=\mu_k(U)=
+    \max_{|S|=k}\gamma_C\left(\sum_{i\in S}s_i^{-1}e_i\right)
+       \quad(1\le k\le d).
+\end{equation}
+In particular, $\mathcal F_d(K)\ge1$.
+\end{proposition}
+
+\begin{proof}
+The volume in an orthant is $\operatorname{vol}_d(C)$ times
+the product of the corresponding $a_i$ or $b_i$.  Summing over
+orthants proves
+$\operatorname{vol}_d(K)=\operatorname{vol}_d(C)\prod_i s_i$;
+the same formula holds for $U$.
+
+Both bodies have the property that the projection onto any
+coordinate subspace agrees with the intersection with that
+subspace.  The reason is precisely the downward closure of $C$:
+zeroing a coordinate keeps a point in the body.  Let $L_S$ be the
+coordinate subspace supported on $S$.  Its intersection body is
+the gauge aggregation of the intervals $[-a_i,b_i]$, $i\in S$,
+with the remaining gauge coordinates zero.  Each of these intervals
+has covering radius $1/s_i$.  The exact radius identity
+\eqref{c6f:eq:radius} therefore gives
+\[
+ \mu(K\cap L_S,\mathbb Z^d\cap L_S)
+       =\gamma_C\left(\sum_{i\in S}s_i^{-1}e_i\right).
+\]
+The coordinate projection description of covering minima gives
+the lower inequality in \eqref{c6f:eq:spectrum}.
+
+For the reverse inequality, put $t$ equal to the maximum of these
+section radii over $|S|=k$.  Then $tK+\mathbb Z^d$ contains every
+coordinate $k$-dimensional linear subspace: its subset
+$t(K\cap L_S)+(\mathbb Z^d\cap L_S)$ covers $L_S$.
+Every affine subspace $H$ of codimension $k$ meets at least one
+such $L_S$.  To see this, write $H=\{x:Bx=c\}$ with $B$ a
+rank-$k$ matrix and choose $k$ linearly independent columns of
+$B$.  The corresponding $L_S$ maps onto $\mathbb R^k$, so
+$H\cap L_S\ne\emptyset$.  Thus $tK+\mathbb Z^d$ meets
+every such $H$, proving $\mu_k(K)\le t$.  This handles all
+affine subspaces, including irrational ones.  The same argument
+applies to $U$ and proves the exact spectrum identity.
+
+Finally, apply Theorem~\ref{c6f:thm:aggregation} with all factors
+one-dimensional intervals, whose covering products equal one.
+Equivalently, the volume and spectrum identities transfer the
+known standard-unconditional bound $\mathcal F_d(U)\ge1$.
+\end{proof}
+
+\subsection{Provenance and the remaining bridge}
+
+The geometric proofs above are self-contained apart from the
+standard rational-quotient characterization of covering minima;
+the planar application also uses Schnell's theorem.  The exact
+coordinate-section argument in the last proposition is the
+mechanism in Krivoku\'ca's Theorem~1.3 and Corollary~3.3
+(arXiv:2601.15173v1).  The standard-unconditional bound itself
+is already Theorem~4.5 of Gonz\'alez Merino--Schymura, and is
+not a newly solved case here.
+
+The corpus contributed proof-design mechanisms, not unproved
+substitutes for the geometric steps.  In manuscript \#185,
+the theorem labelled \texttt{density-thm:weighted}, ``Exact
+weighted optimum,'' proves a global inequality by assigning
+nonnegative masses to lattice corners, verifying local capacities,
+and summing.  Lemma~\ref{c6f:lem:packing} transfers this
+certificate architecture to disjoint permutation simplices;
+all required containment and determinant checks are given above.
+In manuscript \#123, the section labelled \texttt{sec:hqmajor},
+especially \texttt{hq:sharp} and \texttt{hq:finite}, uses
+beta-integral slices and multiplicative gamma constants to
+transfer inequalities between products.  The $\ell_r$ refinement
+uses the same analytic design, with its own explicitly proved
+gamma-constant inequality.  Neither corpus theorem is assumed
+to imply a covering inequality merely by analogy.
+
+The result does not represent an arbitrary convex body as
+\eqref{c6f:eq:aggregation}.  Such a representation requires one
+fixed gauge in each block and a common monotone coefficient body;
+general fibers can change their shapes and centers.  Moreover,
+one cannot infer a factor inequality from a proved inequality for
+an aggregate: \eqref{c6f:eq:supermultiplicativity} points in the
+opposite direction.  A solution of the unrestricted conjecture
+would require a new reduction controlling both volume and the
+entire covering-minimum product under replacement by an aggregate.
+No such reduction is established here.  Historical priority for
+the aggregation theorem or the asymmetric extension is not
+asserted.
+
+There is also a concrete obstruction to a volume-and-spectrum
+preserving reduction to one-dimensional factors.  For the standard
+terminal simplex $T_D$ the values $\mu_i(T_D)=i/2$ and
+$\operatorname{vol}_D(T_D)=(D+1)/D!$ give
+$\mathcal F_D(T_D)=(D+1)/2^D<1$ when $D\ge2$, whereas every
+aggregation of intervals has covering product at least one.
+More generally, a nontrivial aggregation of factors satisfying the
+conjectured bounds has covering product strictly above the proposed
+extremal value, by Corollary~\ref{c6f:cor:Fclosure}.  Thus the
+theorem genuinely excludes these decompositions for an extremizer;
+it does not make all bodies admit such a decomposition.
+
+
+\section{Recalled input: simplex congruence states}
+\label{eq:section}
+
+We reproduce the ambient-lattice simplex criterion from the preceding
+note, including its proof, because its actual states are the inputs
+to the new polytope recursion in the next section.
+
+Let $S=\operatorname{conv}(v_0,\ldots,v_d)$ be a lattice simplex with
+$0\in\operatorname{int}S$. Put
+\[
+ \Gamma=\sum_{j=0}^{d}\mathbb Z v_j\subseteq\Lambda,
+ \qquad \sum_{j=0}^{d}q_jv_j=0,
+ \qquad \gcd(q_0,\ldots,q_d)=1,
+ \qquad Q=\sum_{j=0}^{d}q_j,
+\]
+where every $q_j$ is positive.  If each $q_j$ divides $Q$, set
+$m_j=Q/q_j$. Define the facet forms by
+\begin{equation}\label{eq:facetforms}
+ \ell_j(v_i)=1-m_j\delta_{ij}.
+\end{equation}
+The positive relation makes these well-defined linear forms, and
+$S=\{x:\ell_j(x)\le1\text{ for every }j\}$.
+
+\begin{lemma}[Deep points of the coarse lattice]\label{eq:deep}
+For $x=\sum_jt_jv_j$ one has
+\begin{equation}\label{eq:distance}
+ \rho_{S,\Gamma}(x)=\min_{s\in[0,1)}
+                       \sum_{j=0}^{d}\{t_j+s q_j\}.
+\end{equation}
+The maximum of this function is at most $d/2$. It equals $d/2$
+at $x$ if and only if the coordinate crossing events are simple and
+form an equally spaced grid of $Q$ points on the circle.
+Consequently a point at distance $d/2$ exists if and only if every $m_j$ is
+an integer and there are residues $0\le a_j<m_j$ whose classes
+$a_j+m_j\mathbb Z$ partition $\mathbb Z$. Its class modulo $\Gamma$
+then has a representative
+\begin{equation}\label{eq:deep-representative}
+ x(a)=-\sum_j\frac{a_j}{m_j}v_j,
+ \qquad \ell_j(x(a))=a_j-\frac d2.
+\end{equation}
+In particular, every point at distance $d/2$ satisfies
+$\ell_j(x)\equiv-d/2\pmod{\mathbb Z}$ for every $j$.
+\end{lemma}
+\begin{proof}
+Every translate by $\Gamma$ is obtained by replacing $t$ by an
+integer translate, and every other coefficient representation has
+the form $t+s q$. Minimizing the nonnegative coefficient sum gives
+\eqref{eq:distance}. Write $F(s)=\sum_j\{t_j+s q_j\}$.
+It has slope $Q$, mean $(d+1)/2$, and downward jumps $J_e$ at
+the distinct events $e$. The jump identity, obtained by integrating
+$d(F^2)/ds$ on the event intervals, is
+\[
+ \frac1Q\sum_e J_eF(e)
+ =\frac{d+1}{2}-\frac1{2Q}\sum_eJ_e^2.
+\]
+Since $\sum_eJ_e=Q$ and every $J_e$ is a positive integer, the
+right side is at most $d/2$. Equality of the minimum with $d/2$
+forces every jump to be one and every post-jump value to be $d/2$.
+The slope then forces gaps $1/Q$. The converse follows from the
+same identity. A coordinate has crossings at spacing $1/q_j$,
+so its grid positions are one residue class modulo $m_j=Q/q_j$.
+They partition the grid exactly when they partition $\mathbb Z$.
+
+For these classes, take $t_j=-a_j/m_j$. The resulting events
+are exactly that grid. Exactly one residue $a_j$ is zero, so
+$F(0)=d-\sum_j a_j/m_j=d/2$. Thus
+$\sum_j a_j/m_j=d/2$, and applying \eqref{eq:facetforms} to
+$x(a)$ gives \eqref{eq:deep-representative}. Conversely an arbitrary
+point at distance $d/2$ has such coefficients after a common rotation of the
+event parameter and changes by integer coefficients; the former
+adds a multiple of $q$ and does not change the represented point.
+The facet forms are integral on $\Gamma$, giving the last assertion.
+\end{proof}
+
+Choose any lattice basis $b_1,\ldots,b_d$ of $\Lambda$. When the
+forms $\ell_j$ are integral on $\Lambda$, define
+\begin{equation}\label{eq:Dij}
+ D_{ij}=\gcd\bigl(m_i,m_j,
+       (\ell_i-\ell_j)(b_1),\ldots,(\ell_i-\ell_j)(b_d)\bigr)
+       \qquad(0\le i<j\le d).
+\end{equation}
+The gcd is positive and independent of the chosen lattice basis.
+
+\begin{theorem}[Ambient-lattice congruence criterion]\label{eq:main}
+The equality $\mu(S,\Lambda)=d/2$ holds if and only if all three
+conditions below hold:
+\begin{enumerate}
+\item every $q_j$ divides $Q$;
+\item every $\ell_j$ is integral on $\Lambda$;
+\item there are integers $a_0,\ldots,a_d$, equivalently residues
+      $0\le a_j<m_j$, such that
+\begin{equation}\label{eq:avoid}
+       a_i\not\equiv a_j\pmod{D_{ij}}
+       \quad\text{for every }i<j.
+\end{equation}
+\end{enumerate}
+If these conditions hold, \eqref{eq:deep-representative} gives a
+deepest point for the full ambient lattice. In particular, a pair
+with $D_{ij}=1$ rules out extremality.
+\end{theorem}
+\begin{proof}
+Suppose first that $\mu(S,\Lambda)=d/2$. The distance is continuous
+and lattice-periodic, so it has a maximizing point $x$. Since
+$\Gamma\subseteq\Lambda$, for every $h\in\Lambda$ one has
+\[
+ d/2\le\rho_{S,\Gamma}(x-h)\le d/2.
+\]
+Lemma~\ref{eq:deep} gives condition (1). It also gives
+$\ell_j(x),\ell_j(x-h)\equiv-d/2\pmod{\mathbb Z}$, hence
+$\ell_j(h)\in\mathbb Z$, proving (2).
+Replace $x$ by a representative $x(a)$ modulo $\Gamma$ as in
+the lemma; this does not change its property of being deepest
+for $\Lambda$.
+
+We next describe the events for $x(a)-h$. For a coefficient
+representation $y=\sum_jt_jv_j$, let $A=\sum_jt_j$. Then
+$\ell_j(y)=A-m_jt_j$. In particular, if
+$\ell_j(y)=r_j-d/2$ with all $r_j$ integral, the crossings of
+$\{t_j+s q_j\}$ satisfy
+\[
+ Qs+A+d/2\equiv r_j\pmod{m_j}.
+\]
+Thus its distance equals $d/2$ if and only if the residue classes
+$r_j+m_j\mathbb Z$ form an exact cover. Applied to $y=x(a)-h$,
+these are $r_j=a_j-\ell_j(h)$.
+
+Two residue classes with moduli $m_i,m_j$ intersect exactly when
+their residues agree modulo $g_{ij}=\gcd(m_i,m_j)$. Their density
+sum over all $j$ is $\sum_j1/m_j=1$. Since all the moduli divide
+$Q$, pairwise disjointness is therefore equivalent to exact
+coverage, by counting the residues in one period of length $Q$.
+Consequently the translated systems are exact covers for every
+$h\in\Lambda$ precisely when
+\[
+ a_i-a_j\notin
+ \{(\ell_i-\ell_j)(h)\bmod g_{ij}:h\in\Lambda\}
+ \quad\text{for every }i<j.
+\]
+The subgroup on the right is the set of multiples of $D_{ij}$
+modulo $g_{ij}$, by the gcd definition and Bezout's identity.
+This proves (3).
+
+Conversely assume (1)--(3). Since $D_{ij}\mid g_{ij}$,
+\eqref{eq:avoid} first implies that $a_j+m_j\mathbb Z$ is an exact
+cover. Choose $x=x(a)$. The same subgroup argument shows that
+$a_j-\ell_j(h)+m_j\mathbb Z$ remains an exact cover for every
+$h\in\Lambda$. By the event calculation,
+$\rho_{S,\Gamma}(x-h)=d/2$ for every such $h$. Finally
+\[
+ \rho_{S,\Lambda}(x)
+ =\min_{h\in\Lambda/\Gamma}\rho_{S,\Gamma}(x-h)=d/2.
+\]
+The universal upper bound proves the desired equality.
+\end{proof}
+
+\begin{remark}[Relation to the earlier criterion]\label{eq:relation}
+If $\Lambda=\Gamma$, the numbers in \eqref{eq:Dij} coming from
+vertex generators are $0$, $-m_i$, or $m_j$. Hence
+$D_{ij}=\gcd(m_i,m_j)$, and the theorem reduces to the exact
+covering criterion of \cite{VMRC200}. For a strict superlattice
+the smaller gcd values encode precisely the additional lattice
+translates that may destroy a former deepest point. The theorem
+is finite: after integral linear algebra one tests at most
+$\prod_jm_j$ residue tuples. It makes no efficiency or polynomial
+time claim.
+\end{remark}
+
+
+
+\section{Every extremal polytope has finitely many deep holes}
+\label{ce:section}
+
+For a convex body $K$ containing the origin in its interior, write
+$g_K$ for its gauge and put
+\[
+ \rho_{K,\Lambda}(x)=\min_{z\in\Lambda}g_K(x-z),\qquad
+ \mathcal H(K,\Lambda)=
+ \{x+\Lambda:\rho_{K,\Lambda}(x)=d/2\}.
+\]
+Here $d$ is the dimension of $K$. Thus $\mathcal H$ is empty unless
+the non-hollow upper bound is attained, when $K$ is a non-hollow
+lattice polytope. We count classes in the lattice torus, not all
+their lattice translates.
+Rationality below means rational coordinates in a basis of $\Lambda$.
+
+The conditional-state composition in corpus [041] suggests retaining
+the actual finite boundary states through a geometric projection,
+rather than retaining only a scalar covering bound. The states here
+are exact-covering-system representatives of simplex deep holes.
+All assertions about their transfer are proved below; no Ewald
+counting theorem is an input.
+
+\begin{lemma}[Counting the simplex states]\label{ce:simplex-count}
+Let $S$ be a lattice $r$-simplex containing $0$ in its interior.
+Let $q_0,\ldots,q_r$ be its primitive positive vertex relation,
+$Q=\sum q_j$, and $\Gamma$ its vertex-generated lattice.
+If $\mu(S,\Lambda)=r/2$, then
+\[
+ |\mathcal H(S,\Lambda)|
+ \le \frac{(r+1)!}{Q[\Lambda:\Gamma]}\le r!.
+\]
+Equality in the last bound is possible only for the standard
+terminal simplex in its vertex-generated lattice, and it holds
+for that simplex.
+\end{lemma}
+\begin{proof}
+The simplex congruence criterion gives integers $m_j=Q/q_j$.
+In the coarse lattice, its deep-hole representatives correspond
+to exact covers by the labelled residue classes
+$a_j+m_j\mathbb Z$, with $0\le a_j<m_j$.
+There are at most $(r+1)!$ such labelled covers. Indeed, the
+least nonnegative representatives $a_j$ are all distinct. Their
+increasing order determines the cover uniquely: its first residue
+is zero, and, after a collection of classes has been assigned,
+the next residue is the least nonnegative integer not covered by
+those classes. If that integer is not smaller than the modulus
+of the next prescribed label, the prescribed order is impossible.
+For a genuine exact cover, this reconstruction succeeds at every
+step. Hence assigning the order is injective.
+
+Simultaneous translation $a_j\mapsto a_j+k\pmod{m_j}$ acts
+freely on these covers with period $Q$, since
+$\operatorname{lcm}(m_0,\ldots,m_r)=Q$ follows from
+$\gcd(q_0,\ldots,q_r)=1$. It does not change the represented
+point modulo $\Gamma$: the change before reducing residues is
+$-k\sum_j v_j/m_j=0$. Conversely, if $x(a)-x(b)\in\Gamma$,
+then $(b_j-a_j)/m_j=n_j+tq_j$ for integers $n_j$ and one real
+$t$, because the kernel of the vertex map is spanned by $q$.
+Multiplication by $m_j$ gives
+$b_j-a_j=n_jm_j+tQ$. Thus $k=tQ$ is an integer, and the
+two residue arrays differ by a common integer shift.
+Consequently there are at most $(r+1)!/Q$ coarse deep-hole classes.
+
+A point is deep for $\Lambda$ precisely when all its translates
+by $\Lambda/\Gamma$ are coarse deep holes. The surviving coarse
+classes form free orbits of size $[\Lambda:\Gamma]$. This gives
+the first inequality. Since $Q\ge r+1$, the second follows.
+If the final bound is attained, $Q=r+1$ and
+$[\Lambda:\Gamma]=1$, so every $q_j=1$. The simplex is then
+unimodularly equivalent to
+$T_r=\operatorname{conv}(-\mathbf1_r,e_1,\ldots,e_r)$.
+For $T_r$ all $m_j=r+1$; all $(r+1)!$ permutations of the residues
+form exact covers, and their common-shift orbits give exactly $r!$
+deep-hole classes.
+\end{proof}
+
+\begin{lemma}[Finite-state lifting]\label{ce:lifting}
+Let $P$ be a non-hollow lattice $d$-polytope with $0$ interior.
+Let $S$ be a simplex on vertices of $P$ with
+$0\in\operatorname{relint}S$, put $r=\dim S<d$, and let
+$L=\operatorname{span}S$, $\Lambda_L=\Lambda\cap L$,
+$\pi:\mathbb R^d\to\mathbb R^d/L$, $Q=\pi P$.
+If $\mu(P,\Lambda)=d/2$, then
+\[
+ P\cap L=S,\quad \mu(S,\Lambda_L)=r/2,\quad
+ \mu(Q,\pi\Lambda)=(d-r)/2.
+\]
+Moreover, if the two lower-dimensional deep-hole sets are finite,
+\[
+ |\mathcal H(P,\Lambda)|
+ \le |\mathcal H(S,\Lambda_L)|\,
+       |\mathcal H(Q,\pi\Lambda)|.
+\]
+\end{lemma}
+\begin{proof}
+Set $\alpha=r/2$ and $\beta=(d-r)/2$. The section--projection
+bound and the non-hollow upper bound give
+\[
+ d/2=\mu(P)\le\mu(P\cap L)+\mu(Q)
+ \le\mu(S)+\mu(Q)\le\alpha+\beta=d/2.
+\]
+Every inequality is equality. Tightness of a simplex, also for
+nonlattice convex super-bodies, gives $P\cap L=S$.
+
+Fix a representative $y$ of each class in $\mathcal H(Q,\pi\Lambda)$.
+Choose $h_y\in\pi\Lambda$ and $v_y\in\beta P$ such that
+$\pi v_y=y-h_y$, and choose a lattice lift $z_y$ of $h_y$.
+Put $w_y=v_y+z_y$, so $\pi w_y=y$. Such choices exist because
+$\beta Q+\pi\Lambda$ covers the quotient.
+
+If $x$ is deep for $P$, then $\pi x$ is deep for $Q$. Otherwise,
+lifting a covering point for $\pi x$ at scale strictly smaller
+than $\beta$ and completing along $S$ at scale $\alpha$ would
+cover $x$ at scale strictly smaller than $d/2$.
+After a lattice translation, arrange $\pi x=y$. Since
+$x-w_y\in L$, convexity and $S\subseteq P$ imply
+\[
+ \rho_{P,\Lambda}(x)
+ \le\beta+\rho_{S,\Lambda_L}(x-w_y)
+ \le\beta+\alpha.
+\]
+Equality of the outer terms forces $x-w_y$ to be deep for $S$.
+Thus every class of $\mathcal H(P,\Lambda)$ has a representative
+$w_y+s$, with $s$ chosen from the finite set of simplex states.
+There are at most the displayed number of candidates.
+\end{proof}
+
+\begin{theorem}[A sharp factorial bound and its rigidity]
+\label{ce:factorial}
+For every non-hollow lattice $d$-polytope $P$,
+\[
+ |\mathcal H(P,\Lambda)|\le d!.
+\]
+All points in this set are rational modulo $\Lambda$ and isolated.
+If $P$ is not a simplex and $d\ge2$, the stronger bound
+\[
+ |\mathcal H(P,\Lambda)|\le(d-1)!
+\]
+holds, and this stronger bound is also sharp.
+Equality $|\mathcal H(P,\Lambda)|=d!$ holds if and only if
+$P$, after translating its interior lattice point to the origin,
+is unimodularly equivalent to $T_d$.
+\end{theorem}
+\begin{proof}
+The assertion is empty if $\mu(P)<d/2$. Otherwise, choose an
+inclusion-minimal set of vertices whose convex hull contains zero.
+It is a simplex $S$ with zero in its relative interior.
+If $\dim S=d$, tightness and $\mu(S)\le d/2$ force $P=S$;
+Lemma~\ref{ce:simplex-count} applies.
+If $r=\dim S<d$, apply Lemma~\ref{ce:lifting} and induction:
+\[
+ |\mathcal H(P,\Lambda)|\le r!(d-r)!\le(d-1)!<d!.
+\]
+The penultimate inequality follows from $\binom dr\ge d$.
+The simplex representatives are rational by their exact-cover
+formula. In the inductive construction, $y$ is rational and a
+nonempty rational polytope fiber admits a rational $v_y$.
+Thus all candidates, and hence all surviving deep holes, are
+rational. A finite subset of the torus is isolated. The rigidity
+statement now follows from Lemma~\ref{ce:simplex-count}.
+For sharpness of the nonsimplicial bound, take
+$T_{d-1}\oplus[-1,1]$ in the product lattice. Its gauge and
+lattice distance are sums of the two factor gauges and distances,
+so its deep-hole set is their Cartesian product. It has exactly
+$(d-1)!$ deep-hole classes and is not a simplex.
+\end{proof}
+
+For comparison, the extremal four-dimensional simplex with relation
+$(1,1,1,1,2)$ has exactly $12$ deep-hole classes, not $4!=24$.
+Its moduli are $(6,6,6,6,3)$: the modulus-three class has three
+choices, and the four remaining classes occupy the four unclaimed
+residues in $4!$ orders. Thus there are $3\cdot4!=72$ labelled
+exact covers and $72/6=12$ common-shift orbits. This simplex
+attains the same covering radius as $T_4$ while the number of
+last-covered classes distinguishes them.
+
+\subsection{An exact decision procedure for arbitrary polytopes}
+
+The preceding proof yields a finite recognition criterion for
+\emph{all} non-hollow lattice polytopes, including nonsimplicial
+ones. It also lists every deep-hole class when equality holds.
+It is not a short geometric classification of all extremizers.
+
+\begin{theorem}[Recursive equality certificate]\label{ce:algorithm}
+The following rational finite procedure returns exactly
+$\mathcal H(P,\Lambda)$.
+\begin{enumerate}
+\item Translate an interior lattice point to zero, and choose a
+      minimal positive vertex simplex $S$.
+\item If $S$ is full dimensional, return the simplex congruence
+      states when $P=S$, and the empty set when $P\ne S$.
+\item Otherwise, form $L$, $Q$, and the two induced lattices.
+      Return the empty set if $P\cap L\ne S$, if $S$ has no
+      extremal congruence state, or if the recursive call on $Q$
+      returns the empty set.
+\item Choose one rational lift $w_y\in\beta P+\Lambda$ of each
+      quotient state as in Lemma~\ref{ce:lifting}. Form all
+      candidates $c=w_y+s$ using the simplex states $s$.
+\item Retain $c$ exactly when
+      \begin{equation}\label{ce:finite-empty}
+       \operatorname{int}\bigl(c-(d/2)P\bigr)\cap\Lambda
+       =\varnothing.
+      \end{equation}
+      Remove duplicates modulo $\Lambda$ and return the result.
+\end{enumerate}
+In particular, equality $\mu(P,\Lambda)=d/2$ is equivalent to
+the returned set being nonempty.
+\end{theorem}
+\begin{proof}
+All rejections are necessary by simplex tightness and
+Lemma~\ref{ce:lifting}. That lemma proves that every deep hole
+occurs among the candidates. Conversely,
+\eqref{ce:finite-empty} says $\rho_{P,\Lambda}(c)\ge d/2$;
+the universal upper bound makes it an equality.
+Each recursion reduces dimension. The simplex tests use only
+integral linear algebra and finite residue enumeration. Rational
+polyhedral operations give the sections, quotients, and lifts.
+Finally, the body in \eqref{ce:finite-empty} is bounded: enumerate
+the finitely many lattice points in a rational coordinate bounding
+box and test its strict facet inequalities exactly. This proves
+termination and exactness, with no efficiency claim.
+\end{proof}
+
+\begin{remark}[A useful obstruction]
+The same argument gives a geometric rejection test before the
+last enumeration. If $P$ is extremal, $y$ is a quotient deep hole
+which is the projection of a deep hole of $P$, and
+$u\in\beta Q\cap(y-\pi\Lambda)$, then the fiber
+$\beta P\cap\pi^{-1}(u)$ is a singleton. Indeed all its points
+$v$ would make $x-z-v$ simplex deep holes, for a fixed deep lift
+$x$ and fixed lattice lift $z$ of $y-u$. A positive-dimensional
+convex fiber would give infinitely many points in the discrete
+set of simplex deep holes, a contradiction. A quotient state
+without a deep lift is not subject to this obstruction.
+\end{remark}
+
+\paragraph{Relation to existing algorithms.}
+Finite computability of a rational polytope's covering radius is
+already known; see Cslovjecsek--Malikiosis--Nasz\'odi--Schymura
+\cite{ComputingRadius}, and the earlier algorithm of Kannan cited
+there. The contribution proved here is the specialized recursive
+state description at the non-hollow extremal value, the sharp
+dimension-only count of all such states, and its rigidity statement.
+No first algorithm or improvement in worst-case running time is
+claimed.
+
+
+\appendix
+\section{Recalled input: the one-small-column planar theorem}
+\label{app:onesmall}
+This earlier lemma is included to make the three-weight proof
+independent of access to the preceding manuscript.
+
+\begin{lemma}[Three first-event bounds]
+\label{r4w:lem-first-events}
+Let $p,q\ge1$ be integers and $0<b\le1$. For all real $t_0,t_1,t_2$,
+\[
+ \min_{s\in\mathbb R}
+ \bigl(\{t_0+s\}+b\{t_1+ps\}+b\{t_2+qs\}\bigr)
+ \le \frac{b(2+b)}{1+2b}.
+\]
+\end{lemma}
+\begin{proof}
+Rotate the parameter to make $t_0=0$ modulo one, and replace the other
+phases by their representatives in $[0,1)$. Their first subsequent
+crossing times are
+\[
+ \alpha=\frac{1-t_1}{p},\qquad
+ \beta=\frac{1-t_2}{q}.
+\]
+Interchanging the two equally weighted coordinates, if needed, makes
+$\alpha\le\beta$. Both times belong to $(0,1]$. Put
+$C=1+b(p+q)$ and denote the displayed fractional-part sum by $F$.
+Then
+\begin{align*}
+ F(0)&=L_0:=2b-bp\alpha-bq\beta,\\
+ F(\alpha)&\le L_1:=b+(1+bq)\alpha-bq\beta,\\
+ F(\beta)&\le L_2:=(1+bp)\beta-bp\alpha.
+\end{align*}
+The second estimate subtracts at least the first $p$-coordinate jump.
+The third subtracts at least one jump of each of the two coordinates.
+Any extra crossings only strengthen these inequalities, including
+coincidences and a crossing of the first coordinate at time one.
+
+The positive numbers $1/C,bp/C,bq/C$ sum to one. Their corresponding
+weighted average of $L_0,L_1,L_2$ is
+\[
+ \frac{L_0+bpL_1+bqL_2}{C}
+ =\frac{b(2+bp)}{1+b(p+q)}.
+\]
+Thus the minimum of $F$ is at most this last quantity. Finally,
+\[
+ \frac{b(2+b)}{1+2b}
+ -\frac{b(2+bp)}{1+b(p+q)}
+ =\frac{b^2\bigl((1-b)(p-1)+(2+b)(q-1)\bigr)}
+ {(1+2b)(1+b(p+q))}\ge0.
+\]
+This proves the lemma without a restriction on later crossings.
+\end{proof}
+
+\begin{lemma}[Planar unimodular refinement inside a triangle]
+\label{r4w:lem-fan}
+Let $v,w$ be independent vectors of a planar lattice $\Lambda$.
+Their cone admits a subdivision into unimodular cones whose primitive
+ray generators all lie in $\operatorname{conv}(0,v,w)$.
+\end{lemma}
+\begin{proof}
+First shorten the two boundary vectors to their primitive generators.
+Suppose a current pair of primitive generators $u_1,u_2$ has lattice
+determinant $D>1$. A nonzero lattice class in their half-open
+fundamental parallelogram has a representative
+$z=\alpha u_1+\beta u_2$ with $0\le\alpha,\beta<1$.
+Primitivity of the two generators forces $0<\alpha,\beta<1$.
+If $\alpha+\beta\le1$, retain $z$; otherwise retain $u_1+u_2-z$.
+The retained vector belongs to $\operatorname{conv}(0,u_1,u_2)$
+and lies strictly between the boundary rays. Shorten it to its
+primitive generator and subdivide along that ray.
+Both new positive lattice determinants are strictly smaller than $D$.
+Induction terminates in determinant-one cones. Every new triangle
+lies in its predecessor, so all generators remain in the original
+triangle.
+\end{proof}
+
+\begin{theorem}[Planar stretching with at most one fixed column]
+\label{r4w:thm-stretch}
+Let $u_1,\ldots,u_N$ be vectors of a planar lattice $\Lambda$,
+with $0\in\operatorname{int}\operatorname{conv}(u_1,\ldots,u_N)$.
+Keep at most one of the columns fixed and multiply all the others
+by $r\ge1$. For their resulting convex hull $P_r$,
+\[
+ \boxed{\displaystyle
+ \mu(P_r,\Lambda)\le G(r):=\frac{2r+1}{r(r+2)}.}
+\]
+The columns need not be primitive, distinct, or generators of $\Lambda$.
+\end{theorem}
+\begin{proof}
+The case $r=1$ is included below. Delete zero columns, which does not
+affect origin-interiority or the convex hull. A minimally supported
+positive dependence among the columns consists either of an opposite
+pair or of a triangle containing zero in its interior.
+
+First consider such a triangle. If none of its vertices is fixed,
+its scaled hull has covering radius at most $1/r\le G(r)$ by the
+planar non-hollow bound. If exactly one is fixed, write its hull as
+\[
+ T_r=\operatorname{conv}(v_0,rv_1,rv_2),
+ \qquad 0\in\operatorname{int}\operatorname{conv}(v_0,v_1,v_2).
+\]
+The vectors $v_1,v_2$ are independent, and $-v_0$ lies strictly
+inside their positive cone. Apply Lemma~\ref{r4w:lem-fan} to that cone.
+
+If $-v_0$ lies strictly inside one of its unimodular cones, let
+$w_1,w_2$ be the generators of that cone. Then
+\[
+ v_0=-pw_1-qw_2\quad\text{for integers }p,q\ge1,
+\]
+and
+$T'_r=\operatorname{conv}(v_0,rw_1,rw_2)\subseteq T_r$.
+The inclusion holds because $rw_j\in\operatorname{conv}(0,rv_1,rv_2)$
+and $0\in T_r$. For any point written in the integer directions
+$v_0,w_1,w_2$, fractional-part rounding along their relation
+$(1,p,q)$ bounds its distance to $\Lambda$ by
+\[
+ \min_s\bigl(\{t_0+s\}+r^{-1}\{t_1+ps\}
+                    +r^{-1}\{t_2+qs\}\bigr).
+\]
+Lemma~\ref{r4w:lem-first-events}, with $b=1/r$, bounds this by
+$G(r)$, as required.
+
+If $-v_0$ lies on a ray of the subdivision, write $v_0=-Aw$
+with $w$ primitive and $A\ge1$ an integer. The section of $T_r$
+along $\mathbb Rw$ contains $[-Aw,rw]$, of lattice length at
+least $r+1$. The quotient of $T_r$ by this line has lattice
+length at least $2r$: its two nonzero endpoint candidates are
+$r$ times opposite-sign nonzero integers. Section/projection
+subadditivity therefore gives
+\[
+ \mu(T_r,\Lambda)\le\frac1{r+1}+\frac1{2r}\le G(r),
+\]
+where
+\[
+ G(r)-\left(\frac1{r+1}+\frac1{2r}\right)
+ =\frac{r-1}{2(r+1)(r+2)}\ge0.
+\]
+
+It remains to handle an opposite pair in the original columns.
+Let $W$ be its line. If one selected column is fixed, the section
+of $P_r$ along $W$ has lattice length at least $r+1$, and all
+nonzero projected columns are scaled, so the quotient interval
+has lattice length at least $2r$. If both selected columns are
+scaled, the section length is at least $2r$. At most one nonzero
+projected column is fixed; because the unscaled quotient has
+opposite-sign nonzero integer endpoints, the scaled quotient has
+length at least $r+1$. Thus both cases give the same preceding
+bound. Each selected triangle or section lies in $P_r$, so
+monotonicity completes the proof.
+\end{proof}
+
+
+
+\section{Checks and the precise remaining questions}
+
+\subsection{Mathematical and exact arithmetic checks}
+
+The arguments are analytic proofs. The residue bounds include
+coincident jumps, the sharp event schedules construct actual phases,
+and the weighted upper bound ranges over every rational planar
+quotient. The gauge-product argument proves containment separately
+inside each coordinate-order cone; it does not assume that its
+auxiliary piecewise-linear function is globally convex. The
+deep-hole recursion uses the full ambient lattice at every stage.
+
+The following finite checks were also performed with exact rational
+arithmetic:
+\begin{itemize}
+\item The new arithmetic bound was checked on 2,500 unit-weight
+flows and 2,500 commensurable weighted flows, including coincident
+events. The sharp schedule for $(1^k,a^\ell)$ was checked on
+all $1\le k,\ell,a\le10$, another 1,000 cases.
+\item The two-event formula was checked on 1,008 exact optimization
+cases and 6,552 actual rational phase certificates, followed by
+243 integer-ratio cases and seven named examples.
+\item Exact-cover enumeration gave $d!$ deep-hole classes for $T_d$,
+$1\le d\le6$, and 12 classes for the four-dimensional relation
+$(1,1,1,1,2)$, consistent with the direct count in the text.
+\end{itemize}
+These checks do not replace the general proofs. Independent readings
+checked the event-deficit argument, the two-event attainment and
+dimension truncation, the permutation-simplex packing, and the
+deep-hole lifting argument. The proof text incorporates the
+zero-column qualification in the planar reduction and the
+deep-lift qualification in the fiber obstruction.
+
+\subsection{What is still not established}
+
+The new arithmetic theorem proves D whenever a suitable simplex
+section satisfies $(h+1)G(q)\le2Q$. It does not prove that such a
+certificate always exists. The relation $(1,3,4)$ already shows
+why the gcd bound alone cannot supply an unrestricted proof.
+The prime-volume theorem and repeated-relation exact family are
+fully established without that further reduction.
+
+The second covering minimum is completely determined here for the
+specified three-weight family, including irrational weights.
+The argument eliminating unequal planar frequencies uses $c\ge2b$.
+It does not imply the missing interval $b<c<2b$, a formula for
+independently varying later weights, or general higher covering
+indices.
+
+The gauge-aggregation theorem proves F for the stated geometric
+class. An arbitrary convex body need not have homothetic sections
+with fixed factor gauges and one common monotone coefficient body.
+A reduction of general bodies to that class would need to control
+both volume and all covering minima; it is not supplied here.
+The obstruction at the end of the aggregation section explains why
+simple spectrum-preserving reduction to intervals cannot work.
+
+The recursive equality criterion applies to every non-hollow
+lattice polytope and terminates. It decides equality and enumerates
+all last-covered classes when equality occurs. A concise geometric
+description of all extremal polytopes, and a general reflexivity
+theorem for them, are not proved. General finite algorithms for
+covering radius are existing results \cite{ComputingRadius}; the
+specific state structure and sharp counts are what is proved here.
+
+\subsection{Reproducibility and status}
+
+The manuscript is one standalone \LaTeX{} source with its bibliography
+included. All new estimates, sharpness constructions, and finite
+reductions are given in the source. The only external geometric
+inputs beyond definitions are standard covering-minimum quotient
+facts and published planar covering-product bounds; the basic
+flow, section argument, simplex criterion, and planar stretching
+input are reproduced.
+
+No universal literature-priority claim is made for these transfers.
+The referenced papers fix the original questions and the established
+ingredients. The scope labels refer to what has been proved in this
+manuscript and the preceding work, rather than an assertion of external
+peer review, formal verification, or resolution of every conjecture
+in the source paper.
+
+\begin{thebibliography}{99}
+\bibitem{CSS}
+G. Codenotti, F. Santos, and M. Schymura,
+\emph{The covering radius and a discrete surface area for non-hollow
+simplices}, Discrete Comput. Geom. 67 (2022), 65--111.
+\href{https://doi.org/10.1007/s00454-021-00330-3}{doi:10.1007/s00454-021-00330-3}.
+Open text: \href{https://pmc.ncbi.nlm.nih.gov/articles/PMC8709830/}{PMC8709830}.
+
+\bibitem{GMS}
+B. Gonz\'alez Merino and M. Schymura,
+\emph{On densities of lattice arrangements intersecting every
+$i$-dimensional affine subspace}, Discrete Comput. Geom. 58
+(2017), 663--685.
+\href{https://doi.org/10.1007/s00454-017-9911-x}{doi:10.1007/s00454-017-9911-x}.
+The preprint lists the second author as Matthias Henze.
+
+\bibitem{Schnell}
+U. Schnell, \emph{A Minkowski-type theorem for covering minima
+in the plane}, Geom. Dedicata 55 (1995), 247--255.
+\href{https://doi.org/10.1007/BF01266316}{doi:10.1007/BF01266316}.
+
+\bibitem{Krivokuca}
+K. Krivoku\'ca, \emph{Upper bounds on covering minima of convex bodies},
+arXiv:2601.15173v1 (21 January 2026).
+\href{https://arxiv.org/html/2601.15173v1}{Full text}.
+
+\bibitem{ComputingRadius}
+J. Cslovjecsek, R. D. Malikiosis, M. Nasz\'odi, and M. Schymura,
+\emph{Computing the covering radius of a polytope with an application
+to lonely runners}, arXiv:2009.12080v2 (2021).
+\href{https://real.mtak.hu/152905/1/2009.12080.pdf}{Primary manuscript}.
+
+
+\bibitem{VMRC200}
+Verifiable Mathematical Reasoning Corpus, manuscript [200], \emph{Weighted fractional-part flows and sharp lattice covering bounds}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B200\%5D\%20lattice_covering_flows.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus030}
+Verifiable Mathematical Reasoning Corpus, manuscript [030], \emph{Arithmetic and observation classifications, recovery, and transcendence barriers}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B030\%5D\%20Arithmetic\%20and\%20Observation\%20Classifications\%2C\%20Recovery\%2C\%20and\%20Transcendence\%20Barriers.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus029}
+Verifiable Mathematical Reasoning Corpus, manuscript [029], \emph{Corpus manuscript [029], simultaneous returns of finitely many phases}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B029\%5D\%20Observation\%20and\%20Recovery\%20\%28Geometry\%2C\%20Mixtures\%2C\%20and\%20Spectral\%20Inversion\%29.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus041}
+Verifiable Mathematical Reasoning Corpus, manuscript [041], \emph{Ewald points of monotone polytopes and branching simplex bundles}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B041\%5D\%20Ewald\%20points\%20of\%20monotone\%20polytopes\%20the\%20minimum\%20in\%20dimension\%20eight\%20and\%20branching\%20simplex\%20bundles.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus123}
+Verifiable Mathematical Reasoning Corpus, manuscript [123], \emph{Neighborhoods, kernels, and fractional zeros}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B123\%5D\%20Neighborhoods_Kernels_and_Fractional_Zeros.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus185}
+Verifiable Mathematical Reasoning Corpus, manuscript [185], \emph{Three proof transfers unified}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B185\%5D\%20three_proof_transfers_unified.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\bibitem{Corpus215}
+Verifiable Mathematical Reasoning Corpus, manuscript [215], \emph{Two frontiers: spectral realization and tiling}. 
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/ac1492a50784be919fe0b5e8f19f96f8d221a22e/\%5B215\%5D\%20two_frontiers.tex}{Frozen source at revision \texttt{ac1492a5}}.
+
+\end{thebibliography}
+\end{document}
