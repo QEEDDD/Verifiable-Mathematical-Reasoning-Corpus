@@ -1,0 +1,1579 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,enumitem,xcolor,fancyhdr,listings,textcomp}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={The Randic index is at least the average distance: a proof of Fajtlowicz's conjecture},
+ pdfsubject={Randic index, average distance, Graffiti conjecture, weighted distance inequality, stationarity-deletion principle}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small The Randi\'c index is at least the average distance}
+\fancyhead[R]{\small VMRC research manuscript}
+\fancyfoot[C]{\thepage}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\numberwithin{equation}{section}
+\newcommand{\ad}{\operatorname{ad}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\hi}{\operatorname{hi}}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,
+  frame=single,framerule=0.3pt,rulecolor=\color{black!40},showstringspaces=false,
+  upquote=true}
+\setlength{\emergencystretch}{2em}
+
+\title{\bfseries The Randi\'c index is at least the average distance:\\ a proof of Fajtlowicz's conjecture\\[5pt]
+\large\normalfont A stationarity--deletion principle for weighted distance sums}
+\author{Verifiable Mathematical Reasoning Corpus --- research manuscript\thanks{Prepared with an AI system (Claude, Anthropic) as a continuation of the Verifiable Mathematical Reasoning Corpus (VMRC). The programs for the finite verification are reproduced in Appendix~\ref{app:code}. This manuscript has not been refereed.}}
+\date{20 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fbox{\parbox{0.93\linewidth}{\small\textbf{Status.}
+This manuscript claims a complete proof of Fajtlowicz's 1988 conjecture
+$R(G)\ge\ad(G)$. One step of the proof is a finite exhaustive computation over
+the pendant-vertex decorations of all two-connected graphs with at most nine
+vertices (Section~\ref{sec:budget} and Appendix~\ref{app:code}): the combinatorial
+quantities are computed in exact integer arithmetic, and the final comparison is
+made in floating point with a margin of $0.38$. It was carried out by two
+independently written programs. Everything else is proved in the text. The argument
+was produced with an AI system and checked by the computations listed in
+Section~\ref{sec:remarks} and by a separate AI review pass, but it has not been
+refereed by humans or formally verified, and priority cannot be certified by a
+literature search alone (Section~\ref{sec:audit}).}}
+\end{center}
+
+\begin{abstract}
+For a connected graph $G$ let $R(G)=\sum_{uv\in E(G)}(d_ud_v)^{-1/2}$ be its
+Randi\'c index and $\ad(G)$ the average distance between two distinct vertices.
+In 1988 Fajtlowicz conjectured, on the basis of the program Graffiti, that
+$R(G)\ge\ad(G)$ for every connected graph. The conjecture was known for trees
+(Cygan, Pilipczuk and \v{S}krekovski), for unicyclic graphs, and under various
+restrictions on degrees, diameter or blocks. We prove it for all connected graphs,
+with equality only for $K_2$.
+
+The proof goes through the \emph{weighted distance inequality}
+\[
+ \sum_{x\ne y}p_xp_y\,d_G(x,y)+2\sum_xp_x^2\ \le\ M(G)+1,\qquad
+ M(G)=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)},
+\]
+valid for every probability vector $p$ on the vertices of a connected graph with
+at least two vertices. Two-point measures give the diameter theorem
+$M(G)\ge\diam(G)/2$ of Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski, and the uniform
+measure, combined with an elementary comparison of $R$ and $M$, gives Fajtlowicz's
+conjecture. The new tool is a
+\emph{stationarity--deletion principle}. At a maximiser $p$ of the left-hand side
+the first-order optimality conditions turn the deletion of a vertex $u$ of mass
+$t=p_u<\frac12$ into the inequality
+$(1-t)^2\bigl(M(G)-M(G-u)\bigr)<(M(G)-1)\,t^2$ for a minimal counterexample. Thus
+a vertex whose deletion lowers $M$ has to carry a definite amount of mass, and the
+total mass one becomes a budget. For the graphs that survive the classical reductions
+(two-connected cores with pendant vertices, all of whose core edges are
+``supportive'') we show that the budget is exceeded: by an analytic estimate when
+the core has at least ten vertices, and by an exhaustive computer enumeration of
+the decorations of the $201{,}727$ two-connected graphs with at most nine vertices,
+carried out by two independently written programs.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{The conjecture}
+All graphs are finite, simple and undirected. For a graph $G$ write $d_v=d_G(v)$
+for the degree of $v$, and for a connected graph of order $n\ge2$ let $d_G(x,y)$
+be the distance and
+\[
+ R(G)=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}},\qquad
+ W(G)=\sum_{\{x,y\}}d_G(x,y),\qquad \ad(G)=\frac{W(G)}{\binom n2}.
+\]
+The index $R$ was introduced by Randi\'c \cite{Randic}; $\ad$ is the average
+(mean) distance. In his report on the conjectures of the program Graffiti,
+Fajtlowicz \cite{Faj} proposed two inequalities linking $R$ with distances:
+$R(G)\ge\operatorname{rad}(G)-1$, and the following, which is the subject of
+this paper (we quote it in the form used in \cite{CPS,YL,LiShi}).
+
+\medskip\noindent\textbf{Conjecture (Fajtlowicz, 1988).}
+\emph{For every connected graph $G$, $R(G)\ge\ad(G)$.}
+\medskip
+
+Cygan, Pilipczuk and \v{S}krekovski \cite{CPS} proved the conjecture for trees, You
+and Liu \cite{YL} for unicyclic graphs, Li and Shi \cite{LiShi} for graphs with
+$\delta(G)\ge n/5$ and $n\ge15$, and Dalf\'o \cite{Dalfo} for graphs of sufficiently
+large order whose minimum degree exceeds (approximately) $\Delta^{1/3}$. The
+unrefereed collection \cite{VMRC189} of the Verifiable Mathematical Reasoning
+Corpus contains nine manuscripts on the conjecture (its papers 06--14). They prove
+it for diameter at most $53$, for maximum degree at most $100$, for circuit rank at
+most $155$, and for graphs all of whose blocks satisfy certain diameter or degree
+conditions. Papers 11--14 of that collection introduce the weighted inequality of
+Theorem~\ref{thm:W} below, prove it when all distances are truncated at $40$, and
+reduce it to two-connected graphs with pendant vertices; the collection records
+that the unrestricted conjecture remained open there. The first of the two
+conjectures is related to the theorem $M(G)\ge\diam(G)/2$ of Dvo\v{r}\'ak,
+Lidick\'y and \v{S}krekovski \cite{DLS}, where
+\[
+ M(G)=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)}\ \le\ R(G)
+\]
+is their modified index (denoted $R'$ in \cite{DLS}).
+
+\subsection{Results}
+For a connected graph $G$ on vertex set $V$ and a probability vector $p$ on $V$
+put
+\begin{equation}\label{eq:F}
+ F(G;p)=\sum_{x\ne y}p_xp_y\,d_G(x,y)+2\sum_{x}p_x^2,\qquad F(G)=\max_pF(G;p),
+\end{equation}
+the first sum being over ordered pairs of distinct vertices. The maximum exists
+because $F(G;\cdot)$ is continuous on the simplex of probability vectors; a vector
+at which it is attained is called a \emph{maximiser}.
+
+\begin{theorem}[Weighted distance inequality]\label{thm:W}
+For every connected graph $G$ with at least two vertices, $F(G)\le M(G)+1$.
+\end{theorem}
+
+\begin{theorem}[Fajtlowicz's conjecture]\label{thm:F}
+For every connected graph $G$ with at least two vertices, $R(G)\ge\ad(G)$, with
+equality if and only if $G=K_2$.
+\end{theorem}
+
+\begin{corollary}\label{cor:main}
+Let $G$ be a connected graph of order $n\ge2$.
+\begin{enumerate}[label=(\alph*)]
+\item {\rm (Dvo\v{r}\'ak--Lidick\'y--\v{S}krekovski \cite{DLS})} $M(G)\ge\diam(G)/2$.
+\item For any $k\ge2$ distinct vertices $x_1,\dots,x_k$,
+$\ \frac1{k^2}\sum_{i\ne j}d_G(x_i,x_j)\le M(G)+1-\frac2k$.
+\item $M(G)\ge\bigl(1-\frac1n\bigr)\ad(G)-1+\frac2n$.
+\end{enumerate}
+\end{corollary}
+
+Theorem~\ref{thm:W} is sharp in several ways: equality holds for every star with
+at least two leaves and every measure carried by its leaves, for every path with at
+least three vertices and the two-point measure on its ends, and for some graphs
+with cycles (Remark~\ref{rem:sharp}).
+
+\subsection{Method}
+Theorem~\ref{thm:F} follows from Theorem~\ref{thm:W} by an elementary comparison of
+$R$ and $M$ (Section~\ref{sec:proofs}). Theorem~\ref{thm:W} is proved by considering a
+counterexample $G$ with the fewest vertices and then the fewest edges, together
+with a maximiser $p$ of $F(G;\cdot)$.
+
+\emph{Classical reductions} (Section~\ref{sec:red}). Deleting a cycle edge that does
+not increase $M$, and the cut-vertex padding of \cite[Lemma~4]{DLS} in the weighted
+form of \cite{VMRC189}, reduce $G$ to a two-connected core with at most one pendant
+vertex at each core vertex, in which the deletion of any core edge strictly
+increases $M$ (an \emph{irreducible decorated block}).
+
+\emph{Stationarity--deletion} (Section~\ref{sec:sd}; this is the new ingredient). Let
+$u$ be a vertex whose deletion leaves a connected graph, with mass $t=p_u$.
+Because $p$ is a maximiser, $\sum_yp_y\,d(u,y)=F(G)-2t$ if $t>0$. Deleting $u$,
+renormalising $p$ and applying minimality to $G-u$ therefore gives a closed
+inequality in which the unknown distances have disappeared:
+\[
+ (1-2t)\bigl(F(G)-M(G)-1\bigr)\ \le\ (M(G)-1)\,t^2-(1-t)^2\bigl(M(G)-M(G-u)\bigr).
+\]
+In a counterexample the left side is positive when $t<\frac12$, so
+$t\ge\theta\bigl(M(G)-M(G-u)\bigr)$ for an explicit increasing function $\theta$:
+\emph{a vertex whose deletion lowers $M$ must carry mass}. Summing over suitable
+deletable vertices shows that a minimal counterexample satisfies $\Theta(G)\le1$
+for a purely combinatorial quantity $\Theta$ (the \emph{mass budget}).
+
+\emph{The budget is exceeded} (Section~\ref{sec:budget}). We prove $\Theta(G)>1$ for
+every irreducible decorated block. If the core has $h\ge10$ vertices this follows
+from a lower bound for the sum of the deletion values of the core vertices, the
+constraints that supportive edges impose on them, and a counting bound
+$M\ge\frac{15}4$; for $h\le9$ it is verified by an exhaustive computer enumeration.
+
+\paragraph{New problem, new method, application.}
+The paper has the following logical structure. \emph{(i) A new problem}: the
+\emph{budget problem}, which asks whether $\Theta(G)>1$ for every irreducible
+decorated block $G$ (Proposition~\ref{prop:exceed}); it is a statement about degrees
+only and does not mention distances or measures. \emph{(ii) A new method}: the
+stationarity--deletion principle (Lemma~\ref{lem:sdel} and
+Proposition~\ref{prop:budget}), which converts any minimal counterexample to the
+weighted inequality into a negative instance of the budget problem, and the
+site-deletion calculus of Section~\ref{sec:blocks}, which solves the budget
+problem. \emph{(iii) Application to a known problem}: Theorem~\ref{thm:W} and,
+through it, Fajtlowicz's conjecture in its original form (Theorem~\ref{thm:F}).
+
+\paragraph{Relation to earlier work.}
+The functional \eqref{eq:F} and the inequality of Theorem~\ref{thm:W} were
+introduced, as an open problem, in papers 11--14 of the collection \cite{VMRC189}.
+Those papers also contain the deduction of Fajtlowicz's inequality from the weighted
+one (reproduced in Section~\ref{sec:proofs}), the weighted form of the cut-vertex
+padding of \cite{DLS} (Lemma~\ref{lem:cut}), and the description of an edge-minimal
+obstruction as a two-connected core with at most one pendant vertex at each core
+vertex in which the deletion of any core edge strictly increases $M$, together with
+the consequences (P1) and (P2) of Lemma~\ref{lem:struct}. Lemma~\ref{lem:cut} has the
+same statement as Lemma~4 of \cite{DLS}; the use of vertices without neighbours of
+smaller degree goes back to Lemma~5 of \cite{DLS}, and the counting argument of
+Lemma~\ref{lem:count} to Lemma~7 of \cite{DLS} (numbering of the preprint version).
+We give complete proofs of all these statements. Thus no result of the unrefereed
+collection \cite{VMRC189} is used as a black box, and neither is the theorem of
+\cite{DLS}, which is reproved as Corollary~\ref{cor:main}(a). The only published
+result used is the bound $W(G)\le\binom{n+1}3$ \cite{EJS}, for which a proof is
+included.
+
+New in this paper are the stationarity--deletion inequality
+(Lemma~\ref{lem:sdel}), the mass budget (Proposition~\ref{prop:budget}), the
+deletion values of the sites with their sum inequality and upper bounds
+(Lemmas~\ref{lem:X}--\ref{lem:upper}), and the proof that the budget is exceeded
+(Proposition~\ref{prop:exceed}), including the enumeration behind
+Lemma~\ref{lem:small}. In \cite{VMRC189} the weighted inequality had been verified
+directly for all cores with at most eight vertices and proved for truncated
+distances; the first-order optimality conditions of the maximiser were not used
+there.
+
+\section{Notation and elementary formulas}\label{sec:prelim}
+
+Let $G$ be a graph. For an edge $uv$ its \emph{weight} is $1/\max(d_u,d_v)$, so
+$M(G)$ is the total weight. If $G$ has an edge, then $M(G)\ge1$: the $\Delta$ edges
+at a vertex of maximum degree $\Delta$ have weight $1/\Delta$ each. For a vertex $w$
+with $d_w\ge2$ put
+\[
+ g_w=d_w(d_w-1),\qquad \ell(w)=\#\{z\in N(w):d_z<d_w\},
+\]
+the number of \emph{lower} neighbours of $w$. A \emph{leaf} is a vertex of degree
+one. For a statement $S$ we write $[S]$ for $1$ if $S$ holds and $0$ otherwise.
+For a connected graph $G$ let $K_G$ be the symmetric matrix with $K_G(x,y)=d_G(x,y)$
+for $x\ne y$ and $K_G(x,x)=2$, so that $F(G;p)=p^{\mathsf T}K_Gp$.
+
+\begin{lemma}[Monotonicity]\label{lem:mono}
+Let $G'$ be a connected subgraph of a connected graph $G$ and let $p$ be a
+probability vector on $V(G)$ with $\supp p\subseteq V(G')$. Then
+$F(G;p)\le F(G';p)$.
+\end{lemma}
+\begin{proof}
+$d_{G'}(x,y)\ge d_G(x,y)$ for $x,y\in V(G')$, and the diagonal entries agree.
+\end{proof}
+
+\begin{lemma}[Deletion formulas]\label{lem:del}
+\begin{enumerate}[label=(\alph*)]
+\item Let $uv\in E(G)$ with $d_u,d_v\ge2$. Then
+\[
+ M(G-uv)-M(G)=\frac{\ell(u)-[d_v<d_u]}{g_u}+\frac{\ell(v)-[d_u<d_v]}{g_v}
+ -\frac1{\max(d_u,d_v)} .
+\]
+\item Let $v'$ be a leaf with neighbour $v$, where $d_v\ge2$. Then
+$M(G)-M(G-v')=\dfrac{d_v-\ell(v)}{g_v}\ \ge0$.
+\item Let $v\in V(G)$, let $D_0$ be a set of leaves adjacent to $v$, put
+$D=\{v\}\cup D_0$ and $N=N(v)\setminus D_0$, and assume $d_w\ge2$ for all $w\in N$.
+Then
+\[
+ M(G)-M(G-D)=\sum_{w\in N(v)}\frac1{\max(d_v,d_w)}
+ -\sum_{w\in N}\frac{\ell(w)-[d_v<d_w]}{g_w}-\tau,
+\]
+where $\tau\ge0$ is the sum of $1/g_w$ over all edges $wz$ of $G$ with $w,z\in N$
+and $d_w=d_z$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+If the degree of $w$ drops from $d_w$ to $d_w-1$ while the degree of a neighbour
+$z$ is unchanged, the weight of $wz$ changes exactly when $d_z<d_w$, and then it
+increases from $1/d_w$ to $1/(d_w-1)$, that is, by $1/g_w$. If the degrees of both
+ends of an edge drop by one, its weight increases by $1/g$ of the end of larger
+degree.
+
+(a) Only $d_u$ and $d_v$ change. The edges at $u$ other than $uv$ whose weight
+increases are those to the $\ell(u)-[d_v<d_u]$ lower neighbours of $u$ different
+from $v$; similarly at $v$; and the weight $1/\max(d_u,d_v)$ of $uv$ is lost.
+
+(b) The lost edge has weight $1/d_v$, and the weight increases on the $\ell(v)-1$
+edges from $v$ to its lower neighbours other than $v'$. Hence the difference is
+$1/d_v-(\ell(v)-1)/g_v=(d_v-\ell(v))/g_v$, which is nonnegative because
+$\ell(v)\le d_v$.
+
+(c) The lost edges are those at $v$ (a leaf edge $vv'$ has weight $1/d_v$). Exactly
+the vertices of $N$ lose one unit of degree. For $w\in N$ and a neighbour
+$z\notin N\cup D$ of $w$ the weight of $wz$ increases by $1/g_w$ iff $d_z<d_w$.
+For an edge $wz$ with $w,z\in N$ the weight increases by $1/g_w$ if $d_z<d_w$,
+by $1/g_z$ if $d_w<d_z$, and by $1/g_w$ if $d_w=d_z$. Summing, every $w\in N$
+contributes $1/g_w$ for each of its lower neighbours other than $v$, and the edges
+inside $N$ with equal end degrees contribute $\tau$.
+\end{proof}
+
+\section{Reductions}\label{sec:red}
+
+Call a connected graph $G$ with at least two vertices \emph{good} if
+$F(G)\le M(G)+1$ and \emph{bad} otherwise. Theorem~\ref{thm:W} says that there are
+no bad graphs. \emph{Throughout Sections~\ref{sec:red} and \ref{sec:sd} we assume
+that bad graphs exist, we let $G$ be a bad graph for which the pair
+$(|V(G)|,|E(G)|)$ is lexicographically smallest, and we fix a maximiser $p$ of
+$F(G;\cdot)$.} Thus $F(G;p)=F(G)>M(G)+1$, and every connected graph with at least
+two vertices that has fewer vertices than $G$, or the same number of vertices and
+fewer edges, is good.
+
+\begin{lemma}\label{lem:base}
+$K_2$, all stars and all double stars are good. (A double star consists of two
+adjacent vertices, each with at least one further neighbour, all further vertices
+being leaves.)
+\end{lemma}
+\begin{proof}
+Let $c$ be the centre of a star $K_{1,k}$, $k\ge1$. Then $K(x,y)=2$ unless
+$\{x,y\}$ consists of $c$ and a leaf, where it is $1$; hence
+$F(G;p)=2-2p_c(1-p_c)\le2=M(G)+1$. In a double star with centres $a,b$ write
+$\alpha,\beta$ for the masses of the leaves at $a$ and at $b$. Since $K\le2$
+except for $K=3$ between leaves at different centres, and $K=1$ on the pairs
+$\{a,\text{leaf of }a\}$, $\{b,\text{leaf of }b\}$, $\{a,b\}$,
+\[
+ F(G;p)=2+2\alpha\beta-2p_a\alpha-2p_b\beta-2p_ap_b\le2+2\alpha\beta\le\tfrac52 .
+\]
+If $a,b$ have $k\ge l\ge1$ leaves, then $M(G)=\frac{k}{k+1}+\frac{l}{l+1}+\frac1{k+1}
+=1+\frac l{l+1}\ge\frac32$.
+\end{proof}
+
+\begin{lemma}[Subgraph principle]\label{lem:sub}
+Let $G'$ be a connected proper subgraph of $G$ with at least two vertices such that
+$\supp q\subseteq V(G')$ for some maximiser $q$ of $F(G;\cdot)$. Then
+$M(G')>M(G)$. In particular:
+\begin{enumerate}[label=(\alph*)]
+\item every edge $e$ of $G$ that lies on a cycle is \emph{supportive}:
+$M(G-e)>M(G)$;
+\item every leaf of $G$ has positive mass under every maximiser of $F(G;\cdot)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+$G'$ has fewer vertices than $G$, or the same vertices and fewer edges, so it is
+good. By Lemma~\ref{lem:mono}, $M(G)+1<F(G;q)\le F(G';q)\le M(G')+1$. For (a),
+$G-e$ is connected and contains all vertices. For (b), suppose $q_z=0$ for a leaf $z$ and a
+maximiser $q$. As $G\ne K_2$ by Lemma~\ref{lem:base}, the neighbour of $z$ has degree
+at least $2$ and $G'=G-z$ is connected with at least two vertices; then
+$M(G')>M(G)$ contradicts Lemma~\ref{lem:del}(b).
+\end{proof}
+
+\begin{lemma}[Cut vertices]\label{lem:cut}
+For every cut vertex $v$ of $G$, all components of $G-v$ except one consist of a
+single vertex.
+\end{lemma}
+\begin{proof}
+Suppose two components of $G-v$ have more than one vertex. Then
+$V(G)\setminus\{v\}=A\sqcup B$ with no edges between $A$ and $B$, where each of $A$
+and $B$ contains such a component. Let $G_A$ be obtained from $G[A\cup\{v\}]$ by
+attaching $d_B:=|N(v)\cap B|$ new leaves to $v$, and define $G_B$ symmetrically with
+$d_A=|N(v)\cap A|$ new leaves. Here $d_A,d_B\ge1$ because $G$ is connected, and
+$G_A$, $G_B$ are connected graphs with at least two vertices. All vertices of $A\cup\{v\}$ have the same degree in
+$G_A$ as in $G$, so the old edges keep their weights and the new edges have total
+weight $d_B/d_v$; hence
+\begin{equation}\label{eq:padM}
+ M(G_A)+M(G_B)=M(G)+\frac{d_A+d_B}{d_v}=M(G)+1 .
+\end{equation}
+$G_A$ has $|A|+1+d_B\le|V(G)|$ vertices. If equality holds, every vertex of $B$ is
+adjacent to $v$, and $G_A$ has $|E(G[B])|$ fewer edges than $G$; this number is
+positive because $B$ contains a component with an edge. So $G_A$, and likewise
+$G_B$, is good.
+
+Fix new leaves $a^\ast$ of $G_A$ and $b^\ast$ of $G_B$ and define
+$\pi_A\colon V(G)\to V(G_A)$ by $\pi_A(x)=x$ for $x\in A$ and $\pi_A(x)=a^\ast$
+otherwise; define $\pi_B$ symmetrically. We claim that for all $x,y\in V(G)$
+\begin{equation}\label{eq:padK}
+ K_{G_A}(\pi_Ax,\pi_Ay)+K_{G_B}(\pi_Bx,\pi_By)\ \ge\ K_G(x,y)+2 .
+\end{equation}
+Indeed, distances inside $A\cup\{v\}$ are the same in $G$ and $G_A$. If
+$x,y\in A$, the left side is $K_G(x,y)+K_{G_B}(b^\ast,b^\ast)=K_G(x,y)+2$. If
+$x\in A$ and $y\in B$, it is $(d(x,v)+1)+(d(v,y)+1)=d_G(x,y)+2$. If $x\in A$ and
+$y=v$, it is $(d(x,v)+1)+2=K_G(x,v)+3$. If $x=y=v$, it is $2+2=K_G(v,v)+2$. The
+remaining cases follow by exchanging $x$ and $y$, or $A$ and $B$. Multiplying \eqref{eq:padK} by $p_xp_y$ and summing gives
+$F(G_A;\pi_Ap)+F(G_B;\pi_Bp)\ge F(G;p)+2$ for the image measures. As $G_A,G_B$ are
+good, \eqref{eq:padM} yields $F(G;p)\le M(G_A)+1+M(G_B)+1-2=M(G)+1$, a contradiction.
+\end{proof}
+
+\begin{definition}\label{def:block}
+A \emph{decorated block} is a connected graph $G$ such that, $L$ being the set of
+its leaves, $H=G-L$ is two-connected with $h=|V(H)|\ge3$ vertices and every vertex
+of $H$ is adjacent to at most one leaf. The vertices of $H$ are the \emph{sites},
+its edges the \emph{core edges}; a site $v$ is \emph{loaded} if it has a leaf,
+denoted $v'$, and \emph{unloaded} otherwise. A decorated block is
+\emph{irreducible} if every core edge $e$ is supportive, i.e.\ $M(G-e)>M(G)$.
+\end{definition}
+
+\begin{proposition}\label{prop:shape}
+The minimal bad graph $G$ is an irreducible decorated block, and $p_v=0$ for every
+loaded site $v$.
+\end{proposition}
+\begin{proof}
+Let $L$ be the set of leaves and $H=G-L$. Since $G\ne K_2$ (Lemma~\ref{lem:base}),
+$H$ is a non-empty connected graph. If $|V(H)|=1$ then $G$ is a star, and if $|V(H)|=2$ then $G$ is a double star (both vertices of $H$ are
+non-leaves, so each has a leaf); by Lemma~\ref{lem:base} neither occurs, so
+$h=|V(H)|\ge3$. Suppose $v$ is a cut vertex of $H$ and let $C_1,C_2$ be two
+components of $H-v$. The component of $G-v$ containing $C_i$ contains a vertex
+$w\in V(H)$; it is not the single vertex $w$, because then $w$ would be a leaf of
+$G$. This contradicts Lemma~\ref{lem:cut}. Hence $H$ is two-connected.
+
+Suppose a site $s$ has two leaves $a,b$. The rows of $K_G$ at $a$ and $b$ agree
+outside $\{a,b\}$ and $K(a,a)=K(b,b)=K(a,b)=2$; so moving the mass of $b$ to $a$
+does not change $F$ and produces a maximiser $q$ with $q_b=0$, contradicting
+Lemma~\ref{lem:sub}(b). Thus $G$ is a decorated block. Core edges lie on cycles of
+$H$, so $G$ is irreducible by Lemma~\ref{lem:sub}(a).
+
+Finally let $v$ be a loaded site and $t=p_v$. Since $K(v',y)=K(v,y)+1$ for
+$y\notin\{v,v'\}$, $K(v',v)=K(v,v)-1$ and $K(v',v')=K(v,v')+1$, we get
+$(Kp)_{v'}-(Kp)_v=1-2t$, and therefore
+$F(G;p+t(\delta_{v'}-\delta_v))-F(G;p)=2t(1-2t)+t^2(2+2-2)=2t(1-t)$. As $p$ is a
+maximiser, $t\in\{0,1\}$, and $t=1$ is impossible because then $F(G;p)=2\le M(G)+1$.
+\end{proof}
+
+\section{Irreducible decorated blocks}\label{sec:blocks}
+
+In this section $G$ is an arbitrary irreducible decorated block with core $H$ on
+$h$ sites. Degrees $d_v$ are always taken in $G$. For a site $v$ let $\epsilon_v\in\{0,1\}$
+indicate whether it is loaded, and let $\ell(v)$, $e(v)$, $\hi(v)$ be the numbers of
+neighbours of $v$ in $G$ of smaller, equal and larger degree (the leaf $v'$ is a
+lower neighbour). Put
+\[
+ a(v)=\frac{\ell(v)}{g_v},\qquad b(v)=\frac{d_v-\ell(v)}{g_v}=\frac{e(v)+\hi(v)}{g_v},
+ \qquad a(v)+b(v)=\frac1{d_v-1}.
+\]
+
+\begin{lemma}[Structure]\label{lem:struct}
+\begin{enumerate}[label=\textup{(P\arabic*)}]
+\item Every site has a neighbour of strictly smaller degree: $\ell(v)\ge1$.
+\item Every site has degree at least $3$. A site of degree $3$ is loaded and its
+two core neighbours have degree at least $4$.
+\item For every core edge $uv$: if $d_u<d_v$ then $a(u)>b(v)$; if $d_u=d_v$ then
+$a(u)\ge b(v)$ and $a(v)\ge b(u)$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+Sites have at least two core neighbours, so Lemma~\ref{lem:del}(a) applies to core
+edges. Let $uv$ be a core edge with $d_u\le d_v$. If $d_u<d_v$, supportiveness reads
+$\ell(u)/g_u+(\ell(v)-1)/g_v>1/d_v=(d_v-1)/g_v$, i.e.\ $a(u)>b(v)$. If $d_u=d_v=d$
+it reads $\ell(u)+\ell(v)>d-1$, i.e.\ $\ell(u)\ge d-\ell(v)$, which is $a(u)\ge b(v)$,
+and symmetrically. This is (P3). If $\ell(u)=0$ for a site $u$, take a core
+neighbour $v$; then $d_v\ge d_u$ and $a(u)=0\ge b(v)\ge0$ forces $d_u=d_v$ and
+$b(v)=0$, i.e.\ $\ell(v)=d_v$, which is impossible because $u$ is not a lower
+neighbour of $v$. This proves (P1). A site of minimum degree has a lower neighbour,
+which must be its leaf; since it also has two core neighbours, all sites have degree
+at least $3$. Let $v$ be a site of degree $3$. Its lower neighbour has degree at most
+$2$, hence is its leaf, so $v$ has exactly two core neighbours and $\ell(v)=1$. If a
+core neighbour $w$ had degree $3$ as well, then $\ell(v)+\ell(w)=2<3$ would
+contradict (P3).
+\end{proof}
+
+A site $v$ is a \emph{strict peak} if all its core neighbours have smaller degree.
+Strict peaks are pairwise non-adjacent, and a loaded strict peak has degree at
+least $4$.
+
+\paragraph{Deletion values.}
+For a site $v$ define
+\[
+ X(v)=M(G)-M\bigl(G-\{v,v'\}\bigr)\quad(\text{$v'$ omitted if $v$ is unloaded}),
+\]
+and note that $G-\{v,v'\}$ is connected and has at least two vertices, because
+$H-v$ is connected. For a loaded site, $G-v'$ is connected as well, and by
+Lemma~\ref{lem:del}(b)
+\begin{equation}\label{eq:bleaf}
+ M(G)-M(G-v')=b(v)\ \ge0 .
+\end{equation}
+
+\begin{lemma}\label{lem:X}
+For every site $v$,
+\[
+ X(v)=\frac{\epsilon_v}{d_v}+\sum_{w\in N_H(v)}c(v,w)-\tau_v,\qquad
+ c(v,w)=\begin{cases} b(w),& d_w>d_v,\\[2pt] b(w)-\dfrac1{g_w},& d_w=d_v,\\[6pt]
+ \dfrac1{d_v}-a(w),& d_w<d_v,\end{cases}
+\]
+where $\tau_v\ge0$ is the sum of $1/g_w$ over the core edges $wz$ with
+$w,z\in N_H(v)$ and $d_w=d_z$. Moreover $X(v)\le1$.
+\end{lemma}
+\begin{proof}
+Apply Lemma~\ref{lem:del}(c) with $D_0=\{v'\}$ or $\emptyset$. The term of
+$w\in N_H(v)$ is $1/\max(d_v,d_w)-(\ell(w)-[d_v<d_w])/g_w$. If $d_w>d_v$ this is
+$(d_w-1-\ell(w)+1)/g_w=b(w)$; if $d_w=d_v$ it is $(d_w-1-\ell(w))/g_w=b(w)-1/g_w$;
+if $d_w<d_v$ it is $1/d_v-a(w)$. Finally, the terms subtracted in
+Lemma~\ref{lem:del}(c) are non-negative (if $d_v<d_w$ then $v$ is a lower neighbour
+of $w$, so $\ell(w)\ge1$). Hence $X(v)$ is at most the total weight of the edges at
+$v$, which is at most $d_v\cdot\frac1{d_v}$.
+\end{proof}
+
+Let $M_{\rm core}$ be the total weight of the core edges, so that
+$M(G)=M_{\rm core}+\sum_{v\ \rm loaded}1/d_v$.
+
+\begin{lemma}[Sum inequality]\label{lem:sum}
+$\displaystyle\sum_{v\in V(H)}X(v)\ \ge\ M_{\rm core}$.
+\end{lemma}
+\begin{proof}
+$\sum_vX(v)$ equals the sum over the sites $v$ of the weight of the edges at $v$
+(including $vv'$), which is $2M_{\rm core}+\sum_{\rm loaded}1/d_v$, minus the sum
+over $v$ of the total increase of the weights of the other edges when
+$\{v,v'\}$ is deleted. We compute the latter edge by edge, using the proof of
+Lemma~\ref{lem:del}. A leaf edge $yy'$ increases by $1/g_y$ for each of the
+$d_y-1$ core neighbours $v$ of $y$: in total $1/d_y$. A core edge $xy$ with
+$d_x<d_y$ increases by $1/g_y$ exactly when $v$ is a core neighbour of $y$ other
+than $x$: in total $(d_y-1-\epsilon_y)/g_y\le 1/d_y$, its weight. A core edge $xy$ with
+$d_x=d_y=d$ increases by $1/g_x$ exactly when $v$ is a common core neighbour of
+$x$ and $y$; there are at most $d-1$ of these, so the total is at most $1/d$, its
+weight. Hence the total increase is at most
+$\sum_{\rm loaded}1/d_y+M_{\rm core}$.
+\end{proof}
+
+\begin{lemma}[Upper bounds]\label{lem:upper}
+Let $v$ be a loaded site of degree $d$ with $n_l$, $n_e$, $n_h$ core neighbours
+of smaller, equal and larger degree $(n_l+n_e+n_h=d-1)$. Then
+\begin{equation}\label{eq:U}
+ X(v)\ \le\ \frac{(n_l+1)(d-1)+n_h}{d(d-1)} .
+\end{equation}
+Consequently, with $\xi(v):=\max\{X(v),b(v)\}$:
+\begin{enumerate}[label=(\roman*)]
+\item if $d=3$, then $\frac13\le\xi(v)\le\frac23$;
+\item if $d\ge4$ and $v$ is not a strict peak, then
+$\dfrac1{d(d-1)}\le\xi(v)\le1-\dfrac{d-2}{d(d-1)}$;
+\item if $v$ is a strict peak of degree $4$, then $\xi(v)=\frac12$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+By (P3), $c(v,w)=b(w)\le a(v)$ if $d_w>d_v$; $c(v,w)=b(w)-1/g_w\le a(v)-1/g_v$ if
+$d_w=d_v$; and $c(v,w)=1/d_v-a(w)\le1/d_v-b(v)$ if $d_w<d_v$. Here
+$a(v)=(n_l+1)/g_v$ and $b(v)=(n_e+n_h)/g_v$. With $g=g_v$, Lemma~\ref{lem:X} gives
+\[
+ gX(v)\le(d-1)+n_h(n_l+1)+n_e n_l+n_l\bigl((d-1)-n_e-n_h\bigr)
+ =(n_l+1)(d-1)+n_h ,
+\]
+which is \eqref{eq:U}. Also $b(v)=(n_e+n_h)/g$ does not exceed the right side of
+\eqref{eq:U}. (i) By (P2), $n_l=n_e=0$ and $n_h=2$, so $b(v)=\frac13$ and the bound
+is $\frac46$. (ii) Here $n_e+n_h\ge1$, so $\xi(v)\ge b(v)\ge1/g$, and
+$(n_l+1)(d-1)+n_h\le n_l(d-2)+2(d-1)\le(d-2)^2+2(d-1)=g-(d-2)$. (iii) The three
+core neighbours have degree $3$; by (P2) they are loaded, pairwise non-adjacent,
+and have $\ell=1$, i.e.\ $a=\frac16$. Hence $\tau_v=0$,
+$X(v)=\frac14+3(\frac14-\frac16)=\frac12$ and $b(v)=0$.
+\end{proof}
+
+\begin{lemma}[Counting bound]\label{lem:count}
+$M(G)\ge f(h):=\min_{2\le k\le h}\Bigl(\dfrac k2+\dfrac{h-k}{k-1}\Bigr)$. In
+particular $h\ge4$, $M(G)\ge2$, and $M(G)\ge\frac{15}4$ whenever $h\ge10$.
+\end{lemma}
+\begin{proof}
+This is the argument of \cite[Lemma~7]{DLS}. Order the sites
+$v_1,\dots,v_h$ by non-increasing degree $d_1\ge\dots\ge d_h$. An edge at $v_i$
+whose other end is not among $v_1,\dots,v_{i-1}$ has weight exactly $1/d_i$, and at
+most $i-1$ edges at $v_i$ lead to earlier sites. Hence for every $k$ the edges
+meeting $\{v_1,\dots,v_k\}$ have total weight at least
+$\sum_{i\le k}\bigl(1-\frac{i-1}{d_i}\bigr)$. Let $k_0$ be the largest $k\le h$ with
+$d_k\ge k-1$; then $k_0\ge2$, and since $d_i\ge k_0-1$ for $i\le k_0$ this weight is
+at least $k_0-\frac{k_0(k_0-1)}{2(k_0-1)}=\frac{k_0}2$. For $i>k_0$ we have
+$d_i\le d_{k_0+1}\le k_0-1$. By (P1), $v_i$ has a lower neighbour $z_i$; the edge
+$v_iz_i$ has weight $1/d_i\ge1/(k_0-1)$, does not meet $\{v_1,\dots,v_{k_0}\}$
+(their degrees are at least $k_0-1\ge d_i>d_{z_i}$), and these $h-k_0$ edges are
+distinct since $v_i$ is the end of larger degree. So
+$M(G)\ge\frac{k_0}2+\frac{h-k_0}{k_0-1}\ge f(h)$. The function
+$f$ is non-decreasing in $h$ (each term is, and the new term $\frac{h+1}2$ for
+$k=h+1$ exceeds the term $\frac h2$ for $k=h$), $f(4)=2$ and $f(10)=\frac{15}4$
+(attained at $k=5$).
+Finally $h=3$ is impossible: then $H=K_3$, by (P2) all three sites would be loaded
+of degree $3$, and adjacent sites of degree $3$ contradict (P2).
+\end{proof}
+
+\section{The stationarity--deletion principle}\label{sec:sd}
+
+We return to the minimal bad graph $G$ and its maximiser $p$; by
+Proposition~\ref{prop:shape} and Lemma~\ref{lem:count}, $G$ is an irreducible
+decorated block and $M:=M(G)\ge2$. Write $F=F(G)$, $K=K_G$ and $y=\sqrt{M-1}\ge1$.
+
+\begin{lemma}[Stationarity]\label{lem:kkt}
+$(Kp)_u=F$ for every $u\in\supp p$.
+\end{lemma}
+\begin{proof}
+For $u,z\in V(G)$ with $p_u>0$ the vector $p+\varepsilon(\delta_z-\delta_u)$ is a
+probability vector for small $\varepsilon>0$, and
+$\frac{d}{d\varepsilon}F=2\bigl((Kp)_z-(Kp)_u\bigr)$ at $\varepsilon=0$. Maximality
+gives $(Kp)_z\le(Kp)_u$. Hence $(Kp)_u=\max_z(Kp)_z$ for all $u\in\supp p$, and
+$F=\sum_up_u(Kp)_u$ equals this common value.
+\end{proof}
+
+\begin{lemma}[Deletion inequality]\label{lem:sdel}
+Let $D\subset V(G)$ be such that $G-D$ is connected with at least two vertices, and
+suppose that $u\in D$ is the only vertex of $D$ that may have positive mass. Put
+$t=p_u$ and $x=M(G)-M(G-D)$.
+\begin{enumerate}[label=(\alph*)]
+\item If $t=0$, then $x<0$.
+\item If $0<t<\frac12$, then $(1-t)^2\,x<(M-1)\,t^2$.
+\item In all cases, if $x\le1$ then
+\[
+ t\ \ge\ \theta(x^+),\qquad \theta(s):=\frac{\sqrt s}{y+\sqrt s}\quad(s\ge0),
+ \qquad x^+=\max\{x,0\}.
+\]
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(a) is Lemma~\ref{lem:sub}. Let $0<t<1$ and let $q$ be the probability vector
+$q_z=p_z/(1-t)$ on $V(G)\setminus D$. Splitting the double sum defining
+$F(G;p)$ according to whether an index equals $u$, and using
+Lemma~\ref{lem:mono} for the pairs outside $D$,
+\[
+ F\le(1-t)^2F(G-D;q)+2t\sum_{z\ne u}p_z\,d_G(u,z)+2t^2 .
+\]
+By Lemma~\ref{lem:kkt}, $\sum_{z\ne u}p_zd_G(u,z)=(Kp)_u-2t=F-2t$. The graph $G-D$
+has fewer vertices than $G$, hence is good: $F(G-D;q)\le M-x+1$. Therefore
+\[
+ (1-2t)F\le(1-t)^2(M+1-x)-2t^2 .
+\]
+If $t<\frac12$, inserting $F>M+1$ on the left and using
+$(1-t)^2-(1-2t)=t^2$ gives $0<t^2(M+1)-2t^2-(1-t)^2x$, which is (b).
+(c) If $x\le0$ there is nothing to prove. Let $0<x\le1$. Then $t>0$ by (a). If
+$t<\frac12$, (b) gives $(1-t)\sqrt x<yt$, i.e.\ $t>\theta(x)$. If $t\ge\frac12$,
+then $\theta(x)\le\frac12\le t$ because $\sqrt x\le1\le y$.
+\end{proof}
+
+For an irreducible decorated block put
+\begin{equation}\label{eq:Theta}
+\begin{gathered}
+ \xi(v)=\begin{cases}\max\{X(v),b(v)\},& v\text{ loaded},\\ \max\{X(v),0\},&
+ v\text{ unloaded},\end{cases}\\[4pt]
+ \Theta(G)=\sum_{v\in V(H)}\theta\bigl(\xi(v)\bigr),\qquad
+ \theta(s)=\frac{\sqrt s}{\sqrt{M(G)-1}+\sqrt s}.
+\end{gathered}
+\end{equation}
+Note that $0\le\xi(v)\le1$ by Lemma~\ref{lem:X} and \eqref{eq:bleaf}.
+
+\begin{proposition}[Mass budget]\label{prop:budget}
+The minimal bad graph $G$ satisfies $\Theta(G)\le1$.
+\end{proposition}
+\begin{proof}
+For an unloaded site $v$ apply Lemma~\ref{lem:sdel}(c) with $D=\{v\}$: then
+$p_v\ge\theta(X(v)^+)=\theta(\xi(v))$. For a loaded site $v$ we have $p_v=0$
+(Proposition~\ref{prop:shape}), so Lemma~\ref{lem:sdel}(c) applies to
+$D=\{v'\}$, where $x=b(v)$ by \eqref{eq:bleaf}, and to $D=\{v,v'\}$, where
+$x=X(v)$; both times $u=v'$. Since $\theta$ is increasing, $p_{v'}\ge\theta(\xi(v))$.
+The vertices $v$
+($v$ unloaded) and $v'$ ($v$ loaded) are distinct, so $\Theta(G)\le\sum_zp_z=1$.
+\end{proof}
+
+\section{The budget is exceeded}\label{sec:budget}
+
+\begin{proposition}\label{prop:exceed}
+Every irreducible decorated block $G$ satisfies $\Theta(G)>1$.
+\end{proposition}
+
+Propositions~\ref{prop:budget} and \ref{prop:exceed} contradict each other, which
+proves Theorem~\ref{thm:W}. Proposition~\ref{prop:exceed} follows from the next two
+lemmas together with Lemma~\ref{lem:count}: if $h\ge10$ then $M(G)\ge\frac{15}4>3.62$.
+
+\begin{lemma}[Large blocks]\label{lem:A}
+Let $G$ be an irreducible decorated block with $\Theta(G)\le1$ and put
+$y=\sqrt{M(G)-1}$. Then $M(G)\le1.3+1.43\,y$, and consequently $M(G)<3.62$.
+\end{lemma}
+
+\begin{lemma}[Small blocks; computer-assisted]\label{lem:small}
+Every irreducible decorated block with $h\le9$ sites satisfies
+$\Theta(G)\ge1.38$.
+\end{lemma}
+
+\begin{proof}[Proof of Lemma~\ref{lem:A}]
+Write $M=M(G)$; recall that $M\ge2$ by Lemma~\ref{lem:count}. Let $\mathcal P$ be
+the set of loaded strict peaks of degree at least $5$ and $\Lambda$ the set of all
+other loaded sites. A strict peak $z$ is the end of larger degree of each of its
+$d_z-\epsilon_z$ core edges, which have weight $1/d_z$, and distinct strict peaks
+share no edge; hence
+\[
+ \sum_{z\in\mathcal P}\frac1{d_z}\le\frac14\sum_{z\in\mathcal P}\frac{d_z-1}{d_z}\le
+ \frac14M_{\rm core}.
+\]
+By Lemma~\ref{lem:sum} and $X(v)\le\xi(v)$,
+$M_{\rm core}\le\sum_vX(v)\le\sum_v\xi(v)$. Therefore
+\begin{equation}\label{eq:gain}
+ M=M_{\rm core}+\sum_{v\ \rm loaded}\frac1{d_v}\ \le\ \sum_{v\in V(H)}\gamma_v,\qquad
+ \gamma_v:=\frac54\,\xi(v)+\lambda_v,\quad
+ \lambda_v:=\begin{cases}1/d_v,&v\in\Lambda,\\0,&\text{otherwise.}\end{cases}
+\end{equation}
+If $v\in\Lambda$ then $\xi(v)>0$ by Lemma~\ref{lem:upper}. Hence $\gamma_v>0$ only
+if $\xi(v)>0$, and with $\rho_v:=\gamma_v/\theta(\xi(v))$ for these sites,
+\[
+ M\le\sum_{\xi(v)>0}\theta(\xi(v))\,\rho_v\le\Theta(G)\cdot\max_v\rho_v\le\max_v\rho_v .
+\]
+It remains to show $\rho_v\le1.3+1.43\,y$ for every site with $\xi(v)>0$. Put
+$s=\sqrt{\xi(v)}\in(0,1]$; then
+\[
+ \rho_v=\Bigl(\frac54s^2+\lambda_v\Bigr)\frac{y+s}{s}
+ =\frac54s^2+\lambda_v+y\Bigl(\frac54s+\frac{\lambda_v}{s}\Bigr).
+\]
+
+\emph{Case $\lambda_v=0$.} Then $\rho_v=\frac54s(y+s)\le\frac54+\frac54y$.
+
+\emph{Case $\lambda_v=1/d$}, $d=d_v$. As a function of $s>0$, $\rho_v$ is convex,
+so on an interval it is at most its larger endpoint value
+$\alpha+\beta y$, where at $s^2=\sigma$
+\[
+ \alpha=\frac54\sigma+\frac1d,\qquad \beta=\frac54\sqrt\sigma+\frac1{d\sqrt\sigma}.
+\]
+By Lemma~\ref{lem:upper} the relevant values of $\sigma$ (the ends of the range of
+$\xi(v)$) are the following; we list $(\alpha,\beta)$ rounded up. Recall that the
+sites of $\Lambda$ of degree at least $5$ are not strict peaks.
+\begin{center}\small
+\begin{tabular}{lll}
+\toprule
+site & $\sigma$ & $(\alpha,\beta)$\\
+\midrule
+$d=3$ & $1/3$ & $(0.7500,\ 1.2991)$\\
+$d=3$ & $2/3$ & $(1.1667,\ 1.4289)$\\
+$d=4$, not a strict peak & $1/12$ & $(0.3542,\ 1.2269)$\\
+$d=4$, not a strict peak & $5/6$ & $(1.2917,\ 1.4150)$\\
+$d=4$, strict peak & $1/2$ & $(0.8750,\ 1.2375)$\\
+$d=5$, not a strict peak & $17/20$ & $(1.2625,\ 1.3694)$\\
+$d\ge5$, not a strict peak & $1/(d(d-1))$ & $(\le0.2625,\ \le1.2800)$\\
+$d\ge6$, not a strict peak & $1-\frac{d-2}{d(d-1)}$ & $(\le1.2500,\ \le1.4291)$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For the last two rows: at $\sigma=1/g$ with $g=d(d-1)\ge20$ we have
+$\alpha=\frac5{4g}+\frac1d\le\frac1{16}+\frac15$ and
+$\beta=\frac5{4\sqrt g}+\sqrt{\frac{d-1}d}<0.28+1$. At
+$\sigma=\sigma_d:=1-\frac{d-2}{g}$ with $d\ge6$ we have
+$\alpha=\frac54-\frac{d-6}{4g}\le\frac54$, and since $\sigma_d$ increases with $d$,
+$\beta<\frac54+\frac1{6\sqrt{\sigma_6}}=\frac54+\frac1{6\sqrt{13/15}}<1.4291$.
+In every case $\alpha\le1.3$ and $\beta\le1.43$.
+
+Thus $y^2+1=M\le1.3+1.43y$, whence
+$y\le\frac12\bigl(1.43+\sqrt{1.43^2+1.2}\bigr)<1.6157$ and $M<3.62$.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:small}]
+Two programs were run on the list of all two-connected graphs $H$ on $h$ vertices,
+$3\le h\le9$, generated by \texttt{nauty-geng -C} \cite{nauty}.
+
+The first program (Appendix~\ref{app:blocks}) runs through the sets of loaded sites
+that contain all core vertices of degree two (the other sets are not irreducible by
+(P2)), applies the quick test (P1), which is implied by irreducibility, and then
+tests irreducibility by the integer form of Lemma~\ref{lem:del}(a). For each
+irreducible decoration it computes $M(G)$, $X(v)$ and $b(v)$ directly from the
+definitions as integers over the common denominator $27720$, and then $\Theta(G)$ in
+floating point.
+
+The second program (Appendix~\ref{app:indep}) was written independently and uses no
+formula of this paper for the test: for each of the $2^h$ sets of loaded sites it
+builds $G$ explicitly and tests the definition, recomputing $M(G-e)$ for every core
+edge $e$; it then computes $\Theta(G)$ in the same way and also re-checks the
+statements of Lemmas~\ref{lem:struct}--\ref{lem:count} and inequality
+\eqref{eq:gain} in exact arithmetic.
+
+Both programs find the same irreducible decorations, $5\,956$ in all for $h\le9$
+(counted as pairs of a core and a set of loaded sites), with the same minima; see
+Table~\ref{tab:blocks}. The smallest value of $\Theta$ is $1.3845\ldots$, attained
+for $H=K_2\vee\overline{K_5}$ (two adjacent vertices joined to five further
+vertices) when the five vertices of degree two are loaded and at most one of the
+other two is. Since $\Theta$ is a sum of at most nine terms, each computed from
+exact rationals with relative error below $10^{-12}$, the bound $1.38$ is rigorous.
+The numbers of cores in the second column of the table agree with the known numbers
+of two-connected graphs, and in the second program every decorated block with $h$
+sites arises from exactly one core and at least one of the $2^h$ sets of loaded
+sites.
+\end{proof}
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{rrrrrr}
+\toprule
+$h$ & two-connected $H$ & decorations & irreducible & $\min\Theta$ & $\min M$\\
+\midrule
+3 & 1 & 1 & 0 & -- & --\\
+4 & 3 & 21 & 1 & 1.4065 & 2.4167\\
+5 & 10 & 149 & 5 & 1.5271 & 2.7500\\
+6 & 56 & 1\,873 & 12 & 1.5908 & 3.1333\\
+7 & 468 & 32\,217 & 78 & 1.3846 & 3.5000\\
+8 & 7\,123 & 1\,065\,605 & 494 & 1.5000 & 3.8214\\
+9 & 194\,066 & 64\,360\,437 & 5\,366 & 1.6818 & 4.1250\\
+\midrule
+10 & 9\,743\,542 & 7\,213\,889\,689 & 81\,866 & 1.6504 & 4.4167\\
+
+\bottomrule
+\end{tabular}
+\caption{Exhaustive enumeration of decorated blocks. ``Decorations'' counts the sets
+of loaded sites that contain all core vertices of degree two. Rows $h\le9$ are used
+in the proof; the further rows are redundant (Lemma~\ref{lem:A} covers $h\ge10$) and
+serve as a check.}
+\label{tab:blocks}
+\end{table}
+
+\section{Proofs of the theorems}\label{sec:proofs}
+
+\begin{proof}[Proof of Theorem~\ref{thm:W}]
+If the theorem fails, a minimal bad graph $G$ exists. It is an irreducible
+decorated block (Proposition~\ref{prop:shape}) with $\Theta(G)\le1$
+(Proposition~\ref{prop:budget}). If its core has at most nine sites this contradicts
+Lemma~\ref{lem:small}. Otherwise $M(G)\ge\frac{15}4$ by Lemma~\ref{lem:count}, which
+contradicts Lemma~\ref{lem:A}.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:main}]
+Apply Theorem~\ref{thm:W} to the uniform measure on $\{x_1,\dots,x_k\}$ to get (b).
+Part (a) is $k=2$ with $d(x_1,x_2)=\diam(G)$, and (c) is $k=n$, where
+$\frac1{n^2}\sum_{x\ne y}d(x,y)=\frac{n-1}n\ad(G)$.
+\end{proof}
+
+\begin{lemma}\label{lem:RM}
+Let $G$ be a graph without isolated vertices, of order $n$ and maximum degree
+$\Delta$. Then
+\begin{equation}\label{eq:RM}
+ (\sqrt\Delta+1)\,R(G)\ \ge\ n+(\sqrt\Delta-1)\,M(G).
+\end{equation}
+\end{lemma}
+\begin{proof}
+For an edge with end degrees $a\le b$,
+\[
+ \Bigl(\frac1{\sqrt a}-\frac1{\sqrt b}\Bigr)^2
+ =\Bigl(\sqrt{\tfrac ba}-1\Bigr)\Bigl(\frac1{\sqrt{ab}}-\frac1b\Bigr)
+ \le(\sqrt\Delta-1)\Bigl(\frac1{\sqrt{ab}}-\frac1b\Bigr).
+\]
+Summing over the edges and using $\sum_{uv\in E}(1/d_u+1/d_v)=n$ gives
+$n-2R(G)\le(\sqrt\Delta-1)(R(G)-M(G))$.
+\end{proof}
+
+\begin{lemma}[\cite{EJS}]\label{lem:path}
+$\ad(G)\le\frac{n+1}3$ for every connected graph of order $n\ge2$, with equality
+only for the path.
+\end{lemma}
+\begin{proof}
+It suffices to consider a tree $T$ (pass to a spanning tree). Let $v$ be a leaf of
+$T$. Listing the other vertices in breadth-first order from $v$, the $i$-th one is
+at distance at most $i$, so $\sum_ud_T(u,v)\le\binom n2$, with equality only if
+$T$ is a path ending at $v$. Since $W(T)=W(T-v)+\sum_ud_T(u,v)$, induction gives
+$W(T)\le\binom n3+\binom n2=\binom{n+1}3$, with equality only for the path. If $G$
+is not a tree, then $W(G)<W(T)$ for every spanning tree $T$ of $G$, because the ends
+of an edge of $G$ outside $T$ are closer in $G$ than in $T$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:F}]
+Let $n\ge5$, $\mu=\ad(G)$ and $r=\sqrt{\Delta(G)}\le r_0:=\sqrt{n-1}$. By
+Corollary~\ref{cor:main}(c), $M(G)\ge\bigl((n-1)\mu-(n-2)\bigr)/n$. Suppose that
+$R(G)\le\mu$. Then \eqref{eq:RM} gives
+\[
+ (r+1)\mu\ \ge\ n+(r-1)\,\frac{(n-1)\mu-(n-2)}{n},
+ \qquad\text{that is,}\qquad
+ \mu\ \ge\ \frac{n^2-(r-1)(n-2)}{2n+r-1}=:\varphi(r).
+\]
+The function $\varphi$ is strictly decreasing in $r\ge1$ (its derivative is
+$-(3n^2-4n)/(2n+r-1)^2$), so $\mu\ge\varphi(r_0)$. We claim
+$\varphi(r_0)\ge\frac{n+1}3$. This is equivalent to
+$n^2+2n-5\ge r_0(4n-5)$, and, after squaring, to
+\[
+ (n^2+2n-5)^2-(n-1)(4n-5)^2=(n-5)(n-2)(n^2-5n+5)\ \ge0,
+\]
+which holds for $n\ge5$. Hence $\mu\ge\varphi(r)\ge\varphi(r_0)\ge\frac{n+1}3\ge\mu$
+by Lemma~\ref{lem:path}, so equality holds throughout: $n=5$, $r=r_0=2$, and $G$
+is the path on five vertices, whose maximum degree is $2$, not $4$. This
+contradiction proves $R(G)>\ad(G)$ for $n\ge5$.
+
+For $n\le4$ there are nine connected graphs. Their values of $(R,\ad)$ are:
+$K_2$ $(1,1)$; $P_3$ $(\sqrt2,\frac43)$; $K_3$ $(\frac32,1)$;
+$P_4$ $(\frac12+\sqrt2,\frac53)$; $K_{1,3}$ $(\sqrt3,\frac32)$; $C_4$ $(2,\frac43)$;
+the triangle with a pendant vertex $(\frac12+\frac1{\sqrt3}+\frac2{\sqrt6},\frac43)$;
+$K_4-e$ $(\frac13+\frac4{\sqrt6},\frac76)$; $K_4$ $(2,1)$. In all cases
+$R\ge\ad$, with equality only for $K_2$.
+\end{proof}
+
+\section{Remarks}\label{sec:remarks}
+
+\begin{remark}[Sharpness of Theorem~\ref{thm:W}]\label{rem:sharp}
+For a star with at least two leaves, $M=1$ and $F(G;p)=2$ for every $p$ carried by
+the leaves. For a path with $n\ge3$ vertices, $M=\frac{n-1}2$ and the two-point
+measure on the ends gives $F=\frac{n-1}2+1$. For $K_{2,b}$, $b\ge2$, with one pendant
+vertex at each vertex of the side of size two, $M=2$, the diameter is $4$, and the two-point measure on the
+pendant vertices gives $F=3$. This last graph is a decorated block that is not
+irreducible (its core edges are not supportive). The quantities of \eqref{eq:Theta},
+computed for it in the same way, are $\xi=1$ at the two loaded sites and $\xi=0$
+elsewhere, so that $\Theta=1$: irreducibility cannot be dropped in
+Proposition~\ref{prop:exceed}.
+\end{remark}
+
+\begin{remark}[The deletion inequality for all graphs]\label{rem:allgraphs}
+Once Theorem~\ref{thm:W} is known, the computation in the proof of
+Lemma~\ref{lem:sdel} applies to every connected graph $G$ with at least three
+vertices: if $p$ is a maximiser of $F(G;\cdot)$ and $u$ is a vertex with $G-u$
+connected and $t=p_u<\frac12$, then
+\[
+ F(G)\ \le\ M(G)+1-\frac{(1-t)^2\bigl(M(G)-M(G-u)\bigr)-(M(G)-1)\,t^2}{1-2t}.
+\]
+(For $t=0$ this is Lemma~\ref{lem:mono}.) Thus Theorem~\ref{thm:W} is strict as soon
+as some deletable vertex carries less mass than its deletion value requires. This is
+the form of the inequality that was tested numerically, see
+Remark~\ref{rem:checks}(2).
+\end{remark}
+
+\begin{remark}[Independent checks]\label{rem:checks}
+The following computations are not part of the proof. Programs that are not printed
+in Appendix~\ref{app:code} are in the directory \texttt{extra} of the accompanying
+repository.
+(1) For every connected graph with at most nine vertices ($273\,192$ graphs;
+$261\,080$ of order nine) the maximum $F(G)$ was computed by enumerating supports
+and solving the stationarity equations, and $F(G)\le M(G)+1$ was confirmed
+(Appendix~\ref{app:small}). This is legitimate because a maximiser with a minimal
+number of positive coordinates has a non-singular kernel on its support. A separate C program (Appendix~\ref{app:direct}) did the same in floating point for all $11\,716\,571$ connected graphs of order ten; the $86$ graphs with $M+1-F<10^{-6}$ were then examined in exact rational arithmetic, and all of them satisfy $F=M+1$.
+The inequality was also confirmed, with a heuristic maximisation that gives lower
+bounds for $F$, for $1\,500$ random graphs with $8$ to $21$ vertices.
+(2) The inequality of Remark~\ref{rem:allgraphs} was confirmed at the maximiser for
+all connected graphs with at most eight vertices and all non-cut vertices of mass
+less than $\frac12$ ($70\,315$ instances).
+(3) Lemma~\ref{lem:sum}, the bound \eqref{eq:U} and the inequality \eqref{eq:gain}
+were confirmed in exact arithmetic, and the bound $\rho_v\le1.3+1.43y$ in floating
+point, on all $87\,822$ irreducible decorations with $h\le10$
+(Appendix~\ref{app:cross}); the largest value of $\rho_v-(1.3+1.43y)$ is $-0.20$.
+(4) The second program used for Lemma~\ref{lem:small} (Appendix~\ref{app:indep})
+confirmed, on all $5\,956$ irreducible decorations with $h\le9$ and in exact
+arithmetic, (P1)--(P3), the formula of Lemma~\ref{lem:X}, Lemma~\ref{lem:sum},
+Lemma~\ref{lem:upper}, Lemma~\ref{lem:count} and \eqref{eq:gain}.
+(5) All statements of Lemmas~\ref{lem:struct}--\ref{lem:count}, the inequality
+\eqref{eq:gain}, the bound $\rho_v\le1.3+1.43y$ and $\Theta>1$ were confirmed from
+the definitions, with rational arithmetic, on 5\,640 further irreducible decorated
+blocks with up to 111 sites, found by random search among cores consisting of a
+few vertices of large degree joined through many vertices of degree two or three,
+and among complete multipartite cores (Appendix~\ref{app:big}).
+(6) A separate AI review pass re-derived Sections~\ref{sec:prelim}--\ref{sec:proofs}
+and tested each lemma numerically with its own programs; the second program of Lemma~\ref{lem:small} and the check for order ten in (1) come from that pass. It is
+not a substitute for refereeing.
+\end{remark}
+
+\begin{remark}[The diameter theorem]
+Corollary~\ref{cor:main}(a) is the theorem of \cite{DLS}. The proof given here is
+independent of the proof in \cite{DLS}, from which only the padding idea and the
+counting argument of Lemma~\ref{lem:count} are borrowed.
+\end{remark}
+
+\begin{remark}[Erratum to an earlier manuscript]
+An earlier manuscript of this series (\emph{Breadth-first routing trees and
+Fajtlowicz's average-distance conjecture}, 15 November 2026) proposed a
+``deepest-vertex inequality'' as Conjecture~3.4 and verified it for all graphs with
+at most nine vertices. As stated, for \emph{every} vertex at maximum distance from
+the root, that conjecture is false: in $K_2\vee C_{41}$ ($43$ vertices), rooted at
+one of the two vertices of degree $42$, the other one is a deepest vertex and the
+inequality reads $1.906\ldots\ge3.952\ldots$. The breadth-first routing inequality
+proposed there (its Conjecture~1.2) is not affected by this example and remains
+open; it is not implied by Theorem~\ref{thm:F}.
+\end{remark}
+
+\subsection{Audit against six acceptance criteria}\label{sec:audit}
+The work was carried out against six criteria fixed in advance (G1--G6 below). We
+record how the result stands with respect to each of them.
+\begin{center}\small
+\begin{tabular}{p{0.27\linewidth}p{0.66\linewidth}}
+\toprule
+Criterion & Assessment\\
+\midrule
+G1 a named problem that existed before this work & Fajtlowicz's average-distance conjecture \cite{Faj} (1988), in the form quoted in \cite{CPS,YL,LiShi}.\\
+G2 the problem is not changed & Theorem~\ref{thm:F} is the original statement, for all connected graphs and with the original quantities $R$ and $\ad$. The weighted inequality is an intermediate strengthening, not a replacement.\\
+G3 the problem was open & In the literature we could find \cite{CPS,YL,LiShi,Dalfo,VMRC189}, and in searches of the arXiv listings on 20 November 2026, only special classes were settled. A search cannot exclude a proof that is not indexed.\\
+G4 unconditional and complete & A complete proof is given, with no hypothesis and no restriction on the graph. One lemma (Lemma~\ref{lem:small}) is a finite exhaustive computation whose source is printed in Appendix~\ref{app:code}. The manuscript is unrefereed: independent verification is required before the result is relied upon.\\
+G5 not a restatement & The stationarity--deletion inequality and the resulting mass budget are new estimates; they are what closes the case of unbounded degree and diameter that was left open in \cite{VMRC189}.\\
+G6 no earlier identical solution & No proof of the conjecture and no use of the stationarity--deletion argument was found. Priority cannot be certified by the absence of search results.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{99}
+\bibitem{CPS} M.~Cygan, M.~Pilipczuk and R.~\v{S}krekovski, Relation between Randi\'c index and average distance of trees, \emph{MATCH Commun.\ Math.\ Comput.\ Chem.} \textbf{66} (2011), 605--612.
+\bibitem{Dalfo} C.~Dalf\'o, On the Randi\'c index of graphs, \emph{Discrete Math.} \textbf{342} (2019), 2792--2796.
+\bibitem{DLS} Z.~Dvo\v{r}\'ak, B.~Lidick\'y and R.~\v{S}krekovski, Randi\'c index and the diameter of a graph, \emph{European J.\ Combin.} \textbf{32} (2011), 434--442; preprint KAM--DIMATIA Series 2010--496.
+\bibitem{EJS} R.~C.~Entringer, D.~E.~Jackson and D.~A.~Snyder, Distance in graphs, \emph{Czechoslovak Math.\ J.} \textbf{26} (1976), 283--296.
+\bibitem{Faj} S.~Fajtlowicz, On conjectures of Graffiti, \emph{Discrete Math.} \textbf{72} (1988), 113--118.
+\bibitem{LiShi} X.~Li and Y.~Shi, Randi\'c index, diameter and the average distance, arXiv:0906.5230 (2009).
+\bibitem{nauty} B.~D.~McKay and A.~Piperno, Practical graph isomorphism, II, \emph{J.\ Symbolic Comput.} \textbf{60} (2014), 94--112.
+\bibitem{Randic} M.~Randi\'c, On characterization of molecular branching, \emph{J.\ Amer.\ Chem.\ Soc.} \textbf{97} (1975), 6609--6615.
+\bibitem{VMRC189} Keio and Shaitetsu, \emph{Collected research papers: the Randi\'c index, graph distances, and rational Lambert series}, collected edition, November 2026, papers 06--14; item [189] of the Verifiable Mathematical Reasoning Corpus, \url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}. Unrefereed.
+\bibitem{YL} Z.~You and B.~Liu, On a conjecture between Randi\'c index and average distance of unicyclic graphs, \emph{Filomat} \textbf{28} (2014), 767--773.
+\end{thebibliography}
+
+\appendix
+\section{Programs}\label{app:code}
+Graphs are generated with \texttt{nauty} 2.8.8. Commands:
+\begin{lstlisting}
+gcc -O3 -o irreducible_blocks irreducible_blocks.c -lm
+for h in 3 4 5 6 7 8 9 10; do nauty-geng -C -q $h | ./irreducible_blocks; done
+gcc -O3 -o lemma_crosscheck lemma_crosscheck.c -lm
+for h in 4 5 6 7 8 9 10; do nauty-geng -C -q $h | ./lemma_crosscheck; done
+gcc -O3 -o independent_enum independent_enum.c -lm
+for h in 3 4 5 6 7 8 9; do nauty-geng -C -q $h | ./independent_enum; done
+for n in 2 3 4 5 6 7 8 9; do nauty-geng -c -q $n | python3 wc_small.py; done
+gcc -O3 -o direct_check direct_check.c -lm
+for k in $(seq 0 15); do nauty-geng -c -q 10 $k/16 | ./direct_check 2>>tight_n10.g6; done
+python3 extra/exact_tight.py < tight_n10.g6
+for s in 1 2 3 4; do python3 bigblocks.py $s 3000; done
+\end{lstlisting}
+(For the larger cases the input was split with the \texttt{res/mod} argument of
+\texttt{geng}, e.g.\ \texttt{nauty-geng -C -q 9 0/4}.)
+
+\subsection{Enumeration of irreducible decorated blocks (Lemma~\ref{lem:small})}\label{app:blocks}
+\begin{lstlisting}[language=C]
+/* Enumerate decorated two-connected blocks G = H + leaves (at most one leaf per site),
+   H read as graph6 from stdin (output of: nauty-geng -C -q h).
+   A decoration is IRREDUCIBLE if every core edge uv is supportive:  M(G-uv) > M(G),
+   M(G) = sum over edges 1/max(deg,deg).  For every irreducible decoration compute exactly
+   (integers over DEN = 27720) the deletion values
+       X_v = M(G) - M(G - v - leaf(v))   (every site v),
+       b_v = M(G) - M(G - leaf(v))       (loaded sites),
+   xi_v = max(X_v, b_v, 0),  and  Theta = sum_v theta(xi_v),
+   theta(x) = sqrt(x)/(sqrt(M-1)+sqrt(x)).   Reports the minimum of Theta.            */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#define MAXH 12
+#define DEN 27720L   /* lcm(1,...,12): every degree that can occur for h<=11 divides DEN */
+static int h; static unsigned adj[MAXH]; static int kdeg[MAXH];
+static int eu[64], ev[64], ne;
+static void parse(const char *s){
+  h = s[0]-63; int bit=5; const char *p=s+1; int val=*p-63;
+  for(int i=0;i<h;i++) adj[i]=0;
+  for(int j=1;j<h;j++) for(int i=0;i<j;i++){
+    if(bit<0){p++; val=*p-63; bit=5;}
+    if((val>>bit)&1){adj[i]|=1u<<j; adj[j]|=1u<<i;}
+    bit--; }
+  ne=0; for(int i=0;i<h;i++){ kdeg[i]=__builtin_popcount(adj[i]);
+    for(int j=i+1;j<h;j++) if(adj[i]>>j&1){eu[ne]=i; ev[ne]=j; ne++;} }
+}
+/* M (times DEN) of the graph: sites in `alive`, core edges among alive sites, leaves at sites in lm&alive */
+static long Mof(unsigned alive, unsigned lm){
+  int d[MAXH]; long s=0;
+  for(int v=0;v<h;v++) d[v] = (alive>>v&1) ? __builtin_popcount(adj[v]&alive) + ((lm>>v)&1) : 0;
+  for(int e=0;e<ne;e++){ int u=eu[e], v=ev[e];
+    if((alive>>u&1) && (alive>>v&1)){ int m = d[u]>d[v]?d[u]:d[v]; s += DEN/m; } }
+  for(int v=0;v<h;v++) if((alive>>v&1) && (lm>>v&1)) s += DEN/d[v];
+  return s;
+}
+int main(void){
+  char line[128]; long cores=0, decos=0, irr=0, bad=0; double minT=1e9, minM=1e9; char arg[128]=""; unsigned argm=0;
+  long cnt_p1=0;
+  while(fgets(line,sizeof line,stdin)){
+    line[strcspn(line,"\n")]=0; parse(line); cores++;
+    unsigned full=(1u<<h)-1, forced=0;
+    for(int v=0;v<h;v++) if(kdeg[v]==2) forced|=1u<<v;
+    unsigned freem = full & ~forced;
+    /* iterate over all subsets sub of freem */
+    unsigned sub=0;
+    do{
+      unsigned lm = forced|sub;
+      {
+        decos++;
+        int d[MAXH]; for(int v=0;v<h;v++) d[v]=kdeg[v]+((lm>>v)&1);
+        /* P1: every site has a strictly lower neighbour */
+        int ok=1; int ell[MAXH];
+        for(int v=0;v<h && ok;v++){
+          int l=(lm>>v)&1; unsigned a=adj[v];
+          while(a){int w=__builtin_ctz(a); a&=a-1; if(d[w]<d[v]) l++;}
+          ell[v]=l; if(l==0) ok=0; }
+        if(ok){ cnt_p1++;
+          for(int e=0;e<ne && ok;e++){ int u=eu[e], v=ev[e];
+            long bu = ell[u] - (d[v]<d[u]), bv = ell[v] - (d[u]<d[v]);
+            long gu=(long)d[u]*(d[u]-1), gv=(long)d[v]*(d[v]-1); long mx = d[u]>d[v]?d[u]:d[v];
+            /* supportive iff bu/gu + bv/gv > 1/mx */
+            if(!((bu*gv + bv*gu)*mx > gu*gv)) ok=0; }
+        }
+        if(ok){ irr++;
+          long M = Mof(full,lm);
+          double Mf=(double)M/DEN, y=sqrt(Mf-1.0), T=0;
+          for(int v=0;v<h;v++){
+            long X = M - Mof(full & ~(1u<<v), lm & ~(1u<<v));
+            long xi = X>0?X:0;
+            if(lm>>v&1){ long b = M - Mof(full, lm & ~(1u<<v)); if(b>xi) xi=b; }
+            if(xi>0){ double s=sqrt((double)xi/DEN); T += s/(y+s); }
+          }
+          if(T<minT){minT=T; strcpy(arg,line); argm=lm;}
+          if(Mf<minM) minM=Mf;
+          if(T<=1.0+1e-9){ bad++; printf("THETA<=1 %s mask=%u M=%.6f Theta=%.6f\n",line,lm,Mf,T); }
+        }
+      }
+      sub = (sub - freem) & freem;   /* next subset of freem */
+    } while(sub);
+  }
+  printf("h=%d cores=%ld decorations=%ld passP1=%ld irreducible=%ld minTheta=%.6f (at %s mask %u) minM=%.6f Theta<=1:%ld\n",
+         h,cores,decos,cnt_p1,irr,minT,arg,argm,minM,bad);
+  return 0;
+}
+\end{lstlisting}
+Output for $h\le9$:
+\begin{lstlisting}
+h=3 cores=1 decorations=1 passP1=1 irreducible=0 minTheta=1000000000.000000 (at  mask 0) minM=1000000000.000000 Theta<=1:0
+h=4 cores=3 decorations=21 passP1=3 irreducible=1 minTheta=1.406515 (at C^ mask 15) minM=2.416667 Theta<=1:0
+h=5 cores=10 decorations=149 passP1=17 irreducible=5 minTheta=1.527081 (at DF{ mask 31) minM=2.750000 Theta<=1:0
+h=6 cores=56 decorations=1873 passP1=168 irreducible=12 minTheta=1.590805 (at E?~w mask 15) minM=3.133333 Theta<=1:0
+h=7 cores=468 decorations=32217 passP1=2283 irreducible=78 minTheta=1.384595 (at F?B~w mask 31) minM=3.500000 Theta<=1:0
+h=8 cores=7123 decorations=1065605 passP1=57962 irreducible=494 minTheta=1.500000 (at G??F~w mask 63) minM=3.821429 Theta<=1:0
+h=9 cores=194066 decorations=64360437 passP1=2689544 irreducible=5366 minTheta=1.681772 (at H???F~} mask 127) minM=4.125000 Theta<=1:0
+\end{lstlisting}
+(For $h=3$ there is no irreducible decoration, and the two minima printed are the
+initial sentinel values.) Output for $h=10$ (input split into the four parts \texttt{0/4}, \dots, \texttt{3/4};
+the counts add up to the row of Table~\ref{tab:blocks}):
+\begin{lstlisting}
+h=10 cores=2397411 decorations=1718983912 passP1=58428451 irreducible=23708 minTheta=1.650367 (at I???FreFw mask 639) minM=4.416667 Theta<=1:0
+h=10 cores=2216372 decorations=1673411265 passP1=54354154 irreducible=12337 minTheta=1.812079 (at I??CFF\nW mask 383) minM=4.583333 Theta<=1:0
+h=10 cores=2525186 decorations=1906671944 passP1=62909060 irreducible=14295 minTheta=1.842464 (at I??EEC~Nw mask 127) minM=4.533333 Theta<=1:0
+h=10 cores=2604573 decorations=1914822568 passP1=62783569 irreducible=31526 minTheta=1.894820 (at I?AAFB|}w mask 511) minM=4.660714 Theta<=1:0
+\end{lstlisting}
+
+
+\subsection{Independent re-implementation (Lemma~\ref{lem:small})}\label{app:indep}
+\begin{lstlisting}[language=C]
+/* Independent re-implementation of the enumeration of irreducible decorated blocks
+   (written separately from irreducible_blocks.c, from the definitions only).
+   Reads graph6 (two-connected cores from geng -C).  For EVERY subset of loaded sites
+   (no forcing, no P1 pre-test) builds G explicitly as an adjacency matrix on up to 2h vertices,
+   and tests the definition: every core edge e satisfies M(G-e) > M(G), M recomputed from scratch.
+   All quantities exact: integers over DEN = lcm(1..12) = 27720.
+   For irreducible blocks: X(v), b(v) from the definition, xi, Theta (long double),
+   plus checks: Lemma 4.3, (4.2), Lemma 4.4(i)-(iii), Lemma 4.5, (6.1), rho bound.            */
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#define MAXN 24
+#define DEN 27720LL
+static int n;                 /* number of vertices of G currently */
+static int A[MAXN][MAXN];
+static int alive[MAXN];
+static long long Mcalc(void){
+  int deg[MAXN]; long long s=0;
+  for(int i=0;i<n;i++){ deg[i]=0; if(!alive[i]) continue; for(int j=0;j<n;j++) if(alive[j]&&A[i][j]) deg[i]++; }
+  for(int i=0;i<n;i++) if(alive[i]) for(int j=i+1;j<n;j++) if(alive[j]&&A[i][j]){
+     int m=deg[i]>deg[j]?deg[i]:deg[j]; s+=DEN/m; }
+  return s;
+}
+int main(void){
+  char line[256]; long long cores=0, decos=0, irr=0, viol=0, viol2=0; long double minT=1e9L; double minM=1e9; long long thle1=0;
+  double worst=-1e9; char argline[256]=""; unsigned argmask=0; int h=0; long long mintie=0;
+  while(fgets(line,sizeof line,stdin)){
+    line[strcspn(line,"\n")]=0; if(!line[0]) continue; cores++;
+    h=line[0]-63; int H[12][12]; memset(H,0,sizeof H);
+    { int k=0; /* bit index */
+      for(int j=1;j<h;j++) for(int i=0;i<j;i++){
+        int byte=line[1+k/6]-63; int bit=5-(k%6); if((byte>>bit)&1){H[i][j]=H[j][i]=1;} k++; } }
+    int ce_u[64], ce_v[64], nce=0;
+    for(int i=0;i<h;i++) for(int j=i+1;j<h;j++) if(H[i][j]){ce_u[nce]=i; ce_v[nce]=j; nce++;}
+    for(unsigned mask=0; mask<(1u<<h); mask++){
+      decos++;
+      /* build G: sites 0..h-1, leaf of site v is vertex h+v (alive only if loaded) */
+      n=2*h; memset(A,0,sizeof A);
+      for(int i=0;i<h;i++) for(int j=0;j<h;j++) A[i][j]=H[i][j];
+      for(int v=0;v<h;v++){ alive[v]=1; alive[h+v]=(mask>>v)&1; if(alive[h+v]){A[v][h+v]=A[h+v][v]=1;} }
+      long long M=Mcalc(); int ok=1;
+      for(int e=0;e<nce&&ok;e++){ int u=ce_u[e], v=ce_v[e];
+        A[u][v]=A[v][u]=0; long long M2=Mcalc(); A[u][v]=A[v][u]=1;
+        if(!(M2>M)) ok=0; }
+      if(!ok) continue;
+      irr++;
+      int d[12]; for(int v=0;v<h;v++){ d[v]=(mask>>v)&1; for(int w=0;w<h;w++) d[v]+=H[v][w]; }
+      long long Mcore=0; for(int e=0;e<nce;e++){int m=d[ce_u[e]]>d[ce_v[e]]?d[ce_u[e]]:d[ce_v[e]]; Mcore+=DEN/m;}
+      double Mf=(double)M/DEN; long double y=sqrtl((long double)M/DEN-1.0L), T=0;
+      long long sumX=0, gam4=0; /* gam4 = 4*DEN*sum gamma */
+      long long P5sum=0;
+      for(int v=0;v<h;v++){
+        int loaded=(mask>>v)&1;
+        alive[v]=0; int sv=alive[h+v]; alive[h+v]=0;
+        long long X=M-Mcalc(); alive[v]=1; alive[h+v]=sv;
+        long long xi=X>0?X:0, b=0;
+        int nl=0,neq=0,nh=0; for(int w=0;w<h;w++) if(H[v][w]){ if(d[w]<d[v]) nl++; else if(d[w]==d[v]) neq++; else nh++; }
+        int peak=(neq==0&&nh==0);
+        if(X>DEN) viol++;
+        if(nl+loaded==0) viol++;                 /* P1 */
+        if(d[v]<3) viol++;                       /* P2 */
+        long long lam4=0;
+        if(loaded){
+          alive[h+v]=0; b=M-Mcalc(); alive[h+v]=1;
+          if(b<0) viol++;
+          long long g=(long long)d[v]*(d[v]-1);
+          if(b*g != (long long)(d[v]-nl-1)*DEN) viol++;         /* (4.1): b = (d-ell)/g */
+          if(X*g > ((long long)(nl+1)*(d[v]-1)+nh)*DEN) viol++; /* (4.2) */
+          if(b>xi) xi=b;
+          if(d[v]==3){ if(!(3*xi>=DEN && 3*xi<=2*DEN)) viol++; if(nl||neq) viol++; }
+          else if(!peak){ if(!(xi*g>=DEN && xi*g<=(g-(d[v]-2))*DEN)) viol++; }
+          else if(d[v]==4){ if(2*xi!=DEN) viol++; }
+          if(peak && d[v]>=5) P5sum+=DEN/d[v]; else lam4=4*DEN/d[v];
+        }
+        sumX+=X; gam4+=5*xi+lam4;
+        if(xi>0){ long double s=sqrtl((long double)xi/DEN); long double th=s/(y+s); T+=th;
+          double rho=(double)(((long double)(5*xi+lam4)/(4.0L*DEN))/th); double bd=1.3+1.43*(double)y;
+          if(rho-bd>worst) worst=rho-bd; }
+        else if(lam4>0) viol++;
+      }
+
+      { /* extra exact checks: (P2), (P3), Lemma 4.2 */
+        int ell[12]; long long g_[12], a_[12], b_[12];
+        for(int v=0;v<h;v++){ ell[v]=(mask>>v)&1; for(int w=0;w<h;w++) if(H[v][w]&&d[w]<d[v]) ell[v]++;
+          g_[v]=(long long)d[v]*(d[v]-1); a_[v]=DEN/g_[v]*ell[v]; b_[v]=DEN/g_[v]*(d[v]-ell[v]); if(DEN%g_[v]) viol2++; }
+        for(int v=0;v<h;v++) if(d[v]==3){ if(!((mask>>v)&1)) viol2++; for(int w=0;w<h;w++) if(H[v][w]&&d[w]<4) viol2++; }
+        for(int e=0;e<nce;e++){ int u=ce_u[e], v=ce_v[e]; if(d[u]>d[v]){int t=u;u=v;v=t;}
+          if(d[u]<d[v]){ if(!(a_[u]>b_[v])) viol2++; } else { if(!(a_[u]>=b_[v] && a_[v]>=b_[u])) viol2++; } }
+        for(int v=0;v<h;v++){
+          long long form=((mask>>v)&1)?DEN/d[v]:0;
+          for(int w=0;w<h;w++) if(H[v][w]){ if(d[w]>d[v]) form+=b_[w]; else if(d[w]==d[v]) form+=b_[w]-DEN/g_[w]; else form+=DEN/d[v]-a_[w]; }
+          for(int w=0;w<h;w++) if(H[v][w]) for(int z=w+1;z<h;z++) if(H[v][z]&&H[w][z]&&d[w]==d[z]) form-=DEN/g_[w];
+          alive[v]=0; int sv=alive[h+v]; alive[h+v]=0; long long X=M-Mcalc(); alive[v]=1; alive[h+v]=sv;
+          if(form!=X) viol2++; }
+      }
+      if(sumX<Mcore) viol++;                    /* Lemma 4.3 */
+      if(4*P5sum>Mcore) viol++;
+      if(4*M>gam4) viol++;                      /* (6.1) */
+      { /* Lemma 4.5: M >= f(h) */
+        int okf=0; long long best=-1;
+        for(int t=2;t<=h;t++){ long long val=DEN*t/2 + DEN*(h-t)/(t-1); /* exact since DEN divisible by 2 and by t-1<=11 */
+          if(best<0||val<best) best=val; }
+        if(M>=best) okf=1; if(!okf) viol++; if(M<2*DEN) viol++; }
+      if(T<minT-1e-12L){minT=T; strcpy(argline,line); argmask=mask; mintie=1;} else if(fabsl(T-minT)<=1e-12L) mintie++;
+      if(Mf<minM) minM=Mf;
+      if(T<=1.0L+1e-9L) thle1++;
+    }
+  }
+  printf("h=%d cores=%lld all-decorations=%lld irreducible=%lld minTheta=%.6Lf (at %s mask %u; ties %lld) minM=%.6f Theta<=1: %lld lemma-violations=%lld P2/P3/Lemma4.2-violations=%lld max(rho-bound)=%.4f\n",
+     h,cores,decos,irr,minT,argline,argmask,mintie,minM,thle1,viol,viol2,worst);
+  return 0;
+}
+\end{lstlisting}
+Output for $h\le8$, and for $h=9$ in four parts (the counts add up to $194\,066$
+cores and $5\,366$ irreducible decorations):
+\begin{lstlisting}
+h=3 cores=1 all-decorations=8 irreducible=0 minTheta=1000000000.000000 (at  mask 0; ties 0) minM=1000000000.000000 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-1000000000.0000
+h=4 cores=3 all-decorations=48 irreducible=1 minTheta=1.406515 (at C^ mask 15; ties 1) minM=2.416667 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.5729
+h=5 cores=10 all-decorations=320 irreducible=5 minTheta=1.527081 (at DF{ mask 31; ties 1) minM=2.750000 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.5870
+h=6 cores=56 all-decorations=3584 irreducible=12 minTheta=1.590805 (at E?~w mask 15; ties 3) minM=3.133333 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.4598
+h=7 cores=468 all-decorations=59904 irreducible=78 minTheta=1.384595 (at F?B~w mask 31; ties 3) minM=3.500000 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2028
+h=8 cores=7123 all-decorations=1823488 irreducible=494 minTheta=1.500000 (at G??F~w mask 63; ties 4) minM=3.821429 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2040
+h=9 cores=47669 all-decorations=24406528 irreducible=1327 minTheta=1.681772 (at H???F~} mask 127; ties 4) minM=4.125000 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2055
+h=9 cores=35374 all-decorations=18111488 irreducible=683 minTheta=1.849527 (at H?AELvz mask 511; ties 1) minM=4.303571 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2058
+h=9 cores=70139 all-decorations=35911168 irreducible=1849 minTheta=1.872558 (at H?B@c\| mask 127; ties 2) minM=4.316667 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2054
+h=9 cores=40884 all-decorations=20932608 irreducible=1507 minTheta=1.933889 (at H?bDLj^ mask 127; ties 2) minM=4.392857 Theta<=1: 0 lemma-violations=0 P2/P3/Lemma4.2-violations=0 max(rho-bound)=-0.2055
+\end{lstlisting}
+
+\subsection{Cross-check of the analytic lemma}\label{app:cross}
+\begin{lstlisting}[language=C]
+/* Cross-check of the analytic lemma on every irreducible decorated block (same enumeration as irreducible_blocks.c).
+   Exact integer checks (denominator 27720):
+     (I1) sum_v X_v >= M_core
+     (I2) X_v <= U_v = ((n_l+1)(d-1)+n_h)/(d(d-1))  for loaded non-peak sites
+     (I3) M <= sum_v gamma_v,  gamma_v = (5/4) xi_v + lambda_v
+   Floating check:
+     (I4) rho_v = gamma_v (y+sqrt(xi_v))/sqrt(xi_v) <= 1.3 + 1.43 y  for every site with xi_v>0 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#define MAXH 12
+#define DEN 27720L
+static int h; static unsigned adj[MAXH]; static int kdeg[MAXH]; static int eu[64], ev[64], ne;
+static void parse(const char *s){ h=s[0]-63; int bit=5; const char*p=s+1; int val=*p-63;
+  for(int i=0;i<h;i++) adj[i]=0;
+  for(int j=1;j<h;j++) for(int i=0;i<j;i++){ if(bit<0){p++; val=*p-63; bit=5;} if((val>>bit)&1){adj[i]|=1u<<j; adj[j]|=1u<<i;} bit--; }
+  ne=0; for(int i=0;i<h;i++){ kdeg[i]=__builtin_popcount(adj[i]); for(int j=i+1;j<h;j++) if(adj[i]>>j&1){eu[ne]=i; ev[ne]=j; ne++;} } }
+static long Mof(unsigned alive, unsigned lm, long *core){ int d[MAXH]; long s=0, c=0;
+  for(int v=0;v<h;v++) d[v]=(alive>>v&1)?__builtin_popcount(adj[v]&alive)+((lm>>v)&1):0;
+  for(int e=0;e<ne;e++){int u=eu[e],v=ev[e]; if((alive>>u&1)&&(alive>>v&1)){int m=d[u]>d[v]?d[u]:d[v]; c+=DEN/m;}}
+  s=c; for(int v=0;v<h;v++) if((alive>>v&1)&&(lm>>v&1)) s+=DEN/d[v];
+  if(core) *core=c; return s; }
+int main(void){ char line[128]; long irr=0, f1=0,f2=0,f3=0,f4=0; double worst=-1e9, maxratio=0;
+  while(fgets(line,sizeof line,stdin)){ line[strcspn(line,"\n")]=0; parse(line);
+    unsigned full=(1u<<h)-1, forced=0; for(int v=0;v<h;v++) if(kdeg[v]==2) forced|=1u<<v;
+    unsigned freem=full&~forced, sub=0;
+    do{ unsigned lm=forced|sub;
+      { int d[MAXH], ell[MAXH], ok=1; for(int v=0;v<h;v++) d[v]=kdeg[v]+((lm>>v)&1);
+        for(int v=0;v<h&&ok;v++){ int l=(lm>>v)&1; unsigned a=adj[v]; while(a){int w=__builtin_ctz(a); a&=a-1; if(d[w]<d[v]) l++;} ell[v]=l; if(!l) ok=0; }
+        for(int e=0;e<ne&&ok;e++){ int u=eu[e],v=ev[e]; long bu=ell[u]-(d[v]<d[u]), bv=ell[v]-(d[u]<d[v]);
+          long gu=(long)d[u]*(d[u]-1), gv=(long)d[v]*(d[v]-1), mx=d[u]>d[v]?d[u]:d[v]; if(!((bu*gv+bv*gu)*mx>gu*gv)) ok=0; }
+        if(ok){ irr++; long Mc; long M=Mof(full,lm,&Mc); double Mf=(double)M/DEN, y=sqrt(Mf-1.0);
+          long sumX=0; long gam4=0; /* 4*DEN*sum gamma */
+          for(int v=0;v<h;v++){
+            long X=M-Mof(full&~(1u<<v), lm&~(1u<<v), NULL); sumX+=X;
+            long xi=X>0?X:0; int loaded=(lm>>v)&1; long b=0;
+            int nl=0,nh=0,ne_=0; unsigned a=adj[v]; while(a){int w=__builtin_ctz(a); a&=a-1; if(d[w]<d[v]) nl++; else if(d[w]>d[v]) nh++; else ne_++;}
+            int peak=(nh==0&&ne_==0);
+            if(loaded){ b=M-Mof(full, lm&~(1u<<v), NULL); if(b>xi) xi=b;
+              if(!peak){ /* (I2): X*g <= ((nl+1)(d-1)+nh)*DEN */
+                long g=(long)d[v]*(d[v]-1); if(X*g > ((long)(nl+1)*(d[v]-1)+nh)*DEN) f2++; } }
+            long lam4 = (loaded && !(peak && d[v]>=5)) ? 4*DEN/d[v] : 0;   /* 4*DEN*lambda ; DEN/d integer */
+            long g4 = 5*xi + lam4;  gam4 += g4;
+            if(xi>0){ double s=sqrt((double)xi/DEN); double rho=((double)g4/(4.0*DEN))*(y+s)/s; double bound=1.3+1.43*y;
+              if(rho>bound+1e-9) f4++; if(rho-bound>worst) worst=rho-bound; if(rho/(Mf)>maxratio) maxratio=rho/Mf; }
+            else if(lam4>0) f3+=1000000; /* lambda>0 must imply xi>0 */
+          }
+          if(sumX<Mc) f1++;
+          if(4*M>gam4) f3++;
+        } }
+      sub=(sub-freem)&freem; }while(sub); }
+  printf("h=%d irreducible=%ld  violations: I1=%ld I2=%ld I3=%ld I4=%ld   max(rho-(1.3+1.43y))=%.4f\n",h,irr,f1,f2,f3,f4,worst);
+  return 0; }
+\end{lstlisting}
+Output for $h\le9$, and for $h=10$ in two parts:
+\begin{lstlisting}
+h=4 irreducible=1  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.5729
+h=5 irreducible=5  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.5870
+h=6 irreducible=12  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.4598
+h=7 irreducible=78  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.2028
+h=8 irreducible=494  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.2040
+h=9 irreducible=5366  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.2054
+h=10 irreducible=38003  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.2067
+h=10 irreducible=43863  violations: I1=0 I2=0 I3=0 I4=0   max(rho-(1.3+1.43y))=-0.2069
+\end{lstlisting}
+
+\subsection{Direct small-order check of Theorems~\ref{thm:W} and \ref{thm:F}}\label{app:small}
+\begin{lstlisting}[language=Python]
+#!/usr/bin/env python3
+# Independent small-order check of  F(G) <= M(G)+1  and of  R(G) >= mu(G).
+# Usage:  nauty-geng -c -q n | python3 wc_small.py
+# F(G) = max over the simplex of p^T K p, K = distance matrix with diagonal 2, is computed
+# by enumerating supports S and solving K_S w = 1 (every maximiser is of this form on its support).
+import sys, itertools, math
+import numpy as np, networkx as nx
+def Fmax(G):
+    nodes = list(G.nodes()); n = len(nodes); idx = {v: i for i, v in enumerate(nodes)}
+    K = np.zeros((n, n))
+    for s, dist in nx.all_pairs_shortest_path_length(G):
+        for t, dd in dist.items(): K[idx[s], idx[t]] = dd
+    D = K.copy(); np.fill_diagonal(K, 2.0)
+    best = 2.0
+    for r in range(2, n + 1):
+        for S in itertools.combinations(range(n), r):
+            KS = K[np.ix_(S, S)]
+            try: w = np.linalg.solve(KS, np.ones(r))
+            except np.linalg.LinAlgError: continue
+            tot = w.sum()
+            if abs(tot) < 1e-13: continue
+            p = w / tot
+            if (p < -1e-10).any(): continue
+            best = max(best, float(p @ KS @ p))
+    return best, D
+cnt = 0; minslack = 1e9; minRmu = 1e9; fail = 0
+for line in sys.stdin:
+    G = nx.from_graph6_bytes(line.strip().encode()); n = G.number_of_nodes(); cnt += 1
+    d = dict(G.degree())
+    M = sum(1.0 / max(d[u], d[v]) for u, v in G.edges())
+    R = sum(1.0 / math.sqrt(d[u] * d[v]) for u, v in G.edges())
+    F, D = Fmax(G); mu = D.sum() / (n * (n - 1))
+    minslack = min(minslack, M + 1 - F); minRmu = min(minRmu, R - mu)
+    if F > M + 1 + 1e-9 or R < mu - 1e-12: fail += 1; print("FAIL", line.strip())
+print(f"graphs={cnt} failures={fail} min(M+1-F)={minslack:.6f} min(R-mu)={minRmu:.6f}")
+\end{lstlisting}
+Output (a failure is reported if $F>M+1+10^{-9}$ or $R<\operatorname{ad}-10^{-12}$;
+the value $-0.000000$ is a rounding error at graphs with $F=M+1$; the prefixes
+\texttt{n=}\dots\ were added by the calling loop):
+\begin{lstlisting}
+n=2 graphs=1 failures=0 min(M+1-F)=0.000000 min(R-mu)=0.000000
+n=3 graphs=2 failures=0 min(M+1-F)=0.000000 min(R-mu)=0.080880
+n=4 graphs=6 failures=0 min(M+1-F)=0.000000 min(R-mu)=0.232051
+n=5 graphs=21 failures=0 min(M+1-F)=0.000000 min(R-mu)=0.400000
+n=6 graphs=112 failures=0 min(M+1-F)=0.000000 min(R-mu)=0.569401
+n=7 graphs=853 failures=0 min(M+1-F)=-0.000000 min(R-mu)=0.735204
+n=8 graphs=11117 failures=0 min(M+1-F)=-0.000000 min(R-mu)=0.895751
+n=9 part 0/4 graphs=65533 failures=0 min(M+1-F)=-0.000000 min(R-mu)=1.050649
+n=9 part 1/4 graphs=47296 failures=0 min(M+1-F)=-0.000000 min(R-mu)=1.103389
+n=9 part 2/4 graphs=94487 failures=0 min(M+1-F)=0.000000 min(R-mu)=1.080880
+n=9 part 3/4 graphs=53764 failures=0 min(M+1-F)=0.333333 min(R-mu)=1.498261
+\end{lstlisting}
+
+\subsection{Direct check for order ten (Remark~\ref{rem:checks}(1))}\label{app:direct}
+\begin{lstlisting}[language=C]
+/* Independent direct check of Theorem 1.1 on all connected graphs of order n<=10 (graph6 on stdin),
+   written separately from wc_small.py:
+   F(G) = max over supports S (K_S nonsingular) of 1/sum(K_S^{-1} 1) when K_S^{-1} 1 > 0   (and 2 for |S|=1).
+   M(G) exact as integer over DEN.  Reports min of M+1-F and the number of graphs with slack < 1e-9;
+   the graphs with slack < 1e-6 are written to stderr for an exact re-check (exact_tight.py).           */
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#define DEN 27720L
+int main(void){
+  char line[256]; long cnt=0, tight=0, fail=0; double minslack=1e9; int n=0;
+  while(fgets(line,sizeof line,stdin)){
+    line[strcspn(line,"\n")]=0; if(!line[0]) continue; cnt++;
+    n=line[0]-63; int A[10][10]; memset(A,0,sizeof A);
+    { int k=0; for(int j=1;j<n;j++) for(int i=0;i<j;i++){ int byte=line[1+k/6]-63; if((byte>>(5-k%6))&1) A[i][j]=A[j][i]=1; k++; } }
+    int D[10][10];
+    for(int i=0;i<n;i++) for(int j=0;j<n;j++) D[i][j]= i==j?0:(A[i][j]?1:99);
+    for(int k=0;k<n;k++) for(int i=0;i<n;i++) for(int j=0;j<n;j++) if(D[i][k]+D[k][j]<D[i][j]) D[i][j]=D[i][k]+D[k][j];
+    int deg[10]; long M=0;
+    for(int i=0;i<n;i++){deg[i]=0; for(int j=0;j<n;j++) deg[i]+=A[i][j];}
+    for(int i=0;i<n;i++) for(int j=i+1;j<n;j++) if(A[i][j]) M+=DEN/(deg[i]>deg[j]?deg[i]:deg[j]);
+    double best=2.0;
+    for(unsigned S=1;S<(1u<<n);S++){
+      int idx[10], r=0; for(int i=0;i<n;i++) if(S>>i&1) idx[r++]=i;
+      if(r<2) continue;
+      double a[10][11];
+      for(int i=0;i<r;i++){ for(int j=0;j<r;j++) a[i][j]= i==j?2.0:(double)D[idx[i]][idx[j]]; a[i][r]=1.0; }
+      int sing=0;
+      for(int c=0;c<r&&!sing;c++){
+        int piv=c; double mx=fabs(a[c][c]);
+        for(int i=c+1;i<r;i++) if(fabs(a[i][c])>mx){mx=fabs(a[i][c]); piv=i;}
+        if(mx<1e-9){sing=1; break;}
+        if(piv!=c) for(int j=c;j<=r;j++){double t=a[c][j]; a[c][j]=a[piv][j]; a[piv][j]=t;}
+        for(int i=c+1;i<r;i++){ double f=a[i][c]/a[c][c]; if(f!=0.0) for(int j=c;j<=r;j++) a[i][j]-=f*a[c][j]; }
+      }
+      if(sing) continue;
+      double w[10]; int pos=1; double tot=0;
+      for(int i=r-1;i>=0;i--){ double s=a[i][r]; for(int j=i+1;j<r;j++) s-=a[i][j]*w[j]; w[i]=s/a[i][i]; }
+      for(int i=0;i<r;i++){ if(w[i]<=1e-12) pos=0; tot+=w[i]; }
+      if(!pos||tot<=0) continue;
+      double val=1.0/tot; if(val>best) best=val;
+    }
+    double slack=(double)M/DEN+1.0-best;
+    if(slack<minslack) minslack=slack;
+    if(slack<1e-9) tight++;
+    if(slack<1e-6) fprintf(stderr,"%s\n",line);
+    if(slack<-1e-9){ fail++; printf("FAIL %s slack=%.9f\n",line,slack); }
+  }
+  printf("n=%d graphs=%ld failures=%ld min(M+1-F)=%.9f tight=%ld\n",n,cnt,fail,minslack,tight);
+  return 0;
+}
+\end{lstlisting}
+Output for the sixteen parts \texttt{nauty-geng -c -q 10 k/16}, followed by the output of the exact re-check (\texttt{extra/exact\_tight.py}) of the graphs written to the error stream:
+\begin{lstlisting}
+part 0/16: n=10 graphs=602072 failures=0 min(M+1-F)=0.000000000 tight=51
+part 1/16: n=10 graphs=508270 failures=0 min(M+1-F)=0.000000000 tight=26
+part 2/16: n=10 graphs=562497 failures=0 min(M+1-F)=0.000000000 tight=4
+part 3/16: n=10 graphs=607709 failures=0 min(M+1-F)=0.500000000 tight=0
+part 4/16: n=10 graphs=319966 failures=0 min(M+1-F)=0.833333333 tight=0
+part 5/16: n=10 graphs=586883 failures=0 min(M+1-F)=0.333333333 tight=0
+part 6/16: n=10 graphs=879635 failures=0 min(M+1-F)=0.816666667 tight=0
+part 7/16: n=10 graphs=597745 failures=0 min(M+1-F)=0.000000000 tight=4
+part 8/16: n=10 graphs=674677 failures=0 min(M+1-F)=0.166666667 tight=0
+part 9/16: n=10 graphs=823542 failures=0 min(M+1-F)=0.000000000 tight=1
+part 10/16: n=10 graphs=810514 failures=0 min(M+1-F)=0.464285714 tight=0
+part 11/16: n=10 graphs=1078725 failures=0 min(M+1-F)=0.983333333 tight=0
+part 12/16: n=10 graphs=1335009 failures=0 min(M+1-F)=0.583333333 tight=0
+part 13/16: n=10 graphs=789448 failures=0 min(M+1-F)=0.666666667 tight=0
+part 14/16: n=10 graphs=764578 failures=0 min(M+1-F)=0.500000000 tight=0
+part 15/16: n=10 graphs=775301 failures=0 min(M+1-F)=1.233333333 tight=0
+order 10: graphs re-checked exactly: 86; F = M+1 exactly: 86; F > M+1: 0
+\end{lstlisting}
+
+
+\subsection{Large irreducible decorated blocks (Remark~\ref{rem:checks}(5))}\label{app:big}
+\begin{lstlisting}[language=Python]
+# Stress test of Lemmas 4.1-4.5, inequality (6.1), the bound rho <= 1.3+1.43y and Theta > 1 on LARGE
+# irreducible decorated blocks (up to about 100 sites); everything is computed from the definitions
+# with exact rationals (irreducibility: M(G-e) > M(G) for every core edge e).
+import sys, random, itertools, math
+from fractions import Fraction as Fr
+import networkx as nx
+
+def Mval(G):
+    d = dict(G.degree())
+    return sum(Fr(1, max(d[u], d[v])) for u, v in G.edges())
+
+def build(H, loaded):
+    G = H.copy()
+    for v in loaded: G.add_edge(v, ('leaf', v))
+    return G
+
+def irreducible(H, G):
+    M = Mval(G)
+    for u, v in H.edges():
+        G.remove_edge(u, v)
+        ok = Mval(G) > M
+        G.add_edge(u, v)
+        if not ok: return False
+    return True
+
+def analyse(H, loaded):
+    """returns None if not an irreducible decorated block, else dict of checks"""
+    loaded = set(loaded)
+    if H.number_of_nodes() < 3 or not nx.is_biconnected(H): return None
+    G = build(H, loaded)
+    if not irreducible(H, G): return None
+    d = dict(G.degree()); M = Mval(G)
+    Mcore = sum(Fr(1, max(d[u], d[v])) for u, v in H.edges())
+    y = math.sqrt(float(M) - 1)
+    # Lemma 4.1 (P1)-(P3), from the definitions
+    g = {v: d[v]*(d[v]-1) for v in H}
+    ell = {v: sum(1 for w in G[v] if d[w] < d[v]) for v in H}
+    a = {v: Fr(ell[v], g[v]) for v in H}; b_ = {v: Fr(d[v]-ell[v], g[v]) for v in H}
+    for v in H:
+        assert ell[v] >= 1 and d[v] >= 3
+        if d[v] == 3: assert v in loaded and all(d[w] >= 4 for w in H[v])
+    for u, v in H.edges():
+        if d[u] > d[v]: u, v = v, u
+        if d[u] < d[v]: assert a[u] > b_[v]
+        else: assert a[u] >= b_[v] and a[v] >= b_[u]
+    X = {}; xi = {}; gam = {}; theta = 0.0; worst_rho = -1e9; i2 = True
+    for v in H.nodes():
+        G2 = G.copy(); G2.remove_node(v)
+        if v in loaded: G2.remove_node(('leaf', v))
+        X[v] = M - Mval(G2)
+        # Lemma 4.2: closed formula for X(v)
+        form = Fr(1, d[v]) if v in loaded else Fr(0)
+        for w in H[v]:
+            form += b_[w] if d[w] > d[v] else (b_[w] - Fr(1, g[w]) if d[w] == d[v] else Fr(1, d[v]) - a[w])
+        nb = list(H[v])
+        form -= sum(Fr(1, g[w]) for i, w in enumerate(nb) for z in nb[i+1:] if H.has_edge(w, z) and d[w] == d[z])
+        assert form == X[v]
+        x = max(X[v], Fr(0))
+        nl = sum(1 for w in H[v] if d[w] < d[v]); ne = sum(1 for w in H[v] if d[w] == d[v]); nh = sum(1 for w in H[v] if d[w] > d[v])
+        peak = (ne == 0 and nh == 0)
+        lam = Fr(0)
+        if v in loaded:
+            G3 = G.copy(); G3.remove_node(('leaf', v)); b = M - Mval(G3)
+            assert b == Fr(d[v] - (nl + 1), d[v]*(d[v]-1))
+            x = max(x, b)
+            U = Fr((nl + 1)*(d[v]-1) + nh, d[v]*(d[v]-1))
+            if X[v] > U: i2 = False
+            if not (peak and d[v] >= 5): lam = Fr(1, d[v])
+            # range claims of Lemma 4.4
+            if d[v] == 3: assert Fr(1,3) <= x <= Fr(2,3)
+            elif not peak: assert Fr(1, d[v]*(d[v]-1)) <= x <= 1 - Fr(d[v]-2, d[v]*(d[v]-1))
+            elif d[v] == 4: assert x == Fr(1,2)
+        assert X[v] <= 1
+        xi[v] = x; gam[v] = Fr(5,4)*x + lam
+        if x > 0:
+            s = math.sqrt(float(x)); th = s/(y+s); theta += th
+            worst_rho = max(worst_rho, float(gam[v])/th - (1.3 + 1.43*y))
+        else:
+            assert lam == 0
+    h = H.number_of_nodes()
+    f = min(Fr(t,2) + Fr(h-t, t-1) for t in range(2, h+1))
+    return dict(h=h, M=float(M), I1=sum(X.values()) >= Mcore, I2=i2, I3=M <= sum(gam.values()),
+                I4=worst_rho <= 1e-9, Theta=theta, count=M >= f, worst=worst_rho)
+
+def hubs_and_middles(rng):
+    k = rng.randint(2, 7)                       # hubs
+    Q = nx.gnp_random_graph(k, rng.random(), seed=rng.randint(0, 10**9))
+    H = nx.Graph(); H.add_nodes_from(range(k)); H.add_edges_from(Q.edges())
+    nxt = k; loaded = set()
+    pairs = list(itertools.combinations(range(k), 2))
+    for (a, b) in pairs:
+        m = rng.choice([0, 0, 1, 2, 3, 4, 6, 8]) if k > 2 else rng.randint(3, 30)
+        for _ in range(m):
+            H.add_edge(nxt, a); H.add_edge(nxt, b); loaded.add(nxt); nxt += 1
+    # a few middles of core degree 3
+    for _ in range(rng.randint(0, 4)):
+        if k >= 3:
+            tri = rng.sample(range(k), 3)
+            for a in tri: H.add_edge(nxt, a)
+            if rng.random() < 0.7: loaded.add(nxt)
+            nxt += 1
+    for a in range(k):
+        if rng.random() < 0.4: loaded.add(a)
+    return H, loaded
+
+def multipartite(rng):
+    k = rng.randint(2, 4); parts = [rng.randint(1, 9) for _ in range(k)]
+    H = nx.complete_multipartite_graph(*parts)
+    loaded = set()
+    for v, dat in H.nodes(data=True):
+        pass
+    part_of = nx.get_node_attributes(H, 'subset')
+    flags = [rng.random() < 0.5 for _ in range(k)]
+    loaded = {v for v in H.nodes() if flags[part_of[v]]}
+    return H, loaded
+
+if __name__ == '__main__':
+    seed = int(sys.argv[1]); N = int(sys.argv[2]); rng = random.Random(seed)
+    found = 0; bad = 0; minT = 1e9; maxh = 0; hs = {}
+    for it in range(N):
+        H, loaded = (hubs_and_middles if rng.random() < 0.8 else multipartite)(rng)
+        if H.number_of_nodes() < 4: continue
+        r = analyse(H, loaded)
+        if r is None: continue
+        found += 1; maxh = max(maxh, r['h']); hs[r['h']] = hs.get(r['h'], 0) + 1
+        minT = min(minT, r['Theta'])
+        if not (r['I1'] and r['I2'] and r['I3'] and r['I4'] and r['count'] and r['Theta'] > 1):
+            bad += 1; print('VIOLATION', r, sorted(H.edges()), sorted(loaded))
+    print(f'seed={seed} trials={N} irreducible_found={found} max_h={maxh} violations={bad} minTheta={minT:.4f}')
+    print('h histogram:', sorted(hs.items()))
+\end{lstlisting}
+Output:
+\begin{lstlisting}
+seed=1 trials=3000 irreducible_found=1376 max_h=104 violations=0 minTheta=1.3846
+seed=2 trials=3000 irreducible_found=1405 max_h=111 violations=0 minTheta=1.3846
+seed=3 trials=3000 irreducible_found=1476 max_h=106 violations=0 minTheta=1.3846
+seed=4 trials=3000 irreducible_found=1383 max_h=108 violations=0 minTheta=1.3846
+\end{lstlisting}
+
+\end{document}

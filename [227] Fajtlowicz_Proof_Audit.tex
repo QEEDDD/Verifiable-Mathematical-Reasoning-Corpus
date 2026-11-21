@@ -1,0 +1,791 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm,top=23mm,bottom=23mm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs,array,enumitem,listings,xcolor,fancyhdr}
+\definecolor{ink}{HTML}{143549}
+\definecolor{accent}{HTML}{136466}
+\definecolor{quiet}{HTML}{4C5E65}
+\usepackage[hypertexnames=false,colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent,pdfauthor={Shaitetsu},pdftitle={A proof audit of Fajtlowicz's average-distance conjecture}]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem*{remark}{Remark}
+\newcommand{\ad}{\operatorname{ad}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\supp}{\operatorname{supp}}
+\DeclareMathOperator{\dist}{dist}
+\newcommand{\dd}{\mathrm d}
+\newcommand{\cH}{\mathcal H}
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{doi: #1}}
+\setlist{topsep=4pt,itemsep=2pt,parsep=0pt}
+\lstset{basicstyle=\ttfamily\footnotesize,columns=fullflexible,keepspaces=true,showstringspaces=false,breaklines=true,aboveskip=6pt,belowskip=6pt,frame=single,rulecolor=\color{quiet!30},xleftmargin=4pt,xrightmargin=4pt,framesep=4pt}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\color{quiet}Fajtlowicz's average-distance conjecture}
+\fancyhead[R]{\small\color{quiet}Proof audit}\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\parindent}{1.2em}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\begin{document}
+\thispagestyle{plain}
+\noindent{\small\sffamily\bfseries\color{accent} GRAPH THEORY\quad /\quad RESEARCH VERIFICATION}\par
+\vspace{8pt}
+\noindent{\color{ink}\LARGE\bfseries A proof audit of Fajtlowicz's\\[3pt] average-distance conjecture}\par
+\vspace{6pt}
+\noindent{\large Weighted distances, the harmonic index, and the extremal star}\par
+\vspace{8pt}
+\noindent{\small Shaitetsu\quad$\cdot$\quad 21 November 2026}\par
+\vspace{8pt}\hrule\vspace{10pt}
+\noindent\textbf{Abstract.}
+We examine the two theorems of the supplied 20 November 2026 VMRC manuscript. Its weighted bound holds on every finite simple connected graph of order at least two. We give a proof that retains its minimal-counterexample and stationarity arguments. Keeping a positive term in the sum of the vertex-deletion differences forces any obstruction to have modified Randi\'c index at most $5/2$. An elementary count and a four-vertex argument finish the proof without a graph enumeration. An independent integer computation also verifies the original finite lemma on all 5,956 irreducible decorations.
+The weighted theorem gives a further global result, $\ad(G)\le H(G)$ for the harmonic index, with equality precisely on stars. This answers entry 148 of \emph{Written on the Wall} and implies the Randi\'c bound of entry 3. For the stronger Caporossi--Hansen additive conjecture, we show that for every sufficiently large order the star is the unique minimizer, with an explicit sufficient order of $10^{27}$. We also derive the harmonic-index diameter inequalities of Liu and of Jerline--Michaelraj. A seven-vertex graph refutes both constants in a published 2020 strengthening.
+\section{The verdict and its scope}
+Write $n=|V(G)|$, $m=|E(G)|$, $d_v=\deg_G(v)$, $D=\diam(G)$ and $\mu=\ad(G)=\binom n2^{-1}\sum_{\{u,v\}}\dist(u,v)$. We always assume $G$ finite, simple, undirected, connected, and $n\ge2$. Define the three edge sums
+\[
+ M=\sum_{uv\in E}\frac1{\max(d_u,d_v)},\qquad
+ H=\sum_{uv\in E}\frac2{d_u+d_v},\qquad
+ R=\sum_{uv\in E}\frac1{\sqrt{d_ud_v}} .
+\]
+They satisfy $M\le H\le R$. The average uses distinct unordered pairs; the quadratic form below uses all ordered pairs and a specified diagonal. Confusing these two normalizations changes the conclusion for a star.
+\begin{center}\small
+\begin{tabular}{@{}p{.38\linewidth}p{.565\linewidth}@{}}\toprule
+Statement & Audit finding\\\midrule
+Theorems 1.1 and 1.2 of \cite{audited}& Both pass. All orders and degrees are covered. The only equality graph for $R=\mu$ is $K_2$.\\[3pt]
+Graffiti 148, $H\ge\mu$ \cite{wow}& True on all graphs in scope, with exactly the stars as equality graphs. This uses two specializations of the weighted theorem.\\[3pt]
+Caporossi--Hansen $3'$ \cite{cap}& Sharp, with the star as unique minimizer, for $2\le n\le9$ and $n\ge10^{27}$; an all-order proof remains outstanding here.\\[3pt]
+Diameter, radius, and stronger variants & The harmonic diameter conjectures of Liu and Jerline--Michaelraj follow. A 2020 strengthening fails on a seven-vertex example; the earlier Yang--Lu bounds are recovered. The two radius conjectures are separate. Explicit counterexamples to two other strengthenings appear in Sections~\ref{sec:limits} and~\ref{sec:boundaries}.\\\bottomrule
+\end{tabular}\end{center}
+\noindent The original conjecture appears in Fajtlowicz's 1988 paper and as entry 3 in his catalogue \cite{faj,wow}. Published special cases include trees \cite{tree}, unicyclic graphs \cite{uni}, and graphs with degree restrictions \cite{dalfo}. The report audits the specific attached version. Neither an external referee decision nor historical priority is inferred from the verification.
+\section{Reconstructing the reduction}
+Put $K(x,x)=2$, $K(x,y)=\dist(x,y)$ for $x\ne y$, and $F(G)=\max_{p}p^{\mathsf T}Kp$, where $p$ ranges over the probability simplex. The maximum exists by compactness. We prove the manuscript's main estimate
+\begin{equation} F(G)\le M(G)+1.\label{weighted}\tag{W}\end{equation}
+For every $G$ in scope, $M\ge1$: the edges at a maximum-degree vertex contribute exactly one.
+\subsection{The possible shape of a counterexample}
+Suppose a graph violates \eqref{weighted}. Choose one minimizing first its order and then its size, and fix a maximizing vector $p$. A connected proper subgraph $J$ of order at least two containing the support of any maximizing vector must have $M(J)>M(G)$. Indeed the distances of its remaining pairs can only increase, and minimality gives $F(J)\le M(J)+1$. In particular
+\begin{equation}
+ M(G-e)>M(G)\quad\text{for every edge on a cycle.}\label{supportive}
+\end{equation}
+A star has $F\le2=M+1$. In a double star write $a,b$ for the masses on the two sets of leaves. Only pairs from opposite leaf sets have kernel entry above two, so $F\le2+2ab\le5/2$. The smaller number $l\ge1$ of leaves at a centre gives $M=1+l/(l+1)\ge3/2$.
+
+For a vertex of degree at least two set $g_v=d_v(d_v-1)$ and let $\ell_v$ count its strictly lower-degree neighbours. Removing a leaf at $v$ decreases $M$ by
+\begin{equation}
+ b_v=(d_v-\ell_v)/g_v\ge0.\label{bleaf}
+\end{equation}
+The lost edge weighs $1/d_v$, and each of the other $\ell_v-1$ edges to a lower neighbour gains $1/g_v$. Thus a leaf in a minimal counterexample has positive mass for every maximizer.
+
+We detail the cut-vertex step, since the diagonal convention matters here. If a cut vertex $v$ separates two nontrivial components, partition $G-v=A\sqcup B$ without crossing edges and with each side containing such a component. On side $A$ retain $v$ and replace its $d_B$ neighbours across the cut by $d_B$ new leaves; construct $G_B$ symmetrically. These padded graphs have fewer vertices or, in case of a tie, fewer edges, because the discarded side contains an edge. Old degrees are preserved and the new leaves give $M(G_A)+M(G_B)=M(G)+1$. Project $A$ identically to $G_A$ and send $B\cup\{v\}$ to a single new leaf; use the symmetric projection for $G_B$. The two projected kernel values sum to at least $K(x,y)+2$ for each pair. For a pair in one side the second value is two. For opposite sides the two new terminal edges add two. For $v$ paired with another vertex the surplus is three, and for $(v,v)$ it is two. Taking expectations contradicts minimality. Hence at most one component of $G-v$ can be nontrivial.
+
+Remove all leaves and denote the remaining graph by $J$. It is connected; the one- and two-vertex possibilities were covered above. A cut vertex of $J$ would leave two components of the original graph containing non-leaf vertices, each nontrivial, contrary to the preceding paragraph. Thus $J$ is two-connected of order $h\ge3$. Two leaves at the same site have identical rows on the other vertices, and their $2\times2$ kernel is constant. Merging their masses would give a zero-mass leaf. Consequently each site $v$ in $J$ has at most one leaf $v'$. Call it \emph{loaded} when it has one, and set $\epsilon_v=1$ there and $0$ elsewhere. All core edges obey \eqref{supportive}. Moving the entire mass $t=p_v$ of a loaded site to its leaf increases the objective by $2t(1-t)$, because all other distances go up by one and the diagonal is two. The case $t=1$ gives $F=2$. Thus $p_v=0$ at every loaded site.
+\subsection{Degree restrictions and local deletion}
+Put $a_v=\ell_v/g_v$, and use \eqref{bleaf} to define $b_v$ at every site. Deleting a core edge $uv$ gains $1/g_u$ on each surviving lower edge at $u$, and similarly at $v$, and loses its original weight. Hence \eqref{supportive} gives
+\[
+ d_u<d_v\Longrightarrow a_u>b_v,\qquad
+ d_u=d_v\Longrightarrow a_u\ge b_v,\quad a_v\ge b_u .
+\]
+In the equal-degree case the strict inequality in the count is $\ell_u+\ell_v>d_u-1$, so the weak bounds follow by integrality. A site with no lower neighbour would contradict the first relation on a rising edge, or force $b_v=0$ on an equal edge where $u$ itself is not lower. A minimum-degree site therefore has a leaf and at least two core neighbours. Every site has total degree at least three. Every degree-three site is loaded, has exactly two core neighbours, and both have degree at least four by the equal-degree condition. This also rules out $h=3$.
+
+Delete a site and its leaf if present, and denote the decrease of $M$ by $X_v$. The remaining graph is connected and has at least two vertices. Define
+\[
+ \beta_v=\epsilon_v b_v,\qquad \xi_v=\max(0,X_v,\beta_v).
+\]
+Every survivor edge can only grow in weight, while removed edges have total weight at most one. Thus $X_v\le1$. We need the following sharper bound.
+\begin{lemma}\label{local}
+At each site $0\le\beta_v\le\min(\xi_v,1/3)$ and $\xi_v+\beta_v\le1$.
+\end{lemma}
+\begin{proof}
+Only a loaded site needs attention. Set $d=d_v$, $g=d(d-1)$, and let $l,e,u$ count its lower, equal and higher core neighbours. Then $l+e+u=d-1$ and $b_v=(e+u)/g\le1/d$. For a core neighbour $w$, its contribution to $X_v$ after subtracting survivor gains on its lower edges is $b_w$ if $d_w>d$, $b_w-1/g$ if $d_w=d$, and $1/d-a_w$ if $d_w<d$. If two equal-degree neighbours of $v$ are adjacent, the edge between them also gains, requiring a further subtraction. Dropping these nonnegative corrections gives an upper bound. The three preceding contributions are at most $a_v$, $a_v-1/g$ and $1/d-b_v$, respectively. Including the leaf edge gives
+\[
+ g X_v\le(d-1)+u(l+1)+el+l(d-1-e-u)=(l+1)(d-1)+u.
+\]
+Adding $gb_v=e+u$ leaves a shortfall from $g$ of $(d-2)e+(d-3)u\ge0$. Thus $X_v+b_v\le1$ and $2b_v\le2/3$, proving the claim.
+\end{proof}
+\subsection{The probability constraint}
+For $u\in\supp p$, a one-sided transfer of mass from $u$ to any $z$ shows $(Kp)_u\ge(Kp)_z$. Averaging on the support yields $(Kp)_u=F(G)$. Suppose $S$ is a set whose deletion leaves a connected graph of order at least two, and only $u\in S$ may have positive mass. Set $t=p_u$, $x=M(G)-M(G-S)$ and $F=F(G)$. If $t=0$, then $x<0$ by the subgraph argument. For $0<t<1$, renormalize the surviving vector by $1-t$. The kernels of surviving pairs can only rise and $\sum_{z\ne u}p_z\dist(u,z)=F-2t$, whence
+\[
+ (1-2t)F\le (1-t)^2(M+1-x)-2t^2 .
+\]
+For $0<t<1/2$, using $F>M+1$ on the left gives $(1-t)^2x<(M-1)t^2$.
+
+To justify the other half of the mass range, $M\ge2$ here: order the sites by decreasing degree and charge each edge to its first endpoint, putting leaves last. The first four sites contribute at least $\sum_{i=1}^4(1-(i-1)/3)=2$. Write $y=\sqrt{M-1}\ge1$ and $\theta(s)=\sqrt s/(y+\sqrt s)$. If $0<x\le1$, the last inequality gives $t>\theta(x)$ when $t<1/2$, and $\theta(x)\le1/2\le t$ otherwise. An unloaded site supplies mass for the deletion $\{v\}$. A loaded site supplies the same leaf mass for each of $\{v'\}$ and $\{v,v'\}$ because $p_v=0$. Summing these lower bounds over distinct masses yields
+\begin{equation}
+ \Theta:=\sum_{v\in V(J)}\theta(\xi_v)\le1.\label{budget}
+\end{equation}
+
+\section{A hand proof closing the weighted inequality}\label{sec:hand}
+\begin{lemma}\label{saved}
+Let $l_v$ count the lower \emph{core} neighbours of $v$, and $M_0$ be the weight of the core edges. Then
+\[
+ \sum_v X_v\ \ge\ M_0+\sum_{v\ \mathrm{loaded}}\frac{l_v}{g_v},
+ \qquad M\le\sum_v(\xi_v+\beta_v).
+\]
+\end{lemma}
+\begin{proof}
+Sum the weight removed under site deletions. It is $2M_0+\sum_{v\ \mathrm{loaded}}1/d_v$ before the gains of surviving edges are subtracted. Each leaf edge at $w$ gains $1/g_w$ exactly $d_w-1$ times. For a core edge $uw$ with $d_u<d_w$, the gain $1/g_w$ occurs exactly when a core neighbour of $w$ other than $u$ is deleted. This is $d_w-1-\epsilon_w$ times, giving total $1/d_w-\epsilon_w/g_w$. On an equal-degree edge of degree $d$, gains occur only when a common neighbour is deleted, at most $d-1$ times, for total at most $1/d$. Subtract these gains. The unequal-degree term saves $1/g_w$ once for each lower core neighbour of a loaded $w$. Finally $1/d_v-l_v/g_v=b_v$ on a loaded site, since $\ell_v=l_v+1$. Adding the leaf weights to $M_0$ and using $X_v\le\xi_v$ proves the second claim.
+\end{proof}
+For a site with $x=\xi_v>0$, $b=\beta_v$, Lemma~\ref{local} gives $b\le x\le1-b$. The function $\sqrt{x}+b/\sqrt{x}$ is increasing on $x\ge b$, so
+\[
+ \frac{x+b}{\theta(x)}
+   =(x+b)+y\bigl(\sqrt{x}+b/\sqrt{x}\bigr)
+   \le1+\frac{y}{\sqrt{1-b}}\le1+\sqrt{3/2}\,y .
+\]
+At $x=0$ both summands in $x+b$ vanish. Lemma~\ref{saved} and \eqref{budget} now force $1+y^2=M\le1+\sqrt{3/2}\,y$, or
+\begin{equation}M\le 5/2.\label{fivehalf}\end{equation}
+\begin{lemma} If $h\ge5$, every surviving decorated core has $M>5/2$.\end{lemma}
+\begin{proof}
+Let $r$ be the number of sites of degree at least four. If some sites have degree three, each has two distinct higher neighbours, so $r\ge2$. For $2\le r\le4$, charge edges at the first endpoint in decreasing order. The first $r$ sites contribute at least $r-\binom r2/4$. Each remaining site contributes a separate leaf edge of weight $1/3$. At $h=5$ these lower bounds for $r=2,3,4$ are $11/4,35/12,17/6$. They increase with $h$. If $r\ge5$, the first five sites alone contribute at least $5-10/4=5/2$. For $h>5$ choose the last site in this ordering. Its lower neighbour must be a leaf, and that edge was uncounted. For $h=5$, a missing pair among the five gives strictness in counting earlier neighbours. If the core is $K_5$, an unloaded site would have degree four and no lower neighbour. All sites are therefore loaded and $M=3$.
+\end{proof}
+It remains to handle $h=4$. Every site has core degree at least two, so the missing pairs of $J$ form a matching. Project a leaf to its site and each site to itself, and write $q$ for the resulting masses. For independent samples $x,y$ from $p$, $K(x,y)\le2+\dist_J(\pi x,\pi y)$ even on the diagonal. Missing pairs have distance two, and hence
+\[
+ \mathbb E_q\dist_J
+ =1-\sum_i q_i^2+2\sum_{ij\ \mathrm{missing}}q_iq_j\le1
+\]
+by $2q_iq_j\le q_i^2+q_j^2$ on disjoint pairs. Thus $F\le3\le M+1$. This contradicts minimality in the last possible case and proves \eqref{weighted}. In particular, no external computation is needed for this proof of the weighted theorem.
+
+\section{Checking the original argument on its own terms}\label{sec:check}
+The original Lemma 6.2 uses the weaker bound $\sum X_v\ge M_0$ and proves that $\Theta\le1$ entails $M\le 1.30+1.43\sqrt{M-1}$. Its endpoint estimate divides loaded sites into degree three, degree four, and higher degree, charging the leaf weights of loaded strict local degree maxima of degree at least five against their disjoint core edges. We checked the sign of the common-neighbour correction, the endpoint inequalities, and the final large-order comparison. For clarity, at $M\ge15/4$ put $y=\sqrt{M-1}\ge\sqrt{11}/2$. Then $y^2-1.43y-0.30$ is increasing and positive already at $\sqrt{11}/2$, since $490^2>143^2\cdot11$. The degree-order count in the manuscript gives $M\ge\min_{2\le i\le h}(i/2+(h-i)/(i-1))\ge15/4$ for $h\ge10$. Thus its large and small ranges meet without an omitted order.
+
+For the original Lemma 6.3 we regenerated every unlabelled core of order at most nine. Starting with one vertex, adjoin a new vertex on each possible neighbour set, retaining the extension when its new vertex has minimum degree; deleting a minimum-degree vertex proves inductive coverage. Isomorphic extensions were deduplicated by canonical adjacency encodings with individualization and partition refinement. We kept the cores connected after every single-vertex deletion. For every such core we considered every subset of sites for leaf attachment. Subsets violating the necessary lower-neighbour or degree-three conditions were skipped. For each retained subset, supportiveness and all deletion values were tested by recomputing the degrees and edge sums directly.
+\begin{center}\small
+\begin{tabular}{rrrr}
+\toprule
+Core order & Nonisomorphic cores & Irreducible decorations & Certified lower bound on $\Theta$\\\midrule
+3 & 1 & 0 & ---\\
+4 & 3 & 1 & 1.406514816\\
+5 & 10 & 5 & 1.527080948\\
+6 & 56 & 12 & 1.590805328\\
+7 & 468 & 78 & 1.384594780\\
+8 & 7,123 & 494 & 1.500000000\\
+9 & 194,066 & 5,366 & 1.681771511\\\midrule
+Total & 201,727 & 5,956 & 1.384594780\\\bottomrule
+\end{tabular}\end{center}
+Decorations count all passing subsets on one representative per core, before quotienting by its automorphisms. The printed lower bounds are exact rationals. Every degree is at most nine, so $2520M$ and $2520\xi_v$ are integers. For $T=10^9$, $A=2520(M-1)$ and $X=2520\xi_v$, the comparison
+\[
+ j/T\le\theta(\xi_v)\quad\Longleftrightarrow\quad A j^2\le X(T-j)^2\qquad(0\le j\le T)
+\]
+uses integers only. We took the minimum, over passing decorations, of the sum of the individual floors divided by $T$. The supplied versions use floating point for their last comparison; this gives a reproducible rational margin. A witness for the order-seven row is two adjacent hubs joined to five independent sites, with a leaf at each of the five. Here $M=7/2$, each hub has $\xi=0$, and each of the five sites has $\xi=11/30$, giving $5\sqrt{11}/(5\sqrt3+\sqrt{11})$. Random tests and the manuscript's order-ten stress tests are outside the proof dependencies.
+
+\subsection{Returning to the ordinary mean}
+Uniform mass on all vertices and equal mass on two diameter endpoints in \eqref{weighted} give, respectively,
+\begin{align}
+ M&\ge\frac{(n-1)\mu-(n-2)}n ,\label{uniform}\\
+ M&\ge D/2.\label{diameter}
+\end{align}
+The second is the published theorem of Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski \cite{dls}. For the first, the coefficient $(n-1)/n$ comes from drawing with replacement; the diagonal contributes $2/n$. For an edge with endpoint degrees $a\le b$ the identity
+\[
+ (a^{-1/2}-b^{-1/2})^2=(\sqrt{b/a}-1)((ab)^{-1/2}-b^{-1})
+\]
+and summation over edges, with $r=\sqrt\Delta$, give
+\begin{equation}
+ (r+1)R\ge n+(r-1)M.\label{randicbridge}
+\end{equation}
+For completeness, the supplied route from these estimates to $R>\mu$ is valid. For $n\ge5$ a hypothetical $R\le\mu$ requires
+\[
+ \mu\ge\frac{n^2-(r-1)(n-2)}{2n+r-1}.
+\]
+The right-hand side decreases in $r$. At $r=\sqrt{n-1}$ it is at least $(n+1)/3$ because the numerator of the squared comparison factors as $(n-5)(n-2)(n^2-5n+5)$. The classical path bound $\mu\le(n+1)/3$ has equality only on $P_n$ \cite{ejs}. One sees this by passing to a spanning tree, deleting a leaf and bounding its transmission by $1+\cdots+(n-1)$. An extra edge strictly shortens a pair, and equality in the leaf bound forces a path. Equality throughout would require both $G=P_5$ and $\Delta=4$, which is impossible. The nine graphs of orders two through four give equality only on $K_2$; the next section supplies a uniform second proof that includes these small orders.
+
+
+\section{The harmonic-index conjecture}\label{sec:harmonic}
+
+Entry 148 of Fajtlowicz's \emph{Written on the Wall} asks whether mean distance is at most the harmonic index. The notes to entry 63 define the edge weight as $2/(d_u+d_v)$ \cite{wow}. Shi established the inequality for all trees, with equality exactly for stars, and for certain dense triangle-free graphs \cite{shi}. We derive the unrestricted inequality from the uniform specialization \eqref{uniform}, the diameter bound \eqref{diameter}, and two estimates for the mean distance.
+
+\begin{theorem}[Graffiti 148]\label{thm:harmonic}
+Every connected simple graph $G$ of order $n\ge2$ satisfies
+\[
+ \mu(G)\le H(G):=\sum_{uv\in E(G)}\frac{2}{d_u+d_v}.
+\]
+Equality holds exactly for the stars $K_{1,n-1}$, including $K_2$.
+\end{theorem}
+
+\begin{proof}
+Write $d=\Delta(G)$, $D=\operatorname{diam}(G)$ and $M=\sum_{uv\in E(G)}1/\max(d_u,d_v)$. For an edge with degrees $1\le a\le b\le d$,
+\[
+ \frac{2(d+1)}{a+b}-\frac1a-\frac d b
+ =\frac{(b-a)(da-b)}{ab(a+b)}\ge0.
+\]
+Summation and $\sum_{uv\in E}(1/d_u+1/d_v)=n$ give
+\begin{equation}\label{eq:HM-audit}
+ (d+1)H\ge n+(d-1)M.
+\end{equation}
+The edges incident with a vertex of degree $d$ give $M\ge1$. If $D\le2$ and $m=|E(G)|$, then
+\[
+ \mu=2-\frac{m}{\binom n2}\le 2-\frac2n
+ \le 1+\frac{n-2}{d+1}\le H.
+\]
+Equality requires $m=n-1$. Every tree of diameter at most two is a star, and every star has $H=\mu=2-2/n$.
+
+Suppose $D\ge3$, so $d\ge2$. By \eqref{uniform}, $M\ge ((n-1)\mu-(n-2))/n$. Substitution in \eqref{eq:HM-audit} shows that $H\le\mu$ would imply $\mu\ge\phi$, where
+\[
+ \phi=\frac{n^2-(d-1)(n-2)}{2n+d-1}.
+\]
+Also, \eqref{diameter} and \eqref{eq:HM-audit} give $H\ge L_D=(2n+D(d-1))/(2(d+1))$. It suffices to show $\mu<\max(\phi,L_D)$.
+
+\smallskip\noindent\emph{Two upper bounds for the mean distance.}
+Set $j=n-1-d$, $q=\binom n2$ and $s=j(d+1)+\binom j2$. Then
+\begin{align}
+ \mu &\le B=\frac{n(n-1)(n+1)-(d-1)(d-2)(3n-2d-3)}{3n(n-1)},\label{eq:broom-audit}\\
+ \mu &\le C_D=2+\frac{(D-2)(s-j)-(n-1)}q.\label{eq:hub-audit}
+\end{align}
+For \eqref{eq:broom-audit}, extend the star at a vertex $v$ of degree $d$ to a spanning tree. Distances can only increase. Build the tree from this initial star by adding one leaf at a time. When the tree including the new leaf has order $t$, its distances $b_1\le\cdots\le b_{t-1}$ from that leaf to the other vertices satisfy $b_i\le i$, because a path to a vertex at distance $k$ contains all smaller positive distances. The $d-1$ neighbours of $v$ outside the branch of the new leaf are equidistant from it. A block of $d-1$ equal entries costs at least $\binom{d-1}{2}$ in $\sum_i(i-b_i)$. The initial star has unordered distance sum $d^2$. Each leaf adds at most $\binom t2-\binom{d-1}{2}$. Summing from $t=d+2$ to $n$ and dividing by $q$ gives \eqref{eq:broom-audit}; a single extended arm attains the estimate.
+
+For \eqref{eq:hub-audit}, all pairs inside $N[v]$ have distance at most two. Precisely $s$ pairs meet the complement. A breadth-first search from $v$ supplies $j$ distinct parent edges from the vertices outside $N[v]$. Thus at most $s-j$ pairs can have distance at least three. Against a baseline distance of two, the $m\ge n-1$ edges subtract one each, and each pair at distance at least three adds at most $D-2$. This proves \eqref{eq:hub-audit}. Moreover $D\le j+2$. A geodesic of length $D$ contains at most two neighbours of $v$ if $v$ lies on it, and at most three if $v$ lies outside it, since any two such neighbours at separation at least three would give a shortcut. Counting the possible neighbours off the path gives $d\le n-D+1$ in both cases.
+
+\smallskip\noindent\emph{Comparison for all orders.}
+Substituting $n=d+j+1$ into $3n(n-1)(2n+d-1)(\phi-B)$ gives
+\begin{align*}
+ Q(j,d)={}&3(j-2)d^3+(6-21j)d^2+(18j-6j^2)d\\
+           &+j^4+5j^3+14j^2+4j.
+\end{align*}
+For $j\ge6$ its forward difference in $j$ is
+\[
+ 4j^3+21j^2+47j+24+3d^3-21d^2-12dj+12d.
+\]
+For $d\ge10$ this is positive by
+$21j^2+3d^3-21d^2-12dj=3d^2(d-10)+(3d-2j)^2+17j^2$.
+For $2\le d\le9$ the bounds $3d^2(d-7)\ge-150$, $12dj\le108j$ give the positive lower bound $4j^3+21j^2-61j-126$. At $j=6$ the polynomial $Q(6,d)/12=d^3-10d^2-9d+242$ takes the values $192,152,110,72,44,32,42,80$ for $d=2,\ldots,9$, and equals $w^3+20w^2+91w+152$ for $d=10+w$. Consequently $B<\phi$ whenever $j\ge6$.
+
+For $d\ge19$ and $j=3,4,5$, respectively, the three quantities
+\begin{align*}
+ Q(3,d)/3&=d^2(d-19)+118,\\
+ Q(4,d)/6&=d^2(d-13)-4d+136,\\
+ Q(5,d)/3&=d^2(3d-33)-20d+540
+\end{align*}
+are positive. For $j=1,2$, respectively, $6n(n-1)(d+1)(L_3-B)$ equals
+$3(d+1)(d^2-d+2)$ and $3(d^3-4d^2+9d+10)$, both positive for $d\ge19$. Here $L_D\ge L_3$. The case $j=0$ forces $D\le2$.
+
+There remain $1\le j\le5$, $2\le d\le18$ and $3\le D\le j+2$. The code below compares the four rational functions at every integer triple in this box. The minima of $\max(\phi,L_D)-\min(B,C_D)$ for successive $j$ are $1/6$, $7/60$, $3/14$, $4/45$ and $59/345$. Hence $\mu<\max(\phi,L_D)$ throughout, completing the proof.
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+from fractions import Fraction as F
+mins, count = [], 0
+for j in range(1, 6):
+    margins = []
+    for d in range(2, 19):
+        n = d + j + 1
+        q = n*(n-1)//2
+        s = j*(d+1) + j*(j-1)//2
+        B = F(n*(n-1)*(n+1)-(d-1)*(d-2)*(3*n-2*d-3),
+              3*n*(n-1))
+        phi = F(n*n-(d-1)*(n-2), 2*n+d-1)
+        for D in range(3, j+3):
+            L = F(2*n+D*(d-1), 2*(d+1))
+            C = 2 + F((D-2)*(s-j)-(n-1), q)
+            margins.append(max(phi, L)-min(B, C))
+    count += len(margins)
+    mins.append(min(margins))
+assert count == 255
+assert mins == [F(1,6), F(7,60), F(3,14), F(4,45), F(59,345)]
+\end{lstlisting}
+\end{proof}
+
+The edge inequality $2/(a+b)\le1/\sqrt{ab}$ gives a second derivation of Graffiti 3. On a star this comparison is strict except for $K_2$, so it recovers the exact equality case for the Randi\'c index.
+
+
+\section{The Caporossi--Hansen gap at large orders}\label{sec:capgap}
+
+Caporossi and Hansen \cite{cap} proposed the sharper inequality
+\[
+ R(G)-\mu(G)\ \ge\ \sqrt{n-1}-2+\frac2n .
+\]
+Here $\mu(G)=\operatorname{ad}(G)$.  The right side is the gap of the star
+$S_n=K_{1,n-1}$.  We show that the sharp inequality, including the unique
+extremizer, follows for all sufficiently large orders.  The weighted theorem
+enters only through its uniform specialization \eqref{uniform}.
+
+\begin{theorem}\label{thm:eventualCH}
+For every $n\ge 10^{27}$ and every connected simple
+graph $G$ of order $n$,
+\[
+ R(G)-\mu(G)\ \ge\ \sqrt{n-1}-2+\frac2n,
+ \qquad\text{with equality if and only if }G\cong S_n .
+\]
+\end{theorem}
+
+Write $g=R-\mu$, $r=\sqrt{\Delta(G)}$, and $s=\sqrt{n-1}$.
+Equations \eqref{uniform} and \eqref{randicbridge} give
+\begin{align}
+ R-M &\le g+1+(\mu-2)/n, \label{gapdiff}\\
+ (r+1)g &\ge n-2\mu-(r-1)\bigl(1+(\mu-2)/n\bigr).\label{gapineq}
+\end{align}
+In particular, the path bound $\mu\le(n+1)/3$ gives the following estimate
+without a restriction on $n$:
+\[
+ g\ \ge\ \frac{n^2+2n-5-r(4n-5)}{3n(r+1)} .
+\]
+
+\begin{corollary}\label{cor:fixedDelta}
+For fixed $D\ge2$, connected graphs of maximum degree at most $D$ satisfy
+\[
+ R-\mu\ \ge\ \frac{n}{3(1+\sqrt D)}-O_D(1).
+\]
+Consequently these graphs exceed the proposed Caporossi--Hansen bound
+strictly for all sufficiently large $n$.
+\end{corollary}
+\begin{proof}
+The displayed all-order bound is decreasing in $r$ for $n\ge2$.
+Substitute $\sqrt D$ and compare the linear main term with $\sqrt{n-1}$.
+\end{proof}
+
+To study an unrestricted minimizer we need to quantify the loss in average
+distance when many vertices are grouped close together.  The following
+elementary weighted-tree estimate supplies that loss.
+
+\begin{lemma}\label{lem:gapweightedtree}
+Let $T$ be a tree with $h$ edges and positive integer vertex weights summing
+to $n$. Draw $X,Y$ independently with probabilities proportional to these
+weights. For $h\ge8$,
+\[
+ \mathbb E d_T(X,Y)\le \frac h2-\frac{h^3}{64n^2}.
+\]
+For all $h$ the same inequality holds with an absolute additive constant.
+\end{lemma}
+\begin{proof}
+Root the tree at a weighted centroid, so each child subtree has weight at
+most $n/2$. Such a vertex is obtained by moving into any neighboring branch
+whose weight exceeds $n/2$ until no such branch remains. For the subtree below
+edge $e$ denote its weight by $s_e$. Counting the edges on the random path gives
+\[
+ \mathbb E d_T(X,Y)=\frac2{n^2}\sum_e s_e(n-s_e)
+  =\frac h2-\frac2{n^2}\sum_e(n/2-s_e)^2 .
+\]
+Set $t=h/8\le n/8$. Subtrees with $s_e>n/2-t$ form a laminar family
+with at most two inclusion-minimal members, since three disjoint such
+subtrees have total weight exceeding $n$. Every member contains a minimal
+one, and the subtrees containing any specified one form a chain. Along a
+strict chain the integer weights differ by at least one. Thus at most
+$2(t+1)$ edges have $s_e>n/2-t$. For $h\ge8$, at least $h/2$ edges
+have deficit $n/2-s_e\ge h/8$. Substitute these in the identity. The
+bound $\mathbb E d_T(X,Y)\le h/2$ treats the remaining values of $h$.
+\end{proof}
+
+\begin{lemma}\label{lem:gapstability}
+For every $n$ choose any graph minimizing $g$ over connected graphs of order
+$n$. Every such choice satisfies $\mu=O(n^{8/9})$ and
+$\Delta/n\longrightarrow1$, with absolute implied constants in the
+bound for $\mu$.
+\end{lemma}
+\begin{proof}
+The star gives $g\le s-2+2/n\le\sqrt n$. Since $\mu\le n-1$,
+\eqref{gapdiff} implies $0\le R-M\le \sqrt n+2$. Call a vertex high if its
+degree is at least $n^{1/3}$. Choose a maximal set of high vertices at mutual
+distance at least three. Its size $c$ is at most $n^{2/3}$ because the closed
+radius-one balls are disjoint. Every high vertex lies within two steps of
+a chosen vertex. Let $A$ be the union of the closed radius-three balls about
+the chosen vertices, and put $b=n-|A|$. Both ends of every edge incident to
+a high vertex belong to $A$.
+
+The identity $n-2R=\sum_{uv\in E}(d_u^{-1/2}-d_v^{-1/2})^2$ now gives
+\[
+ n-2R\ \le\ |A|+n^{1/6}(R-M).
+\]
+Indeed the terms at edges incident to a high vertex are at most the sums
+$1/d_u+1/d_v$, whose total over these edges is at most $|A|$.
+At other edges with endpoint degrees $a\le d$, the squared difference equals
+$(\sqrt{d/a}-1)(1/\sqrt{ad}-1/d)$, with first factor at most $n^{1/6}$.
+It follows that $R\ge b/2-O(n^{2/3})$.
+
+Contract each connected component of $G[A]$ and retain each vertex outside
+$A$ singly.  Give each resulting vertex its number of original vertices
+as weight, and take any spanning tree of this connected quotient. Its number
+of edges is $h=b+O(c+1)$. A component containing $c_i$ of the chosen
+balls has internal diameter at most $7c_i$: each ball has internal diameter
+at most six, and a chain of at most $c_i$ balls in that component can be
+traversed using at most $c_i-1$ joining edges. Hence the sum of the internal
+diameters is at most $7c$. Every path in the quotient tree lifts to a walk
+in $G$ with at most $7c$ additional edges, including the connections to its
+chosen original endpoints. This also bounds the distance of two original
+endpoints in a single contracted component.
+
+Apply Lemma~\ref{lem:gapweightedtree} to the quotient tree with two independent
+uniform original vertices. Passing to distinct pairs multiplies their mean
+distance by $n/(n-1)$, at a cost of at most one since distances in $G$ are
+at most $n-1$. Replacing $h$ by $b$ in $h/2-h^3/(64n^2)$ costs $O(c+1)$
+because $b,h\le n$. We obtain
+\[
+ \mu\le \frac b2-\frac{b^3}{64n^2}+O(n^{2/3}).
+\]
+Subtract from the lower bound for $R$. Since $g\le\sqrt n$, we have
+$b^3/n^2=O(n^{2/3})$, whence $b=O(n^{8/9})$ and
+$\mu=O(n^{8/9})=o(n)$. Finally,
+\[
+ n-2(\mu+\sqrt n)\le n-2R\le(r-1)(R-M)
+                                      \le r(\sqrt n+2).
+\]
+Together with $r\le s$, this gives $r/\sqrt n\to1$, as required.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:eventualCH}]
+Consider an arbitrary sequence of minimizing graphs as $n$ tends to infinity.
+Set $k=n-1-\Delta$. Lemma~\ref{lem:gapstability} gives $k=o(n)$.
+For a vertex $v$ of maximum degree, each of its $k$ nonneighbors is at
+distance at most $k+1$ from $v$: all but the first vertex after $v$ on a
+shortest path are nonneighbors of $v$. Thus, by the triangle inequality,
+\begin{equation}\label{eq:gaphub}
+ \mu\le\frac2n\sum_x d_G(v,x)
+       \le 2-\frac2n+\frac{2k^2}{n}.
+\end{equation}
+Rearranging \eqref{gapineq} about $\mu=2$ yields the exact lower bound
+\[
+ g\ge s-2+\frac{(n-2)(s-r)}{(s+1)(r+1)}
+       -\frac{2+(r-1)/n}{r+1}(\mu-2).
+\]
+Compare with the star value $s-2+2/n$ and use $s-r=k/(s+r)$ and
+\eqref{eq:gaphub}. We find
+\[
+ \frac{(n-2)k}{(s+1)(s+r)}
+       \le\frac{2(r+1)}{n}+\frac{6k^2}{n}.
+\]
+If $k\ge1$ along an infinite subsequence, dividing by $k$ gives a
+contradiction: the coefficient $(n-2)/((s+1)(s+r))$ tends to $1/2$,
+while $2(r+1)/(nk)+6k/n$ tends to zero. Every minimizer therefore has a
+dominating vertex for all sufficiently large $n$.
+
+In a graph with a dominating vertex, $M\ge1$ by summing the weights of its
+incident edges. Since $r=s$, \eqref{randicbridge} gives
+$R\ge[n+(s-1)]/(s+1)=s$. Every such graph contains a spanning star,
+and every additional edge shortens at least one pair distance. Hence
+$\mu\le 2-2/n$, strictly unless the graph is the star. The star attains
+both equalities. This proves the assertion for all sufficiently large
+orders.
+\end{proof}
+
+\paragraph{An explicit sufficient order.}
+Here are the constants for the stated cutoff. For $n\ge10^{27}$ we have $R\ge b/2-(3/2)n^{2/3}$ from the edge split above. For $h<8$ the additive constant in Lemma~\ref{lem:gapweightedtree} can be taken to be one. Consequently,
+\[
+ \mu\le h/2-h^3/(64n^2)+7c+2,\qquad h\le b+c.
+\]
+Using $g\le\sqrt n$ and $c\le n^{2/3}$ gives
+$h^3/(64n^2)\le\sqrt n+9n^{2/3}+2\le11n^{2/3}$.
+Thus $h<9n^{8/9}$ and $\mu/n\le4.5n^{-1/9}+7n^{-1/3}+2/n<0.005$.
+The last inequality in the proof of Lemma~\ref{lem:gapstability} gives
+\[
+ r/\sqrt n\ \ge\ (1-2\mu/n-2/\sqrt n)/(1+2/\sqrt n)>0.98,
+ \qquad k/n<0.04 .
+\]
+If $k\ge1$, divide the last comparison in the proof of Theorem~\ref{thm:eventualCH} by $k$. The left side is $(s-1)/(s+r)>0.49$ and the right side is at most $2(s+1)/n+0.24<0.25$. This establishes the explicit sufficient cutoff. Its size reflects the estimates in the proof.
+
+\paragraph{Small orders and the remaining question.}
+The unique minimum also occurs on the star for every $2\le n\le9$. We used the graph generator described in Section~\ref{sec:check}, retaining every connected graph. Shortest-path distances were computed with integer arithmetic. Every term $1/\sqrt{d_ud_v}$ and the term $\sqrt{n-1}$ were enclosed between adjacent multiples of $10^{-12}$ by integer squaring. For each nonstar we lower-bounded $R-\mu-(\sqrt{n-1}-2+2/n)$. The table rounds the certified minima \emph{down} to four decimal places. At $n=2$ there is only a star.
+\begin{center}\small
+\begin{tabular}{@{}lrrrrrrr@{}}\toprule
+$n$ &3&4&5&6&7&8&9\\\midrule
+Connected graphs &2&6&21&112&853&11,117&261,080\\
+Nonstar slack, at least &.4191&.0154&.0142&.0114&.0123&.0184&.0302\\\bottomrule
+\end{tabular}
+\end{center}
+For $10\le n<10^{27}$ a universal proof of the sharp inequality is still needed. This conclusion concerns the additive refinement. Both Graffiti distance inequalities above hold unconditionally throughout this interval.
+
+
+\section{Sharp transfers and counterexamples}\label{sec:limits}
+\subsection{A family with an exact true--false boundary}
+For positive $a,b$ and real $t$, let
+\[
+ P_t(a,b)=\bigl((a^t+b^t)/2\bigr)^{1/t}\quad(t\ne0),
+ \qquad P_0(a,b)=\sqrt{ab},\qquad
+ J_t(G)=\sum_{uv\in E(G)}P_t(d_u,d_v)^{-1}.
+\]
+\begin{corollary}
+For all connected graphs in scope, $J_t(G)\ge\mu(G)$ holds if and only if $t\le1$. At $t=1$ equality holds precisely on stars; for every $t<1$ it holds precisely on $K_2$.
+\end{corollary}
+\begin{proof}
+The power means are increasing in their order, strictly when $a\ne b$. For $t\le1$ this gives $J_t\ge J_1=H\ge\mu$. Equality forces a star; on every star of order at least three every edge has unequal endpoint degrees. For $t>1$ each such star gives $J_t<H=\mu$. Already the three-vertex path is a counterexample.
+\end{proof}
+Thus $t=0$ gives the equality case claimed for $R$ even at the small orders. The limit $t\to+\infty$ gives precisely $M$. Explicitly on $K_{1,k}$, $k\ge2$, we have $M=1<2k/(k+1)=\mu=H$ and $R=\sqrt{k}$. The complete collection of uniform measures on all vertex subsets also gives the sharp family
+\[
+ \frac1{k^2}\sum_{i\ne j}\dist(x_i,x_j)\le M+1-2/k
+ \qquad (x_1,\ldots,x_k\text{ distinct},\ k\ge2),
+\]
+with equality on sets of leaves of a star.
+
+\subsection{Diameter consequences and their provenance}
+The two-point specialization \eqref{diameter} is available independently from \cite{dls}. Put $e=n-D\ge1$. A vertex on a diametral geodesic has at most two neighbours on that geodesic. For an outside vertex, its neighbours there occupy at most three consecutive positions. In either case, counting the outside vertices gives $\Delta\le e+1$. Combining \eqref{diameter} with \eqref{randicbridge} yields
+\[
+ R-D/2\ge \frac{e}{1+\sqrt\Delta}\ge\sqrt{e+1}-1\ge\sqrt2-1.
+\]
+For $n\ge3$ the last equality requires $D=n-1$, which forces a path; the path attains it. It follows that $R-D\ge\sqrt2-(n+1)/2$ and $R/D\ge (n-3+2\sqrt2)/(2n-2)$, each sharp exactly on paths. These are the Aouchiche--Hansen--Zheng conjectures already proved by Yang and Lu \cite{ylu}. Every modal distance is at most $D$, and $D\le2\rad(G)$ and $D\le2M$, so Graffiti 7, $\mathrm{mode}(\dist)\le\rad(G)+R$, also follows from the earlier diameter theorem \cite{wow,dls}.
+
+
+\section{Two conjectures on the harmonic index and diameter}\label{sec:harm-diameter}
+
+The two-point specialization \eqref{diameter} is also a theorem of Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski. Thus the results of this section have a proof independent of the unrestricted weighted theorem. Write $D=\operatorname{diam}(G)$, $d=\Delta(G)$ and $e=n-D$. The count on a diametral path used above gives $d\le e+1$. From \eqref{eq:HM-audit} and $M\ge D/2$ we obtain
+\begin{equation}\label{eq:diam-harmonic}
+ H-\frac D2\ge\frac{e}{d+1}\ge\frac{e}{e+2}.
+\end{equation}
+
+\begin{theorem}[Liu's Conjecture 2.6]\label{thm:liu-harm}
+For every connected graph of order $n\ge4$,
+\[
+ H-D\ge\frac56-\frac n2,\qquad \frac HD\ge\frac12+\frac{1}{3(n-1)}.
+\]
+Equality in either bound holds exactly for the path $P_n$.
+\end{theorem}
+\begin{proof}
+Liu posed these bounds after proving them for trees \cite{liu2013}. In \eqref{eq:diam-harmonic}, $e\ge1$ gives $H\ge D/2+1/3$. Subtract $D$ or divide by $D$, then use $D\le n-1$. Equality forces $D=n-1$, so $G=P_n$. The path has $H=n/2-1/6$, which attains both bounds.
+\end{proof}
+
+\begin{theorem}[Jerline--Michaelraj non-tree conjecture]\label{thm:jm-harm}
+For every connected graph with a cycle and $n\ge7$,
+\[
+ H\ge\frac D2+\frac23,\qquad
+ H-D\ge\frac53-\frac n2,\qquad
+ \frac HD\ge\frac12+\frac{2}{3(n-2)}.
+\]
+For each of the last two inequalities, equality holds exactly for a four-cycle with a pendant edge and a path of length $n-5$ attached at opposite vertices of the cycle.
+\end{theorem}
+
+Jerline and Michaelraj proposed the last two bounds \cite{jm2016}. Abdolghafourian and Iranmanesh state the conjecture in this form and prove it for quasi-trees, meaning graphs that become a tree after one vertex deletion \cite{quasi2021}.
+
+\begin{proof}
+A connected graph with a cycle has $D\le n-2$, so $e\ge2$. If $e\ge4$, \eqref{eq:diam-harmonic} already gives $H-D/2\ge2/3$. It remains to show the first bound when $e=2,3$ and determine its equality cases for $e=2$.
+
+Fix a diametral geodesic $p_0,\ldots,p_D$. It has no chords. There are $e-1$ vertices off the path. For each such vertex, the indices of its neighbours on the path have span at most two; when the two off-path vertices are adjacent, any two path indices incident to different off-path vertices differ by at most three. Otherwise the path could be shortened.
+
+Mark the two path endpoints and every path vertex with an off-path neighbour. When two successive marks have gap at least three, two consecutive degree-two unmarked vertices lie between them. Suppress one of these vertices, replacing its two incident edges by the single edge joining its neighbours. The other unmarked vertex has degree two, so the change in $H$ is exactly $-1/2$. The new path has length one less and is still geodesic between its endpoints, since any shorter alternative would lift to a walk in the original graph by adding at most one step. Connectivity and the existence of a cycle are preserved. During this reduction let $k$ denote the current path length; $H-k/2$ remains constant. The reduced path need only be geodesic between its endpoints.
+
+Stop when all gaps have length at most two or when the reduced graph has seven vertices. With one off-path vertex there are at most five marks, giving $5\le k\le8$. With two off-path vertices there are at most eight marks, giving $4\le k\le14$. For $e=2$ there is one path-neighbour set $S$. The equality family in the statement corresponds to two neighbours at separation two, with the shorter of the two exterior path segments of length one. Compression preserves and reflects this condition: it preserves every gap of length one or two, and it can reduce a larger gap only to a length of at least two. In particular a length of one cannot be created. The span of $S$ was at most two initially and is unchanged.
+
+The following exact computation covers the reduced graphs. The sets include every collection of path neighbours permitted by geodesicity. We retain only connected choices containing a cycle. It is enough to check this list even if the new path fails to realize the new diameter. With one off-path vertex the minimum is $2/3$ at each $k$ and equality has precisely the stated form. With two off-path vertices the minimum is $23/30$ for $k=4$ and $5/6$ for $5\le k\le14$. This proves the first bound. Subtraction of $D$ and division by $D$, using $D\le n-2$, now give the last two bounds, with strictness whenever $e>2$.
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+from fractions import Fraction as F
+from itertools import combinations
+
+def harmonic_gap(k, extra, edges):
+    degree = [0]*(k+1+extra)
+    edges = [(i, i+1) for i in range(k)] + edges
+    for a, b in edges:
+        degree[a] += 1
+        degree[b] += 1
+    return sum(F(2, degree[a]+degree[b]) for a,b in edges) - F(k,2)
+
+one, two = 0, 0
+for k in range(4, 15):
+    sets = [s for t in range(4) for s in combinations(range(k+1),t)
+            if not s or s[-1]-s[0] <= 2]
+    x, y = k+1, k+2
+    if 5 <= k <= 8:
+        for s in sets:
+            if len(s) < 2:
+                continue
+            value = harmonic_gap(k, 1, [(i,x) for i in s])
+            equal = (len(s)==2 and s[-1]-s[0]==2
+                     and min(s[0], k-s[-1])==1)
+            assert value >= F(2,3) and (value==F(2,3))==equal
+            one += 1
+    values = []
+    for index, s in enumerate(sets):
+        for t in sets[:index+1]:
+            for join in (0,1):
+                if not (s or t) or not (join or (s and t)):
+                    continue
+                if len(s)+len(t)+join < 3:
+                    continue
+                if join and s and t and max(s[-1]-t[0],t[-1]-s[0])>3:
+                    continue
+                edges = [(i,x) for i in s] + [(i,y) for i in t]
+                if join:
+                    edges.append((x,y))
+                values.append(harmonic_gap(k, 2, edges))
+    assert min(values) == (F(23,30) if k==4 else F(5,6))
+    two += len(values)
+assert (one,two)==(70,10659)
+\end{lstlisting}
+\end{proof}
+
+\paragraph{A published pair of bounds that fails.}
+Ignomary and Suganya \cite[Theorem~1 and Conjecture~1]{ignomary2020} give a different ratio for unicyclic graphs and propose two inequalities for all connected non-trees of order $n\ge7$. Their proposed inequalities are
+\[
+ H-D\ge\frac52-\frac n2,\qquad
+ \frac HD\ge\frac12+\frac{4}{3(n-4)}.
+\]
+Both fail on the equality family of Theorem~\ref{thm:jm-harm}, at every order $n\ge7$. Indeed $D=n-2$, $H=D/2+2/3$, and hence
+\[
+ H-D=\frac53-\frac n2<\frac52-\frac n2,\qquad
+ \frac HD=\frac12+\frac{2}{3(n-2)}<\frac12+\frac{4}{3(n-4)}.
+\]
+Already at $n=7$ the four-cycle with arms of lengths one and two has four cycle edges of weight $2/5$ and three arm edges of weights $1/2,2/5,2/3$. Thus $H=19/6$ and $D=5$, giving $H-D=-11/6<-1$ and $H/D=19/30<17/18$. This direct witness also disproves the unicyclic ratio statement as printed.
+
+\begin{center}
+\setlength{\unitlength}{1pt}
+\begin{picture}(182,63)
+\color{ink}
+\put(12,15){\line(1,0){40}}\put(52,15){\line(1,0){38}}
+\put(52,15){\line(0,1){31}}\put(90,15){\line(0,1){31}}
+\put(52,46){\line(1,0){38}}\put(90,46){\line(1,0){78}}
+\put(12,15){\circle*{4}}\put(52,15){\circle*{4}}\put(90,15){\circle*{4}}
+\put(52,46){\circle*{4}}\put(90,46){\circle*{4}}\put(129,46){\circle*{4}}\put(168,46){\circle*{4}}
+\put(8,3){\makebox(8,8){\scriptsize $u$}}\put(164,51){\makebox(8,8){\scriptsize $v$}}
+\end{picture}\\[-2pt]
+{\small A seven-vertex counterexample.\enspace $d(u,v)=5$ and $H=19/6$.}
+\end{center}
+
+
+\section{Limits of the implications}\label{sec:boundaries}
+Fajtlowicz also asked for $R\ge\rad(G)-1$, and Caporossi and Hansen asked for $R\ge\rad(G)$ except on even paths \cite{faj,cap}. The bounds on $\mu$ proved here do not by themselves supply those radius estimates. For example, on $C_6$, $\mu=9/5<2=\rad(G)-1$, so the intermediate comparison $\mu\ge\rad(G)-1$ fails. This example leaves the radius conjectures themselves intact. A different strengthening has a direct counterexample: replacing $\mu$ by the \emph{largest} mean distance from one vertex fails on every $P_n$ with $n\ge3$. An endpoint has mean distance $n/2$, while $R(P_n)=n/2+\sqrt2-3/2<n/2$.
+
+\paragraph{Verification record.}
+The supplied PDF is 24 pages, dated 20 November 2026. Its Sections 2--7 and the corresponding TeX were checked. One bibliographic correction is that the middle author of \emph{Distance in graphs} is D. E. Jackson \cite{ejs}. The independent integer check concerns the finite lemma actually used in the original proof. The alternative argument in Section~\ref{sec:hand} removes that computational dependency. The harmonic mean-distance theorem uses a separate, displayed check of 255 rational triples. The non-tree diameter theorem includes its own finite calculation after a reduction preserving the harmonic deficit. The claims in this report are mathematical audit findings. Formal proof-assistant verification, external peer review, and an exhaustive priority determination have not been conducted.
+
+\subsection*{Reproducing the graph checks}
+The editable source includes a readable verifier after its final LaTeX command. It uses only the Python standard library. It accepts graph6 files of orders two through nine. The following commands extract it and run a small example, using the standard \texttt{geng} graph generator from nauty (on some systems the executable is \texttt{nauty-geng}).
+\begin{lstlisting}
+sed '1,/^% BEGIN OPTIONAL PYTHON$/d' Fajtlowicz_Proof_Audit.tex > graph_audit.py
+geng -C -q 5 > cores5.g6
+geng -c -q 5 > connected5.g6
+python3 graph_audit.py cores cores5.g6
+python3 graph_audit.py gap connected5.g6
+\end{lstlisting}
+The first run counts ten two-connected cores and five passing decorations. The second counts 21 connected graphs and 20 nonstars. Changing the order reproduces other rows, although the transparent Python implementation is slower than the integer implementation used for the full scan. The two short Python listings in the proofs of the harmonic-index theorems run separately, without a graph generator.
+
+\begin{thebibliography}{99}\small
+\bibitem{audited} Verifiable Mathematical Reasoning Corpus, \emph{The Randi\'c index is at least the average distance: a proof of Fajtlowicz's conjecture}. Supplied PDF and TeX, 20 November 2026. Theorems 1.1--1.2, Lemmas 4.1--4.5, 5.2, 6.2--6.3, and Appendix A.
+\bibitem{faj} S. Fajtlowicz, On conjectures of Graffiti, \emph{Discrete Math.} \textbf{72} (1988), 113--118. Also in \emph{Ann. Discrete Math.} \textbf{38}. \doi{10.1016/S0167-5060(08)70776-3}.
+\bibitem{wow} S. Fajtlowicz, \emph{Written on the Wall}, electronic catalogue, July 2004 copy, entries 3, 7, 12, 63, and 148. \href{https://independencenumber.wordpress.com/wp-content/uploads/2012/08/wow-july2004.pdf}{Catalogue PDF}.
+\bibitem{tree} M. Cygan, M. Pilipczuk and R. \v{S}krekovski, Relation between Randi\'c index and average distance of trees, \emph{MATCH Commun. Math. Comput. Chem.} \textbf{66} (2011), 605--612. \href{https://match.pmf.kg.ac.rs/electronic_versions/Match66/n2/match66n2_605-612.pdf}{Journal PDF}.
+\bibitem{uni} Z. You and B. Liu, On a conjecture between Randi\'c index and average distance of unicyclic graphs, \emph{Filomat} \textbf{28} (2014), 767--773. \doi{10.2298/FIL1404767Y}.
+\bibitem{dalfo} C. Dalf\'o, On the Randi\'c index of graphs, \emph{Discrete Math.} \textbf{342} (2019), 2792--2796. \doi{10.1016/j.disc.2018.08.020}.
+\bibitem{ejs} R. C. Entringer, D. E. Jackson and D. A. Snyder, Distance in graphs, \emph{Czechoslovak Math. J.} \textbf{26} (1976), 283--296. \doi{10.21136/CMJ.1976.101401}.
+\bibitem{dls} Z. Dvo\v{r}\'ak, B. Lidick\'y and R. \v{S}krekovski, Randi\'c index and the diameter of a graph, \emph{European J. Combin.} \textbf{32} (2011), 434--442. \doi{10.1016/j.ejc.2010.12.002}.
+\bibitem{shi} L. Shi, Chemical indices, mean distance, and radius, \emph{MATCH Commun. Math. Comput. Chem.} \textbf{75} (2016), 57--70, Theorems 1.1 and 1.2. \href{https://match.pmf.kg.ac.rs/electronic_versions/Match75/n1/match75n1_57-70.pdf}{Journal PDF}.
+\bibitem{cap} G. Caporossi and P. Hansen, Variable neighborhood search for extremal graphs 1. The AutoGraphiX system, \emph{Discrete Math.} \textbf{212} (2000), 29--44. \doi{10.1016/S0012-365X(99)00206-X}. For the precise statements of Conjectures $3'$ and $12'$, see O. Favaron, M. Mah\'eo and J.-F. Sacl\'e, The Randi\'c index and other Graffiti parameters of graphs, \emph{MATCH} \textbf{47} (2003), 7--23, Conjectures 4.8 and 4.9. \href{https://match.pmf.kg.ac.rs/electronic_versions/Match47/match47_7-23.pdf}{Journal PDF}.
+\bibitem{ylu} Y. Yang and L. Lu, The Randi\'c index and the diameter of graphs, \emph{Discrete Math.} \textbf{311} (2011), 1333--1343. \doi{10.1016/j.disc.2011.03.020}.
+\bibitem{liu2013} J. Liu, On harmonic index and diameter of graphs, \emph{J. Applied Mathematics and Physics} \textbf{1} (2013), 5--6, Conjecture 2.6. \doi{10.4236/jamp.2013.13002}.
+\bibitem{jm2016} J. A. Jerline and L. B. Michaelraj, On harmonic index and diameter of unicyclic graphs, \emph{Iranian J. Math. Sci. Informatics} \textbf{11} (2016), 115--122. See also their \emph{Kragujevac J. Math.} \textbf{40} (2016), 73--78, \doi{10.5937/kgjmath1601073j}.
+\bibitem{quasi2021} A. Abdolghafourian and M. A. Iranmanesh, On harmonic index and diameter of quasi-tree graphs, \emph{Journal of Mathematics} (2021), Article 6650407, Conjectures 1 and 2. \doi{10.1155/2021/6650407}.
+\bibitem{ignomary2020} I. Ignomary and S. Suganya, A study on unicyclic graph, \emph{International Journal of Computational Research and Development} \textbf{5}(1) (2020), 1--3, Theorem 1 and Conjecture 1. \href{https://ijcrd.dvpublication.com/uploads/6660177aa9af5_166.pdf}{Published PDF}.
+\end{thebibliography}
+\end{document}
+
+% BEGIN OPTIONAL PYTHON
+"""Check graph6 files generated by geng. Uses the Python 3.9+ standard library."""
+import argparse
+from fractions import Fraction
+from itertools import combinations
+from math import isqrt
+from collections import deque
+
+RADICAL_SCALE = 10**12
+THETA_SCALE = 10**9
+DEGREE_SCALE = 2520   # lcm(1, ..., 9)
+
+def read_graph6(line):
+    encoded = line.strip().removeprefix(b'>>graph6<<')
+    n = encoded[0] - 63
+    if not 2 <= n <= 9:
+        raise ValueError('supply a headerless graph6 stream of orders 2 to 9')
+    graph = {v: set() for v in range(n)}
+    bit = 0
+    for v in range(1, n):
+        for u in range(v):
+            if ((encoded[1 + bit//6] - 63) >> (5 - bit%6)) & 1:
+                graph[v].add(u)
+                graph[u].add(v)
+            bit += 1
+    return graph
+
+def edges(graph):
+    return ((u, v) for u in graph for v in graph[u] if u < v)
+
+def without(graph, vertices):
+    return {u: neighbors - vertices for u, neighbors in graph.items() if u not in vertices}
+
+def modified_weight(graph):
+    return sum(DEGREE_SCALE // max(len(graph[u]), len(graph[v])) for u, v in edges(graph))
+
+def distances(graph, start):
+    queue = deque([start])
+    seen = {start: 0}
+    while queue:
+        v = queue.popleft()
+        for u in graph[v]:
+            if u not in seen:
+                seen[u] = seen[v] + 1
+                queue.append(u)
+    return seen
+
+def certified_theta_term(x, a):
+    # Return floor(T sqrt(x)/(sqrt(a)+sqrt(x))) by integer comparison.
+    low, high = 0, THETA_SCALE
+    while high - low > 1:
+        j = (low + high) // 2
+        if a * j*j <= x * (THETA_SCALE-j)**2:
+            low = j
+        else:
+            high = j
+    return low
+
+def core_values(core):
+    h = len(core)
+    forced = {v for v in core if len(core[v]) == 2}
+    optional = sorted(set(core) - forced)
+    for size in range(len(optional)+1):
+        for extra in combinations(optional, size):
+            loaded = forced.union(extra)
+            degree = {v: len(core[v]) + int(v in loaded) for v in core}
+            if any(all(degree[w] >= degree[v] for w in core[v])
+                   for v in core if v not in loaded):
+                continue
+            graph = {v: set(core[v]) for v in core}
+            for v in loaded:
+                graph[v].add(v+h)
+                graph[v+h] = {v}
+            baseline = modified_weight(graph)
+            for u, v in edges(core):
+                graph[u].remove(v)
+                graph[v].remove(u)
+                supportive = modified_weight(graph) > baseline
+                graph[u].add(v)
+                graph[v].add(u)
+                if not supportive:
+                    break
+            else:
+                terms = []
+                for v in core:
+                    removed = {v, v+h} if v in loaded else {v}
+                    x = max(0, baseline-modified_weight(without(graph, removed)))
+                    if v in loaded:
+                        after_leaf = without(graph, {v+h})
+                        x = max(x, baseline-modified_weight(after_leaf))
+                    terms.append(certified_theta_term(x, baseline-DEGREE_SCALE))
+                yield Fraction(sum(terms), THETA_SCALE)
+
+def additive_gap_lower(graph):
+    n, m = len(graph), sum(map(len, graph.values())) // 2
+    if max(map(len, graph.values())) == n-1 and m == n-1:
+        return None
+    # Downward bound for R, upward bound for sqrt(n-1).
+    scale = RADICAL_SCALE
+    low_r = sum(isqrt(scale**2 // (len(graph[u])*len(graph[v])))
+                for u, v in edges(graph))
+    star_floor = isqrt((n-1)*scale**2)
+    star_ceil = star_floor + int(star_floor**2 < (n-1)*scale**2)
+    ordered = sum(sum(distances(graph, v).values()) for v in graph)
+    return (Fraction(low_r-star_ceil, scale) - Fraction(ordered, n*(n-1))
+            + Fraction(2*(n-1), n))
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('mode', choices=['cores', 'gap'])
+    parser.add_argument('files', nargs='+')
+    args = parser.parse_args()
+    for path in args.files:
+        graphs = passing = 0
+        minimum = None
+        with open(path, 'rb') as stream:
+            for line in stream:
+                graph = read_graph6(line)
+                if args.mode == 'gap' and len(distances(graph, 0)) != len(graph):
+                    continue
+                graphs += 1
+                values = (core_values(graph) if args.mode == 'cores'
+                          else [additive_gap_lower(graph)])
+                for value in values:
+                    if value is None:
+                        continue
+                    passing += 1
+                    minimum = value if minimum is None else min(minimum, value)
+        print(path, graphs, passing, minimum)
+
+if __name__ == '__main__':
+    main()
