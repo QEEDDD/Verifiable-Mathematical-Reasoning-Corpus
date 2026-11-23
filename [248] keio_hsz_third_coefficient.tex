@@ -1,0 +1,718 @@
+\begin{filecontents*}[overwrite]{verify_hsz_third_coefficient.py}
+"""Exact symbolic checks accompanying the HSZ third-coefficient proof.
+Requires Python 3 and SymPy. No numerical search is used as a proof.
+Run: python verify_hsz_third_coefficient.py
+"""
+import json
+import sympy as sp
+results = []
+ns = {}
+exec('"""Exact identity checks for the one-boundary-root entropy proof.\nNo numerical search or numerical inequality certification is performed.\nAll strict signs and covariance arguments are analytic in the audit note.\n"""\nfrom pathlib import Path\nimport hashlib\nimport json\nimport sympy as sp\nq,s,v,u,x,z=sp.symbols(\'q s v u x z\', real=True)\nd=2*q-1\nE=(s*s-2*v)*(d*v*v+1)-2*s*(d*v+1)*v-2*q*v*v\nchecks=[]\ndef same(name,left,right):\n    residual=sp.factor(sp.together(left-right))\n    assert residual==0,(name,residual)\n    checks.append(name)\nE0=sp.expand(E.subs(q,0));E1=sp.expand(E.subs(q,1))\nsame(\'affineness in q\',E,(1-q)*E0+q*E1)\na=1-u\nsame(\'negative v endpoint q0\',E0.subs(v,-u),(1+u)*(a*s*s+2*u*(s+a)))\nsame(\'negative v endpoint q1\',E1.subs(v,-u),(1+u*u)*s*s+2*u*a*s+2*u*(1-u+u*u))\nsame(\'negative v q1 positive remainder\',E1.subs(v,-u)-2*u*u,(1+u*u)*s*s+2*u*a*(s+a))\nsame(\'mass after s=-x\',q-sp.Rational(1,2)*x*(2*q-1+1/v),q*(1-x)-x*(1-v)/(2*v))\nX=2*v/(1+v)\nsame(\'nonpositive s endpoint q0\',E0.subs(s,-x),(1-v)*((1+v)*x*x+2*v*x-2*v*(1+v)))\nsame(\'nonpositive s endpoint q1\',E1.subs(s,-x),(1+v*v)*x*x+2*v*(1+v)*x-2*v*(1+v+v*v))\nsame(\'q0 endpoint at X\',E0.subs(s,-X),-2*v*(1-v)**3/(1+v))\nsame(\'q1 endpoint at X\',E1.subs(s,-X),-2*v*(1-v)**2*(v*v+v+1)/(1+v)**2)\nA=(1+v)*s*s-2*v*s-2*v*(1+v)\nB=s*s-2*s-2*v-1\nsame(\'A B decomposition\',E,(1-v)*A+2*q*v*v*B)\nT=4*v/(1+v)\nsame(\'A at threshold\',A.subs(s,T),-2*v*(1-v)**2/(1+v))\nP=(1-v)**2+s*s-2*s*(1+v)*x+4*v*x*x\nsame(\'quadratic boundary modulus\',P.subs(x,(z+1/z)/2),(1-s*z+v*z*z)*(1-s/z+v/z**2))\nsame(\'derivative positivity certificate\',-sp.diff(P,x),2*(1+v)*(s-T)+8*v*(1-x))\n# Beta integral of (1-cos theta)^a under normalized circle measure.\nbeta_exponent=sp.symbols(\'beta_exponent\',positive=True)\nJ=2**beta_exponent*sp.gamma(beta_exponent+sp.Rational(1,2))/(sp.sqrt(sp.pi)*sp.gamma(beta_exponent+1))\nsame(\'base probability mass\',J.subs(beta_exponent,1),1)\nsame(\'base entropy\',sp.expand_func(sp.diff(J,beta_exponent).subs(beta_exponent,1)),1-sp.log(2))\n', ns)
+results.extend('one-boundary' + ': ' + name for name in ns['checks'])
+ns = {}
+exec('"""Exact identity audit for the two-boundary entropy lemma.\nProof of strict inequalities and the joint-parameter argument is analytic,\nrecorded separately. This checker is not a numerical certificate.\n"""\nfrom pathlib import Path\nimport json,hashlib\nimport sympy as s\nc,r,q,w,z,x=s.symbols(\'c r q w z x\',real=True)\nd=2*q-1\nchecks=[]\ndef same(name,a,b):\n residual=s.factor(s.together(a-b))\n assert residual==0,(name,residual)\n checks.append(name)\nA1=(d*r+1/r)/2\nsame(\'A1 minus q\',A1-q,(1-r)*(1+(1-2*q)*r)/(2*r))\nsame(\'A_k positivity decomposition at k1\',A1,(1/r-r)/2+q*r)\n# Laurent coefficients yield exact integrals against logarithm of |B|^2.\nB=1-2*c*z+z*z\nBabs=s.expand(B*B.subs(z,1/z))\nS=2+4*c*c\nsame(\'base norm\',Babs.coeff(z,0),S)\nsame(\'base Laurent polynomial\',Babs,S-4*c*(z+1/z)+(z*z+1/z**2))\nL={k:-2*s.chebyshevt(abs(k),c)/abs(k) for k in range(-3,4) if k}\ndef log_pair(A):\n A=s.expand(A)\n return s.expand(sum(A.coeff(z,-k)*L[k] for k in L))\nH0=log_pair(Babs)\nH1=log_pair(s.expand((z+1/z)*Babs/2))\nsame(\'base log integral\',H0,2+12*c*c)\nsame(\'first cosine log integral\',H1,-8*c-s.Rational(8,3)*c**3)\nmean_x=s.expand((z+1/z)*Babs/2).coeff(z,0)/S\nsame(\'mean cosine\',mean_x,-4*c/S)\ncov=s.factor(H1/S-mean_x*H0/S)\nsame(\'covariance formula\',cov,-8*c*(4*c**4-4*c*c+3)/(3*S*S))\nsame(\'positive covariance polynomial\',4*c**4-4*c*c+3,4*(c*c-s.Rational(1,2))**2+2)\nbase_entropy=H0/S-s.log(S)\nexcess=base_entropy-(1-s.log(2))\nsame(\'base entropy excess after w substitution\',s.expand_log(excess.subs(c*c,(w-1)/2),force=True),2-2/w-s.log(w))\nsame(\'base entropy derivative\',s.diff(2-2/w-s.log(w),w),(2-w)/w**2)\nsame(\'log upper comparison derivative\',s.diff((x-1/x)/2-s.log(x),x),(x-1)**2/(2*x*x))\nassert s.Rational(9,16)>s.Rational(1,2)\nchecks.append(\'exact 3/4 > 1/sqrt2 comparison\')\n# Normalized fixed-density logarithmic norm derivative at q=q0.\nq0=s.symbols(\'q0\', real=True)\nJ=s.Function(\'J\')\na=(1-q0)/(1-q)\nN=(1-q)*s.log(J(a))\nres=s.diff(N,q).subs(q,q0).subs(J(1),1)\nsame(\'fixed density parameter derivative at norm1\',res,s.Subs(s.Derivative(J(x),x),x,1))\n', ns)
+results.extend('two-boundary' + ': ' + name for name in ns['checks'])
+
+q,z=sp.symbols('q z', real=True)
+L=2*z-(1+q)*z**2+(sp.Rational(2,3)+sp.Rational(4,3)*q)*z**3
+F=sp.series(sp.exp(L),z,0,4).removeO().expand()
+assert sp.simplify(F-(1+2*z+(1-q)*z**2-sp.Rational(2,3)*q*z**3))==0
+results.append('canonical first-coefficient function through degree three')
+assert sp.binomial(6,3)==20
+results.append('additional H1 equality example central coefficient')
+report={'status':'PASS_EXACT_IDENTITIES', 'checks_count':len(results),
+        'checks':results,
+        'scope':'Symbolic identities only. The analytic inequalities, compactness, and global argument are proved in the manuscript.'}
+print(json.dumps(report,indent=2))
+\end{filecontents*}
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[a4paper,margin=27mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,microtype}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{embedfile}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small The third zero-free Hardy coefficient}
+\fancyhead[R]{\small Keio}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\D}{\mathbb D}
+\newcommand{\T}{\mathbb T}
+\newcommand{\norm}[1]{\lVert #1\rVert}
+\newcommand{\Ent}{\mathcal E}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Rea}{\operatorname{Re}}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{black!15}}
+\hypersetup{pdftitle={Sharp third coefficients for zero-free Hardy functions},pdfauthor={Keio}}
+\begin{document}
+\title{Sharp third coefficients for zero-free Hardy functions\\[5pt]
+\large An entropy proof of the degree-three\\Hummel--Scheinberg--Zalcman bound}
+\author{Keio}
+\date{23 November 2026}
+\maketitle
+\begin{abstract}
+We give a proof of the sharp third-coefficient estimate
+$|a_3|\le(2/e)^{1-1/p}$ for zero-free functions in the unit ball of $H^p$,
+for every $1<p<\infty$, using the established third-coefficient Krzy\.{z}
+theorem as the bounded-function input. Multiplicative variations give a
+nonnegative trigonometric polynomial $|f|^p$ of degree three. Its spectral
+factor and the singular inner measure reduce a maximizer to three
+algebraic logarithmic-moment identities. If one or two spectral factors
+have boundary zeros, these identities force the normalized boundary
+density to have entropy strictly greater than $1-\log2$. If all three do,
+there is an exact transfer to the classical bounded problem. Maximizing
+the possible violation also over $q=1-1/p$ forces entropy exactly
+$1-\log2$, and rules out every stratum. The argument treats the two
+parameter endpoints and repeated boundary factors. The finite-$p$
+equality cases are the expected rotations of the canonical HSZ function.
+No finite numerical search or unrestricted Krzy\.{z} conjecture is used.
+\end{abstract}
+{\small\setlength{\parskip}{0pt}\tableofcontents}
+\section{Statement, normalization, and the established input}
+Let $dm=d\theta/(2\pi)$ be normalized arc measure on $\T$ and set
+\[
+ \|f\|_p=\sup_{0<r<1}\left(\int_{\T}|f(rz)|^p\,dm(z)\right)^{1/p}.
+\]
+All logarithms are natural. A function is zero-free if it has no zeros
+in $\D$; zeros of its boundary values are allowed.
+
+\begin{theorem}\label{thm:main}
+Let $1<p<\infty$ and let $f(z)=\sum_{j\ge0}a_jz^j$ be zero-free in $\D$
+with $\|f\|_p\le1$. Then
+\begin{equation}\label{eq:main}
+ |a_3|\le(2/e)^{1-1/p}.
+\end{equation}
+Equality holds exactly for
+\begin{equation}\label{eq:kappa}
+ f(z)=\eta\,2^{-1/p}(1+\omega z^3)^{2/p}
+ \exp\left[\left(1-\frac1p\right)
+             \frac{\omega z^3-1}{\omega z^3+1}\right],
+ \qquad |\eta|=|\omega|=1.
+\end{equation}
+The analytic power is defined by the logarithm of $1+\omega z^3$ that
+vanishes at zero. At $p=1$ the sharp coefficient bound is $1$; at
+$p=\infty$ it is $2/e$.
+\end{theorem}
+
+The established coefficient result used here is the degree-three
+Krzy\.{z} theorem: if $F$ is zero-free and $\|F\|_\infty\le1$, then
+$|F_3|\le2/e$, with equality precisely for rotations of
+$\exp((z^3-1)/(z^3+1))$. The original degree-three result is due to
+Hummel, Scheinberg, and Zalcman~\cite{HSZ}; a later independent proof,
+including the equality statement, is given by Stupin~\cite{Stupin}.
+Only this fixed third-coefficient theorem is invoked, together with
+standard Hardy inner--outer factorization, Fej\'er--Riesz factorization,
+and elementary compactness and entropy inequalities.
+
+Write
+\[
+ q=1-1/p\in(0,1),\qquad C=1-\log2,
+ \qquad (2/e)^q=e^{-Cq}.
+\]
+The function in \eqref{eq:kappa} is admissible: its singular exponential
+has boundary modulus one almost everywhere, and
+\[
+ |f|^p=\frac{|1+\omega z^3|^2}{2},\qquad
+ \|f\|_p=1,\qquad |a_3|=2^{1-1/p}e^{-q}=e^{-Cq}.
+\]
+This verifies sharpness and supplies a positive lower bound throughout
+the compactness arguments below.
+
+We use two normalizations of the spectral factor: $Q$ has $\|Q\|_2=1$,
+whereas $P=Q/Q(0)$ has $P(0)=1$. Let $m$ be the number of factors of $P$
+with zeros on $\T$, \emph{counted with multiplicity}. This is distinct
+from the number $N$ of positive singular atoms. Zero masses and repeated
+boundary factors are included in the arguments.
+\section{Existence and first variations}
+
+Existence follows from normal-family compactness and the lower semicontinuity
+of the $H^p$ norm: a maximizing sequence has a locally uniform subsequential
+limit, and Hurwitz's theorem makes it either zero-free or identically zero.
+The explicit HSZ candidate has nonzero third coefficient, so the maximizing
+limit is not identically zero. Its norm is one by scaling. Rotation of the
+variable and multiplication by a unimodular constant arrange $a_0,a_3>0$.
+
+\begin{lemma}[Boundary polynomial]
+Put $w=|f|^p$ on the boundary. Then
+\begin{equation}\label{eq:w}
+ w(e^{i\theta})=1+2\operatorname{Re}\sum_{k=1}^3
+       \frac{a_{3-k}}{a_3}e^{-ik\theta}\geq0.
+\end{equation}
+In particular, the proposed identity $|f|^p=h/a_3$ is correct with
+$h=a_3+2\operatorname{Re}\sum_{k=1}^3 a_{3-k}e^{-ik\theta}$.
+\end{lemma}
+\begin{proof}
+For every analytic polynomial $g$ and real $\epsilon$, the function
+$f e^{\epsilon g}/\norm{f e^{\epsilon g}}_p$ is admissible. Differentiating
+the real part of its third coefficient at zero gives
+$\operatorname{Re}(fg)_3=a_3\int w\operatorname{Re}g\,dm$.
+Applying the same assertion to $ig$ yields the complex identity
+\begin{equation}\label{eq:stationary}
+ (fg)_3=a_3\int_{\T}w g\,dm.
+\end{equation}
+Taking $g=z^k$ determines every Fourier coefficient of $w$: it is
+$a_{3-k}/a_3$ for $1\leq k\leq3$, zero for $k>3$, and its zeroth coefficient
+is one. Fourier uniqueness in $L^1$ proves \eqref{eq:w} almost everywhere.
+The resulting trigonometric polynomial is nonnegative everywhere by continuity.
+\end{proof}
+
+Write the zero-free inner--outer factorization as
+\[
+ f=\eta I_\mu O,\qquad
+ I_\mu(z)=\exp\left[-\int_{\T}\frac{\zeta+z}{\zeta-z}\,d\mu(\zeta)\right],
+\]
+where $\mu$ is a finite positive singular measure, $O(0)>0$ is outer, and
+$|\eta|=1$. Because $f$ has no zeros, there is no Blaschke factor.
+
+\begin{lemma}[Atomic support and exact degree]
+The singular measure $\mu$ is supported on the boundary zeros of $w$.
+There is an outer polynomial $Q$ of degree exactly three, with $Q(0)>0$
+and $\norm Q_2=1$, such that
+\[
+ w=|Q|^2,\qquad f=\eta I_\mu Q^{2/p}.
+\]
+Every boundary atom lies at a zero of $Q$; there are at most three distinct
+atoms. The converse inclusion of zero sets and atom supports is not asserted.
+\end{lemma}
+\begin{proof}
+Replace $\mu$ by $(1+\epsilon)\mu$ for small real $\epsilon$ of either sign.
+This changes only the inner factor, hence leaves the boundary norm one.
+Differentiating the third coefficient and taking real parts gives
+$\int h\,d\mu=0$. Since $h=a_3w\geq0$, the measure is supported on its zeros.
+A nonzero nonnegative trigonometric polynomial of degree three has at most
+three distinct zeros, each of even multiplicity. Fej\'er--Riesz factorization
+gives $w=|Q|^2$ with $Q$ outer and of degree at most three. The outer factor
+of $f$ is $Q^{2/p}$ by uniqueness of outer factors, using the branch positive
+at zero. Finally, if $Q=\sum_{j=0}^3q_jz^j$, the highest Fourier coefficient
+in \eqref{eq:w} is
+$a_0/a_3=q_0\overline{q_3}\ne0$. Consequently $q_3\ne0$ and the degree is three.
+\end{proof}
+
+\section{The exact finite stationary equations}
+Here and below $\delta=2/p-1=1-2q$.
+Write
+\[
+ Q=S^{-1/2}P,\quad
+ P(z)=\prod_{i=1}^3(1-\alpha_i z)=1+u z+v z^2+b z^3,
+ \quad S=1+|u|^2+|v|^2+|b|^2.
+\]
+Every $\alpha_i\ne0$, $|\alpha_i|\leq1$. A boundary root of $Q$ is at
+$\overline{\alpha_i}$ when $|\alpha_i|=1$. In this parameter convention write
+the positive singular atom masses as $\lambda_j$ at
+$\zeta_j=\overline{\alpha_j}$, and set
+$t=\sum_j\lambda_j$ and $M_k=\sum_j\lambda_j\alpha_j^k$.
+We also write $P(z)=\sum_{i=0}^3p_i z^i$.
+The reflected polynomial is $P^*(z)=z^3\overline{P(1/\bar z)}$.
+The moment equations below are covariant under a rotation of the variable
+and unaffected by a scalar unimodular factor. Thus later arguments may
+rotate an atom to $1$ and retain $a_3>0$ without requiring $a_0>0$ in
+that same normalization.
+
+\begin{lemma}[Moment equations, including the factor $k$]
+The first four Taylor coefficients satisfy
+\begin{equation}\label{eq:jet}
+ \frac{f(z)}{a_0}=\frac{P(z)P^*(z)}{\overline b}+O(z^4).
+\end{equation}
+Consequently, the three exact logarithmic equations are
+\begin{equation}\label{eq:moments}
+ 2k M_k=\sum_{i=1}^3\overline{\alpha_i}^{-k}
+                  -\delta\sum_{i=1}^3\alpha_i^k,
+ \qquad k=1,2,3.
+\end{equation}
+Moreover,
+\begin{equation}\label{eq:value}
+ |a_3|=\frac{e^{-t}S^q}{|b|}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The coefficient relation \eqref{eq:stationary} gives
+$a_{3-k}/a_3=S^{-1}\sum_{i=0}^{3-k}p_i\bar p_{i+k}$, which is precisely
+the coefficient of degree $3-k$ in $PP^*/S$.
+The constant coefficient gives $a_0/a_3=\bar b/S$, proving \eqref{eq:jet}.
+Also
+\[
+ \log(f/a_0)=\frac2p\log P-2\sum_{k\geq1}M_k z^k.
+\]
+Subtracting $\log P$ from the logarithm of \eqref{eq:jet}, and using
+\[
+ [z^k]\log P=-\frac1k\sum_i\alpha_i^k,
+ \qquad
+ [z^k]\log(P^*/\bar b)=-\frac1k\sum_i\bar\alpha_i^{-k},
+\]
+proves \eqref{eq:moments}. Finally $|a_0|=e^{-t}S^{-1/p}$ and
+$|a_3/a_0|=S/|b|$, proving \eqref{eq:value}.
+\end{proof}
+
+\section{Fixed-inner-factor uniqueness and the absence of the outer stratum}
+\begin{lemma}[Fixed-inner-factor maximization]
+The stationary function $f$ is the unique normalized maximizer of
+$\operatorname{Re}v_3$ over $v\in I_\mu H^p$ with $\norm v_p\leq1$.
+Consequently $\mu\ne0$. If $I_\mu$ has real Taylor coefficients, then the
+maximizer with $a_3>0$ also has real Taylor coefficients.
+\end{lemma}
+\begin{proof}
+Consider the bounded complex linear functional
+\[
+ L(v)=v_3-a_3\int_{\T}|f|^{p-2}\bar f v\,dm
+\]
+on $H^p$. By \eqref{eq:stationary} it vanishes on $f$ times analytic
+polynomials. This set is dense in $I_\mu H^p$ by outer cyclicity.
+For completeness, in the present polynomial setting no general cyclicity
+theorem is needed: with $O=Q^{2/p}$ and $0<r<1$, the functions $1/O(rz)$
+are analytic in a neighborhood of the closed disk and are uniform limits of
+polynomials. Moreover $O(z)/O(rz)\to1$ almost everywhere and in $L^p$.
+Indeed each factor satisfies
+$|(1-\alpha z)/(1-r\alpha z)|\leq2$ for $|z|=1$, so dominated convergence
+applies to the positive analytic powers of their product. Multiplying by an
+arbitrary polynomial shows that $L$ vanishes on $I_\mu$ times polynomials,
+and density of polynomials in $H^p$ finishes the argument.
+Thus for $v\in I_\mu H^p$, H\"older's inequality gives
+$|v_3|\leq a_3\norm v_p$, since $\norm f_p=1$.
+Equality in the real functional is unique by the strict convexity of $H^p$.
+If $\mu=0$, the subspace is all of $H^p$; the unique coefficient maximizer
+is $z^3$, contradicting the absence of zeros in $f$.
+If $I_\mu$ is real, $\overline{f(\bar z)}$ lies in the same subspace, has the
+same norm, and has the same positive third coefficient. Uniqueness proves
+the final assertion.
+\end{proof}
+
+\section{Transfer of the full boundary-factor stratum to Krzy\.{z}}
+\begin{theorem}[Exact full-boundary transfer]
+Suppose all three factors of $P$ have $|\alpha_i|=1$.
+After rotations arranging $a_0,a_3>0$, there is a zero-free analytic $F$ with $|F|\leq1$ on $\D$ and
+$F_3>0$ such that
+\[
+ a_3=F_3^q.
+\]
+In particular, the established third-coefficient Krzy\.{z} inequality
+$F_3\leq2/e$ implies the desired HSZ bound $a_3\leq(2/e)^q$
+on this entire stratum. Some of its possible singular masses may be zero.
+\end{theorem}
+\begin{proof}
+Normalize $a_0,a_3>0$ as above. Since $|b|=1$ and $a_0/a_3=\bar b/S$,
+we have $b=1$. All roots lie on the unit circle, so $P^*=P$.
+Equation \eqref{eq:jet} becomes $f/a_0=P^2+O(z^4)$.
+Let $F=I_{\mu/q}$. This is a zero-free function bounded by one, because
+$q>0$ and $\mu$ is positive. Comparing logarithms gives
+$F/F_0=P^2+O(z^4)$.
+As $P^*=P$, one has $[z^3]P^2=\sum_{i=0}^3|p_i|^2=S$.
+Thus $F_3=e^{-t/q}S$, whereas \eqref{eq:value} is $a_3=e^{-t}S^q$.
+The claimed identity follows. No limiting argument at $p=1$ is used.
+\end{proof}
+
+
+\section{Entropy under a positive multiplicative tilt}
+For a probability density $W$ relative to $dm$, put
+\[
+ \Ent(W)=\int_{\T}W\log W\,dm,\qquad 0\log0=0.
+\]
+If $W_0dm=\nu$ is a probability measure and $J$ is positive and bounded,
+let $W=W_0J/\mathbb E_\nu J$. Direct expansion gives
+\begin{equation}\label{eq:tilt}
+ \Ent(W)=D(Wdm\|\nu)+\Ent(W_0)
+ +\frac{\Cov_\nu(J,\log W_0)}{\mathbb E_\nu J},
+\end{equation}
+where $D(\rho\|\nu)=\int\log(d\rho/d\nu)\,d\rho\ge0$ is relative entropy.
+It is strictly positive unless $J$ is constant $\nu$-almost everywhere.
+In our applications $J$ is bounded away from zero and the zeros of $W_0$
+are finite, so every term is integrable. Also, for two real functions $A,B$,
+\[
+ \Cov_\nu(A,B)=\frac12\iint(A(x)-A(y))(B(x)-B(y))\,d\nu(x)d\nu(y).
+\]
+In particular it is positive for two strictly monotone functions with
+the same direction on a nondegenerate distribution.
+\section{One boundary factor: strict entropy}
+\begin{lemma}\label{lem:one}
+At a third-coefficient extremizer with exactly one boundary factor of
+$P$, the density $W=|P|^2/\|P\|_2^2$ satisfies $\Ent(W)>C$.
+\end{lemma}
+\begin{proof}
+Let $0<q<1$, $d=2q-1$, and suppose a stationary candidate has one boundary factor, with a positive singular atom there. Rotate the sole singular atom to $1$ and choose $a_3>0$.
+Fixed-inner-factor uniqueness makes $f$ real; the unique outer spectral
+factor normalized at zero is then real as well. Thus write
+\[
+ P(z)=(1-z)(1-sz+vz^2),\qquad s,v\in\mathbb R,
+\]
+where the reciprocal roots of $1-sz+vz^2$ lie strictly in $\mathbb D$. Since $P$ has degree three, $v\ne0$. For a real quadratic with reciprocal roots strictly in $\D$, the
+conditions are
+\[
+ -1<v<1,\qquad |s|<1+v.
+\]
+Let $\lambda>0$ denote the singular mass. The first two log-jet identities are
+\[
+ 2\lambda=2q+s(d+v^{-1}),\qquad
+ 4\lambda=2q+(s^2-2v)(d+v^{-2}).
+\]
+Consequently
+\[
+ E(q;s,v):=(s^2-2v)(d v^2+1)-2s(dv+1)v-2qv^2=0.
+\]
+This expression is affine in $q$.
+
+\paragraph{Step 1: $v>0$.}
+If $v=-u$ with $0<u<1$, let $a=1-u$; stability gives $-a<s<a$. At $q=0$,
+\[
+ E(0;s,-u)=(1+u)\bigl(a s^2+2u(s+a)\bigr)>0.
+\]
+At $q=1$,
+\[
+ E(1;s,-u)=(1+u^2)s^2+2ua s+2u(1-u+u^2)>2u^2>0,
+\]
+Indeed the difference from $2u^2$ is
+$(1+u^2)s^2+2u(1-u)(s+1-u)>0$. Affineness contradicts $E(q)=0$.
+
+\paragraph{Step 2: $s>0$.}
+Assume $v>0$ and $s=-x\le0$. The first moment and $\lambda>0$ give
+\[
+ 0<\lambda=q(1-x)-\frac{x(1-v)}{2v}.
+\]
+Thus $x<1$ and, since $q<1$,
+\[
+ 0\le x<\frac{2v}{1+v}=:X.
+\]
+Both endpoint expressions below are increasing functions of $x\ge0$:
+\[
+ E(0;-x,v)=(1-v)\bigl((1+v)x^2+2vx-2v(1+v)\bigr),
+\]
+\[
+ E(1;-x,v)=(1+v^2)x^2+2v(1+v)x-2v(1+v+v^2).
+\]
+At $x=X$ they equal, respectively,
+\[
+ -\frac{2v(1-v)^3}{1+v}<0,
+ \qquad
+ -\frac{2v(1-v)^2(v^2+v+1)}{(1+v)^2}<0.
+\]
+Therefore $E(q)<0$, again a contradiction.
+
+\paragraph{Step 3: a decreasing outer tilt.}
+For $s>0$ and $0<v<1$, stability gives $s<1+v<2$. Put
+\[
+ A=(1+v)s^2-2vs-2v(1+v),\qquad
+ B=s^2-2s-2v-1<0.
+\]
+Then $E(q)=(1-v)A+2qv^2B=0$, so $A>0$. The quadratic $A$ has one positive root, and at $s=4v/(1+v)$ its value is
+\[
+ -\frac{2v(1-v)^2}{1+v}<0.
+\]
+It follows that
+\[
+ s>\frac{4v}{1+v}.
+\]
+For $x=\cos\theta$,
+\[
+ J(x):=|1-se^{i\theta}+ve^{2i\theta}|^2
+ =(1-v)^2+s^2-2s(1+v)x+4vx^2.
+\]
+Hence $J'(x)=-2s(1+v)+8vx<0$ on $[-1,1]$.
+
+\paragraph{Step 4: entropy.}
+Let $dm=d\theta/(2\pi)$, $W_0=|1-e^{i\theta}|^2/2=1-\cos\theta$, and let $d\nu=W_0dm$. With $S=\|P\|_2^2$,
+\[
+ W=|P|^2/S=W_0J/\mathbb E_\nu J.
+\]
+Relative entropy and the covariance inequality give
+\begin{align*}
+ \int W\log W\,dm
+ &=D(Wdm\|\nu)+\mathbb E_{Wdm}\log W_0\\
+ &\ge \mathbb E_\nu\log W_0+
+ \frac{\operatorname{Cov}_\nu(J,\log W_0)}{\mathbb E_\nu J}
+ >1-\log2.
+\end{align*}
+The covariance is strictly positive because both $J(x)$ and $\log(1-x)$ are strictly decreasing and $\nu$ is not a point mass. Strictness also follows directly from the covariance double-integral
+identity above. The endpoint integral is
+$\int (1-\cos\theta)\log(1-\cos\theta)\,dm=1-\log2$.
+
+ Its value follows from the constant and first cosine
+coefficients of the Abel-summed $L^1$ Fourier identity
+$\log(1-\cos\theta)=-\log2-2\sum_{k\ge1}\cos(k\theta)/k$.
+\end{proof}
+\section{Two boundary factors: alignment and strict entropy}
+\begin{lemma}\label{lem:two}
+At a third-coefficient extremizer with exactly two boundary factors of
+$P$, counted with multiplicity, the density $W=|P|^2/\|P\|_2^2$
+satisfies $\Ent(W)>C$.
+\end{lemma}
+\begin{proof}
+Let $0<q<1$, let $d=2q-1$, and suppose a stationary cubic spectral polynomial has two boundary reciprocal roots (counted with multiplicity) and one reciprocal root strictly inside the disk. Rotate so that
+\[
+ \begin{gathered}
+ P(z)=B(z)(1-\beta z),\qquad B(z)=1-2cz+z^2,\\
+ c=\cos\theta\in[-1,1],\qquad\beta=re^{i\phi},\quad 0<r<1.
+ \end{gathered}
+\]
+The two boundary reciprocal roots are $e^{\pm i\theta}$. Let their nonnegative singular masses be $\lambda_1,\lambda_2$, allowing a zero mass. At a repeated boundary root only their sum matters. Write $t=\lambda_1+\lambda_2$ and $\Delta=\lambda_1-\lambda_2$.
+The correct three log-jet equations are
+\[
+ (kt-2q)T_k(c)+ik\Delta\sin(k\theta)=A_k e^{ik\phi},\qquad k=1,2,3,
+\]
+where
+\[
+ A_k=\frac{d r^k+r^{-k}}2>0.
+\]
+In addition,
+\[
+ A_1-q=\frac{(1-r)(1+(1-2q)r)}{2r}>0.
+\]
+
+\paragraph{Step 1: alignment, $c\operatorname{Re}\beta\ge0$.}
+If $\sin\phi\ne0$, the imaginary parts for $k=1,2$ give
+\[
+ \Delta\sin\theta=A_1\sin\phi,
+ \qquad 4\Delta c\sin\theta=2A_2\sin\phi\cos\phi.
+\]
+Consequently
+\[
+ \cos\phi=\frac{2cA_1}{A_2},\qquad
+ c\operatorname{Re}\beta=\frac{2r c^2 A_1}{A_2}\ge0.
+\]
+This branch automatically has $\sin\theta\ne0$.
+
+If $\sin\phi=0$, change $z$ to $-z$ if necessary to make $\beta=r>0$; the product $c\operatorname{Re}\beta$ is unchanged by this operation. The first real equation is $(t-2q)c=A_1$, so $c\ne0$. Suppose $c=-u<0$. Then
+\[
+ t=2q-A_1/u,\qquad
+ 2t-2q=2(q-A_1/u)<0,
+\]
+because $A_1>q$ and $0<u\le1$. The second real equation forces
+\[
+ 2u^2-1<0,\qquad u<1/\sqrt2.
+\]
+Thus $T_3(-u)=u(3-4u^2)>0$. The third real equation forces $3t-2q>0$, hence
+\[
+ 4q-3A_1/u>0,\qquad
+ u>\frac{3A_1}{4q}>\frac34>\frac1{\sqrt2},
+\]
+a contradiction. Thus $c>0$ and alignment holds. This reasoning also covers repeated boundary roots $c=\pm1$; in that case the first imaginary equation already forces $\sin\phi=0$.
+
+\paragraph{Step 2: the quadratic boundary density.}
+Let $dm=du/(2\pi)$, put $x=\cos u$, and write
+\[
+ S_B=\|B\|_2^2=2+4c^2,\qquad W_B=|B|^2/S_B,\qquad d\nu=W_Bdm.
+\]
+The Fourier expansion of the logarithms of the two unit-circle factors, paired with the finite Fourier polynomials $|B|^2$ and $x|B|^2$, gives
+the following identities. These pairings can be justified by radial Abel
+limits in $L^1$; only the first three Fourier modes occur.
+\[
+ \int |B|^2\log|B|^2\,dm=2+12c^2,
+ \qquad
+ \int x|B|^2\log|B|^2\,dm=-8c-\frac83c^3.
+\]
+Also $\int x|B|^2dm=-4c$. Therefore
+\[
+ \operatorname{Cov}_{\nu}(x,\log W_B)
+ =-\frac{8c(4c^4-4c^2+3)}{3S_B^2}.
+\]
+The factor $4c^4-4c^2+3=4(c^2-1/2)^2+2$ is positive.
+The entropy of the base density is
+\[
+ \mathcal E(W_B)=\frac{1+6c^2}{1+2c^2}-\log(2+4c^2)\ge1-\log2.
+\]
+Indeed, with $w=1+2c^2\in[1,3]$, its excess over $1-\log2$ is
+$2-2/w-\log w$. This function increases up to $w=2$ and then decreases; its endpoint values are $0$ and $4/3-\log3>0$.
+For the last strict inequality, differentiate
+$(x-x^{-1})/2-\log x$: its derivative is $(x-1)^2/(2x^2)>0$
+for $x>1$, and evaluate at $x=3$. Thus equality holds only for $c=0$.
+
+\paragraph{Step 3: the inside-root tilt raises entropy.}
+Let
+\[
+ J(u)=|1-\beta e^{iu}|^2
+ =1+r^2-2r\cos\phi\cos u+2r\sin\phi\sin u.
+\]
+The density $W_B$ and its logarithm are even in $u$, so the odd term contributes zero covariance. By Step 1 and the covariance identity,
+\[
+ \operatorname{Cov}_{\nu}(J,\log W_B)
+ =-2r\cos\phi\operatorname{Cov}_{\nu}(x,\log W_B)\ge0.
+\]
+For $W=|P|^2/\|P\|_2^2=W_BJ/\mathbb E_\nu J$,
+\begin{align*}
+ \mathcal E(W)
+ &=D(Wdm\|\nu)+\mathcal E(W_B)
+   +\frac{\operatorname{Cov}_\nu(J,\log W_B)}{\mathbb E_\nu J}\\
+ &>\mathcal E(W_B)\ge1-\log2.
+\end{align*}
+Strictness holds because $r>0$ makes $J$ nonconstant on the full-measure support of $\nu$, so $D(Wdm\|\nu)>0$.
+
+\end{proof}
+\section{Maximizing also over the Hardy exponent}\label{sec:joint}
+Put $q=1-1/p$, $C=1-\log2$, and let $M(q)$ be the supremum of the
+normalized third coefficient over zero-free $H^{1/(1-q)}$ functions.
+For $0<q<1$ the stationary reduction proves attainment and supplies
+$f_q=\eta I_\mu Q^{2/p}$ with $\|Q\|_2=1$, $\deg Q=3$.
+Consequently $\|Q\|_\infty\leq2$ and
+\[
+ \|f_q\|_\infty\leq4^{1/p}=4^{1-q}.
+\]
+Applying the established third-coefficient Krzy\.{z} inequality to
+$f_q/\|f_q\|_\infty$ gives
+\[
+ (2/e)^q\leq M(q)\leq (2/e)4^{1-q}.
+\]
+Here the lower bound is provided by the explicit HSZ candidate.
+Thus $M(q)\to2/e$ as $q\uparrow1$. At the other endpoint,
+$(2/e)^q\leq M(q)\leq1$, so $M(q)\to1$ as $q\downarrow0$.
+
+The function $M$ is continuous on $(0,1)$. One direct proof compares a
+normalized extremizer at either of two nearby parameter values. If its
+own exponent is $p_0$, its boundary density is
+$W=|f|^{p_0}=|Q|^2$, with $0\leq W\leq4$ and $\int W=1$.
+At another exponent $p$, the logarithmic norm is
+\[
+ \log\|f\|_p=\frac1p\log\int W^{p/p_0}\,dm.
+\]
+For $p,p_0$ in a fixed compact subset of $(1,\infty)$ and sufficiently
+close, the first two parameter derivatives of this expression are bounded
+uniformly in $W$: the functions $x^a|\log x|^j$ are bounded on $[0,4]$
+for $a\geq1/2$, $j\leq2$, and the integrals $\int W^a$ are bounded below
+uniformly by $\min(1,4^{a-1})$.
+Using the extremizer at either parameter gives local Lipschitz bounds for
+$\log M$. The preceding endpoint limits extend $M$ continuously to $[0,1]$.
+
+Suppose the HSZ bound fails somewhere. Then
+\[
+ R(q)=e^{Cq}M(q)
+\]
+has a maximum greater than one at an interior $q_*\in(0,1)$.
+Let $f_*$ be a normalized extremizer at $p_*=1/(1-q_*)$.
+This function is bounded and zero-free, so for every $q\in(0,1)$ it is an
+admissible test function after normalizing its $H^{1/(1-q)}$ norm. Hence
+\[
+ G(q)=e^{Cq}\frac{|(f_*)_3|}{\|f_*\|_{1/(1-q)}}\leq R(q)\leq R(q_*),
+ \qquad G(q_*)=R(q_*).
+\]
+The ordinary derivative $G'(q_*)$ vanishes. Differentiation of the fixed
+function's norm gives
+\[
+ \left.\frac{d}{dq}\log\|f_*\|_{1/(1-q)}\right|_{q=q_*}
+ =\int_{\T}W\log W\,dm,
+ \qquad W=|f_*|^{p_*},\quad\int W=1.
+\]
+Therefore every joint-parameter maximizing counterexample obeys the exact
+additional equation
+\[
+ \boxed{\int W\log W\,dm=1-\log2.}
+\]
+This is a condition at a maximizer over the parameter $q$, not a condition
+that may be imposed on every fixed-$p$ extremizer. No differentiability of
+the maximizing function $f_q$ or of the envelope $M(q)$ is needed.
+
+
+\section{Proof of the global inequality and the equality cases}
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Suppose first that \eqref{eq:main} fails. Section~\ref{sec:joint} gives an
+interior joint maximizing counterexample $f_*$ with
+$\Ent(|f_*|^{p_*})=C$. Its normalized spectral polynomial has degree three.
+There is at least one boundary factor because its singular measure is
+nonzero and supported on boundary zeros. Count boundary factors with
+multiplicity. If $m=1$, Lemma~\ref{lem:one} gives entropy strictly greater
+than $C$. If $m=2$, Lemma~\ref{lem:two} gives the same strict inequality,
+including a possible repeated factor. If $m=3$, the exact full-boundary
+transfer already gives $|a_3|\le(2/e)^{q_*}$.
+Each case contradicts the defining properties of the joint maximum.
+This proves the inequality for every $1<p<\infty$.
+
+Now let $f$ attain equality at a fixed $q_0\in(0,1)$, with norm one.
+It is a bounded stationary extremizer. Since the inequality has now been
+proved for \emph{all} $q$, the fixed-function ratio
+\[
+ G(q)=e^{Cq}\frac{|a_3(f)|}{\|f\|_{1/(1-q)}}
+\]
+is at most one everywhere and equals one at $q_0$. Its ordinary derivative
+therefore gives $\Ent(|f|^{p_0})=C$. The two strict entropy lemmas exclude
+$m=1,2$, so all three boundary factors are present.
+
+The transfer $F=I_{\mu/q_0}$ satisfies
+$|F_3|^{q_0}=|a_3(f)|=(2/e)^{q_0}$. The classical degree-three Krzy\.{z}
+equality classification~\cite{Stupin,HSZ}, together with $F(0)>0$, yields
+\[
+ F(z)=\exp\left(\frac{\omega z^3-1}{\omega z^3+1}\right),\qquad|\omega|=1.
+\]
+Its singular measure consists of three equal positive atoms. Their support
+forces $P(z)=1+\omega z^3$ and $S=2$, and $I_\mu=F^{q_0}$.
+Substitution in $f=\eta I_\mu P^{2/p_0}/S^{1/p_0}$ proves
+\eqref{eq:kappa}. The direct verification in Section~1 proves the converse.
+The endpoint inequalities are the elementary $H^1$ coefficient estimate
+and the established third-coefficient Krzy\.{z} theorem, respectively.
+\end{proof}
+
+\section{Endpoints, scope, and exact verification}
+The parameter argument does not assume a positive margin uniform as
+$p\downarrow1$. Instead the exact endpoint limits put a hypothetical
+strict violation at an interior parameter, where the entropy derivative
+is legitimate. Equality at $p=1$ is not uniquely canonical: both
+\[
+ \frac{(1+z^3)^2}{2}\quad\hbox{and}\quad\frac{(1+z)^6}{20}
+\]
+are zero-free in $\D$, have $H^1$ norm one and third coefficient one.
+For the second example, $\int|1+z|^6dm=\binom63=20$.
+
+The proof is a degree-three argument. Its one-factor algebra and
+two-factor alignment use the first three logarithmic moments in an
+essential way. No all-degree Hardy coefficient theorem or all-degree
+Krzy\.{z} conjecture is inferred.
+
+The accompanying exact symbolic script checks the displayed one-factor
+polynomial identities, two-factor Fourier pairings and covariance,
+elementary derivative identities, and a canonical Taylor expansion.
+It uses SymPy and performs no numerical search. Strict positivity,
+compactness, relative entropy, and the global contradiction are proved
+analytically above; passing the script is not a formal proof of those
+steps. The TeX source contains the whole script and writes it on
+compilation. It is also attached to the PDF.
+\begin{lstlisting}
+python verify_hsz_third_coefficient.py
+\end{lstlisting}
+\embedfile[desc={Exact symbolic identity checks for the third-coefficient proof},ucfilespec={verify\string_hsz\string_third\string_coefficient.py}]{verify_hsz_third_coefficient.py}
+
+\appendix
+\section{A distinction from a claimed ambient-openness argument}
+The proof above uses multiplicative variations that preserve absence of
+zeros. It does not need the set of all zero-free Hardy functions to be
+open in the surrounding Hardy norm. In fact that ambient-openness
+statement, appearing as Lemma~3 in~\cite{Krushkal2022}, is false as written.
+Let
+\[
+ f(z)=\frac{1-z}{4},\qquad
+ g_\varepsilon(z)=\frac{1-z}{4}-\varepsilon,
+ \qquad 0<\varepsilon<\frac14.
+\]
+The function $f$ is zero-free in $\D$, $\|f\|_p\le1/2$, and
+$\|g_\varepsilon-f\|_p=\varepsilon\to0$. Nevertheless
+$g_\varepsilon(1-4\varepsilon)=0$, while
+$\|g_\varepsilon\|_p\le1/2+\varepsilon<1$.
+This observation concerns that stated lemma, not a counterexample to
+the HSZ inequality. The later general comparison in~\cite{Krushkal2026}
+is not an input to the present proof.
+
+\begin{thebibliography}{9}
+\bibitem{HSZ} J. A. Hummel, S. Scheinberg, and L. Zalcman,
+\emph{A coefficient problem for bounded nonvanishing functions},
+Journal d'Analyse Math\'ematique \textbf{31} (1977), 169--190.
+\href{https://doi.org/10.1007/BF02813302}{doi:10.1007/BF02813302}.
+\bibitem{Stupin} D. L. Stupin,
+\emph{A new proof of the Krzyz conjecture for $n=3$},
+Izvestiya of Saratov University. Mathematics. Mechanics. Informatics
+\textbf{24}(3) (2024), 342--350, especially Corollary~1 on p.~349.
+\href{https://doi.org/10.18500/1816-9791-2024-24-3-342-350}{doi:10.18500/1816-9791-2024-24-3-342-350}.
+\bibitem{Krushkal2022} S. L. Krushkal,
+\emph{Quasiconformal deformations of nonvanishing $H^p$ functions
+and the Hummel--Scheinberg--Zalcman conjecture},
+\href{https://arxiv.org/abs/2211.16295}{arXiv:2211.16295v1} (2022).
+\bibitem{Krushkal2026} S. L. Krushkal,
+\emph{A New Method for Estimating the Coefficients of Holomorphic Functions},
+Axioms \textbf{15}(5) (2026), 361.
+\href{https://doi.org/10.3390/axioms15050361}{doi:10.3390/axioms15050361}.
+\end{thebibliography}
+\end{document}

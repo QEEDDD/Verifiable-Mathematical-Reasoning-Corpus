@@ -1,0 +1,697 @@
+% A standalone source. Compile twice with pdfLaTeX. The Python certificates
+% in the appendix may be concatenated and executed with Python 3.8 or later.
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools,booktabs,array}
+\usepackage[left=25mm,right=25mm,top=23mm,bottom=24mm,headheight=14pt]{geometry}
+\usepackage{xcolor,fancyhdr,fancyvrb}
+\usepackage[hyphens]{url}
+\usepackage[colorlinks=true,linkcolor=teal,citecolor=teal,urlcolor=teal]{hyperref}
+\definecolor{teal}{HTML}{175A60}
+\definecolor{ink}{HTML}{182F3C}
+\hypersetup{pdftitle={How far can the first denominator move? Egyptian fractions of prime squares},pdfauthor={Keio and Shaitetsu}}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\sffamily\color{ink} Egyptian fractions of prime squares}
+\fancyhead[R]{\small\sffamily\color{ink} Least first denominators}\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}\newtheorem{question}[theorem]{Question}
+\setlength{\emergencystretch}{2.5em}\allowdisplaybreaks[1]
+\raggedbottom
+\newcommand{\E}{\mathcal E}
+\newcommand{\arxiv}[1]{\href{https://arxiv.org/abs/#1}{arXiv:#1}}
+\newcommand{\jac}[2]{\left(\frac{#1}{#2}\right)}
+\begin{document}
+\begin{center}
+{\LARGE\bfseries\color{ink}How far can the first denominator move?\par}
+\vspace{4pt}
+{\large Egyptian fractions of prime squares}\par\vspace{8pt}
+Keio and Shaitetsu\quad\textperiodcentered\quad 20 November 2026
+\end{center}
+
+\begin{abstract}
+A public bounded-shift conjecture asks for an absolute constant $C$ such that, for every prime $p$ in a specified exceptional class, $4/p^2$ has a three-term Egyptian fraction expansion containing $1/x$ with $4x-p^2\le C$. We disprove it. For each prime $\ell\ge7$ congruent to $3$ modulo $4$, a positive lower proportion of exceptional base primes have least shift exactly $\ell$, simultaneously for $4/p^{2h}$ at every $h\ge1$. On square inputs the first shifts having positive lower relative density are precisely those primes $\ell$ and the numbers $3r$ with $r$ prime and $r\equiv1\pmod4$. Among all primes $p\equiv1\pmod{12}$, the $j$th value in this ordered list has relative density $2^{-j}$. Of eighteen shifts reported missing through $10^8$, thirteen are impossible and five occur. We give a deterministic certificate against the proposed bound $159$, and a separate application to the first three choices of denominator for $5/p$. The classical existence conjectures of Erd\H os--Straus and Sierpi\'nski remain open.
+\end{abstract}
+
+\section{The problem and the result}
+The Erd\H os--Straus conjecture, dating from around 1948, asks whether every integer $n\ge2$ admits positive integers $x,y,z$ with
+\begin{equation}\label{eq:original}
+ \frac4n=\frac1x+\frac1y+\frac1z.
+\end{equation}
+One can test successive integers just above $n/4$ for the smallest denominator. Ionascu and Wilson studied this search in 2011 \cite{iw}. In 2026 the public computational project \cite{tier} named a more specific \emph{bounded-$A$ conjecture}. Its domain is
+\[
+ \E=\big\{p\text{ prime}:p\equiv1\pmod{12},       q\mid(p+3)/4\ \Longrightarrow\ q\equiv1\pmod3
+       \text{ for every prime }q\big\}.
+\]
+Indeed $3\nmid(p+3)/4$ on the stated progression. The source fixes $n=p^2$, sets $x=(p^2+A)/4$, and asks for a split of the remainder into two positive unit fractions. The project reports that $A\le159$ sufficed for its 289,372 exceptional primes through $10^8$; its proof sketch also proposes an unspecified absolute bound. Both statements concern the original $p$, $A$, and first denominator of that project.
+
+For $n\equiv1\pmod4$ define $a(n)$ as the smallest $c=4x-n$ for which $1/x$ occurs in some solution to \eqref{eq:original}, with $a(n)=\infty$ if there is no solution. Every such $c$ is positive and $3$ modulo $4$. Minimizing over denominators that occur in a solution is equivalent to minimizing over smallest denominators of solutions, since all three summands can be permuted. Write $A_*(p)=a(p^2)$. We first ask the following auxiliary realization question.
+\begin{question}
+Can a prescribed list of first denominators be made to fail while a specified later one succeeds, for the same prime and for all its even powers?
+\end{question}
+The square in $p^{2h}+c$ forces every prime divisor of $(p^{2h}+c)/4$ into the kernel of a single character. This excludes every split at the specified failures. A separate divisor at a later shift supplies an actual split. The primitive shifted-form theorem \cite{fhrss} makes these two requirements compatible with the exact domain $\E$.
+
+For example, $p=96\,616\,332\,289$ has $A_*(p)=163$, the first admissible value above $159$. Appendix~\ref{sec:cert} proves this by integer arithmetic. For the same $p$, the least shift for $4/p^4$ rises to $179$ and returns to $163$ for every $4/p^{2h}$ with $h\ge11$.
+
+\clearpage
+\section{Prescribing the first successful shift}
+\begin{theorem}\label{thm:prime-squares}
+For each prime $\ell\ge7$ with $\ell\equiv3\pmod4$, there are
+\[
+ \gg_{\ell}\frac{X}{(\log X)^{3/2}}
+ \quad\text{primes }p\in\E,\ p\le X,\quad
+ a(p^{2h})=\ell\quad\text{for every }h\ge1 .
+\]
+More generally, prescribe success or failure at each member of a finite set of such primes $\ell$. With an implied constant depending on the prescription, the same lower bound holds for base primes realizing every prescribed outcome at every $h\ge1$. One may require that each input have a solution even when only failures were prescribed.
+\end{theorem}
+In particular, the finite values of $A_*(p)$ are unbounded on the domain of the bounded-$A$ conjecture. The dependence on $\ell$ matters. The theorem fixes the desired shift before counting the base primes.
+
+\begin{proof}
+\emph{The two-denominator test.}
+For $n=p^{2h}$, put $K=(n+c)/4$ and $N=nK$. The remainder after $1/K$ is $c/N$. If $\gcd(c,N)=1$, then
+\begin{align}
+ \frac{c}{N}=\frac1y+\frac1z
+ &\quad\Longleftrightarrow\quad
+ (cy-N)(cz-N)=N^2\quad(y,z>0) \notag\\
+ &\quad\Longleftrightarrow\quad
+ \exists\ e>0:\ e\mid N^2,\quad e\equiv-N\pmod c . \label{eq:div}
+\end{align}
+The first two factors are positive in a solution. Conversely $f=N^2/e$ has the same residue, and $(y,z)=((N+e)/c,(N+f)/c)$ works. When $n>c$ both denominators exceed $K$. This is the classical two-unit-fraction criterion \cite{hv}.
+
+\emph{Excluding a shift.}
+Take $c\equiv3\pmod4$, $p\nmid c$. Then $\gcd(c,N)=1$. For each odd prime $q\mid K$, the congruence $(p^h)^2\equiv-c\pmod q$ is nonzero. Quadratic reciprocity gives
+\begin{equation}\label{eq:recip}
+ \jac{q}{c}=\jac{-c}{q}=1.
+\end{equation}
+If $2\mid K$ then $c\equiv7\pmod8$, so $(2/c)=1$ as well. If $(p/c)=1$, every prime factor of $N$ has Jacobi symbol $+1$. Since $(-1/c)=-1$, no divisor of $N^2$ has the symbol of $-N$. Equation~\eqref{eq:div} forbids every completion. In particular $p\equiv1$ at every prime factor of $c$ suffices.
+
+\emph{Forcing a success.}
+If $p\equiv-1\pmod\ell$, then $e=Np$ divides $N^2$ and both $e$ and $N/p$ are $-N$ modulo $\ell$. This works for each $h\ge1$, with $c=\ell$.
+
+\emph{Finding base primes in the exact domain.}
+Take $F(u,v)=u^2+uv+v^2$, of discriminant $-3$. Theorem 1.1(2) of Fuchs, Hsu, Rickards, Schindler and Stange \cite{fhrss} supplies
+\begin{equation}\label{eq:primitive}
+ \#\{p\le X:p\text{ prime},\ p\equiv b\pmod M,       p=4F(u,v)-3,\ \gcd(u,v)=1\}
+ \gg_{M,b} \frac{X}{(\log X)^{3/2}}
+\end{equation}
+whenever $(M,6)=1$ and $(b(b+3),M)=1$. The leading coefficient is one, the multiplier $4$ is coprime to the shift $-3$, their product is even and $(M,2\cdot3\cdot4)=1$. Primitivity makes $F$ odd. No prime $q\equiv2\pmod3$ divides $F$, since for odd $q$ this would force $q\mid u,v$ or give a nontrivial cube root of unity in $\mathbb F_q$. For $p>3$ also $3\nmid F$, hence $F\equiv1\pmod3$ and $p\in\E$.
+
+For the exact minimum, let $M$ be the product of the primes between $5$ and $\ell$, inclusive. Set $b=1$ at all these primes except $\ell$, where $b=-1$. Both $b$ and $b+3$ are units. Every admissible $c<\ell$ has its prime factors among the smaller primes or $3$, and $p\equiv1\pmod3$. Thus all earlier shifts fail at every even power. The success construction applies at $\ell$, and $p>\ell$ after deletion of a finite set. For the finite-pattern assertion use the product of the prescribed primes, with $+1$ at failures and $-1$ at successes. If necessary add a fresh success prime $3\pmod4$. Equation~\eqref{eq:primitive} proves both counts.
+\end{proof}
+The size of $\E\cap[1,X]$ is $\asymp X/(\log X)^{3/2}$. For the upper bound sieve out $p\equiv0\pmod q$ at all small primes and $p\equiv-3\pmod q$ at primes $q\equiv2\pmod3$, omitting $2,3$; the sieve estimate below gives dimension $3/2$. Equation~\eqref{eq:primitive} supplies the lower bound. In particular the primes in Theorem~\ref{thm:prime-squares} have positive lower relative density in $\E$.
+
+\begin{corollary}\label{cor:eventual}
+Let $p,\ell$ be distinct odd primes with $\ell\equiv3\pmod4$. For every $h$ such that $4h\ge\ell-1$ and $p^{2h}>\ell$, the shift $\ell$ succeeds for $4/p^{2h}$ precisely when $(p/\ell)=-1$.
+\end{corollary}
+\begin{proof}
+The positive character is excluded by \eqref{eq:recip}. For the negative character, Euler's criterion gives $p^{(\ell-1)/2}\equiv-1\pmod\ell$. The integer $e=Np^{(\ell-1)/2}$ divides $N^2$ because $2h\ge(\ell-1)/2$. Apply \eqref{eq:div}.
+\end{proof}
+
+
+\section{A sieve for simultaneous failures}\label{sec:sieve}
+We first prove the sieve estimate for linear shifts of a prime input $p$. The argument identifies the exceptional prime factors needed for the quadratic shifts of $p^2$ in the next section. The total fixed-shift bound below also follows from the fixed-parameter sieve in \cite{dahan}. The second estimate separates failures explained by odd quadratic characters.
+Let $c_1,\ldots,c_s$ be distinct fixed positive integers congruent to
+$3\pmod4$. For primes $p\equiv1\pmod{24}$ put
+$K_i=(p+c_i)/4$, $N_i=pK_i$, and $G_i=(\mathbb Z/c_i\mathbb Z)^\times$.
+Discard the finitely many $p$ dividing a shift or smaller than the largest shift. Write $\mathcal B(X)$
+for the primes $p\le X$ at which all $s$ choices of first denominator
+$K_i$ fail. For each $i$, call the support of $N_i$ quadratic if
+some quadratic character $\chi_i$ modulo $c_i$ with $\chi_i(-1)=-1$
+has $\chi_i(q)=1$ for every prime $q\mid N_i$. Write
+$\mathcal Q(X)$ for the primes with quadratic support at every shift.
+Then
+\begin{align}
+ \mathcal Q(X)&\subseteq\mathcal B(X),&
+ |\mathcal B(X)|&\ll_{\mathbf c}\frac{X}{(\log X)^{1+s/2}},\label{eq:esjoint}\\
+ |\mathcal B(X)\setminus\mathcal Q(X)|
+    &\ll_{\mathbf c}\frac{X}{(\log X)^{1+s/2+1/4}}.\label{eq:esremainder}
+\end{align}
+In particular the upper bound for two simultaneous fixed shifts is
+$O_{c_1,c_2}(X/(\log X)^2)$.
+
+\paragraph{Signed divisor products.}
+For one shift omit subscripts. The remainder after taking $1/K$ out
+of $4/p$ is $c/N$, and $\gcd(N,c)=1$.
+The identity $(cy-N)(cz-N)=N^2$ shows that a representation exists
+if and only if a positive divisor $d$ of $N^2$ is congruent to
+$-N\pmod c$. The paired divisor $N^2/d$ then has the same residue.
+Consequently failure is equivalent to $-1\notin S$, where
+\[
+ S=\prod_{q\mid N}\{q^j:-v_q(N)\le j\le v_q(N)\}\subset G.
+\]
+In particular any odd quadratic character trivial on the support of
+$N$ implies failure.
+
+For a failing shift let $H=\{g\in G:gS=S\}$, $h=[G:H]$, and
+write $Q=G/H$. Since $1\in S$, one has $H\subseteq S$, so $-1$
+has nontrivial image of order two in $Q$. In particular $h$ is even.
+The image $\bar S$ is a proper subset with trivial stabilizer, because
+$S$ is a union of $H$-cosets. Form it by multiplying factors
+$\{1,\bar q,\bar q^{-1}\}$, one copy per prime factor of $N$ counted
+with multiplicity. A stabilizer of any partial product stabilizes the
+final product. Hence each factor with $\bar q\ne1$ strictly increases
+the size of the partial product: equality would imply that translation
+by $\bar q$ fixes the partial product. The final size is at most $h-1$.
+There are at most $h-2$ primes outside $H$, counted with multiplicity.
+
+If $h=2$ the support is contained in $H$, the kernel of an odd quadratic
+character. If $h=4$, a nontrivial element of order two cannot occur:
+its symmetric factor is a subgroup and would stabilize $\bar S$.
+If $Q$ has exponent two this already puts all primes in $H$. Otherwise
+$Q$ is cyclic of order four and every outside factor is
+$\{1,g,g^{-1}\}$ for a generator $g$. The product of two such
+factors is all of $Q$, so at most one outside factor occurs.
+But $N=pK\equiv4K^2\pmod c$ has square image in $Q$, excluding
+a single generator as well. Thus there are no outside factors when
+$h=4$, and $4\in H$ since $p,K\in H$ and $p\equiv4K\pmod c$.
+If quadratic support fails in this case then $Q$ must be cyclic
+(an exponent-two quotient admits a quadratic character separating
+the image of $-1$ from the identity). Hence this remaining
+index-four obstruction is supported in the kernel of a quartic
+character $\psi$ with $\psi(-1)=-1$ and $\psi(4)=1$.
+
+\paragraph{An upper-bound sieve in arithmetic progressions.}
+Fix a possible tuple of stabilizers $H_i$; only finitely many occur.
+Put $h_i=[G_i:H_i]$ and
+$D=1+\sum_i(1-1/h_i)$. Choose a constant $B=\sum_i|G_i|$ and
+$z=X^{1/(32(B+1)(s+1))}$. Remove once and for all primes at most
+$2s+3$ and those dividing
+$24\prod_i c_i\prod_{i<j}|c_i-c_j|$. The resulting exceptional
+set of primes is fixed. Primes $p\le z$ contribute $O(z)$ overall.
+
+For each $i$ mark the distinct nonremoved primes $q\le z$ dividing
+$K_i$ with $q\bmod c_i\notin H_i$ and let $e_i$ be their squarefree
+product. The $e_i$ are pairwise coprime, since a common prime would
+divide $c_i-c_j$. The total number of marked primes is at most $B$.
+Moreover $e_i=1$ whenever $h_i=2$ or $4$. Put $e=\prod_i e_i\le z^B$.
+For fixed marks the congruences $p\equiv-c_i\pmod{e_i}$ specify a
+single class $p=p_0+e t$, in an interval of length $Y\le X/e+1$;
+for estimates we take $Y=\lceil X/e\rceil+1$.
+For a nonremoved $q\le z$ not dividing $e$, exclude $p\equiv0\pmod q$,
+and exclude $p\equiv-c_i\pmod q$ whenever $q\bmod c_i\notin H_i$.
+On the progression these exclude
+\[
+ \nu(q)=1+\sum_i\boldsymbol{1}_{q\bmod c_i\notin H_i}
+\]
+distinct classes modulo $q$. Distinctness follows from the primes
+removed at the start. The condition $p\equiv1\pmod{24}$ can be
+dropped when taking this upper bound.
+
+For completeness, the standard large sieve for excluded residues \cite{sieve} gives
+at most $(Y+L^2)/J(L)$ survivors, where $L=\lfloor\sqrt Y\rfloor$ and
+\[
+ J(L)=\sum_{d\le L}\mu^2(d)\prod_{q\mid d}\frac{\nu(q)}{q-\nu(q)}.
+\]
+Here $d$ uses only the available sieving primes. In the unrestricted
+Euler product $U=\prod_q(1-\nu(q)/q)^{-1}$, the normalized weights
+have mean $\sum_q\nu(q)\log q/q\le(s+1)(\log z+O(1))$ for $\log d$.
+Our choice of $z$ and $e\le z^B$ gives this mean $<\frac12\log L$
+for large $X$. Markov's inequality yields $J(L)\ge U/2$.
+The survivor count is therefore
+\[
+ \ll_{\mathbf c}(X/e)\prod_q(1-\nu(q)/q)
+ \ll_{\mathbf c} \frac{X}{e(\log X)^D}.
+\]
+Indeed Mertens' theorem in reduced residue classes gives
+$\sum_{q\le z,\ q\bmod c_i\notin H_i}q^{-1}
+ =(1-1/h_i)\log\log z+O_{c_i}(1)$. Omitting the prime divisors of
+$e$ changes the product by a bounded factor, since their number is
+at most $B$ and all satisfy $q>2s+3$.
+
+The sum of $1/e$ over the tuples of marks is
+$O_{\mathbf c}((1+\log\log X)^B)$ by the prime harmonic sum
+and the at most $s^B$ assignments of marked primes to shifts.
+When all $h_i$ are $2$ or $4$ the only tuple is $e=1$.
+When every $h_i=2$, the exponent is $1+s/2$ and the primes have
+quadratic support at every shift. If any $h_i=4$ and none is larger,
+the exponent is at least $1+s/2+1/4$. If any $h_i\ge6$ the exponent
+is at least $1+s/2+1/3$, which absorbs the factor
+$(1+\log\log X)^B$ and still gives \eqref{eq:esremainder}.
+Summation over the fixed tuples of subgroups proves both assertions.
+
+
+\section{A quadratic law for the first denominator of a prime square}
+For fixed
+$c\equiv3\pmod4$, $c>0$, let $T_c(X)$ count primes $p\le X$, $p\nmid 2c$,
+for which $(p/c)=-1$ but the first denominator $(p^2+c)/4$ does not work
+for $4/p^2$. Parentheses denote the Jacobi symbol.
+Let $T_c^{\mathcal E}(X)$ count the same primes in $\mathcal E$.
+
+\begin{theorem}\label{thm:squarejacobi}
+For every fixed admissible $c$ one has
+\[
+ T_c(X)\ll_c X(\log X)^{-3/2},\qquad
+ T_c^{\mathcal E}(X)\ll_c X(\log X)^{-2}.
+\]
+The respective exponents improve to $5/3$ and $13/6$ when $c$ is prime.
+If $(p/c)=+1$ the shift always fails. Thus, for any fixed cutoff $C$,
+all the shifts $c\le C$ obey the Jacobi criterion simultaneously apart
+from $O_C(X/(\log X)^2)$ primes in $\mathcal E$.
+\end{theorem}
+
+\begin{proof}
+We may assume $p^2>c$, so every two-term completion has denominators
+larger than $K=(p^2+c)/4$. Put $G=(\mathbb Z/c\mathbb Z)^\times$,
+$J=\ker(\cdot/c)$ and $N=p^2K$. The Jacobi character is odd, hence
+$[G:J]=2$. The reciprocity argument of Theorem~\ref{thm:prime-squares}
+puts every prime divisor of $K$ in $J$, proving the assertion for
+$(p/c)=+1$. Suppose that $p\notin J$ and the shift fails. Let $H$
+be the stabilizer of the symmetric divisor product of $N$, and set
+$h=[G:H]$, $k=[J:J\cap H]$. The signed-product argument above gives
+an even $h$ and at most $h-2$ outside factors of $N$, counted with
+multiplicity. When $h=2$ or $4$ it gives no outside factors, using
+$N\equiv4K^2\pmod c$ in the index-four case. Thus $H=J$ is
+impossible because $p\mid N$. Since $H$ is proper, it cannot
+contain $J$. Consequently $k\ge2$, and $h=k[G:JH]\le2k$.
+
+For any fixed $H$, sieve in the variable $p$. At each prime $q\nmid2c$
+with $q\bmod c\in J\setminus H$, the congruence
+$p^2\equiv-c\pmod q$ has exactly two roots since
+$(-c/q)=(q/c)=1$. Exclude both roots except at the marked small
+prime divisors of $K$ outside $H$. In addition exclude $p\equiv0\pmod q$
+at every sieving prime and, for $p\in\mathcal E$,
+$p\equiv-3\pmod q$ at primes $q\equiv2\pmod3$. Omit the fixed primes
+$q\le 11$ and $q\mid c(c+9)$; all excluded residues are then distinct.
+Indeed a quadratic root equal to $-3$ would imply $q\mid c+9$.
+The extra sieve dimension contributed by the polynomial is
+\[
+ 2\frac{|J|-|J\cap H|}{|G|}=1-1/k,
+\]
+by Mertens' theorem in arithmetic progressions. To see the uniform
+bound after marking, take $B=|G|$, $z=X^{1/(128(B+1))}$ and mark
+only the applicable $q\le z$. Their product $e$ is at most $z^B$ and
+specifies at most $2^{\omega(e)}\le 2^B$ classes for $p\pmod e$.
+On each class the other sieving primes have the same excluded counts.
+The large-sieve argument used for \eqref{eq:esjoint} applies with
+at most four excluded residues per prime. Summing $1/e$ costs
+$O_c((1+\log\log X)^B)$, and costs $1$ if no marks can occur.
+The total dimension is $1+(1-1/k)$, with an additional $1/2$ for
+$\mathcal E$. If $k=2$ then $h=2$ or $4$ and there are no marks.
+If $k\ge3$ the exponent gap absorbs the logarithms. This proves
+the first pair of bounds.
+
+For prime $c$, $G$ is cyclic of order twice an odd number. A subgroup
+missing $-1$ has odd order and lies in $J$. Hence $h=2k$ with $k$
+odd, and $k\ge3$. In the case $k=3$, the quotient is cyclic of order
+six and the image of $p$ has odd discrete logarithm. Its image cannot
+equal $-1$, which would give a completion, so it is a generator.
+Every nonidentity image of a prime factor of $K$ has exponent
+$\pm2$ with respect to that generator. Combining this factor and $p$
+with signs gives the exponent $3$, also a completion. Thus no marks
+occur when $k=3$. The case $k\ge5$ has sufficient exponent gap.
+For $c=3$ no such discrepancy can occur. Finite summation proves the
+simultaneous assertion, absorbing the primes dividing one of the shifts.
+\end{proof}
+
+\begin{theorem}\label{thm:squarespectrum}
+The fixed values $c$ attained by the least shift $A_*(p)$ on a set
+of positive lower relative density in $\mathcal E$ are precisely
+\[
+ \{r\ge7:r\text{ prime},\ r\equiv3\pmod4\}
+ \ \cup\ \{3r:r\text{ prime},\ r\equiv1\pmod4\}.
+\]
+For each of these values its count through $X$ is
+$\asymp_c X/(\log X)^{3/2}$. Every other fixed admissible value
+occurs $O_c(X/(\log X)^2)$ times. The shift $3$ never works in
+$\mathcal E$.
+\end{theorem}
+
+\begin{proof}
+For $p\in\mathcal E$ one has $(p/3)=1$. The first admissible
+multiple of an odd prime $r$ is $m(r)=r$ for $r\equiv3\pmod4$ and
+$m(r)=3r$ for $r\equiv1\pmod4$. Thus $(p/m(r))=(p/r)$.
+If an admissible $c$ is none of these first multiples, every prime
+dividing $c$ has already appeared. When all earlier Jacobi symbols
+are positive, multiplicativity makes $(p/c)$ positive as well.
+Theorem~\ref{thm:squarejacobi} bounds the number of actual departures
+from this description through any fixed $c$. The obstruction at $3$
+follows directly from the positive Jacobi symbol.
+
+For $c=m(r)$ with $r\ge5$, impose $p\equiv1$ modulo every prime
+$5\le t\le c$ other than $r$. At $r$ impose a quadratic nonresidue
+$b\not\equiv-3\pmod r$. Such a residue exists since $r\ge5$; at
+$r=5$ take $b=3$. The combined class modulo the product of these
+primes, including $r$, is coprime to the modulus, as is its translate
+by $3$. The primitive-form theorem applied exactly as in
+Theorem~\ref{thm:prime-squares} gives
+$\gg_c X/(\log X)^{3/2}$ primes in $\mathcal E$ in this class.
+All earlier symbols are positive and $(p/c)=-1$. Removing the
+$O_c(X/(\log X)^2)$ discrepancies proves the lower bound. The upper
+bound follows from $|\mathcal E\cap[1,X]|\ll X/(\log X)^{3/2}$,
+by sieving $0$ at all primes and $-3$ at primes $2\pmod3$.
+\end{proof}
+
+There is an explicit distribution when one conditions only on
+$p\equiv1\pmod{12}$. In increasing order write $c_1,c_2,\ldots$
+for the shifts in Theorem~\ref{thm:squarespectrum}. The list starts $7,11,15,19,23,31,39,43$. Then the natural
+density, relative to this progression of primes, of $A_*(p)=c_j$
+is $2^{-j}$. Here the least-shift definition extends to all primes
+in the progression, using the same denominator rule. Indeed the first
+$j$ new characters are independent quadratic characters at distinct
+primes $r\ge5$, by the Chinese remainder theorem and the prime number
+theorem in arithmetic progressions. For any fixed $j$ the unrestricted
+error in Theorem~\ref{thm:squarejacobi} has relative density zero.
+The claimed density is the probability of $j-1$ positive signs followed
+by a negative sign. These densities sum to one.
+
+
+\subsection{Classification of the eighteen reported missing shifts}
+\label{sec:missing-shifts}
+The project's revised \href{https://github.com/GUINEA-PIG-TRENCH/erdos-straus-solver/blob/b6e0ae6d7885c84082e5c654a3b9bdfbe02bd307/CONJECTURE.md\#L172}{list of shifts missing through $10^8$} contains eighteen entries. Exactly thirteen can never be the least shift of an exceptional prime square:
+\[
+ 3,27,35,55,63,75,91,99,115,135,143,147,155.
+\]
+The other five, $119,123,131,139,151$, all occur. Of these, $119$ has relative density zero in $\E$ by Theorem~\ref{thm:squarespectrum}. The other four have positive lower relative density.
+
+Here are finite local calculations proving the exclusions. An exceptional prime satisfies $p\equiv1\pmod{24}$, since $(p+3)/4$ is odd. In the following table, $K=(p^2+c)/4$ and $D\mid K$. For $c=39$ the extra hypothesis $(p/5)=1$ implies $p^2\equiv1\pmod5$, hence $5\mid K$. Write $\chi_c(b)=(b/c)$. For each row a shift succeeds whenever $\chi_c(p)=-1$.
+\[
+\begin{array}{c|rrrrrr}
+ c&7&11&15&23&31&39\rule{0pt}{2.2ex}\\
+ D&2&3&4&6&4&10\\
+ \text{Nonresidue classes tested}&3&5&2&11&15&6
+\end{array}
+\]
+To verify the table, factor $D=\prod q^{e_q}$ and write $b=p\bmod c$, $v=b^2(4D)^{-1}\bmod c$. Test the units $b$ with $\chi_c(b)=-1$, retaining $b\equiv1\pmod3$ if $3\mid c$. In every class counted in the last row, $-1$ is among the residues
+\[
+ b^i v^j \prod_{q\mid D}q^{h_q},
+ \qquad |i|\le 2,\quad |j|\le1,\quad |h_q|\le e_q .
+\]
+Each tested product lifts to a rational number $R$ with $NR$ integral and $NR\mid N^2$, because $N=p^2(K/D)D$. A residue $-1$ therefore gives a completion, and $p^2>c$ puts both residual denominators above $K$. Appendix~\ref{sec:cert} reproduces the table in integer arithmetic.
+The character for each of $3,27,75,147$ equals $(p/3)=1$. In every other exclusion a negative character forces a smaller working shift from the table. More explicitly, the possible smaller shifts for $35,55,63,91,99,115,135,143,155$ are, respectively,
+\[
+ \{7,15\},\{11,15\},\{7\},\{7,15,39\},\{11\},
+ \{15,23\},\{15\},\{11,15,39\},\{15,31\}.
+\]
+These implications follow by multiplying the prime characters of the displayed shifts, discarding square factors. An occurrence of $(p/13)=-1$ is covered by $15$ when $(p/5)=-1$ and by $39$ otherwise. All prime factors in this argument are coprime to the exceptional prime, since $p\equiv1\pmod{24}$ gives $p\ge73$.
+
+The preceding theorems give infinitely many occurrences of each of $123,131,139,151$. For $119$ take $p=1736718481$. Trial division proves that $p,19,757,30187$ are prime, and $(p+3)/4=19\cdot757\cdot30187$, so $p$ is exceptional. Euler's criterion at the prime factors of $3,7,\ldots,115$ gives $\chi_c(p)=1$ except at $c=51$. Equivalently $p$ is a quadratic residue modulo each of
+\[
+ 3,5,7,11,13,19,23,29,31,37,43,47,59,67,71,79,83,103,107
+\]
+and a nonresidue modulo $17$. Together these exhaust the prime divisors of the candidate shifts up to $115$. At $c=51$ the integer $K=754047770561736853$ is prime, so every divisor of $N^2$ is $1\pmod3$ and none is $-N\pmod{51}$. An integer primality certificate for $K$ is
+\[
+ K-1=2^2\cdot3\cdot10341481\cdot6076239391.
+\]
+The listed prime divisors are certified by trial division. Modular exponentiation gives $5^{K-1}\equiv1\pmod K$ and $\gcd(5^{(K-1)/q}-1,K)=1$ for each prime divisor $q$ of $K-1$. The Lucas primality criterion proves the assertion. Finally, for $c=119$ the divisor $d=48454445619900$ of $N^2$ satisfies $d\equiv-N\equiv33\pmod{119}$, as direct integer arithmetic verifies. Hence the least shift for this $p$ is exactly $119$.
+
+
+\paragraph{Divisibility of shifts does not imply reduction.}
+A second named claim in the proof sketch of \cite{tier}, the \emph{Divisor Reduction Conjecture} (section 3.3, Corollary 1), says that if $A$ works and a smaller admissible $A'$ divides $A-A'$, then $A'$ works for the same exceptional prime. Take $p=73$, so $(p+3)/4=19$ and $p\in\E$. At $A=95$ the first denominator is $K=1356=2^2\cdot3\cdot113$. Put $N=73^2K$. The divisor $W=73\cdot2\cdot3\cdot113=49\,494$ of $N$ satisfies $W+1=95\cdot521$. Hence $NW\mid N^2$, and \eqref{eq:div} gives a split. Yet $A'=19$ divides $95-19$, and $(73/19)=(16/19)=1$, so $19$ fails. Both $95$ and $19$ occur in the project's empirical list of working shifts.
+
+
+\section{Transferring the obstruction to other progressions and numerators}
+The reciprocity calculation also applies when the numerator $4$ is replaced by any multiple of $4$. This gives a construction using only Dirichlet's theorem on primes in an arithmetic progression.
+\begin{proposition}\label{prop:mult}
+Fix $m\ge4$ divisible by $4$, and a prime $\ell\equiv-1\pmod m$. There is a reduced arithmetic progression of base primes $p\equiv1\pmod m$ on which the following holds, apart from finitely many $p$. For every $h\ge1$, the smallest $c=mx-p^{2h}$ over all positive three-unit-fraction representations of $m/p^{2h}$ is exactly $\ell$.
+\end{proposition}
+\begin{proof}
+For $n=p^{2h}$, every candidate $K=(n+c)/m$ has $c>0$, $c\equiv-1\pmod m$. For $p>\ell$ and $c\le\ell$, the reduced remainder is $c/(nK)$. Each $c$ is $3\pmod4$. Every odd prime factor $q$ of $K$ satisfies $(q/c)=(-c/q)=1$. If $2\mid K$ then $8\mid n+c$, so $(2/c)=1$. Prescribe $p=1$ modulo $m$ and modulo every prime dividing any earlier admissible $c$, and $p=-1$ modulo $\ell$. The conditions are compatible because $(m,\ell)=1$ and $c<\ell$. They specify a reduced class. The same symbol obstruction excludes all smaller $c$, while $e=nKp$ supplies a split at $\ell$. Dirichlet's theorem gives infinitely many such primes, and the prime number theorem in progressions gives positive density among all base primes.
+\end{proof}
+
+\paragraph{Three progressions in the tables of Ionascu and Wilson.}
+In their notation $n\in C_i$ if some representation has smallest denominator at most $(n+4i-1)/4$ \cite{iw}. For $n\equiv1\pmod4$ this says exactly $a(n)\le4i-1$. On page 28 they discuss evidence for bounded depth in specific progressions $9240s+r$ with prime residue $r$. On the literal reading allowing every nonnegative $s$, three of their listed prime residues have unbounded depth even among soluble inputs:
+\[
+ \begin{array}{c|rrr}
+ r &7561&7681&8761\\ \hline
+ t\text{ with }t^4\equiv r\pmod{9240}&41&37&31 .
+ \end{array}
+\]
+To see this, fix one $t$ and any prime $\ell>11$, $\ell\equiv3\pmod4$. Prescribe $p\equiv t^2\pmod{9240}$, $p\equiv-1\pmod\ell$, and $p\equiv1$ modulo all odd primes less than $\ell$ not dividing $9240$. Then $p$ is a nonzero square modulo every odd prime less than $\ell$. Infinitely many $p$ satisfy this reduced progression. For each $p>\ell$, \eqref{eq:recip} excludes all earlier shifts, and $a(p^2)=\ell$ with $p^2\equiv r\pmod{9240}$. Letting $\ell$ grow proves the assertion. The same 2011 discussion tabulates prime inputs, and the authors' final limsup question concerns primes. The square inputs here leave that prime-input question open.
+
+
+\section{Successive smallest denominators for Sierpi\'nski's equation}
+Recall Sierpi\'nski's conjecture for $5/n$ with three distinct denominators \cite{graham}. For a prime $p>5$, let $K=\lceil p/5\rceil$. Define $B_i^{(5)}(X)$
+to count the primes $5<p\le X$ for which no representation of $5/p$ as
+three distinct positive unit fractions has smallest denominator in
+$[K,K+i-1]$. Then
+\begin{equation}\label{eq:sierp-first-two}
+ B_1^{(5)}(X)\asymp\frac{X}{(\log X)^{3/2}},
+ \qquad B_2^{(5)}(X)\ll\frac{X}{(\log X)^{7/3}} .
+\end{equation}
+Consequently the number of primes whose least attainable denominator is
+$K+1$ equals $B_1^{(5)}(X)(1+O((\log X)^{-5/6}))$.
+The third choice gives
+\[
+ B_3^{(5)}(X)\ll X(\log X)^{-19/6}.
+\]
+
+
+Put $c=5K-p$ and $N=pK$. After removal of $1/K$ the residual fraction
+is $c/N$. For $c=1$, split $1/N$ with denominators $N+1$ and $N(N+1)$.
+For $c=2$, $N$ is odd, so $(N+1)/2$ and $N(N+1)/2$ give two
+distinct denominators. For $c=3$ we have
+$N\equiv5K^2\equiv2\pmod3$, so the factors $1,N^2$ both equal
+$-N\pmod3$ and yield a decomposition.
+For $c=4$ the prime satisfies $p\equiv1\pmod5$, and $K=(p+4)/5$ is odd.
+Here $N\equiv p^2\equiv1\pmod4$. The equation $4/N=1/y+1/z$
+is equivalent to the existence of positive factors of $N^2$ both
+congruent to $-N$ modulo $4$. Such factors exist precisely when some
+prime $q\equiv3\pmod4$ divides $N$: the choice $q,N^2/q$ suffices.
+All denominators in these constructions exceed $K$ because each
+residual unit fraction is strictly smaller than $c/N$ and $p>c$.
+Thus the first denominator fails exactly at primes $p\equiv1\pmod{20}$
+such that every prime dividing $(p+4)/5$ is $1\pmod4$.
+
+Apply Theorem~1.1 of \cite{fhrss} to the primitive positive definite
+form $u^2+v^2$ with $D=-4$, and take $A=-4$, $B=5$.
+Its leading coefficient is one, $\gcd(A,B)=1$ and $AB$ is even.
+This gives $\gg X/(\log X)^{3/2}$ primes $p=5(u^2+v^2)-4$ with
+$\gcd(u,v)=1$. For $p>5$, the norm is odd and $1\pmod4$.
+No prime $q\equiv3\pmod4$ divides it, since that would give either
+a square root of $-1$ modulo $q$ or $q\mid\gcd(u,v)$.
+These primes therefore fail at their smallest admissible denominator.
+
+\paragraph{Exact criteria at the second and third choices.}
+In the cyclic group of order six written additively, suppose a sequence
+has odd total sum and contains a generator $g$. Its signed subsums,
+with coefficients in $\{-1,0,1\}$, contain the element of order two
+unless every entry besides this occurrence of $g$ is zero.
+Indeed, identify $g$ with $1$ modulo six. An entry $3$ suffices, and
+an entry $\pm2$ combines with $1$ to produce $3$. In the remaining
+case, all nonzero entries are $\pm1$ and their number is odd.
+Any three of them give $3$ after signs are chosen. A single nonzero
+entry gives only $0,1,-1$, proving the converse. Apply this observation
+to prime factors counted with multiplicity and use the signed-divisor
+criterion above. In a cyclic group of order six the nonsquare elements
+have odd exponent relative to any generator.
+
+For a first failure $p\equiv1\pmod{20}$ let $K_2=(p+9)/5$. Then
+$K_2\equiv2\pmod4$, so $N_2=pK_2$ has exactly one factor $2$.
+The class of $2$ generates the group of units modulo $9$, and
+$N_2\equiv5K_2^2\pmod9$ is a nonsquare. For $p>9$, the second
+choice fails if and only if every prime factor of $p(p+9)/10$ is
+$1\pmod9$. In particular two failures give $p\equiv1\pmod{180}$.
+At the third choice $K_3=(p+14)/5$ is odd and $K_3\equiv3\pmod9$.
+The group of units modulo $14$ is isomorphic to that modulo $7$;
+$3$ is a generator, and $N_3=pK_3\equiv5K_3^2\pmod7$ is a
+nonsquare. Since $3$ occurs exactly once, for $p>14$ a third failure
+occurs if and only if every prime factor of $p(p+14)/15$ is
+$1\pmod7$. For all these choices the condition $p>5K_i-p$ ensures
+that the two residual denominators exceed $K_i$. They are distinct because a pair
+of equal factors of $N_i^2$ would be $N_i,N_i$, whereas
+$N_i\not\equiv-N_i\pmod{5K_i-p}$.
+
+Exclude $p\equiv0\pmod\ell$ at all sieving primes. The first
+failure also excludes $p\equiv-4\pmod\ell$ at $\ell\equiv3\pmod4$.
+The second excludes $-9$ at all $\ell\not\equiv1\pmod9$, and the
+third excludes $-14$ at all $\ell\not\equiv1\pmod7$. Remove the
+finitely many primes dividing any shift, its differences from other
+shifts, or $30$. The classes are now distinct. The first three sieve
+dimensions are $3/2$, $3/2+5/6=7/3$, and $7/3+5/6=19/6$.
+The interval sieve above proves the corresponding upper bounds.
+
+
+
+\section*{Literature and scope}
+The binary factorization \eqref{eq:div} and quadratic reciprocity are classical. Elsholtz and Tao, Proposition 1.6 \cite{et}, exclude two particular divisibility types for odd squares; Dubickas and Novikas \cite{dn} exclude squares in their special parametrization. These restrictions leave other decompositions available. For prime inputs, Dahan treats search depth, simultaneous fixed channels, and primitive norm obstructions \cite{dahan}; Houze discusses failures at a single fixed shift \cite{houze}. Our lower bound on exceptional base primes uses the published primitive-form theorem \cite{fhrss}. The unbounded finite minimum on prime squares requires the additional simultaneous exclusion and success construction. The signed-product argument yields a distribution for that minimum.
+
+Corpus note 050 \cite{vmrc} suggested organizing local congruences so that every earlier candidate has a certified obstruction. Note 129 suggested using multiplicative orders to verify the explicit higher-power example. Neither corpus note is used as an unverified premise. The empirical corpus and repository comparisons are limited to the sources identified here. The public conjecture in \cite{tier} is a 2026 research proposal. We have not found a prior disproof on its exact domain or a prior statement of the distribution proved here. Historical priority and the relative importance of this result across the corpus have not been established. The existence question for all $n$ in \eqref{eq:original}, and its Sierpi\'nski analogue, remain open.
+
+\appendix
+\section{Exact numerical certificates}\label{sec:cert}
+
+\paragraph{Local residues and the witness for 119.}
+The following Python 3.8+ code checks the six rows of Section~\ref{sec:missing-shifts} and the exceptional prime with minimum $119$. The function \texttt{jac} is used only on coprime inputs with positive odd denominator.
+\begin{Verbatim}[fontsize=\small]
+from math import gcd, isqrt, prod
+def factors(n):
+    ans = {}
+    for q in range(2, isqrt(n)+1):
+        while n % q == 0:
+            ans[q] = ans.get(q,0)+1
+            n //= q
+    if n > 1:
+        ans[n] = 1
+    return ans
+
+def jac(b,c):
+    v = 1
+    for q,e in factors(c).items():
+        v *= (1 if pow(b,(q-1)//2,q)==1 else -1)**e
+    return v
+
+rows = [(7,2,3), (11,3,5), (15,4,2), (23,6,11),
+        (31,4,15), (39,10,6)]
+for c,D,count in rows:
+    hits = 0
+    for b in range(1,c):
+        if gcd(b,c)>1 or (c%3==0 and b%3!=1) or jac(b,c)>0:
+            continue
+        v = b*b*pow(4*D,-1,c) % c
+        S = {pow(b,i,c)*pow(v,j,c)%c
+             for i in range(-2,3) for j in range(-1,2)}
+        for q,e in factors(D).items():
+            S = {s*pow(q,h,c)%c for s in S for h in range(-e,e+1)}
+        assert c-1 in S
+        hits += 1
+    assert hits == count
+
+p = 1736718481
+def prime(n):
+    return n>=2 and all(n%j for j in range(2,isqrt(n)+1))
+assert p%24==1 and all(prime(q) for q in (p,19,757,30187))
+assert (p+3)//4==19*757*30187 and 19%3==757%3==30187%3==1
+assert [c for c in range(3,119,4) if jac(p,c)<0]==[51]
+K = (p*p+51)//4
+Q = (2,3,10341481,6076239391)
+assert K==754047770561736853 and K-1==2*prod(Q)
+assert all(prime(q) for q in Q) and pow(5,K-1,K)==1
+assert all(gcd(pow(5,(K-1)//q,K)-1,K)==1 for q in Q)
+assert p%3==K%3==1
+N = p*p*((p*p+119)//4)
+d = 48454445619900
+assert N*N%d==0 and d%119==(-N)%119==33
+\end{Verbatim}
+
+
+\paragraph{A prime with least shift exactly $163$.}
+Let $p=96\,616\,332\,289$. Then
+\[
+ \frac{p+3}{4}=79\cdot305\,747\,887.
+\]
+The three integers $p$, $79$, and $305\,747\,887$ are prime.
+Both factors on the right are $1$ modulo $3$, and $p\equiv1\pmod{24}$.
+Thus $p$ lies in the required exceptional class. For each prime $s$
+dividing at least one of $3,7,\ldots,159$, Euler's criterion gives
+$(p/s)=1$ by the modular checks below. Multiplicativity therefore gives
+$(p/c)=1$ for every admissible $c\le159$, including composite shifts.
+The character obstruction excludes every such shift.
+
+For $c=163$, put $K=(p^2+163)/4$, $N=p^2K$, and
+$e=32\,036\,167\,691\,309\,154\,845\,113$. Then $e\mid N^2$ and
+both $e$ and $N^2/e$ are $-N$ modulo $163$. Consequently
+\[
+ \frac4{p^2}=\frac1K+
+    \frac1{(N+e)/163}+\frac1{(N+N^2/e)/163}.
+\]
+Both additional denominators exceed $K$ because $p^2>163$.
+This proves $A_*(p)=163$. The certificate below uses integer trial division
+and modular exponentiation only.
+\begin{Verbatim}[fontsize=\small]
+from math import isqrt
+
+def prime(n):
+    return n >= 2 and all(n % j for j in range(2, isqrt(n) + 1))
+
+p = 96616332289
+assert all(prime(t) for t in (p, 79, 305747887))
+assert p % 24 == 1 and (p + 3)//4 == 79 * 305747887
+assert 79 % 3 == 305747887 % 3 == 1
+for s in range(3, 160, 2):
+    if prime(s) and any(c % s == 0 for c in range(3, 160, 4)):
+        assert pow(p, (s - 1)//2, s) == 1
+
+K = (p*p + 163)//4
+N = p*p*K
+e = 32036167691309154845113
+assert 4*K == p*p + 163 and N*N % e == 0
+f = N*N//e
+assert (N + e) % 163 == (N + f) % 163 == 0
+y, z = (N + e)//163, (N + f)//163
+assert K < min(y, z) and 4*K*y*z == p*p*(y*z + K*z + K*y)
+\end{Verbatim}
+
+
+\paragraph{The least shift can increase before stabilizing.}
+For the same prime $p=96\,616\,332\,289$, write $a_d$ for the least
+shift at input $p^{2d}$. Then
+\[
+ a_1=163,\qquad a_2=179,\qquad a_d=163\quad(d\ge11).
+\]
+The lower character obstructions at shifts up to $159$ apply to
+every $d$: if $t\mid(p^{2d}+c)/4$ is odd then $-c\equiv(p^d)^2\pmod t$,
+and the argument for $t=2$ is unchanged. At $c=163$ one has
+$p^{41}\equiv-4\pmod{163}$. If $d\ge11$, put $K=(p^{2d}+163)/4$,
+$N=p^{2d}K$, and $e=p^{4d-41}$. Then $e\mid N^2$ and
+$e\equiv-p^{4d}/4\equiv-N\pmod{163}$, proving success.
+
+For $d=2$ the integer $K=(p^4+163)/4$ is prime and distinct from $p$.
+Consequently the divisors of $N^2$ at that shift are exactly
+$p^i K^j$ with $0\le i\le8$ and $0\le j\le2$. None has residue $-N$.
+The three shifts $167,171,175$ have $(p/c)=1$ and hence fail. One divisor
+at shift $179$ is $e=387\,675\,494\,389\,909\,242\,994\,635$.
+The following certificate continues the preceding code. Its primality
+test uses Pocklington's criterion recursively, here with the full
+factorization of $q-1$ at each large integer $q$.
+\begin{Verbatim}[fontsize=\small]
+from math import gcd, prod
+K = (p**4 + 163)//4
+P = 4112822024555342844807791
+Q = 2958864765867153125761
+proof = [
+    (Q, 31, {2:7, 3:1, 5:1, 79:1, 18561209:1, 1050970523:1}),
+    (P, 11, {2:1, 5:1, 139:1, Q:1}),
+    (K, 6, {2:3, 5:2, 43:1, 263:1, 47017:1, 49807319:1, P:1})
+]
+known = set()
+for q, a, factors in proof:
+    assert all(t in known or prime(t) for t in factors)
+    assert prod(t**k for t, k in factors.items()) == q-1
+    assert pow(a, q-1, q) == 1
+    assert all(gcd(pow(a, (q-1)//t, q)-1, q) == 1 for t in factors)
+    known.add(q)
+
+N = p**4*K
+assert all((p**i*K**j+N) % 163 for i in range(9) for j in range(3))
+for c in (167, 171, 175):
+    # The Jacobi symbol depends on prime factors to odd multiplicity.
+    a, sign = c, 1
+    for t in range(3, c+1, 2):
+        while a % t == 0:
+            sign *= 1 if pow(p, (t-1)//2, t) == 1 else -1
+            a //= t
+    assert a == sign == 1
+K = (p**4 + 179)//4
+N = p**4*K
+e = 387675494389909242994635
+assert N*N % e == 0 and (N+e) % 179 == (N+N*N//e) % 179 == 0
+assert pow(p, 41, 163) == 159
+\end{Verbatim}
+
+
+\begin{thebibliography}{99}\small
+\bibitem{tier} Tne-max, \emph{Erdos--Straus solver}, public research repository (2026).
+\href{https://github.com/Tne-max/erdos-straus-solver/blob/7a011457cd72404e1d02943488a7b80f8a9ec636/CONJECTURE.md}{Conjecture, Open Question 5} and
+\href{https://github.com/Tne-max/erdos-straus-solver/blob/8184c788e52f606e793a742729b0d5e74fca3420/PROOF_SKETCH.md}{Proof sketch, sections 1--2}. A
+\href{https://github.com/GUINEA-PIG-TRENCH/erdos-straus-solver/blob/b6e0ae6d7885c84082e5c654a3b9bdfbe02bd307/CONJECTURE.md}{revised empirical table} lists additional skipped shifts.
+\bibitem{fhrss} E.~Fuchs, C.~Hsu, J.~Rickards, D.~Schindler, K.~E.~Stange,
+Primes represented by shifted quadratic forms: on primitivity and congruence classes, \emph{Acta Arith.} \textbf{222} (2026), 371--391, Theorem 1.1.
+\href{https://doi.org/10.4064/aa250502-24-10}{doi:10.4064/aa250502-24-10}.
+\bibitem{iw} E.~J.~Ionascu, A.~Wilson, On the Erd\H os--Straus conjecture, \emph{Rev. Roumaine Math. Pures Appl.} \textbf{56} (2011), 21--30.
+\href{https://www.csm.ro/reviste/Revue_Mathematique/pdfs/2011/1/Ionascu.pdf}{Journal PDF}.
+\bibitem{graham} R.~L.~Graham, Paul Erd\H os and Egyptian fractions, in \emph{Erd\H os Centennial} (2013). \href{https://mathweb.ucsd.edu/~ronspubs/13_03_Egyptian.pdf}{Author's copy}.
+\bibitem{et} C.~Elsholtz, T.~Tao, Counting the number of solutions to the Erd\H os--Straus equation on unit fractions, \emph{J. Aust. Math. Soc.} \textbf{94} (2013), 50--105.
+\href{https://doi.org/10.1017/S1446788712000468}{doi:10.1017/S1446788712000468}.
+\bibitem{dn} A.~Dubickas, A.~Novikas, On integers expressible by some special linear form, \emph{Acta Math. Univ. Comenianae} \textbf{81} (2012), 203--209. \href{https://www.iam.fmph.uniba.sk/amuc/_vol-81/_no_2/_dubickas/dubickas.html}{Journal entry}.
+\bibitem{hv} J.~Huang, R.~C.~Vaughan, Mean value theorems for binary Egyptian fractions, \emph{J. Number Theory} \textbf{131} (2011), 1641--1656. \arxiv{1108.0096}.
+\bibitem{dahan} B.~Dahan, Sieve dimension and search depth for the Erd\H os--Straus conjecture, $n\equiv1\pmod{24}$, preprint (2026), \arxiv{2608.24035}; see also \arxiv{2611.08717} for Kneser-theoretic methods.
+\bibitem{houze} W.~C.~Houze, What has been proved so far on the Erd\H os--Straus conjecture under a human-directed, two-system research protocol, research report (2026).
+\href{https://aixiv.online/abs/2611.00365v3}{aiXiv:2611.00365v3}.
+\bibitem{sieve} J.~Friedlander, H.~Iwaniec, \emph{Opera de Cribro}, American Mathematical Society Colloquium Publications 57, 2010.
+\bibitem{vmrc} QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, items 050, Exact prime covers and arithmetic obstructions, and 129, Certified prime lifting from known primes.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c2ac34ea4622778187173f41bb1996deee8081b7}{Repository snapshot \texttt{c2ac34e}}.
+\end{thebibliography}
+\end{document}

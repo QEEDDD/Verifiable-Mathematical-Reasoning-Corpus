@@ -1,0 +1,368 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm,top=23mm,bottom=24mm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,xcolor,fancyhdr}
+\definecolor{ink}{HTML}{183649}
+\definecolor{accent}{HTML}{0C625E}
+\definecolor{quiet}{HTML}{4C626A}
+\usepackage[colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent,hypertexnames=false,
+ pdftitle={Harmonic index and diameter: proof audit and sharp extensions},pdfauthor={Shaitetsu}]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\gap}{\mathcal{E}}
+\newcommand{\Bad}{\mathrm{Bad}}
+\newcommand{\dd}{\operatorname{dist}}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\color{quiet}Harmonic index and diameter}
+\fancyhead[R]{\small\color{quiet}Proof audit and sharp extensions}
+\fancyfoot[C]{\thepage}\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\begin{document}
+\thispagestyle{plain}
+\noindent{\small\sffamily\bfseries\color{accent} GRAPH THEORY\quad /\quad RESEARCH VERIFICATION}\par
+\vspace{9pt}
+\noindent{\LARGE\bfseries\color{ink} Harmonic index and diameter}\\[5pt]
+{\large A proof audit of Liu's bounds and sharp extensions to sum-connectivity}\par
+\vspace{7pt}\noindent{\small Shaitetsu\quad$\cdot$\quad 21 November 2026}\par
+\vspace{9pt}\hrule\vspace{12pt}
+\noindent\textbf{Abstract.}
+We verify the supplied vertex-deletion proof of $H(G)\ge D(G)/2+1/3$ and its equality characterization. A four-vertex graph exposes a missing hypothesis in the manuscript's account of its numerical checks. A second proof follows from the modified Randi\'c diameter theorem of Dvo\v r\'ak, Lidick\'y and \v Skrekovski. We then answer the conjecture of Alyar and Khoeilar on the ordinary sum-connectivity index. More generally, at every fixed diameter $D\ge2$ the path uniquely minimizes the general sum-connectivity index exactly for exponents $\alpha\ge-1$. For $\alpha<-1$ the infimum is zero. We also determine the minimum of $H-D/2$ over all graphs containing a cycle, characterize the second minimum at each order, prove $H\ge(1/2+1/870)D$ for every two-connected graph, and settle the harmonic-radius conjecture for maximum degree at most four. A family of trees gives equality in a published strict bound.
+\section{The statement and the verdict}
+Let $G$ be a finite, simple, connected graph on $n\ge2$ vertices. Write $d_v$ for vertex degree, $D$ for diameter, $r$ for radius, and $P_n$ for the path on $n$ vertices. The indices used below are
+\[
+ H=\sum_{uv\in E}\frac2{d_u+d_v},\qquad M=\sum_{uv\in E}\frac1{\max(d_u,d_v)},\qquad
+ R=\sum_{uv\in E}\frac1{\sqrt{d_ud_v}}.
+\]
+The earlier Fajtlowicz average-distance statement uses $\mu(G)=\operatorname{ad}(G)=\binom n2^{-1}\sum_{\{u,v\}}\dd(u,v)$, the mean over distinct vertex pairs. Here the distance parameter is $D$. The quantity to be minimized is $\gap(G)=H(G)-D(G)/2$. The input is the 12-page VMRC manuscript of 20 November 2026 and its accompanying TeX source \cite{input}. The earlier average-distance audit \cite{previous} already derived the Liu inequalities and related non-tree bounds. Here we examine the supplied deletion proof and give a separate application to another published conjecture.
+\begin{theorem}[Main statement of the supplied manuscript]\label{thm:liu}
+Every such graph has $\gap(G)\ge1/3$. Equality holds precisely for $P_n$ with $n\ge3$. For $n\ge3$ this gives
+\[
+ H\ge D+\frac56-\frac n2,\qquad H\ge\left(\frac12+\frac1{3(n-1)}\right)D.
+\]
+Equality in either formula characterizes $P_n$. For $n\ge4$ these are the two bounds of Liu's Conjecture 2.6 \cite{liu}.
+\end{theorem}
+The graph reductions and strictness arguments support the theorem for all orders. Section~\ref{sec:audit} records the local accounting and the correction. Section~\ref{sec:indep} provides an independent proof of the full statement. The application in Section~\ref{sec:sumfamily} needs only Theorem~\ref{thm:liu} and the effect of deleting a leaf.
+\section{Audit of the vertex-deletion proof}\label{sec:audit}
+\paragraph{What is being averaged.}
+For an edge $uv$ put $s=d_u+d_v$, $\theta(s)=2/[s(s-1)]$, and $\phi(s)=2/[s(s-2)]$. In a connected graph of order at least three all these denominators are positive. Fix a vertex set $Z$. Let $j$ count endpoints in $Z$, let $k$ count other vertices of $Z$ adjacent to exactly one end, and let $t$ count vertices of $Z$ adjacent to both. In $\sum_{z\in Z}[H(G)-H(G-z)]$ the edge contributes exactly
+\[
+ \omega_Z(uv)=j\,2/s-k\theta(s)-2t\phi(s).
+\]
+Indeed each deletion either removes the edge, lowers its degree sum by one or two, or leaves its weight unchanged. If $f$ counts the incidences from the two ends to vertices outside $Z$ other than the opposite end, then $k+2t=s-2-f$. Consequently $\omega_Z\ge[(j-1)(s-2)+f]\phi(s)$. For $Z=V(G)$ this yields a positive sum for every graph under consideration. Deleting an arbitrary vertex of positive contribution may disconnect the graph. The next two steps account for connectivity and for the distance being protected.
+\paragraph{Parts attached at one vertex.}
+Protect a shortest path between two vertices $p,q$ at distance $D$. If a component $X$ of $G-v$ misses this path, let $e\ge1$ and $x\ge1$ count the neighbours of $v$ inside and outside $X$. Apply Zhong's connected-graph bound $H(J)\ge2(|V(J)|-1)/|V(J)|$ to $J=G[X\cup\{v\}]$ \cite{zhong}. Comparing the weights of the incident edges on each side gives
+\[
+ H(G)-H(G-X)\ge\frac{2e}{e+1}
+ -\frac{2xe}{(e+1)(e+x+1)}-\frac{2xe}{(x+1)(e+x+1)}
+ =\frac{2e}{(x+1)(e+x+1)}>0.
+\]
+For completeness, on any connected graph with $m$ edges an edge degree sum is at most $m+1$, since the union of its two endpoint stars has $d_u+d_w-1$ edges. Thus $H\ge2m/(m+1)\ge2(n-1)/n$, which gives the numerical input directly. Each correction uses the smallest permitted degree $1$ at the opposite endpoint. The remaining graph is connected and retains $p,q$. If every component at a cut vertex meets the protected path, every cut vertex lies internally on it and separates its two ends. The block-cut tree is then a chain. Each nontrivial block has two distinguished vertices (its poles), formed by the cut vertices that it contains and any protected endpoints it contains. Every other vertex of the block has all neighbours inside it. At a pole an external block is either a bridge with one outside neighbour or a block with all outside neighbours of degree at least two. These are exactly conditions (B1) and (B2) in the source.
+\paragraph{Why the two-pole sum is positive.}
+Let $Z$ be the nonpoles in a nontrivial block, let $L=\max_{u\in Z}d_u$, and let $\pi_u$ count pole neighbours. For a pole $a$, set $n_a=|N(a)\cap Z|$, $x_a=|N(a)\setminus V(\Gamma)|$, and let $\varepsilon$ indicate adjacency of the poles. Write $a'$ for the other pole and put $O_a=\sum_{w\in N(a)\setminus V(\Gamma)}\theta(d_a+d_w)$. The possible negative contribution of $a$ in the case $L\ge3$ is bounded by
+\[
+ \Bad_a=n_a\max\{0,O_a+\varepsilon\phi(d_a+d_{a'})-(x_a+\varepsilon)\phi(d_a+L)\}.
+\]
+The numeric pole lemma bounds this by $1/2-1/L$. Its two cases use $O_a\le x_a\theta(d_a+2)$, or a unique external leaf with $x_a=1$, $O_a=\theta(d_a+1)$. In the first case the nontrivial scalar comparison reduces to
+\[
+ \frac1L<\frac1{d+2}+\frac{d^2}{2(d+L)(d+L-2)},\quad d\ge2,\quad L\ge3.
+\]
+For $L\ge d+2$ it is immediate. On $3\le L\le d+1$ the source bounds the denominator product by $(d+L-1)^2$. The resulting polynomial $g=d^2L(d+2)-2(d+L-1)^2(d+2-L)$ has $g(3)=(d+2)(d^2-2d+4)>0$. Its derivative is positive for $d\le4$ and is at least $d(d^2-2d+16)>0$ for $d\ge5$. In the external-leaf case the separate rational comparisons cover $\varepsilon=0,1$ and all $L\ge3$. The potentially tight case is $(\varepsilon,n_a,L)=(0,2,3)$. For the printed table with $\varepsilon=1$ the least margins at $L=4,5,6,7$ are $1/20,19/315,1/15,247/3465$, respectively.
+ 
+Summing the edge contributions gives the following lower bound, where $uv\subset Z$ denotes an edge with both ends in $Z$:
+\[
+ \sum_{z\in Z}[H(G)-H(G-z)]\ \ge \sum_{uv\subset Z}\left[\frac2{d_u+d_v}+(\pi_u+\pi_v)\phi(d_u+d_v)\right]
+       -\left(1-\frac2L\right).
+\]
+A vertex of degree $L$ in $Z$ has at least $L-\pi_u$ neighbours in $Z$. The incident terms $2/(d_u+d_v)$ sum to at least $(L-\pi_u)/L$. If $\pi_u=2$, one of these edges also has a strictly positive $\phi$ term. This proves strictness even when both scalar bounds are tight.
+ 
+When $L=2$, all nonpoles have degree two. A pole and its nonpole neighbour cannot have a common neighbour in $Z$, since deleting the pole would disconnect the block. The source uses the resulting exact edge identity. In the outside-leaf case the bracket for a pole--nonpole edge is at least $2(n_a-1)/[d_a(d_a+1)(d_a+2)]$. If a bracket can vanish here, $\varepsilon=n_a=\pi_u=1$ and there is an edge inside $Z$. For a pole with outside neighbours all of degree at least two, the strict difference $\phi(d_a+2)-\theta(d_a+2)$ supplies a positive contribution. When neither pole has outside neighbours the exact identity gives a positive bracket directly. Thus the positive-sum conclusion holds also at $L=2$.
+ 
+A positive block sum gives a nonpole $z$ with $H(G-z)<H(G)$. It is not a cut vertex, and both $p,q$ survive. Their distance in $G-z$ is at least $D$, even when the chosen old shortest path passes through $z$. Induction on order is therefore legitimate. It is strict for every nonpath. The base graph $K_2$ has $H=1$, and $H(P_n)=(n-3)/2+4/3$ for $n\ge3$.
+\paragraph{A correction to the computational summary.}
+In the third bullet of Section 6 in the supplied paper the statement $\Bad_a\le1/2-1/L$ needs the condition $L\ge3$ in addition to (B2). Take a triangle $abc$ with a leaf attached at $a$, make $a,b$ its poles, and take $Z=\{c\}$. Now $L=2$, $(d_a,d_b)=(3,2)$, $n_a=x_a=\varepsilon=1$. Both block conditions hold, yet
+\[
+ \Bad_a=\theta(4)+\phi(5)-2\phi(5)=\frac16-\frac{2}{15}=\frac1{30}>0=\frac12-\frac1L.
+\]
+The proof in Section 4 of the input already restricts the bound to $L\ge3$ and treats $L=2$ separately.
+
+\section{An independent proof using a degree comparison}\label{sec:indep}
+Let $\rho=\max_{uv\in E}\max(d_u,d_v)/\min(d_u,d_v)$ and let $e=n-D$. For one edge with end degrees $a\le b$ write $h=2/(a+b)$ and $m=1/b$. For every $s\ge b/a$ one has
+\begin{equation}\label{eq:edge}
+ (s+1)h-\left(\frac1a+\frac1b\right)-(s-1)m
+ =\frac{(b-a)(sa-b)}{ab(a+b)}\ge0 .
+\end{equation}
+Each vertex contributes one to the sum of the reciprocal endpoint degrees over all edges. Summing \eqref{eq:edge} with $s=\rho$ gives $(\rho+1)H\ge n+(\rho-1)M$. Dvo\v r\'ak, Lidick\'y and \v Skrekovski proved $M\ge D/2$ for every connected graph \cite[Thm.~3]{dls}. Hence
+\begin{equation}\label{eq:bridge}
+ \gap(G)\ge\frac{n-D}{\rho+1}\ge\frac{e}{\Delta(G)+1}\ge\frac{e}{e+2}.
+\end{equation}
+To justify the last step, a vertex on a diametral path has at most two path neighbours and $e-1$ neighbours outside the path. An off-path vertex can meet only three consecutive path positions, since two neighbours at index distance at least three would shorten the path. At most $e-2$ other vertices lie off the path. Thus $\Delta(G)\le e+1$.
+ 
+Since $e\ge1$, \eqref{eq:bridge} proves $\gap(G)\ge1/3$. Equality forces $e=1$. A spanning geodesic has no chord, so $G$ must be a path. Direct evaluation excludes $K_2$ and gives equality for every other path. Finally,
+\[
+ H-\left(D+\frac56-\frac n2\right)\ge\frac{n-1-D}{2},
+ \qquad H-\left(\frac12+\frac{1}{3(n-1)}\right)D
+     \ge\frac{n-1-D}{3(n-1)} .
+\]
+This proves Theorem~\ref{thm:liu} without any local-deletion case analysis. The block lemma retains independent content. It supplies an actual permissible reduction of a given graph with a protected diametral pair.
+
+\section{The full exponent range for general sum-connectivity}\label{sec:sumfamily}
+For a real exponent $\alpha$, the general sum-connectivity index is
+\[
+   \chi_\alpha(G)=\sum_{uv\in E(G)}(d_u+d_v)^\alpha .
+\]
+The classical sum-connectivity index is $\chi_{-1/2}$, and $H=2\chi_{-1}$. Alyar and Khoeilar proved a sharp bound on $\chi_{-1/2}-D$ for trees and asked in the final paragraph of their paper whether it holds for every connected graph \cite{alyar}. The harmonic-index theorem in the supplied manuscript implies a fixed-diameter extremal result throughout a half-line of exponents.
+
+\begin{theorem}\label{thm:sum-halfline}
+Fix an integer $D\ge2$. For every $\alpha\ge-1$ the path $P_{D+1}$ uniquely minimizes $\chi_\alpha$ among all finite connected simple graphs of diameter $D$. Its value is
+\[
+    (D-2)4^\alpha+2\,3^\alpha.
+\]
+For every $\alpha<-1$ the infimum in the same class is zero and is not attained.
+\end{theorem}
+
+\begin{proof}
+First suppose $\alpha\ge-1$. Adding a leaf to a vertex of positive degree strictly increases $\chi_\alpha$. For $\alpha\ge0$ this follows from monotonicity of $s^\alpha$ and the positive contribution of the new edge. For $-1\le\alpha<0$ put $t=-\alpha\in(0,1]$ and let $k$ be the degree of the attachment vertex before addition. The function $s^{-t}-(s+1)^{-t}$ decreases in $s$. Thus the total increase is at least
+\[
+ (k+2)^{-t}-k\big[(k+1)^{-t}-(k+2)^{-t}\big]
+ =(k+2)^{-t}\left[k+1-k\left(\frac{k+2}{k+1}\right)^t\right]
+ \ge\frac{(k+2)^{-t}}{k+1}>0 .
+\]
+Fix vertices $p,q$ at distance $D$. Successively remove leaves different from $p,q$ until none remains. Removing a leaf preserves all remaining distances, so the resulting connected graph $G'$ has diameter $D$ and at least three vertices. Every leaf of $G'$ belongs to $\{p,q\}$, hence at most two edges have degree sum three, and all other edges have degree sum at least four. Let
+$J_\alpha=\chi_\alpha/(2\cdot4^\alpha)$. On an edge of degree sum $s\ge4$,
+\[
+ \tfrac12(s/4)^\alpha\ge \tfrac12(s/4)^{-1}=2/s .
+\]
+At $s=3$ the shortfall from $2/3$ is $2/3-\tfrac12(3/4)^\alpha\ge0$. The harmonic-index theorem for $G'$ therefore yields
+\[
+ J_\alpha(G)\ge J_\alpha(G')
+ \ge H(G')-2\left[\frac23-\tfrac12(3/4)^\alpha\right]
+ \ge \frac D2-1+(3/4)^\alpha.
+\]
+Multiplying by $2\cdot4^\alpha$ gives the asserted bound. Equality requires that no leaf was removed and that $G'$ attained equality in $H(G')\ge D/2+1/3$. Consequently $G$ is a path. Its two end edges have degree sum three and its remaining $D-2$ edges degree sum four, so equality is attained.
+
+Finally fix $\alpha<-1$. Take a path on $D-1$ vertices, a single vertex when $D=2$, and attach $k$ leaves at each of those vertices, where $k\ge2$. The resulting tree has diameter $D$. Its $(D-1)k+D-2$ edges each have degree sum at least $k+1$, so its index is at most $((D-1)k+D-2)(k+1)^\alpha$, which tends to zero. Every finite connected graph of diameter $D$ has a positive index.
+\end{proof}
+
+\begin{corollary}[Alyar--Khoeilar and a ratio bound]
+If $n\ge4$, every connected graph on $n$ vertices satisfies
+\[
+ \chi_{-1/2}-D\ge\frac{2}{\sqrt3}-\frac{n+1}{2},
+ \qquad
+ \frac{\chi_{-1/2}}D\ge\frac12+\frac{2/\sqrt3-1}{n-1}.
+\]
+Equality in either inequality holds exactly for $P_n$.
+\end{corollary}
+\begin{proof}
+For $D\ge2$, Theorem~\ref{thm:sum-halfline} gives
+$\chi_{-1/2}\ge D/2+2/\sqrt3-1$. Apply $D\le n-1$. For $D=1$ the graph is complete and $\chi_{-1/2}=n\sqrt{n-1}/(2\sqrt2)>1$ for $n\ge4$, giving strict inequalities.
+\end{proof}
+
+\section{The exact gap for cyclic graphs and for nonpaths}\label{sec:gaps}
+\begin{theorem}\label{thm:cyclic}
+Among all connected graphs containing a cycle the minimum of $\gap(G)$ is $3/5$. Its unique minimizer is a four-cycle with one leaf at each of two opposite vertices.
+\end{theorem}
+\begin{proof}
+A complete graph of order at least three has $D=1$ and $\gap=(n-1)/2\ge1$. Assume $D\ge2$. Since a spanning geodesic forces a path, $e=n-D\ge2$. For $e>3$, \eqref{eq:bridge} is strict above $3/5$. For $e=3$ it gives at least $3/5$. Equality here would require $\Delta=4$, equality in \eqref{eq:edge} at $s=4$ on every edge, and $M=D/2$. Along every edge the degrees must agree or be $1$ and $4$. By connectivity and the presence of a degree-four vertex, every degree is $1$ or $4$. If $k$ vertices have degree four, $M=|E|/4$ and the degree sum yield $4D=2|E|=n+3k$, so $k=D-1$. The $D-1$ internal vertices of a diametral path all have degree at least two. They exhaust the degree-four vertices. Every off-path vertex is therefore a leaf. Since the geodesic has no chord, this is incompatible with a cycle.
+
+It remains to treat $e=2$. The graph is a diametral path $P$ and one extra vertex $z$. To create a cycle, $z$ must meet two or three vertices of the path. Their indices span at most two. On an old path edge of degree sum $s$, raising a single end degree by one costs $2/[s(s+1)]$. Charging two such increases separately at the original $s$ gives a strict upper bound on the actual loss when both endpoints are raised.
+
+If $z$ has two neighbours, its two new edges contribute at least $4/5$. When a neighbour is a path endpoint, there are at most three old incidences to charge, each losing at most $1/6$. With two internal neighbours there are four incidences, at most two of them on end edges. Total loss is at most $2/6+2/10=8/15$. Thus in all cases the gain is at least $4/5-8/15=4/15$, and $\gap(G)\ge1/3+4/15=3/5$. Equality requires two internal, nonadjacent neighbours of $z$, each incident to an end edge. They must be the neighbours of opposite path ends. Their separation is exactly two, hence $D=4$.
+
+If $z$ has three neighbours, they are consecutive. The new edges contribute at least one. When all three neighbours are internal, the two edges between them lose $1/6$ each and the two exterior edges lose at most $1/6$ each. With exactly one endpoint in the triple the two interior losses are $4/15$ and $1/6$, and at most one exterior edge loses $1/6$. With both endpoints the losses are $4/15$ twice. Thus the gain is at least $1/3$ and $\gap(G)\ge2/3$. Finally, the asserted extremizer has $D=4$ and $H=2(1/2)+4(2/5)=13/5$.
+\end{proof}
+This answers Question (2) in the supplied manuscript. Deng, Vetr\'ik and Balachandran identified the same six-vertex graph and its value in the unicyclic class \cite[Thm.~2.2]{dvb}. Theorem~\ref{thm:cyclic} gives the all-graphs minimum and uniqueness. The earlier audit \cite{previous} also obtained $\gap\ge2/3$ for cyclic graphs of order at least seven.
+\begin{theorem}\label{thm:nonpath}
+For each $n\ge5$, the minimum of $\gap(G)$ over connected nonpaths of order $n$ is $17/30$. The unique extremizer is obtained from $P_{n-1}$ by attaching a single leaf to the neighbour of an endpoint.
+\end{theorem}
+\begin{proof}
+A cyclic graph has gap at least $3/5>17/30$. For a nonpath tree, $e\ge2$. If $e\ge3$, \eqref{eq:bridge} gives the same strict comparison. If $e=2$, a diametral path of length $D=n-2\ge3$ has one vertex outside it. This vertex is a leaf and attaches to an internal path vertex. Its edge contributes $1/2$. The two old edges at its parent lose at most $1/6$ and $1/10$, since at most one old neighbour of the parent is a leaf. Thus the gain over the path is at least $7/30$. Equality holds exactly when one of the two old neighbours is an endpoint. Adding the initial gap $1/3$ proves the result.
+\end{proof}
+For $n=4$ the nonpath minimum is $1/2$, uniquely at $K_{1,3}$, by the cyclic bound and the list of trees of order four. At $n=3$ the triangle is the only nonpath. Theorem~\ref{thm:nonpath} proves, for every order, the pattern reported in the supplied paper through order eleven.
+
+\section{A uniform diameter coefficient for two-connected graphs}
+\begin{theorem}\label{thm:slope}
+For every two-connected graph,
+\[
+ H\ge\left(\frac12+\frac1{870}\right)D .
+\]
+If $c_2$ is the infimum of $H/D$ on this class, then $1/2+1/870\le c_2\le11/12$.
+\end{theorem}
+\begin{proof}
+Write $x=H-M$ and $z=H-D/2$, so $0\le x\le z$ by \cite[Thm.~3]{dls}. Fix a diametral pair $p,q$. Group the vertices into layers $L_j$ by distance $j$ from $p$. Every edge spans at most one layer. Each interior layer has at least two vertices, since removing a singleton interior layer would separate $p$ and $q$.
+
+For a fixed layer $i$, give every vertex in $L_j$ weight $t_v=(2/3)^{|i-j|}$. Let $B_i$ be the sum, over all edges $uv$, of $\max(t_u,t_v)2/(d_u+d_v)$. Summing the multipliers over $i$ gives at most $5$ for a same-layer edge and at most $6$ for an edge between consecutive layers. Thus $\sum_i B_i\le6H$. We claim
+\begin{equation}\label{eq:tail}
+ \sum_{v:\,t_vd_v\ge T} t_v\le \tfrac52 B_i
+ \quad\text{if } T\ge\tfrac{15}2 B_i+3 .
+\end{equation}
+Otherwise order vertices by decreasing $t_vd_v$ and stop at the first prefix of mass $s>5B_i/2$. Every vertex in it satisfies $t_vd_v\ge T$, and $s\le5B_i/2+1$. Any member $v$ has at most $3s/(2t_v)$ earlier neighbours since neighbouring weights are at least $2t_v/3$. From $3s\le T\le t_vd_v$, at least $d_v/2$ of its neighbours are later in the order. Each later neighbour has degree at most $3d_v/2$ by the ordering. Its edge from $v$ contributes at least $4t_v/(5d_v)$ to $B_i$. Counting edges at the earlier end gives $B_i\ge2s/5$, a contradiction.
+
+Call a layer high if it contains a vertex of degree at least $K=819$. Choose one such vertex $v$ per high layer $i$. When $B_i\le2(K-9)/45$, use \eqref{eq:tail} with $T=K/3$. Every neighbour $w$ of degree at least $d_v/2$ satisfies $t_wd_w\ge K/3$. Since $t_w\ge2/3$, there are at most $15B_i/4\le d_v/6$ such neighbours. Each of the other neighbours contributes at least $1/(3d_v)$ to $x$, since
+\[
+ \frac2{d_v+d_w}-\frac1{d_v}=\frac{d_v-d_w}{d_v(d_v+d_w)}.
+\]
+The sum charged to $v$ is at least $5/18>1/4$. Only the strictly higher-degree endpoint charges each edge, so at most $4x$ high layers fall into this case. The remaining high layers number at most $135H/(K-9)$, using $\sum_iB_i\le6H$. Consequently their total number $b$ satisfies
+\begin{equation}\label{eq:bad}
+ b\le\frac{135H}{K-9}+4x=H/6+4x.
+\end{equation}
+
+Mark $p,q$ and two vertices in each interior layer. At least $2D-6b$ marks remain after discarding all marks in or next to high layers. Both degrees on an edge incident to a surviving mark lie between $2$ and $818$. For such degrees $a\le c$, the exact identity
+\[
+ \frac1a+\frac1c=\frac4{a+c}
+       +\left(\frac ca-1\right)\left(\frac2{a+c}-\frac1c\right)
+\]
+has $c/a-1\le408$. Summing reciprocal-degree incidences counts each surviving marked vertex with weight one. By positivity its total is at most $2H+408x$. Thus $2D\le2H+408x+6b\le3H+432x\le3D/2+435z$. This proves the lower bound.
+
+For the upper bound, start with two internally disjoint paths of length $D\ge4$ with common ends $p,q$. At each interior layer $i$ choose one vertex $u_i$, alternating between the two paths. Add the edges $u_i u_{i+1}$ for $1\le i\le D-2$. The original cycle ensures two-connectivity and diameter at most $D$. The layer indices ensure $d(p,q)=D$. The chosen vertices at layers $1,D-1$ have degree three, the other chosen vertices degree four, and all unchosen vertices degree two. The cycle edges contribute $1+8/5+2(D-3)/3$, and the added edges contribute $4/7+(D-4)/4$. Hence $H=11D/12+6/35$. Letting $D$ increase proves the upper bound.
+\end{proof}
+This answers the existence question (1) posed in the source. The largest possible coefficient remains undetermined.
+
+\begin{corollary}[Structure near the coefficient $1/2$]
+In any connected graph let $u$ be the number of interior layers with at least two vertices, measured from either chosen diametral endpoint. Then
+\[
+ H-D/2\ge\frac{u^2}{1694D}.
+\]
+In particular, along a sequence with $H/D\to1/2$, the proportion of such layers tends to zero for any choice of diametral endpoint.
+\end{corollary}
+\begin{proof}
+The layer estimate $b\le135H/(K-9)+4x$ used no connectivity assumption beyond connectedness and holds at any threshold $K>9$. Mark a vertex in each of the $D+1$ layers and a second vertex in each of the $u$ layers. On edges at surviving marks the degree ratio minus one is at most $K$. The same incidence argument gives $D+1+u\le2H+Kx+6b$. Hence
+\[
+ 1+u\le\left(K+26+\frac{810}{K-9}\right)z+\frac{405D}{K-9}.
+\]
+For $u>0$ take $K=9+\lceil810D/u\rceil$. The last term is at most $u/2$ and the coefficient of $z$ is at most $847D/u$, using $u\le D$. For $u=0$ the statement follows from $z\ge0$.
+\end{proof}
+
+\section{The harmonic radius conjecture for graphs of maximum degree four}
+Let $r(G)$ denote the radius. Deng, Tang and Zhang \cite[Conj.~6.1]{dtz} conjectured that $H(G)\ge r(G)$
+except when $G$ is a path of even order. The following confirms their
+conjecture on graphs of maximum degree at most four, with no restriction on
+their order, cycle rank or diameter.
+
+\begin{theorem}
+If $G$ is connected and has $\Delta(G)\le4$, then $H(G)\ge r(G)$ unless
+$G$ is an even-order path. Among the graphs covered by the inequality,
+equality holds exactly for even cycles.
+\end{theorem}
+\begin{proof}
+For $r(G)=1$ the star lower bound gives $H(G)\ge1$. Assume $r(G)\ge2$.
+By Fajtlowicz's induced-ciliate theorem
+\cite[Thm.~2]{ciliate}, $G$ has a
+connected induced subgraph $U$ with $r(U)=r(G)$ whose form is an even path, an even cycle, or an even cycle with a path of the
+same positive length appended separately at every cycle vertex.
+For the cycle $C_{2q}$ we have $H=q=r$. If its $2q$ cycle vertices each carry an arm of length $t\ge1$, where $q\ge2$, its radius is $q+t$. For $t=1$, each cycle vertex accounts for one cycle edge of weight $1/3$ and one leaf edge of weight $1/2$, so $H=5q/3>q+1$. For $t\ge2$, the share per cycle vertex is $1/3+2/5+(t-2)/2+2/3=t/2+2/5$. Hence $H=qt+4q/5>q+t$. These evaluations also follow from the unicyclic theorem in \cite[Thm.~4.1]{dtz}.
+
+For $u\in U$ let $a=d_U(u)$, $t=d_G(u)-a$, and write $b_1,\ldots,b_a$ for
+the degrees of its neighbors in $U$. Raising the two endpoint degrees of
+an old edge from $a,b$ to $a+t,b+t'$ decreases its harmonic weight by at most
+\[
+ \frac{2t}{(a+b)(a+t+b)}+\frac{2t'}{(a+b)(a+b+t')}.
+\]
+This follows by increasing one degree first and using the smaller initial
+denominator to bound both losses. Charge the first part at the first
+endpoint and the second at the other. For each crossing edge $ux$ with
+$x\notin U$ of degree $k$, the net gain after these charges is at least
+\[
+ B(a,\boldsymbol b,t;k)=\frac{2}{a+t+k}
+      -\sum_{j=1}^a\frac{2}{(a+b_j)(a+t+b_j)}.
+\]
+Every edge entirely outside $U$ contributes its full weight in addition.
+The following entries are the minima of $B$ over $1\le t\le4-a$ for the
+displayed neighbor degree profiles. Replacing a neighbor degree by a larger
+one only improves the bound.
+\[
+\begin{array}{c|cccc}
+ k & (2) & (1,2) & (2,2) & (1,3,3)\\ \hline
+ 1 &13/45&11/60&7/30&43/210\\
+ 2 &2/9&7/60&1/6&29/210\\
+ 3 &11/63&1/15&5/42&19/210\\
+ 4 &5/36&2/105&1/12&23/420
+\end{array}
+\]
+In a ciliate, each vertex has one of these four profiles or a
+coordinatewise larger profile of the same size. This includes the even path
+since it has at least four vertices. Positivity proves $H(G)\ge H(U)$.
+
+It remains to deal with $U=P_{2s}$ properly contained in $G$, because
+$H(U)=s-1/6$. If $G-U$ has an edge it contributes at least $1/4$.
+Otherwise take a vertex $x$ outside $U$. All its $k\ge1$ neighbors are in
+$U$. At most two neighbors can have the profile $(1,2)$, and all remaining
+neighbors are endpoints or have profile $(2,2)$. Summing the corresponding
+entries in the table, the gain at $x$ is at least, respectively,
+$11/60$, $7/30$, $53/210$ or $43/210$ for $k=1,2,3,4$.
+Each exceeds $1/6$, so $H(G)>s\ge r(G)$. If $G=U$ is an even path it is
+the stated exception. If $U$ is unicyclic, equality requires $G=U$
+by positivity of every crossing margin and connectedness, and the explicit values above give exactly the even cycles. For radius one
+and order at least three the star bound is strict above one.
+\end{proof}
+
+\subsection*{Other radius cases and a correction to a published tree bound}
+Write $\delta=\min d_v$. By \eqref{eq:bridge},
+\[
+ \gap\ge\frac{\delta e}{\Delta+\delta}\ge\frac{\delta e}{e+1+\delta}.
+\]
+In a two-connected graph the interior distance layers have at least two vertices. Thus $e\ge D$ and $\delta\ge2$, giving $\gap\ge2D/(D+3)$. In particular $H\ge r$ if $D\ge3$ and $2r-D\le2$, or if $D\ge9$ and $2r-D\le3$. At $D=2$, $n\ge5$ gives $e\ge3$ and $H\ge2$. The only four-vertex two-connected graph of radius two is $C_4$ (any degree-three vertex is universal), and complete graphs have radius one. Every chordal graph satisfies $D\ge2r-2$ \cite[Thm.~1]{chordal}. It follows that every two-connected chordal graph has $H\ge r$. All connected chordal graphs of order at least two satisfy $R\ge H\ge r-2/3$, by Theorem~\ref{thm:liu} and arithmetic--geometric mean. This implies Fajtlowicz's radius bound $R\ge r-1$ on that class.
+
+When $r=\lceil D/2\rceil$, $H\ge r$ except possibly on even-order paths. For even $D$ use Theorem~\ref{thm:liu}. At odd $D$ the nonpath gap in Theorem~\ref{thm:nonpath} gives $H-r\ge1/15$ for $n\ge5$; the remaining nonpaths at odd $D$ and $n\le4$ are complete graphs. Every tree has $r=\lceil D/2\rceil$. In particular the correct sharp tree statement for $n\ge2$ and $T$ other than an even-order path is
+\[
+ H(T)\ \ge\ r(T)+1/15 .
+\]
+Equality holds exactly for the trees of Theorem~\ref{thm:nonpath} with odd diameter at least three. For example, take $P_4$ and attach a leaf to an internal vertex. Its edge weights give $H=1/2+1/2+2/5+2/3=31/15$ and $r=2$. This refutes the strict sign in Deng--Tang--Zhang's Theorem~3.2 \cite{dtz}. Their proof introduces a first nonpath tree $T_0$ and uses $H(T)>H(T_0)$, which requires a further leaf addition. In the equality family $T=T_0$. The strict Randi\'c tree inequality quoted in their abstract survives, because $R>H$ on these trees. The unrestricted harmonic-radius conjecture remains unresolved by the arguments here.
+\begin{center}\small
+\setlength{\unitlength}{1pt}
+\begin{tabular}{@{}cc@{}}
+\begin{picture}(160,54)
+\put(18,26){\line(1,0){32}}\put(50,26){\line(1,1){22}}
+\put(50,26){\line(1,-1){22}}\put(72,48){\line(1,-1){22}}
+\put(72,4){\line(1,1){22}}\put(94,26){\line(1,0){32}}
+\color{accent}\put(18,26){\circle*{5}}\put(50,26){\circle*{5}}\put(72,48){\circle*{5}}
+\put(72,4){\circle*{5}}\put(94,26){\circle*{5}}\put(126,26){\circle*{5}}
+\end{picture}&
+\begin{picture}(150,54)
+\put(20,17){\line(1,0){96}}\put(52,17){\line(0,1){28}}
+\color{accent}\put(20,17){\circle*{5}}\put(52,17){\circle*{5}}\put(84,17){\circle*{5}}
+\put(116,17){\circle*{5}}\put(52,45){\circle*{5}}
+\end{picture}\\
+Cyclic minimizer, $H-D/2=3/5$ & Five-vertex tree, $H-r=1/15$
+\end{tabular}
+\end{center}
+
+\section{Computational cross-checks and scope}
+We independently evaluated the diameter inequality on all $273{,}192$ connected isomorphism classes of orders two through nine. We decoded simple graphs in graph6 format, computed all-pairs distances and degrees, and compared integers after scaling all quantities by $720720=\operatorname{lcm}(1,\ldots,16)$. With at most nine vertices an edge has degree sum at most sixteen. Equality with $\gap=1/3$ occurred once at each order from three through nine. The table lists the minimum gap itself.
+\begin{center}\small
+\begin{tabular}{r r c c}
+\toprule
+Order & Connected graphs & Nonpaths & Graphs containing a cycle\\
+\midrule
+2&1&---&---\\
+3&2&$1$&$1$\\
+4&6&$1/2$&$4/5$\\
+5&21&$17/30$&$19/30$\\
+6&112&$17/30$&$3/5$\\
+7&853&$17/30$&$2/3$\\
+8&11,117&$17/30$&$2/3$\\
+9&261,080&$17/30$&$2/3$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For orders through eight we separately examined all cut-vertex components and all nontrivial blocks with at most two cut vertices. For each block we tried every pole pair containing its cut vertices and computed each $H(G-z)$ from the induced subgraph. At order eight this gives $219{,}088$ pole choices, of which $217{,}539$ meet (B2). The least sum under (B2) is exactly $349/1260$. Also at order eight, all $11{,}845$ admissible component removals decreased $H$, and all $147{,}561$ choices of diametral pair and shortest path on nonpaths admitted the requisite reduction. All 23 fractions of the source's scalar pole table were reproduced. The two illustrative failures of unrestricted deletion in the source give signed differences $-9512533/1220389500$ and $-220829/312885$, respectively, the latter summed over its nominated vertices. The supplied pair of files contains the manuscript and source. Its reported orders ten and eleven and its random trials were not independently rerun here. None of the global bounds above depends on those searches.
+
+The fixed-diameter exponent theorem proves the final conjecture on page 252 of \cite{alyar}. Prior work on general sum-connectivity at given order and diameter also treats the unicyclic class \cite{unicyclic-sum}. Our search did not identify an earlier proof covering every connected graph for the Alyar--Khoeilar conjecture. Establishing publication priority would require a separate bibliographical assessment. The optimal two-connected coefficient and the unrestricted Deng--Tang--Zhang radius conjecture remain open within this paper.
+\clearpage
+\begin{thebibliography}{99}\small
+\bibitem{input} Verifiable Mathematical Reasoning Corpus, \emph{A proof of Liu's conjecture on the harmonic index and the diameter of a graph}, supplied PDF and TeX, 20 November 2026.
+\bibitem{previous} Shaitetsu, \emph{A proof audit of Fajtlowicz's average-distance conjecture}, preceding research report, 21 November 2026.
+\bibitem{liu} J. Liu, On harmonic index and diameter of graphs, \emph{J. Appl. Math. Phys.} \textbf{1} (2013), 5--6. \href{https://doi.org/10.4236/jamp.2013.13002}{doi:10.4236/jamp.2013.13002}.
+\bibitem{dls} Z. Dvo\v r\'ak, B. Lidick\'y and R. \v Skrekovski, Randi\'c index and the diameter of a graph, \emph{European J. Combin.} \textbf{32} (2011), 434--442. \href{https://kam.mff.cuni.cz/~bernard/pub/index.pdf}{Author manuscript}.
+\bibitem{zhong} L. Zhong, The harmonic index for graphs, \emph{Appl. Math. Lett.} \textbf{25} (2012), 561--566. \href{https://doi.org/10.1016/j.aml.2011.09.059}{doi:10.1016/j.aml.2011.09.059}.
+\bibitem{alyar} S. Alyar and R. Khoeilar, On the sum-connectivity index of trees, \emph{Applied Mathematics E-Notes} \textbf{21} (2021), 250--252. \href{https://www.math.nthu.edu.tw/~amen/2021/AMEN-200425.pdf}{Journal PDF}.
+\bibitem{unicyclic-sum} M. R. Alfuraidan, K. C. Das, T. Vetr\'ik and S. Balachandran, General sum-connectivity index of unicyclic graphs with given diameter, \emph{Discrete Appl. Math.} (2021). \href{https://doi.org/10.1016/j.dam.2021.02.012}{doi:10.1016/j.dam.2021.02.012}.
+\bibitem{dvb} H. Deng, T. Vetr\'ik and S. Balachandran, On the harmonic index and diameter of unicyclic graphs, \emph{Math. Reports} \textbf{22(72)} (2020), 11--18. \href{https://imar.ro/journals/Mathematical_Reports/Pdfs/2020/1/2.pdf}{Journal PDF}.
+\bibitem{dtz} H. Deng, Z. Tang and J. Zhang, On a conjecture of Randi\'c index and graph radius, \emph{Filomat} \textbf{29} (2015), 1369--1375. \href{https://doi.org/10.2298/FIL1506369D}{doi:10.2298/FIL1506369D}.
+\bibitem{ciliate} S. Fajtlowicz, A characterization of radius-critical graphs, \emph{J. Graph Theory} \textbf{12} (1988), 529--532. \href{https://doi.org/10.1002/jgt.3190120409}{doi:10.1002/jgt.3190120409}.
+\bibitem{chordal} J. M. Shook and B. Wei, A characterization of the centers of chordal graphs, 2022. \href{https://arxiv.org/abs/2210.00039}{arXiv:2210.00039}.
+\end{thebibliography}
+\end{document}

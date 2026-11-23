@@ -1,0 +1,4930 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[a4paper,left=25mm,right=25mm,top=24mm,bottom=25mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable,tabularx,enumitem}
+\usepackage{xcolor,fancyhdr,listings,tikz}
+\usetikzlibrary{positioning,calc}
+\usepackage[unicode=true,hypertexnames=false,colorlinks=true,linkcolor=ink,citecolor=teal,urlcolor=teal]{hyperref}
+\definecolor{ink}{HTML}{17374D}
+\definecolor{teal}{HTML}{176B75}
+\definecolor{quiet}{HTML}{586B78}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textsc{Prime products and graph sampling}}
+\fancyhead[R]{\small Consolidated research study}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+\linespread{1.025}
+\raggedbottom
+\allowdisplaybreaks[2]
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{3}
+\setlist{topsep=4pt,itemsep=3pt,parsep=0pt,leftmargin=*}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{hypothesis}[theorem]{Hypothesis}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\newtheorem{example}[theorem]{Example}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\providecommand{\lcm}{\operatorname{lcm}}
+\providecommand{\supp}{\operatorname{supp}}
+\providecommand{\Stab}{\operatorname{Stab}}
+\providecommand{\one}{\mathbf 1}
+\providecommand{\E}{\mathbb E}
+\providecommand{\Var}{\operatorname{Var}}
+\providecommand{\ad}{\operatorname{ad}}
+\providecommand{\dist}{\operatorname{dist}}
+\lstset{basicstyle=\ttfamily\scriptsize,breaklines=true,columns=fullflexible,
+  keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{quiet!30},
+  xleftmargin=4pt,xrightmargin=4pt,aboveskip=8pt,belowskip=8pt,
+  captionpos=b,tabsize=4}
+\hypersetup{pdftitle={Sharp Bounds and Obstructions in Prime Products, Graph Sampling, and Zeta-Zero Correlations},
+pdfauthor={Research manuscript prepared for Keio},
+pdfsubject={Consolidated proofs; Dirichlet GRH; finite groups; Randić index; conditional prime gaps},
+pdfkeywords={Dirichlet GRH, subset products, finite abelian groups, Randic index, random induced subgraphs, prime gaps}}
+\begin{document}
+\pagenumbering{roman}
+\begin{titlepage}
+\thispagestyle{empty}
+\noindent{\small\sffamily\bfseries\color{teal} NUMBER THEORY AND EXTREMAL GRAPH THEORY}
+\vspace{14pt}
+
+\noindent{\color{ink}\LARGE\bfseries Sharp Bounds and Obstructions\par
+in Prime Products, Graph Sampling,\par
+and Zeta-Zero Correlations\par}
+\vspace{10pt}
+\noindent{\large A consolidated research study with complete proofs,\par
+conditional implications, and unresolved extensions}
+\vspace{13pt}
+
+\noindent Research manuscript prepared for Keio\par
+\noindent 22 November 2026
+\vspace{12pt}\hrule\vspace{12pt}
+
+\noindent\textbf{Abstract.}
+This article consolidates the mathematical results developed in a research
+programme starting from the Riemann hypothesis and Dirichlet GRH. For
+small-prime pools, it proves a sharp asymptotic one-third dichotomy for
+squarefree subset products, identifies finite-quotient obstructions at
+arbitrary and vanishing retention densities, and gives first-order
+optimal compression of the attainable support. Further consequences
+include exact-cardinality estimates, short-window variants, a weighted
+two-prime exceptional-set estimate, and induced quadratic-residue patterns.
+The finite-group arguments are separated from their GRH applications.
+
+An independent, unconditional part determines sharp constants for the sum
+of generalized Randić indices over all vertex deletions, including every
+equality case and the transition at exponent one half. The result extends
+to arbitrary uniform vertex sampling: the extremal problem reduces exactly
+to a one-variable hypergeometric maximum, attained by clique components.
+The deletion inequality forces any smallest counterexample to the
+Caporossi--Hansen additive conjecture to have a cut vertex; the conjecture
+itself remains unresolved here.
+
+A third part proves that an explicitly stated Gaussian zero-correlation
+hypothesis, together with RH, implies prime gaps of order
+$o(\sqrt p)$ and the expected asymptotic count between consecutive squares.
+It also records a positive-kernel transfer to weighted prime Dirichlet series
+and the off-diagonal estimate still missing from that approach. Exact
+identities and numerical diagnostics explain the limitations of an attempted
+irrationality proof for the Gieseking volume. Finite certificates and
+reproducibility code are included. All assumptions and incomplete steps
+are stated explicitly; bibliographic priority is not asserted.
+\vfill
+\noindent{\small\color{quiet} One self-contained source file. No external figure,
+bibliography, or TeX input file is required.}
+\end{titlepage}
+
+\section*{Reader's guide and logical status}
+\addcontentsline{toc}{section}{Reader's guide and logical status}
+The three parts share a research objective---understanding what can be
+deduced from balanced arithmetic data, positive kernels, and extremal
+inequalities---but their conclusions have different logical status.
+The graph theorems do not use RH. The prime-product applications use
+Dirichlet GRH. The prime-gap implication uses an additional zero-correlation
+hypothesis that is not proved in this article.
+
+\begin{center}\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{.29\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}p{.24\textwidth}@{}}
+\toprule
+Material & Result supplied & Assumptions and status\\
+\midrule
+Finite-group subset products & Obstruction structure, Fourier bounds,
+and constructive compression proofs & Unconditional finite statements\\[4pt]
+Small-prime applications & One-third dichotomy; fixed and vanishing
+density classification; repair and compression & Dirichlet GRH;
+asymptotic thresholds\\[4pt]
+Two-prime products & A logarithmic exceptional set and one fixed
+correction prime & Dirichlet GRH; full coverage not established\\[4pt]
+Graph deletion and sampling & Exact optimal constants and complete
+equality classifications & Unconditional\\[4pt]
+Caporossi--Hansen & A cut-vertex reduction and exact tests of candidate
+induction schemes & Reduction proved; full conjecture open here\\[4pt]
+Primes in square-root intervals & Conditional short-interval asymptotics
+and $o(\sqrt p)$ gaps & RH plus the stated Gaussian hypothesis\\[4pt]
+Gieseking and related diagnostics & Exact algebraic identities, a norm
+barrier, and exploratory determinant data & No irrationality conclusion\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The mathematical premise is the stated meaning of the five zeta and
+Dirichlet declarations supplied in the discussion. A record of those
+declarations is retained in Part~\ref{r-part-prime}. They are not treated
+as five independent analytic inputs. The arguments presented here are
+ordinary mathematical proofs; this article does not claim a Lean
+formalization or an external referee verification.
+
+The full proofs of the finite and conditional results are retained.
+Results already established in cited literature, including the
+Mills-type transcendence consequence, are attributed as such. Numerical
+experiments and failed transfer arguments are explicitly separated from
+theorems. A search that did not locate an identical formulation is not a
+proof of historical novelty.
+
+\clearpage
+\begingroup
+\small
+\setlength{\parskip}{0pt}
+\linespread{1}\selectfont
+\tableofcontents
+\endgroup
+\clearpage
+\pagenumbering{arabic}
+
+\clearpage
+\part{Small-prime products under Dirichlet GRH}\label{r-part-prime}
+
+
+% Consolidated prime chapter. All local identifiers use the p- prefix.
+\providecommand{\pSP}{\operatorname{SP}}
+\providecommand{\pGq}{(\mathbb Z/q\mathbb Z)^\times}
+\providecommand{\pli}{\operatorname{li}}
+\providecommand{\psupp}{\operatorname{supp}}
+\providecommand{\pone}{\mathbf 1}
+\providecommand{\pGRHD}{\mathrm{GRH}_{\mathrm D}}
+\providecommand{\pStab}{\operatorname{Stab}}
+
+\section{Scope, conventions, and main theorem}
+
+Throughout, $\log$ is the natural logarithm and $\log_2 x=\log x/\log2$.
+We write $\pGRHD$ for GRH for every primitive Dirichlet $L$-function,
+including the Riemann hypothesis through the principal primitive
+character. Standard passage to imprimitive characters is understood.
+This is the standing premise for the prime results below. The supplied
+zeta and Dirichlet critical-line statements are used through these
+mathematical meanings; they do not supply five independent analytic
+hypotheses. The present proofs are ordinary mathematical proofs, not
+a Lean formalization.
+
+For a finite set $R$ of primes not dividing $q$, define
+\[
+ \pSP_q(R)=\left\{\prod_{p\in U}p\pmod q:U\subseteq R\right\}.
+\]
+The empty product is included. Each prime can appear at most once in
+each product. This differs from ordinary generation of a group, which
+allows repeated powers and inverses. Different subsets may represent
+the same residue; all resulting integers are squarefree. In the
+finite-group sections we write $\Sigma(R)$ for the same construction,
+and in prime applications $\Sigma_q(R)=\pSP_q(R)$.
+
+\begin{theorem}[One-third principle and optimal compression]\label{p-thm:main}
+Assume $\pGRHD$. Fix
+\[
+ B>2,\qquad 0<c<\min\{B/2-1,1\}.
+\]
+For every sufficiently large integer $q$, put
+\[
+ \ell=\log q,\quad
+ P_q=\{p\le\ell^B:p\text{ prime},\ p\nmid q\},\quad d=|P_q|.
+\]
+Let $R\subseteq P_q$ satisfy
+\begin{equation}\label{p-eq:main-density}
+ |R|\ge(1/3+\ell^{-c})d.
+\end{equation}
+Then, writing $H=\langle R\rangle\le\pGq$, the following hold uniformly
+over the choice of $R$.
+\begin{enumerate}[label=(\roman*),leftmargin=*,itemsep=4pt]
+\item $\pSP_q(R)=H$ and $[\pGq:H]\in\{1,2\}$.
+\item If $H\ne\pGq$, then $H=\ker\chi$ for a unique nonprincipal
+quadratic character $\chi\bmod q$, and $\chi(p)=1$ for every $p\in R$.
+\item There is a set $T\subseteq R$ of distinct primes such that
+\begin{equation}\label{p-eq:main-compression}
+ \pSP_q(T)=H,\qquad
+ |T|\le\log_2|H|+
+ O_{B,c}\!\left(\frac{\log q}{\log\log q}\right).
+\end{equation}
+\item If $H\ne\pGq$, any one prime $p\in P_q\setminus H$ restores full
+coverage: $\pSP_q(T\cup\{p\})=\pGq$. Such primes exist.
+\end{enumerate}
+The implied constants and the sufficiently-large threshold depend only
+on $B,c$.
+\end{theorem}
+
+For a prime modulus $q$, there is just one nonprincipal quadratic
+character, the Legendre symbol. Thus, in the range of the theorem,
+\emph{one quadratic nonresidue among the retained primes is enough to
+rule out every obstruction to squarefree coverage}. For composite $q$,
+the equivalent test is that the images of $R$ span $\pGq/(\pGq)^2$.
+
+The theorem permits adversarial deletion: the removed primes can be
+chosen with complete knowledge of their residues. The small covering
+set $T$ is chosen \emph{after} the deletion and may depend on both $q$
+and $R$. It is not a claim that deleting nearly two thirds of an already
+compressed $T$ preserves coverage.
+
+The bound is optimal at leading order because any $t$ primes have only
+$2^t$ subsets, so covering $H$ requires
+$t\ge\lceil\log_2|H|\rceil$. The threshold $1/3$ is also sharp in an
+asymptotic sense, proved in Section~\ref{p-sec:sharpness}. No exact finite
+cutoff at $d/3$ is asserted. In particular, the positive margin in
+\eqref{p-eq:main-density} cannot simply be erased.
+
+\subsection{A single squarefree integer and simultaneous congruences}
+If $M=\prod_{p\in T}p$, then the divisors of $M$ represent exactly $H$,
+and
+\[
+ \tau(M)=2^{|T|}=|H|^{1+o(1)},\qquad
+ \log M\le\left(\frac B{\log2}+o(1)\right)
+       (\log q)\log\log q.
+\]
+Here $\tau(M)$ is the number of positive divisors. The result optimizes
+the number of shared prime factors, not the numerical size of each
+representative. If $q=\prod_j q_j$ with pairwise coprime moduli and
+$H=\pGq$, the same divisor set realizes every tuple of unit residues
+modulo the $q_j$ by the Chinese remainder theorem. This is a direct
+corollary, not a separate novelty claim.
+
+
+
+
+\subsection{Context and the scope of the claims}
+
+Jao--Miller--Venkatesan~\cite{p-JMV} derive expansion from primes of
+size $(\log q)^B$, $B>2$, under GRH. Booker--Pomerance~\cite{p-BP}
+and Munsch--Shparlinski~\cite{p-MS} establish squarefree smooth
+representations in other size regimes. Optimizing an individual
+representative differs from choosing one shared list of prime factors
+whose divisors cover many residue classes.
+
+Klurman--Shparlinski--Ter\"av\"ainen~\cite{p-KST} construct a common
+set of polylogarithmically many small primes for almost all moduli,
+and record a GRH Boolean-covering consequence. The primary abstract
+of Hughes~\cite{p-Hughes} states a first-order optimal
+$(1/\log2+o(1))\log Q$ count in an almost-all-moduli setting.
+Thus a logarithmic number of shared primes alone is not claimed as
+a new discovery. Nor is a conditional modulus-dependent construction
+being compared as a blanket improvement over an unconditional
+common-list theorem. The structure of incomplete sets in abelian
+groups is an established subject; see Vu~\cite{p-Vu}. Here relative
+density is measured inside a sparse character-balanced pool.
+
+The results proved in this part comprise the sharp one-third
+quadratic dichotomy, the obstruction classification at every fixed
+positive density, its quantitative vanishing-density extension,
+exact-support compression, correction by additional primes, and
+several refinements. All finite-group arguments are included.
+No assertion of publication priority is made for their combined
+formulation. The subsequent two-prime results leave the
+Erd\H{o}s--Odlyzko--S\'ark\"ozy problem open.
+
+
+
+\section{The analytic input}
+Under $\pGRHD$, the standard prime-character estimate is
+\begin{equation}\label{p-eq:prime-character}
+ \sum_{p\le y}\psi(p)
+ =\pone_{\psi=\psi_0}\pli(y)
+  +O\bigl(\sqrt y\log(qy)\bigr),\qquad y\ge2,
+\end{equation}
+uniformly for Dirichlet characters modulo $q$. Characters are zero on
+nonunits. The complex-valued weighted form, the correction for
+imprimitive characters, and partial summation are given in
+\cite[Section 2, equation (2.6)]{p-JMV}; see also
+\cite[Theorem 13.7]{p-MV}. Only the rational-field Dirichlet case is used.
+
+Let $y=\ell^B$, $\ell=\log q$, and $d=|P_q|$. The prime number theorem
+and the elementary bound $\omega(q)=O(\ell)$ give
+\begin{equation}\label{p-eq:d-asymptotic}
+ d\sim\frac{\ell^B}{B\log\ell}.
+\end{equation}
+For every nonprincipal character,
+\begin{equation}\label{p-eq:prime-bias}
+ \frac1d\left|\sum_{p\in P_q}\psi(p)\right|
+ \ll_B(\log\ell)\ell^{-\kappa},\qquad \kappa=B/2-1>0.
+\end{equation}
+This small character average is the only analytic input for the main
+theorem. In particular, all remaining group-theoretic lemmas are
+unconditional.
+
+
+
+\section{Finite Fourier bounds and quadratic obstructions}\label{p-sec:inverse}
+Let $G$ be a finite abelian group of order $N\ge2$. A pool $P$ consists
+of $d$ distinct labels carrying elements of $G$; repeated group elements
+are allowed but a label can be used only once. Call the pool
+$\varepsilon$-balanced if
+\begin{equation}\label{p-eq:inverse-bias}
+ \left|\sum_{p\in P}\psi(p)\right|\le\varepsilon d
+ \quad(1\ne\psi\in\widehat G),\qquad 0\le\varepsilon<1.
+\end{equation}
+For $R\subseteq P$, let $r=|R|$, let $\Sigma(R)$ denote its subset-product
+set, and let $r_R(a)$ count its subsets with product $a$. Define
+\[
+ K=3r-(1+2\varepsilon)d.
+\]
+
+\begin{theorem}[Complete obstruction classification above one third]\label{p-thm:finite-inverse}
+If
+\begin{equation}\label{p-eq:inverse-threshold}
+ K>16\log(N-1),
+\end{equation}
+then
+\[
+ \Sigma(R)=\langle R\rangle,
+ \qquad [G:\langle R\rangle]\in\{1,2\}.
+\]
+More precisely, either $\Sigma(R)=G$, or there is a unique nonprincipal
+quadratic character $\chi$ such that
+\[
+ R\subseteq\ker\chi,
+ \qquad \Sigma(R)=\ker\chi.
+\]
+In particular, the following are equivalent:
+\begin{enumerate}
+\item $\Sigma(R)=G$;
+\item $R$ generates $G$ as a group;
+\item for every nonprincipal quadratic character $\chi$, at least one
+label $p\in R$ satisfies $\chi(p)=-1$.
+\end{enumerate}
+If $H=\langle R\rangle$ and $h=[G:H]\in\{1,2\}$, then uniformly for
+$a\in H$,
+\begin{equation}\label{p-eq:inverse-equidistribution}
+ \left|\frac{|H|\,r_R(a)}{2^r}-1\right|
+ \leq\frac{N-h}{h}\,e^{-K/16}.
+\end{equation}
+For $a\notin H$, $r_R(a)=0$.
+\end{theorem}
+
+\begin{proof}
+For a character $\psi$, put
+\[
+ F_R(\psi)=\prod_{p\in R}\frac{1+\psi(p)}2,
+ \qquad
+ D_R(\psi)=\sum_{p\in R}(1-\operatorname{Re}\psi(p)).
+\]
+Since $|z|=1$ implies
+\[
+ \left|\frac{1+z}{2}\right|^2
+ =1-\frac{1-\operatorname{Re}z}{2}
+ \leq e^{-(1-\operatorname{Re}z)/2},
+\]
+we have
+\begin{equation}\label{p-eq:inverse-fourier-product}
+ |F_R(\psi)|\leq e^{-D_R(\psi)/4}.
+\end{equation}
+
+Suppose first that $\psi^2\ne1$. The degree-two Fej\'er polynomial
+\[
+ F(z)=|1+z+z^2|^2
+     =3+4\operatorname{Re}z+2\operatorname{Re}z^2
+\]
+is nonnegative for $|z|=1$, and
+\begin{equation}\label{p-eq:fejer-lower}
+ F(z)\geq9-12(1-\operatorname{Re}z).
+\end{equation}
+Indeed, writing $u=\operatorname{Re}z$, the difference between the two
+sides is $4(u-1)^2$. Nonnegativity and \eqref{p-eq:inverse-bias} give
+\[
+ 9r-12D_R(\psi)
+ \leq\sum_{p\in R}F(\psi(p))
+ \leq\sum_{p\in P}F(\psi(p))
+ \leq(3+6\varepsilon)d.
+\]
+Both $\psi$ and $\psi^2$ are nonprincipal here. It follows that
+\[
+ D_R(\psi)\geq K/4,
+ \qquad |F_R(\psi)|\leq e^{-K/16}.
+\]
+
+For a nonprincipal quadratic character $\chi$, the coefficient
+$F_R(\chi)$ is exactly $1$ if $R\subseteq\ker\chi$, and exactly $0$
+otherwise. There can be at most one such quadratic kernel containing
+$R$. Otherwise distinct quadratic characters $\chi_1,\chi_2$ would give
+\[
+ r\leq |P\cap\ker\chi_1\cap\ker\chi_2|
+ =\frac14\sum_{p\in P}(1+\chi_1(p))(1+\chi_2(p))
+ \leq\frac{1+3\varepsilon}{4}d.
+\]
+This contradicts $K>0$, since
+$(1+2\varepsilon)/3-(1+3\varepsilon)/4=(1-\varepsilon)/12>0$.
+
+If no quadratic kernel contains $R$, put $H=G$ and $h=1$. If one does,
+put $H=\ker\chi$ and $h=2$. Character orthogonality now yields
+\[
+ \frac{N r_R(a)}{2^r}
+ =h\,1_H(a)+E(a),
+ \qquad |E(a)|\leq (N-h)e^{-K/16}.
+\]
+The error comes only from characters of order at least three; every
+other nonprincipal quadratic coefficient vanishes. Under
+\eqref{p-eq:inverse-threshold} the error has absolute value less than $1$.
+Thus every $a\in H$ has a representation. Conversely, all elements of
+$R$ belong to $H$, so every subset product belongs to $H$.
+Consequently $\Sigma(R)=H=\langle R\rangle$. Division by $h$ proves
+\eqref{p-eq:inverse-equidistribution}. The stated equivalences follow.
+\end{proof}
+
+\begin{corollary}[One-prime repair]
+Under the preceding hypotheses, if $\Sigma(R)\ne G$, any label
+$p\in P$ outside its unique quadratic kernel satisfies
+\[
+ \Sigma(R\cup\{p\})=G.
+\]
+Such labels exist, since their number is at least $(1-\varepsilon)d/2$.
+\end{corollary}
+\begin{proof}
+Write $\Sigma(R)=H$ with $[G:H]=2$. For $p\notin H$,
+$\Sigma(R\cup\{p\})=H\cup pH=G$.
+\end{proof}
+
+
+
+
+\section{Near-minimal compression in a finite group}\label{p-sec:compression}
+The next argument extracts a small common collection, rather than
+retaining the entire large set of available labels.
+
+\begin{lemma}[Positive overlap estimate]\label{p-lem:overlap}
+For every $A\subseteq G$, $a=|A|$, a balanced pool satisfies
+\[
+ \sum_{p\in P}|A\cap pA|
+ \le d\left(\frac{a^2}{N}+\varepsilon a(1-a/N)\right).
+\]
+Consequently, for any $R'\subseteq P$ with $|R'|\ge\beta d$, some
+$p\in R'$ has
+\begin{equation}\label{p-eq:overlap-positive}
+ |A\cap pA|\le\frac{a^2/N+\varepsilon a}{\beta}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+With $\widehat{\pone_A}(\psi)=\sum_{a\in A}\overline{\psi(a)}$,
+Fourier inversion writes the sum as
+\[
+ \frac1N\sum_{\psi\in\widehat G}|\widehat{\pone_A}(\psi)|^2
+                   \sum_{p\in P}\overline{\psi(p)}.
+\]
+The principal contribution is $da^2/N$. Parseval gives nonprincipal
+mass $Na-a^2$, yielding the first assertion. All individual overlaps
+are nonnegative, so their sum over $R'$ is no greater than their sum
+over $P$. Averaging gives the second assertion. No symmetry of $P$
+under inversion is needed.
+\end{proof}
+For a probability measure $\nu$ on $G$, use the normalised-character
+transform $\widehat\nu(\chi)=\sum_{g\in G}\nu(g)\chi(g)$ and the energy
+\[
+ E(\nu)=\sum_{\chi\ne1}|\widehat\nu(\chi)|^2
+       =N\sum_{g\in G}\nu(g)^2-1.
+\]
+For a label $p$, put $b_p=(\delta_1+\delta_p)/2$.
+
+\begin{lemma}[Weighted positive restriction]
+If $R'\subseteq P$ contains at least $\beta d$ labels, some $p\in R'$
+satisfies
+\begin{equation}\label{p-eq:weighted-positive}
+ E(\nu*b_p)\leq
+ \frac12\left(1+\frac\varepsilon\beta\right)E(\nu)
+ +\frac12\left(\frac1\beta-1\right).
+\end{equation}
+\end{lemma}
+\begin{proof}
+For $C_p=\langle\nu,\nu(p^{-1}\cdot)\rangle$ one has $C_p\geq0$.
+Fourier inversion and the bias hypothesis give
+\[
+ \sum_{p\in P}C_p\leq\frac dN(1+\varepsilon E(\nu)).
+\]
+Restricting this sum to $R'$ and averaging gives an available label with
+$NC_p\leq(1+\varepsilon E(\nu))/\beta$.
+Since
+\[
+ \|\nu*b_p\|_2^2=\tfrac12\|\nu\|_2^2+\tfrac12 C_p,
+\]
+the asserted estimate follows.
+\end{proof}
+
+\begin{theorem}[Finite compression above one third]\label{p-thm:finite-compression}
+Suppose $P$ is $\varepsilon$-biased, and $R\subseteq P$ generates $G$.
+Put $L=\log N$ and $H=\log(1/\varepsilon)$, and assume
+\[
+ 16\leq H\leq L,\qquad
+ 0<\eta\leq\tfrac23,\qquad
+ \varepsilon\leq\eta/4,\qquad
+ |R|\geq(1/3+\eta)d.
+\]
+Define
+\[
+ M=\left\lceil
+ \frac L{\log2}+\frac{16L}{H}
+ +\frac{8\log(16H)}{\eta}+H+5
+ \right\rceil.
+\]
+If $\eta d\geq3M$, then $R$ contains distinct labels $T$ with
+$\Sigma(T)=G$ and $|T|\leq M$.
+\end{theorem}
+\begin{proof}
+Choose $U\subseteq R$ whose images are a basis of the elementary
+abelian group $G/G^2$, and put $s=|U|$.
+The $2^s$ subsets of $U$ give distinct images in $G/G^2$, and hence
+distinct elements of $G$. The probability measure
+$\nu_U=\mathop{*}_{p\in U}b_p$ is uniform on these $2^s$ elements,
+so
+\[
+ E(\nu_U)=N/2^s-1.
+\]
+Every nonprincipal quadratic Fourier coefficient of $\nu_U$ is zero:
+its character is negative on at least one of the selected basis labels.
+These zero coefficients remain zero after all subsequent convolutions.
+
+All labels below are chosen outside those already used.
+As long as at most $M\leq\eta d/3$ labels have been used, the remaining
+pool $R'$ has at least $(1/3+2\eta/3)d$ labels, in particular at least
+$d/3$. Moreover
+\begin{equation}\label{p-eq:unused-third-gap}
+ 3|R'|-(1+2\varepsilon)d
+ \geq(2\eta-2\varepsilon)d\geq\eta d.
+\end{equation}
+
+First, while $E(\nu)>H$, use \eqref{p-eq:weighted-positive} with
+$\beta=1/3$ to choose a new label satisfying
+\[
+ E(\nu*b_p)
+ \leq\tfrac12(1+3\varepsilon)E(\nu)+1
+ \leq\left(\tfrac12+\frac2H\right)E(\nu).
+\]
+Here $\varepsilon=e^{-H}$ and $H\geq16$.
+If this phase is nonempty, it uses at most
+\[
+ \frac{\log(N/2^s)}{\log(1/(1/2+2/H))}+1
+ \leq\frac L{\log2}-s+\frac{14L}{H}+1
+\]
+labels. If it is empty, $|U|=s\leq\log_2N$ already.
+Thus in either case the total number of labels used so far is at most
+$L/\log2+14L/H+1$.
+
+Next, for every character $\chi$ of order at least three, the Fej\'er
+estimate and \eqref{p-eq:unused-third-gap} give
+\[
+ D_{R'}(\chi)
+ :=\sum_{p\in R'}(1-\operatorname{Re}\chi(p))\geq\eta d/4.
+\]
+Consequently
+\[
+ \frac1{|R'|}\sum_{p\in R'}|\widehat b_p(\chi)|^2
+ =1-\frac{D_{R'}(\chi)}{2|R'|}\leq1-\eta/8.
+\]
+Quadratic coefficients are already zero, so averaging the energy over
+available labels gives one for which
+$E(\nu*b_p)\leq(1-\eta/8)E(\nu)$.
+At most $8\log(16H)/\eta+1$ additional labels make $E(\nu)\leq1/16$.
+
+At every stage $\nu$ is a probability measure supported on
+$\Sigma(T)$ for the distinct labels used so far. Cauchy--Schwarz gives
+\[
+ |\operatorname{supp}\nu|\geq\frac N{1+E(\nu)}\geq\frac{16N}{17}.
+\]
+Therefore the actual subset-product set $S=\Sigma(T)$ misses at most
+$N/17$ elements. For its missing set $B=G\setminus S$, the unweighted
+overlap estimate, restricted to at least $d/3$ unused labels, supplies
+a label with
+\[
+ |B\cap pB|\leq3\left(\frac{|B|^2}{N}+\varepsilon|B|\right).
+\]
+While $\varepsilon N<|B|\leq N/17$, this contracts $|B|$ by a factor
+at most $3/17+3\varepsilon<1/4$. At most $H+1$ further labels give
+$|B|\leq\varepsilon N$. Subsequently the contraction factor is at most
+$6\varepsilon$, and at most $2L/H+2$ further labels make $|B|<1$.
+Since $|B|$ is an integer, $S=G$.
+
+The total count is at most $M$. The assumed inequality
+$\eta d\geq3M$ justifies the unused-pool bounds throughout, so the
+argument is non-circular. No prime, or other label, has been used twice.
+\end{proof}
+
+
+
+
+\section{Proof and sharpness of the prime theorem}
+\subsection{Uniform specialization of the finite bounds}
+Write $\ell=\log q$, $\kappa=B/2-1$, and choose
+\begin{equation}\label{p-eq:parameters}
+ \eta=\ell^{-c},\qquad
+ \varepsilon=\ell^{-(c+\kappa)/2},\qquad
+ H_0=\log(1/\varepsilon)=\frac{c+\kappa}{2}\log\ell.
+\end{equation}
+Since $c<\kappa$, equation~\eqref{p-eq:prime-bias} is bounded by
+$\varepsilon$ for all sufficiently large $q$, and
+$\varepsilon=o(\eta)$. Furthermore,
+\[
+ \frac{\eta d}{\ell}\longrightarrow\infty,\qquad
+ \eta^{-1}\log H_0=O_{B,c}(\ell^c\log\log\ell)
+       =o(\ell/\log\ell),
+\]
+where the last assertion uses $c<1$. Also
+$\log\varphi(q)\asymp\ell$, for example from
+$\varphi(q)\ge\sqrt{q/2}$.
+
+For $r=|R|\ge(1/3+\eta)d$,
+\[
+ K=3r-(1+2\varepsilon)d\ge(3\eta-2\varepsilon)d
+       \gg\eta d\gg\log\varphi(q).
+\]
+Theorem~\ref{p-thm:finite-inverse} therefore proves the asserted support
+dichotomy and identifies $H=\langle R\rangle$.
+
+If $H=\pGq$, apply Theorem~\ref{p-thm:finite-compression}. Its bound is
+\[
+ M=\log_2\varphi(q)+O_{B,c}(\ell/\log\ell),
+\]
+and its reserve condition $\eta d\ge3M$ follows from the preceding
+estimates. This proves the desired compression in the full group.
+
+If $H=\ker\chi$ has index two, put $P_H=P_q\cap H$, $d_H=|P_H|$.
+Then
+\[
+ d_H=\tfrac12(d+O(\varepsilon d)).
+\]
+Every nonprincipal character $\rho$ of $H$ extends to a character
+$\psi$ of $\pGq$. Both $\psi$ and $\psi\chi$ are nonprincipal, so
+\[
+ \left|\sum_{p\in P_H}\rho(p)\right|
+ =\left|\frac12\sum_{p\in P_q}(\psi(p)+\psi(p)\chi(p))\right|
+ \le\varepsilon d.
+\]
+Thus $P_H$ is $4\varepsilon$-balanced for large $q$. Also $R$ generates
+$H$ and $|R|/d_H\ge(2/3+2\eta)/(1+\varepsilon)>1/2$ eventually.
+Apply the finite compression theorem inside $H$ with a fixed margin
+$\eta_H=1/6$ and $\varepsilon_H=4\varepsilon$. All its hypotheses
+hold for large $q$. This gives
+\[
+ |T|\le\log_2|H|+O_{B,c}(\ell/\log\ell).
+\]
+Finally, any $p\in P_q\setminus H$ gives
+$\Sigma(T\cup\{p\})=H\cup pH=\pGq$. There are at least
+$(1-\varepsilon)d/2$ such available primes. This proves every assertion
+of Theorem~\ref{p-thm:main}.
+
+\subsection{Uniform multiplicities on the attainable subgroup}
+Let $h=[\pGq:H]\in\{1,2\}$ and $r=|R|$. The finite theorem yields
+\begin{equation}\label{p-eq:prime-counts}
+ \left|\frac{|H|r_R(a)}{2^r}-1\right|
+ \le\frac{\varphi(q)-h}{h}
+ \exp\left(-\frac{(3\eta-2\varepsilon)d}{16}\right)
+ \quad(a\in H).
+\end{equation}
+For every fixed $A>0$, the right-hand side is $o(q^{-A})$, uniformly
+over all permitted $R,a$. Thus the conclusion includes extremely
+uniform counts over the full surviving pool. The compressed $T$ is
+only guaranteed to cover $H$; this estimate is not transferred to $T$.
+
+\subsection{Sharpness from cubic characters}\label{p-sec:sharpness}
+There are arbitrarily large prime moduli $q\equiv1\pmod3$. Fix such a
+$q$ and a character $\chi$ of order three. Put $J=\ker\chi$ and
+$P_0=P_q\cap J$. Orthogonality gives
+\[
+ |P_0|=(1/3+O(\varepsilon))d.
+\]
+Every nonprincipal character $\rho$ of $J$ extends to a character
+$\psi$ of $\pGq$, and each $\psi\chi^j$ ($j=0,1,2$) is
+nonprincipal. Hence
+\[
+ \left|\sum_{p\in P_0}\rho(p)\right|
+ =\left|\frac13\sum_{j=0}^2\sum_{p\in P_q}\psi(p)\chi(p)^j\right|
+ \le\varepsilon d.
+\]
+Since $|P_0|\ge(1-2\varepsilon)d/3$, every nonprincipal $\rho$ has
+\[
+ D_{P_0}(\rho)\ge(1-5\varepsilon)d/3\gg\log|J|.
+\]
+The Fourier product bound from Section~\ref{p-sec:inverse} implies
+$\pSP_q(P_0)=J$ for all sufficiently large $q$.
+
+Choose $p_1\in P_q$ with $\chi(p_1)=\omega=e^{2\pi i/3}$;
+that coset contains $(1/3+O(\varepsilon))d$ available primes. Then
+\[
+ R=P_0\cup\{p_1\},\quad |R|=(1/3+o(1))d,\quad
+ \langle R\rangle=\pGq,
+\]
+but
+\[
+ \pSP_q(R)=J\cup p_1J\ne\pGq.
+\]
+The third coset $p_1^2J$ is absent. This proves asymptotic sharpness
+of the one-third threshold for generation implying squarefree coverage.
+The simpler retained pool $P_0$ also shows sharpness for one-prime
+repair: adding any one prime can cover at most two of the three cosets.
+
+\subsection{The half-density corollary without an obstruction test}
+Under the parameters of Theorem~\ref{p-thm:main}, if
+$|R|\ge(1/2+\ell^{-c})d$, no quadratic kernel can contain $R$, because
+each such kernel contains at most $(1+\varepsilon)d/2$ candidate primes.
+Therefore $H=\pGq$ automatically, with no prime needing restoration.
+Here ``automatically'' concerns the absence of a further algebraic
+condition; the statement still assumes $\pGRHD$.
+The half-density threshold for full coverage without any obstruction
+test is asymptotically optimal by retaining only the primes in a
+quadratic kernel.
+
+
+
+\section{All positive densities: bounded quotients and exact compression}
+
+We work with a family of finite abelian groups $G$, of orders $N\to\infty$,
+and labelled pools $P$, of sizes $d$. Different labels may carry the same
+group element. Assume
+\begin{equation}\label{p-eq:ad-balanced}
+ \max_{\chi\ne1}\left|\sum_{p\in P}\chi(p)\right|\leq\varepsilon d,
+ \qquad \varepsilon\longrightarrow0,
+ \qquad \frac d{\log N}\longrightarrow\infty.
+\end{equation}
+For labels $R\subseteq P$, write $\Sigma(R)$ for the set of products of
+all subsets of $R$, including the empty product. All assertions below
+are uniform in $R$ of a fixed positive relative density.
+
+\begin{lemma}[Restriction to a subgroup]\label{p-lem:subgroup-restriction}
+For any subgroup $J\leq G$ of index $j$, put $P_J=P\cap J$ and
+$d_J=|P_J|$. Then
+\[
+ d_J=\frac dj+O(\varepsilon d),
+ \qquad
+ \left|\sum_{p\in P_J}\rho(p)\right|\leq\varepsilon d
+ \quad(1\ne\rho\in\widehat J).
+\]
+The constants in these two statements do not depend on $j$.
+\end{lemma}
+\begin{proof}
+The annihilator $J^\perp$ has $j$ characters, and
+$1_J(g)=j^{-1}\sum_{\psi\in J^\perp}\psi(g)$. This gives the first
+assertion. Extend a nonprincipal $\rho\in\widehat J$ to a character
+$\rho_0$ of $G$. All characters in $\rho_0J^\perp$ are nonprincipal,
+and averaging their prime sums proves the second assertion.
+\end{proof}
+
+\begin{lemma}[A higher Fej\'er estimate]\label{p-lem:higher-fejer}
+Let $J\leq G$, let $R_J\subseteq P_J$ have $r_J$ labels, and let $\chi$
+be a character of $J$ of order at least $m$, where $m\geq2$. Then
+\begin{equation}\label{p-eq:ad-fejer}
+ r_J\leq\frac{d_J}{m}
+       +\left(1-\frac1m\right)\varepsilon d
+       +\frac{m^2-1}{6}D_{R_J}(\chi),
+ \qquad
+ D_{R_J}(\chi)=\sum_{p\in R_J}(1-\operatorname{Re}\chi(p)).
+\end{equation}
+\end{lemma}
+\begin{proof}
+The nonnegative polynomial
+\[
+ F_m(z)=|1+z+\cdots+z^{m-1}|^2
+       =m+2\sum_{a=1}^{m-1}(m-a)\operatorname{Re}z^a
+\]
+satisfies, on $|z|=1$,
+\[
+ F_m(z)\geq m^2-\frac{m^2(m^2-1)}6(1-\operatorname{Re}z).
+\]
+Indeed, $1-\operatorname{Re}z^a\leq a^2(1-\operatorname{Re}z)$ and
+$2\sum_{a=1}^{m-1}(m-a)a^2=m^2(m^2-1)/6$.
+The characters $\chi^a$, $1\leq a<m$, are all nonprincipal. Thus
+\[
+ m^2r_J-\frac{m^2(m^2-1)}6 D_{R_J}(\chi)
+ \leq\sum_{p\in R_J}F_m(\chi(p))
+ \leq\sum_{p\in P_J}F_m(\chi(p))
+ \leq m d_J+m(m-1)\varepsilon d.
+\]
+Division by $m^2$ gives the claim.
+\end{proof}
+
+\begin{theorem}[All-density obstruction theorem]\label{p-thm:all-density}
+Fix $0<\alpha\leq1$. Under \eqref{p-eq:ad-balanced}, for all sufficiently
+large members of the family the following holds for every
+$R\subseteq P$ with $|R|\geq\alpha d$.
+Put $S=\Sigma(R)$. If $S\ne G$, let
+\[
+ H=\operatorname{Stab}(S)=\{g\in G:gS=S\},\qquad h=[G:H].
+\]
+Then
+\begin{equation}\label{p-eq:ad-classification}
+ 2\leq h\leq\lfloor1/\alpha\rfloor,
+ \qquad |R\setminus H|\leq h-2,
+ \qquad
+ S=\pi^{-1}\bigl(\Sigma(\pi(R\setminus H))\bigr),
+\end{equation}
+where $\pi:G\to G/H$ is the quotient map. In particular, every failure
+of subset-product coverage at a fixed positive density is controlled
+by a quotient of bounded order and at most $h-2$ exceptional labels.
+\end{theorem}
+\begin{proof}
+We first find a subgroup $J$ such that $\Sigma(R\cap J)=J$, with
+$[G:J]\leq1/\alpha+o(1)$.
+
+Begin with $J=G$. If $\Sigma(R\cap J)\ne J$, character orthogonality
+at a missing element yields a nonprincipal character $\chi$ of $J$
+with
+\[
+ \left|\prod_{p\in R\cap J}\frac{1+\chi(p)}2\right|
+ \geq\frac1{|J|-1}.
+\]
+Since this product is at most $e^{-D_{R\cap J}(\chi)/4}$, we have
+$D_{R\cap J}(\chi)\leq4\log(|J|-1)\leq4\log N$.
+
+Choose a fixed integer $m>8/\alpha$. As long as only a bounded number
+of the following steps have been performed, the current set $R\cap J$
+has $\alpha d-O_\alpha(\log N)$ labels. If $\chi$ had order at least
+$m$, \eqref{p-eq:ad-fejer} would give
+\[
+ |R\cap J|\leq d/m+\varepsilon d+O_\alpha(\log N)
+ <\alpha d/2
+\]
+for sufficiently large members of the family, a contradiction.
+Consequently $\chi$ has order $u$ with $2\leq u<m$.
+
+Replace $J$ by $J\cap\ker\chi$, where the kernel is understood inside
+the current $J$. This multiplies $[G:J]$ by $u\geq2$ and discards at
+most $O_\alpha(\log N)$ labels of $R$: every discarded label contributes
+at least
+$\min_{2\leq u<m}(1-\cos(2\pi/u))>0$ to $D_{R\cap J}(\chi)$.
+
+The process must stop after a bounded number of steps. Otherwise, after
+a fixed $k$ with $2^k>4/\alpha$, the current subgroup would have
+index at least $2^k$, and hence contain at most
+$d/2^k+\varepsilon d<\alpha d/2$ pool labels, whereas it still contains
+$\alpha d-O_\alpha(\log N)>\alpha d/2$ labels of $R$.
+This contradiction proves termination. At its end,
+\[
+ \Sigma(R\cap J)=J,
+ \qquad |R\cap J|\geq\alpha d-O_\alpha(\log N).
+\]
+The restriction lemma now gives
+$\alpha\leq1/[G:J]+o(1)$. Since the index is a bounded integer, it is
+at most $\lfloor1/\alpha\rfloor$ eventually.
+
+The identity
+$S=J\,\Sigma(R\setminus J)$ shows that $J\leq H$.
+Thus $h=[G:H]\leq[G:J]\leq\lfloor1/\alpha\rfloor$.
+The image $\bar S\subseteq G/H$ is proper and aperiodic. Scan the
+nonidentity images of the labels in $R$ in any order. Every one must
+strictly enlarge the current subset-product set: if a nonidentity
+$g$ did not, it would fix that set, and by commutativity would fix all
+later unions of its translates. It would then be a nontrivial period
+of $\bar S$, which is impossible. Starting from a set of size one, this
+gives
+\[
+ 1+|R\setminus H|\leq|\bar S|\leq h-1.
+\]
+Therefore $|R\setminus H|\leq h-2$. Finally, $H$-periodicity and the
+definition of the quotient imply the last identity in
+\eqref{p-eq:ad-classification}.
+\end{proof}
+
+
+\subsection{The positive-overlap estimate used in compression}
+
+We record the averaging calculation explicitly. Let $J\le G$, let
+$n=|J|$, and let $R'\subseteq P\cap J$ contain at least $\beta d$
+unused labels. For a probability measure $\nu$ on $J$, set
+$E=n\sum_x\nu(x)^2-1$. The correlations
+$C_p=\sum_x\nu(x)\nu(p^{-1}x)$ are nonnegative. Fourier inversion and
+the subgroup restriction lemma give
+\[
+ \sum_{p\in P\cap J}C_p
+ \le\frac{|P\cap J|+\varepsilon dE}{n}.
+\]
+Restriction to $R'$ is legitimate by nonnegativity. Since
+\[
+ E(\nu*(\delta_1+\delta_p)/2)=(E-1)/2+nC_p/2,
+\]
+some unused label satisfies
+\begin{equation}\label{p-eq:positive-energy}
+ E(\nu*b_p)\le
+ \frac12(1+\varepsilon/\beta)E
+ +\frac12(1/\beta-1).
+\end{equation}
+Likewise, for a missing set $B\subseteq J$, the nonnegative correlations
+$|B\cap pB|$ have full-pool average bounded by
+$|P\cap J||B|^2/n+\varepsilon d|B|$. Hence some unused label gives
+\begin{equation}\label{p-eq:positive-holes}
+ |B\cap pB|\le\beta^{-1}
+       \bigl(|B|^2/n+\varepsilon|B|\bigr).
+\end{equation}
+Inserting that label into the subset-product list changes the missing
+set to precisely $B\cap pB$. All energies in this calculation are
+normalized by $|J|$, not by the order of the original ambient group.
+
+\subsection{A core with a uniform character gap}
+
+For compression we use a different stopping rule. Fix $0<\alpha\leq1$.
+There is a constant $\theta=\theta(\alpha)>0$ such that, under
+\eqref{p-eq:ad-balanced}, every $R$ with $|R|\geq\alpha d$ contains a
+core $R_J=R\cap J$ in a subgroup $J$ satisfying
+\begin{equation}\label{p-eq:ad-core}
+ [G:J]\leq2/\alpha,
+ \qquad |R_J|\geq3\alpha d/4,
+ \qquad
+ D_{R_J}(\chi)>\theta d
+ \quad(1\ne\chi\in\widehat J).
+\end{equation}
+
+Here is a fully quantitative choice of constants for the argument.
+Choose $m>8/\alpha$,
+$k=\lceil\log_2(4/\alpha)\rceil+1$, and put
+\[
+ c_* =\min_{2\leq u<m}(1-\cos(2\pi/u)),\qquad
+ C_*=(m^2-1)/6,
+ \qquad
+ \theta=\min\left\{\frac{\alpha}{16C_*},
+                         \frac{\alpha c_*}{4k}\right\}.
+\]
+For sufficiently large members of the family, $\varepsilon\leq\alpha/16$.
+Begin with $J=G$ and restrict to the kernel of any nonprincipal
+$\chi\in\widehat J$ with $D_{R\cap J}(\chi)\leq\theta d$.
+As before, \eqref{p-eq:ad-fejer} forces the order of $\chi$ to be less
+than $m$, provided $|R\cap J|\geq3\alpha d/4$.
+Each step loses at most $\theta d/c_*$ labels, so $k$ steps lose at
+most $\alpha d/4$. But $k$ steps would make the index too large for a
+subgroup containing $3\alpha d/4$ pool labels. Therefore the procedure
+stops before then. At termination the character gap is as stated,
+and the restriction lemma bounds the index by
+$1/(3\alpha/4-\varepsilon)<2/\alpha$.
+In particular $\Sigma(R_J)=J$, since
+$(|J|-1)e^{-\theta d/4}<1$ eventually.
+
+\begin{theorem}[Exact compression at every positive density]\label{p-thm:all-compression}
+Fix $0<\alpha\leq1$. Under \eqref{p-eq:ad-balanced}, uniformly for
+$R\subseteq P$ with $|R|\geq\alpha d$, there is $T\subseteq R$ with
+\[
+ \Sigma(T)=\Sigma(R),\qquad
+ |T|\leq\log_2|\Sigma(R)|+o_\alpha(\log N).
+\]
+More quantitatively, if an upper bound $\varepsilon_*>0$ for the bias
+is chosen so that
+\[
+ v=\log(1/\varepsilon_*)\longrightarrow\infty,
+ \qquad v\leq(\log N)^{1/3},
+\]
+then the remainder is
+$O_\alpha(\log N/v+v+\log v+1)$.
+\end{theorem}
+\begin{proof}
+Use the subgroup $J$ and core $R_J$ from \eqref{p-eq:ad-core}.
+Put $n=|J|$. We first select $T_0\subseteq R_J$ whose subset products
+cover $J$, using
+\begin{equation}\label{p-eq:ad-core-count}
+ |T_0|\leq\log_2n+
+ O_\alpha(\log N/v+v+\log v+1)
+\end{equation}
+labels. The case $J=\{1\}$ is immediate.
+
+For a probability measure $\nu$ on $J$, define
+$E(\nu)=n\sum_x\nu(x)^2-1$ and $b_p=(\delta_1+\delta_p)/2$.
+At all times only $O_\alpha(\log N)$ labels will be used. Since
+$d/\log N\to\infty$, at least $\alpha d/2$ unused core labels remain,
+and the gap of every nonprincipal character on the unused core is
+at least $\theta d/2$.
+
+The restriction lemma and nonnegativity of
+$\langle\nu,\nu(p^{-1}\cdot)\rangle$ give an unused core label with
+\[
+ E(\nu*b_p)
+ \leq\tfrac12(1+2\varepsilon_*/\alpha)E(\nu)+1/\alpha.
+\]
+Start with $\nu=\delta_1$. While $E(\nu)>v$, this nearly halves the
+energy, so at most $\log_2n+O_\alpha(\log N/v+1)$ labels give
+$E(\nu)\leq v$.
+
+For each nonprincipal character, averaging
+$|\widehat b_p(\chi)|^2=(1+\operatorname{Re}\chi(p))/2$
+over unused core labels gives a value at most $1-\theta/4$.
+Averaging the whole Fourier energy therefore supplies an unused label
+that contracts it by this factor. At most $O_\alpha(\log v+1)$
+additional labels give $E(\nu)\leq\alpha/16$.
+The support of $\nu$ then has size at least $n/(1+\alpha/16)$.
+All measures constructed are supported on subset products of the
+distinct labels selected so far.
+
+Let $B$ be the missing set of the actual subset-product support.
+It has at most $\alpha n/16$ elements. Positive restriction of the
+overlap estimate to at least $\alpha d/2$ unused core labels supplies
+an unused $p$ with
+\[
+ |B\cap pB|
+ \leq\frac2\alpha\left(\frac{|B|^2}{n}
+                         +\varepsilon_*|B|\right).
+\]
+While $\varepsilon_*n<|B|\leq\alpha n/16$, this contracts $|B|$
+by a factor less than $1/4$ for sufficiently large members of the
+family. After $O(v+1)$ labels, $|B|\leq\varepsilon_*n$.
+The contraction factor is now at most $4\varepsilon_*/\alpha$, and
+$O_\alpha(\log N/v+1)$ more labels make the integer $|B|$ equal zero.
+This proves \eqref{p-eq:ad-core-count}. The stated bounds on $v$ ensure
+that the total is $O_\alpha(\log N)$, validating the unused-core
+estimates throughout.
+
+The quotient $Q=G/J$ has bounded order $j\leq2/\alpha$.
+Scan the labels in $R\setminus J$, retaining a label only if its image
+strictly enlarges the current subset-product set in $Q$. If a label
+does not enlarge that set, its image fixes the set and continues to
+fix every future union of translates, so omitting it is harmless.
+At most $j-1$ labels are retained, and their quotient subset products
+are exactly those of $R\setminus J$. Call this retained set $U$.
+Since $\Sigma(T_0)=J$,
+\[
+ \Sigma(T_0\cup U)
+ =J\Sigma(U)
+ =J\Sigma(R\setminus J)
+ =\Sigma(R).
+\]
+Finally, $\log_2|\Sigma(R)|=\log_2|J|+O_\alpha(1)$.
+Combining this with \eqref{p-eq:ad-core-count} proves the theorem.
+For the qualitative statement, take
+$\varepsilon_* =\max\{\varepsilon,e^{-(\log N)^{1/3}}\}$.
+\end{proof}
+
+\subsection{Prime application under Dirichlet GRH}
+
+Fix $B>2$ and $0<\alpha\leq1$. For sufficiently large $q$, let
+\[
+ G=(\mathbb Z/q\mathbb Z)^\times,
+ \qquad P_q=\{p\leq(\log q)^B:p\text{ prime},\ p\nmid q\}.
+\]
+Dirichlet GRH gives\[
+ d\sim\frac{(\log q)^B}{B\log\log q},\qquad
+ \varepsilon\ll_B(\log\log q)(\log q)^{1-B/2}.
+\]
+Thus the preceding theorems apply simultaneously to every
+$R\subseteq P_q$ of cardinality at least $\alpha|P_q|$.
+If its subset products fail to cover $G$, the stabilizer has index
+$2\leq h\leq\lfloor1/\alpha\rfloor$, and at most $h-2$ primes of
+$R$ lie outside that stabilizer. Its whole subset-product support can
+be reproduced by a set $T\subseteq R$ satisfying
+\[
+ |T|\leq\log_2|\Sigma(R)|+
+ O_{\alpha,B}\left(\frac{\log q}{\log\log q}\right).
+\]
+
+There is also a bounded-prime repair. If $H$ is the actual stabilizer,
+write $G/H\cong C_{n_1}\times\cdots\times C_{n_t}$. Each quotient
+coset contains $(1/h+o(1))d$ candidate primes. Choose available primes
+lifting the binary powers of a generator in each cyclic factor.
+Their subset products cover $G/H$, so adding at most
+\[
+ b(G/H)=\sum_{i=1}^t\lceil\log_2 n_i\rceil
+ \leq h-1\leq\lfloor1/\alpha\rfloor-1
+\]
+primes repairs full coverage. The inequality follows from
+$\lceil\log_2n\rceil\leq n-1$ for $n\geq2$ and
+$\sum_i(n_i-1)\leq\prod_i n_i-1$. There are plenty of unused candidates
+in each needed nonidentity coset, because $R$ has at most $h-2$ labels
+outside $H$. No optimality claim for $b(G/H)$ is made.
+
+The structural exception bound is sharp: for a cyclic quotient of
+order $h$, retain the whole kernel pool together with $h-2$ distinct
+prime labels in one generating coset. For large $q$ the kernel pool
+covers its subgroup, while the quotient subset products are exactly
+$0,g,\ldots,(h-2)g$, missing one coset. Its stabilizer is precisely
+the kernel and there are exactly $h-2$ exceptional primes. Such
+examples have relative density $1/h+o(1)$. To realize every fixed
+$h\geq2$ arithmetically, take prime moduli $q\equiv1\pmod h$;
+their unit groups have a cyclic quotient of order $h$. The restriction
+lemma makes every nonprincipal Fourier coefficient of the kernel
+pool $O(\varepsilon d)$, whereas its size is $d/h+O(\varepsilon d)$.
+The product estimate \eqref{p-eq:inverse-fourier-product} and
+$d/\log q\to\infty$ therefore show that this pool covers the kernel.
+The generating coset contains $d/h+O(\varepsilon d)$ available primes,
+so the $h-2$ exceptional labels can be chosen distinctly.
+
+
+
+
+
+
+\section{Keeping a vanishing fraction of the prime pool}
+
+\subsection{Uniform obstruction structure}
+
+\begin{theorem}[Uniform obstruction structure]\label{p-thm:vanishing-structure}
+The all-density obstruction theorem admits a uniform extension. Let
+$\alpha=\alpha_N\in(0,1]$ vary, and assume
+\begin{equation}\label{p-eq:vd-assumptions}
+ \varepsilon=o(\alpha),\qquad
+ \frac{\alpha^3 d}{\log N}\longrightarrow\infty.
+\end{equation}
+For every $R\subseteq P$ with $|R|\geq\alpha d$, if
+$S=\Sigma(R)\ne G$, its actual stabilizer $H$ satisfies
+\begin{equation}\label{p-eq:vd-structure}
+ [G:H]\leq
+ \left(\alpha-\varepsilon-
+       \frac{C\log N}{\alpha^2d}\right)^{-1}
+ =\frac{1+o(1)}{\alpha},
+ \qquad
+ |R\setminus H|\leq[G:H]-2,
+\end{equation}
+where $C$ is an absolute constant. As before, $S$ is the full preimage
+of the subset-product set of $R\setminus H$ in $G/H$.
+\end{theorem}
+
+\begin{proof}
+Repeat the missing-element character argument from the all-density
+theorem, but at a current subgroup of index $j$ choose
+$m_j=\lceil8/(\alpha j)\rceil+1$. Until termination, the current
+index is at most $2/\alpha$ and the retained core has
+$\alpha d-o(\alpha d)$ labels; these bounds will be justified below.
+A missing element supplies $\chi$ with $D(\chi)\leq4\log N$.
+If its order were at least $m_j$, the higher Fej\'er estimate would give
+\[
+ |R\cap J|
+ \leq \frac{d/j+\varepsilon d}{m_j}+\varepsilon d
+       +O\left(\frac{\log N}{\alpha^2j^2}\right)
+ \leq\frac{\alpha d}{8}+o(\alpha d),
+\]
+contradicting the size of the core. Thus the order $u$ is less than
+$m_j=O(1/(\alpha j))$.
+
+For $u\geq2$, the elementary bound
+$1-\cos(2\pi/u)\geq8/u^2$ shows that restricting to its kernel loses
+at most
+\[
+ \frac{u^2}{8}\,4\log N
+ \ll\frac{\log N}{\alpha^2j^2}
+\]
+labels. The indices at successive restrictions at least double.
+Therefore the total number discarded is at most
+$C\log N/\alpha^2=o(\alpha d)$, by summing a geometric series.
+A restriction cannot produce an index larger than $2/\alpha$, since
+the resulting subgroup would then have at most
+$\alpha d/2+\varepsilon d$ pool labels while still containing
+$\alpha d-o(\alpha d)$ labels of $R$.
+The process consequently terminates after $O(\log(1/\alpha)+1)$ steps,
+at a subgroup $J$ with $\Sigma(R\cap J)=J$ and
+\[
+ |R\cap J|\geq\alpha d-C\log N/\alpha^2.
+\]
+The restriction estimate $|P\cap J|\leq d/[G:J]+\varepsilon d$
+gives the quantitative index bound in \eqref{p-eq:vd-structure}.
+Since $J$ is a period of $S$, the actual stabilizer $H$ contains $J$.
+The elementary aperiodicity argument in $G/H$ gives
+$|R\setminus H|\leq[G:H]-2$ exactly as before.
+\end{proof}
+
+\subsection{Uniform prime compression: the exponent one half}
+
+\begin{theorem}[Vanishing retention, exact structure, and compression]\label{p-thm:vanishing-compression}
+Assume Dirichlet GRH. Fix
+\[
+ B>2,\qquad
+ 0<c<\min\{B/2-1,\tfrac12\}.
+\]
+Put $\ell=\log q$, $\alpha=\ell^{-c}$, and
+\[
+ P_q=\{p\leq\ell^B:p\text{ prime},\ p\nmid q\},\qquad d=|P_q|.
+\]
+For every sufficiently large $q$ and every subset
+$R\subseteq P_q$ with $|R|\geq\alpha d$, there is $T\subseteq R$ with
+\begin{equation}\label{p-eq:vd-compression}
+ \Sigma(T)=\Sigma(R),\qquad
+ |T|\leq\log_2|\Sigma(R)|+
+ O_{B,c}\left(\frac{\log q}{\log\log q}\right).
+\end{equation}
+If $\Sigma(R)\ne G=(\mathbb Z/q\mathbb Z)^\times$, then its stabilizer
+has index $h\leq(1+o(1))(\log q)^c$, with at most $h-2$ labels
+of $R$ outside $H$. With $\pi:G\to G/H$, its support is exactly
+\[
+ \Sigma(R)=\pi^{-1}\bigl(\Sigma(\pi(R\setminus H))\bigr).
+\]
+There is $U\subseteq P_q\setminus R$ with
+\[
+ |U|\leq2c\log_2\log q+O(1),\qquad\Sigma(R\cup U)=G.
+\]
+The augmented set contains a covering subcollection of at most
+$\log_2\varphi(q)+O_{B,c}(\log q/\log\log q)$ primes.
+If $\Sigma(R)=G$, no restoration is needed.
+\end{theorem}
+
+\begin{proof}
+Write $\kappa=B/2-1$ and fix
+$\sigma=(c+\kappa)/2$, so $c<\sigma<\kappa$.
+The GRH prime-character estimate permits the bias upper bound
+$\varepsilon=\ell^{-\sigma}$ for sufficiently large $q$.
+Also $d\sim\ell^B/(B\log\ell)$.
+In particular \eqref{p-eq:vd-assumptions} holds, because
+$B-3c>2-c>1$. This proves the structural assertions.
+
+For compression, first select an arbitrary $R_0\subseteq R$ with
+$|R_0|=\lceil\alpha d\rceil$. This upper bound on the initial core
+size is essential for the uniform estimate below.
+
+Apply the fixed-threshold core construction, with its constants now
+depending explicitly on $\alpha$. Take
+\[
+ m=\lceil8/\alpha\rceil+1,\qquad
+ k=\lceil\log_2(4/\alpha)\rceil+1,
+\]
+and
+\[
+ \theta=\min\left\{
+ \frac{\alpha}{16((m^2-1)/6)},
+ \frac{\alpha\min_{2\leq u<m}(1-\cos(2\pi/u))}{4k}
+ \right\}.
+\]
+Thus $\theta\asymp\alpha^3/k$, with absolute implied constants.
+Every restriction has character order less than $m$, loses at most
+$\alpha d/(4k)$ core labels, and multiplies the subgroup index by at
+least two. Consequently it stops before $k$ steps, at $J\leq G$ with
+\begin{equation}\label{p-eq:vd-core-bounds}
+ [G:J]\leq2/\alpha,
+ \qquad 3\alpha d/4\leq|R_0\cap J|\leq2\alpha d,
+ \qquad
+ D_{R_0\cap J}(\chi)>\theta d
+ \quad(\chi\ne1).
+\end{equation}
+The estimates in the fixed-density proof are uniform here: its Fej\'er
+contradiction uses $\varepsilon=o(\alpha)$, and its total loss is at
+most $\alpha d/4$ by the displayed choice of $\theta$.
+
+Fix in advance a core-label budget $M_0=\lceil4\ell\rceil$.
+For sufficiently large $q$,
+\[
+ M_0<\alpha d/4,\qquad 2M_0<\theta d/2,
+\]
+because $\alpha d/\ell\to\infty$ and
+$\theta d\asymp_{B,c}\ell^{B-3c}/(\log\ell)^2\gg\ell$.
+Thus, at every stage before the budget is exhausted, at least
+$\alpha d/2$ unused core labels remain, their number is at most
+$2\alpha d$, and every nonprincipal character retains gap at least
+$\theta d/2$. The phase counts below will show that the construction
+finishes strictly before $M_0$ labels have been used.
+
+Put $n=|J|$ and
+\[
+ v=\log(\alpha/\varepsilon)
+   =(\sigma-c)\log\ell\asymp_{B,c}\log\ell,
+ \qquad V=16v/\alpha.
+\]
+For the probability-measure energy $E(\nu)=n\|\nu\|_2^2-1$, positive
+restriction to at least $\alpha d/2$ unused core labels supplies
+\[
+ E(\nu*b_p)\leq\tfrac12(1+2\varepsilon/\alpha)E(\nu)+1/\alpha.
+\]
+While $E(\nu)>V$, this contracts energy by a factor
+$1/2+O(1/v)$. Starting at $\delta_1$, at most
+$\log_2n+O_{B,c}(\ell/v)$ labels give $E(\nu)\leq V$.
+
+Within the predetermined budget, unused core labels retain character
+gap at least $\theta d/2$.
+Their number is at most $2\alpha d$, by the deliberate initial
+choice of $R_0$. Averaging the squared Fourier multiplier consequently
+gives energy contraction at least
+\[
+ 1-\frac{\theta d/2}{2(2\alpha d)}
+ =1-\frac{\theta}{8\alpha}.
+\]
+This is the improvement over the weaker contraction $1-O(\theta)$.
+At most
+\[
+ O\left(\frac{\alpha}{\theta}
+               \log\frac{32V}{\alpha}\right)
+ =O_{B,c}\bigl(\ell^{2c}(\log\ell)^2\bigr)
+ =o_{B,c}\left(\frac\ell{\log\ell}\right)
+\]
+additional labels give $E(\nu)\leq\alpha/32$.
+
+The missing set of the actual subset-product support now has size
+at most $\alpha n/32$. Its positive-restriction update satisfies
+\[
+ |B\cap pB|\leq\frac2\alpha
+       \left(\frac{|B|^2}{n}+\varepsilon|B|\right).
+\]
+It contracts by a factor less than $1/4$ until $|B|\leq\varepsilon n$,
+which costs $O(v+1)$ labels. Thereafter the factor is at most
+$4\varepsilon/\alpha=4e^{-v}$, so
+$O_{B,c}(\ell/v)$ more labels eliminate all holes.
+We have obtained a set $T_0\subseteq R_0\cap J$ with
+\[
+ \Sigma(T_0)=J,
+ \qquad |T_0|\leq\log_2n+
+ O_{B,c}(\ell/\log\ell).
+\]
+The first phase uses at most $\ell/\log2+o_{B,c}(\ell)$ labels, and
+all remaining phases together use $o_{B,c}(\ell)$ labels. Their sum
+is strictly less than $4\ell$ for sufficiently large $q$. Hence the
+construction finishes before its predetermined budget is exhausted,
+justifying all unused-core estimates without circularity.
+
+Finally, in $G/J$ scan all labels of the original $R\setminus J$ and
+retain a label only when it enlarges the quotient subset-product set.
+At most $[G:J]-1\leq2/\alpha=O(\ell^c)$ labels are retained.
+Together with $T_0$ they reproduce $\Sigma(R)$ exactly. Their number
+is as in \eqref{p-eq:vd-compression}, since
+$\ell^c=o(\ell/\log\ell)$ and
+$\log_2n\leq\log_2|\Sigma(R)|$.
+
+For repair, use the actual stabilizer $H$. Every quotient coset
+contains $(1/[G:H]+O(\varepsilon))d\gg\alpha d$ pool labels.
+There are at most $[G:H]-2$ retained labels outside $H$, so the needed
+nonidentity cosets contain unused prime labels. If
+$G/H\cong\prod_i C_{n_i}$, binary powers in each cyclic factor can be
+lifted to distinct available primes, using at most
+\[
+ \sum_i\lceil\log_2n_i\rceil
+ \leq2\log_2[G:H]
+ \leq2c\log_2\ell+O(1)=O_{B,c}(\log\ell)
+\]
+labels. Their subset products cover $G/H$, repairing full coverage.
+The augmented set still has at least $\alpha d$ labels, so the same
+compression theorem applies again.
+\end{proof}
+
+\begin{remark}[Range and limitations]
+The structural conclusion and bounded-quotient repair do not require
+$c<1/2$. They hold in the larger range
+$0<c<\min\{B/2-1,(B-1)/3\}$, which is exactly the range ensuring
+$\varepsilon=o(\alpha)$ and $\alpha^3d/\log q\to\infty$ with the
+present estimates. The restriction $c<1/2$ is used for the quantitative
+near-optimal compression, through its middle energy-contraction stage.
+No optimality claim for this exponent is made.
+\end{remark}
+
+
+
+
+\begin{corollary}[Size of the attainable support]\label{p-cor:vanishing-support}
+Under Theorem~\ref{p-thm:vanishing-compression},
+\[
+ |\Sigma(R)|\geq(1-o(1))
+ \frac{\varphi(q)}{(\log q)^c},
+ \qquad
+ \log_2|\Sigma(R)|
+ \geq\log_2\varphi(q)-c\log_2\log q-o(1).
+\]
+\end{corollary}
+\begin{proof}
+If the support is incomplete, the identity lies in it and its stabilizer
+is a period, so the support contains that stabilizer. The index bound
+therefore proves both inequalities. They also hold when the support
+is the full group.
+\end{proof}
+
+For example, $B=3$ and $c=2/5$ are admissible. A retained fraction
+$(\log q)^{-2/5}$ can be repaired with at most
+$(4/5)\log_2\log q+O(1)$ primes and then compressed to first-order
+minimum size. The number of attainable residue classes loses only
+$O(\log\log q)$ in its base-two logarithm, although the deleted
+fraction tends to one. The compressed list is chosen after the
+deletion. This statement concerns residue coverage and the number
+of shared factors, not the numerical size of the integer products.
+
+
+
+\section{Products with a prescribed number of distinct prime factors}
+The one-third theorem concerns subsets of all cardinalities together.
+An exact cardinality has an additional obstruction: if every retained
+prime is a quadratic nonresidue, products of exactly $k$ of them all
+have the fixed character value $(-1)^k$. The next theorem therefore
+uses a stronger, explicit condition.
+
+\begin{theorem}[Exact-cardinality equidistribution]\label{p-thm:exact-k}
+Let $P$ be an $\varepsilon$-balanced pool of $d$ labels in a group of
+order $N$, and let $R\subseteq P$ have $r$ labels. Put
+\[
+ \Delta=2r-(1+\varepsilon)d>0.
+\]
+For $1\le k\le r-1$, let $C_{R,k}(a)$ count the $k$-element subsets
+of $R$ with product $a$. Then
+\begin{equation}\label{p-eq:exact-k}
+ \left|\frac{N C_{R,k}(a)}{\binom rk}-1\right|
+ \le (N-1)(r+1)
+ \exp\left(-\frac{k(r-k)}{r^2}\Delta\right).
+\end{equation}
+In particular, if the right-hand side is less than one, every element
+has a representation by exactly $k$ distinct labels.
+\end{theorem}
+\begin{proof}
+For a nonprincipal $\psi$,
+\[
+ \left|\sum_{p\in R}\psi(p)\right|
+ \le\varepsilon d+d-r=r-\Delta.
+\]
+Write $\theta=k/r$ and $z=\theta/(1-\theta)>0$. For $|w|=1$,
+\[
+ |1+zw|\le(1+z)
+ \exp\left(-\frac{z}{(1+z)^2}(1-\Re w)\right).
+\]
+This follows by squaring and using $1-u\le e^{-u}$.
+Uniformly in real $t$, it implies
+\[
+ \prod_{p\in R}|1+ze^{it}\psi(p)|
+ \le(1+z)^r e^{-\theta(1-\theta)\Delta}.
+\]
+The Cauchy coefficient estimate for
+$\prod_{p\in R}(1+Z\psi(p))$ bounds its $k$th coefficient by
+$z^{-k}(1+z)^r e^{-\theta(1-\theta)\Delta}$.
+The binomial probability
+$\binom rk\theta^k(1-\theta)^{r-k}$ is a mode of the
+$\operatorname{Bin}(r,\theta)$ distribution, so it is at least
+$1/(r+1)$. Consequently the coefficient divided by $\binom rk$ has
+modulus at most $(r+1)e^{-\theta(1-\theta)\Delta}$.
+Character orthogonality, with principal term $\binom rk/N$, proves
+\eqref{p-eq:exact-k}.
+\end{proof}
+
+For the prime pool, retention $r\ge(1/2+\eta)d$ gives
+$\Delta\ge(2\eta-\varepsilon)d$. Every fixed central range
+$\theta\in[\theta_0,1-\theta_0]$, $\theta_0>0$, then has uniform
+exact-cardinality counts with relative error smaller than every fixed
+negative power of $q$. More generally, equation~\eqref{p-eq:exact-k}
+itself supplies a finite sufficient condition. No such conclusion is
+asserted for all fixed cardinalities at one-third retention.
+
+\section{A version using primes in one narrow window}
+\begin{corollary}\label{p-cor:window}
+Assume $\pGRHD$, and fix
+\[
+ B>2,\qquad B/2+1<D\le B,\qquad
+ 0<c<\min\{D-B/2-1,1\}.
+\]
+Replace $P_q$ in Theorem~\ref{p-thm:main} by
+\[
+ P_q^{\mathrm{win}}=
+ \{p:\ell^B<p\le\ell^B+\ell^D,\ p\text{ prime},\ p\nmid q\}.
+\]
+All conclusions of that theorem remain valid, including one-third
+retention, the quadratic dichotomy, one-prime repair, and near-minimal
+compression.
+\end{corollary}
+\begin{proof}
+Subtracting \eqref{p-eq:prime-character} at the two endpoints gives a
+nonprincipal sum $O_B(\ell^{B/2+1})$. The prime number theorem on RH
+gives
+$d\sim\ell^D/(B\log\ell)$; deleting prime divisors of $q$ changes
+this by only $O(\ell)$. The normalized bias is therefore
+$O_B((\log\ell)\ell^{-(D-B/2-1)})$.
+Use this positive exponent in place of $\kappa$ in
+Section~\ref{p-sec:compression} and the prime specialization.
+\end{proof}
+For example, the window
+$(\ell^6,\ell^6+\ell^5]$ has relative width $1/\ell$ and permits
+every $c<1$. Thus all selected prime factors may be constrained to a
+single shrinking relative-width interval.
+
+
+
+\section{A weighted refinement near the Erd\H{o}s--Odlyzko--S\'ark\"ozy problem}
+
+Throughout this section, assume GRH for all primitive Dirichlet
+$L$-functions, including the Riemann zeta function. All logarithms are
+natural. For an integer $q\geq3$, put
+\[
+ G_q=(\mathbb Z/q\mathbb Z)^\times,
+ \qquad n=\varphi(q),
+ \qquad
+ E_2(q)=\{p_1p_2\bmod q:p_1,p_2\leq q\text{ prime},\ p_1p_2\perp q\}.
+\]
+Here $p_1p_2\perp q$ means $\gcd(p_1p_2,q)=1$; the two primes need not
+be distinct. The original Erd\H{o}s--Odlyzko--S\'ark\"ozy conjecture asks
+for $E_2(q)=G_q$ for all sufficiently large prime $q$.
+The estimates below also apply when $q$ is composite. The original
+formulation is in~\cite{p-EOS1987}, and the general-modulus setting is
+discussed in~\cite{p-Szabo2024}. The primary abstract of
+Banks~\cite{p-Banks2026} explicitly records that full two-prime
+coverage remains open even under GRH. No theorem below asserts it.
+
+\begin{lemma}[Triangularly weighted prime sums]\label{p-lem:eos-smoothed}
+Let $\chi$ be a Dirichlet character modulo $q$, induced by a primitive
+character $\chi^*$ of conductor $r\mid q$. Write $\delta_\chi=1$ when
+$\chi$ is principal and $\delta_\chi=0$ otherwise. Uniformly for $x\geq2$,
+\begin{equation}\label{p-eq:eos-smoothed}
+ S_\chi(x):=\sum_{p\leq x}\left(1-\frac px\right)(\log p)\chi(p)
+ =\delta_\chi\frac x2
+  +O\bigl(\sqrt{x}\log(2r)+\log(2q)\bigr).
+\end{equation}
+The implied constant is absolute. In particular, at $x=q$,
+\begin{equation}\label{p-eq:eos-at-q}
+ S_{\chi_0}(q)=\frac q2+O(\sqrt q),
+ \qquad
+ \max_{\chi\ne\chi_0}|S_\chi(q)|\ll\sqrt q\log q.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+We include the explicit-formula argument to keep track of the smoothing
+and the dependence on the conductor. This is the standard first-order
+smoothed estimate; see Montgomery~\cite[\S13, (13.19)]{p-Montgomery1971}
+and, for its quadratic-character form,
+Shparlinski--Sutherland~\cite[\S3.1]{p-SS2017}.
+
+For a primitive character $\chi^*$, Mellin inversion gives
+\[
+ \Psi_1(x,\chi^*)
+ :=\sum_{m\leq x}\left(1-\frac mx\right)\Lambda(m)\chi^*(m)
+ =\frac1{2\pi i}\int_{(2)}
+   -\frac{L'}{L}(s,\chi^*)\frac{x^s}{s(s+1)}\,ds.
+\]
+Move the contour to $\operatorname{Re}s=-1/2$, taking horizontal
+heights that stay away from zero ordinates and then tending to infinity.
+The factor $1/[s(s+1)]$ makes the resulting zero sum absolutely
+convergent. The residues at the nontrivial zeros and at the pole $s=1$
+give
+\begin{equation}\label{p-eq:eos-explicit}
+ \Psi_1(x,\chi^*)
+ =\delta_\chi\frac x2
+   -\sum_{\rho}\frac{x^\rho}{\rho(\rho+1)}
+   +O\bigl(\log(2rx)\bigr),
+\end{equation}
+where zeros are counted with multiplicity.
+
+Here are bounds for the remaining terms in this contour calculation.
+The functional equation and the absolutely convergent Dirichlet series
+on $\operatorname{Re}s=3/2$ give
+\[
+ \left|\frac{L'}{L}(-1/2+it,\chi^*)\right|
+ \ll\log\bigl(2r(|t|+2)\bigr).
+\]
+Thus the integral on the new vertical line is
+$O(x^{-1/2}\log(2r))$. For a nonprincipal primitive character, the
+regular part of $L'/L$ at $s=0$ is $O(\log(2r))$ under GRH. To see
+this directly, the logarithmic derivative of the completed $L$-function
+at $s=1$ differs from its value at $s=2$ by the absolutely convergent
+sum
+\[
+ \sum_\rho\left(\frac1{1-\rho}-\frac1{2-\rho}\right)
+ \ll\log(2r).
+\]
+Indeed, under GRH its summands are $O((1+|\operatorname{Im}\rho|^2)^{-1})$,
+and the standard local zero count is
+\[
+ \#\{\rho:T\leq|\operatorname{Im}\rho|<T+1\}
+ \ll\log\bigl(2r(T+2)\bigr).
+\]
+The value at $s=2$ is $O(\log(2r))$ by the Euler product; the
+functional equation transfers the bound to the regular part at $s=0$.
+Consequently the residue at $s=0$ is $O(\log(2r)+\log(2x))$, including
+the possible double pole for even $\chi^*$. For the primitive principal
+character, $L(s,\chi^*)=\zeta(s)$ and this residue is bounded absolutely.
+These observations justify the remainder in \eqref{p-eq:eos-explicit}.
+
+Since $\rho=1/2+i\gamma$ under GRH, the same local zero count gives
+\[
+ \sum_\rho\frac1{|\rho(\rho+1)|}\ll\log(2r).
+\]
+Equation~\eqref{p-eq:eos-explicit} therefore implies
+\[
+ \Psi_1(x,\chi^*)
+ =\delta_\chi\frac x2+O\bigl(\sqrt{x}\log(2r)\bigr),
+\]
+where $\log(2x)\ll\sqrt x$ absorbs the remaining logarithm.
+
+Removing the higher prime powers costs at most
+\[
+ \sum_{\substack{k\geq2\\p^k\leq x}}\log p
+ \leq\sum_{2\leq k\leq\log_2x}\vartheta(x^{1/k})
+ \ll\sqrt x+x^{1/3}\log(2x)\ll\sqrt x,
+\]
+by the elementary Chebyshev bound $\vartheta(t)\ll t$.
+Finally, on primes the induced and primitive characters differ only
+at primes dividing $q$ but not $r$. Their total contribution is at most
+\[
+ \sum_{p\mid q}\log p\leq\log q.
+\]
+This proves \eqref{p-eq:eos-smoothed} without an extra logarithm from
+imprimitive Euler factors. For comparison, if one instead compares
+the full von Mangoldt sums before removing prime powers, the discrepancy
+is bounded by $\omega(q)\log x$; that bound also suffices at $x=q$.
+For the principal character $r=1$, which gives the sharper first
+estimate in \eqref{p-eq:eos-at-q}.
+\end{proof}
+
+\begin{theorem}[At most a logarithmic exceptional set]\label{p-thm:eos-log3}
+For every sufficiently large integer $q$,
+\begin{equation}\label{p-eq:eos-log3}
+ |G_q\setminus E_2(q)|
+ \ll\left(\frac{\varphi(q)}q\right)^2(\log q)^3
+ \ll(\log q)^3.
+\end{equation}
+All implied constants are absolute.
+\end{theorem}
+
+\begin{proof}
+Put $w(p)=(1-p/q)\log p$ for primes $p<q$ with $p\nmid q$, and
+view these weights as a function $w:G_q\to[0,\infty)$, zero elsewhere.
+The primes in question occupy distinct residue classes, also for
+composite $q$. With the unnormalized Fourier transform
+\[
+ \widehat w(\chi)=\sum_{a\in G_q}w(a)\chi(a),
+ \qquad W=\widehat w(\chi_0),
+\]
+Lemma~\ref{p-lem:eos-smoothed} and Chebyshev's bound give
+\[
+ W=\frac q2+O(\sqrt q),\qquad
+ B:=\max_{\chi\ne\chi_0}|\widehat w(\chi)|\ll\sqrt q\log q,
+ \qquad
+ \sum_{a\in G_q}w(a)^2
+ \leq(\log q)\vartheta(q)\ll q\log q.
+\]
+Use the unnormalized multiplicative convolution
+$(w*w)(a)=\sum_{b\in G_q}w(b)w(ab^{-1})$.
+Parseval and the convolution identity yield
+\begin{align*}
+ \sum_{a\in G_q}\left|(w*w)(a)-\frac{W^2}{n}\right|^2
+ &=\frac1n\sum_{\chi\ne\chi_0}|\widehat w(\chi)|^4\\
+ &\leq\frac{B^2}{n}\sum_\chi|\widehat w(\chi)|^2
+  =B^2\sum_{a\in G_q}w(a)^2
+  \ll q^2(\log q)^3.
+\end{align*}
+If $a\notin E_2(q)$, then $(w*w)(a)=0$. Thus, writing
+$K=|G_q\setminus E_2(q)|$,
+\[
+ K\frac{W^4}{n^2}\ll q^2(\log q)^3.
+\]
+Since $W\gg q$, this is precisely \eqref{p-eq:eos-log3}.
+\end{proof}
+
+\begin{corollary}[One fixed correction prime]\label{p-cor:eos-correction}
+For every sufficiently large integer $q$, there is one prime
+$\ell\nmid q$ such that
+\begin{equation}\label{p-eq:eos-correction}
+ \ell\ll(\log q)^6\log\log q,
+ \qquad
+ G_q=E_2(q)\cup\ell E_2(q).
+\end{equation}
+Equivalently, the same prime $\ell$, chosen once for $q$, lets every
+invertible residue be represented either by two primes at most $q$
+or by $\ell$ times two primes at most $q$. Repeated prime factors
+are permitted.
+\end{corollary}
+
+\begin{proof}
+Let $E=G_q\setminus E_2(q)$ and $K=|E|$.
+The set $EE^{-1}$ has at most $K^2$ elements. Among the first
+\[
+ M=K^2+\omega(q)+1
+\]
+primes, at most $\omega(q)$ divide $q$. Since $K\ll\log^3q$,
+the standard bound for the $M$th prime gives
+\[
+ p_M\ll M\log(2M)\ll(\log q)^6\log\log q<q
+\]
+for sufficiently large $q$. The remaining primes therefore represent
+distinct elements of $G_q$. At most $K^2$ of them can belong to
+$EE^{-1}$, so some prime $\ell\leq p_M$ satisfies
+$\ell\nmid q$ and $\ell\bmod q\notin EE^{-1}$.
+It follows that $E\cap\ell E=\varnothing$. Since the complement of
+$\ell E_2(q)$ is $\ell E$, this proves \eqref{p-eq:eos-correction}.
+The argument includes $E=\varnothing$.
+\end{proof}
+
+\paragraph{Relation to earlier work and the remaining problem.}
+For prime moduli, Erd\H{o}s, Odlyzko and S\'ark\"ozy proved in
+1987 that under their quasi-Riemann hypothesis the exceptional set
+has size $O(q^{2\theta-1}\log^5q)$; GRH gives the special case
+$O(\log^5q)$~\cite{p-EOS1987}. Theorem~\ref{p-thm:eos-log3} removes two
+logarithms from that displayed historical bound by using a triangular
+weight before applying Parseval. This is an elementary conditional
+refinement assembled here, not a verified claim of priority: the
+literature search has not established whether this smoothing argument
+or a stronger bound already appears elsewhere. Neither the exceptional
+set estimate nor the fixed-prime correction proves $E_2(q)=G_q$.
+They leave the possible existence of even one exceptional residue
+unresolved.
+
+
+
+
+
+\section{An inversion-pair obstruction to scalar Fourier arguments}
+
+\begin{theorem}\label{p-thm:inversion-countermodel}
+Let $q\ge257$ be a prime and $a\in\mathbb F_q^\times$.
+There exists a set $A\subseteq\mathbb F_q^\times$ such that
+\[
+ |A|=\left\lfloor\frac{q-1}{\log q}\right\rfloor,
+ \qquad a\notin A\cdot A,
+ \qquad
+ \max_{\chi\ne1}\left|\sum_{x\in A}\chi(x)\right|
+ \le12\sqrt q.
+\]
+Here the maximum is over the nonprincipal multiplicative characters
+of $\mathbb F_q^\times$, and repeated factors are allowed in $A\cdot A$.
+\end{theorem}
+
+\begin{proof}
+The map $\tau(x)=a/x$ is an involution.  It has $f\in\{0,2\}$ fixed
+points, namely the solutions of $x^2=a$.  Discard those fixed points and
+partition the other elements into $m=(q-1-f)/2$ two-element orbits.
+Independently for every orbit $\{x,y\}$, select no element with probability
+$1-2/\log q$, select $x$ with probability $1/\log q$, and select $y$
+with probability $1/\log q$.  Denote the resulting random set by $A_0$.
+At most one point is selected from each orbit, so
+$a\notin A_0\cdot A_0$ deterministically.
+
+The random size $Z=|A_0|$ has mean
+\[
+ \mu=\frac{q-1-f}{\log q}.
+\]
+For a nonprincipal character $\chi$, put $S_\chi=\sum_{x\in A_0}\chi(x)$.
+Character orthogonality gives
+\[
+ \mathbb E S_\chi
+ =-\frac1{\log q}\sum_{\tau(x)=x}\chi(x),
+ \qquad |\mathbb E S_\chi|\le\frac2{\log q}.
+\]
+Both the real and imaginary parts of $S_\chi$ are sums of independent
+orbit contributions.  Each centred contribution has absolute value at
+most $2$, and the sum of variances is at most
+$\mu\le q/\log q$.  The same bounds apply to $Z-\mu$.
+
+Bernstein's inequality, with $t=4\sqrt q$, shows for each such real
+sum $W$ that
+\[
+ \mathbb P(|W-\mathbb EW|>4\sqrt q)
+ \le2\exp\!\left(-\frac{16q}{2(q/\log q+(8/3)\sqrt q)}\right)
+ \le2q^{-4}.
+\]
+For the last inequality use
+$\log q\le(3/8)\sqrt q$, valid for $q\ge257$.
+The union bound over the real and imaginary parts of all $q-2$
+nonprincipal characters and over $Z$ has failure probability at most
+\[
+ (4(q-2)+2)q^{-4}<1.
+\]
+There is therefore a realization satisfying
+\[
+ |Z-\mu|\le4\sqrt q,
+ \qquad
+ |S_\chi|\le4\sqrt{2q}+\frac2{\log q}
+ \quad(\chi\ne1).
+\]
+
+Let $k=\lfloor(q-1)/\log q\rfloor$.  Since $k\le m$, we may obtain
+a set $A$ of exactly $k$ elements by deleting elements if $Z>k$, or by
+adding one element from each of sufficiently many unused two-element
+orbits if $Z<k$.  The number of changes is at most
+\[
+ |Z-k|\le4\sqrt q+2.
+\]
+These changes preserve $a\notin A\cdot A$, and change any character sum
+by at most their number.  Thus
+\[
+ \left|\sum_{x\in A}\chi(x)\right|
+ \le(4\sqrt2+4)\sqrt q+2+\frac2{\log q}
+ \le12\sqrt q.
+\]
+\end{proof}
+
+\paragraph{Scope.}
+This is not a counterexample to the Erd\H{o}s--Odlyzko--S\'ark\"ozy
+conjecture: the constructed sets are not sets of primes.  It proves only
+that prime-sized cardinality together with uniform scalar multiplicative
+character bounds---even $O(\sqrt q)$ bounds, stronger than the usual
+GRH bound $O(\sqrt q\log q)$ for primes up to $q$---does not logically
+force every residue to be a product of two set elements.  The construction
+is a standard independent-orbit probabilistic argument, and no novelty
+claim is made for it.
+
+
+
+
+
+\subsection{The exact two-prime term that remains uncontrolled}
+
+For prime $q$, let $\mathcal P_q$ be the primes below $q$ and put
+$F_q(\chi)=\sum_{p\in\mathcal P_q}\chi(p)$. The unweighted number
+of ordered two-prime representations of a unit $a$ is exactly
+\[
+ \frac1{q-1}\left(
+ |\mathcal P_q|^2+
+ \sum_{\chi\ne1}\overline{\chi(a)}F_q(\chi)^2\right).
+\]
+The unresolved issue is controlling the signed, cross-character sum
+well enough at every individual $a$. The GRH scalar upper bounds do
+not establish the required positivity. The inversion-pair construction
+above proves that this logical gap is real for arbitrary prime-sized
+sets. It does not prove that GRH itself cannot imply EOS by some other,
+prime-specific argument.
+
+This distinction also appears in another major direction:
+Kandhil--Languasco--Moree~\cite{p-KLM2026} derive a corrected Montgomery
+conjecture and Elliott--Halberstam from GRH together with an additional
+cross-character zero-pair-correlation conjecture. Their extra
+correlation assumption is not supplied by the finite-pool arguments
+in the present manuscript.
+
+
+
+\section{A second universality result: prime quadratic-residue graphs}\label{p-sec:prime-graphs}
+This section supplies a separate consequence of the same hypothesis.
+The qualitative graph on all primes $p\equiv1\pmod4$, with an edge when
+$(p/r)=1$, is already Cameron's prime realization of the countable random
+graph~\cite{p-Cameron}. We make no novelty claim for that construction.
+The result below is a uniform quantitative, deletion-resilient
+formulation for short intervals and progressions, derived from standard
+analytic inputs.
+
+\begin{theorem}[Induced patterns in short progressions]\label{p-thm:graphs}
+Assume $\pGRHD$. Fix
+\[
+ 0<e\le\tfrac12,\quad 0\le u<e,\quad
+ 0<v<e-u,\quad 0<\alpha\le1.
+\]
+Set $Y=X^{1/2+e}$. For every sufficiently large $X$, simultaneously
+for every integer $q\le X^u$ and every reduced residue $a\bmod q$
+with $a\equiv1\pmod{\gcd(q,4)}$, let
+\[
+ V=\{p:X<p\le X+Y,\ p\text{ prime},\ p\equiv a\pmod q,
+                  \ p\equiv1\pmod4\}.
+\]
+Every $W\subseteq V$ with $|W|\ge\alpha|V|$ contains an induced copy
+of every simple graph on at most
+\[
+ \left\lfloor(e-u-v)\log_2X\right\rfloor
+\]
+vertices, where distinct primes are adjacent precisely when their
+Legendre symbol is $+1$.
+\end{theorem}
+
+\begin{lemma}[An explicit spectral embedding bound]\label{p-lem:embedding}
+Let $L$ be a real symmetric matrix indexed by $V$, with diagonal zero,
+off-diagonal entries in $\{-1,1\}$, and $\|L\|_{\mathrm{op}}\le\lambda$,
+$\lambda\ge1$. If $W\subseteq V$ has size
+$m>8n^{3/2}2^n\lambda$, then every simple graph on $n\ge2$ vertices
+has an induced embedding in $W$, interpreting $+1$ as adjacency.
+\end{lemma}
+\begin{proof}
+Put $\beta=(1-1/n)/2$. Maintain a candidate set $R_j\subseteq W$ for
+each unchosen target vertex, initially $W$; the sets may overlap.
+For a future set $T$ and required sign $\sigma$, the available companions
+of a vertex $x$ number
+\[
+ N_\sigma(x,T)=
+ \frac{|T|-\pone_T(x)+\sigma(L\pone_T)_x}{2}.
+\]
+If this is smaller than $\beta|T|$ and $|T|\ge2n$, then
+$|(L\pone_T)_x|>|T|/(2n)$. The norm bound therefore permits at most
+$4n^2\lambda^2/|T|$ such bad vertices.
+
+Let $t=m\beta^{n-1}$. Since
+$(1-1/n)^{n-1}\ge e^{-1}$, the assumed bound gives
+$t>4n^{3/2}\lambda\ge2n$. Throughout the selection, each candidate
+set has size at least $t$ if every update retains a $\beta$-fraction.
+The union of bad vertices for fewer than $n$ future sets has size at
+most $4n^3\lambda^2/t<t$. Thus the current candidate set contains a
+vertex good for all future requirements. Choose it, intersect the
+future sets with its required neighbors or nonneighbors, and exclude
+that vertex. Induction completes an injective induced embedding.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{p-thm:graphs}]
+Put $Q=\operatorname{lcm}(4,q)$. Compatibility gives one reduced residue modulo $Q$.
+The GRH prime-count estimate from \eqref{p-eq:prime-character} yields,
+uniformly,
+\[
+ |V|=\frac{\pli(X+Y)-\pli(X)}{\varphi(Q)}+O(\sqrt X\log X)
+ \sim\frac{Y}{\varphi(Q)\log X}
+ \gg\frac{X^{1/2+e-u}}{\log X}.
+\]
+The relative error is $O(X^{u-e}\log^2X)=o(1)$.
+
+For primes in $V$, put $L_{pr}=(r/p)$. Quadratic reciprocity makes
+$L$ symmetric. Heath-Brown's quadratic large sieve~\cite[Theorem 1]{p-HB}
+states, for every $t>0$,
+\[
+ \sum_{\substack{m\le M\\m\text{ odd squarefree}}}
+ \left|\sum_{\substack{n\le N\\n\text{ odd squarefree}}}
+ a_n\left(\frac nm\right)\right|^2
+ \ll_t (MN)^t(M+N)
+       \sum_{\substack{n\le N\\n\text{ odd squarefree}}}|a_n|^2.
+\]
+Take $M=N=\lceil2X\rceil$, support the coefficients on $V$, and
+restrict the outer sum to $V$. This gives the unconditional bound
+$\|L\|_{\mathrm{op}}\ll_t X^{1/2+t}$.
+Choose $t=v/2$. For $n\le(e-u-v)\log_2X$,
+\[
+ 8n^{3/2}2^n\|L\|_{\mathrm{op}}
+ \ll_v(\log X)^{3/2}X^{1/2+e-u-v/2}
+ =o\!\left(\frac{X^{1/2+e-u}}{\log X}\right).
+\]
+Lemma~\ref{p-lem:embedding} applies to every allowed $W$.
+\end{proof}
+
+Any fixed surviving fraction is allowed, for example $\alpha=0.01$,
+with the sufficiently-large threshold depending on $\alpha$. The
+embedding is chosen after deletion and may differ for different target
+graphs. Arbitrary preselected seed vertices need not retain all possible
+extensions. For $q=1$ and $Y=X$, this graph consequence is already
+unconditional by the prime number theorem in the fixed progression
+$1\pmod4$; in short intervals the displayed conditional theorem supplies
+the necessary prime count. This distinction prevents attributing every
+part of the graph argument to GRH.
+
+\subsection{A verified Petersen graph inside one prime interval}
+The following ordered primes all lie in $(10^6,10^6+10^4]$ and are
+$1\pmod4$:
+\begin{center}
+\begin{tabular}{rrrrr}
+\toprule
+$p_0$ & $p_1$ & $p_2$ & $p_3$ & $p_4$\\
+1000033 & 1000037 & 1000213 & 1000537 & 1000429\\
+\midrule
+$p_5$ & $p_6$ & $p_7$ & $p_8$ & $p_9$\\
+1000289 & 1002109 & 1005313 & 1000117 & 1009097\\
+\bottomrule
+\end{tabular}
+\end{center}
+Their $45$ pairwise Legendre symbols give exactly the Petersen graph.
+All ten primalities were checked by trial division and every pairwise
+sign by Euler's criterion. This is a finite unconditional certificate,
+not a verification of the asymptotic threshold in the theorem.
+
+
+With indices $0,\ldots,4$ interpreted modulo five, the edge set is
+exactly
+\[
+ \{\{p_i,p_{i+1}\}:0\leq i<5\}
+ \ \cup\ \{\{p_i,p_{i+5}\}:0\leq i<5\}
+ \ \cup\ \{\{p_{i+5},p_{5+(i+2\bmod5)}\}:0\leq i<5\}.
+\]
+This describes the outer pentagon, the five spokes, and the inner
+pentagram without relying on a drawing.
+
+
+
+
+\section{Finite certificates and what they verify}\label{p-sec:certificates}
+The following examples were computed by exact modular arithmetic.
+Their coverage is independently verifiable without GRH; they illustrate
+the definitions and conclusions but do not establish the unknown
+numerical onset of the asymptotic theorems.
+
+For each prime $q$, take all primes $p\le\lfloor(\log q)^3\rfloor$.
+Retain $r=\lceil0.4d\rceil$ primes by taking the smallest $r-1$
+quadratic-residue primes and the smallest quadratic-nonresidue prime.
+The displayed $t$ is the size of a greedily extracted covering set;
+the lower bound is $\lceil\log_2(q-1)\rceil$.
+\begin{center}
+\begin{tabular}{rrrrrr}
+\toprule
+$q$ & pool $d$ & retained $r$ & covered & $t$ & lower bound\\
+\midrule
+101 & 25 & 10 & 100 & 8 & 7\\
+1,009 & 66 & 27 & 1,008 & 12 & 10\\
+10,007 & 137 & 55 & 10,006 & 16 & 14\\
+100,003 & 241 & 97 & 100,002 & 20 & 17\\
+\bottomrule
+\end{tabular}
+\end{center}
+For $q=101$, the eight selected primes are
+\[
+ (5,13,17,23,2,31,43,47).
+\]
+The successive numbers of represented nonzero residues are
+\[
+ 1,2,4,8,16,32,56,88,100.
+\]
+Retaining only the smallest $r$ quadratic-residue primes instead gives
+exactly $(q-1)/2$ represented residues in each of these four examples.
+
+The cubic obstruction is already visible at $q=1009$. Among the
+$66$ primes at most $330$, exactly $22$ belong to a cubic-character
+kernel. They squarefreely cover its $336$ residues. Adding the prime
+$2$, whose cubic-character value is a nontrivial cube root, produces
+a $23$-prime set that generates all $1008$ units but has only $672$
+squarefree-product residues. At $q=100003$, the analogous figures are
+$241$ candidate primes, $80$ kernel primes, and $66668$ represented
+residues after adding one prime, although the generated group has
+$100002$ elements. These finite examples also explain why an
+unqualified statement with merely $r>d/3$ would be too strong.
+
+\subsection{Constructive meaning and computational limits}
+The proofs prescribe finite choices: form a quadratic-basis set,
+select unused primes decreasing Fourier energy, and then select primes
+that shrink the missing set. All selections can be implemented by
+enumerating the group and comparing exact correlations. The compression
+proof guarantees existence and a finite construction; it does not give
+a polynomial-in-$\log q$ decoder or extraction algorithm. The complete
+representation table can have $\varphi(q)$ entries.
+
+
+
+\section{Self-contained verification code for the finite certificates}
+The following Python 3 code uses only the standard library. It verifies
+the displayed compressed covers, the quadratic half-group examples,
+both cubic obstructions, and the Petersen certificate. It is not part of
+the asymptotic proofs.
+\begin{lstlisting}[language=Python,basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,keepspaces=true,showstringspaces=false]
+from math import isqrt, log, ceil
+
+def prime(n):
+    return n >= 2 and all(n % d for d in range(2,isqrt(n)+1))
+
+def primes_up_to(n):
+    flags = bytearray(b"\x01") * (n+1)
+    flags[:2] = b"\x00\x00"
+    for p in range(2,isqrt(n)+1):
+        if flags[p]:
+            flags[p*p:n+1:p] = b"\x00" * ((n-p*p)//p+1)
+    return [i for i in range(2,n+1) if flags[i]]
+
+def products(q, ps):
+    out = {1}
+    for p in ps:
+        out |= {p*a % q for a in list(out)}
+    return out
+
+certificates = [
+    (101, [5, 13, 17, 23, 2, 31, 43, 47]),
+    (1009, [2, 3, 5, 7, 37, 67, 151, 11, 191, 157, 199, 29]),
+    (10007, [2, 3, 11, 13, 19, 47, 53, 61, 79, 5, 139, 433, 271, 211, 421, 71]),
+    (100003, [11, 17, 23, 41, 43, 71, 79, 83, 97, 101, 107, 131, 2, 911, 751, 857, 173, 733, 263, 113]),
+]
+for q, selected in certificates:
+    assert prime(q)
+    pool = primes_up_to(int(log(q)**3))
+    positive = [p for p in pool if pow(p,(q-1)//2,q)==1]
+    negative = [p for p in pool if pow(p,(q-1)//2,q)==q-1]
+    r = ceil(0.4*len(pool))
+    retained = positive[:r-1] + negative[:1]
+    assert len(set(selected)) == len(selected)
+    assert set(selected) <= set(retained)
+    assert len(products(q, selected)) == q-1
+    assert len(products(q, positive[:r])) == (q-1)//2
+
+for q, d, k, symbol in [
+        (1009, 66, 22, 374), (100003, 241, 80, 7120)]:
+    pool = primes_up_to(int(log(q)**3))
+    exponent = (q-1)//3
+    kernel = [p for p in pool if pow(p, exponent, q)==1]
+    assert len(pool)==d and len(kernel)==k
+    assert pow(2, exponent, q)==symbol and symbol!=1
+    assert len(products(q, kernel))==exponent
+    assert len(products(q, kernel+[2]))==2*exponent
+    # The kernel is covered and 2 lies outside it.
+    # Therefore the retained labels generate the full group.
+
+ps = [1000033,1000037,1000213,1000537,1000429,
+      1000289,1002109,1005313,1000117,1009097]
+assert all(prime(p) and p%4==1 and 10**6<p<=1010000
+           for p in ps)
+edges = set()
+for i,p in enumerate(ps):
+    for j in range(i):
+        r = ps[j]
+        a = 1 if pow(p,(r-1)//2,r)==1 else -1
+        b = 1 if pow(r,(p-1)//2,p)==1 else -1
+        assert a==b
+        if a==1: edges.add((j,i))
+expected = {tuple(sorted((i,(i+1)%5))) for i in range(5)}
+expected |= {(i,i+5) for i in range(5)}
+expected |= {tuple(sorted((i+5,5+(i+2)%5))) for i in range(5)}
+assert edges==expected and len(edges)==15
+print("All finite certificates verified.")
+\end{lstlisting}
+
+
+
+
+\section{A standard transcendence consequence and an independence barrier}
+\label{p-sec:transcendence-scope}
+
+The discussion of prime-representing constants contributes a standard
+consequence of an external theorem, not an additional discovery.
+Let $\xi_3$ denote the ordinary Mills constant: the least real
+$A>1$ for which $\lfloor A^{3^k}\rfloor$ is prime for every integer
+$k\geq1$. Saito's theorem~\cite[Theorem 1.8]{p-Saito2026} proves that
+$\xi_3$ is transcendental under the Density Hypothesis for the
+Riemann zeta function.
+
+\begin{corollary}[Saito's consequence under RH]\label{p-cor:mills}
+Assuming RH, the ordinary Mills constant is transcendental.
+\end{corollary}
+\begin{proof}
+Write $N(\sigma,T)$ for the number of nontrivial zeta zeros with
+real part at least $\sigma$ and imaginary part between $0$ and $T$.
+The Density Hypothesis asks, for each fixed $\delta>0$, for
+\[
+ N(\sigma,T)\ll_\delta T^{\,2(1-\sigma)+\delta}
+ \qquad(1/2\leq\sigma\leq1).
+\]
+Under RH this count is zero for $\sigma>1/2$, and at $\sigma=1/2$
+the usual zero-counting formula gives
+$N(1/2,T)\ll T\log(2T)\ll_\delta T^{1+\delta}$.
+Thus RH implies the Density Hypothesis. Saito's theorem applies.
+\end{proof}
+
+We also considered algebraic independence of $\xi_3$ and the analogous
+quartic constant $\xi_4$, defined using exponents $4^k$.
+Saito--Takeda~\cite{p-ST2022} prove algebraic independence for families
+with sufficiently rapidly increasing exponent ratios; that theorem's
+hypotheses do not cover the two constant-ratio sequences considered
+here. A polynomial relation between $\xi_3$ and $\xi_4$ does not imply
+that either constant is algebraic over $\mathbb Q$. Consequently a
+one-variable argument whose hypothesis is algebraicity cannot be
+applied to such a relation.
+
+The direct norm method has the following additional quantitative
+limitation. Put
+\[
+ p_n=\lfloor\xi_3^{3^n}\rfloor,\quad
+ r_m=\lfloor\xi_4^{4^m}\rfloor,\quad
+ a_n=p_n^{1/3^n},\quad b_m=r_m^{1/4^m}.
+\]
+For $K=3^n$ choose $m$ so that $K\leq4^m<4K$.
+The mean value theorem applied to $t^{1/K}$, together with
+$0\leq\xi_3^K-p_n<1$, gives
+\[
+ |\xi_3-a_n|\ll K^{-1}e^{-c_1K}.
+\]
+The analogous estimate gives
+$|\xi_4-b_m|\ll K^{-1}e^{-c_2K}$, with positive constants depending
+only on the two fixed constants.
+
+If a fixed nonzero polynomial $F\in\mathbb Z[X,Y]$ satisfied
+$F(\xi_3,\xi_4)=0$, its bounded derivatives on a compact neighborhood
+would therefore imply
+\[
+ |F(a_n,b_m)|\ll_F e^{-cK}
+\]
+for some $c>0$. On the other hand, $a_n,b_m$ are algebraic integers,
+and
+$[\mathbb Q(a_n,b_m):\mathbb Q]\leq3^n4^m<4K^2$.
+Every conjugate of $a_n$ has modulus $a_n$, and every conjugate of
+$b_m$ has modulus $b_m$, so every conjugate of $F(a_n,b_m)$ has
+modulus at most a fixed $C_F\geq2$. Whenever $F(a_n,b_m)\ne0$,
+its nonzero integral norm consequently gives only
+\[
+ |F(a_n,b_m)|\geq C_F^{-4K^2}
+ =e^{-O_F(K^2)}.
+\]
+These lower and upper bounds are compatible. Moreover, the required
+nonvanishing has not been established by this comparison. Thus the
+argument does not prove algebraic independence; it isolates a need
+for additional simultaneous arithmetic separation.
+
+
+
+\section{Dependency record for the five supplied declarations}
+The input declarations were taken as assumptions with the meanings
+specified in the request. The two zeta declarations supply RH; the
+Dirichlet nonvanishing statement, the all-character critical-line
+statement, and the primitive-character version supply the Dirichlet
+GRH setting. The following mathematical dependency chain is all that
+is used here:
+\[
+\begin{aligned}
+ \pGRHD&\ \Longrightarrow\ \text{uniform prime-character sums}\\
+       &\ \Longrightarrow\ \text{balanced finite prime pools}\\
+       &\ \Longrightarrow\ \text{the proved finite-group lemmas}.
+\end{aligned}
+\]
+No stronger GRH for general number fields, Artin $L$-functions, or
+prime-tuple correlation conjecture is assumed. Section~\ref{p-sec:prime-graphs} additionally
+uses the unconditional quadratic large sieve. The exact Lean definitions,
+the proofs of the five declarations, and a machine formalization of this
+paper are outside the present artifact.
+
+
+
+All asymptotic statements above leave their numerical starting
+moduli unspecified. The finite lemmas record explicit sufficient
+inequalities, but no verified finite starting range is claimed.
+The algorithms obtained by enumerating a unit group are finite
+constructions, not polynomial-in-$\log q$ extraction or decoding
+algorithms. The two-prime conjecture and the algebraic independence
+question just discussed remain unresolved here.
+
+\clearpage
+\part{Sharp graph deletion and vertex sampling}\label{r-part-graph}
+
+\section{Sharp deletion and sampling inequalities for Randi\'c indices}
+\label{g-sec-main}
+
+This part is independent of the Riemann-hypothesis assumptions used elsewhere
+in this manuscript.  Its main results are sharp inequalities for deleting a
+vertex or sampling a prescribed number of vertices from a finite graph.  The
+constants and all equality cases are determined.  The application to the
+Caporossi--Hansen conjecture is a reduction of a smallest counterexample to a
+graph with a cut vertex.  A stronger deletion statement is formulated below
+as a conjecture, and the unsuccessful gluing arguments are recorded as exact
+counterexamples to the proposed arguments, not as counterexamples to
+Caporossi--Hansen.  No assertion of historical priority is made for the
+sampling inequalities.
+
+\subsection{Conventions}
+\label{g-sub-conventions}
+
+All graphs are finite, simple, and undirected.  Unless connectivity is
+explicitly required, isolated vertices are allowed.  For a graph $G$ and
+$\alpha\in\mathbb R$, put
+\[
+ R_\alpha(G)=\sum_{uv\in E(G)}(d_G(u)d_G(v))^{-\alpha},
+ \qquad R(G)=R_{1/2}(G).
+\]
+Only edges occur in the sum, so no convention involving a zero degree raised
+to a negative power is needed.  The degrees in $R_\alpha(G[S])$ are the
+degrees in the induced graph $G[S]$, not the degrees in $G$.  In particular,
+$R_0(G)=|E(G)|$.  We write $G-v$ for $G[V(G)\setminus\{v\}]$.
+
+For a connected graph of order $n\ge2$, define
+\[
+ W(G)=\sum_{\{x,y\}\subseteq V(G)}d_G(x,y),\qquad
+ \mu(G)=\frac{2W(G)}{n(n-1)},\qquad
+ \tau_G(v)=\sum_{x\ne v}d_G(v,x).
+\]
+Thus $W$ is the Wiener index, $\mu$ is the average distance over distinct
+unordered pairs, and $\tau_G(v)$ is the transmission of $v$.  We also use
+\[
+ M(G)=\sum_{uv\in E(G)}\frac1{\max\{d_G(u),d_G(v)\}}.
+\]
+The symbols $K_n$, $P_n$, and $K_{1,n-1}$ denote the complete graph, path,
+and star, respectively.
+
+\subsection{The sharp one-vertex deletion inequality}
+\label{g-sub-deletion}
+
+\begin{theorem}[Sharp deletion inequality]
+\label{g-thm-deletion}
+Let $G$ have $n\ge3$ vertices and let $\alpha\ge0$.  Then
+\begin{equation}
+ \sum_{v\in V(G)}R_\alpha(G-v)
+ \le C_n(\alpha)R_\alpha(G),
+ \label{g-eq-deletion}
+\end{equation}
+where
+\begin{equation}
+ C_n(\alpha)=
+ \begin{cases}
+ (n-1)^{2\alpha}(n-2)^{1-2\alpha},&0\le\alpha\le\tfrac12,\\[2pt]
+ n-3+2^{2\alpha},&\alpha\ge\tfrac12.
+ \end{cases}
+ \label{g-eq-deletion-constant}
+\end{equation}
+The constant is best possible for every $n$ and $\alpha$.  For a graph with
+at least one edge, equality holds precisely in the following cases:
+\begin{enumerate}
+ \item $\alpha=0$: every graph;
+ \item $0<\alpha<\tfrac12$: $G=K_n$;
+ \item $\alpha=\tfrac12$: every nontrivial component is a clique of order
+ at least three;
+ \item $\alpha>\tfrac12$: every nontrivial component is a triangle.
+\end{enumerate}
+Isolated vertices are permitted in the last two cases.  Edgeless graphs
+satisfy equality for every $\alpha$.
+\end{theorem}
+
+\begin{proof}
+Fix an edge $uw$, and write $a=d_G(u)$, $b=d_G(w)$.  For a deleted vertex
+$z\notin\{u,w\}$, the contribution of this edge to $R_\alpha(G-z)$ is
+$(ab)^{-\alpha}A_zB_z$, where
+\[
+ A_z=
+ \begin{cases}
+ (a/(a-1))^\alpha,&z\sim u,\\
+ 1,&z\not\sim u,
+ \end{cases}
+\]
+and $B_z$ is defined in the same way with $w,b$ in place of $u,a$.
+If $a=1$, no eligible $z$ is adjacent to $u$, and $A_z=1$ for all eligible
+$z$; thus the displayed quotient is never evaluated at $a=1$.
+
+Set $q=2\alpha$ and, for positive integers $j$, let
+\[
+ f_q(j)=j\bigl((1+1/j)^q-1\bigr),\qquad f_q(0)=0.
+\]
+There are $a-1$ eligible neighbors of $u$, and therefore
+\[
+ \sum_{z\ne u,w}A_z^2=n-2+f_q(a-1).
+\]
+Cauchy--Schwarz gives
+\begin{equation}
+ \sum_{z\ne u,w}A_zB_z
+ \le\sqrt{\bigl(n-2+f_q(a-1)\bigr)
+              \bigl(n-2+f_q(b-1)\bigr)}.
+ \label{g-eq-edge-cauchy}
+\end{equation}
+For $q>0$, the identity
+\[
+ f_q(j)=q\int_0^1(1+t/j)^{q-1}\,dt
+\]
+shows that $f_q(j)$ is strictly increasing in $j\ge1$ when $0<q<1$,
+strictly decreasing when $q>1$, and equal to one when $q=1$.
+For $q=0$, it is zero.  Consequently, if $0<q<1$, the right side of
+\eqref{g-eq-edge-cauchy} is at most
+\[
+ n-2+f_q(n-2)=(n-1)^q(n-2)^{1-q}.
+\]
+If $q>1$, its upper bound is instead
+\[
+ n-2+f_q(1)=n-3+2^q.
+\]
+At $q=1$ the bound is $n-1$, and at $q=0$ it is $n-2$.
+Multiplying by $(ab)^{-\alpha}$ and summing over edges proves
+\eqref{g-eq-deletion}.
+
+We next check equality.  Every original edge has positive weight, so equality
+in the sum requires equality in each of the edgewise bounds.  For $0<q<1$,
+strict monotonicity forces $a=b=n-1$ on every edge.  The presence of one
+such edge forces every vertex to be incident with an edge, and then every
+vertex is universal.  Hence $G=K_n$.
+
+For $q>1$, both endpoint degrees must be two.  The two vectors in
+\eqref{g-eq-edge-cauchy} have the same squared norm, so equality in
+Cauchy--Schwarz requires $A_z=B_z$ for every eligible $z$.  Each endpoint
+has a unique remaining neighbor, and these neighbors must coincide.  Each
+edge therefore belongs to a triangle whose vertices have degree two; all
+nontrivial components are triangles.
+
+For $q=1$, both endpoint degrees must be at least two.  The squared norms
+again agree, and equality requires $A=B$.  Their exceptional entries have
+values $\sqrt{a/(a-1)}$ and $\sqrt{b/(b-1)}$.  These values are strictly
+decreasing functions of the degree.  It follows that $a=b$ and
+\begin{equation}
+ N_G(u)\setminus\{w\}=N_G(w)\setminus\{u\}.
+ \label{g-eq-true-twins}
+\end{equation}
+In a connected component satisfying \eqref{g-eq-true-twins} on every edge,
+the endpoints of every path of length two are adjacent.  A shortest path
+between any two vertices thus has length at most one.  The component is a
+clique, and its order is at least three because its degrees are at least
+two.  Conversely, all the stated graphs give equality.
+
+Finally,
+\[
+ R_\alpha(K_n)=\frac n2(n-1)^{1-2\alpha},
+\]
+so $K_n$ gives exactly the first ratio in
+\eqref{g-eq-deletion-constant}.  A triangle together with $n-3$ isolated
+vertices has $R_\alpha=3\cdot4^{-\alpha}$; deleting an isolated vertex
+preserves that value, and deleting a triangle vertex leaves a single edge
+of weight one.  Its ratio is $n-3+2^{2\alpha}$.  This proves sharpness.
+\end{proof}
+
+\begin{corollary}[The ordinary index]
+\label{g-cor-ordinary-deletion}
+For every graph of order $n\ge3$,
+\begin{equation}
+ \sum_vR(G-v)\le(n-1)R(G),\qquad
+ \sum_v\bigl(R(G)-R(G-v)\bigr)\ge R(G).
+ \label{g-eq-ordinary-deletion}
+\end{equation}
+For a connected graph of order at least three, equality holds exactly for
+a complete graph.  A component $K_2$ makes the inequality strict.
+\end{corollary}
+
+\begin{remark}
+The last qualification matters: for $G=K_2$ the left side of the first
+inequality in \eqref{g-eq-ordinary-deletion} is zero, whereas
+$(n-1)R(G)=1$.  For general graphs the equality components are cliques of
+order at least three, not arbitrary nontrivial cliques.
+\end{remark}
+
+\begin{proposition}[Negative exponents]
+\label{g-prop-negative-deletion}
+If $\alpha<0$, then
+\[
+ \sum_vR_\alpha(G-v)\le(n-2)R_\alpha(G).
+\]
+The coefficient is sharp.  A nonempty graph gives equality exactly when
+its nontrivial components are single edges.
+\end{proposition}
+
+\begin{proof}
+The edge weight is now a positive power of the product of its endpoint
+degrees.  Deleting a third vertex can only decrease it, and an edge survives
+exactly $n-2$ deletions.  If an endpoint has another neighbor, deleting that
+neighbor strictly decreases the surviving edge weight.  Thus equality on
+every edge is equivalent to every endpoint having degree one.  A matching
+with isolated vertices realizes the coefficient.
+\end{proof}
+
+\subsection{The exact envelope for uniform induced subgraphs}
+\label{g-sub-sampling}
+
+Let $2\le k<n$ and let $S$ be uniform among all $k$-element subsets of
+$V(G)$.  For $1\le d\le n-1$, define a hypergeometric variable $H_d$ by
+\begin{equation}
+ \Pr(H_d=h)=
+ \frac{\binom{d-1}{h}\binom{n-1-d}{k-2-h}}
+      {\binom{n-2}{k-2}}.
+ \label{g-eq-hypergeom}
+\end{equation}
+As usual, a binomial coefficient is zero when its lower argument lies
+outside the range from zero to its nonnegative upper argument.  Thus
+$H_d$ counts marked elements when $k-2$ elements are sampled from a
+population of $n-2$ containing $d-1$ marked elements.  Put
+\begin{equation}
+ F_{n,k,q}(d)=d^q\mathbb E(1+H_d)^{-q},\qquad
+ \mathcal D_{n,k,q}=\operatorname*{arg\,max}_{1\le d\le n-1}
+                    F_{n,k,q}(d).
+ \label{g-eq-sampling-F}
+\end{equation}
+
+\begin{theorem}[Sharp uniform-sampling inequality]
+\label{g-thm-sampling}
+For every $\alpha\ge0$ and every graph $G$ of order $n$,
+\begin{equation}
+ \mathbb E R_\alpha(G[S])\le
+ \frac{k(k-1)}{n(n-1)}
+ \max_{1\le d\le n-1}F_{n,k,2\alpha}(d)\,R_\alpha(G).
+ \label{g-eq-sampling-main}
+\end{equation}
+The coefficient is sharp.  For each maximizing degree $d$, the graph
+$K_{d+1}$ together with $n-d-1$ isolated vertices attains equality.
+
+If $\alpha>0$ and $G$ has at least one edge, equality holds if and only if
+every nontrivial component is a clique whose degree belongs to
+$\mathcal D_{n,k,2\alpha}$.  Isolated vertices are allowed.  At $\alpha=0$,
+every graph gives equality.
+\end{theorem}
+
+\begin{proof}
+An edge $uv$ is retained with probability
+\[
+ p_{n,k}=\frac{k(k-1)}{n(n-1)}.
+\]
+Condition on retaining its endpoints.  The remaining selected vertices
+form a uniform $(k-2)$-subset $T$ of the other $n-2$ vertices.  Write
+$a=d_G(u)$ and $b=d_G(v)$, and set
+\[
+ A_T=\left(\frac a{1+|T\cap(N_G(u)\setminus\{v\})|}\right)^\alpha,
+ \quad
+ B_T=\left(\frac b{1+|T\cap(N_G(v)\setminus\{u\})|}\right)^\alpha.
+\]
+The retained edge has weight $(ab)^{-\alpha}A_TB_T$.  The two squared
+moments are $F_{n,k,2\alpha}(a)$ and $F_{n,k,2\alpha}(b)$, so
+\begin{equation}
+ \mathbb E(A_TB_T)
+ \le\sqrt{F_{n,k,2\alpha}(a)F_{n,k,2\alpha}(b)}
+ \le\max_dF_{n,k,2\alpha}(d).
+ \label{g-eq-sampling-cauchy}
+\end{equation}
+Multiplication by the original edge weight and by $p_{n,k}$, followed by
+summation, proves \eqref{g-eq-sampling-main}.
+
+For a clique component, both conditional endpoint degrees are identical
+for every $T$.  The first inequality in \eqref{g-eq-sampling-cauchy} is
+therefore an equality.  If its original degree is maximizing, the second
+inequality is also exact.  This proves sharpness and the sufficiency of
+the stated equality condition.
+
+For necessity assume $\alpha>0$ and equality in the graph inequality.
+Every edge must attain both bounds in
+\eqref{g-eq-sampling-cauchy}.  In particular, its endpoints have
+$F(a)=F(b)=\max F$.  Equality in Cauchy--Schwarz, together with these equal
+squared norms, implies $A_T=B_T$ for every conditional sample $T$.
+Since $\alpha>0$, this is equivalent to
+\begin{equation}
+ \frac a{1+|T\cap(N_G(u)\setminus\{v\})|}
+ =
+ \frac b{1+|T\cap(N_G(v)\setminus\{u\})|}.
+ \label{g-eq-sample-ratio-equality}
+\end{equation}
+Taking reciprocals and expectations is useful here: for any degree $d$,
+\begin{equation}
+ \mathbb E\frac{1+H_d}{d}
+ =\frac{k-2}{n-2}
+  +\left(1-\frac{k-2}{n-2}\right)\frac1d.
+ \label{g-eq-reciprocal-mean}
+\end{equation}
+Because $k<n$, the coefficient of $1/d$ is positive.  Equality in
+\eqref{g-eq-sample-ratio-equality} consequently forces $a=b$.
+
+Suppose first that $3\le k<n$.  The two remaining neighborhoods then
+have equal intersection counts with every $(k-2)$-subset of a set of
+size $n-2$.  If two subsets $A,B$ have that property for sample size
+$s$ with $1\le s<N$, the quantities
+$\mathbf1_A(z)-\mathbf1_B(z)$ are equal for all population elements:
+exchange $z$ and $w$ in a common sample of $s-1$ other elements.
+Here $|A|=|B|=a-1$, so the common value is zero.  Hence $A=B$, giving
+\eqref{g-eq-true-twins}.  The component is a clique by the argument in
+Theorem~\ref{g-thm-deletion}, and its degree must maximize $F$.
+
+If $k=2$, the conditional sample is empty and $F_{n,2,q}(d)=d^q$.
+For $q>0$ the unique maximizing degree is $n-1$.  Every endpoint of every
+edge is universal, and the nonempty graph is $K_n$.  This agrees with
+the stated classification.  Finally, at $\alpha=0$ the assertion is just
+the exact expected edge count $\mathbb E|E(G[S])|=p_{n,k}|E(G)|$.
+\end{proof}
+
+\begin{remark}[Boundary cases]
+The restriction $k<n$ is essential to the equality classification.
+At $k=n$, the sample is $G$ itself and every graph gives equality.  If
+$k=0$ or $1$, the sampled index is zero.  An edgeless graph gives equality
+for every admissible parameter.  No additional regular-graph equality
+case appears at $k=2$.
+\end{remark}
+
+\subsubsection{A closed form up to the ordinary Randi\'c exponent}
+
+\begin{lemma}[The reciprocal hypergeometric moment]
+\label{g-lem-hypergeom-one}
+For $1\le d\le n-1$,
+\begin{equation}
+ F_{n,k,1}(d)=\frac{n-1}{k-1}
+ \left(1-
+ \frac{\binom{n-1-d}{k-1}}{\binom{n-1}{k-1}}\right).
+ \label{g-eq-hypergeom-one}
+\end{equation}
+Its maximizing degrees are exactly $d\ge n-k+1$.
+\end{lemma}
+
+\begin{proof}
+The identity
+\[
+ \frac d{h+1}\binom{d-1}{h}=\binom d{h+1}
+\]
+and Vandermonde's identity give
+\begin{align*}
+ F_{n,k,1}(d)
+ &=\frac{\sum_{j\ge1}\binom d j
+                   \binom{n-1-d}{k-1-j}}
+          {\binom{n-2}{k-2}}\\
+ &=\frac{\binom{n-1}{k-1}-\binom{n-1-d}{k-1}}
+          {\binom{n-2}{k-2}}.
+\end{align*}
+This is \eqref{g-eq-hypergeom-one}.  Its upper bound $(n-1)/(k-1)$
+is attained precisely when $n-1-d<k-1$, or $d\ge n-k+1$.
+\end{proof}
+
+\begin{corollary}[Closed sampling constant]
+\label{g-cor-closed-sampling}
+For $0\le\alpha\le\tfrac12$,
+\begin{equation}
+ \mathbb E R_\alpha(G[S])
+ \le \frac{k}{n}
+       \left(\frac{k-1}{n-1}\right)^{1-2\alpha}R_\alpha(G).
+ \label{g-eq-closed-sampling}
+\end{equation}
+For $0<\alpha<\tfrac12$, the only nonempty equality graph is $K_n$.
+For $\alpha=\tfrac12$, the nonempty equality graphs are precisely the
+disjoint unions of cliques of order at least $n-k+2$, with isolated
+vertices allowed.  At $\alpha=0$ every graph gives equality.
+\end{corollary}
+
+\begin{proof}
+Put $q=2\alpha$.  If $0<q<1$, Jensen's inequality for the strictly
+concave function $x^q$ yields
+\[
+ F_{n,k,q}(d)
+ =\mathbb E\left(\frac d{1+H_d}\right)^q
+ \le F_{n,k,1}(d)^q
+ \le\left(\frac{n-1}{k-1}\right)^q.
+\]
+Substitution in Theorem~\ref{g-thm-sampling} proves the coefficient.
+For $3\le k<n$ and $2\le d\le n-2$, the hypergeometric variable $H_d$
+is nonconstant: one can exchange a marked and an unmarked element in
+a sample of size between one and $n-3$.  Jensen is therefore strict.
+The degree $d=1$ does not maximize the last bound, leaving only $d=n-1$.
+For $k=2$, uniqueness follows from $F_{n,2,q}(d)=d^q$.  The equality
+classification in Theorem~\ref{g-thm-sampling} now gives $K_n$.
+
+At $q=1$, Lemma~\ref{g-lem-hypergeom-one} gives the exact maximizing
+degrees.  A clique with degree at least $n-k+1$ has order at least
+$n-k+2$, proving the critical equality statement.  The case $q=0$
+again follows by counting edges.
+\end{proof}
+
+\begin{corollary}[Normalized expectations and random deletion]
+\label{g-cor-normalized}
+For a graph $H$ of order $m\ge2$, define
+\[
+ \mathcal R_\alpha(H)=
+ \frac{R_\alpha(H)}{R_\alpha(K_m)}
+ =\frac{2R_\alpha(H)}{m(m-1)^{1-2\alpha}}.
+\]
+If $0\le\alpha\le\tfrac12$, then
+\begin{equation}
+ \mathbb E\mathcal R_\alpha(G[S])\le\mathcal R_\alpha(G).
+ \label{g-eq-normalized-expectation}
+\end{equation}
+Moreover, start with $G$ and repeatedly delete a uniformly chosen
+remaining vertex until two vertices remain.  The normalized index of the
+remaining induced graph is a supermartingale for this deletion process.
+In particular, at $\alpha=\tfrac12$ the normalization is $2R(H)/|V(H)|$.
+\end{corollary}
+
+\begin{proof}
+Divide \eqref{g-eq-closed-sampling} by
+$R_\alpha(K_k)=k(k-1)^{1-2\alpha}/2$.  For the process statement,
+condition at each step on the entire remaining graph and apply the
+one-step instance.  The inequality holds for every induced graph,
+including those with isolated vertices, so the conditional inequality
+is valid throughout the process.
+\end{proof}
+
+\begin{proposition}[Sampling at negative exponents]
+\label{g-prop-negative-sampling}
+For $\alpha<0$ and $2\le k<n$,
+\[
+ \mathbb E R_\alpha(G[S])\le
+ \frac{k(k-1)}{n(n-1)}R_\alpha(G).
+\]
+The coefficient is sharp, with nonempty equality precisely for matchings
+together with isolated vertices.
+\end{proposition}
+
+\begin{proof}
+Condition on an edge being retained.  Its endpoint degrees can only
+decrease, so its positive-power weight cannot increase.  If an endpoint
+has another neighbor, that neighbor has positive probability of being
+omitted because $k<n$, causing a strict decrease with positive
+probability.  Equality is therefore equivalent to every edge having
+both endpoint degrees one.  A matching attains the coefficient.
+\end{proof}
+
+\subsection{A reduction for the Caporossi--Hansen conjecture}
+\label{g-sub-CH}
+
+For $n\ge2$, put
+\begin{equation}
+ B_n=\sqrt{n-1}-2+\frac2n,\qquad
+ \mathcal S(G)=R(G)-\mu(G)-B_n.
+ \label{g-eq-CH-surplus}
+\end{equation}
+The Caporossi--Hansen additive conjecture asks whether
+\begin{equation}
+ \mathcal S(G)\ge0
+ \quad\text{for every connected graph of order }n\ge2.
+ \label{g-eq-CH}
+\end{equation}
+The star attains equality.  The conjecture originates with
+Caporossi and Hansen~\cite{g-CH2000}; its explicit formulation is also
+recorded as Conjecture~4.8 in~\cite{g-FMS2003}.  The argument below proves
+a reduction, not \eqref{g-eq-CH} for all graphs.
+
+\begin{lemma}[The standard star lower bound]
+\label{g-lem-star-lower}
+Every connected graph of order $n\ge2$ satisfies
+\begin{equation}
+ R(G)\ge\sqrt{n-1}.
+ \label{g-eq-star-lower}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+We include a self-contained spectral proof of this standard bound
+\cite{g-BE1998}.  Let $m=|E(G)|$, let $A$ be the adjacency matrix, and
+let $\rho$ be its largest eigenvalue.  Cauchy--Schwarz gives
+\[
+ R(G)\ge
+ \frac{m^2}{\sum_{uv\in E(G)}\sqrt{d_G(u)d_G(v)}}.
+\]
+Apply the Rayleigh quotient to the vector with entries $\sqrt{d_G(v)}$.
+Its squared norm is $2m$, and hence
+\[
+ \sum_{uv\in E(G)}\sqrt{d_G(u)d_G(v)}\le m\rho,
+ \qquad R(G)\ge m/\rho.
+\]
+For any vertex $u$, all $n-d_G(u)-1$ nonneighbors have degree at least
+one.  Therefore
+\[
+ \sum_{v\sim u}d_G(v)\le2m-d_G(u)-(n-d_G(u)-1)=2m-n+1.
+\]
+These are the row sums of $A^2$.  The maximum row-sum bound for a
+nonnegative matrix gives $\rho^2\le2m-n+1$.  Finally,
+\[
+ m^2-(n-1)(2m-n+1)=(m-n+1)^2\ge0.
+\]
+Since $m\ge n-1$, all quantities used above are positive and
+$R(G)\ge m/\sqrt{2m-n+1}\ge\sqrt{n-1}$.
+\end{proof}
+
+\begin{theorem}[A smallest counterexample has a cut vertex]
+\label{g-thm-cut-reduction}
+If \eqref{g-eq-CH} has a counterexample, every counterexample of smallest
+order has a cut vertex.
+\end{theorem}
+
+\begin{proof}
+Let $G$ be a counterexample of smallest order $n$.  The graph $K_2$
+satisfies equality, so $n\ge3$.  Suppose that $G$ has no cut vertex.
+Every $G-v$ is then connected and satisfies the conjecture by minimality.
+Deleting $v$ cannot decrease distances between surviving vertices, so
+\[
+ W(G-v)\ge W(G)-\tau_G(v).
+\]
+Writing $\mu=\mu(G)$, this becomes
+\begin{equation}
+ \mu(G-v)\ge
+ \frac{n\mu-2\tau_G(v)/(n-1)}{n-2}.
+ \label{g-eq-distance-deletion}
+\end{equation}
+Set $\Delta_v=R(G)-R(G-v)$.  The strict failure for $G$ and the validity
+for $G-v$ imply
+\begin{align}
+ \Delta_v
+ &< B_n-B_{n-1}+\mu-\mu(G-v)\notag\\
+ &\le B_n-B_{n-1}
+ +\frac2{n-2}\left(\frac{\tau_G(v)}{n-1}-\mu\right).
+ \label{g-eq-counterexample-decrement}
+\end{align}
+Now $\sum_v\tau_G(v)=n(n-1)\mu$, so summing cancels the transmission
+terms and yields
+\[
+ \sum_v\Delta_v<n(B_n-B_{n-1}).
+\]
+For $n\ge3$,
+\[
+ n(B_n-B_{n-1})
+ =\frac n{\sqrt{n-1}+\sqrt{n-2}}-\frac2{n-1}
+ <\sqrt{n-1}.
+\]
+Indeed, $(n-1)+\sqrt{(n-1)(n-2)}>n$.  But
+Corollary~\ref{g-cor-ordinary-deletion} and
+Lemma~\ref{g-lem-star-lower} give
+\[
+ R(G)\le\sum_v\Delta_v
+ <\sqrt{n-1}\le R(G),
+\]
+a contradiction.
+\end{proof}
+
+\begin{remark}[The scope of the reduction]
+The theorem does not prove the conjecture on the class of graphs without
+cut vertices by induction within that class: deleting a vertex can create
+cut vertices.  It proves that a globally smallest counterexample cannot
+belong to that class.  Eliminating its possible cut vertices is a separate
+problem.
+\end{remark}
+
+\subsection{Exact gluing identities and two failed envelopes}
+\label{g-sub-gluing}
+
+\begin{proposition}[Gluing at one vertex]
+\label{g-prop-gluing}
+Let connected graphs $G_1,\ldots,G_t$, $t\ge2$, meet only at a common
+root $v$, with no edges between their other vertices, and let their union
+be $G$.  Suppose each $G_i$ has at least two vertices.  Write
+\[
+ n_i=|V(G_i)|,\quad n=1+\sum_i(n_i-1),\quad
+ d_i=d_{G_i}(v),\quad d=\sum_i d_i,
+\]
+\[
+ A_i=\sum_{u\sim_{G_i}v}d_{G_i}(u)^{-1/2},\qquad
+ T_i=\sum_{x\in V(G_i)\setminus\{v\}}d_{G_i}(v,x).
+\]
+Then
+\begin{align}
+ R(G)&=\sum_iR(G_i)-L,
+ &L&=\sum_iA_i\left(\frac1{\sqrt{d_i}}-\frac1{\sqrt d}\right),
+ \label{g-eq-gluing-R}\\
+ W(G)&=\sum_iW(G_i)+\sum_i(n-n_i)T_i.
+ \label{g-eq-gluing-W}
+\end{align}
+Moreover,
+\begin{equation}
+ 0\le L\le\sum_i\sqrt{d_i}-\sqrt d.
+ \label{g-eq-gluing-loss}
+\end{equation}
+Equality in the upper bound holds precisely when every piece is a star
+rooted at its center.
+\end{proposition}
+
+\begin{proof}
+Every nonroot degree is unchanged by gluing, while the root degree changes
+from $d_i$ to $d$ in the $i$th piece.  This proves
+\eqref{g-eq-gluing-R}.  If $x\in G_i-v$ and $y\in G_j-v$ with $i\ne j$,
+their distance is $d_{G_i}(x,v)+d_{G_j}(v,y)$.  Thus the cross contribution
+of two pieces is $(n_j-1)T_i+(n_i-1)T_j$.  Summing over unordered pairs
+of pieces gives \eqref{g-eq-gluing-W}.
+
+All coefficients in $L$ are positive and $A_i\le d_i$, since every
+nonroot degree is at least one.  This proves \eqref{g-eq-gluing-loss}.
+Equality requires every neighbor of the root in every piece to have
+degree one.  Connectivity then forces that piece to be a star centered
+at the root.  Such stars do give equality.
+\end{proof}
+
+For two pieces, replacing each $R(G_i)$ by only its conjectural lower
+bound $\mu(G_i)+B_{n_i}$ gives the gluing envelope
+\begin{equation}
+ \mathcal E=
+ B_{n_1}+B_{n_2}-B_n+\mu(G_1)+\mu(G_2)-\mu(G)-L.
+ \label{g-eq-plain-envelope}
+\end{equation}
+If $\mathcal E\ge0$, those lower bounds suffice.  The next example shows
+that $\mathcal E$ need not be nonnegative, even though all the actual
+graphs satisfy the conjecture.
+
+\begin{example}[Two four-vertex paths]
+\label{g-ex-P4-gluing}
+Glue two copies of $P_4$ at endpoints.  The union is $P_7$ and
+\[
+ n_1=n_2=4,\quad d_1=d_2=1,\quad A_1=A_2=1/\sqrt2,
+ \quad T_1=T_2=6.
+\]
+Consequently $L=\sqrt2-1$, $\mu(G_i)=5/3$, and $\mu(G)=8/3$.
+The envelope \eqref{g-eq-plain-envelope} is
+\begin{equation}
+ \mathcal E=2\sqrt3-\sqrt2-\sqrt6+\frac8{21}<0.
+ \label{g-eq-P4-negative}
+\end{equation}
+Its value is approximately $-0.0186493$.  The strict sign follows, for
+example, by squaring the rational bounds
+$\sqrt3<1.732051$, $\sqrt2>1.414213$, and
+$\sqrt6>2.449489$.  This refutes the nonnegativity of the envelope, not
+the Caporossi--Hansen conjecture.
+\end{example}
+
+To formulate a stronger unsuccessful envelope, it is useful to record
+two additional lower bounds with their dependencies.
+
+\begin{lemma}[A degree bridge and a diameter consequence]
+\label{g-lem-degree-bridge}
+If $G$ is connected of order $n\ge2$ and has maximum degree $\Delta$, then
+\begin{equation}
+ R(G)\ge
+ \frac{n+(\sqrt\Delta-1)M(G)}{\sqrt\Delta+1}.
+ \label{g-eq-degree-bridge}
+\end{equation}
+Using the established theorem $M(G)\ge D(G)/2$ of
+Dvo\v r\'ak, Lidick\'y, and \v Skrekovski~\cite{g-DLS2011}, this implies
+\begin{equation}
+ R(G)\ge\frac{D(G)}2+\sqrt{n-D(G)+1}-1.
+ \label{g-eq-diameter-bridge}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Put $r=\sqrt\Delta$.  On an edge with degrees $a\le b$, set
+$x=\sqrt{b/a}$, so $1\le x\le r$.  The inequality
+$(x-1)(r-x)\ge0$ is equivalent to
+\[
+ \frac{r+1}{\sqrt{ab}}\ge\frac1a+\frac r b.
+\]
+Summing over edges gives $(r+1)R\ge n+(r-1)M$, because
+$\sum_{uv\in E}(1/d_u+1/d_v)=n$ for a graph without isolated vertices.
+This proves \eqref{g-eq-degree-bridge}.
+
+Let $D=D(G)$ and $e=n-D$.  On a diametral geodesic, a vertex has at most
+two neighbors on the geodesic; an outside vertex has neighbors in at most
+three consecutive positions, since otherwise it provides a shortcut.
+Counting outside vertices in either case gives $\Delta\le e+1$.
+The cited bound $M\ge D/2$ and \eqref{g-eq-degree-bridge} now give
+\[
+ R-\frac D2\ge\frac{e}{1+\sqrt\Delta}
+ \ge\frac e{1+\sqrt{e+1}}=\sqrt{e+1}-1.
+\]
+Only the input $M\ge D/2$ is external to this proof; the weighted
+distance theorem from the corpus is not needed here.
+\end{proof}
+
+\begin{example}[Two small brooms defeat a strengthened envelope]
+\label{g-ex-brooms}
+Let $H_j$ consist of a hub with two pendant leaves and a path of length
+$j$ attached at the hub, rooted at the other end of that path, for
+$j=2,3$.  Direct edge-cut and degree calculations give
+\[
+\begin{array}{c|ccccccc}
+ & n & T & W & M & \Delta & D & R\\ \hline
+ H_2&5&9&18&3/2&3&3&1/\sqrt2+1/\sqrt6+2/\sqrt3\\
+ H_3&6&14&32&2&3&4&1/\sqrt2+1/\sqrt6+2/\sqrt3+1/2
+\end{array}
+\]
+For clarity, the Wiener values follow from summing $s(n-s)$ over tree
+edges: for $H_2$ this is $4+4+6+4=18$, and for $H_3$ it is
+$5+5+9+8+5=32$.
+
+Consider the lower envelope
+\[
+ \mathcal L(H)=\max\left\{
+ \mu(H)+B_{|H|},\ \sqrt{|H|-1},\
+ \frac{|H|+(\sqrt\Delta-1)M(H)}{\sqrt\Delta+1},\
+ \frac D2+\sqrt{|H|-D+1}-1\right\}.
+\]
+The first term is available under induction; the other three are the
+proved lower bounds above.  Substitution gives
+\[
+ \mathcal L(H_2)=\sqrt3+\frac12,
+ \qquad \mathcal L(H_3)=\sqrt3+1.
+\]
+Indeed, in both cases the last two terms agree with these values and
+dominate the first two terms.
+
+Glue the roots.  Both roots originally have degree one and have a
+degree-two neighbor, so $L=\sqrt2-1$.  The resulting graph $G$ has
+\[
+ n=10,\qquad W(G)=18+32+5\cdot9+4\cdot14=151,
+ \qquad \mu(G)=151/45.
+\]
+Even this strengthened envelope leaves the negative remainder
+\begin{equation}
+ \mathcal L(H_2)+\mathcal L(H_3)-L-\mu(G)-B_{10}
+ =2\sqrt3-\sqrt2-\frac{37}{18}<0.
+ \label{g-eq-broom-negative}
+\end{equation}
+Its value is approximately $-0.00566750$.  The square-checked bounds
+$\sqrt3<1.732051$ and $\sqrt2>1.414213$ already prove strict negativity.
+The actual surplus is positive:
+\[
+ \mathcal S(G)=\frac2{\sqrt6}+\frac4{\sqrt3}-\frac{55}{18}
+ =\frac{6\sqrt6+24\sqrt3-55}{18}>0.
+\]
+For example, $\sqrt6>2.44$ and $\sqrt3>1.73$ prove the final sign.
+The example identifies information lost by the lower envelope; it does
+not refute any of its component lower bounds.
+\end{example}
+
+\subsubsection{A rooted consequence of the external weighted theorem}
+\label{g-sub-rooted-external}
+
+The preceding proved deletion and sampling results do not use the weighted
+distance theorem in the external corpus.  For completeness, the following
+derived estimate records exactly what one additional rooted specialization
+would supply.  Its dependency is explicit.
+
+\begin{proposition}[Conditional on the weighted distance inequality]
+\label{g-prop-rooted-weighted}
+Assume the following weighted inequality for a connected graph $H$:
+\begin{equation}
+ \sum_{x\ne y}p_xp_y d_H(x,y)+2\sum_xp_x^2\le M(H)+1
+ \quad\text{for every probability vector }p.
+ \label{g-eq-external-WD}
+\end{equation}
+This is the theorem stated and audited in the external manuscript
+\cite{g-VMRC227}; its full proof is not reproduced here.
+Root $H$ at $v$, put $m=|V(H)|-1$, $T=\tau_H(v)$, $W=W(H)$,
+and $M=M(H)$.  If
+\[
+ T>2m,\qquad
+ \frac Tm\ge\frac{2(W-T)}{m^2}+\frac2m,
+\]
+then
+\begin{equation}
+ (T-2m)^2\le
+ 2(M-1)\bigl((m+1)T-W-m(m+1)\bigr).
+ \label{g-eq-rooted-quadratic}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Give the root mass $1-t$ and each other vertex mass $t/m$, where
+$0\le t\le1$.  The left side of \eqref{g-eq-external-WD} is
+\[
+ 2+2at+2bt^2,
+ \quad
+ a=T/m-2,
+ \quad
+ b=1+1/m-T/m+(W-T)/m^2.
+\]
+The first assumption gives $a>0$.  The second is exactly $2b+a\le0$,
+so $b<0$ and the maximizing parameter $t_*=-a/(2b)$ lies in $(0,1]$.
+Applying \eqref{g-eq-external-WD} at $t_*$ yields
+$a^2\le-2b(M-1)$.  Multiplication by $m^2$ gives
+\eqref{g-eq-rooted-quadratic}.
+\end{proof}
+
+\subsection{The compensated deletion candidate}
+\label{g-sub-CD}
+
+\begin{conjecture}[Compensated noncut deletion]
+\label{g-conj-CD}
+Every connected graph $G$ of order $n\ge3$ has a noncut vertex $v$ such
+that
+\begin{equation}
+ nR(G)-(n-2)R(G-v)-\frac{2\tau_G(v)}{n-1}
+ \ge C_n^*,\qquad
+ C_n^*=nB_n-(n-2)B_{n-1}.
+ \label{g-eq-CD}
+\end{equation}
+\end{conjecture}
+
+The notation $C_n^*$ is separate from the proved coefficient
+$C_n(\alpha)$ in Theorem~\ref{g-thm-deletion}.  A useful exact expression
+for this candidate threshold is
+\begin{equation}
+ C_n^*=n\sqrt{n-1}-(n-2)\sqrt{n-2}-4+\frac2{n-1}.
+ \label{g-eq-CD-threshold}
+\end{equation}
+
+\begin{proposition}[The candidate would imply Caporossi--Hansen]
+\label{g-prop-CD-implies}
+If Conjecture~\ref{g-conj-CD} holds for every connected graph, then
+\eqref{g-eq-CH} holds for every connected graph.
+\end{proposition}
+
+\begin{proof}
+For any noncut vertex $v$, \eqref{g-eq-distance-deletion} implies
+\begin{align*}
+ n\mathcal S(G)-(n-2)\mathcal S(G-v)
+ &=nR(G)-(n-2)R(G-v)-n\mu(G)+(n-2)\mu(G-v)-C_n^*\\
+ &\ge nR(G)-(n-2)R(G-v)-\frac{2\tau_G(v)}{n-1}-C_n^*.
+\end{align*}
+A vertex supplied by \eqref{g-eq-CD} therefore gives
+$n\mathcal S(G)\ge(n-2)\mathcal S(G-v)$.  Induction from $K_2$, whose
+surplus is zero, proves the assertion.
+\end{proof}
+
+\begin{lemma}[Exact leaf decrement]
+\label{g-lem-leaf-decrement}
+Let $v$ be a leaf of a connected graph of order at least three, let $u$
+be its neighbor, and set $d=d_G(u)\ge2$.  Then
+\begin{align}
+ R(G)-R(G-v)
+ &=\frac1{\sqrt d}
+ -\left(\frac1{\sqrt{d-1}}-\frac1{\sqrt d}\right)
+     \sum_{w\in N_G(u)\setminus\{v\}}\frac1{\sqrt{d_G(w)}}
+ \label{g-eq-leaf-exact}\\
+ &=\sqrt d-\sqrt{d-1}
+ +\left(\frac1{\sqrt{d-1}}-\frac1{\sqrt d}\right)
+    \sum_{w\in N_G(u)\setminus\{v\}}
+       \left(1-\frac1{\sqrt{d_G(w)}}\right).
+ \label{g-eq-leaf-positive}
+\end{align}
+In particular, the decrement is at least $\sqrt d-\sqrt{d-1}$, with
+equality precisely when $G$ is a star centered at $u$.  Also,
+\[
+ \tau_G(v)=\tau_G(u)+n-2.
+\]
+\end{lemma}
+
+\begin{proof}
+The deleted edge has weight $1/\sqrt d$.  The only surviving weights
+that change are the other edges incident with $u$, where its degree drops
+from $d$ to $d-1$.  This gives \eqref{g-eq-leaf-exact}; adding and
+subtracting $d-1$ terms gives \eqref{g-eq-leaf-positive}.  Each summand
+in its last sum is nonnegative.  Equality forces all the other neighbors
+of $u$ to be leaves, and connectivity then forces a star.  For distances,
+every path from $v$ to a vertex other than $v$ begins with $vu$; summing
+these distances gives the transmission identity.
+\end{proof}
+
+\subsubsection{Why uncompensated deletion fails}
+
+The superficially stronger assertion that some noncut vertex always
+satisfies $\mathcal S(G)\ge\mathcal S(G-v)$ is false.
+For $n\ge3$,
+\[
+ R(P_n)=\frac{n-3}{2}+\sqrt2,\qquad
+ \mu(P_n)=\frac{n+1}{3},\qquad
+ \mathcal S(P_n)=\frac n6+\sqrt2+\frac16-\sqrt{n-1}-\frac2n.
+\]
+The only noncut vertices of a path are its endpoints, and
+\[
+ \mathcal S(P_5)-\mathcal S(P_4)=\sqrt3-\frac{26}{15}<0,
+ \qquad
+ \mathcal S(P_6)-\mathcal S(P_5)=\frac{67}{30}-\sqrt5<0.
+\]
+Both signs follow immediately by squaring positive rational bounds.
+
+The failure is not confined to small graphs.  Let $T_m$ have two hubs
+joined by a path of $2m$ edges and attach $m$ leaves to each hub.  Then
+$|T_m|=4m+1$, and every noncut vertex is a leaf.  Direct calculation gives
+\begin{equation}
+ R(T_m)=m-1+\frac{2m+\sqrt2}{\sqrt{m+1}},\qquad
+ \mu(T_m)=\frac{11m^2+18m+1}{3(4m+1)}.
+ \label{g-eq-doublebroom-values}
+\end{equation}
+For a leaf $v$,
+\[
+ \frac{\tau_{T_m}(v)}{4m}=m+\frac74-\frac1{4m}.
+\]
+Deleting a leaf preserves all surviving distances, so
+\[
+ \mu(T_m)-\mu(T_m-v)
+ =\frac2{4m-1}
+  \left(\frac{\tau_{T_m}(v)}{4m}-\mu(T_m)\right)
+ \longrightarrow\frac1{24}.
+\]
+Meanwhile \eqref{g-eq-leaf-exact} gives
+$R(T_m)-R(T_m-v)=O(m^{-1/2})$, and
+$B_{4m+1}-B_{4m}=O(m^{-1/2})$.  Thus
+\begin{equation}
+ \mathcal S(T_m)-\mathcal S(T_m-v)\longrightarrow-\frac1{24}.
+ \label{g-eq-doublebroom-failure}
+\end{equation}
+Every sufficiently large graph in this family defeats uncompensated
+one-vertex induction.  It is not a counterexample to
+Conjecture~\ref{g-conj-CD}: in fact
+$\mathcal S(T_m)=m/12+O(1)$, and the compensation
+$2\mathcal S(T_m)/(4m-1)$ tends to $1/24$, exactly the leading loss in
+\eqref{g-eq-doublebroom-failure}.
+
+For completeness, the Wiener calculation behind
+\eqref{g-eq-doublebroom-values} is elementary.  In a tree, an edge whose
+deletion gives component orders $s$ and $n-s$ contributes $s(n-s)$ to
+$W$, because precisely those separated pairs use the edge.  Here the
+$2m$ leaf edges contribute $8m^2$, and the path-edge cut sizes are
+$m+j$, $1\le j\le2m$.  Hence
+\[
+ W(T_m)=8m^2+\sum_{j=1}^{2m}(m+j)(3m+1-j)
+       =\frac{22m^3+36m^2+2m}{3},
+\]
+which proves the displayed average-distance formula.
+
+\subsection{Leaf-transfer curvature and an auxiliary obstruction}
+\label{g-sub-curvature}
+
+\begin{proposition}[Exact curvature under leaf transfer]
+\label{g-prop-leaf-curvature}
+Fix a connected core graph $K$ with at least two vertices.  At each core
+vertex $v$, attach $l_v\ge0$ pendant leaves.  Write $k_v=d_K(v)$,
+$d_v=k_v+l_v$, and $n=|V(K)|+\sum_vl_v$.  Extend the resulting formulas
+analytically to real nonnegative $l_v$.  Then
+\begin{equation}
+ \frac{\partial^2R}{\partial l_v^2}
+ =\frac{3\sum_{w\sim_Kv}d_w^{-1/2}-d_v-3k_v}{4d_v^{5/2}}<0,
+ \label{g-eq-curvature-diagonal}
+\end{equation}
+and, for distinct $u,v$,
+\begin{equation}
+ \frac{\partial^2R}{\partial l_u\partial l_v}
+ =\begin{cases}
+ (4d_u^{3/2}d_v^{3/2})^{-1},&uv\in E(K),\\
+ 0,&uv\notin E(K).
+ \end{cases}
+ \label{g-eq-curvature-cross}
+\end{equation}
+Along a transfer $l_u\mapsto l_u+t$, $l_v\mapsto l_v-t$, the total
+order is fixed and
+\begin{equation}
+ R''(t)<0,\qquad W''(t)=-2d_K(u,v),\qquad
+ (R-\mu)''(t)=R''(t)+\frac{4d_K(u,v)}{n(n-1)}.
+ \label{g-eq-transfer-curvature}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The exact index is
+\[
+ R=\sum_v\frac{l_v}{\sqrt{k_v+l_v}}
+   +\sum_{uv\in E(K)}\frac1{\sqrt{d_ud_v}}.
+\]
+Differentiating gives \eqref{g-eq-curvature-diagonal} and
+\eqref{g-eq-curvature-cross}.  Since $d_w\ge1$, the sum in the
+numerator of \eqref{g-eq-curvature-diagonal} is at most $k_v$; the
+numerator is therefore at most $-d_v<0$.  Along the transfer,
+$R''=R_{uu}+R_{vv}-2R_{uv}<0$.
+
+Let $h=|V(K)|$ and $\tau_K(v)=\sum_xd_K(v,x)$.  Counting core--core,
+leaf--core, same-site leaf, and distinct-site leaf pairs gives the
+polynomial
+\[
+ W=W(K)+\sum_v l_v(\tau_K(v)+h)
+       +\sum_vl_v(l_v-1)
+       +\sum_{u<v}l_ul_v(d_K(u,v)+2).
+\]
+Its second derivative along the transfer is
+$2+2-2(d_K(u,v)+2)=-2d_K(u,v)$.  Since $n$ is fixed, differentiation
+of $\mu=2W/[n(n-1)]$ proves the last identity.
+\end{proof}
+
+These formulas separate two competing effects.  The degree index is
+strictly concave under a transfer, but the subtraction of average distance
+adds a positive term proportional to the separation of the attachment
+sites.  Consequently, the concavity of $R$ alone does not justify moving
+all leaves to one hub when minimizing $R-\mu$.  A sufficient condition
+for an entire transfer interval to have strictly concave $R-\mu$ is
+\[
+ \frac{4d_K(u,v)}{n(n-1)}
+ <\frac1{4d_u(t)^{3/2}}+\frac1{4d_v(t)^{3/2}}
+ \quad\text{throughout that interval}.
+\]
+Under this additional condition the minimum on the interval occurs at an
+endpoint.  Without such a condition, the transfer argument remains
+incomplete.
+
+A separate tempting auxiliary comparison also fails.  Let
+\[
+ H(G)=\sum_{uv\in E(G)}\frac2{d_G(u)+d_G(v)}
+\]
+be the harmonic index.  Form a comb $Q_m$ by attaching one leaf to every
+vertex of $P_m$, with $m\ge3$, so $|Q_m|=2m$.  Direct degree counting gives
+\begin{align*}
+ R(Q_m)&=\frac{m-3}{3}+\frac2{\sqrt6}
+              +\frac{m-2}{\sqrt3}+\sqrt2,\\
+ H(Q_m)&=\frac{m-3}{3}+\frac45+\frac{m-2}{2}+\frac43.
+\end{align*}
+Therefore
+\[
+ \lim_{m\to\infty}
+ \frac{(2m-1)H(Q_m)}{2R(Q_m)^2}
+ =\frac{5/6}{(1/3+1/\sqrt3)^2}
+ =\frac{15}{8+4\sqrt3}>1,
+\]
+where the strict sign follows from $7>4\sqrt3$.  Thus
+$H(G)\le2R(G)^2/(|G|-1)$ is false for infinitely many trees and cannot
+be used to justify the compensated deletion candidate.
+
+\subsection{Finite experiments and the remaining gap}
+\label{g-sub-computation}
+
+The numerical search concerned Conjecture~\ref{g-conj-CD}, not the
+proved sampling theorems.  For a connected graph of order $n\ge3$, its
+tested score was
+\[
+ \operatorname{score}(G)=
+ \max_{v\ \mathrm{noncut}}
+ \left(2R(G)+(n-2)(R(G)-R(G-v))
+             -\frac{2\tau_G(v)}{n-1}-C_n^*\right).
+\]
+The conjecture requires this score to be nonnegative.  The computation
+used NetworkX~3.7 and ordinary floating-point arithmetic, with tolerances
+of order $10^{-8}$.  It was not an interval-arithmetic or formal proof.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}lXr@{}}
+\toprule
+Collection & Scope & Observed failures\\
+\midrule
+Connected graph atlas & all $994$ connected graphs, $3\le n\le7$ & $0$\\
+Unlabeled trees & all $32{,}506$ trees, $3\le n\le16$ & $0$\\
+Structured random tests & $600$ generated graphs, fixed seed $20261121$ & $0$\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+For the tree enumeration the counts at orders $10,\ldots,16$ were
+$106$, $235$, $551$, $1301$, $3159$, $7741$, and $19320$, respectively.  Stars have exact zero
+score.  Among the nonstars in the exhaustive atlas and tree checks, the
+smallest reported score was approximately $0.0120192597$, attained by
+$P_6$; its exact expression is
+$2\sqrt2-6\sqrt5+53/5$.
+
+The structured tests used path, star, cycle, complete, random-tree, and
+augmented-tree cores, with core orders drawn from
+$\{3,4,5,6,8,10,15,20\}$.  Leaf-load scales ranged from $2$ to $1000$;
+subdivision lengths were generated using exponents $0,1/2,2/3,1$.
+Attachments included leaves, paired attachments, path-like chains of
+attachments, and some clique attachments.  The implementation's mode
+named \texttt{cycle} joins the attachment vertices in a path, while each
+also remains adjacent to the core vertex; it should not be read as an
+unqualified cycle graph.  The random search stopped scanning vertices
+as soon as it found a positive witness.  Consequently, its recorded
+positive margins are lower bounds for the maximum score, not necessarily
+the exact maxima.  The retained worst floating-point value was
+$-4.44\times10^{-16}$ on the three-vertex star, consistent with rounding
+of its exact zero score.  The full reproducibility script is included in
+Appendix~\ref{r-graph-code}.
+
+The computations motivate further study of
+Conjecture~\ref{g-conj-CD}; they do not establish it.  The proved outcomes
+of this part are Theorems~\ref{g-thm-deletion}, \ref{g-thm-sampling}, and
+\ref{g-thm-cut-reduction}, their corollaries, and the exact transformation
+identities and counterexamples above.  The outstanding mathematical step
+is to prove the compensated noncut deletion statement, or to eliminate
+cut vertices in a smallest Caporossi--Hansen counterexample by a different
+argument.
+
+\clearpage
+\part{Zero correlations and arithmetic frontiers}\label{r-part-frontier}
+
+\providecommand{\fCl}{\operatorname{Cl}}
+\providecommand{\fden}{\operatorname{den}}
+
+\section{A conditional zero-energy criterion for prime gaps}
+\label{f-sec-zero-energy}
+
+This part records a complete implication from an additional, explicitly
+stated hypothesis on zeta-zero phases to primes in intervals of length
+$o(\sqrt{x})$.  The Riemann hypothesis is assumed throughout this section.
+The additional phase hypothesis is not proved here, and it is not identified
+with RH or with Dirichlet GRH.  The subsequent sections prove a transfer
+identity that isolates one of its missing estimates, and record exact
+obstructions to several attempted transfers.  Their purpose is to retain
+the mathematically checkable progress without treating an unproved input as
+a conclusion.
+
+We use $\psi(x)=\sum_{m\le x}\Lambda(m)$, with the usual von Mangoldt
+function.  The nontrivial zeros are written $1/2+i\gamma$; ordinates are
+counted with their multiplicities.  Standard zero counting and the truncated
+explicit formula are used in their usual forms; see
+\cite{f-titchmarsh}.  Unless otherwise stated, constants in $O$ and $\ll$
+are absolute, and logarithms are natural.
+
+\subsection{The precise extra hypothesis}
+\label{f-sub-q-definition}
+
+For an integer $n\ge2$, put
+\[
+ X=n^2,\qquad \eta=\frac1{50},\qquad
+ I_n=[X-10n,X+10n].
+\]
+For real $T>1$ define
+\[
+ B_T(u)=\sum_{T<\gamma\le2T}u^{i\gamma}.
+\]
+For $L>0$, put $M=L\log T$ and
+\begin{equation}
+ P_{T,L}(n)=
+ \sum_{\substack{T<\gamma\le2T\\T<\gamma'\le2T}}
+ X^{i(\gamma-\gamma')}
+ \exp\!\left(-\frac{(\gamma-\gamma')^2}{L^2\log^2T}\right).
+ \label{f-eq-gaussian-energy}
+\end{equation}
+The sum is real and nonnegative, as will follow from
+Lemma~\ref{f-lem-fourier-positive}.  The height $T$ is not restricted to
+integers or to a predetermined dyadic grid.
+
+\begin{hypothesis}[Gaussian phase condition $Q$]
+\label{f-hyp-q}
+With the preceding definitions,
+\begin{equation}
+ \lim_{L\to\infty}\ \limsup_{n\to\infty}\
+ \sup_{n^{1/50}\le T\le n^2}
+ \frac{P_{T,L}(n)}{LT\log T}=0.
+ \label{f-eq-q}
+\end{equation}
+The supremum is over all real $T$ in the displayed interval.
+\end{hypothesis}
+
+In particular, $L$ is fixed before $n$ tends to infinity.  An estimate whose
+threshold in $n$ depends on $L$ can be sufficient; interchanging the two
+limits is not part of the hypothesis.  A stronger sufficient assertion
+would be the following: there is one constant $C$ such that, for every
+fixed sufficiently large $L$, all sufficiently large $n$ satisfy
+\begin{equation}
+ P_{T,L}(n)\le C T\log T
+ \quad(n^{1/50}\le T\le n^2).
+ \label{f-eq-q-prime}
+\end{equation}
+The threshold for $n$ may depend on $L$, but $C$ must not.  Dividing by
+$LT\log T$ proves that \eqref{f-eq-q-prime} implies $Q$.
+
+\begin{theorem}[Consequences of the Gaussian phase condition]
+\label{f-thm-q-prime-gaps}
+Assume RH and Hypothesis~\ref{f-hyp-q}.  Then, for each fixed real
+$c\in(0,1]$,
+\begin{align}
+ \psi(x+c\sqrt{x})-\psi(x)&\sim c\sqrt{x},
+ \label{f-eq-short-psi}\\
+ \pi(x+c\sqrt{x})-\pi(x)&\sim\frac{c\sqrt{x}}{\log x}
+ \qquad(x\to\infty).
+ \label{f-eq-short-primes}
+\end{align}
+In addition,
+\begin{equation}
+ \pi((n+1)^2)-\pi(n^2)\sim\frac n{\log n},
+ \label{f-eq-squares-asymptotic}
+\end{equation}
+and consecutive primes satisfy
+\begin{equation}
+ p_{k+1}-p_k=o(\sqrt{p_k}).
+ \label{f-eq-small-prime-gaps}
+\end{equation}
+In particular, there is a prime between consecutive sufficiently large
+integer squares.  No finite threshold or verification of the remaining
+small squares is asserted.
+\end{theorem}
+
+The proof is given in full below.  The use of a positive Fourier kernel is
+classical in the connection between zero correlations and short intervals;
+related conditional frameworks include \cite{f-lpz,f-gwx}.  We make no
+claim that the formulation above is historically optimal or new.
+
+\subsection{Positive Fourier representation and its limitations}
+\label{f-sub-positive-kernel}
+
+\begin{lemma}[Gaussian Fourier identity]
+\label{f-lem-fourier-positive}
+For the quantities in \eqref{f-eq-gaussian-energy},
+\begin{equation}
+ P_{T,L}(n)=\frac{M}{2\sqrt\pi}
+ \int_{\mathbb R}e^{-M^2v^2/4}|B_T(Xe^v)|^2\,dv\ge0.
+ \label{f-eq-positive-integral}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The elementary Fourier transform
+\[
+ \frac{M}{2\sqrt\pi}\int_{\mathbb R}
+ e^{-M^2v^2/4}e^{irv}\,dv=e^{-r^2/M^2}
+\]
+applies to each term after expanding the square.  There are finitely many
+zeros in the height block, so the interchange requires no limiting
+argument.  The integrand is nonnegative.
+\end{proof}
+
+\begin{remark}[What positivity does not say]
+\label{f-rem-psd-limitations}
+The diagonal contribution $\#\{T<\gamma\le2T\}$ is not a lower bound for
+$P_{T,L}(n)$: modulated off-diagonal terms can be negative.  Nor are
+quadratic energies monotone under passage to larger principal submatrices.
+For example, the positive definite matrix
+\[
+ K=\begin{pmatrix}1&\rho\\\rho&1\end{pmatrix},\qquad 0<\rho<1,
+\]
+has energy $(1,-1)K(1,-1)^{\mathsf t}=2-2\rho<2$, and this energy is less
+than the one-coordinate energy $1$ when $\rho>1/2$.  This is also a Gaussian
+kernel example: take $\rho=e^{-r^2/M^2}$ and a modulation with
+$x^{ir}=-1$.  Thus positive semidefiniteness by itself gives neither the
+desired arithmetic phase bound nor permission to discard an arbitrary
+subset of zero ordinates from an energy estimate.
+
+The proof below only restricts the nonnegative integral in
+\eqref{f-eq-positive-integral}; it never uses the invalid principal-submatrix
+monotonicity assertion.
+\end{remark}
+
+\begin{remark}[An operator-norm obstruction to a phase-blind estimate]
+\label{f-rem-operator-norm}
+Suppose $M=L\log T$, with $L>0$ fixed and $T$ large.  A subinterval of
+length $M$ in the interior of $(T,2T]$ contains $\asymp M\log T$ ordinates,
+by the standard zero-counting formula with $O(\log T)$ remainder.  On those
+ordinates the unmodulated Gaussian matrix has all entries at least $e^{-1}$.
+Testing on the constant vector shows that its operator norm is
+$\gg M\log T$.  Modulation is conjugation by a diagonal unitary matrix and
+does not change that norm.  Consequently an operator-norm argument that
+ignores the particular arithmetic modulation cannot, by positivity alone,
+supply the small energy required by $Q$.  This observation concerns that
+proof strategy, not the logical consequences of RH.
+\end{remark}
+
+\begin{lemma}[Moving a Gaussian energy to a nearby square]
+\label{f-lem-square-centre}
+Fix any finite set of ordinates and write
+\[
+ \mathcal P_M(x)=\sum_{\gamma,\gamma'}
+ x^{i(\gamma-\gamma')}e^{-(\gamma-\gamma')^2/M^2}.
+\]
+If $x,Y>0$ and $\epsilon=\log(x/Y)$, then
+\begin{equation}
+ \mathcal P_M(x)\le
+ 2e^{M^2\epsilon^2/12}\mathcal P_{M/2}(Y).
+ \label{f-eq-square-comparison}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Apply \eqref{f-eq-positive-integral} with this finite set and change
+variables from $v$ to $w=v+\epsilon$.  The inequality
+\[
+ (w-\epsilon)^2\ge\frac{w^2}{4}-\frac{\epsilon^2}{3}
+\]
+follows by completing the square.  It bounds the Gaussian weight by
+$e^{M^2\epsilon^2/12}e^{-M^2w^2/16}$.  The normalizing prefactor for the
+kernel with width $M/2$ is half the original prefactor, giving the factor
+$2$ in \eqref{f-eq-square-comparison}.
+\end{proof}
+
+For $Y$ a neighboring square, $|\epsilon|=O(x^{-1/2})$.  For fixed $L$ and
+$M=L\log T$ in the relevant height range, the exponential factor in
+\eqref{f-eq-square-comparison} tends uniformly to $1$.  More precisely,
+$Q$ is equivalent to the analogous condition with real centers $x\to\infty$
+and $x^{1/100}\le T\le x$.  To obtain that version from $Q$, set
+$n=\lfloor\sqrt{x}\rfloor$.  Use the center $n^2$ if $T\le n^2$ and the
+center $(n+1)^2$ otherwise.  In the latter case $T\asymp x$, so the lower
+height bound for $n+1$ also holds.  Apply
+\eqref{f-eq-square-comparison} with $L$ replaced by $L/2$ on the right.
+After division by $LT\log T$ the factor $2$ cancels that replacement.
+The converse follows by specializing the real center to a square.  Thus the
+restriction to square centers does not materially weaken the problem at
+this Gaussian resolution.
+
+\subsection{From block energies to cumulative zero sums}
+\label{f-sub-block-sums}
+
+\begin{lemma}[Local block bound]
+\label{f-lem-local-block}
+For each fixed $L>0$ and all sufficiently large $n$,
+\begin{equation}
+ \int_{I_n}|B_T(u)|^2\,du
+ \le 8\sqrt\pi\,\frac{X}{L\log T}P_{T,L}(n)
+ \quad(n^{1/50}\le T\le n^2).
+ \label{f-eq-local-block}
+\end{equation}
+Consequently, under $Q$, for every $\varepsilon>0$ one can first choose
+$L$ and then $n_0(L,\varepsilon)$ so that
+\begin{equation}
+ \|B_T\|_{L^2(I_n)}\le C\sqrt\varepsilon\,n\sqrt T
+ \quad(n\ge n_0,\ n^{1/50}\le T\le n^2).
+ \label{f-eq-small-block}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For $u\in I_n$, put $v=\log(u/X)$.  Uniformly there,
+$|v|\le20/n$ for large $n$, $du=u\,dv\le2X\,dv$, and
+$M\le2L\log n$.  Thus $e^{-M^2v^2/4}\ge1/2$ for large $n$, uniformly in
+the allowed $T$.  Restricting the nonnegative integral in
+\eqref{f-eq-positive-integral} to these $v$ gives
+\eqref{f-eq-local-block}.  The definition of the ordered limit in $Q$
+then supplies \eqref{f-eq-small-block}, with an absolute constant $C$.
+\end{proof}
+
+\begin{lemma}[Uniform cumulative-sum bound]
+\label{f-lem-cumulative}
+Put $S_t(u)=\sum_{0<\gamma\le t}u^{i\gamma}$.  Under $Q$, for each fixed
+$C_0>0$,
+\begin{equation}
+ \sup_{n/C_0\le t\le n^2}
+ \frac{\|S_t\|_{L^2(I_n)}}{n\sqrt t}\longrightarrow0.
+ \label{f-eq-cumulative}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Decompose $(0,t]$ into blocks
+$(t/2^j,t/2^{j-1}]$ as long as their lower endpoint is at least
+$n^{1/50}$.  Each is a complete block of the form used in
+\eqref{f-eq-small-block}.  The endpoints need not be integers; this is why
+$Q$ was stated for all real heights.  Minkowski's inequality gives a total
+norm at most
+\[
+ C\sqrt\varepsilon\,n\sqrt t
+ \sum_{j\ge1}2^{-j/2}\ll\sqrt\varepsilon\,n\sqrt t.
+\]
+The undecomposed bottom interval has upper endpoint below $2n^{1/50}$.
+The standard estimate $N(y)=O(y\log(y+3))$ bounds its contribution in
+$L^2(I_n)$ by
+\[
+ O\!\left(n^{1/2+1/50}\log n\right).
+\]
+Relative to $n\sqrt t$ this tends to zero uniformly for $t\ge n/C_0$.
+First let $n\to\infty$ with the previously selected $L$ fixed, and then
+let $\varepsilon\to0$.
+\end{proof}
+
+\subsection{A short-interval mean square and the pointwise recovery}
+\label{f-sub-short-interval-proof}
+
+\begin{lemma}[Uniform mean square near a square]
+\label{f-lem-mean-square}
+Let $K_n=[X-4n,X+4n]$.  For every fixed $0<c_0<c_1\le4$, RH and $Q$
+imply, uniformly for $c_0n\le h\le c_1n$,
+\begin{equation}
+ J_n(h):=\int_{K_n}
+ |\psi(u+h)-\psi(u)-h|^2\,du=o(Xh)=o(n^3).
+ \label{f-eq-j-small}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Choose a height $U=U_n\in[X/2,X]$ separated from zero ordinates by
+$\gg1/\log X$.  Such a height exists by unit-interval zero counting.  The
+truncated explicit formula, with this good height, gives uniformly on
+$I_n$
+\begin{equation}
+ \psi(u)=u-\sum_{|\gamma|\le U}
+ \frac{u^{1/2+i\gamma}}{1/2+i\gamma}+O(\log^2X).
+ \label{f-eq-explicit-local}
+\end{equation}
+At a discontinuity one may first use the half-weighted function $\psi_0$;
+the adjustment is $O(\log X)$ and is absorbed by the stated remainder.
+
+Set $a=X/h\asymp n$.  For the positive ordinates up to $a$,
+\[
+ \sum_{0<\gamma\le a}
+ \frac{(u+h)^{1/2+i\gamma}-u^{1/2+i\gamma}}{1/2+i\gamma}
+ =\int_0^h(u+v)^{-1/2}S_a(u+v)\,dv.
+\]
+Every translated integration interval lies inside $I_n$.  Minkowski's
+inequality and Lemma~\ref{f-lem-cumulative} therefore give
+\begin{align*}
+ \left\|\int_0^h(u+v)^{-1/2}S_a(u+v)\,dv\right\|_{L^2(K_n)}
+ &\le C hX^{-1/2}\|S_a\|_{L^2(I_n)}\\
+ &=o(h\sqrt a)=o(\sqrt{Xh}).
+\end{align*}
+
+For the higher positive ordinates, Abel summation gives the exact identity
+\begin{align}
+ \sum_{a<\gamma\le U}\frac{u^{i\gamma}}{1/2+i\gamma}
+ &=\frac{S_U(u)}{1/2+iU}-\frac{S_a(u)}{1/2+ia}
+ +i\int_a^U\frac{S_t(u)}{(1/2+it)^2}\,dt.
+ \label{f-eq-abel-high}
+\end{align}
+There is a number $e_n\to0$, depending only on $c_0,c_1$, for which
+$\|S_t\|_{L^2(I_n)}\le e_n n\sqrt t$ throughout the heights in this
+identity.  Hence its $L^2(I_n)$ norm is at most
+\[
+ C e_n n\left(U^{-1/2}+a^{-1/2}+
+ \int_a^Ut^{-3/2}\,dt\right)
+ \ll e_n n a^{-1/2}.
+\]
+Multiplication by $u^{1/2}\ll n$ gives $o(n^2/\sqrt a)
+=o(\sqrt{Xh})$.  Applying this bound at both $u$ and $u+h$ bounds their
+difference in the same way.  The negative ordinates contribute conjugate
+terms and introduce only a factor of two.  Finally, the explicit-formula
+remainder has $L^2(K_n)$ norm $O(n^{1/2}\log^2X)=o(n^{3/2})$.
+Combining these estimates and squaring proves
+\eqref{f-eq-j-small}, uniformly in the stated range of $h$.
+\end{proof}
+
+\begin{lemma}[Monotonicity upgrades the mean square]
+\label{f-lem-pointwise}
+For each fixed $c_0>0$, RH and $Q$ imply
+\begin{equation}
+ \psi(x+h)-\psi(x)=h+o(n)
+ \label{f-eq-pointwise-local}
+\end{equation}
+uniformly for
+\[
+ X-n\le x\le X+2n+1,\qquad c_0n\le h\le3n.
+\]
+\end{lemma}
+
+\begin{proof}
+Suppose first that an excess of at least $\varepsilon h$ occurs at some
+admissible $(x,h)$, along a sequence $n\to\infty$.  Let
+$\delta=\min\{\varepsilon/2,1/4\}$ and $H=(1+\delta)h$.
+For every $u\in[x-\delta h,x]$, the interval $(u,u+H]$ contains
+$(x,x+h]$.  Since $\psi$ is nondecreasing,
+\[
+ \psi(u+H)-\psi(u)-H\ge(\varepsilon-\delta)h.
+\]
+The interval of such $u$ lies in $K_n$ for large $n$.  It follows that
+\[
+ J_n(H)\ge\delta(\varepsilon-\delta)^2h^3\gg_{\varepsilon,c_0}n^3,
+\]
+contradicting Lemma~\ref{f-lem-mean-square}.
+
+For a deficit of at least $\varepsilon h$, instead set
+$H=(1-\delta)h$ and take $u\in[x,x+\delta h]$.  Now $(u,u+H]$ is
+contained in $(x,x+h]$, and
+\[
+ \psi(u+H)-\psi(u)-H\le-(\varepsilon-\delta)h.
+\]
+The same contradiction follows.  All lengths $H$ used here lie in one
+fixed interval $[c_0' n,4n]$, and their translates stay in $I_n$; these are
+exactly the domains of the preceding lemma.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{f-thm-q-prime-gaps}]
+First take $x=n^2$ and $h=2n+1$ in
+Lemma~\ref{f-lem-pointwise}.  Then
+\[
+ \psi((n+1)^2)-\psi(n^2)\sim2n.
+\]
+Prime powers of exponent at least two contribute only $O(\log^2X)$ in an
+interval of length $O(\sqrt X)$ near $X$.  Indeed there are $O(1)$ squares
+there; for every $k\ge3$ the corresponding interval for their bases has
+length $O(X^{1/k-1/2})$, hence contains $O(1)$ integers.  Only $O(\log X)$
+exponents can occur, each with weight at most $\log X$.  Removing those
+powers and using $\log p\sim\log X=2\log n$ proves
+\eqref{f-eq-squares-asymptotic}.
+
+For real $x\to\infty$, put $n=\lfloor\sqrt x\rfloor$.  Then
+$n^2\le x\le n^2+2n+1$.  For a fixed $c\in(0,1]$, the length
+$h=c\sqrt x$ lies between fixed positive multiples of $n$ and is at most
+$3n$ for large $n$.  Equation~\eqref{f-eq-pointwise-local} gives
+\eqref{f-eq-short-psi}.  The same prime-power estimate proves
+\eqref{f-eq-short-primes}.  Finally, for every fixed $\varepsilon>0$,
+\eqref{f-eq-short-primes}, with $c=\min\{\varepsilon,1\}$, places a
+prime in $(p_k,p_k+c\sqrt{p_k}]$ for all sufficiently large $k$.
+This is precisely \eqref{f-eq-small-prime-gaps}.
+\end{proof}
+
+\section{A positive-kernel transfer and its unresolved arithmetic estimate}
+\label{f-sec-transfer}
+
+This section derives an identity between one zero-energy scale and the
+mean square of an explicitly weighted prime Dirichlet series.  The identity
+is proved; the strong upper bound subsequently requested of that mean
+square is not.  In this section only, the center and the height are coupled
+by $X=T^2$.  Establishing a bound at this one scale would still leave the
+other heights in Hypothesis~\ref{f-hyp-q} to be treated.
+
+\subsection{Gaussian and Cauchy kernels}
+\label{f-sub-cauchy}
+
+Let $T$ be large, $X=T^2$, $1\le a\le T/10$, and $M=2a$.  Write
+$I=(T,2T]$ and
+\[
+ B(v)=\sum_{\gamma\in I}e^{i\gamma(\log X+v)}.
+\]
+For clarity the parameters in the following two energies are suppressed:
+\begin{align}
+ P_M&=\sum_{\gamma,\gamma'\in I}
+ X^{i(\gamma-\gamma')}e^{-(\gamma-\gamma')^2/M^2},
+ \label{f-eq-transfer-p}\\
+ F_M&=\sum_{\gamma,\gamma'\in I}
+ X^{i(\gamma-\gamma')}
+ \frac{M^2}{M^2+(\gamma-\gamma')^2}.
+ \label{f-eq-transfer-f}
+\end{align}
+
+\begin{lemma}[A positive comparison]
+\label{f-lem-cauchy-comparison}
+Both energies are nonnegative, and
+\begin{equation}
+ P_M\le\frac e{\sqrt\pi}F_M.
+ \label{f-eq-cauchy-comparison}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Fourier inversion gives
+\[
+ P_M=\frac M{2\sqrt\pi}\int_{\mathbb R}
+ e^{-M^2v^2/4}|B(v)|^2\,dv,\qquad
+ F_M=\frac M2\int_{\mathbb R}e^{-M|v|}|B(v)|^2\,dv.
+\]
+For $s\ge0$, $-s^2/4+s\le1$.  Therefore
+$e^{-M^2v^2/4}\le e\,e^{-M|v|}$, proving the comparison of the two
+nonnegative integrals.  No entrywise comparison of signed modulated
+matrix sums is being used.
+\end{proof}
+
+\subsection{The exact explicit-formula identity}
+\label{f-sub-series-identity}
+
+For $a>1/2$, define the absolutely convergent Dirichlet series
+\begin{equation}
+ D_{X,a}(t)=\sum_{m\ge2}\Lambda(m)m^{-1/2-it}
+ e^{-a|\log(m/X)|}.
+ \label{f-eq-long-series}
+\end{equation}
+It has an infinite, decaying tail; calling it a finite Dirichlet polynomial
+would require an additional truncation and error estimate.  Under RH put
+\begin{equation}
+ A_{X,a}(t)=\sum_{\gamma\text{ of either sign}}
+ \frac{2a}{a^2+(t-\gamma)^2}X^{i(\gamma-t)}.
+ \label{f-eq-a-all}
+\end{equation}
+This series is absolutely convergent by zero counting.
+
+\begin{proposition}[Explicit residual and uniform domain]
+\label{f-prop-explicit-transfer}
+Assume RH.  For $t\in[T,2T]$, $X=T^2$, and $1\le a\le T/10$,
+\begin{equation}
+ A_{X,a}(t)=-D_{X,a}(t)+R_{X,a}(t),
+ \label{f-eq-a-d}
+\end{equation}
+where the residual is exactly
+\begin{align}
+ R_{X,a}(t)={}&
+ \frac{2aX^{1/2-it}}{a^2-(1/2-it)^2}
+ -\sum_{k\ge1}
+ \frac{2aX^{-2k-1/2-it}}{a^2-(-2k-1/2-it)^2}
+ \notag\\[-2pt]
+ &-X^{-a}\frac{\zeta'}{\zeta}(1/2-a+it).
+ \label{f-eq-residual-exact}
+\end{align}
+Uniformly on this domain,
+\begin{equation}
+ R_{X,a}(t)\ll X^{-a}\log T+\frac{a\sqrt X}{T^2}
+ =X^{-a}\log T+\frac aT.
+ \label{f-eq-residual-bound}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The Mellin transform of $w_a(y)=e^{-a|\log y|}$ is
+\[
+ K_a(s)=\int_0^\infty w_a(y)y^{s-1}\,dy
+ =\frac{2a}{a^2-s^2},\qquad |\Re s|<a.
+\]
+Choose $1/2<c<a$ and set $s_0=1/2+it$.  Absolute convergence and Mellin
+inversion give
+\[
+ D_{X,a}(t)=\frac1{2\pi i}\int_{\Re s=c}
+ K_a(s)X^s\left(-\frac{\zeta'}{\zeta}(s_0+s)\right)ds.
+\]
+Shift the contour to the left, avoiding its poles.  The zeta pole contributes
+$K_a(1-s_0)X^{1-s_0}$.  The nontrivial zeros contribute
+$-K_a(\rho-s_0)X^{\rho-s_0}$, which is the negative of
+\eqref{f-eq-a-all} under RH.  The trivial zeros give the displayed negative
+sum in \eqref{f-eq-residual-exact}.  Finally $K_a$ has residue $1$ at
+$s=-a$, yielding $-X^{-a}(\zeta'/\zeta)(s_0-a)$.  The shifted integrals
+vanish on a standard sequence of rectangles: $K_a(s)=O(|s|^{-2})$ at
+large height, the factor $X^{\Re s}$ decays on the left, and the usual
+logarithmic-derivative bounds apply away from poles.  The residue series
+are absolutely convergent.  Rearranging proves the exact identity.
+
+For the bound, the pole term is $O(a\sqrt X/T^2)$.  In the trivial-zero
+term, if $b=-2k-1/2$, then
+\[
+ |a^2-(b-it)^2|=|a-b+it|\,|a+b-it|\ge t^2,
+\]
+so its sum is negligible compared with the pole bound.  The functional
+equation reflects $1/2-a+it$ to a point with real part $1/2+a\ge3/2$.
+The logarithmic derivative at that reflected point is bounded by an
+absolutely convergent Dirichlet series.  The gamma-factor derivative is
+$O(\log T)$ uniformly for $a\le T/10$ and $T\le t\le2T$.
+This proves \eqref{f-eq-residual-bound}.
+\end{proof}
+
+\begin{theorem}[Transfer to a weighted prime mean square]
+\label{f-thm-mean-square-transfer}
+Assume RH.  Uniformly for $X=T^2$ and $1\le a\le T/10$,
+\begin{equation}
+ F_{2a}=\frac a{2\pi}\int_T^{2T}|D_{T^2,a}(t)|^2\,dt
+ +O(a^2\log^3T).
+ \label{f-eq-transfer-mean-square}
+\end{equation}
+The implied constant is absolute.  In particular, for each fixed $L>0$
+and $a=(L/2)\log T$, the remainder is $O_L(\log^5T)$.
+\end{theorem}
+
+\begin{proof}
+Let $A_I$ denote the sum in \eqref{f-eq-a-all} restricted to $\gamma\in I$.
+Write $C_a(u)=2a/(a^2+u^2)$.  Convolution of Poisson kernels gives
+\[
+ \int_{\mathbb R}C_a(t-\gamma)C_a(t-\gamma')\,dt
+ =\frac{8\pi a}{4a^2+(\gamma-\gamma')^2}.
+\]
+Expanding the finite square and cancelling the common factor $X^{-it}$
+therefore gives the exact identity
+\begin{equation}
+ F_{2a}=\frac a{2\pi}\int_{\mathbb R}|A_I(t)|^2\,dt.
+ \label{f-eq-poisson-exact}
+\end{equation}
+
+The standard bound of $O(\log(|t|+3))$ zeros in a unit interval implies
+\[
+ |A_{X,a}(t)|+|A_I(t)|\ll\log T\qquad(T\le t\le2T).
+\]
+Summing the Poisson tails of the discarded ordinates also gives
+\begin{equation}
+ |A_{X,a}(t)-A_I(t)|\ll\log T
+ \left(\frac a{a+t-T}+\frac a{a+2T-t}\right).
+ \label{f-eq-boundary-tail}
+\end{equation}
+For example, subdivide each tail into unit intervals and compare the
+resulting sum with the integral of $a/(a^2+u^2)$.  Ordinates farther than
+$T$ from this height interval contribute $O(a\log T/T)$ and are absorbed
+by the right-hand side.  Hence
+\begin{align*}
+ \int_T^{2T}\big||A_{X,a}(t)|^2-|A_I(t)|^2\big|\,dt
+ &\ll a\log^2T\log(1+T/a)\\
+ &\ll a\log^3T.
+\end{align*}
+The same tail argument, now for the fixed finite set $I$, gives
+\[
+ \int_{\mathbb R\setminus[T,2T]}|A_I(t)|^2\,dt\ll a\log^2T.
+\]
+
+Finally, \eqref{f-eq-a-d}, \eqref{f-eq-residual-bound}, and
+$|A_{X,a}|\ll\log T$ imply
+\[
+ \int_T^{2T}\big||D_{X,a}(t)|^2-|A_{X,a}(t)|^2\big|\,dt
+ \ll a\log^2T.
+\]
+For instance, use $\big||A-R|^2-|A|^2\big|\le2|A||R|+|R|^2$,
+$X=T^2$, and $a\ge1$; the term $TX^{-a}\log^2T$ is then harmless.
+Insert these three estimates into \eqref{f-eq-poisson-exact} and retain
+the prefactor $a/(2\pi)$.  The resulting error is $O(a^2\log^3T)$.
+\end{proof}
+
+\subsection{The off-diagonal term that is still needed}
+\label{f-sub-off-diagonal}
+
+Put
+\[
+ b_m=\Lambda(m)m^{-1/2}e^{-a|\log(m/X)|}.
+\]
+Absolute convergence of the series justifies the exact expansion
+\begin{align}
+ \int_T^{2T}|D_{X,a}(t)|^2dt
+ ={}&T\sum_{m\ge2}b_m^2
+ \notag\\
+ &+2\Re\sum_{h\ge1}\sum_{m\ge2}b_mb_{m+h}
+ \int_T^{2T}e^{it\log(1+h/m)}dt.
+ \label{f-eq-prime-pair-expansion}
+\end{align}
+For fixed $L>0$, $X=T^2$, and $a=(L/2)\log T$, partial summation with
+the RH estimate $\psi(y)=y+O(\sqrt y\log^2 y)$ gives
+\begin{equation}
+ \sum_m b_m^2\sim\frac{\log X}{a}=\frac4L,
+ \qquad
+ \sum_m mb_m^2\ll\frac{X\log X}{a}.
+ \label{f-eq-diagonal-evaluation}
+\end{equation}
+For the first relation, the main integral is
+$\int (\log y)y^{-1}e^{-2a|\log(y/X)|}\,dy$; putting
+$v=\log(y/X)$ gives $(\log X)/a$ up to a negligible endpoint error.
+The contribution of higher prime powers and the prime-counting remainder
+are negligible on the window of relative width $1/a\asymp1/\log T$.
+
+A sufficient unproved estimate at this scale is
+\begin{equation}
+ \int_T^{2T}|D_{T^2,a}(t)|^2dt
+ \le C\frac{T\log T}{a},\qquad a=\frac L2\log T,
+ \label{f-eq-missing-mean-square}
+\end{equation}
+where $C$ is independent of fixed $L$ and the threshold in $T$ may depend
+on $L$.  Theorem~\ref{f-thm-mean-square-transfer} and
+Lemma~\ref{f-lem-cauchy-comparison} would then imply
+$P_M\ll T\log T$ at $X=T^2$.  The oscillatory factors in
+\eqref{f-eq-prime-pair-expansion} and the products
+$\Lambda(m)\Lambda(m+h)$ are the missing arithmetic information.
+Separations $h\asymp X/T=T$ already affect the oscillation over this
+time interval, while the coefficient window has width $X/a\gg T$.
+
+The general Hilbert-inequality mean-value bound
+\cite{f-montgomery-vaughan} gives only
+\begin{equation}
+ \int_T^{2T}|D_{X,a}(t)|^2dt
+ =T\sum_m b_m^2+O\!\left(\sum_m mb_m^2\right)
+ \ll(T+X)\frac{\log X}{a}.
+ \label{f-eq-hilbert-loss}
+\end{equation}
+At $X=T^2$ this misses \eqref{f-eq-missing-mean-square} by a factor of
+order $T$.  The termwise absolute bound in the zero representation instead
+gives $|D_{X,a}|\ll\log T$, hence only
+$F_M\ll aT\log^2T\asymp L T\log^3T$.  Neither estimate proves $Q$.
+
+\subsection{Why character averaging does not recover the principal term}
+\label{f-sub-character-average}
+
+Choose a prime $q\asymp T$ and define
+\[
+ D_\chi(t)=\sum_{m\ge2}b_m\chi(m)m^{-it}.
+\]
+Orthogonality of all Dirichlet characters modulo $q$ gives
+\begin{equation}
+ \frac1{\varphi(q)}\sum_{\chi\bmod q}\int_T^{2T}|D_\chi(t)|^2dt
+ =\sum_{\substack{m\equiv k\pmod q\\(mk,q)=1}}
+ b_mb_k\int_T^{2T}e^{it\log(k/m)}dt.
+ \label{f-eq-character-average}
+\end{equation}
+This identity is exact.  Apply the separated-frequency mean-value
+inequality to the sequence $\log(r+jq)$ in each reduced residue class.
+The inverse neighboring frequency gap is $O(1+m/q)$, so
+\begin{align}
+ \frac1{\varphi(q)}\sum_{\chi\bmod q}\int_T^{2T}|D_\chi(t)|^2dt
+ &\ll(T+1)\sum_m b_m^2+q^{-1}\sum_m mb_m^2
+ \notag\\
+ &\ll\frac{T\log X}{a}.
+ \label{f-eq-character-average-bound}
+\end{align}
+Thus an average over characters really is of the desired diagonal order.
+This part of the argument needs no GRH character estimate.
+
+However, nonnegativity gives for the principal character only
+\[
+ \int_T^{2T}|D_{\chi_0}(t)|^2dt
+ \le\varphi(q)\left\{
+ \frac1{\varphi(q)}\sum_\chi\int_T^{2T}|D_\chi(t)|^2dt\right\}.
+\]
+The factor $\varphi(q)\asymp T$ restores the loss.  The distinction between
+$D$ and $D_{\chi_0}$ is harmless here: their difference is supported on
+powers of $q$ and is $O(\log T/T)$ when $q\asymp T$, $X=T^2$, and
+$a\ge1$.  The unresolved issue is the extraction of a single character
+from the average, not those omitted coefficients.  No argument in this
+investigation removes that factor using scalar GRH character-sum bounds.
+
+\section{Exact domain checks for two further transfer attempts}
+\label{f-sec-domain-checks}
+
+This section concerns the hypotheses of proposed applications, not an audit
+of the accepted RH premise.  A source theorem can be correct while not
+being applicable to the continuous shifts or quadratic energies required
+above.  The checks below rule out the literal substitutions attempted in
+this investigation; they do not rule out a new theorem with a larger
+domain.
+
+\subsection{Angular infinity types, radial shifts, and logarithmic metrics}
+\label{f-sub-theta-domain}
+
+The source files cited here were inspected at the fixed public mirror
+commit in \cite{f-lean-source}.  In
+\texttt{IsUnitaryNormOf.lean}, the predicates \texttt{HasInf} and
+\texttt{HasInfQ} require an infinity component of the form
+\begin{equation}
+ \chi_\infty(k)=\prod_\phi
+ \left(\frac{\phi(k)}{|\phi(k)|}\right)^{n_\phi},
+ \qquad n_\phi\in\mathbb Z,
+ \label{f-eq-angular-type}
+\end{equation}
+with $n_\phi=2a_\phi$ for prescribed rational weights in
+\texttt{HasInfQ}.  The \texttt{IsMu0} host in \texttt{CharHost.lean}
+requires that fixed angular type together with global triviality and
+specified local finite-place conditions.
+
+For positive rational $k$, the right-hand side of
+\eqref{f-eq-angular-type} is $1$.  A nonzero radial norm twist at the
+infinite places has the form $k^{it[E:\mathbb Q]}$ and cannot be
+identically $1$ on all positive rationals unless $t=0$.  For example,
+requiring this simultaneously for $k=2,3$ would make $\log2/\log3$
+rational if $t\ne0$, contradicting unique factorization.  Thus the direct
+insertion of arbitrary real shifts $it$ does not satisfy this particular
+host's infinity-type hypothesis.  The availability of more general Hecke
+characters at a definitional level does not change that conclusion about
+the theorem being applied.
+
+The predicate \texttt{TaylorLogMetric.IsChi}\footnote{Declared in
+\texttt{IsDiscriminantTwelfthRootOfIdealLattice.lean}.} is defined on
+norm-one fractional ideals with a fixed principal-unitary ideal law.
+Radial twists are invisible on a norm-one domain, so this does not supply
+the missing continuous parameter.  Also,
+\texttt{TaylorLogMetric.th22} bounds a Galois mean of logarithms of norm
+squares.  A bound on a logarithmic mean alone does not bound an individual
+quadratic energy: even two positive numbers $e^A,e^{-A}$ have mean
+logarithm zero while their maximum is unbounded.
+
+The inspected class-sum Cauchy--Schwarz statements retain explicit
+cardinality and class-number factors.  They do not state cancellation of
+the arithmetic phases in \eqref{f-eq-prime-pair-expansion}.  Finally, the
+``ratio'' in \texttt{KernelRatioClosedWithCharacters.lean} is the
+algebraic-jet kernel-rationality property
+\texttt{StandardLatticesGL3.kRat}; it is not a ratios asymptotic for shifted
+$L$-functions.  These are concrete type and conclusion mismatches, not
+claims that no different use of the source could yield a stronger estimate.
+
+\subsection{The support restriction in a recent pair-correlation theorem}
+\label{f-sub-pair-correlation-support}
+
+Wang's Theorem 2.2 in \cite{f-wang} fixes
+$0<\lambda<\theta<1$, a short height window $H=T^\theta$, and a fixed
+even smooth test function supported in $[-\lambda,\lambda]$.  Its
+error depends on that test function.  In the normalization
+\[
+ u=(\gamma-\gamma')\frac{\log T}{2\pi},
+\]
+the modulation at $X=n^2$ translates Fourier frequency to
+\begin{equation}
+ \alpha=\frac{\log X}{\log T}=\frac{2\log n}{\log T}.
+ \label{f-eq-frequency-shift}
+\end{equation}
+For the heights required by $Q$, one has $1\le\alpha\le100$, outside
+the strict support band of that theorem.  In addition, the Gaussian with
+$M=L\log T$ has Fourier width of order $1/(L\log^2T)$ in this
+normalization.  It is neither a fixed test function nor compactly
+supported.  The changing-test error would have to be controlled even if
+the support problem were overcome.  Therefore this theorem cannot be
+substituted directly for the missing phase hypothesis.  The wider
+ratios-conjecture approach in \cite{f-gwx} also uses additional inputs;
+it is not a statement that GRH alone supplies the desired correlations.
+
+\section{A determinant investigation of the Gieseking volume}
+\label{f-sec-gieseking}
+
+This section records a different attempted passage from recent
+irrationality methods to a named constant.  The positive results here are
+exact determinant identities and a conditional norm criterion.  The
+numerical tables are exploratory.  No proof that the Gieseking volume is
+irrational is claimed.
+
+\subsection{The constant and the precise arithmetic target}
+\label{f-sub-volume-constant}
+
+Let $\chi_{-3}$ be the nonprincipal character modulo $3$, and put
+\begin{equation}
+ L=L(2,\chi_{-3})=
+ \sum_{k\ge0}\left(\frac1{(3k+1)^2}-\frac1{(3k+2)^2}\right),
+ \qquad \xi=\frac L4.
+ \label{f-eq-l-constant}
+\end{equation}
+For the Clausen function
+$\fCl_2(\theta)=\sum_{k\ge1}\sin(k\theta)/k^2$, the regular ideal
+tetrahedron volume, also the Gieseking volume, is
+\begin{equation}
+ V=\fCl_2(\pi/3)=\frac{3\sqrt3}{4}L=3\sqrt3\,\xi.
+ \label{f-eq-volume-relation}
+\end{equation}
+The geometric identification and related arithmetic context are discussed
+in \cite{f-cdt}.  The series identity can be verified directly: splitting
+the two series into residue classes modulo $6$, the even part of the
+$L$-series is $-L/4$, so its odd part is $5L/4$.  The sine series is
+$\sqrt3/2$ times the odd part minus the even part, giving
+\eqref{f-eq-volume-relation}.
+
+Calegari, Dimitrov, and Tang prove that $1,\zeta(2),L(2,\chi_{-3})$
+are linearly independent over $\mathbb Q$ \cite{f-cdt}.  This implies
+$L\notin\mathbb Q$ but does not imply $V\notin\mathbb Q$.  If instead
+$V=A/B\in\mathbb Q$, with $B\ne0$, then
+\begin{equation}
+ \xi=\frac{A\sqrt3}{9B},\qquad
+ \xi^\sigma=-\xi,\qquad
+ \xi^2=\frac{A^2}{27B^2},
+ \label{f-eq-pure-quadratic-target}
+\end{equation}
+where $\sigma$ is the nontrivial automorphism of $\mathbb Q(\sqrt3)$.
+The required exclusion is therefore a pure quadratic value, not just a
+rational value of $L$.
+
+Litsey's November 2026 preprint \cite{f-litsey} gives a Loewner-determinant
+framework with explicit estimates for $L(2,\chi_{-3})$ and reports formal
+verification of parts of its argument.  Its stated scope does not include
+irrationality of the Clausen volume in \eqref{f-eq-volume-relation}.
+We do not certify that preprint or its formal development here.  Its
+reported rates are used below to diagnose what a proposed extension would
+still need, while all elementary identities and the norm criterion are
+proved independently.
+
+\subsection{An explicit rational determinant family}
+\label{f-sub-determinant-family}
+
+For $k\ge1$, define the rational numbers
+\begin{align}
+ g(k)&=\frac1{3k-2}-\frac1{2k-1}+\frac1{6k},
+ \label{f-eq-g}\\
+ g'(k)&=-\frac3{(3k-2)^2}+\frac2{(2k-1)^2}-\frac1{6k^2}.
+ \label{f-eq-g-prime}
+\end{align}
+The prime on $g'$ denotes the displayed derivative of the rational
+function, evaluated at $k$.  Define a rational symmetric matrix on
+nonnegative integer nodes by
+\begin{equation}
+ M[t,u]=
+ \begin{cases}
+ \displaystyle\frac1{6(u-t)}\sum_{k=t+1}^{u}g(k),&t<u,\\[6pt]
+ \displaystyle\frac16\sum_{k=1}^{t}g'(k),&t=u,\\[6pt]
+ M[u,t],&t>u.
+ \end{cases}
+ \label{f-eq-rational-matrix}
+\end{equation}
+For integers $r\ge1$, $m\ge0$, let
+\begin{align*}
+ C&=\{0,1,\ldots,r-1\},\\
+ R&=C\cup\{r,r+2,\ldots,r+2m-2\},\\
+ Q&=C\cup\{r+1,r+3,\ldots,r+2m-1\},
+\end{align*}
+where the added sets are empty when $m=0$.  Put
+\begin{equation}
+ P_{r,m}(x)=\det\bigl(M[t,u]+x\,\mathbf1_{t=u}\bigr)_{t\in R,u\in Q}
+ \in\mathbb Q[x].
+ \label{f-eq-determinant-polynomial}
+\end{equation}
+Its degree is at most $r$, since only the $r$ common nodes contain the
+variable.  The geometry used for the principal diagnostic table is even
+$r$ with $m=\lceil r/4-1/2\rceil$.
+
+\begin{proposition}[Connection to the digamma Loewner matrix]
+\label{f-prop-digamma-matrix}
+Let $\psi_\Gamma(z)=\Gamma'(z)/\Gamma(z)$ denote the digamma function,
+and define
+\[
+ F_\chi(z)=-\frac13\psi_\Gamma(z+1/3)
+ +\frac12\psi_\Gamma(z+1/2)-\frac16\psi_\Gamma(z+1),
+ \qquad \omega=-\frac16.
+\]
+For its Loewner matrix
+\[
+ \mathcal L_{F_\chi}[t,u]=
+ \begin{cases}
+ (F_\chi(u)-F_\chi(t))/(u-t),&t\ne u,\\
+ F_\chi'(t),&t=u,
+ \end{cases}
+\]
+one has, at nonnegative integer nodes,
+\begin{equation}
+ \omega\mathcal L_{F_\chi}[t,u]=M[t,u]+\xi\mathbf1_{t=u}.
+ \label{f-eq-loewner-identity}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The digamma recurrence gives
+$F_\chi(k)-F_\chi(k-1)=-g(k)$.  Its differentiated version gives
+$F_\chi'(k)-F_\chi'(k-1)=-g'(k)$.  These prove the off-diagonal
+identity and reduce the diagonal identity to
+$\omega F_\chi'(0)=\xi$.
+The trigamma series gives
+\[
+ \psi_\Gamma'(1/3)-\psi_\Gamma'(2/3)=9L,
+ \qquad
+ \psi_\Gamma'(1/3)+\psi_\Gamma'(2/3)=\frac{4\pi^2}{3}.
+\]
+Together with $\psi_\Gamma'(1/2)=\pi^2/2$ and
+$\psi_\Gamma'(1)=\pi^2/6$, these yield
+$F_\chi'(0)=-3L/2$, and multiplication by $-1/6$ gives $L/4$.
+\end{proof}
+
+\subsection{Parity and reflection do not supply the other conjugate}
+\label{f-sub-parity}
+
+\begin{proposition}[Failure of a uniform parity identity]
+\label{f-prop-no-parity}
+The determinant family \eqref{f-eq-determinant-polynomial} does not obey
+a general identity $P_{r,m}(-x)=\pm P_{r,m}(x)$.  In particular,
+\begin{equation}
+ P_{2,0}(x)=x^2-\frac7{36}x-\frac1{1296}.
+ \label{f-eq-parity-counterexample}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Here the matrix is
+\[
+ \begin{pmatrix}x&1/36\\1/36&x-7/36\end{pmatrix}.
+\]
+Taking its determinant gives \eqref{f-eq-parity-counterexample}, which
+has both a nonzero odd coefficient and nonzero even coefficients.
+\end{proof}
+
+Additional exact rational checks give the following ratio of the
+coefficient of $x^{r-1}$ to the leading coefficient.  Each is nonzero:
+\begin{center}
+\begin{tabular}{r r l}
+\hline
+$r$&$m$&$[x^{r-1}]P_{r,m}/[x^r]P_{r,m}$\\
+\hline
+2&0&$-7/36$\\
+4&1&$-1029911/3175200$\\
+6&1&$-2956587752267/3895779888000$\\
+8&2&$-12927501768602788895963/8681618633814846720000$\\
+\hline
+\end{tabular}
+\end{center}
+These finite checks do not exclude a new construction with a specially
+designed parity symmetry.  They do exclude treating such a symmetry as an
+identity already possessed by these undeleted determinants.
+
+There is also an exact reflection check.  Set
+$F(z)=\psi_\Gamma(z+1/3)-\psi_\Gamma(z+2/3)$.  The digamma reflection
+formula gives
+\begin{equation}
+ F(-z)=-F(z)+\pi\{\cot\pi(z+2/3)-\cot\pi(z+1/3)\}.
+ \label{f-eq-reflection}
+\end{equation}
+Differentiating, with the minus sign from $-z$ retained, gives
+\begin{equation}
+ F'(-z)=F'(z)+\pi^2\{
+ \csc^2\pi(z+2/3)-\csc^2\pi(z+1/3)\}.
+ \label{f-eq-reflection-derivative}
+\end{equation}
+At every integer $j$ the two cosecant squares coincide, so
+\begin{equation}
+ F'(-j)=F'(j).
+ \label{f-eq-reflection-integers}
+\end{equation}
+Thus reflecting integer nodes does not simply replace the constant on the
+derivative diagonal by its negative.  A two-contour or doubled determinant
+would need a new proof of its arithmetic denominator, analytic decay, and
+nonvanishing; the reflection identity alone supplies none of those three.
+
+\subsection{The exact number-field norm requirement}
+\label{f-sub-norm-barrier}
+
+\begin{proposition}[A sufficient conjugate-decay criterion]
+\label{f-prop-norm-criterion}
+Let $P_r\in\mathbb Q[x]$ have degree $d_r=O(r)$, and suppose positive
+integers $D_r$ satisfy
+\[
+ D_rP_r\in\mathbb Z[x],\qquad
+ \log D_r\le(\Lambda+o(1))r^2.
+\]
+Suppose, for infinitely many $r$, that $P_r(\xi)\ne0$ and
+\begin{equation}
+ |P_r(\xi)|\le e^{-(D_+-o(1))r^2},\qquad
+ |P_r(-\xi)|\le e^{-(D_--o(1))r^2}.
+ \label{f-eq-two-decays}
+\end{equation}
+If $D_++D_->2\Lambda$, then $3\sqrt3\,\xi$ is not rational.
+Here the assertion concerns the positive constant $\xi$ in
+\eqref{f-eq-l-constant}.
+\end{proposition}
+
+\begin{proof}
+Assume for a contradiction that $3\sqrt3\,\xi=A/B\in\mathbb Q$.
+By \eqref{f-eq-pure-quadratic-target}, $\xi\in\mathbb Q(\sqrt3)$,
+$\xi^\sigma=-\xi$, and one can choose a fixed positive integer $b$
+such that $b\xi$ is an algebraic integer.  Then
+\[
+ Z_r=b^{d_r}D_rP_r(\xi)
+\]
+is an algebraic integer: write it as an integer polynomial in $b\xi$
+using the factors $b^{d_r-j}$ in its $j$th coefficient.  When
+$P_r(\xi)\ne0$, its field norm is a nonzero integer, so
+\[
+ 1\le|N_{\mathbb Q(\sqrt3)/\mathbb Q}(Z_r)|
+ =b^{2d_r}D_r^2|P_r(\xi)P_r(-\xi)|.
+\]
+Taking logarithms, using $d_r=O(r)$, and applying
+\eqref{f-eq-two-decays}, gives
+\[
+ 0\le\{2\Lambda-D_+-D_-+o(1)\}r^2,
+\]
+which is impossible along the asserted infinite set of indices.
+\end{proof}
+
+The denominator and positive-embedding rates reported for the relevant
+common-node construction in \cite{f-litsey} are
+\begin{equation}
+ \Lambda_\chi=4.09592776731\ldots,
+ \qquad
+ D_+=\frac{580530026928040140331}{125\cdot10^{18}}
+ =4.644240215424321\ldots.
+ \label{f-eq-published-rates}
+\end{equation}
+Their use in the direct norm argument would require a negative-conjugate
+decay rate strictly larger than
+\begin{equation}
+ 2\Lambda_\chi-D_+=3.54761531919\ldots.
+ \label{f-eq-needed-conjugate-rate}
+\end{equation}
+It would also require infinitely many nonzero values at the quadratic
+number in \eqref{f-eq-pure-quadratic-target}.  A rational-point
+nonvanishing theorem for a family of determinants with a bounded number
+of common nodes deleted does not automatically prove that quadratic-point
+statement.  These are separate missing steps.
+
+The factor $2$ in the denominator cost can sometimes be reduced by
+cancellation in the norm polynomial.  Write
+\begin{equation}
+ P(x)=E(x^2)+xO(x^2),\qquad
+ Q_P(y)=E(y)^2-yO(y)^2.
+ \label{f-eq-norm-polynomial}
+\end{equation}
+Then $Q_P(x^2)=P(x)P(-x)$.  If $\xi^2=u/v\in\mathbb Q$ in lowest
+terms and $D_P^{\mathrm N}=\fden(Q_P)$ is the least positive integer
+clearing its coefficients, a nonzero value satisfies
+\begin{equation}
+ |P(\xi)P(-\xi)|\ge
+ (D_P^{\mathrm N}v^{\deg Q_P})^{-1}.
+ \label{f-eq-rational-norm-lower}
+\end{equation}
+This follows by evaluating the integer polynomial
+$D_P^{\mathrm N}Q_P$ at $u/v$ and clearing the denominator
+$v^{\deg Q_P}$.  Accordingly, a proved asymptotic bound for
+$\log D_P^{\mathrm N}$ could improve the direct criterion.  It must be
+computed or proved; it cannot be inferred from the smallness of the one
+real embedding.
+
+\subsection{Exploratory conjugate and border computations}
+\label{f-sub-numerical-tables}
+
+Define the finite-size decay indicators
+\[
+ d_\pm(r,m)=-\frac1{r^2}\log|P_{r,m}(\pm\xi)|.
+\]
+The following values were recomputed from
+\eqref{f-eq-rational-matrix}--\eqref{f-eq-determinant-polynomial}, using
+the trigamma expression for $\xi$.  The precision column is the number
+of working decimal digits.  These are ordinary high-precision evaluations,
+not interval-certified inequalities, asymptotic limits, or proofs of
+eventual nonvanishing.
+
+\begin{center}
+\begin{tabular}{r r r r r}
+\hline
+$r$&$m$&Precision&$d_+(r,m)$&$d_-(r,m)$\\
+\hline
+12&3&200&4.369672777293&0.527530842951\\
+24&6&288&4.515953548401&0.467340154958\\
+36&9&432&4.566849912358&0.455555250719\\
+48&12&576&4.592732360927&0.448394597748\\
+\hline
+\end{tabular}
+\end{center}
+The observed negative-conjugate values are far below the sufficient rate
+in \eqref{f-eq-needed-conjugate-rate}.  This is evidence about this
+construction at these sizes, not a theorem excluding a better construction
+or a different proof.
+
+We also varied the border length $m$.  For each polynomial let
+$D_{r,m}^{\mathrm N}=\fden(Q_{P_{r,m}})$ be computed exactly over the
+rationals, and define
+\begin{equation}
+ s_{r,m}=\frac{\log D_{r,m}^{\mathrm N}
+ +\log|P_{r,m}(\xi)P_{r,m}(-\xi)|}{r^2}.
+ \label{f-eq-border-score}
+\end{equation}
+A successful asymptotic norm argument of this kind would need a negative
+limit superior of the corresponding quantity, together with nonvanishing;
+the additional fixed denominator $v^{\deg Q_P}$ in
+\eqref{f-eq-rational-norm-lower} contributes only $O(r)$ to the logarithm.
+All scores in the following finite test are positive.  Longer borders can
+improve analytic decay while increasing denominator cost even more.
+For $m$ outside the published geometry, the constants in
+\eqref{f-eq-published-rates} are not being asserted.
+
+\begin{center}
+\small
+\begin{longtable}{r r r r r r}
+\hline
+$r$&$m$&$r^{-2}\log D_{r,m}^{\mathrm N}$&$d_+$&$d_-$&$s_{r,m}$\\
+\hline
+\endfirsthead
+\hline
+$r$&$m$&$r^{-2}\log D_{r,m}^{\mathrm N}$&$d_+$&$d_-$&$s_{r,m}$\\
+\hline
+\endhead
+4&0&3.887090&2.325204&0.279232&1.282653\\
+4&1&6.364314&3.792965&0.899450&1.671900\\
+4&2&10.122258&5.591023&1.715981&2.815254\\
+4&4&20.352230&10.351985&5.149711&4.850534\\
+4&8&53.549689&24.830090&17.387696&11.331903\\
+\hline
+6&0&4.361997&2.546725&0.176330&1.638943\\
+6&1&5.983557&3.533842&0.498131&1.951584\\
+6&3&10.237426&5.932201&1.665649&2.639576\\
+6&6&21.488762&10.827640&5.079352&5.581770\\
+6&12&54.785916&25.335433&17.439684&12.010800\\
+\hline
+8&0&4.664819&2.672253&0.128559&1.864007\\
+8&2&7.005661&4.232433&0.556096&2.217132\\
+8&4&10.591857&6.140690&1.567331&2.883837\\
+8&8&21.254303&10.987105&5.053344&5.213853\\
+8&16&55.485942&25.636858&17.481746&12.367337\\
+\hline
+\end{longtable}
+\end{center}
+
+In these fifteen exact rational calculations,
+$\log D_{r,m}^{\mathrm N}=2\log\fden(P_{r,m})$: cancellation in the
+norm polynomial did not lower the denominator.  This is a finite
+observation only.  The displayed decimals use 200 working digits for
+their analytic part, with exact rational coefficients for the denominator.
+
+\subsection{Reproducible formulas and computational method}
+\label{f-sub-reproducibility}
+
+The following Python code specifies the matrix, exact polynomial, and
+norm-polynomial computations used above.  It uses \texttt{mpmath} for
+the exploratory real evaluations and \texttt{sympy} for exact rational
+arithmetic.  The Schur complement in the exact-polynomial routine was
+invertible in the tested cases; a singular border can instead be handled
+by computing the determinant polynomial directly.  Nothing in the
+conditional propositions depends on these computations.
+
+\begin{lstlisting}[language=Python,basicstyle=\ttfamily\scriptsize,breaklines=true]
+import math
+import mpmath as mp
+import sympy as sp
+
+def nodes(r, m):
+    common = list(range(r))
+    return (common + [r+2*j for j in range(m)],
+            common + [r+2*j+1 for j in range(m)])
+
+def matrix_mp(r, m, x):
+    R, C = nodes(r, m)
+    G, H = [mp.mpf(0)], [mp.mpf(0)]
+    for k in range(1, r+2*m):
+        G.append(G[-1] + 1/mp.mpf(3*k-2)
+                 - 1/mp.mpf(2*k-1) + 1/mp.mpf(6*k))
+        H.append(H[-1] - 3/mp.mpf(3*k-2)**2
+                 + 2/mp.mpf(2*k-1)**2 - 1/(6*mp.mpf(k)**2))
+    return mp.matrix([
+        [H[t]/6+x if t == u else
+         (G[u]-G[t])/(6*(u-t)) for u in C] for t in R])
+
+def exact_poly(r, m):
+    R, C = nodes(r, m)
+    G, H = [sp.Rational(0)], [sp.Rational(0)]
+    for k in range(1, r+2*m):
+        G.append(G[-1] + sp.Rational(1,3*k-2)
+                 - sp.Rational(1,2*k-1) + sp.Rational(1,6*k))
+        H.append(H[-1] - sp.Rational(3,(3*k-2)**2)
+                 + sp.Rational(2,(2*k-1)**2)
+                 - sp.Rational(1,6*k*k))
+    A = sp.Matrix([
+        [H[t]/6 if t == u else
+         (G[u]-G[t])/(6*(u-t)) for u in C] for t in R])
+    x = sp.Symbol('x')
+    if not m:
+        return sp.Poly((-A).charpoly(x).as_expr(), x)
+    border = A[r:,r:]
+    S = A[:r,:r] - A[:r,r:]*border.inv()*A[r:,:r]
+    return sp.Poly(border.det()*(-S).charpoly(x).as_expr(), x)
+
+def norm_poly(P):
+    y = sp.Symbol('y')
+    E = sum(P.nth(j)*y**(j//2)
+            for j in range(0, P.degree()+1, 2))
+    O = sum(P.nth(j)*y**((j-1)//2)
+            for j in range(1, P.degree()+1, 2))
+    return sp.Poly(E**2-y*O**2, y)
+
+def denominator(P):
+    return sp.ilcm(*[c.q for c in P.all_coeffs()])
+
+for r in (12,24,36,48):
+    m = math.ceil(r/4-0.5)
+    mp.mp.dps = max(200,12*r)
+    xi = (mp.polygamma(1,mp.mpf(1)/3)
+          - mp.polygamma(1,mp.mpf(2)/3))/36
+    dp = -mp.log(abs(mp.det(matrix_mp(r,m,xi))))/r**2
+    dm = -mp.log(abs(mp.det(matrix_mp(r,m,-xi))))/r**2
+    print(r, m, mp.nstr(dp,18), mp.nstr(dm,18))
+
+# Border table: use 200 decimal digits and, for each r in (4,6,8),
+# m in (0, ceil(r/4-.5), r//2, r, 2*r).
+# Compute P=exact_poly(r,m), DN=denominator(norm_poly(P)), and
+# s=log(DN)/r**2-dp-dm.  All denominators are exact integers.
+\end{lstlisting}
+
+GRH improves some error terms in prime-distribution estimates that occur
+in denominator analysis.  Such an improvement does not by itself change
+the leading quadratic denominator constant for a fixed valuation profile,
+nor does it bound $P_{r,m}(-\xi)$ or prove quadratic-point nonvanishing.
+Those are the additional mathematical inputs needed for this proposed
+norm strategy.  The tables and exact parity test identify that gap; they
+do not fill it.
+
+\section{A finite diagnostic for an Erd\H{o}s--Straus transfer}
+\label{f-sec-es-diagnostic}
+
+One attempted use of a small quadratic nonresidue required a divisor of
+$K^2$ in one of two specified classes modulo $q$.  The finite test
+$p=61$, $q=7$, $K=(p+q)/4=17$ already shows why the nonresidue condition
+alone cannot guarantee the tested divisor condition: the divisors of
+$K^2=289$ have residues
+\[
+ \{1,17,289\}\pmod7=\{1,3,2\},
+\]
+whereas the two required residues in that test were $4$ and $5$.
+Explicitly, the tested channels were
+$d\equiv-K$ or $d\equiv-Kp^{-1}\pmod q$ with $d\mid K^2$;
+here $p^{-1}\equiv3\pmod7$, giving those two residues.
+The statement being refuted is this proposed sufficient-condition
+transfer, not the Erd\H{o}s--Straus conjecture.  Indeed the same prime has
+the explicit valid decomposition
+\[
+ \frac4{61}=\frac1{16}+\frac1{366}+\frac1{2928}.
+\]
+This example is retained only as a short, reproducible diagnostic.  No
+general obstruction to Erd\H{o}s--Straus follows from it.
+
+\subsection*{Status of the frontier results}
+
+Theorem~\ref{f-thm-q-prime-gaps} is a proved conditional implication with
+the extra hypothesis \eqref{f-eq-q} displayed explicitly.  The positive
+kernel comparison, residual formula, and transfer theorem are established
+on their stated domains.  Estimate~\eqref{f-eq-missing-mean-square}, the
+full phase condition $Q$, the required conjugate-decay and nonvanishing
+inputs for the volume, and any new conclusion on the named open problems
+remain unproved in this investigation.  The determinant numbers are
+exploratory computations, while the parity and reflection identities and
+the finite divisor example are exact calculations.
+
+
+\clearpage
+\appendix
+\section{Reproducibility of the compensated-deletion experiments}\label{r-graph-code}
+The following Python program records the local-deletion calculation and
+the finite searches used for the compensated-deletion candidate in
+Part~\ref{r-part-graph}. It uses Python 3 and NetworkX 3.7. The options
+\texttt{--atlas}, \texttt{--trees 16}, and \texttt{--adversarial 600}
+select the respective tests. The finite computations use floating-point
+arithmetic and are evidence about a conjecture, not a proof of it.
+
+For a proposed noncut vertex the program evaluates
+\[
+ 2R(G)+(n-2)\bigl(R(G)-R(G-v)\bigr)
+ -\frac{2\tau_v}{n-1}
+ -\left(nB_n-(n-2)B_{n-1}\right),
+ \qquad B_n=\sqrt{n-1}-2+\frac2n.
+\]
+The adversarial mode may stop after finding one positive witness. Its
+reported positive value is then a positive numerical witness,
+not necessarily the maximum over all noncut vertices. A
+putative failure is examined against every inequivalent noncut vertex.
+The retained run has 600 cases and a smallest recorded value of about
+$-4.44\cdot10^{-16}$ on the three-vertex star, a roundoff-level equality
+case. The random seed is fixed in the source below.
+
+\begin{lstlisting}[language=Python]
+
+import networkx as nx
+import math, random, json, argparse, time
+
+def R(G):
+    d=G.degree()
+    return math.fsum(1/math.sqrt(d[u]*d[v]) for u,v in G.edges())
+
+def B(n):
+    return math.sqrt(n-1)-2+2/n
+
+def threshold(n):
+    s,t=math.sqrt(n-1),math.sqrt(n-2)
+    return 2*s+(n-2)/(s+t)-4+2/(n-1)
+
+def delta_R(G,v):
+    ds=G.degree(); ns=set(G[v]); dv=ds[v]
+    removed=math.fsum(1/math.sqrt(dv*ds[u]) for u in ns)
+    changed={tuple(sorted((u,w))) for u in ns for w in G[u] if w != v}
+    extra=math.fsum(1/math.sqrt((ds[u]-(u in ns))*(ds[w]-(w in ns)))-1/math.sqrt(ds[u]*ds[w]) for u,w in changed)
+    return removed-extra
+
+def check(G, full=False, existence_only=False):
+    n=len(G); rr=R(G); cuts=set(nx.articulation_points(G)); C=threshold(n)
+    seen=set(); vals=[]
+    for v in sorted(G, key=lambda w: (G.degree(w)!=1, G.degree(w))):
+        if v in cuts: continue
+        # Equal open neighborhoods imply equal deletion and distance data.
+        sig=frozenset(G[v])
+        if sig in seen: continue
+        seen.add(sig)
+        tau=sum(nx.single_source_shortest_path_length(G,v).values())
+        delta=delta_R(G,v)
+        val=2*rr+(n-2)*delta-2*tau/(n-1)-C
+        vals.append((val,v,delta,tau))
+        if existence_only and val > 1e-8: return vals[-1]
+    ans=max(vals)
+    return (ans,vals) if full else ans
+
+def loaded_core(core, loads, lengths=None, block_mode="leaf"):
+    h=len(core); G=nx.Graph();G.add_nodes_from(range(h)); nxt=h
+    for i,(u,v) in enumerate(core.edges()):
+        length=1 if lengths is None else lengths[i]
+        last=u
+        for j in range(length-1):
+            G.add_edge(last,nxt);last=nxt;nxt+=1
+        G.add_edge(last,v)
+    for u,load in enumerate(loads):
+        verts=list(range(nxt,nxt+load));nxt+=load
+        G.add_edges_from((u,w) for w in verts)
+        if block_mode=="clique":
+            G.add_edges_from((x,y) for x in verts for y in verts if x<y)
+        elif block_mode=="pairs":
+            G.add_edges_from((verts[j],verts[j+1]) for j in range(0,len(verts)-1,2))
+        elif block_mode=="cycle" and len(verts)>1:
+            G.add_edges_from(zip(verts[:-1],verts[1:]))
+    return G
+
+def audit_atlas():
+    worst=(float("inf"),None);cnt=0
+    for i,G in enumerate(nx.graph_atlas_g()):
+        n=len(G)
+        if n<3 or not nx.is_connected(G):continue
+        score=check(G)[0];cnt+=1
+        if score<worst[0]:worst=(score,(i,n))
+        assert score > -1e-8,(i,score)
+    print("atlas",cnt,"worst",worst,flush=True)
+
+def audit_trees(max_n):
+    for n in range(3,max_n+1):
+        worst=(float("inf"),None);cnt=0
+        for G in nx.nonisomorphic_trees(n):
+            score=check(G)[0];cnt+=1
+            if score<worst[0]:worst=(score,list(G.edges()))
+            assert score > -1e-8,(n,score,list(G.edges()))
+        print("trees",n,cnt,"worst",worst[0],flush=True)
+
+def adversarial(seed_count=500):
+    rng=random.Random(20261121);worst=(float("inf"),None)
+    for it in range(seed_count):
+        h=rng.choice([3,4,5,6,8,10,15,20]);typ=rng.randrange(6)
+        if typ==0:core=nx.path_graph(h)
+        elif typ==1:core=nx.star_graph(h-1)
+        elif typ==2:core=nx.cycle_graph(h)
+        elif typ==3:core=nx.complete_graph(h)
+        elif typ==4:core=nx.random_labeled_tree(h,seed=it)
+        else:
+            core=nx.random_labeled_tree(h,seed=it)
+            for j in range(h//2):u,v=rng.sample(range(h),2);core.add_edge(u,v)
+        scale=rng.choice([2,5,10,30,100,300,1000])
+        load_mode=rng.randrange(5)
+        if load_mode==0:loads=[scale]*h
+        elif load_mode==1:loads=[rng.randrange(0,2*scale+1) for _ in range(h)]
+        elif load_mode==2:loads=[max(0,round(scale*rng.random()**4)) for _ in range(h)]
+        elif load_mode==3:loads=[rng.choice([0,1,scale,2*scale]) for _ in range(h)]
+        else:loads=[0]*h;loads[rng.randrange(h)]=h*scale
+        total=h+sum(loads)
+        exponent=rng.choice([0,.5,2/3,1]);mult=rng.choice([.2,.5,1,2,5])
+        base=max(1,round(mult*total**exponent/max(1,len(core.edges()))))
+        lengths=[max(1,round(base*rng.choice([.5,1,1,1,2]))) for _ in core.edges()]
+        mode=rng.choice(["leaf","leaf","leaf","pairs","cycle"])
+        if it%20==0 and scale<=30:mode="clique"
+        G=loaded_core(core,loads,lengths,mode)
+        ans=check(G,existence_only=True);score=ans[0]
+        desc=dict(iteration=it,n=len(G),hub_count=h,core=list(core.edges()),loads=loads,lengths=lengths,mode=mode,ans=ans)
+        if score<worst[0]:
+            worst=(score,desc);print("new worst",json.dumps(worst),flush=True)
+        if score < -1e-7:
+            with open("ch_compensated_counterexample.json","w") as f:json.dump(dict(desc=desc,edges=list(G.edges())),f)
+            print("FAIL",json.dumps(desc),flush=True);return
+        if it%25==0:print("progress",it,"n",len(G),"worst",worst[0],flush=True)
+    with open("ch_compensated_adversarial_results.json","w") as f:json.dump(dict(count=seed_count,worst=worst),f)
+    print("ALL PASSED",seed_count,json.dumps(worst),flush=True)
+
+if __name__=="__main__":
+    p=argparse.ArgumentParser();p.add_argument("--atlas",action="store_true");p.add_argument("--trees",type=int,default=0);p.add_argument("--adversarial",type=int,default=0);a=p.parse_args()
+    if a.atlas:audit_atlas()
+    if a.trees:audit_trees(a.trees)
+    if a.adversarial:adversarial(a.adversarial)
+
+
+\end{lstlisting}
+
+\section{Coverage and interpretation of the consolidated results}\label{r-coverage}
+This is a single mathematical manuscript, rather than a concatenation of
+earlier PDFs. The two preceding prime-product notes are consolidated in
+Part~\ref{r-part-prime}: repeated definitions and analytic inputs have
+been merged, while the one-third proof, its sharpness examples,
+all-density and vanishing-density results, compression arguments,
+exact-cardinality and window variants, two-prime estimates, residue-graph
+theorem, and finite certificates are retained. The source-premise record
+and the attributed Mills-type consequence are retained as well.
+
+Part~\ref{r-part-graph} contains the complete deletion and sampling
+proofs developed subsequently, the exact gluing calculations, the
+minimal-counterexample reduction, and the unproved compensated-deletion
+target. Part~\ref{r-part-frontier} contains the conditional Gaussian
+prime-gap implication, the positive-kernel transfer, the scope checks on
+attempted analytic inputs, the Gieseking determinant investigation, and
+the finite Erd\H{o}s--Straus transfer diagnostic. Numerical diagnostics
+are not promoted to asymptotic assertions.
+
+The complete mathematical conclusions are those stated with their
+hypotheses in the theorem, lemma, proposition, and corollary environments.
+The additional Gaussian correlation hypothesis, the compensated graph
+deletion candidate, the full two-prime covering problem, and the
+Gieseking irrationality goal remain separate open tasks within this
+investigation. In particular, this compilation does not assert a proof
+of any of those remaining tasks.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\begin{thebibliography}{99}\small\raggedright
+
+\bibitem{p-JMV}
+D. Jao, S. D. Miller, and R. Venkatesan,
+\emph{Expander graphs based on GRH with an application to elliptic curve
+cryptography}, J. Number Theory \textbf{129} (2009), 1491--1504.
+\href{https://arxiv.org/abs/0811.0647}{arXiv:0811.0647};
+\href{https://arxiv.org/html/0811.0647v2}{primary full text}.
+
+\bibitem{p-MV}
+H. L. Montgomery and R. C. Vaughan,
+\emph{Multiplicative Number Theory I: Classical Theory},
+Cambridge Studies in Advanced Mathematics 97, Cambridge University
+Press, 2007. Theorem 13.7.
+
+\bibitem{p-KST}
+O. Klurman, I. E. Shparlinski, and J. Ter\"av\"ainen,
+\emph{On the generation of multiplicative groups by small primes},
+preprint, September 2026.
+\href{https://arxiv.org/abs/2609.25393}{arXiv:2609.25393}.
+
+\bibitem{p-Hughes}
+S. D. Hughes, \emph{Few small primes suffice to cover unit groups},
+preprint, October 2026.
+\href{https://arxiv.org/abs/2610.04678}{arXiv:2610.04678}.
+
+\bibitem{p-BP}
+A. R. Booker and C. Pomerance,
+\emph{Squarefree smooth numbers and Euclidean prime generators},
+Proc. Amer. Math. Soc. \textbf{145} (2017), 5035--5042.
+\href{https://arxiv.org/abs/1607.01557}{arXiv:1607.01557}.
+
+\bibitem{p-MS}
+M. Munsch and I. E. Shparlinski,
+\emph{On smooth square-free numbers in arithmetic progressions},
+J. London Math. Soc. (2020), doi:10.1112/jlms.12297.
+\href{https://arxiv.org/abs/1710.04705}{arXiv:1710.04705}.
+
+\bibitem{p-Vu}
+V. H. Vu, \emph{Structure of large incomplete sets in abelian groups},
+Combinatorica \textbf{30} (2010), 225--237.
+\href{https://arxiv.org/abs/math/0610158}{arXiv:math/0610158}.
+
+\bibitem{p-HB}
+D. R. Heath-Brown, \emph{A mean value estimate for real character sums},
+Acta Arith. \textbf{72} (1995), 235--275.
+\href{https://doi.org/10.4064/aa-72-3-235-275}{doi:10.4064/aa-72-3-235-275}.
+Theorem 1.
+
+\bibitem{p-Cameron}
+P. J. Cameron, \emph{The random graph revisited},
+in European Congress of Mathematics, Barcelona 2000, Vol. II,
+Birkh\"auser, Basel, 2001, pp. 267--274.
+\href{https://www.math.uni-bielefeld.de/~rehmann/ECM/cdrom/3ecm/pdfs/pant3/camer.pdf}{Primary manuscript}.
+
+\bibitem{p-EOS1987}
+P. Erd\H{o}s, A. M. Odlyzko, and A. S\'ark\"ozy,
+On the residues of products of prime numbers,
+Period. Math. Hungar. 18 (1987), 229--239.
+\url{https://www.renyi.hu/~p_erdos/1987-22.pdf}.
+
+\bibitem{p-Szabo2024}
+B. Szab\'o, On the existence of products of primes in arithmetic progressions,
+Bull. London Math. Soc. 56 (2024), 1227--1243.
+\url{https://doi.org/10.1112/blms.12990}.
+
+\bibitem{p-Banks2026}
+W. D. Banks, Products of two elements of Granville's random model in residue classes,
+arXiv:2609.37434 (2026).
+\url{https://arxiv.org/abs/2609.37434}.
+
+\bibitem{p-Montgomery1971}
+H. L. Montgomery, Topics in Multiplicative Number Theory,
+Lecture Notes in Mathematics 227, Springer, 1971.
+
+\bibitem{p-SS2017}
+I. E. Shparlinski and A. V. Sutherland,
+Finding elliptic curves with a subgroup of prescribed size,
+Int. J. Number Theory 13 (2017), 133--152.
+\url{https://arxiv.org/abs/1403.7887}.
+
+\bibitem{p-KLM2026}
+N. Kandhil, A. Languasco, and P. Moree,
+Pair correlation of zeros of Dirichlet L-functions: a possible path towards
+the conjectures of Chowla, Elliott-Halberstam and Montgomery,
+Math. Ann. 394 (2026), article 43.
+\url{https://doi.org/10.1007/s00208-026-03383-y}.
+
+\bibitem{p-Saito2026}
+K. Saito, Transcendency of variants of Mills' constant,
+Ramanujan J. 70 (2026), article 69; arXiv:2508.16068v3, revised 7 December 2025.
+\url{https://arxiv.org/abs/2508.16068}.
+
+\bibitem{p-ST2022}
+K. Saito and W. Takeda,
+Topological properties and algebraic independence of sets of prime-representing constants,
+Mathematika 68 (2022), 429--453.
+\url{https://arxiv.org/abs/2112.14383}.
+
+\bibitem{g-BE1998}
+B.~Bollob\'as and P.~Erd\H os,
+\emph{Graphs of extremal weights},
+Ars Combinatoria \textbf{50} (1998), 225--233.
+\url{https://combinatorialpress.com/article/ars/Volume%20050/volume-50-paper-18.pdf}.
+
+\bibitem{g-CH2000}
+G.~Caporossi and P.~Hansen,
+\emph{Variable neighborhood search for extremal graphs. 1. The AutoGraphiX system},
+Discrete Mathematics \textbf{212} (2000), 29--44.
+\url{https://doi.org/10.1016/S0012-365X(99)00206-X}.
+
+\bibitem{g-FMS2003}
+O.~Favaron, M.~Mah\'eo, and J.-F.~Sacl\'e,
+\emph{The Randi\'c index and other Graffiti parameters of graphs},
+MATCH Communications in Mathematical and in Computer Chemistry
+\textbf{47} (2003), 7--23; see Conjecture~4.8.
+\url{https://match.pmf.kg.ac.rs/electronic_versions/Match47/match47_7-23.pdf}.
+
+\bibitem{g-DLS2011}
+Z.~Dvo\v r\'ak, B.~Lidick\'y, and R.~\v Skrekovski,
+\emph{Randi\'c index and the diameter of a graph},
+European Journal of Combinatorics \textbf{32} (2011), 434--442.
+\url{https://doi.org/10.1016/j.ejc.2010.12.002}.
+Author manuscript: \url{https://kam.mff.cuni.cz/~bernard/pub/index.pdf}.
+
+\bibitem{g-VMRC227}
+Shaitetsu,
+\emph{A proof audit of Fajtlowicz's average-distance conjecture:
+weighted distances, the harmonic index, and the extremal star},
+research manuscript, 21 November 2026, entry~227 of the
+Verifiable Mathematical Reasoning Corpus.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+This is the external source of the weighted inequality explicitly assumed
+in Proposition~\ref{g-prop-rooted-weighted}; its proof is not included here.
+
+\bibitem{f-titchmarsh}
+E.~C. Titchmarsh,
+\emph{The Theory of the Riemann Zeta-Function},
+second edition, revised by D.~R. Heath-Brown,
+Oxford University Press, Oxford, 1986.
+
+\bibitem{f-montgomery-vaughan}
+H.~L. Montgomery and R.~C. Vaughan,
+Hilbert's inequality,
+\emph{Journal of the London Mathematical Society} (2)
+\textbf{8} (1974), 73--82.
+\url{https://doi.org/10.1112/jlms/s2-8.1.73}.
+
+\bibitem{f-lpz}
+A. Languasco, A. Perelli, and A. Zaccagnini,
+An extended pair-correlation conjecture and primes in short intervals,
+arXiv:1311.0597, 2013.
+\url{https://arxiv.org/abs/1311.0597}.
+
+\bibitem{f-gwx}
+H. Gou, V.~Y. Wang, and M.~W. Xu,
+Landau's problems through ratios of $L$-functions,
+preprint, arXiv:2611.18825v1, November 2026;
+also available as Hexagon:2611.00423v1.
+\url{https://arxiv.org/abs/2611.18825}.
+\url{https://hexagonmath.org/2611.00423v1}.
+
+\bibitem{f-wang}
+B. Wang,
+Simple critical zeros and distinct zeros of the Riemann zeta-function in
+short intervals,
+preprint, arXiv:2609.07918v1, September 2026.
+\url{https://arxiv.org/abs/2609.07918}.
+The support and fixed-test restrictions discussed here are those of
+Theorem~2.2 in the inspected version.
+
+\bibitem{f-lean-source}
+SINF-KEN,
+\emph{rh-lean-check}, public source mirror,
+commit \href{https://github.com/SINF-KEN/rh-lean-check/tree/e7c8972c701d3396947808ab20cc16dc14623d33}{\texttt{e7c8972c701d}}.
+\url{https://github.com/SINF-KEN/rh-lean-check}.
+The present discussion cites only the domains and conclusions of the
+specific source declarations named in the text.
+
+\bibitem{f-cdt}
+F. Calegari, V. Dimitrov, and Y. Tang,
+The linear independence of $1$, $\zeta(2)$, and $L(2,\chi_{-3})$,
+arXiv:2408.15403, 2024.
+\url{https://arxiv.org/abs/2408.15403}.
+Author-hosted primary text:
+\url{https://www.math.uchicago.edu/~fcale/papers/L2chi.pdf}.
+
+\bibitem{f-litsey}
+S. Litsey,
+Irrationality measures from L\"owner determinants,
+preprint, Hexagon:2610.00401v3, 10 November 2026.
+\url{https://hexagonmath.org/pdf/2610.00401v3}.
+The constants used in the diagnostic are the rates stated for the
+$L(2,\chi_{-3})$ construction in the inspected version; no independent
+verification of the entire preprint is claimed here.
+
+
+\end{thebibliography}
+\end{document}

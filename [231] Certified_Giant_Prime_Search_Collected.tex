@@ -1,0 +1,730 @@
+\documentclass[11pt,a4paper,oneside,openany]{report}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,amsthm,booktabs,tabularx,array,geometry,xcolor,microtype,fancyhdr,titlesec}
+\usepackage[unicode,hidelinks]{hyperref}
+\geometry{left=24mm,right=24mm,top=21.5mm,bottom=21.5mm,headheight=14pt}
+\definecolor{ink}{HTML}{1B3850}
+\definecolor{teal}{HTML}{19655F}
+\definecolor{rulegray}{HTML}{C9D6D8}
+\hypersetup{colorlinks=true,linkcolor=teal,urlcolor=teal,citecolor=teal,bookmarksopen=false,bookmarksnumbered=true,pdftitle={Certified Giant-Prime Search: Constructions, Sieves, and Exact Verification},pdfsubject={Consolidated computational number theory study},pdfauthor={}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4.1pt plus 0.5pt minus 0.4pt}
+\setlength{\emergencystretch}{1.5em}
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{1}
+\setlength{\tabcolsep}{5pt}
+\setlength{\abovedisplayskip}{8pt plus 2pt minus 2pt}
+\setlength{\belowdisplayskip}{8pt plus 2pt minus 2pt}
+\titleformat{\chapter}[display]{\normalfont\bfseries\color{ink}\LARGE}{\color{teal}\small\sffamily\mdseries\chaptertitlename\ \thechapter}{6pt}{}
+\titlespacing*{\chapter}{0pt}{0pt}{13pt}
+\titleformat{\section}{\large\bfseries\color{ink}}{\thesection}{0.6em}{}
+\titlespacing*{\section}{0pt}{11pt plus 2pt minus 2pt}{3pt}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\file}[1]{\texttt{\detokenize{#1}}}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\sffamily Certified giant-prime search}\fancyhead[R]{\small\sffamily\nouppercase{\leftmark}}\fancyfoot[C]{\small\thepage}
+\renewcommand{\chaptermark}[1]{\markboth{\chaptertitlename\ \thechapter}{}}
+\renewcommand{\headrulewidth}{0.35pt}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\thepage}\renewcommand{\headrulewidth}{0pt}}
+\makeatletter
+\pdfstringdefDisableCommands{\def\binom#1#2{binomial(#1,#2)}\def\cdot{ x }\def\m@th{}}
+\makeatother
+\begin{document}
+\pagenumbering{roman}
+\begin{titlepage}
+\thispagestyle{empty}
+{\sffamily\small\color{teal} COMPUTATIONAL NUMBER THEORY \hfill CONSOLIDATED EDITION}\par
+\vspace{16mm}
+{\fontsize{32}{37}\selectfont\bfseries\color{ink} Certified Giant-Prime Search}\par
+\vspace{3mm}
+{\Large\color{ink} Constructions, Sieves, and Exact Verification}\par
+\vspace{7mm}
+{\color{rulegray}\rule{\linewidth}{0.9pt}}\par
+\vspace{5mm}
+{\large\bfseries Abstract}\par
+Starting from a 21,356-digit prime certified in the Verifiable Mathematical Reasoning Corpus, we construct a 23,829-digit direct child. A separate search yields a 24,095-digit Proth prime. Order certificates also verify two previously listed combinatorial sequence entries, including the 47,130-digit integer $\binom{156570}{78285}+1$. We derive a criterion that decides the complete structured child grid from one exact Euler congruence at a negative-Jacobi base. For discovery, we develop coefficient sieves across exponent rows and displaced coefficient intervals. For certification, we compare exact modular reduction, weighted number-theoretic transforms and parallel verification of untrusted checkpoints.
+\par
+In a matched one-core experiment, six full Proth replays took 45.91 seconds with direct weighted squaring and 100.66 seconds with the preceding implementation. A 47,659-digit Euler replay fell from an average of 100.10 to 56.55 seconds on a separate input. On a fixed-exponent factor sieve, an independently checked implementation took 0.366 seconds against 3.457 seconds for a tuned external program. These timings concern different operations. The terminal worklists contain 36,665 fixed-exponent coefficients and 11,822 child-grid coordinates. Two candidates with more than 80 million digits remain unresolved.
+\vfill
+{\color{rulegray}\rule{\linewidth}{0.65pt}}\par
+{\sffamily\small\color{teal} Consolidated 21 November 2026}\par
+\small Original search reports, four algorithm stages, matched external controls, and an executable certificate appendix.
+\end{titlepage}
+\setcounter{page}{2}
+{\small\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage\pagenumbering{arabic}
+
+\chapter{From the corpus endpoint to certified primes}
+\label{cer:origins}
+
+The search has two ways to turn a large integer into a short certificate. Its direct children inherit a known prime divisor of $N-1$ from the corpus. In the Proth family a large power of two plays the same role. Two further examples use products of many small prime factors of $N-1$. An order argument gives all three constructions a common verification rule.
+
+\section{An order criterion and the chain from 2 and 7}
+
+Let $N>1$ be odd, let $F\mid N-1$ be given in completely factored form, and supply for each prime $q\mid F$ a base $a_q$ for which
+\begin{equation}
+ a_q^{N-1}\equiv 1\pmod N,\qquad
+ \gcd\bigl(a_q^{(N-1)/q}-1,N\bigr)=1 .
+ \label{cer:pock}
+\end{equation}
+For a prime $d\mid N$, the order of $a_q$ modulo $d$ divides $N-1$ and fails to divide $(N-1)/q$. Its $q$-adic valuation therefore equals $v_q(N-1)$, and $q^{v_q(F)}$ divides $d-1$. Applying this to every $q\mid F$ gives $F\mid d-1$. In particular $F^2>N$ proves primality by Pocklington's criterion, since a composite has a prime divisor at most its square root.
+
+For the pinned VMRC endpoint \cite{vmrc}, put
+\[
+ x=14^{256},\quad p_0=x^2-x+1,\qquad
+ p_i=c_i p_{i-1}^2+1\quad(1\le i\le5),
+\]
+where $(c_1,c_2,c_3,c_4,c_5)=(438,13696,5494,13258,22330)$. Define
+\[
+ r=62988p_5+1,\qquad P=2347\cdot 2^{8192}r+1 .
+\]
+For $p_0$ take $F=x=2^{256}7^{256}$ and use bases $11$ and $2$ for the two prime factors, respectively. For $p_i$ take $F=p_{i-1}^2$, for $r$ take $F=p_5$, and for $P$ take $F=r$. In each of these later steps base $2$ supplies the required congruences and gcd. The eight certified nodes end at the 21,356-digit $P$, whose decimal expansion was compared byte for byte with the corpus file.
+
+\section{Two search hits and a historical positive control}
+
+The direct-child search returned
+\[
+ Q=1651\cdot 2^{8205}P+1\qquad(23,829\text{ digits}).
+\]
+Here $P^2>Q$. The Fermat congruence $2^{Q-1}\equiv1\pmod Q$ and the gcd
+$\gcd(2^{1651\cdot2^{8205}}-1,Q)=1$ certify $Q$ using $F=P$. On the adjacent-row search with $8193\le s\le8207$, 740 base-two screens were completed, giving 739 rejections and this one positive, subsequently proved. A separate run at $s=8192$ completed 1,284 screens, all rejections. These counts describe the screened inputs; they do not enumerate all primes on the grid.
+
+The ordinary Proth search returned
+\[
+ R_{80}=27087\cdot2^{80027}+1\qquad(24,095\text{ digits}).
+\]
+It completed 914 screens, including one positive. Since $27087$ is odd and smaller than $2^{80027}$, the exact congruence $5^{(R_{80}-1)/2}\equiv-1\pmod {R_{80}}$ is a Proth certificate. Indeed, squaring yields the Fermat congruence, and the required gcd for $q=2$ equals $\gcd(-2,R_{80})=1$. The large known factor is $2^{80027}$. These are search hits for the specified corpus snapshot. Their historical priority was not established.
+
+At the larger fixed exponent $131113$ the known example
+\[
+ R_{131}=7643\cdot2^{131113}+1\qquad(39,473\text{ digits})
+\]
+was recovered from a published coefficient and recertified at base $3$. PrimeGrid's entry dates from 2 May 2010. The coefficient $7643$ is below the corpus interval, which starts at $202611$. Of 60,875 sieve survivors in that interval, the corpus recorded 3,429 completed initial rejections; the first continuation screened 1,840 previously untested coefficients and recorded 1,840 further rejections. The resulting 55,606-row list became the input to the fixed-exponent sieve comparisons. Thus the 39,473-digit positive is a benchmark control with separate provenance. \href{https://primegrid.com/primes/?section=primelist\&userid=776}{PrimeGrid historical list}.
+
+\section{Cubic certificates for two published sequence entries}
+
+\begin{lemma}[Square and cubic size tests]\label{cer:bls}
+Suppose every prime divisor of $N$ is $1\bmod F$ with $F\ge2$, and $F\mid N-1$. If $N<(F+1)^2$, then $N$ is prime. If $N<F^3$, set
+\[
+ T=(N-1)/F,\qquad U=1+((T-1)\bmod F),\qquad V=(T-U)/F .
+\]
+Then $N$ is composite exactly when $X^2-UX+V$ has two positive integral roots, counted with multiplicity.
+\end{lemma}
+\begin{proof}
+In any proper split $N=(1+xF)(1+yF)$, the integers $x,y$ are positive, giving the square bound. Under the cubic bound we have $xy<F$, hence $x+y\le xy+1\le F$. Expanding $T=x+y+Fxy$ forces $x+y=U$ and $xy=V$. Conversely such roots give the displayed factorization. The discriminant $U^2-4V$ decides the remaining question by its sign, squareness, parity and the positivity of the roots.
+\end{proof}
+This is the elementary discriminant step of the Brillhart--Lehmer--Selfridge method \cite{bls}. Two known sequence terms illustrate how it reduces certificate support. Define
+\[
+ C_n=\frac{1}{n+1}\binom{2n}{n},\qquad H=C_{45622}+1,
+ \qquad B=\binom{156570}{78285}+1 .
+\]
+All prime intervals in the table are inclusive. The symbol $F$ denotes their squarefree product.
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Integer & Digits & Prime interval for $F$ & Distinct primes & $U^2-4V$\\\midrule
+$H$ & 27,460 & $70,207$--$91,243$ &1,866& $13\bmod16$\\
+$B$ & 47,130 & $120,511$--$156,539$ &3,057& $5\bmod8$\\\bottomrule
+\end{tabular}
+\end{center}
+For $H$, each listed prime divides the factorial $(91244)!$ and is larger than 45623, so it divides neither denominator factorial. For $B$, every listed prime divides $(156570)!$ and exceeds 78285. In both cases exact integer checks give $F\mid N-1$, $F^3>N$, and the order conditions \eqref{cer:pock} for the common base $2$. Neither residue in the last column is a square in its stated modulus. Lemma~\ref{cer:bls} therefore certifies both terms.
+
+To evaluate all reduced exponents, start a balanced product tree at $2^{(N-1)/F}\bmod N$. At a node with child products $L,R'$, raise its residue to $R'$ for the left child and $L$ for the right child. The leaf at $q$ has exponent $(N-1)/q$. Using binary powers and counting squarings including the Fermat check, the cubic tree for $H$ requires 390,769 against 170,184,814 for separate powers. For $B$ the corresponding counts are 710,362 and 478,553,232. The base-two tree for $B$ took 81.78 seconds in one FFT run and 907.21 seconds with exact GMP powering on the shared system. Both passed all 3,057 checks. A separate OpenPFGW test reported a successful BLS proof at base 29. \href{https://math.mit.edu/~drew/sutherland-phd.pdf}{Sutherland, cofactor powering, Algorithm 7.3}.
+
+The Catalan index appears in OEIS A053429 with a 2021 attribution to V.~Kote\v{s}ovec. That entry explicitly records a PrimeForm proof through index 4250. The central-binomial index appears in Robert Price's 2024 extension of OEIS A066699. The certificates above supply explicit verification data for both previously listed terms. \href{https://oeis.org/A053429}{OEIS A053429}. \href{https://oeis.org/A066699}{OEIS A066699}.
+
+\section{The number of distinct prime factors required}
+
+For a divisor of $N-1$ with a fixed number of distinct prime factors, the largest attainable value is the product of that many largest maximal prime powers in $N-1$. Factorial valuations supply the entire list for both $H$ and $B$. If $D_j$ is the largest such divisor with $j$ factors, exact computation gives
+\[
+ \left\lfloor H/D_{1865}^3\right\rfloor=114225402705416,
+ \qquad \left\lfloor B/D_{3056}^3\right\rfloor=2783155 .
+\]
+Consequently the cubic support sizes in the table are minimal for these size inequalities. For the square threshold on $H$, the minimum is 2,818. An independent elementary Pocklington replay used the 2,819 primes in $[59407,91243]$. The minima concern the size requirement alone.
+
+\begin{theorem}[Asymptotic certificate support]\label{cer:support}
+For $M_n=\binom{2n}{n}$ or $M_n=C_n$ and fixed $0<\alpha<1$, let $r_\alpha(n)$ be the least number of distinct primes in a divisor $F\mid M_n$ with $F>(M_n+1)^\alpha$. For all sufficiently large $n$ it exists and
+\[
+ r_\alpha(n)=\frac{2\alpha\log2}{\log n}\,n
+             +O_\alpha\!\left(\frac{n}{(\log n)^2}\right).
+\]
+\end{theorem}
+\begin{proof}
+For a prime $q$, each summand of Legendre's formula in the central binomial coefficient valuation is zero or one, and vanishes for $q^j>2n$. Hence $q^{v_q(M_n)}\le2n$ for both sequences. Stirling's formula gives $\log M_n=2n\log2+O(\log n)$, so the lower bound on the number of factors is $\alpha\log(M_n+1)/\log(2n)$.
+
+For the upper bound fix $0<c<\min(1,2(1-\alpha)\log2)$. Prime bases at most $cn$ contribute at most $\pi(cn)\log(2n)=(c+o(1))n$ to $\log M_n$ by the prime number theorem. The remaining maximal prime powers have product exceeding $(M_n+1)^\alpha$ for sufficiently large $n$. Each contributes at least $\log(cn)$ to the logarithm. Stopping at the first product above the threshold uses at most $1+\alpha\log(M_n+1)/\log(cn)$ factors. Expand both bounds in inverse powers of $\log n$.
+\end{proof}
+At $\alpha=1/2$ or $1/3$, fix $1<c<2-2\alpha\log2$. For sufficiently large $n$ every prime in $(cn,2n]$ exceeds both factorial denominator arguments and divides $M_n$. The logarithm of their product is $(2-c+o(1))n$, enough to meet the threshold. The modular order checks remain necessary for an individual prime certificate. \href{https://math.mit.edu/classes/18.785/2019fa/LectureNotes16.pdf}{Prime number theorem and logarithmic prime sums}.
+
+\chapter{Order certificates beyond the square-root boundary}
+\label{cer:orderchap}
+\section{Three choices of order modulus}
+
+Write $N=1+k2^sM$ with $M,k$ positive odd integers and $s\ge1$. A square or a proper gcd gives compositeness directly. An exact Fermat failure, or an exact failed Euler congruence at a negative-Jacobi base, also proves compositeness. For positive certificates the following three tests give different amounts of information for Lemma~\ref{cer:bls}.
+\begin{enumerate}
+\item With $F=2^s$, an exact pass $a^{(N-1)/2}\equiv-1\pmod N$ forces the order of $a$ modulo each prime divisor to have two-adic valuation $s$, since $kM$ is odd. This test uses only the value of $M$. In particular $N<(2^s+1)^2$, equivalently $kM<2^s+2$, suffices for a primality conclusion after a pass.
+\item For $M$ an odd certified prime, put $z=a^{k2^s}\bmod N$. If $z^M=1\bmod N$ and $\gcd(z-1,N)=1$, then $z$ has order $M$ at every prime divisor. Each such divisor is odd and hence $1\bmod 2M$. Take $F=2M$.
+\item Again take a certified prime $M$. Put $z=a^{k2^{s-1}}\bmod N$. If $z^M=-1\bmod N$ and $\gcd(z+1,N)=1$, the order of $z$ at every prime divisor is $2M$: the equality with $-1$ rules out orders $1,M$ and the gcd rules out order 2. The order formula for a power then gives $2^sM\mid\operatorname{ord}_{\ell}(a)$ at any prime $\ell\mid N$. Take $F=2^sM$.
+\end{enumerate}
+
+For $M=p_0$, $k=1215$ and $s=1950$, neither $M^2$ nor $2^{2s}$ exceeds $N$. The two-adic test at base 7 passes, and its cubic discriminant is $2\bmod3$, so $N$ is a 1,177-digit prime. It was found on the 66th screen and independently replayed with Python integers. On 64,906 small triples compared against trial division, the reference engine certified 11,951 primes and 51,823 composites and left 1,132 unresolved. Every definite result agreed with trial division. A finite base search can end without a factor or a usable witness.
+
+The parent-order and mixed-order arguments use the primality of $M$. For $M=21$, $k=33$, $s=1$ a putative base-two parent-order test would accept $1387=19\cdot73$ if 21 were treated as prime. Conversely the composite multiplier 9 gives a valid two-adic proof of $37=1+9\cdot2^2$. A resumable verifier can reconstruct and fingerprint the parent at startup, defer verification of its primality until a positive record first needs it, and cache the result in that process. A replay of a positive parent-dependent journal entry must make the same check. Restarting the archived one-row composite journal took 88.43 seconds before that change and 0.16 seconds afterwards, one cold-process observation per version. This measures restart overhead on completed work.
+
+\section{A one-congruence test for the entire child grid}
+
+\begin{theorem}[Structured child grid]\label{cer:childgrid}
+Let $M=1+A2^t>1$ with $A$ odd, $s>t\ge1$, $0<k<2^t$ odd, and $N=1+k2^s M$. Put $F=2^s$ and $u=\lfloor kM/F\rfloor$. If $u+1<k+2^t$, then for every $a$ with Jacobi symbol $(a/N)=-1$,
+\[
+ N\text{ is prime}\quad\Longleftrightarrow\quad a^{(N-1)/2}\equiv-1\pmod N.
+\]
+\end{theorem}
+\begin{proof}
+Euler's criterion gives necessity. A pass forces $F\mid\ell-1$ for every prime $\ell\mid N$. A composite would split into $(1+xF)(1+yF)$ for positive $x,y$. Hence $kM=Fxy+x+y$, with $xy\le u$ and $x+y\le xy+1\le u+1<k+2^t<F$. This gives $kM\bmod F=x+y\le u+1$. However the canonical remainder is
+\[
+ kM\bmod F=k+2^t\bigl(kA\bmod 2^{s-t}\bigr)\ge k+2^t.
+\]
+The bracket is odd and the right side before the inequality is smaller than $F$ because $k<2^t$. The two remainder bounds contradict each other.
+\end{proof}
+
+Here $M=Q=1+(1651P)2^{8205}$ has 79,157 bits. The prescribed rectangle has $79154\le s\le79169$ and odd $1\le k\le32767$. The exact maximum of $u$ is $\lfloor32767Q/2^{79154}\rfloor=171786$. The theorem therefore covers all 262,144 cells. Among the 13,223 survivors of the sieve through four billion, only 314 satisfied the individual two-adic square bound $2^{2s}>N$ and 12,909 failed both this and $Q^2>N$. The structured theorem applies to both groups. The first survivor, $(s,k)=(79154,47)$, gave a negative-Jacobi failure at base 3 and was proved composite. Its decimal length is 47,658. The later replay inputs at $k=135$ and $141$ are each 47,659 digits. A failure to find a usable base gives an unresolved row.
+
+\section{Sparse direct children and explicit exceptions}
+
+For an odd certified prime $R$ and even $2\le k<R$, put $N=1+kR(R-2)$. If $R=1+A_0 2^E$ has Proth form, then $N=kA_0^2 2^{2E}-(k-1)$, which permits special-modulus reduction.
+
+\begin{theorem}[Sparse direct child]\label{cer:sparsedirect}
+Suppose $a^{N-1}\equiv1\pmod N$ and $\gcd(a^{k(R-2)}-1,N)=1$. Then $N$ is prime if $k=2$ or $5k+2<4R$. For $4\le k<R$ set $D=(R-k)^2-(k-2)$. A nonsquare $D$ proves primality under those order hypotheses. If $D=z^2\ge0$, then $1+R(R-k-z)$ and $1+R(R-k+z)$ are proper factors independently of the witness.
+\end{theorem}
+\begin{proof}
+The order test forces every prime divisor to be $1\bmod R$. Any proper split has the shape $(1+AR)(1+BR)$, with positive even $A,B$ since $N$ and $R$ are odd. Define $t=k-AB$. Comparing coefficients gives $tR=A+B+2k$, so $t\ge2$ is even. From $(A-2)(B-2)\ge0$ follows $A+B\le AB/2+2\le k/2+1$. Thus
+\[
+ 2R\le tR\le(5k+2)/2<4R,
+\]
+where the last inequality follows from $k<R$. It forces $t=2$. Thus $AB=k-2$ and $A+B=2(R-k)$. These conditions are impossible when $k=2$, or when $5k+2<4R$. In the remaining cases the roots are $R-k\pm\sqrt D$. If $D$ is a square and $k>2$, the roots are positive even integers, and substitution proves the factorization.
+\end{proof}
+
+The square-discriminant coefficients correspond exactly to unordered factorizations $4R-7=uv$ with $5\le u\le v$, $u\equiv v\equiv1\pmod4$. Indeed $(2A+1)(2B+1)=4R-7$. Conversely $A=(u-1)/2$, $B=(v-1)/2$ give the admissible coefficient $k=AB+2=R-(u+v-2)/4$. There are at most $\lfloor(\sqrt{4R-7}-1)/4\rfloor$ such coefficients. At $R=53,k=42$ base 24 passes the order tests but $113527=107\cdot1061$, corresponding to $4R-7=5\cdot41$.
+
+The smaller production control uses $R=4987\cdot2^{3072}+1$, certified by Proth base 3. The 58th surviving coefficient was $k=716$. Base 2 satisfies the order tests and $5k+2<4R$, giving a 1,860-digit prime independently replayed with Python integers. For $R=R_{80}$ and $k=12$, the 48,191-digit child is composite. PRST 14.0 took 8.102 seconds with forced generic reduction and 5.144 seconds with sparse reduction in four alternating same-input pairs (medians). The two residual fingerprints agreed with exact arithmetic. This particular modulus gave a 36.51\% reduction in Fermat-screen time.
+
+\section{What is known for the two largest candidates}
+
+Let $m=136279841$ and $L=2^m-1$, an externally certified Mersenne prime. The two corpus targets are
+\[
+ T_2=28L^2+1 \quad(82,048,642\text{ digits}),\qquad
+ T_3=66L^3+1 \quad(123,072,962\text{ digits}).
+\]
+For every odd trial prime $q$, compute $b=2^m-1\bmod q$ and test $28b^2+1$ and $66b^3+1$ modulo $q$. A recheck through $10^9$, a scalar run between $10^9$ and $2^{32}$, and an eight-lane Montgomery run from $2^{32}$ through $12,000,000,000$ cover all 541,555,851 primes to that bound, including 2 by parity. No divisor was found. Both primality questions remain open in these computations. \href{https://www.mersenne.org/primes/press/M136279841.html}{GIMPS parent record}.
+
+A conditional certificate for either $T$ would consist of a unit $z\bmod T$ with $\gcd(z-1,T)=1$ and $z^{2^m}=z\bmod T$. Since $2^m-1=L$ is prime, the order of $z$ at every prime divisor of $T$ would be exactly $L$. Here are the elementary coefficient bounds behind the conclusion. A factorization of $1+kL^2$ would have the form $(1+AL)(1+BL)$, so $(k-AB)L=A+B\le AB+1\le k$. This is impossible for $k<L$. For $1+kL^3$, write $A\le B$. Comparing coefficients yields $A+B=tL$, $AB=kL-t$ and $1\le t<k$ when $k>1$. Indeed, $A+B\le AB+1$ gives $t(L+1)\le kL+1$. Also $A/2\le AB/(A+B)<k/t$, hence $A<2k$. Eliminating $B$ gives $L(At-k)=A^2-t$. If $L>4k^2$, then $|A^2-t|<L$, which forces $t=A^2$ and $k=A^3$. The cubic target has $k=66$, a noncube. A supplied witness would therefore certify the respective candidate after $m$ modular squarings plus gcd and unit checks. Witness generation remains open for both targets; the earlier full base-two recurrences use approximately $2m$ and $3m$ modular squarings respectively.
+
+\chapter{Sieving a grid of prime extensions}
+\label{ch:grid-sieve}
+For a fixed parent $M$, the cell with coordinates $(s,k)$ represents $1+k2^s M$. Both grids studied here have 16 exponent rows and 16,384 odd coefficients $1,3,\ldots,32767$. For the 21,356-digit parent $P$ the exponents start at 8192. For its 23,829-digit child $Q$ they start at 79154. Trial division through the inclusive bound $B$ removes a cell on the first proper divisor it encounters. Every cell in these experiments exceeds its sieve bound. The sorted output consists of the unresolved coordinates and, when requested, their complement labeled by the least trial divisor.
+
+\section{A whole block from one modular inverse}
+Take $k=k_0+2j$, $0\le j<J$, with $k_0$ positive and odd, and $K=k_0+2(J-1)$. Each odd prime $q\nmid M$ gives a unique forbidden residue
+\[
+  u_s\equiv-(M2^s)^{-1}\pmod q,\qquad 1\le u_s<q .
+\]
+A prime dividing $M$ divides none of the candidates. An ordinary row sieve marks the arithmetic progression $k\equiv u_s\pmod q$ and halves $u_s$ modulo $q$ to move to the next exponent.
+
+In the initial implementation it was cheaper to advance the column index directly. With $j_s=(u_s-k_0)/2\bmod q$, the recurrence is
+\[
+  j_{s+1}=(j_s-k_0/2)/2\pmod q.
+\]
+Modular halving of a representative $v$ uses $(v+(v\bmod 2)q)/2$. At $B=300{,}000$ the original $P$ grid left 23,397 candidates. Eight rotated complete runs per method gave median times of 54.98 ms for independent powering and inversion in every row, 39.55 ms for reusing $P^{-1}$, 16.25 ms for reusing $(P2^{8192})^{-1}$ with a relative power, and 8.43 ms for the adjacent-index recurrence. All masks agreed, including 60 sampled comparisons with a direct gcd against the product of the trial primes. At $B=10^8$, all 973 survivors in the $s=8192$ row matched the independent corpus-derived single-row sieve. The search completed 740 base-two screens over $8193\le s\le8207$, with 739 rejections and the direct child $Q$ subsequently certified. A separate single-row search at $s=8192$ completed 1,284 base-two screens with 1,284 rejections.
+
+\begin{theorem}[One possible strike per block]\label{th:block}
+If $g\ge1$ and $2^{g-1}K<q$, at most one cell in rows $s,\ldots,s+g-1$ is divisible by $q$. Write $v=\nu_2(u_s)$ and $b=u_s/2^v$. Such a cell exists exactly when $v<g$ and $k_0\le b\le K$, and its coordinates are $(s+v,b)$.
+\end{theorem}
+\begin{proof}
+At offset $t$ a strike requires $k2^t\equiv u_s\pmod q$. Both sides are positive integers below $q$, hence they are equal. Their decomposition as an odd integer times a power of two is unique. Conversely the specified equality implies divisibility of the original candidate.
+\end{proof}
+
+For $q>K$ take $g=1+\lfloor\log_2((q-1)/K)\rfloor$, truncating it to the number of remaining rows. The portable driver caps $g$ at 16. For the two grids a single block covers every row once $q>32767\cdot2^{15}=1{,}073{,}709{,}056$. The $gJ$ values $k2^t$ in a qualifying block are distinct by the same decomposition.
+
+To advance the root by $d$ exponents, choose $m$ in $[0,2^d)$ with $m\equiv-u_sq^{-1}\pmod {2^d}$. Then
+\[
+           u_{s+d}=\frac{u_s+mq}{2^d}.
+\]
+The numerator is a positive multiple of $2^d$ strictly below $2^dq$, which proves that this is the canonical root. The ordinary progression loop handles the smaller trial primes. For $H$ rows, odd coefficient width $J$ and prime-sieve segment length $L$, the masks, segment and base-prime data use $O(HJ+L+\sqrt B)$ space.
+
+\section{Reverse rows and independent marking controls}
+Going from high to low exponents gives $v_i=2^iu\bmod q$ for an initial root $u$. If $2^d K<q$ for $d\ge1$, a strike at step $i$ requires $v_i/q<2^{-d}$. Thus the first $d$ binary digits of that fractional part are zero. For $i>0$ the bit immediately preceding them must equal one, since $v_i=2v_{i-1}-b_iq$ implies $v_i\bmod2=b_i$. The initial parity is known at $i=0$. Using the high word $\lfloor2^{32}u/q\rfloor$ gives up to $33-d$ possible starting positions for $1\le d\le32$. Every prospective hit receives an exact coefficient-range test. The binary criterion skips no valid hit, and two eligible starts are separated by at least $d+1$ positions. In the measured rectangle, 91,987,280 eligible row positions required 5,749,205 word masks and 484,706 exact row reconstructions. Small primes accounted for another 195,984 direct visits.
+
+\begin{center}\small
+\begin{tabular}{@{}lrr@{}}\toprule
+$P$ grid through $10^8$ & Complete sieve (s) & Repetitions per arm\\\midrule
+Archived forward / segmented forward / segmented reverse &1.768 / 1.283 / 1.194&6\\
+Reverse prefix, scalar / eight-lane IFMA &1.148 / 0.620&6\\
+Archived forward / reverse prefix IFMA / dyadic IFMA &1.685 / 0.601 / 0.545&9\\
+Dyadic IFMA / new prime stream / centered FMA &0.584 / 0.516 / 0.179&9\\
+Centered FMA / new iterator / vector marking and roots &0.178 / 0.134 / 0.101&12\\
+\bottomrule\end{tabular}
+\end{center}
+Each row reports medians from a common experiment on a shared AMD EPYC 9V74. Times include allocation, prime enumeration, root generation and marking. TSV export and candidate modular tests follow the timer. Experiments that measured only marking gave 210.56 versus 46.48 milliseconds for forward and dyadic scalar marking. Rebuilding the prime and root tables raised those times to 1.238 and 1.094 seconds. On a smaller grid with wider coefficient rows, a direct marking loop took 3.58 milliseconds against 3.89 for grouping. These distinctions matter when selecting a method for a new grid.
+
+\section{Exact modular arithmetic and vector marking}
+The first vector implementation used eight-lane integer fused multiply-add (IFMA) on 52-bit limbs. The next evaluated four groups of eight primes in binary64 using compensated fused multiply-add (FMA). It reconstructs the parent from its defining recurrence and computes the inverse in each prime field. To multiply two centered integral residues, put $z=ab$, $H=\operatorname{fl}(ab)$ and round $H\operatorname{fl}(1/q)$ to an integer $d$. Compute
+\[
+   c=\operatorname{fma}(-d,q,H),\qquad
+   l=\operatorname{fma}(a,b,-H),\qquad r=c+l .
+\]
+For $q<2^{32}$ and $|a|,|b|\le0.501q$, binary64 unit roundoff $\epsilon=2^{-53}$ gives a quotient-estimation error below $4\epsilon |z|/q<0.001$. Hence $|z-dq|\le0.501q$. The exact integers $z-H$ and $H-dq$ are small enough to be representable in binary64, so the two fused operations and their sum give the exact integer $z-dq$. For $q<2^{27}$ the product itself fits exactly and the low correction vanishes. The implementation checks round-to-nearest and disables unsafe floating-point optimizations. The compensated-product principle is established modular arithmetic \cite{simd}.
+
+The last implementation obtains $d$ via $\operatorname{fma}(H,\operatorname{fl}(1/q),D)-D$, with $D=3\cdot2^{51}$. In its kernel the exact argument near $D$ has binary64 spacing one, so the subtraction returns the required integral quotient estimate. The exponentiation for the Fermat inverses uses base four. At the marking stage eight trial primes share vector instructions for the valuations $\nu_2(u_s)$, the odd coefficients and both range comparisons. Only lanes with actual strikes update cells. Batches crossing a change of $g$ use the scalar marking path, and a partial final vector carries its valid-lane count.
+
+For $Q$ at $B=10^8$ the corresponding 12-repeat comparison gave $0.215$ s for the previous centered implementation, $0.168$ s with the replacement iterator and $0.118$ s for the full update. All masks agreed in both grids. Independent controls tested 101,120 roots, 227,520 products, 20 shifted grids and 40 complete shifted least-factor ledgers. At $B=4\cdot10^9$, the final $P$ and $Q$ survivor and factor files matched their predecessors byte for byte. In a separate three-repeat test, a shifted $Q$ grid with $k_0=19$ at $B=10^9$ took 2.907 versus 1.579 s with its factor ledger.
+
+\section{Sharing work between exponent intervals}
+For disjoint, ordered exponent intervals with the same parent and coefficient range, prime enumeration and the first modular inverse can be shared. The jump formula above uses one low-word inverse of $q$ for all intervals. Gaps of at most 64 exponents fit a 64-bit step with a 128-bit product. Steps are composed up to gaps of 256, and larger gaps use modular powering of $(q+1)/2$. The only additional grid storage is the collection of requested masks.
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}\toprule
+Four intervals, $B=10^8$ & Separate (s)& Shared (s)& Survivors\\\midrule
+$P$, $16\times16384$ per interval, $k_0=1$ &0.801&0.368&63,992\\
+$Q$, $12\times8192$ per interval, $k_0=19$ &0.723&0.495&23,924\\\bottomrule
+\end{tabular}
+\end{center}
+The $P$ starts were $8192,8256,8320,8384$. The $Q$ starts were $79154,79185,79250,79510$, including a gap of 260. Five paired runs per input used the same centered kernel in both arms and started without a precomputed root table. Every mask agreed. The first $P$ interval reproduced the archived 15,984 surviving cells.
+
+\chapter{Sieve depth and verified continuations}
+\label{ch:depth}
+\section{When deeper trial division saves elapsed time}
+Starting from the same $P$ grid, we increased $B$ and recorded the first new prime divisor of each previously surviving cell. The ordinary row and dyadic implementations produced identical complete files at $4\cdot10^9$. Each divisor was checked for primality and by direct modular reduction.
+\begin{center}\small
+\begin{tabular}{@{}rrrrr@{}}\toprule
+$B$ & Survivors & Removed since $10^8$ & Row-sieve time (s) & Prior tests avoided\\\midrule
+$10^8$ &15,984&0&1.48&0\\
+$3\cdot10^8$ &15,074&910&4.15&43\\
+$10^9$ &14,240&1,744&12.84&77\\
+$2\cdot10^9$ &13,775&2,209&25.05&102\\
+$4\cdot10^9$ &13,346&2,638&49.86&124\\\bottomrule
+\end{tabular}
+\end{center}
+Times are cumulative in one checkpoint run, including prior exports. The denominator of the final column is 740 modular tests actually completed in the historical search. The last depth removed 16.50\% of the former survivors and 16.76\% of the historically tested inputs. A separate portable dyadic pass through $4\cdot10^9$ took 41.64 s.
+
+Two end-to-end checks used a common one-worker OpenPFGW 4.1.8 backend on 16 rows and 64 odd coefficients per row. Each arm paid for sieving the entire 262,144-cell grid. The rectangle $1\le k\le127$ went from 69 screens at $10^8$ to 58 at $10^9$, taking 152.206 versus 140.903 s in total. The rectangle $30001\le k\le30127$ went from 67 to 61 screens and 148.592 to 145.782 s. Each arm was measured once per rectangle. All screens rejected, and the second difference was small relative to possible shared-host variation.
+
+If deeper sieving newly excludes a set $D$ of composites with individual screen costs $c_i$, the exhaustive-scan saving is $\sum_{i\in D} c_i-\Delta S$, where $\Delta S$ is the extra sieve time and other costs are fixed. Under uniformly random candidate order and $r\ge1$ actual primes, symmetry places one specified composite before the $h$th prime with probability $h/(r+1)$, $1\le h\le r$. Linearity of expectation gives the corresponding expected saving $h\sum_{i\in D}c_i/(r+1)-\Delta S$. A fixed scan order can have a substantially different saving.
+
+\section{Deep continuation of the structured child grid}
+The $Q$ sieve left 15,869 cells at $10^8$, 14,135 at $10^9$, and 13,223 at $4\cdot10^9$. Its first archived survivor $(79154,47)$ failed an exact Euler test, leaving 13,222. The minimum decimal length was 47,658 before that test and 47,659 among the latter inputs. The maximum was 47,666 in both lists.
+
+Every new prime above $4\cdot10^9$ exceeds $32767\cdot2^{15}$, allowing a single canonical root to settle all 16 rows. Using 64-bit factor storage removes the earlier 32-bit sieve ceiling. The compensated FMA implementation admits $q<2^{40}$ with $|a|,|b|<2q$. Here the quotient-estimation error is below $0.002$, so $|ab-dq|<0.502q$ and both integer FMA residuals are exactly representable. On the common band $(3.9\cdot10^9,4\cdot10^9]$ the three medians were 1.253, 0.362 and 0.255 s for old 32-bit roots, wide IFMA and wide FMA. Six permutations of the three methods inspected 4,525,187 primes using the same iterator and output duties.
+
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}\toprule
+$Q$ trial interval & At start & New proper factors & Remaining\\\midrule
+$(4\cdot10^9,10^{10}]$ &13,222&474&12,748\\
+$(10^{10},3\cdot10^{10}]$ &12,748&582&12,166\\
+$(3\cdot10^{10},6\cdot10^{10}]$ &12,166&338&11,828\\\bottomrule
+\end{tabular}
+\end{center}
+Across these bands the IFMA and FMA passes visited 2,334,076,343 primes and returned byte-identical survivor and factor files. Of the 1,394 divisors, 1,355 exceeded $2^{32}-1$.
+
+A two-stage Pollard $p-1$ pass with $(B_1,B_2)=(1024,32768)$ was tried on 192 hash-selected survivors of the earlier $4\cdot10^9$ sieve. It found zero factors on 64 pilot inputs in 28.08 s and five on 128 disjoint held-out inputs in 59.50 s. The observed cost per factor was 11.90 s on the held-out sample, or 17.52 s across all 192. Three factors overlapped the deep sieve and two were additional. The exact Euler failures at $k=135,141$ contributed one further distinct exclusion because $k=135$ already had a recorded factor. The next three strict Euler failures, at $k=333,351,425$ and $s=79154$, left 11,822 open cells.
+
+\section{Fixed exponent and wider coefficient windows}
+For $e=131113$, the sparse original list comprised 55,606 individually specified, positive odd coefficients through $k=2{,}202{,}551$. The corpus interval began at $k=202611$ and had 60,875 original sieve survivors. A continuation screened 1,840 previously untested coefficients and rejected them all. The resulting 55,606-entry list had survived trial division through $10^8$ and the earlier screening schedule. Every subsequent trial prime exceeded the largest coefficient in this list. One therefore computes $r=-2^{-e}\bmod q$, $0<r<q$, and checks whether that coefficient is in the list.
+
+The decomposition $e=64\cdot 2^{11}+41$ shortens the power. With Montgomery radix $R=2^{52}$ and $h=-q^{-1}\bmod4096$, the exact integer $(1+hq)/4096$ represents $2^{-64}$ in Montgomery form because $R2^{-64}=2^{-12}$. Eleven Montgomery squares encode $2^{-131072}$. One Montgomery product with 1 decodes it, and another with $2^{11}$ supplies $2^{-41}$. On 45,086,079 primes in $(10^8,10^9]$, four observations per method took 1.936 s median for binary powering and 1.594 s for this specialization. Both factor and survivor files agreed.
+
+Use $0<X<2q$, set $m=X^2q^{-1}\bmod R$, $0\le m<R$, and form
+\[
+ X'=q+\lfloor X^2/R\rfloor-\lfloor mq/R\rfloor
+    =q+(X^2-mq)/R .
+\]
+The product low limbs agree. Since $mq<Rq$ and $X^2<4q^2<Rq$ for $q<R/4$, the result stays in $(0,2q)$ and represents $X^2/R$. Intermediate squares can therefore omit their final normalization. The four-group, eight-lane version combined this arithmetic with a faster prime stream. For the slightly extended comparison through 1,000,000,007 it visited 45,086,080 primes and took 0.315 s versus 1.599 s for the previous complete process. Holding stream and batching fixed gave 0.319 versus 0.430 s when changing the modular square alone. On a higher band above $10^{11}$ through $1.01\cdot10^{11}$ the complete old and new medians were 1.835 and 0.353 s. These pairs involved four fresh processes per arm.
+
+Two further changes made the invariant usable through all $q<2^{50}$. The initialization reconstructs both 52-bit limbs of $hq$, explicitly carrying the addition of one before the shift. At the last decoding step, if $d$ is the decoded residue after eleven squares, let $T=2^{11}d$ and $m=Tq^{-1}\bmod R$. The desired \emph{negative} root equals
+\[
+      \lfloor mq/R\rfloor-\lfloor T/R\rfloor\pmod q
+\]
+because $mq\equiv T\pmod R$. The correction $\lfloor T/R\rfloor$ may be nonzero in the widened range.
+
+For a displaced odd-coefficient interval $[A,H]$ of span less than $2q$, at most one odd lift of a given root belongs to the interval. Starting at $j=\lfloor A/q\rfloor$, take $jq+r$, add $q$ if necessary to reach $A$, then add $q$ if parity requires it. Test the result against $H$ and against actual list membership. While increasing $q$, the quotient $j>0$ persists up to $\lfloor A/j\rfloor$. This permits vector comparisons for several primes and amortizes the quotient calculation. Four distant windows can share a prime stream and modular roots. Their tables occupy space proportional to the sum of their spans.
+
+\begin{center}\small
+\begin{tabular}{@{}lrrrr@{}}\toprule
+Six pairs per arm & Inputs & Previous (s)& New (s)& Ratio\\\midrule
+One window near $2^{36}$ &8,047&0.419&0.316&1.33\\
+Four windows near $2^{32},2^{34},2^{35},2^{36}$ &32,037&1.639&0.343&4.78\\
+Original small coefficients &55,606&0.297&0.320&0.93\\\bottomrule
+\end{tabular}
+\end{center}
+Each displaced window started with 131,072 odd coefficients before pre-sieving. Each timed pass ran above $10^8$ through 1,000,000,007, including both output files and factor verification. The four-window outputs contained 3,514 factors and 28,523 survivors. In the original single window the widened program took 7.8\% longer. The earlier narrow-window implementation remains available.
+
+\section{The fixed-exponent partition}
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}\toprule
+Newly completed operation & At start & Excluded & Remaining\\\midrule
+Trial primes $(10^8,10^9]$ &55,606&6,161&49,445\\
+$(10^9,10^{10}]$ &49,445&5,025&44,420\\
+$(10^{10},10^{11}]$ &44,420&4,091&40,329\\
+Four exact Euler failures &40,329&4&40,325\\
+$(10^{11},2\cdot10^{11}]$ &40,325&1,035&39,290\\
+$(2\cdot10^{11},4\cdot10^{11}]$ &39,290&1,062&38,228\\
+$(4\cdot10^{11},10^{12}]$ &38,228&1,245&36,983\\
+$(10^{12},1.25\cdot10^{12}]$ &36,983&317&36,666\\
+Exact Euler failure at $k=344345$ &36,666&1&36,665\\\bottomrule
+\end{tabular}
+\end{center}
+The first three prime bands took respectively 1.64, 17.34 and 178.33 s of scan time, excluding I/O. The next four exclusions were at $k=343911,343971,344091,344121$, all with negative-Jacobi base 5 and independent exact replays. In the original eight-entry prefix, deepening to $10^9$ reduced the number of full screens from eight to six. Charging the entire band sieve to that prefix gave 23.200 versus 19.935 s in alternating order. This prefix contained a higher fraction of new factors than the whole input.
+
+The final band inspected 9,010,124,647 primes. Two full passes produced identical partitions. Of its 317 recorded factors, 179 exceed the previous $2^{40}$ implementation ceiling. The 36,665 retained coefficients have passed the stated tests and remain available for full modular classification.
+
+\chapter{Exact modular arithmetic for the surviving candidates}
+\label{ch:exact}
+\begingroup
+\setlength{\parskip}{3pt plus 0.3pt minus 0.3pt}
+\setlength{\abovedisplayskip}{5pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{5pt plus 1pt minus 1pt}
+An \emph{exact replay} computes a canonical residue in $[0,N)$ by integer arithmetic or finite-field transforms with verified reconstruction bounds. A floating-point FFT screen supplies a provisional result or checkpoint. Exact replays and proper divisors support the final exclusions.
+
+\section{The first transform-based Proth replay}
+Put $F=2^s$, $N=1+kF$, with $k$ positive, odd and less than $F$. For a negative-Jacobi base $a$, first compute $a^k\bmod N$, then square $s-1$ times. Proth's theorem and Euler's criterion give the respective meanings of a final value equal to or different from $N-1$.
+
+The initial exact implementation formed an ordinary double-width square with GMP and folded the high bits by dividing by the one-word coefficient $k$. The next implementation used FLINT's small-prime number-theoretic transforms (NTTs) and Chinese remaindering to form the full square. It followed this operation with a specialized reduction \cite{flint}. For $H=2^{s+d}>N$, $1\le d\le s$, represent $x$ by $Hx\bmod N$. Decompose a square as $T=t_1H+t_0$, $0\le t_0<H$, and set
+\[
+ z=kt_0\bmod 2^d,\qquad m=z2^s-t_0,\qquad
+ y=t_1+(km+z)/2^d.
+\]
+The numerator $km+z$ is divisible by $2^d$. Expanding $N$ gives $y=(T+mN)/H$. Since $|m|<H$ and $0\le T<N^2<HN$, one has $-N<y<2N$. One conditional correction gives the canonical residue. In the applicable word range, the reduction therefore uses shifts, additions and short products. The full integer square remains the dominant operation.
+
+On the 39,473-digit positive control $k=7643$ and the 39,475-digit composite $k=343971$, both at $s=131113$, the mean times for the original and transform-based methods were 31.59 and 17.10 seconds on the prime, and 30.56 and 17.04 on the composite. In two alternating full runs per number and per method the totals were 124.31 and 68.28 seconds (1.82-fold). Both complete residues matched the independent GMP calculations. Short ablations attributed much of the saving to forming the square with finite-field transforms.
+
+\section{Computing the Proth square directly in the residue ring}
+Store $x$ as $Fx\bmod N$. Choose a power-of-two transform length $L$ and put $b_i=\lceil si/L\rceil$. Write the stored integer as $A+hF$, where $A=\sum_{i<L}x_i2^{b_i}$ and $0\le x_i<2^{b_{i+1}-b_i}$. The required operation is $(A+hF)^2/F\bmod N$. Its cross and top terms are $2hA+h^2F$. The remaining term is a weighted cyclic square of length $L$, avoiding the full double-width integer square of the preceding implementation.
+
+\begin{lemma}[Weighted coefficient identity]
+For a verified transform prime $p$ with $L\mid p-1$, choose $\eta$ with $\eta^L kF\equiv-1\pmod p$. Weight digit $i$ by $w_i=2^{b_i}\eta^i$, cyclically square the weighted vector, and multiply output slot $j$ by $-k/w_j$ in $\mathbb F_p$. If the inverse transform is unnormalized, also divide by $L$. The resulting vector gives, modulo $p$, the signed coefficients of a representative of $A^2/F\bmod N$.
+\end{lemma}
+\begin{proof}
+For indices $i,i'$, write $i+i'=j+mL$ with $m\in\{0,1\}$. By the ceiling identity $\epsilon=b_i+b_{i'}-b_j-ms\in\{0,1\}$. For $m=0$ the coefficient multiplier is $-k2^\epsilon$, as $F^{-1}\equiv-k\pmod N$. For $m=1$, the additional factor $\eta^L$ cancels $-kF$ and the multiplier is $2^\epsilon$. These are exactly the multipliers obtained when the two digits are multiplied and one factor $F$ is removed in the residue ring.
+\end{proof}
+
+With $b=\lceil s/L\rceil$ each signed slot has magnitude at most $2kL(2^b-1)^2$. The program uses two distinct verified primes $p_0,p_1$, and requires the conservative bound $2kL\,2^{2b}+p_0+p_1<p_0p_1/2$. Centered Chinese remaindering recovers the integer coefficients uniquely. The implementation adds $2hA+h^2F$, propagates carries, and reduces the top coefficient via $kF\equiv-1\pmod N$. To decode, multiply by $-k$ and return the canonical residue. Each accepted plan checks both transform primes, the root identities, the reconstruction bound and round-to-nearest arithmetic. The program falls back to the earlier exact path for unsupported shapes and unsuccessful plan selection. The weighted-transform principle goes back to Crandall and Fagin. Percival treated $k2^n\pm1$ explicitly \cite{cf,percival}.
+
+\begin{center}\small
+\begin{tabular}{@{}rllrr@{}}\toprule
+$k$ at $s=131113$ & Base & Exact result & Full square (s) & Weighted square (s)\\\midrule
+7,643   &3&Prime, prior control &17.972&7.535\\
+343,971 &5&Composite, prior control &15.786&7.594\\
+344,345 &3&Composite, then open     &16.573&7.826\\\bottomrule
+\end{tabular}
+\end{center}
+The entries are means of two full fresh processes per arm on one core. The six complete checks per method took 100.661 and 45.910 seconds, a factor of 2.193. These timings include plan selection, validation and writing the full hexadecimal residue. The two published control coefficients used revalidated stored plans. For seven previously unseen coefficients the entire cold setup, including input and output, took 0.030--0.065 seconds each. Independent checks covered 684 seeded residues on nine moduli, including signed representatives and carry boundaries. All timings for this comparison use $L=4096$ on the reported full-size inputs.
+
+\section{Exact folds for the dense-parent Euler power}
+Let $F=2^s$, $C=kQ$, and $N=1+CF$. A large $C$ changes the relative cost of reduction. One early integer implementation used
+\[
+ N^{-1}\equiv 1-C2^s+C^2 2^{2s}\pmod {2^j},\qquad s\le j\le3s .
+\]
+Another used $R=F^2$ as the Montgomery scale. For a nonnegative integer $T=uF+r$ with $0\le r<F$, put $W=u-Cr$. Then
+\[
+ FW=T-rN,\qquad W>-N.
+\]
+Adding $N$ when $W<0$ gives a nonnegative representative of $T/F\bmod N$. Two folds and a final canonical reduction return $T/F^2\bmod N$, including when $F^2<N$. At $s=79154$, $k=135$, $a=7$, the first calibration took 152.107 seconds with ordinary GMP, 131.642 with the sparse inverse and 96.764 with two folds on the same core. Each method ran once; all residues matched. The modulus has 47,659 decimal digits.
+
+The next implementation pads the radix when $F^2<N$. Choose $D=2^d$ with $d=\operatorname{bitlength}(N)-2s$ when that positive $d\le s$ fits the supported word range. Put $R=F^2D>N$. After two folds have produced $X$, put $j=-X\bmod D$. Since $N\equiv1\pmod D$,
+\[
+  Y=(X+jN)/D\equiv XD^{-1}\pmod N.
+\]
+The computation uses a shift and a small product. A fold applied to $T$ has output less than $T/F+N$. For a square $T<N^2$, iterating this bound, then dividing by $D$ and using $R>N$, gives $Y<4N$. Canonicalization needs a bounded number of subtractions. Other size regimes retain an exact fallback.
+
+Each square changes its operand, while each of the two folds multiplies a low part by the same $C$. The accelerated method uses exact FLINT products. An optional version precomputes the forward transforms of $C$ for a compatible length profile, then transforms only the changing operand on each fold. Inverse transforms and exact Chinese remainder reconstruction give the ordinary product. Unmatched lengths use the ordinary product routine.
+\begin{center}\small
+\begin{tabular}{@{}lrr@{}}\toprule
+Matched run for $s=79154$, $k=135$, $a=7$ & Full times (s) & Mean (s)\\\midrule
+Earlier two-fold integer kernel &93.884, 106.323&100.103\\
+New integer kernel, FLINT products &57.214, 55.882&56.548\\
+Optional cached transforms of $C$ &53.286&single run\\\bottomrule
+\end{tabular}
+\end{center}
+The matched two-arm order was previous, new, new, previous. The 1.77-fold ratio comes from those four full runs. The cached measurement and the initial 96.764-second calibration are separate observations. The 2,048-bit prefix controls indicate that the transform backend supplied most of the gain; padding had mixed effects in shorter runs. Independent controls compared 5,680 modular squares and 568 powers across 142 parameter settings.
+
+For the then-open $k=351$ and $s=79154$, FFT screening plus a separate older exact replay took $8.623+107.495=116.118$ seconds. The integrated checker took 67.238 seconds including its screening and strict replay. All three evaluations gave the same full base-5 residue. Each arm ran once on the same core. On a separate pair of 3,910-bit inputs, $k=1215$ and $1219$ at $s=1950$ with parent $p_0$ from the corpus chain, immediate exact evaluation reduced the sum of the per-input medians from 0.4280 to 0.0637 seconds in five fresh-process pairs. The balanced-shape dispatcher uses immediate integer evaluation through 4,096 bits. That short-input timing concerns the cost of FFT setup.
+
+\section{Streaming untrusted checkpoints to exact workers}
+For $N=1+k2^s$ and a chosen base $a$, define $x_0=a^k\bmod N$ and $x_{i+1}=x_i^2\bmod N$. The target is $x_{s-1}$. Choose cuts $0=t_0<t_1<\cdots<t_B=s-1$. A fast worker proposes canonical residues $z_j$ at the internal cuts. Each exact worker starts from the proposed input for its interval and evaluates the prescribed number of squares. The first input is the independently computed $a^k\bmod N$. The output of each internal interval must equal the proposed initial residue of the next interval. The last exact worker supplies the final residue.
+
+\begin{proposition}[Deterministic checkpoint verification]
+If every interval is covered exactly as specified and all internal equalities pass, the accepted final residue is $a^{(N-1)/2}\bmod N$, independently of how the proposals were made.
+\end{proposition}
+\begin{proof}
+The first interval begins with the true $x_0$. Its exact computation determines $x_{t_1}$. The first comparison forces $z_1=x_{t_1}$, so the second interval also begins at the true residue. Induction across all cuts proves the assertion.
+\end{proof}
+The verifier binds the candidate, base, canonical representatives and contiguous interval lengths to one job. A changed bit in an actual transcript for the 39,473-digit prime caused rejection. The streamed generator stops at the penultimate cut, and early exact workers can start before later hints are available.
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}\toprule
+Four complete verifications & Total (s) & Prime mean (s) & Composite mean (s)\\\midrule
+One core, weighted arithmetic &38.35 &9.72&9.45\\
+Three cores, preceding arithmetic and streamed hints &32.52&7.05&9.21\\
+Three cores, weighted arithmetic and streamed hints &18.77&4.17&5.21\\\bottomrule
+\end{tabular}
+\end{center}
+Each arm tested the same prime and composite twice, including hint generation and exact verification. The latency ratios are 2.04 for one versus three weighted cores, and 1.73 for the two three-core algorithms. Throughput per core-hour is a separate measure.
+
+\endgroup
+
+\chapter{External controls on the same machine}
+\label{ch:externalcontrols}
+
+The largest measured advantage in Table~\ref{tab:external-matched} occurs in the fixed-exponent sieve. The Proth test gives a different comparison. On three matched inputs, two implementations of the same FFT-based Proth test finished within one percent of one another in aggregate. Table~\ref{tab:external-matched} reports the measurements and identifies which computation was timed. The machine was a shared AMD EPYC 9V74. Each program used one worker. In the fixed-exponent and Proth series, each run started a fresh process pinned to one logical CPU.
+
+\begin{table}[htbp]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Timed operation & External (s) & Corpus (s) & Ratio\\
+\midrule
+Fixed-exponent sieve, first comparison & 3.4509 & 1.5720 & 2.195\\
+Fixed-exponent sieve, later checked implementation & 3.4572 & 0.3658 & 9.450\\
+Proth screen, three inputs, two passes &18.7943&18.6961&1.005\\
+Published 41,715-digit prime, Proth screen &2.9184&2.9909&0.976\\
+Base-2 screen, 12 dense-parent inputs, two passes &49.9963&45.6608&1.095\\
+Fermat and Euler screens, two larger inputs, two passes &41.5057&35.7761&1.160\\
+\bottomrule
+\end{tabular}
+\caption{External time divided by corpus time. Each sieve entry and the published-prime entry are medians of four measurements per program. The other entries are sums over complete passes. Times cover the work described in each row. The last row uses different exponents for the same input and base.}\label{tab:external-matched}
+\end{table}
+
+\section{Factor sieving}
+The input contained 55,606 odd coefficients $k$ for $1+k2^{131113}$. Each program visited 45,086,080 trial primes in $(10^8,1{,}000{,}000{,}007]$ and wrote the survivor and factor files. The general sieve, \texttt{fbncsieve} 1.7.1 from MTSieve 2.7.0, rounded the requested upper bound of $10^9$ to the next prime. The corpus executable therefore received the explicit endpoint $1{,}000{,}000{,}007$. All runs reproduced the same 49,445 ordered survivors and all 6,161 coefficient--divisor pairs.
+
+For the first comparison we piloted four fixed external chunk sizes. The fastest pilot used 2,097,152. Fresh timed processes then ran in the order $E,C,C,E,E,C,C,E$ with this tuning fixed, where $E$ denotes the external implementation and $C$ the corpus implementation. The external program rechecked each reported factor internally. An independent positive-power divisibility check on all 6,161 records from each of the four original corpus runs took 0.0112--0.0121 seconds per file, outside that comparison's timer. The later experiment put the independent modular check inside the corpus process and used four fresh pairs. Its 9.45 ratio applies to the complete fixed-exponent sieve on this input. The CPU code used for the external arm came from the \href{https://github.com/primesearch/mtsieve/tree/bd03dcd9693362853dcc31482e75aaa8e2b703c5}{pinned MTSieve tree}.
+
+\section{Proth and dense-parent screens}
+The three Proth inputs had $s=131113$. The corpus and PRST used base 3 on the prime $k=7643$ and base 5 on the composites $k=343911$ and $343971$. The two runs per coefficient give the following mean process times.
+\begin{center}\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Coefficient $k$ & 7,643 & 343,911 & 343,971\\\midrule
+PRST (seconds)&2.351&3.594&3.452\\
+Corpus FFT (seconds)&2.538&3.528&3.282\\\bottomrule
+\end{tabular}
+\end{center}
+PRST 14.0.1888 used GWNUM 31.6 and the corpus screen used GWNUM 31.7. Both monitored roundoff. PRST's optional strong Gerbicz check was disabled for the comparison. Independent exact-integer replay was timed separately in the algorithm experiments. The corpus program was slower on the positive input in this series; aggregating both runs on each of the three inputs gives a difference of 0.098 seconds over roughly 19 seconds.
+
+An independent positive control used $7333\cdot 2^{138560}+1$ with witness 3. The 2011 \href{https://www.primegrid.com/download/pps-F138557.pdf}{PrimeGrid discovery report} gives 36 seconds for LLR on an AMD Phenom 8450. On the EPYC, the paired modern programs both finished near three seconds and PRST had the lower median. The historical and modern observations involve different machines and programs.
+
+The 12 dense-parent inputs in Table~\ref{tab:external-matched} were positions $0,60,\ldots,660$ of an archived 740-test sequence for the 21,356-digit parent. Each failed the base-2 screen. The programs alternated order across two passes. On the separate positive direct-child control their individual medians were 2.211 seconds for OpenPFGW and 2.264 for the corpus. On children of the 23,829-digit parent, $s=79154$ with $k=135,141$, the corpus used the negative-Jacobi Euler half-power at bases 7 and 5; OpenPFGW 4.1.8 evaluated the Fermat power at those same bases. Both inputs were independently proved composite. The latter comparison measures two workflows that serve different acceptance tests. Software sources are available for \href{https://github.com/patnashev/prst}{PRST} and \href{https://github.com/primesearch/OpenPFGW}{OpenPFGW}.
+
+The first comparison archive contains 76 individual principal timings: eight fixed-exponent sieve runs, twelve Proth-triple runs, eight published-prime runs and 48 dense-parent runs. The 48 records also support the original dense-parent study and constitute one experiment across the two reports. Later checked-sieve and larger-parent screen observations are separate series. The raw records establish the work and order for these finite comparisons; they do not provide a search-to-first-prime distribution.
+
+\appendix
+
+\chapter{Independent certificate checks and checkpoint identity}
+\label{app:fingerprints}
+The largest explicit prime certified in the study is
+$\binom{156570}{78285}+1$ (47,130 digits), a previously listed sequence
+term. The 39,473-digit PrimeGrid control and the two primes found in the
+initial searches have different provenance. The table gives unambiguous
+integer definitions so that names used in successive releases cannot change
+the identity of a result. Here $P$ is the 21,356-digit VMRC endpoint and
+$C_n=\binom{2n}{n}/(n+1)$.
+
+\begin{center}\small
+\begin{tabular}{@{}lrl@{}}\toprule
+Integer & Digits & Origin and certificate used here\\\midrule
+$1+1651\cdot2^{8205}P$ &23,829& Initial search, Pocklington, base 2\\
+$1+27087\cdot2^{80027}$ &24,095& Initial search, Proth, base 5\\
+$C_{45622}+1$ &27,460& OEIS A053429, cubic order test, base 2\\
+$1+7643\cdot2^{131113}$ &39,473& PrimeGrid 2010, Proth, base 3\\
+$\binom{156570}{78285}+1$ &47,130& OEIS A066699, cubic order test, base 2\\
+\bottomrule\end{tabular}
+\end{center}
+
+The first row was $D$ in the first manuscript and became the parent $Q$
+of the later child grid. The second row was called $Q$ only in the first
+manuscript. World discovery priority was not established for either initial
+search output. The 47,659-digit computations at the end of the project
+give composite results on the tested coordinates.
+
+\section{A short checker for all five entries}
+The two successive code blocks form one executable Python 3 script.
+Standard integer arithmetic suffices. Installing \texttt{gmpy2} accelerates
+the full modular powers, particularly the 3,057-leaf binomial calculation.
+Run the script with Python assertions enabled. Each witness is recomputed
+from the defining integers. A digest is unnecessary for the proof.
+
+{\small\begin{verbatim}
+from math import comb, gcd, isqrt, prod
+try:
+    from gmpy2 import powmod as power
+except ImportError:
+    power = pow
+
+proved = {2, 7}
+def certify(n, factors):
+    F = prod(q**v for q, v, a in factors)
+    assert F*F > n and (n-1) % F == 0
+    for q, v, a in factors:
+        assert q in proved and v >= 1 and 1 < a < n
+        r = power(a, (n-1)//q, n)
+        assert gcd(r-1, n) == 1 and power(r, q, n) == 1
+    proved.add(n)
+    return n
+
+x = 14**256
+p = certify(x*x-x+1, [(2, 256, 11), (7, 256, 2)])
+for c in (438, 13696, 5494, 13258, 22330):
+    p = certify(1+c*p*p, [(p, 2, 2)])
+r = certify(1+62988*p, [(p, 1, 2)])
+P = certify(1+((2347*r) << 8192), [(r, 1, 2)])
+Q = certify(1+((1651*P) << 8205), [(P, 1, 2)])
+
+for k, s, a in [(27087, 80027, 5), (7643, 131113, 3)]:
+    n = 1+(k << s)
+    assert (k & 1) == 1 and 0 < k < 2**s
+    assert power(a, (n-1)//2, n) == n-1
+\end{verbatim}
+}
+
+For the two factorial expressions, the subtree with product $L$ receives
+$2^{(N-1)/L}\bmod N$. The root Fermat check and all leaf gcd tests
+give $d\equiv1\pmod F$ for every prime divisor $d$ of $N$.
+The remaining integer checks apply the cubic discriminant criterion.
+The prime support is generated by deterministic trial division.
+
+{\small\begin{verbatim}
+def tree(q):
+    if len(q) == 1:
+        return q[0], None, None
+    half = len(q)//2
+    l, r = tree(q[:half]), tree(q[half:])
+    return l[0]*r[0], l, r
+
+def cubic(n, lo, hi, expected_count, m, delta):
+    q = [p for p in range(lo, hi+1)
+         if all(p % j for j in range(2, isqrt(p)+1))]
+    assert len(q) == expected_count
+    root = tree(q)
+    F = root[0]
+    R, rem = divmod(n-1, F)
+    assert rem == 0 and F**3 > n
+    w = power(2, R, n)
+    assert power(w, F, n) == 1
+    def visit(node, z):
+        f, l, r = node
+        if l is None:
+            assert gcd(z-1, n) == 1
+        else:
+            visit(l, power(z, r[0], n))
+            visit(r, power(z, l[0], n))
+    visit(root, w)
+    S = 1+(R-1) % F
+    T = (R-S)//F
+    assert (S*S-4*T) % m == delta
+    assert delta not in {a*a % m for a in range(m)}
+
+cubic(comb(91244, 45622)//45623 + 1, 70207, 91243,
+      1866, 16, 13)
+cubic(comb(156570, 78285) + 1, 120511, 156539,
+      3057, 8, 5)
+print("All five certificate checks passed.")
+\end{verbatim}
+}
+
+The 47,130-digit certificate used the same base at every leaf. Its
+published integer-GMP product-tree replay and the separate base-29
+OpenPFGW result supply independent checks for the largest term. The
+1,860-digit control for the doubling construction and the smaller
+arithmetic controls have their own witness data in the relevant chapters.
+
+\section{Which queue can be resumed?}
+Here a fixed-exponent entry is one positive odd coefficient $k$. A child-grid
+entry is an ordered pair $(s,k)$ for $1+kQ2^s$. Counts omit TSV headers.
+The starting lists for the last release contain 36,983 and 11,825
+entries. An exact negative-Jacobi Euler failure or a verified proper
+factor removes a candidate. The union counts each excluded input once,
+even if several methods find it.
+
+\begin{center}\small
+\begin{tabular}{@{}lrr@{}}\toprule
+Checkpoint & Fixed exponent 131113 & Child grid with parent $Q$\\\midrule
+First archived lists compared &55,606&13,223\\
+After v2 factors and recorded full tests &40,325&13,222\\
+After v3 independent exclusions &36,983&11,825\\
+After v4 independent exclusions &36,665&11,822\\
+\bottomrule\end{tabular}
+\end{center}
+
+The first row shows different starting stages. The fixed list had already
+passed the first experiment through $10^8$ and its earlier screening.
+The grid list was generated at bound $4\cdot10^9$ in the second release.
+In v3 the reductions were 3,342 and 1,397. In v4 they were 318 and 3,
+respectively. Thus v3 and v4 together excluded 5,060 distinct candidates
+from the two v2 lists, leaving 48,487 unresolved. Across the full table,
+the reductions within each family are 18,941 and 1,401.
+
+SHA-256 values below cover the original file bytes, including the final
+line feed and, for grid files, the column header and tab separators.
+The \texttt{make check} target in the final experimental archive reconstructs
+the latest partitions. Its \texttt{replay-worklists} target also recomputes
+the four final full-power failures.
+
+{\small\begin{verbatim}
+Fixed exponent, 55,606 input coefficients
+ba8aad1ef39a7af7a89784e80b4eb125eaeb7992f2dc1af4eab09a71801ac825
+Child grid, 13,223 entries after trial division
+56322b0e809937acd2ebbc853ff26c3f4987f73bf21b2426f807c2a276733c07
+
+Fixed exponent, 36,983 entering v4
+530f07d5bf53ccb0c3eddc2cc883df9bea390575f81a22014e80458814036e83
+Child grid, 11,825 entering v4
+ce8a7105cc129b345cab1f0c76251ede7faa126fe4decddc1788afc3fb33ba38
+
+Fixed exponent, 36,665 final coefficients
+34cde03e1f94d18e94f47505946f1060bb8b60a85d4b1a33bc88f11c35137d9a
+Child grid, 11,822 final pairs
+0058a8607a140bca99b74ad9561bd8beed9231bea5d8b66bc727039d36d9be73
+\end{verbatim}
+}
+
+\section{Source archives and reproduction}
+The four source papers, in order, are \emph{Certified primes beyond the VMRC chain endpoint} (v1), \emph{Exact coefficient sieves for certified giant-prime searches} (v2), \emph{Faster coefficient sieves and exact replays for giant-prime searches} (v3), and \emph{Faster exact tests for structured giant primes} (v4). Chapters~\ref{cer:origins} and~\ref{cer:orderchap} collect the certificates. Chapters~\ref{ch:grid-sieve}--\ref{ch:exact} follow the arithmetic through successive implementations. The separately assembled external benchmark archive documents the matched tests against general-purpose programs. Its repeated dense-parent observations are counted once in Chapter~\ref{ch:externalcontrols}.
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}p{0.21\linewidth}X@{}}\toprule
+Archived material & Contents needed for reproduction\\\midrule
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-9a13d05e4ae481919597a7b7132f8e80_67c74a3277a88191acd4edb2733e13fb\&account_id=personal}{Initial certificates} & Search logs, complete prime values, order witnesses, factorial certificates and giant-candidate audit.\\
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-bbe6f17ab17c81918b98d6d77ae7636a_67c74a3277a88191acd4edb2733e13fb\&account_id=personal}{Algorithm release 2} & Portable grid sieve, depth and window experiments, sparse children, order classifier and resumable journal.\\
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-84e200c243988191a22d89850768a0b0_67c74a3277a88191acd4edb2733e13fb\&account_id=personal}{External controls} & Process-level measurements for fbncsieve, PRST, OpenPFGW and the independent PrimeGrid control.\\
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-012e526deac081918eb3e2a95df51b90_67c74a3277a88191acd4edb2733e13fb\&account_id=personal}{Algorithm release 3} & Vector sieve kernels, shared exponent sweeps, journals, independent factor and Euler records.\\
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-ad2224a5814c8191b48c3ebbd298e3b4_67c74a3277a88191acd4edb2733e13fb\&account_id=personal}{Algorithm release 4} & Terminal worklists, weighted squares, dense-parent folds, streamed verifier, factor ledgers, raw measurements and the previous source release.\\\bottomrule
+\end{tabularx}
+\end{center}
+\begin{samepage}
+Run the following from the root of the fourth archive. The first two commands check file integrity and the recorded worklist partitions. The third independently recomputes the final four Euler failures. The last two build and run a complete exact test on an archived coefficient on a compatible native installation.
+{\small\begin{verbatim}
+sha256sum -c SHA256SUMS
+make check
+make replay-worklists
+make -C proth
+./proth/replay auto 344345 131113 3
+\end{verbatim}}
+\end{samepage}
+The files \file{data/fixed_remaining.txt} and \file{data/Q_remaining.tsv} are the final lists. Fixed-exponent lines contain one odd coefficient each. The tab-separated grid file has a header, then an exponent and an odd coefficient per line. The single source of the present volume compiles with two runs of pdfLaTeX and has no external figure, bibliography or input-file dependencies.
+
+\begingroup
+\makeatletter
+\renewcommand{\bibname}{References}
+\def\thebibliography#1{\section*{References}\phantomsection\addcontentsline{toc}{section}{References}\list{\@biblabel{\@arabic\c@enumiv}}{\settowidth\labelwidth{\@biblabel{#1}}\leftmargin\labelwidth\advance\leftmargin\labelsep\@openbib@code\usecounter{enumiv}\let\p@enumiv\@empty\renewcommand\theenumiv{\@arabic\c@enumiv}}\sloppy\clubpenalty4000\widowpenalty4000}
+\makeatother
+\begin{thebibliography}{99}\small\setlength{\itemsep}{2pt}
+\bibitem{vmrc} QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, manuscripts 129, 130 and 135. The experiments used commit \texttt{c2ac34ea4622778187173f41bb1996deee8081b7}. \href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c2ac34ea4622778187173f41bb1996deee8081b7}{Pinned source tree}.
+\bibitem{bls} J. Brillhart, D. H. Lehmer and J. L. Selfridge, New primality criteria and factorizations of $2^m\pm1$, \emph{Mathematics of Computation} 29 (1975), 620--647. See also the \href{https://pari.math.u-bordeaux.fr/dochtml/html/Arithmetic_functions.html}{PARI/GP arithmetic functions manual}.
+\bibitem{grau} J. M. Grau, A. M. Oller-Marc\'en and D. Sadornil, A primality test for $Kp^n+1$ numbers, \emph{Mathematics of Computation}, Theorems 1.2--1.3. \href{https://doi.org/10.1090/S0025-5718-2014-02849-4}{Article}.
+\bibitem{mont} P. L. Montgomery, Modular multiplication without trial division, \emph{Mathematics of Computation} 44 (1985), 519--521.
+\bibitem{walter} C. D. Walter, Montgomery exponentiation needs no final subtractions, \emph{Electronics Letters} 35 (1999), 1831--1832. \href{https://doi.org/10.1049/el:19991230}{Article}.
+\bibitem{simd} J. van der Hoeven, G. Lecerf and G. Quintin, Modular SIMD arithmetic in Mathemagix, \emph{ACM Transactions on Mathematical Software} 43 (2016), article 5. \href{https://arxiv.org/abs/1407.3383}{Preprint}.
+\bibitem{cf} R. Crandall and B. Fagin, Discrete weighted transforms and large-integer arithmetic, \emph{Mathematics of Computation} 62 (1994), 305--324. \href{https://doi.org/10.1090/S0025-5718-1994-1185244-1}{Article}.
+\bibitem{percival} C. Percival, Rapid multiplication modulo the sum and difference of highly composite numbers, \emph{Mathematics of Computation} 72 (2003), 387--395. \href{https://doi.org/10.1090/S0025-5718-02-01419-9}{Article}.
+\bibitem{flint} FLINT project, \href{https://flintlib.org/doc/algorithms/fft/small-prime-fft.html}{FFTs modulo word-size primes} and \href{https://flintlib.org/doc/algorithms/integers/multiplication.html}{integer multiplication algorithms}. The implementations used \href{https://flintlib.org/downloads.html}{FLINT 3.6.0}.
+\bibitem{suth} A. V. Sutherland, \emph{Order Computations in Generic Groups}, MIT, 2007, Algorithm 7.3. \href{https://math.mit.edu/~drew/sutherland-phd.pdf}{Thesis}.
+\bibitem{software} Software sources for comparison and reproduction: G. Reynolds' \href{https://github.com/curtisbright/mepn-data/tree/master/srsieve}{srsieve}, \href{https://github.com/kimwalisch/primesieve}{primesieve}, \href{https://github.com/primesearch/mtsieve}{MTSieve}, \href{https://github.com/primesearch/OpenPFGW}{OpenPFGW}, \href{https://github.com/primesearch/Prime95}{GWNUM}, and \href{https://github.com/patnashev/prst}{PRST}.
+\end{thebibliography}
+\endgroup
+\end{document}

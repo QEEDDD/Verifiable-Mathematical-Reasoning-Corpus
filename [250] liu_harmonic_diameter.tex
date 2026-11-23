@@ -1,0 +1,702 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[margin=2.6cm]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[1]
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Hm}{\mathrm{H}}
+\newcommand{\D}{D}
+\newcommand{\tht}{\theta}
+\newcommand{\tth}{\tilde\theta}
+\newcommand{\Bad}{\mathrm{Bad}}
+
+\title{\textbf{A proof of Liu's conjecture on the harmonic index\\ and the diameter of a graph}\\[4pt]
+\large The inequality $\Hm(G)\ge \tfrac12\D(G)+\tfrac13$ via a vertex-deletion calculus}
+\author{Verifiable Mathematical Reasoning Corpus --- research manuscript}
+\date{20 November 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The harmonic index of a graph $G$ is $\Hm(G)=\sum_{uv\in E(G)}2/(d_u+d_v)$. In 2013 J.~Liu
+conjectured that every connected graph of order $n\ge4$ and diameter $\D$ satisfies
+$\Hm(G)\ge \D+\tfrac56-\tfrac n2$ and $\Hm(G)\ge\bigl(\tfrac12+\tfrac1{3(n-1)}\bigr)\D$, the path
+being extremal. The conjecture was known for trees, unicyclic graphs and quasi-tree graphs. We
+prove a statement that does not involve the order at all: for every connected graph with at
+least two vertices,
+\[
+ \Hm(G)\ \ge\ \tfrac12\,\D(G)+\tfrac13 ,
+\]
+with equality if and only if $G$ is a path with at least three vertices. Both inequalities of
+Liu's conjecture, together with the characterization of equality, follow at once. The proof
+is an induction on the order which deletes one vertex at a time. It rests on an exact formula
+for the sum of the changes $\Hm(G)-\Hm(G-z)$ over a set of vertices, on a lemma which removes
+every part of the graph hanging off a diametral path, and on a \emph{block lemma}: in a
+$2$-connected block with two distinguished vertices, the deletions of the remaining vertices
+decrease the harmonic index on average. The manuscript has not been refereed; every identity
+and inequality of the proof has additionally been checked in exact arithmetic on all connected
+graphs of small order, and the main inequality on all $1{,}006{,}700{,}565$ connected graphs
+of order $11$.
+\end{abstract}
+
+\section{Introduction}\label{sec:intro}
+
+\subsection{The conjecture}
+All graphs are finite and simple. For a connected graph $G$ we write $n=|V(G)|$, $d_v$ for the
+degree of $v$, $d(x,y)$ for the distance and $\D(G)=\max_{x,y}d(x,y)$ for the diameter. The
+\emph{harmonic index}
+\[
+ \Hm(G)=\sum_{uv\in E(G)}\frac{2}{d_u+d_v}
+\]
+goes back to Fajtlowicz's Graffiti conjectures \cite{Faj} and was studied by Favaron, Mah\'eo
+and Sacl\'e \cite{FMS}; see the survey \cite{AZG} for the extensive literature. Zhong
+\cite{Zhong} proved that the star minimizes $\Hm$ among connected graphs:
+\begin{equation}\label{eq:zhong}
+ \Hm(G)\ \ge\ \frac{2(n-1)}{n}\qquad\text{for every connected graph $G$ of order $n\ge2$}
+\end{equation}
+(for $n=2$ the graph is $K_2$ and both sides equal $1$).
+Relating $\Hm$ to the diameter, Liu \cite{Liu} established the two inequalities below for
+trees and proposed them for all connected graphs.
+
+\begin{conjecture}[Liu \cite{Liu}, 2013]\label{conj:liu}
+Let $G$ be a connected graph of order $n\ge4$ with diameter $\D(G)$. Then
+\[
+ \Hm(G)\ \ge\ \D(G)+\frac56-\frac n2
+ \qquad\text{and}\qquad
+ \Hm(G)\ \ge\ \Bigl(\frac12+\frac1{3(n-1)}\Bigr)\D(G) ,
+\]
+and the bounds are attained by the path $P_n$.
+\end{conjecture}
+
+Jerline and Michaelraj proved the conjecture for unicyclic graphs, with sharper constants
+\cite{JM1,JM2}, and Abdolghafourian and Iranmanesh for quasi-tree graphs \cite{AI}. We are
+not aware of a proof for general graphs; the scope of our literature search is described in
+Section~\ref{sec:status}.
+
+\subsection{Results}
+For the path, $\Hm(P_n)=\frac n2-\frac16=\frac12\D(P_n)+\frac13$ when $n\ge3$. Our main
+result says that no connected graph has a smaller harmonic index relative to its diameter.
+
+\begin{theorem}\label{thm:main}
+Let $G$ be a connected graph with at least two vertices. Then
+\[
+ \Hm(G)\ \ge\ \frac12\,\D(G)+\frac13 ,
+\]
+with equality if and only if $G$ is a path with at least three vertices.
+\end{theorem}
+
+\begin{corollary}[Liu's conjecture]\label{cor:liu}
+Let $G$ be a connected graph of order $n\ge3$ with diameter $\D$. Then
+\[
+ \Hm(G)\ \ge\ \D+\frac56-\frac n2
+ \qquad\text{and}\qquad
+ \Hm(G)\ \ge\ \Bigl(\frac12+\frac1{3(n-1)}\Bigr)\D ,
+\]
+and in each inequality equality holds if and only if $G\cong P_n$.
+\end{corollary}
+
+Theorem~\ref{thm:main} is stronger than Conjecture~\ref{conj:liu}: it does not involve $n$,
+and for a graph whose diameter is small compared with its order the two inequalities of the
+conjecture are far weaker (the first one is void as soon as $\D\le \frac n2-\frac56$).
+
+\subsection{Method}
+The inequality of Theorem~\ref{thm:main} was found, and is proved, by looking at what happens
+to $\Hm$ when a single vertex is deleted. Three ingredients are new.
+\begin{itemize}
+\item \emph{An exact deletion formula} (Lemma~\ref{lem:deletion}): for every set $Z$ of
+ vertices, $\sum_{z\in Z}[\Hm(G)-\Hm(G-z)]$ is a sum over the edges of $G$ of explicit terms
+ depending only on the two end degrees and on the number of neighbours in $Z$. For $Z=V(G)$
+ it gives the identity of Remark~\ref{rem:identity}.
+\item \emph{Removal of hanging parts} (Lemma~\ref{lem:hanging}): if a component $X$ of $G-v$
+ does not exhaust $G-v$, then $\Hm(G)>\Hm(G-X)$. Hence everything that hangs off a fixed
+ diametral path can be deleted, and the graph becomes a chain of blocks along that path.
+\item \emph{The block lemma} (Proposition~\ref{prop:block}): in a $2$-connected block of such
+ a chain, the sum of $\Hm(G)-\Hm(G-z)$ over all vertices $z$ of the block other than its two
+ ``poles'' is positive. Consequently some vertex which is neither a cut vertex nor an end of
+ the diametral path can be deleted with a strict decrease of $\Hm$ and without decreasing the
+ diameter.
+\end{itemize}
+An induction on the order then gives Theorem~\ref{thm:main}. No single local rule for choosing
+the deleted vertex works in general (Remark~\ref{rem:rules}); the averaging over a block is
+what makes the argument uniform. The calculus grew out of our earlier study of the harmonic
+form of Fajtlowicz's conjecture on the Randi\'c index and the average distance \cite{VMRC},
+where an edge-deletion identity plays a similar role.
+
+\section{Notation and the deletion formula}\label{sec:deletion}
+
+For an edge $uw$ we write $S_{uw}=d_u+d_w$. If $n\ge3$ and $G$ is connected then
+$S_{uw}\ge3$ for every edge. We use the two functions
+\[
+ \tht(S)=\frac{2}{S(S-1)}=\frac2{S-1}-\frac2S ,\qquad
+ \tth(S)=\frac{2}{S(S-2)}=\frac12\Bigl(\frac2{S-2}-\frac2S\Bigr)\qquad(S\ge3).
+\]
+Both are positive and decreasing, $\tht(S)<\tth(S)$, and $(S-2)\,\tth(S)=2/S$. For a graph
+$G'$ which is not connected, $\Hm(G')$ is defined by the same sum over its edges; isolated
+vertices contribute nothing.
+
+Let $Z\subseteq V(G)$ and let $uw$ be an edge. We put
+\begin{align*}
+ j_Z(uw)&=|\{u,w\}\cap Z| ,\\
+ k_Z(uw)&=\text{the number of $z\in Z\setminus\{u,w\}$ adjacent to exactly one of $u,w$},\\
+ t_Z(uw)&=\text{the number of $z\in Z$ adjacent to both $u$ and $w$},\\
+ f_Z(uw)&=|N(u)\setminus(Z\cup\{w\})|+|N(w)\setminus(Z\cup\{u\})| .
+\end{align*}
+Counting the neighbours of $u$ other than $w$ and of $w$ other than $u$ gives
+\begin{equation}\label{eq:count}
+ k_Z(uw)+2\,t_Z(uw)=S_{uw}-2-f_Z(uw).
+\end{equation}
+
+\begin{lemma}[deletion formula]\label{lem:deletion}
+Let $G$ be a connected graph of order $n\ge3$ and $Z\subseteq V(G)$. Then
+\begin{align*}
+ \sum_{z\in Z}\bigl[\Hm(G)-\Hm(G-z)\bigr]&=\sum_{uw\in E(G)}\omega_Z(uw),\\
+ \omega_Z(uw)&=j_Z(uw)\frac{2}{S_{uw}}-k_Z(uw)\,\tht(S_{uw})-2\,t_Z(uw)\,\tth(S_{uw}).
+\end{align*}
+Moreover, for every edge $uw$, with $S=S_{uw}$ and $f=f_Z(uw)$,
+\begin{equation}\label{eq:omega}
+ \omega_Z(uw)\ \ge\ \tth(S)\bigl[(j_Z(uw)-1)(S-2)+f\bigr],
+\end{equation}
+that is, $\omega_Z\ge \frac2S+f\,\tth(S)$ if both ends are in $Z$, $\omega_Z\ge f\,\tth(S)$ if
+exactly one end is in $Z$, and $\omega_Z\ge-(S-2-f)\,\tth(S)$ if no end is in $Z$. If
+$t_Z(uw)=0$ then $\omega_Z(uw)=\tht(S)\bigl[(j_Z(uw)-1)(S-1)+1+f\bigr]$.
+\end{lemma}
+\begin{proof}
+Fix $z$. Deleting $z$ removes the edges at $z$, of total weight $\sum_{u\sim z}2/S_{zu}$. An
+edge $uw$ not incident with $z$ survives, and its degree sum drops by the number
+$c\in\{0,1,2\}$ of its ends adjacent to $z$; its weight increases by $2/(S-1)-2/S=\tht(S)$ if
+$c=1$ and by $2/(S-2)-2/S=2\tth(S)$ if $c=2$. Summing over $z\in Z$ and collecting the
+contributions of each edge gives the formula. By \eqref{eq:count} and $\tht\le\tth$,
+$k\tht+2t\tth\le(S-2-f)\tth$, and $2/S=(S-2)\tth(S)$; this is \eqref{eq:omega}. If $t=0$ then
+$k=S-2-f$ and $\omega=j\cdot\frac2S-(S-2-f)\tht(S)$, which is the last formula because
+$\frac2S=(S-1)\tht(S)$.
+\end{proof}
+
+\begin{remark}[a vertex-deletion identity]\label{rem:identity}
+For $Z=V(G)$ we have $j=2$, $f=0$ and $k=S-2-2t$, where $t=t_{uw}$ is the number of common
+neighbours of $u$ and $w$, so
+\[
+ \sum_{z\in V(G)}\bigl[\Hm(G)-\Hm(G-z)\bigr]
+ =\sum_{uw\in E(G)}\Bigl[\frac{2}{S_{uw}-1}-\frac{4\,t_{uw}}{S_{uw}(S_{uw}-1)(S_{uw}-2)}\Bigr]
+ \ \ge\ \Hm(G),
+\]
+the inequality being \eqref{eq:omega}. In particular every connected graph with at least
+three vertices has a vertex whose deletion strictly decreases the harmonic index. The difficulty in using this for
+Theorem~\ref{thm:main} is that the deleted vertex must not destroy the diameter.
+\end{remark}
+
+\section{Hanging parts and the chain structure}\label{sec:hanging}
+
+\begin{lemma}[hanging parts]\label{lem:hanging}
+Let $G$ be a connected graph, $v\in V(G)$, and let $X$ be the vertex set of a component of
+$G-v$ such that $v$ has a neighbour outside $X$. Then $\Hm(G)>\Hm(G-X)$.
+\end{lemma}
+\begin{proof}
+Let $e=|N(v)\cap X|\ge1$ and $x=d_v-e\ge1$. In $G-X$ only the degree of $v$ changes, from
+$e+x$ to $x$. Hence $\Hm(G)-\Hm(G-X)=A-B$ with
+\[
+ A=\sum_{\substack{uw\in E(G)\\ \{u,w\}\cap X\ne\emptyset}}\frac2{S_{uw}},\qquad
+ B=\sum_{u\in N(v)\setminus X}\Bigl[\frac{2}{x+d_u}-\frac2{x+e+d_u}\Bigr]
+ =\sum_{u\in N(v)\setminus X}\frac{2e}{(x+d_u)(x+e+d_u)} .
+\]
+Let $J=G[X\cup\{v\}]$. It is connected, has $|X|+1\ge e+1$ vertices, the degree of $v$ in $J$
+is $e$ and all other degrees are as in $G$. Therefore
+\[
+ \Hm(J)=A+\sum_{y\in N(v)\cap X}\Bigl[\frac2{e+d_y}-\frac2{e+x+d_y}\Bigr]
+ =A+\sum_{y\in N(v)\cap X}\frac{2x}{(e+d_y)(e+x+d_y)} .
+\]
+By \eqref{eq:zhong}, $\Hm(J)\ge 2|X|/(|X|+1)\ge 2e/(e+1)$. Using $d_y\ge1$ and $d_u\ge1$,
+\begin{align*}
+ A-B\ &\ge\ \frac{2e}{e+1}-\frac{2xe}{(e+1)(e+x+1)}-\frac{2xe}{(x+1)(e+x+1)}\\
+ &=\frac{2e\bigl[(x+1)(e+x+1)-x(x+1)-x(e+1)\bigr]}{(e+1)(x+1)(e+x+1)} .
+\end{align*}
+Since $(x+1)(e+x+1)=(x+1)(e+1)+x(x+1)$, the bracket equals $e+1$, and
+$A-B\ge 2e/((x+1)(e+x+1))>0$.
+\end{proof}
+
+Now fix a connected graph $G$ with $n\ge3$, two vertices $p,q$ with $d(p,q)=\D(G)$, and a
+shortest path $P=v_0v_1\cdots v_\D$ from $p=v_0$ to $q=v_\D$. We say that $G$ has \emph{no
+hanging part} (with respect to $P$) if
+\begin{equation}\label{eq:H}
+ \text{for every vertex $v$, every component of $G-v$ contains a vertex of $P$.}\tag{H}
+\end{equation}
+Recall that a \emph{block} is a maximal connected subgraph without a cut vertex; a block is a
+$K_2$ or is $2$-connected with at least three vertices; a vertex lies in more than one block
+if and only if it is a cut vertex; a block containing no cut vertex of the connected graph $G$
+is $G$ itself; and if two blocks share a vertex $a$, their remaining vertices lie in different
+components of $G-a$. Note that $p\ne q$ because $n\ge3$.
+
+\begin{lemma}[chain structure]\label{lem:chain}
+Assume \eqref{eq:H}. Then:
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item Every cut vertex $v$ of $G$ is an internal vertex $v_i$ of $P$, and $G-v_i$ has exactly
+ two components, one containing $v_0,\dots,v_{i-1}$ and the other $v_{i+1},\dots,v_\D$. Every
+ vertex of degree one is $p$ or $q$.
+\item Let $\Gamma$ be a block with at least three vertices, and let $\Pi$ be the set of all
+ cut vertices of $G$ in $\Gamma$ together with those of $p,q$ that lie in $\Gamma$. Then
+ $|\Pi|=2$.
+\item With $\Gamma,\Pi$ as in \textup{(ii)} put $Z=V(\Gamma)\setminus\Pi$. Then $Z\ne\emptyset$,
+ no vertex of $Z$ is a cut vertex or one of $p,q$, and every neighbour of a vertex of $Z$ lies
+ in $\Gamma$.
+\item For $a\in\Pi$ let $N_{\rm out}(a)=N(a)\setminus V(\Gamma)$. Then either
+ $N_{\rm out}(a)=\emptyset$, or $N_{\rm out}(a)$ is a single vertex, or $|N_{\rm out}(a)|\ge2$
+ and every vertex of $N_{\rm out}(a)$ has degree at least two.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(i) $P-v$ has at most two components, and exactly two only if $v$ is an internal vertex of
+$P$. By \eqref{eq:H} every component of $G-v$ contains a component of $P-v$; so a cut vertex is
+an internal vertex $v_i$, and $G-v_i$ has exactly two components, which contain the two parts
+of $P-v_i$. If $d_y=1$ and $y\notin\{p,q\}$, let $v$ be the neighbour of $y$; then $v\ne y$
+has a further neighbour (as $n\ge3$), and $\{y\}$ is a component of $G-v$; by \eqref{eq:H},
+$y\in V(P)$, and an internal vertex of $P$ has degree at least two, a contradiction.
+
+(ii) $\Gamma$ is $2$-connected, so $\Gamma-v$ is connected for every $v\in V(\Gamma)$. If
+$\Gamma$ contains no cut vertex of $G$, then $\Gamma=G$ and $\Pi=\{p,q\}$. Suppose $\Gamma$
+contains three cut vertices $v_i,v_j,v_k$ with $i<j<k$. Then $\Gamma-v_j$ contains $v_i$ and
+$v_k$, which by (i) lie in different components of $G-v_j$; a contradiction. If $\Gamma$
+contains two cut vertices $v_i,v_j$ with $i<j$, the same argument shows $p\notin V(\Gamma)$
+(otherwise $\Gamma-v_i$ would contain $p$ and $v_j$) and $q\notin V(\Gamma)$ (otherwise
+$\Gamma-v_j$ would contain $v_i$ and $q$); so $\Pi=\{v_i,v_j\}$. Finally let $\Gamma$ contain
+exactly one cut vertex $v_i$, and let $C$ be the component of $G-v_i$ containing
+$\Gamma-v_i$. If $C\ne V(\Gamma)\setminus\{v_i\}$, some edge joins a vertex $g$ of
+$\Gamma-v_i$ to a vertex of $C$ outside $\Gamma$; this edge lies in another block, so $g$ is a
+second cut vertex in $\Gamma$, a contradiction. Thus $V(\Gamma)\setminus\{v_i\}$ is a
+component of $G-v_i$, and by (i) it contains exactly one of $p,q$. In all cases
+$|\Pi|=2$.
+
+(iii) $|V(\Gamma)|\ge3$ gives $Z\ne\emptyset$. A vertex of $Z$ is not a cut vertex, so it lies
+in no other block and all its neighbours are in $\Gamma$; it is not $p$ or $q$ by the
+definition of $\Pi$.
+
+(iv) If $a\in\{p,q\}$, then $a$ is not a cut vertex by (i) and $N_{\rm out}(a)=\emptyset$.
+Let $a$ be a cut vertex. By (i), $G-a$ has two components; $\Gamma-a$ lies in one of them,
+and the vertices other than $a$ of any other block through $a$ lie in a different component,
+hence in the second one. Two such blocks would be separated by $a$ from each other, so there
+is exactly one further block $\Gamma'$ through $a$, and $N_{\rm out}(a)=N(a)\cap V(\Gamma')$.
+If $\Gamma'=K_2$ this is one vertex. Otherwise $\Gamma'$ is $2$-connected, $a$ has at least
+two neighbours in it, and each of them has degree at least two.
+\end{proof}
+
+The two vertices of $\Pi$ are called the \emph{poles} of $\Gamma$.
+
+\section{The block lemma}\label{sec:block}
+
+Throughout this section $G$ is a connected graph of order $n\ge3$, $\Gamma$ is a block of $G$
+with at least three vertices, $\Pi=\{a_1,a_2\}\subseteq V(\Gamma)$ and
+$Z=V(\Gamma)\setminus\Pi$, and we assume:
+\begin{enumerate}[label=\textup{(B\arabic*)}]
+\item every neighbour of a vertex of $Z$ lies in $\Gamma$;
+\item for each $a\in\Pi$ the set $N_{\rm out}(a)=N(a)\setminus V(\Gamma)$ is empty, or a single
+ vertex, or all its vertices have degree at least two.
+\end{enumerate}
+By Lemma~\ref{lem:chain} these hold for every block with at least three vertices of a graph
+without hanging parts. We use the following notation. For $a\in\Pi$, $a'$ is the other pole,
+\[
+ n_a=|N(a)\cap Z|,\qquad x_a=|N_{\rm out}(a)|,\qquad \varepsilon=\begin{cases}1&a_1a_2\in E(G)\\0&\text{otherwise,}\end{cases}
+ \qquad O_a=\sum_{u'\in N_{\rm out}(a)}\tht(d_a+d_{u'}),
+\]
+so that $d_a=n_a+x_a+\varepsilon$. For $u\in Z$, $\pi_u=|N(u)\cap\Pi|\in\{0,1,2\}$, and
+$\Delta=\max_{u\in Z}d_u$. Since $\Gamma$ is $2$-connected, every vertex of $\Gamma$ has at
+least two neighbours in $\Gamma$; thus $d_u\ge2$ for $u\in Z$, $d_a\ge2$, and
+$n_a+\varepsilon\ge2$ for $a\in\Pi$. An edge with both ends in $Z$ is called a
+\emph{$ZZ$-edge}.
+
+\begin{proposition}[block lemma]\label{prop:block}
+Under \textup{(B1)} and \textup{(B2)},
+\[
+ \Sigma_\Gamma:=\sum_{z\in Z}\bigl[\Hm(G)-\Hm(G-z)\bigr]\ >\ 0 .
+\]
+In particular $\Hm(G-z)<\Hm(G)$ for some $z\in Z$.
+\end{proposition}
+
+The proof occupies the rest of the section.
+
+\begin{lemma}\label{lem:lower}
+\[
+ \Sigma_\Gamma\ \ge\ \sum_{uw\ ZZ\text{-edge}}\Bigl[\frac{2}{S_{uw}}+(\pi_u+\pi_w)\tth(S_{uw})\Bigr]
+ +\sum_{a\in\Pi}\ \sum_{u\in N(a)\cap Z}\Bigl[\omega_Z(au)-O_a-\varepsilon\,\tth(d_{a_1}+d_{a_2})\Bigr],
+\]
+and $\omega_Z(au)\ge(x_a+\varepsilon+\pi_u-1)\,\tth(d_a+d_u)$ for $a\in\Pi$, $u\in N(a)\cap Z$.
+\end{lemma}
+\begin{proof}
+We apply Lemma~\ref{lem:deletion} to the set $Z$ and go through the edges of $G$.
+
+\emph{$ZZ$-edges.} By (B1) the neighbours of $u\in Z$ outside $Z$ are its $\pi_u$ poles, so
+$f_Z(uw)=\pi_u+\pi_w$ and \eqref{eq:omega} gives $\omega_Z(uw)\ge 2/S_{uw}+(\pi_u+\pi_w)\tth(S_{uw})$.
+
+\emph{Edges $au$ with $a\in\Pi$, $u\in Z$.} The neighbours of $a$ outside $Z$ and different from
+$u$ are its $x_a$ outside neighbours and, if $\varepsilon=1$, the other pole; those of $u$
+different from $a$ are $\pi_u-1$ in number. So $f_Z(au)=x_a+\varepsilon+\pi_u-1$ and
+\eqref{eq:omega} gives the stated bound for $\omega_Z(au)$.
+
+\emph{The edge $a_1a_2$} (if $\varepsilon=1$). Here $j_Z=0$ and, by \eqref{eq:count},
+$S-2-f_Z=k_Z+2t_Z=n_{a_1}+n_{a_2}$, so
+$\omega_Z(a_1a_2)\ge-(n_{a_1}+n_{a_2})\tth(d_{a_1}+d_{a_2})$ by \eqref{eq:omega}.
+
+\emph{Edges $au'$ with $a\in\Pi$, $u'\in N_{\rm out}(a)$.} By (B1), $u'$ has no neighbour in
+$Z$. Hence $j_Z=0$, $t_Z=0$, $k_Z=n_a$ and $\omega_Z(au')=-n_a\tht(d_a+d_{u'})$.
+
+\emph{All other edges} have no end in $Z$ and, by (B1), no end adjacent to a vertex of $Z$;
+for them $\omega_Z=0$.
+
+Adding up, and writing $n_{a_1}+n_{a_2}$ and $n_aO_a$ as sums over the pairs $(a,u)$ with
+$u\in N(a)\cap Z$, we obtain the lemma.
+\end{proof}
+
+The next lemma is a statement about numbers; in it $n$ denotes an arbitrary positive integer
+(it will be applied with $n=n_a$), not the order of $G$. Recall also that $\Delta$ is the
+maximum degree over $Z$ only, not the maximum degree of $G$.
+
+\begin{lemma}[pole inequality]\label{lem:pole}
+Let $\Delta\ge3$, $n\ge1$, $x\ge0$ be integers, $\varepsilon\in\{0,1\}$ with $n+\varepsilon\ge2$,
+$d=n+x+\varepsilon$, and let $d'\ge2$ and $O\ge0$ be real numbers. Put
+\[
+ \beta=n\bigl[O+\varepsilon\,\tth(d+d')-(x+\varepsilon)\,\tth(d+\Delta)\bigr].
+\]
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item If $O\le x\,\tht(d+2)$, then $\beta<\frac12-\frac1\Delta$.
+\item If $x=1$ and $O=\tht(d+1)$, then $\beta\le\frac12-\frac1\Delta$, with equality only for
+ $\varepsilon=0$, $n=2$, $\Delta=3$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+(a) Let $m=x+\varepsilon$. If $m=0$ then $\beta=0$. Let $m\ge1$, so $d=n+m\ge2$. Since
+$\tht\le\tth$, $\tth$ is decreasing and $d'\ge2$,
+\begin{align*}
+ \beta&\le nm\bigl[\tth(d+2)-\tth(d+\Delta)\bigr]\le\frac{d^2}{4}\Bigl[\frac{2}{d(d+2)}-\frac{2}{(d+\Delta)(d+\Delta-2)}\Bigr]\\
+ &=\frac12-\frac1{d+2}-\frac{d^2}{2(d+\Delta)(d+\Delta-2)} ,
+\end{align*}
+where we used $nm\le(n+m)^2/4$. It remains to show
+\begin{equation}\label{eq:II}
+ \frac1\Delta<\frac1{d+2}+\frac{d^2}{2(d+\Delta)(d+\Delta-2)}\qquad(d\ge2,\ \Delta\ge3).
+\end{equation}
+If $\Delta\ge d+2$ this is clear. Let $3\le\Delta\le d+1$. Because
+$(d+\Delta)(d+\Delta-2)<(d+\Delta-1)^2$, it suffices that
+$g(\Delta):=d^2\Delta(d+2)-2(d+\Delta-1)^2(d+2-\Delta)\ge0$ on the real interval $[3,d+1]$.
+Now $g(3)=(d+2)(d^2-2d+4)>0$, and
+\[
+ g'(\Delta)=d^2(d+2)+2(d+\Delta-1)(3\Delta-d-5).
+\]
+For $3\le\Delta\le d+1$ we have $0<d+\Delta-1\le2d$ and $3\Delta-d-5\ge-(d-4)$. If $d\le4$
+then $g'>0$; if $d\ge5$ then $g'(\Delta)\ge d^2(d+2)-4d(d-4)=d(d^2-2d+16)>0$. Hence $g$ is
+increasing and positive on $[3,d+1]$, which proves \eqref{eq:II}.
+
+(b) \emph{Case $\varepsilon=0$.} Then $d=n+1$, $n\ge2$ and
+\[
+ \beta=\frac{2n}{(n+1)(n+2)}-\frac{2n}{(n+\Delta+1)(n+\Delta-1)} .
+\]
+Note that $\frac{2n}{(n+1)(n+2)}\le\frac13$ for $n\ge2$ (equivalently $(n-1)(n-2)\ge0$) and
+$\frac{2n}{(n+1)(n+2)}\le\frac3{10}$ for $n\ge3$ (equivalently $(3n-2)(n-3)\ge0$). So
+$\beta<\frac13\le\frac12-\frac1\Delta$ for $\Delta\ge6$. For $\Delta=5$:
+$\beta<\frac3{10}$ if $n\ge3$, and $\beta=\frac14$ if $n=2$. For $\Delta=4$:
+$\beta=\frac{2n(5n+13)}{(n+1)(n+2)(n+3)(n+5)}$, which is $\frac{92}{420}$ and
+$\frac{168}{960}$ for $n=2,3$, and for $n\ge4$ it is less than $\frac14$ because
+$(n+2)(n+3)(n+1)(n+5)\ge42(n^2+6n+5)>8n(5n+13)$. For $\Delta=3$:
+$\beta=\frac{6n}{(n+1)(n+2)(n+4)}$ and
+\[
+ \frac16-\beta=\frac{(n-2)(n^2+9n-4)}{6(n+1)(n+2)(n+4)}\ \ge0 ,
+\]
+with equality only for $n=2$.
+
+\emph{Case $\varepsilon=1$.} Then $d=n+2$, $n\ge1$, and using $d'\ge2$,
+\begin{align*}
+ \beta&\le c(n)-\frac{4n}{(n+\Delta)(n+\Delta+2)},\\
+ c(n)&=\frac{2n}{(n+2)(n+3)}+\frac{2n}{(n+2)(n+4)}=\frac{2n(2n+7)}{(n+2)(n+3)(n+4)} .
+\end{align*}
+One checks that $c(n+1)<c(n)$ if and only if $n^2+2n-9>0$, i.e.\ $n\ge3$; hence
+$c(n)\le c(3)=\frac{13}{35}$ for all $n$, and $c$ is decreasing for $n\ge3$. For
+$\Delta\ge8$ we get $\beta<\frac{13}{35}<\frac38\le\frac12-\frac1\Delta$. For
+$\Delta\in\{4,5,6,7\}$ let $N_\Delta=10,7,6,4$ respectively; then
+$c(N_\Delta)=\frac{540}{2184},\frac{294}{990},\frac{228}{720},\frac{5}{14}$ is at most
+$\frac12-\frac1\Delta=\frac14,\frac3{10},\frac13,\frac5{14}$, so $\beta<\frac12-\frac1\Delta$
+for $n\ge N_\Delta$; for the finitely many $n<N_\Delta$ the numbers
+$c(n)-\frac{4n}{(n+\Delta)(n+\Delta+2)}$ are listed, as exact fractions, in
+Table~\ref{tab:pole}; each of them is smaller than $\frac12-\frac1\Delta$ (the largest entry
+of each row is $\frac15$, $\frac{151}{630}$, $\frac4{15}$, $\frac{283}{990}$, to be compared
+with $\frac14$, $\frac3{10}$, $\frac13$, $\frac5{14}$). Finally, for $\Delta=3$,
+\[
+ c(n)-\frac{4n}{(n+3)(n+5)}=\frac{2n(5n+19)}{(n+2)(n+3)(n+4)(n+5)}<\frac16 :
+\]
+indeed $12n(5n+19)<(n+2)(n+3)(n+4)(n+5)$ holds for $n=1,2$ ($288<360$, $696<840$), for
+$3\le n\le17$ because $(n+4)(n+5)\ge56$ and $56(n^2+5n+6)\ge60n^2+228n$, and for $n\ge18$
+because $(n+4)(n+5)\ge506$.
+\end{proof}
+
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}c|ccccccccc|c@{}}
+\toprule
+$\Delta\backslash n$ & 1&2&3&4&5&6&7&8&9& $\frac12-\frac1\Delta$\\
+\midrule
+4 & $\frac{13}{70}$ & $\frac{1}{5}$ & $\frac{19}{105}$ & $\frac{11}{70}$ & $\frac{125}{924}$ & $\frac{7}{60}$ & $\frac{217}{2145}$ & $\frac{34}{385}$ & $\frac{111}{1430}$ &$\frac14$\\
+5 & $\frac{13}{60}$ & $\frac{151}{630}$ & $\frac{31}{140}$ & $\frac{271}{1386}$ & $\frac{43}{252}$ & $\frac{1277}{8580}$ & & & &$\frac3{10}$\\
+6 & $\frac{149}{630}$ & $\frac{4}{15}$ & $\frac{289}{1155}$ & $\frac{47}{210}$ & $\frac{7115}{36036}$ & & & & &$\frac13$\\
+7 & $\frac{1}{4}$ & $\frac{283}{990}$ & $\frac{19}{70}$ & & & & & & &$\frac5{14}$\\
+\bottomrule
+\end{tabular}
+\caption{The exact values of $c(n)-\frac{4n}{(n+\Delta)(n+\Delta+2)}$ for $n<N_\Delta$ (proof
+of Lemma~\ref{lem:pole}(b), case $\varepsilon=1$).}\label{tab:pole}
+\end{table}
+
+\begin{proof}[Proof of Proposition~\ref{prop:block} when $\Delta\ge3$]
+Let $a\in\Pi$ and $u\in N(a)\cap Z$. Then $\pi_u\ge1$ and $d_u\le\Delta$, so by
+Lemma~\ref{lem:lower},
+\[
+ \omega_Z(au)-O_a-\varepsilon\tth(d_{a_1}+d_{a_2})
+ \ \ge\ -\bigl[O_a+\varepsilon\tth(d_a+d_{a'})-(x_a+\varepsilon)\tth(d_a+\Delta)\bigr].
+\]
+Summing over the $n_a$ vertices $u$ shows that the contribution of the pole $a$ in
+Lemma~\ref{lem:lower} is at least $-\Bad_a$, where
+\[
+ \Bad_a=n_a\max\bigl\{0,\ O_a+\varepsilon\tth(d_a+d_{a'})-(x_a+\varepsilon)\tth(d_a+\Delta)\bigr\}.
+\]
+We claim $\Bad_a\le\frac12-\frac1\Delta$. This is Lemma~\ref{lem:pole} with $n=n_a$, $x=x_a$,
+$d=d_a$, $d'=d_{a'}\ge2$, $O=O_a$: if $x_a=0$, or if all vertices of $N_{\rm out}(a)$ have
+degree at least two, then $O_a\le x_a\tht(d_a+2)$ and part (a) applies; otherwise, by (B2),
+$N_{\rm out}(a)$ is a single vertex of degree one, $x_a=1$, $O_a=\tht(d_a+1)$, and part (b)
+applies. Therefore
+\begin{equation}\label{eq:final}
+ \Sigma_\Gamma\ \ge\ \sum_{uw\ ZZ\text{-edge}}\frac2{S_{uw}}+E-\Bad_{a_1}-\Bad_{a_2}
+ \ \ge\ \sum_{uw\ ZZ\text{-edge}}\frac2{S_{uw}}+E-\Bigl(1-\frac2\Delta\Bigr),
+\end{equation}
+where $E=\sum_{ZZ}(\pi_u+\pi_w)\tth(S_{uw})\ge0$. Let $\zeta\in Z$ be a vertex of degree
+$\Delta$. By (B1) it has $\Delta-\pi_\zeta\ge1$ neighbours $w$ in $Z$, and $d_w\le\Delta$ gives
+$2/S_{\zeta w}\ge1/\Delta$. Hence $\sum_{ZZ}2/S_{uw}\ge(\Delta-\pi_\zeta)/\Delta$. If
+$\pi_\zeta\le1$ this exceeds $1-2/\Delta$. If $\pi_\zeta=2$ it is at least $1-2/\Delta$ and
+$E\ge2\,\tth(S_{\zeta w})>0$ for a neighbour $w\in Z$ of $\zeta$. In both cases
+\eqref{eq:final} gives $\Sigma_\Gamma>0$.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:block} when $\Delta=2$]
+Now every vertex of $Z$ has degree two. We first note:
+
+\smallskip\noindent
+($\ast$) \emph{if $a\in\Pi$ and $u\in N(a)\cap Z$, then $a$ and $u$ have no common neighbour in
+$Z$.} Indeed, if $w\in Z$ were adjacent to both, then $N(u)=\{a,w\}$ and $N(w)=\{a,u\}$, so
+$\{u,w\}$ would be a component of $\Gamma-a$ not containing the other pole, contradicting the
+$2$-connectedness of $\Gamma$.
+
+\smallskip
+By ($\ast$) and the last statement of Lemma~\ref{lem:deletion}, for $a\in\Pi$ and
+$u\in N(a)\cap Z$,
+\begin{equation}\label{eq:exact}
+ \omega_Z(au)=(x_a+\varepsilon+\pi_u)\,\tht(d_a+2).
+\end{equation}
+We show that every bracket
+$\Lambda(a,u):=\omega_Z(au)-O_a-\varepsilon\tth(d_{a_1}+d_{a_2})$ in Lemma~\ref{lem:lower} is
+nonnegative; note $\tth(d_{a_1}+d_{a_2})\le\tth(d_a+2)$ because $d_{a'}\ge2$.
+
+\emph{Poles with $O_a\le x_a\tht(d_a+2)$} (that is, $x_a=0$ or all outside neighbours of degree
+at least two). By Lemma~\ref{lem:lower},
+$\Lambda(a,u)\ge(x_a+\varepsilon+\pi_u-1)\tth(d_a+2)-x_a\tht(d_a+2)-\varepsilon\tth(d_a+2)
+=(\pi_u-1)\tth(d_a+2)+x_a\bigl[\tth(d_a+2)-\tht(d_a+2)\bigr]\ge0$, with strict inequality if
+$x_a\ge1$.
+
+\emph{Poles with a single outside neighbour of degree one.} Here $x_a=1$,
+$O_a=\tht(d_a+1)$, $d_a=n_a+1+\varepsilon\ge3$, and by \eqref{eq:exact} and $\pi_u\ge1$,
+\[
+ \Lambda(a,u)\ \ge\ (2+\varepsilon)\tht(d_a+2)-\tht(d_a+1)-\varepsilon\,\tth(d_a+2)
+ =\frac{2(d_a-2-\varepsilon)}{d_a(d_a+1)(d_a+2)}=\frac{2(n_a-1)}{d_a(d_a+1)(d_a+2)}\ \ge0 ,
+\]
+because $n_a+\varepsilon\ge2$; the inequality $\Lambda(a,u)>0$ is strict unless
+$\varepsilon=1$, $n_a=1$ and $\pi_u=1$.
+
+Hence $\Sigma_\Gamma\ge\sum_{ZZ}2/S_{uw}+\sum_{a}\sum_u\Lambda(a,u)\ge0$, and it remains to
+find one strictly positive term. If some pole has $x_a\ge1$ and all its outside neighbours
+have degree at least two, the corresponding $\Lambda(a,u)$ are positive. If some pole $a$ has
+an outside neighbour of degree one, then $\Lambda(a,u)>0$ unless $\varepsilon=1$, $n_a=1$ and
+$\pi_u=1$ for the unique $u\in N(a)\cap Z$; in that case the second neighbour of $u$ lies in
+$Z$, so there is a $ZZ$-edge, of weight $2/4$. Finally, if $x_{a_1}=x_{a_2}=0$, then by
+\eqref{eq:exact} $\Lambda(a,u)=(\varepsilon+\pi_u)\tht(d_a+2)-\varepsilon\tth(d_{a_1}+d_{a_2})
+\ge(1+\varepsilon)\tht(d_a+2)-\varepsilon\tth(d_a+2)$, which equals $\tht(d_a+2)>0$ for
+$\varepsilon=0$ and $\frac{2(d_a-1)}{d_a(d_a+1)(d_a+2)}>0$ for $\varepsilon=1$. In all cases
+$\Sigma_\Gamma>0$.
+\end{proof}
+
+\section{Proof of the main results}\label{sec:proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+For the path with $n\ge3$ vertices, $\Hm(P_n)=2\cdot\frac23+(n-3)\cdot\frac12=\frac{n-1}2+\frac13$,
+and $\Hm(K_2)=1>\frac12+\frac13$; so the theorem holds for paths. We prove, by induction on
+$n\ge2$, that every connected graph $G$ of order $n$ which is not a path satisfies
+$\Hm(G)>\frac12\D(G)+\frac13$. For $n=2$ there is nothing to prove. Let $n\ge3$, let $G$ be
+connected and not a path, and assume that every connected graph $G'$ with at least two and
+fewer than $n$ vertices satisfies $\Hm(G')\ge\frac12\D(G')+\frac13$ (for paths this is the
+computation above, for the other graphs it is the induction hypothesis). Fix $p,q$ with
+$d(p,q)=\D=\D(G)$ and a shortest path $P$ from $p$ to $q$.
+
+\emph{Case 1: $G$ has a hanging part,} that is, \eqref{eq:H} fails. Then there are a vertex $v$
+and a component $X$ of $G-v$ with $X\cap V(P)=\emptyset$. As $P$ has a vertex other than $v$,
+and $G-v$ has a component containing it, $v$ has a neighbour outside $X$. By
+Lemma~\ref{lem:hanging}, $\Hm(G)>\Hm(G-X)$. The graph $G-X$ is connected, has between $2$ and
+$n-1$ vertices and contains $P$; distances in a subgraph are at least the distances in $G$, so
+$\D(G-X)\ge d_{G-X}(p,q)\ge\D$. By the induction hypothesis,
+$\Hm(G)>\Hm(G-X)\ge\frac12\D(G-X)+\frac13\ge\frac12\D+\frac13$.
+
+\emph{Case 2: \eqref{eq:H} holds.} If every block of $G$ is a $K_2$, then $G$ is a tree, and
+in a tree every vertex of degree at least two is a cut vertex; by Lemma~\ref{lem:chain}(i)
+every such vertex is an internal vertex of $P$ and every leaf is $p$ or $q$, so $V(G)=V(P)$
+and $G=P$ is a path, contrary to the assumption.
+Hence $G$ has a block $\Gamma$ with at least three vertices. Let $\Pi$ be its set of poles and
+$Z=V(\Gamma)\setminus\Pi$. By Lemma~\ref{lem:chain}, the hypotheses (B1), (B2) of
+Section~\ref{sec:block} hold, so Proposition~\ref{prop:block} yields $z\in Z$ with
+$\Hm(G-z)<\Hm(G)$. By Lemma~\ref{lem:chain}(iii), $z$ is not a cut vertex and
+$z\notin\{p,q\}$. Thus $G-z$ is connected with $n-1\ge2$ vertices and contains $p$ and $q$,
+so $\D(G-z)\ge d_{G-z}(p,q)\ge\D$, and the induction hypothesis gives
+$\Hm(G)>\Hm(G-z)\ge\frac12\D(G-z)+\frac13\ge\frac12\D+\frac13$.
+
+This completes the induction. Together with the values for paths, it proves the inequality
+and shows that equality holds exactly for the paths with at least three vertices.
+\end{proof}
+
+\begin{proof}[Proof of Corollary~\ref{cor:liu}]
+Let $n\ge3$ and $\D=\D(G)\le n-1$. By Theorem~\ref{thm:main},
+\[
+ \Hm(G)-\Bigl(\D+\frac56-\frac n2\Bigr)\ \ge\ \frac{n-1-\D}{2}\ \ge0,\qquad
+ \Hm(G)-\Bigl(\frac12+\frac1{3(n-1)}\Bigr)\D\ \ge\ \frac13\Bigl(1-\frac{\D}{n-1}\Bigr)\ \ge0 .
+\]
+Equality in either line forces $\D=n-1$, i.e.\ $G\cong P_n$, and then equality holds by the
+computation of $\Hm(P_n)$.
+\end{proof}
+
+\begin{remark}[why averaging]\label{rem:rules}
+It is tempting to prove Theorem~\ref{thm:main} by deleting a canonically chosen vertex off the
+path $P$, for instance one of minimum degree among the vertices not on $P$. For all connected
+graphs of order at most $9$ this vertex does satisfy $\Hm(G-z)<\Hm(G)$, but the rule fails for
+large graphs. Take a path $v_0\cdots v_8$, a complete graph $K_{1000}$ and a vertex $z$
+adjacent to $v_4$ and to seven vertices of the complete graph. The path is diametral, $z$ has
+the smallest degree among the vertices off the path, and $\Hm(G)-\Hm(G-z)\approx-0.0078<0$:
+deleting $z$ raises the weights of the two path edges at $v_4$ by
+$2(\frac12-\frac25)=\frac15$, while the edge $zv_4$ had weight only $\frac2{11}$ and the
+other edges at $z$ are negligible. Similarly, the sum of $\Hm(G)-\Hm(G-z)$ over \emph{all}
+vertices that are neither cut vertices nor $p,q$ can be negative: for the graph obtained from
+the cycle $C_{400}$ by attaching a pendant vertex to every cycle vertex and adding six
+vertices adjacent to all cycle vertices, this sum is about $-0.71$. The two reductions of the
+proof are designed to avoid these phenomena: hanging parts are removed first, and inside a
+block the losses at the two poles are controlled by Lemma~\ref{lem:pole}.
+\end{remark}
+
+\begin{remark}[sharpness]
+Equality holds only for paths. Among the connected graphs of order at most $11$ that are not
+paths, the minimum of $\Hm(G)-\frac12\D(G)-\frac13$ equals $\frac7{30}$ for every order
+$5\le n\le11$; it is attained by the path with one pendant vertex attached to the neighbour of
+an end vertex. For $n=4$ the minimum is $\frac16$ (the star $K_{1,3}$).
+\end{remark}
+
+\section{Computational checks}\label{sec:computation}
+
+The proof above does not rely on machine computation; the only numerical comparisons in it
+(Table~\ref{tab:pole} and the small cases in Lemma~\ref{lem:pole}) involve explicit fractions.
+Independently, we checked the following statements with exact rational arithmetic (Python
+\texttt{fractions}) or, for the largest enumerations, in floating point with a margin far
+above rounding errors; graphs were enumerated with \texttt{geng} from
+\texttt{nauty}~\cite{nauty}. The programs accompany this manuscript.
+\begin{itemize}
+\item Theorem~\ref{thm:main} for all connected graphs of order at most $11$
+ ($1{,}006{,}700{,}565$ graphs of order $11$): the inequality holds, equality occurs only for
+ paths, and the minimum over non-paths is $\frac7{30}$ (order $4$: $\frac16$). The inequality
+ also holds for about $8{,}000$ random and structured graphs with up to several hundred
+ vertices.
+\item Lemma~\ref{lem:deletion} and Lemma~\ref{lem:hanging} on all connected graphs of order at
+ most $8$: the formula for every vertex subset arising in the proof, and the strict
+ inequality $\Hm(G)>\Hm(G-X)$ for every vertex $v$ and every admissible component $X$.
+\item The chain of inequalities of Section~\ref{sec:block} for every block with at most two
+ cut vertices of every connected graph of order at most $8$ and every choice of two poles
+ containing these cut vertices ($219{,}088$ cases at order $8$, of which $217{,}539$ satisfy
+ \textup{(B2)}): $\Sigma_\Gamma$ is at least the bound of Lemma~\ref{lem:lower}, which is at
+ least $\sum_{ZZ}2/S-\Bad_{a_1}-\Bad_{a_2}$; under \textup{(B2)},
+ $\Bad_a\le\frac12-\frac1\Delta$, and the smallest value of $\Sigma_\Gamma$ is
+ $0.2769\ldots$
+\item Lemma~\ref{lem:pole} for all $n,x\le200$ and a range of $\Delta$ up to $10^5$; equality
+ occurs only in the case stated.
+\item The induction step itself: for every connected non-path graph of order at most $8$,
+ every diametral pair and every shortest path between its two vertices ($147{,}561$ instances
+ at order $8$), either a hanging part exists or the structure of Lemma~\ref{lem:chain} holds
+ and each block with at least three vertices contains a vertex $z$ as in the proof.
+\item The two examples of Remark~\ref{rem:rules}.
+\end{itemize}
+
+\section{Status of the result}\label{sec:status}
+
+\paragraph{What is claimed.} Theorem~\ref{thm:main} and Corollary~\ref{cor:liu} are claimed
+as theorems, with complete proofs in Sections~\ref{sec:deletion}--\ref{sec:proof}. The only
+external result used is Zhong's inequality \eqref{eq:zhong} (in Lemma~\ref{lem:hanging}),
+together with standard facts about blocks. The manuscript has not been refereed.
+
+\paragraph{The criteria.}
+\begin{center}
+\begin{tabular}{@{}lp{0.73\textwidth}@{}}
+\toprule
+Criterion & Assessment\\
+\midrule
+G1 named problem & Liu's conjecture on the harmonic index and the diameter \cite{Liu} (2013), restated in \cite{JM1,JM2,AI}.\\
+G2 original statement & Corollary~\ref{cor:liu} is the conjecture as stated, for all $n\ge3$, with the same constants; nothing is transformed.\\
+G3 open & To our knowledge the conjecture was proved only for trees \cite{Liu}, unicyclic graphs \cite{JM1,JM2} and quasi-tree graphs \cite{AI}. Our search (web search engines, arXiv, and the abstracts and introductions of the papers cited here) found no proof for general graphs; a bounded search cannot exclude one.\\
+G4 complete proof & The proof is unconditional and covers every connected graph. Computations are used only as an independent check.\\
+G5 non-restatement & The result is the new, order-free inequality $\Hm\ge\frac12\D+\frac13$; the proof uses new estimates (Lemmas~\ref{lem:hanging} and~\ref{lem:pole}, Proposition~\ref{prop:block}), not a change of variables.\\
+G6 priority & We found neither Theorem~\ref{thm:main} nor the deletion formula of Lemma~\ref{lem:deletion} in the literature, with the same caveat as for G3.\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Relation to earlier work in this series.} The manuscript \cite{VMRC} proves that
+$\Hm(T)$ is at least the average distance of $T$ for every tree and reduces the general
+statement, a strengthening of Fajtlowicz's conjecture, to a single inequality which remains
+open. The present paper uses the same philosophy (exact first-order identities for a
+degree-based index under deletions) but for vertices instead of edges, and here the method
+closes completely.
+
+\paragraph{Questions.} (1) Is there a constant $c>\frac12$ and a natural class of graphs (for
+instance $2$-connected graphs) with $\Hm(G)\ge c\,\D(G)$? (2) Jerline and Michaelraj
+\cite{JM1,JM2} and Abdolghafourian and Iranmanesh \cite{AI} obtained the sharper bound
+$\Hm(G)\ge\D(G)+\frac53-\frac n2$ for unicyclic and quasi-tree graphs (with a few small
+exceptions); determine the minimum
+of $\Hm(G)-\frac12\D(G)$ over all connected graphs that are not trees. (3) Does the
+vertex-deletion calculus settle the analogous conjectures relating the harmonic index to the
+radius?
+
+\begin{thebibliography}{99}
+\bibitem{AI} A.~Abdolghafourian and M.~A.~Iranmanesh, On harmonic index and diameter of
+quasi-tree graphs, \emph{J. Math.} \textbf{2021}, Article ID 6650407; arXiv:2011.05752.
+\bibitem{AZG} A.~Ali, L.~Zhong and I.~Gutman, Harmonic index and its generalizations: extremal
+results and bounds, \emph{MATCH Commun. Math. Comput. Chem.} \textbf{81} (2019), 249--311.
+\bibitem{Faj} S.~Fajtlowicz, On conjectures of Graffiti II, \emph{Congr. Numer.} \textbf{60}
+(1987), 187--197.
+\bibitem{FMS} O.~Favaron, M.~Mah\'eo and J.-F.~Sacl\'e, Some eigenvalue properties in graphs
+(conjectures of Graffiti II), \emph{Discrete Math.} \textbf{111} (1993), 197--220.
+\bibitem{JM1} J.~Amalorpava Jerline and L.~Benedict Michaelraj, On a conjecture of harmonic
+index and diameter of graphs, \emph{Kragujevac J. Math.} \textbf{40} (2016), 73--78.
+\bibitem{JM2} J.~Amalorpava Jerline and L.~Benedict Michaelraj, On harmonic index and diameter
+of unicyclic graphs, \emph{Iranian J. Math. Sci. Inform.} \textbf{11} (2016), 115--122.
+\bibitem{Liu} J.~Liu, On harmonic index and diameter of graphs, \emph{J. Appl. Math. Phys.}
+\textbf{1} (2013), no.~3, 5--6.
+\bibitem{nauty} B.~D.~McKay and A.~Piperno, Practical graph isomorphism, II, \emph{J. Symbolic
+Comput.} \textbf{60} (2014), 94--112.
+\bibitem{VMRC} Verifiable Mathematical Reasoning Corpus, The harmonic index of a tree
+dominates its average distance, research manuscript, 15 November 2026.
+\bibitem{Zhong} L.~Zhong, The harmonic index for graphs, \emph{Appl. Math. Lett.} \textbf{25}
+(2012), 561--566.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,1386 @@
+\documentclass[11pt,a4paper]{article}
+\ifdefined\pdfmapfile
+  \pdfmapfile{+lm.map}
+  \pdfmapfile{+cm.map}
+  \pdfmapfile{+symbols.map}
+  \pdfmapfile{+euler.map}
+\fi
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage[left=25mm,right=25mm,top=24mm,bottom=25mm,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,tabularx,array}
+\usepackage{xcolor,fancyhdr,enumitem}
+\definecolor{inkblue}{HTML}{174C60}
+\usepackage[unicode,colorlinks=true,linkcolor=inkblue,citecolor=inkblue,urlcolor=inkblue]{hyperref}
+\hypersetup{pdftitle={Prime-counting exceptions, Farey permutations, and zeros of a theta-kernel Mellin transform},pdfsubject={Research manuscript in analytic number theory and analysis}}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\itshape Prime-counting exceptions and theta-kernel zeros}
+\fancyhead[R]{\small Research manuscript}\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.25pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\setlist{topsep=4pt,itemsep=2pt}
+\setcounter{tocdepth}{1}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+\begin{document}
+\thispagestyle{plain}
+\begin{center}
+{\small\sffamily\color{inkblue} ANALYTIC NUMBER THEORY AND ANALYSIS}\\[9pt]
+{\LARGE\bfseries Prime-counting exceptions, Farey permutations,}\\[4pt]
+{\LARGE\bfseries and zeros of a theta-kernel Mellin transform}\\[10pt]
+{\large Unconditional results and consequences of the Riemann hypothesis}\\[9pt]
+{\small Research manuscript \quad $\cdot$ \quad 21 November 2026}
+\end{center}
+
+\begin{abstract}
+Erd\H{o}s and Richards asked in 1977 whether, for a set of integers $n$
+of natural density one, $\pi(n+h)-\pi(n)\le\pi(h)$ holds for every
+integer $2\le h\le n$. We give an unconditional proof. For each fixed
+$K\ge2$, lengths below the $K$th prime determine the set of exceptions
+up to $O_K(x/(\log x)^{K+1})$ starts below $x$. Published optimal admissible diameters through size 342 then give $B(x)\ll x/(\log x)^{351}$ for the total exception count. A separate argument
+answers Tom\'as Garc\'ia's conjecture on the discrepancy averaged over
+permutations of prescribed gaps, with the sharp uniform lower constant.
+Under the ordinary Riemann hypothesis the proportion of permutations of
+the Farey gaps as regular as their natural ordering decays at least as
+fast as $\exp(-c_\eta n^{1-\eta})$ for every $0<\eta<1$.
+We also give a computer-assisted counterexample to Csordas's 1998
+question about the zeros of a meromorphically continued Mellin transform.
+The source contains the interval calculation and the bounds for the
+omitted terms. Additional results concern a positive-definiteness
+question of Csordas, the oscillation of Nicolas's totient sum over zeta
+zeros, and primes between real powers with exponent at least $2.22$.
+\end{abstract}
+
+\tableofcontents
+\newpage
+\section{Which conclusions use RH?}
+Throughout, RH means that every nontrivial zero of the Riemann zeta function
+has real part $1/2$. The central distinction is between proving the
+implication $\mathrm{RH}\Rightarrow C$ and proving $C$ itself.
+Three source questions admit proofs here with no hypothesis on zeta zeros.
+\begin{center}
+\small\renewcommand{\arraystretch}{1.24}
+\begin{tabularx}{\linewidth}{@{}p{.26\linewidth}X@{}}
+\toprule
+Source question & Conclusion and scope\\
+\midrule
+Erd\H{o}s--Richards, 1977, Question 3 \cite{er} &
+Density one, with all lengths allowed at each good start. The authors
+already observed that RH suffices. The proof here removes that assumption.\\
+Tom\'as Garc\'ia, 2026, Conjecture 1 \cite{tg} &
+The two-sided bound holds for every finite gap multiset. The proposed
+lower constant is optimal. The independent small-probability estimate
+for the Farey order is quantitative under RH.\\
+Csordas, 1998, Problem 4 \cite{cs98} &
+A nonreal zero answers the original question in the negative.
+Conjugation gives a second zero. This statement concerns the Mellin
+transform specified in the question.\\
+Csordas, Open Problem 4.11 \cite{cs15} &
+For positive deformation parameter, RH implies positive definiteness
+at every order. The printed derivative index and the unconditional
+eventual assertion are addressed in the proof.\\
+Nicolas, 2012, final questions \cite{nic} &
+An unconditional improvement for the requested upper bound on the
+lower limit. Its exact conjectural endpoint remains undetermined.\\
+Chamberland--Straub \cite{chstr} &
+A conditional all-start bound at exponent $2.22$. Legendre's
+conjecture concerns exponent $2$.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+The historical and mathematical questions admit different levels of
+verification. Original statements and their quantifiers can be compared
+directly with the sources. The proofs and reproducible calculations
+below can be checked independently. The sources consulted do not establish
+historical priority for these arguments or any ranking over the corpus.
+
+\paragraph{Use of the corpus.}
+The repository snapshot \cite{vmrc} contains 225 tracked TeX sources.
+We searched this inventory and read the pertinent sections of selected
+manuscripts. Item [141] uses exceptional-set estimates for prime counts
+on short intervals. Item [149] discusses the large sieve and distinguishes
+its additive and multiplicative forms. Both ideas enter the prime-counting
+proof below, using published estimates at the required scales.
+Item [187] explores failures of iterated Tur\'an tests on multiplier
+sequences; the kernel in the present derivative problem is fixed by the
+original question. Items [223] and [224] study which positivity transfers
+preserve information about zeta zeros. Here an explicit Fourier identity
+identifies the tested derivative, while in the Mellin problem a zero-free
+normalizing factor preserves the zeros of the original transform.
+The repository describes its papers as research drafts. Our theorem
+inputs are cited independently of these drafts.
+
+\section{The density conjecture of Erd\H{o}s and Richards}
+\label{sec:erdos-richards}
+Write $A(n,h)=\pi(n+h)-\pi(n)$. In Question 3 on pp.~110--111 of
+\cite{er}, Erd\H{o}s and Richards called an integer $n\ge2$ bad if
+$A(n,h)>\pi(h)$ for some integer $2\le h\le n$. They conjectured
+that the bad integers have natural density zero and explicitly noted
+on p.~111 that RH would suffice. Let $B(x)$ count these integers up to $x$.
+
+\begin{theorem}\label{thm:er-density}
+Unconditionally, as $x\to\infty$,
+\[
+ B(x)\ll x\frac{\log\log x}{\log x}.
+\]
+Consequently a set of integers $n$ of natural density one satisfies
+$A(n,h)\le\pi(h)$ simultaneously for every integer $2\le h\le n$.
+\end{theorem}
+
+For comparison, Corollary~1 of Alkan \cite{alkan} estimates the number of
+exceptional pairs in a two-dimensional region. A single exceptional
+length at each starting point would be compatible with a pair count of
+order $X$. Here the exceptional set is projected onto its first
+coordinate before counting. The second Hardy--Littlewood conjecture
+asks for the inequality at every starting point and every length.
+Theorem~\ref{thm:er-density} answers the separate density question of
+Erd\H{o}s and Richards.
+
+\subsection{An upper sieve with a mean-square bound}
+Fix a large integer $X$ and put $L=\log X$, $R=\lfloor X^{1/4}\rfloor$,
+and $D=R^2$. Define
+\[
+ G=\sum_{r\le R}\frac{\mu^2(r)}{\varphi(r)},\qquad
+ y_r=\frac{\mu(r)}{\varphi(r)G}\quad(1\le r\le R),\qquad
+ \lambda_d=d\sum_{d\mid r,\ r\le R}\mu(r/d)y_r.
+\]
+Here $\mu$ is the M\"obius function and $\varphi$ is Euler's totient.
+Grouping positive integers by their squarefree radical gives
+$G\ge\sum_{m\le R}1/m$, since the total reciprocal mass of all positive
+integers with squarefree radical $d$ is $1/\varphi(d)$.
+In particular $1/G\le (4+o(1))/L$.
+
+M\"obius inversion gives $\sum_{r\mid d,\ d\le R}\lambda_d/d=y_r$ and
+$\lambda_1=1$. The weight vanishes for nonsquarefree $d$. For squarefree
+$d$ its absolute value is
+\[
+ \frac{d}{\varphi(d)G}
+   \sum_{m\le R/d,\ (m,d)=1}\frac{\mu^2(m)}{\varphi(m)}\le1.
+\]
+Indeed the terms of $G$ indexed by $em$, for $e\mid d$ and the squarefree
+$m$ in this sum, are distinct, and
+$\sum_{e\mid d}1/\varphi(e)=d/\varphi(d)$.
+Now set
+\[
+ W(t)=\Bigl(\sum_{d\mid t,\ d\le R}\lambda_d\Bigr)^2
+     =\sum_{\ell\mid t,\ \ell\le D} a_\ell.
+\]
+This is nonnegative and $W(p)=1$ for every prime $p>R$. The
+coefficient $a_\ell$ is the sum of $\lambda_d\lambda_e$ over pairs
+with $[d,e]=\ell$, where brackets denote the least common multiple.
+It vanishes unless $\ell$ is squarefree, and $|a_\ell|\le\tau_3(\ell)$,
+where $\tau_k$ counts ordered factorizations into $k$ positive factors.
+There are three assignments per prime divisor of $\ell$ to the two
+indices. Its constant Fourier coefficient is
+\[
+ \sum_{\ell\le D}\frac{a_\ell}{\ell}
+ =\sum_{d,e\le R}\frac{\lambda_d\lambda_e}{[d,e]}
+ =\sum_{r\le R}\varphi(r)y_r^2=\frac1G.
+\]
+The middle equality uses $(d,e)=\sum_{r\mid(d,e)}\varphi(r)$.
+
+For every positive integer $H$ the following dispersion estimate holds:
+\begin{equation}\label{eq:er-l2}
+ \sum_{X\le n<2X}
+ \left|\sum_{j=1}^{H}W(n+j)-H/G\right|^2
+ \ll X H L^{15}.
+\end{equation}
+To prove it, expand the divisor indicators by additive characters,
+collecting equal fractions in reduced form. If $e(t)=\exp(2\pi it)$
+and $K_H(t)=\sum_{j=1}^H e(jt)$, then the coefficient at a reduced
+fraction $a/q$, $q\ge2$, of the centered interval sum as a function
+of $n$ is $b_q K_H(a/q)$, where
+\[
+ b_q=\sum_{q\mid\ell,\ \ell\le D}\frac{a_\ell}{\ell},\qquad
+ |b_q|\ll \frac{\tau_3(q)L^3}{q}.
+\]
+The estimate follows from $\tau_3(qm)\le\tau_3(q)\tau_3(m)$ and
+$\sum_{m\le D}\tau_3(m)/m\le(1+\log D)^3$. Orthogonality gives
+$\sum_{a=1}^{q-1}|K_H(a/q)|^2=r(q-r)\le\min(q^2,qH)$,
+where $r$ is the remainder on dividing $H$ by $q$.
+The nonzero $b_q$ have squarefree $q$, so that
+$\tau_3(q)^2=\tau_9(q)$. Summing the squared coefficients gives
+\[
+ \ll L^6\left(\sum_{q\le\min(D,H)}\tau_9(q)
+             +H\sum_{H<q\le D}\frac{\tau_9(q)}{q}\right)\ll HL^{15}.
+\]
+The elementary estimates used here follow by summing the nine
+factor variables, bounding eight or nine harmonic sums, respectively.
+Distinct reduced fractions of denominator at most $D$ are
+$D^{-2}$-separated modulo one. The dual additive large sieve
+of Montgomery and Vaughan \cite{ls} multiplies the last bound by
+at most $X+D^2\le2X$, proving \eqref{eq:er-l2}.
+
+\subsection{All lengths for the same starting point}
+Set $H_0=\lceil L^{26}\rceil$. There is an absolute $c>0$ such that
+$\pi(h)/h\ge c/\log(2h)$ for all integers $h\ge2$, by the prime
+number theorem and adjustment at finitely many integers. If there is
+a violation with $2\le h\le H_0$, the average of the prime indicator
+on $(n,n+h]$ exceeds $c'/\log L$. This implicates
+$O(X\log L/L)$ starting points $n\in[X,2X)$. For a direct covering
+argument, take the intervals $[n,n+h]$ of all the witnesses and
+select disjoint intervals greedily in order of decreasing length.
+Tripling the selected intervals covers their union. On each selected
+interval the prime count is $\gg h/\log L$. Their disjointness and
+$\pi(3X)\ll X/L$ bound their total length by $O(X\log L/L)$.
+Counting integers in their triples changes only the absolute constant.
+
+In any length range $[U,V]$ below we use the integer grid obtained by
+taking $H=\lceil U\rceil$ first and then repeatedly replacing $H$ by
+$\lceil1.01H\rceil$ until $V$ is reached or crossed. At most $O(L)$
+grid points are needed, and for any integer $h\in[U,V]$ the next grid
+point satisfies $h\le H\le1.02h$ when $U\ge H_0$.
+For $H_0\le h\le X^{1/5}$, apply \eqref{eq:er-l2} on this grid.
+The number of starts for which a grid sum exceeds
+$H/G+H/(10L)$ is $O(XL^{17}/H)$ at each $H$. Their union has size
+$O(XL^{18}/H_0)$. At the remaining starts, monotonicity of prime counts
+and the majorant give
+\[
+ A(n,h)\le \sum_{j=1}^H W(n+j)\le (4+0.1+o(1))H/L
+       <4.3h/L<\pi(h).
+\]
+The last inequality follows uniformly from $\pi(h)\sim h/\log h$,
+$h\ge H_0\to\infty$ and $\log h\le L/5$.
+
+For $X^{1/5}\le h\le X^{4/5}$ use a fresh grid.
+Guth and Maynard \cite[Corollary~1.4]{gm} give, for each such grid point,
+\[
+ A(n,H)=H/\log n+O(H\exp(-c_1 L^{1/4}))
+\]
+except on a set of $O(X\exp(-c_1 L^{1/4}))$ starts, for some $c_1>0$.
+Their range is $X^{2/15+\epsilon}\le H\le X^{0.99}$, including the
+rounded endpoints for fixed sufficiently small $\epsilon>0$. Their
+continuous exceptional-set bound gives the stated integer version:
+for integer $H$, both prime counts are constant as the start varies
+in $[n,n+1)$, and $H/\log n$ changes by $O(H/(XL^2))$ there.
+After taking the union over the grid, all remaining starts satisfy
+$A(n,h)\le(1.02+o(1))h/L<\pi(h)$ throughout this range since
+$\log h\le4L/5$.
+
+Finally let $X^{4/5}\le h\le n$ and $b=\lfloor X^{7/10}\rfloor$.
+Tile $(n,n+h]$ by full blocks of length $b$ and a final segment of
+length less than $b$. At every full-block start $u\in[X,4X]$,
+\cite[Corollary~1.3]{gm} gives
+$\pi(u+b)-\pi(u)=b/\log u+O(b\exp(-c_2 L^{1/4}))$ for a fixed
+$c_2>0$, as $u^{17/30+\epsilon}\le b\le u^{0.99}$.
+Since $u\ge n$ and $b/h\le X^{-1/10}$, summation yields, uniformly,
+\[
+ A(n,h)\le h/\log n+o(h/L^2).
+\]
+The two-term prime number theorem gives
+$\pi(h)\ge h/\log h+h/(2\log^2 h)$ for large $h$.
+As $h\le n<2X$, this absorbs the error, even when $h=n$.
+
+The dyadic exceptional count is thus $O(X\log L/L)$. Summing over
+dyadic intervals between $\sqrt{x}$ and $x$, and counting smaller
+starts trivially, proves Theorem~\ref{thm:er-density}. The original
+definition starts at $h=2$. If the variant $h=1$ is included, its
+extra exceptions have $n+1$ prime and contribute only $O(x/\log x)$.
+
+\paragraph{Literature and scope.}
+Erd\H{o}s and Richards give a positive lower density of good
+starts and explicitly identify the implication from RH \cite[p.~111]{er}.
+We compared their individual-start quantifier with Alkan's pair
+count \cite[Corollary~1]{alkan} and checked the short-interval input
+against the two separate estimates of Guth and Maynard \cite{gm}.
+Selberg's square weights, mean squares for sieve weights in almost
+all short intervals, the additive large sieve, and the prime
+distribution results used here all have antecedents. For related work
+on variance estimates for sieve weights see K.~Matom\"aki,
+\emph{Almost primes in almost all very short intervals},
+J.~London Math. Soc.\ 106 (2022), 1061--1097,
+\href{https://doi.org/10.1112/jlms.12592}{doi:10.1112/jlms.12592},
+particularly Sections 1.2 and 5.
+The application here uses the numerical overlap between the
+sieve bound near $4h/\log X$ and the range of the almost-all prime
+number theorem. We have not located an earlier unconditional proof
+of the stated individual-start conclusion. Priority would require
+further bibliographic and independent mathematical review.
+
+\subsection{How many lengths determine the exceptional set?}
+The density theorem leaves a finer question: to a prescribed power of
+$1/\log x$, which interval lengths can account for the exceptional starts?
+Write $p_j$ for the $j$th prime. Let $B_{\le d}(x)$ count starts up to $x$
+with a witness $2\le h\le\min(n,d)$. We obtain a fixed cutoff at every order.
+\begin{theorem}\label{thm:projection}
+For each fixed integer $K\ge2$,
+\[
+ 0\le B(x)-B_{\le p_K-1}(x)\ll_K \frac{x}{(\log x)^{K+1}}.
+\]
+\end{theorem}
+\begin{proof}
+For $X\le n<2X$ write $L=\log X$. In the proof of
+Theorem~\ref{thm:er-density}, start the mean-square argument at
+$H_0=\lceil L^{K+30}\rceil$. It bounds the exceptional starts with
+$h\ge H_0$ by $O_K(XL^{18}/H_0+XL e^{-cL^{1/4}})$.
+For $p_K\le h<p_{K+1}$ a violation requires $K+1$ simultaneous primes
+with distinct offsets in the fixed interval $[1,p_{K+1}-1]$.
+For each admissible collection of $K+1$ offsets, the upper-bound
+sieve gives $O_K(X/L^{K+1})$ starts \cite[Lemma 2.3]{lt}.
+An inadmissible collection occupies every residue modulo a prime
+at most $K+1$ and has no such translates in this dyadic interval for
+large $X$. Summing over a fixed finite family preserves the bound.
+
+Put $r=K+2$. Treat $p_{K+1}\le h\le H_0$ in dyadic intervals
+$H\le h<2H$ with $H=2^j p_{K+1}$, so that every witness implies
+$A(n,2H)\ge r$ and $A(n,2H)\ge \pi(H)+1\gg H/\log(2H)$.
+The factorial moment satisfies
+\[
+ \sum_{X\le n<2X}\binom{A(n,2H)}{r}\ll_{r}\frac{XH^r}{L^r}.
+\]
+Indeed expand in $r$-element subsets of the offsets. Apply the uniform
+upper-bound sieve of \cite[Lemma 2.3]{lt} and sum the singular series
+using \cite[Corollary 2.6]{lt}, with the coordinate projections as the
+linear forms. Here $2H\ll_K L^{K+30}<X$ for large $X$. Inadmissible
+tuples have zero contribution in this interval. For integers $z\ge r$,
+$\binom zr\gg_r z^r$. Thus the number of starts with a witness in
+one dyadic range is $O_K(X(\log(2H)/L)^r)$. Summing the
+$O_K(\log L)$ ranges gives $O_K(X(\log L)^{r+1}/L^r)$.
+This is $O_K(X/L^{K+1})$. Summing the estimates over the starting
+dyadic intervals proves the theorem.
+\end{proof}
+
+Call a finite set of offsets admissible if it omits at least one
+residue class modulo every prime. Define
+\begin{align*}
+ m&=\min\{k\ge2:\ [1,p_k-1]\text{ contains an admissible set of size }k\},\\
+ \mathcal F&=\{S\subseteq[1,p_m-1]: |S|=m,\ S\text{ admissible}\},
+\end{align*}
+where interval subsets in this formula consist of integers.
+The existence of $m$ follows from Hensley and Richards
+\cite{hensley}: their construction gives an admissible set in $[1,h]$
+of cardinality at least $k=\pi(h)+1$ for some $h\ge2$, and $h<p_k$.
+Write $T_S(x)=\#\{1\le n\le x : n+s\text{ is prime for every }s\in S\}$.
+
+\begin{corollary}\label{cor:patterns}
+Unconditionally,
+\[
+ B(x)=\sum_{S\in\mathcal F}T_S(x)
+       +O_m\!\left(\frac{x}{(\log x)^{m+1}}\right),
+ \qquad B(x)\ll_m\frac{x}{(\log x)^m}.
+\]
+If the usual Hardy--Littlewood asymptotic holds for the fixed tuples in
+$\mathcal F$, then $B(x)\sim
+(\sum_{S\in\mathcal F}\mathfrak S(S))\,x/(\log x)^m$,
+where $\mathfrak S(S)=\prod_p(1-\nu_p(S)/p)(1-1/p)^{-|S|}$
+and $\nu_p(S)$ counts occupied residue classes.
+\end{corollary}
+\begin{proof}
+At a sufficiently large $n$, a fixed tuple of $k$ actual primes gives
+an admissible set of offsets whenever all these primes exceed $k$.
+A witness $h<p_m$ would therefore give, with $k=\pi(h)+1$, an
+admissible $k$-set in $[1,h]\subseteq[1,p_k-1]$. Minimality forces
+$k=m$. Conversely an occurrence of any $S\in\mathcal F$ is a witness
+at $h=p_m-1$ once $n\ge p_m-1$. Two distinct tuples have at least
+$m+1$ offsets in their union, giving $O_m(x/(\log x)^{m+1})$
+overlaps by the upper-bound sieve. Theorem~\ref{thm:projection} and the
+two elementary union bounds give the formula. The upper bound follows
+from the same sieve for $m$ offsets. The conditional asymptotic follows
+by summing finitely many positive singular series.
+\end{proof}
+The tuple asymptotics enter only the last assertion. In particular,
+the upper bound holds even if no tuple in $\mathcal F$ has infinitely
+many prime translates. The implied constants depend on the fixed
+order and the result is asymptotic in $x$.
+
+\paragraph{An explicit range for the exponent.}
+Let $H(k)$ denote the smallest diameter of an admissible $k$-set,
+with $H(1)=0$. Thus a witness of size $k$ is possible exactly when
+$H(k)+1<p_k$, for $k\ge2$. The exact diameters for $2\le k\le342$
+were determined by Engelsma and are documented in
+A.~V.~Sutherland's \emph{Sieve theory and gaps between primes:
+Narrow admissible tuples} \cite{suth}, by Polymath \cite[Section 7]{poly}, and in OEIS A008407.
+For reproducibility, the table below gives the minimum of
+$H(k)+1-p_k$ on successive blocks of the tabulation.
+\[
+\begin{array}{c|rrrrrrr}
+k&2\text{--}50&51\text{--}100&101\text{--}150&151\text{--}200&
+201\text{--}250&251\text{--}300&301\text{--}342\\
+\hline
+\min(H(k)+1-p_k)&0&14&16&28&8&20&4
+\end{array}
+\]
+This is a comparison against published finite computations. To
+extend it analytically, a sorted admissible set of size $342+j$
+splits into disjoint admissible sets of sizes $342$ and $j$.
+Their adjacent endpoints have even positive difference, so
+$H(342+j)\ge H(342)+2+H(j)$. With $H(342)=2328$ this gives
+\[
+\begin{array}{c|rrrrrrrr}
+k&343&344&345&346&347&348&349&350\\ \hline
+H(k)\ \text{at least}&2330&2332&2336&2338&2342&2346&2350&2356\\
+p_k&2309&2311&2333&2339&2341&2347&2351&2357
+\end{array}
+\]
+Meanwhile Engelsma's admissible $447$-tuple of diameter $3158$
+gives a witness, since $p_{447}=3163$. Thus
+$351\le{m}\le447$. In particular the unconditional estimate is
+$B(X)\ll X/(\log X)^{351}$. The data for $k>342$ in tables of
+narrowest \emph{known} tuples need not be optimal.
+The primary presentation is available at
+\url{https://math.mit.edu/~drew/PrimeGapsOberwolfach3.pdf};
+the data are at \url{https://oeis.org/A008407/b008407.txt}.
+
+\section{Gap permutations and a conjecture of Tom\'as Garc\'ia}
+\label{sec:fareygaps}
+Let $0=x_0<x_1<\cdots<x_N=1$, with gaps $g_j=x_j-x_{j-1}$.
+The discrepancy considered by Tom\'as Garc\'ia is
+\[
+ r(S)=\sum_{k=1}^N|x_k-k/N|.
+\]
+For a uniformly random permutation $\pi$ of the gaps, write $R(S)$
+for the expected discrepancy of their successive partial sums. Equal
+gaps cause no change in the average: each distinct ordering has the
+same number of labelled representations. Put $a_j=g_j-1/N$,
+$A=(\sum_j a_j^2)^{1/2}$ and $\sigma_S=A/\sqrt N$.
+Conjecture~1 in Section~3 of \cite{tg} asks whether absolute positive
+constants bound $R(S)/(\sigma_S N^{3/2})$ from below and above,
+uniformly in $S$ with positive variance. The author also proposes two
+numerical constants, explicitly designating them provisional.
+
+\begin{theorem}[The permutation estimate]
+\label{thm:fareyperm}
+For every $N\ge 2$ and every such sequence,
+\[
+ \frac{N+1}{3\sqrt 2}\,A\ \le\ R(S) \le\sqrt{\frac{N^2-1}{6}}\,A.
+\]
+The lower coefficient is best possible for each $N$. In the
+normalization $\sigma_S N^{3/2}=NA$, the sharp common lower constant
+is $1/(3\sqrt2)$. An admissible common upper constant is $1/\sqrt 6$.
+\end{theorem}
+
+\noindent
+For $N=1$ or $A=0$ the discrepancy and both bounds are zero.
+The theorem proves the existential statement in \cite[Conjecture~1]{tg}
+and the proposed sharp lower constant. The proposed sharp upper constant
+$(4/9)\sqrt{2/3}$ requires a further estimate for general gap multisets.
+For comparison, a non-sharp first-moment lower bound for independent
+summands is also available from Bobkov and Ledoux \cite[Lemma 3.4]{bl}.
+
+\subsection{Averaging over the size of a random subset}
+For $0<p<1$, let $B_1(p),\ldots,B_N(p)$ be independent Bernoulli
+variables of success probability $p$. With $T_p=\sum_j a_j(B_j(p)-p)$,
+\begin{equation}
+ \frac{R(S)}{N+1}=\int_0^1\mathbb E|T_p|\,dp .
+ \label{eq:beta-perm}
+\end{equation}
+Indeed, the first $k$ entries of a uniform permutation form a uniform
+$k$-subset. A fixed set $I$ of size $k$ is the set of Bernoulli
+successes with probability $p^k(1-p)^{N-k}$. Its integral is
+$1/((N+1)\binom Nk)$. Summing over sets gives~\eqref{eq:beta-perm},
+since $\sum_j a_j=0$ and the two endpoint partial sums vanish.
+
+\begin{lemma}[A sharp lower estimate at each sampling probability]
+\label{lem:bias-bern}
+For real $u_1,\ldots,u_N$, independent Bernoulli$(p)$ variables $B_j$
+and $0\le p\le1$,
+\[
+ \mathbb E\left|\sum_j u_j(B_j-p)\right|
+ \ge \sqrt2\,p(1-p)\left(\sum_j u_j^2\right)^{1/2}.
+\]
+Opposite coefficients of equal magnitude, with all other coefficients
+zero, give equality for every $p$.
+\end{lemma}
+
+\begin{proof}
+The endpoints and the zero vector are immediate. Write $q=1-p$ and
+normalize $\sum_j u_j^2=1$, omitting zero terms.
+If $|u_j|\ge 1/\sqrt2$ for some $j$, conditional Jensen applied
+given $B_j$ bounds the left-hand side below by
+$|u_j|\mathbb E|B_j-p|=2pq|u_j|$.
+
+Suppose now that $|u_j|\le1/\sqrt2$ for all $j$. Put
+$h(v)=1-2pq+2pq\cos v$. This is the characteristic function of the
+difference of two independent Bernoulli$(p)$ variables. It is
+nonnegative because $2pq\le1/2$. We use the following integral
+inequality from Havrilla and Tkocz \cite[proof of Theorem~8,
+Section~3.4, equation (23) in the preprint]{ht}. If
+$h(v)=\rho_0+(1-\rho_0)\cos v$ with $1/2\le\rho_0\le1$, then
+for every real $s\ge1$,
+\[
+ F_h(s):=\frac2\pi\int_0^\infty
+   \bigl(1-h(v/\sqrt s)^s\bigr)\frac{dv}{v^2}
+ \ge F_h(1)=1-\rho_0.
+\]
+Here the atom at zero is $\rho_0=1-2pq$.
+
+Let $T=\sum_j u_j(B_j-p)$, with characteristic function $\phi_T$.
+Independence and the weighted arithmetic--geometric mean inequality give
+\[
+ \operatorname{Re}\phi_T(v)
+ \le \prod_j h(u_jv)^{1/2}
+ \le \sum_j u_j^2 h(u_jv)^{1/(2u_j^2)} .
+\]
+The first absolute moment identity
+$\mathbb E|T|=(2/\pi)\int_0^\infty(1-\operatorname{Re}\phi_T(v))\,dv/v^2$
+follows from the corresponding cosine integral for $|x|$ and Tonelli's
+theorem. Apply it to the preceding inequality, use evenness of $h$,
+and substitute $v=\sqrt2\,w$. With $s_j=1/(2u_j^2)\ge1$ this yields
+\[
+ \mathbb E|T|\ge
+ \frac1{\sqrt2}\sum_j u_j^2 F_h(s_j)
+ \ge \frac{2pq}{\sqrt2}.
+\]
+The normalized vector $(1,-1,0,\ldots,0)/\sqrt2$ gives
+$\mathbb E|B_1-B_2|/\sqrt2=\sqrt2\,pq$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:fareyperm}]
+Integration of Lemma~\ref{lem:bias-bern} in~\eqref{eq:beta-perm}
+gives the lower bound, since $\int_0^1p(1-p)\,dp=1/6$.
+For its sharpness take $a=(d,-d,0,\ldots,0)$ with $0<d<1/N$.
+These centred gaps correspond to a strictly increasing sequence.
+Letting $N\to\infty$ gives sharpness of the dimension-independent
+constant. For the upper bound, let $S_k=\sum_{j=1}^k a_{\pi(j)}$.
+For $i\ne j$ one has $\mathbb E[a_{\pi(i)}a_{\pi(j)}]
+=-A^2/(N(N-1))$, so
+\[
+ \mathbb E S_k^2=\frac{k(N-k)}{N(N-1)}A^2.
+\]
+Cauchy--Schwarz first in probability and then over $1\le k\le N-1$
+gives $R(S)^2\le (N-1)\sum_{k=1}^{N-1}\mathbb E S_k^2
+=(N^2-1)A^2/6$.
+\end{proof}
+
+
+\paragraph{The proposed upper constant on a class of gap multisets.}
+If just one centered gap is positive, of size $d$, all the negative
+magnitudes sum to $d$. Conditional on whether the positive gap was
+sampled, the sign of $T_p$ is fixed. The conditional means therefore
+give $\mathbb E|T_p|=2p(1-p)d$, so $R=(N+1)d/3$. The same calculation
+applies with the signs reversed. By Cauchy--Schwarz,
+$d\le A\sqrt{1-1/N}$. The upper ratio in this class is
+$(1+1/N)\sqrt{1-1/N}/3$; its maximum for $N\ge2$ occurs at $N=3$,
+by differentiation, and equals $(4/9)\sqrt{2/3}$. Choosing all other
+centered gaps equal attains it.
+
+\subsection{The leading constant for permuted Farey gaps}
+Set $D=\sum_j|a_j|^3$. The same integral formula gives a quantitative
+normal approximation for every collection of gaps with $A>0$.
+\begin{proposition}
+\label{prop:fareynormal}
+One has
+\[
+ \left|\frac{R(S)}{N+1}-\frac{\sqrt{2\pi}}8 A\right|
+ \le \frac{2D}{A^2}.
+\]
+In particular, along any sequence with $N\to\infty$ and
+$\max_j|a_j|/A\to0$, the quotient $R(S)/(NA)$ tends to
+$\sqrt{2\pi}/8$.
+\end{proposition}
+\begin{proof}
+Write $v_p=p(1-p)A^2$. For fixed $0<p<1$, use the independent-sum
+normal approximation for Lipschitz test functions
+\cite[Theorem~3.1]{cgs} on $T_p/\sqrt{v_p}$, with test $|x|$.
+Multiplying by $\sqrt{v_p}$ gives
+\[
+ \left|\mathbb E|T_p|-\sqrt{2v_p/\pi}\right|
+ \le 3\,\frac{D}{A^2}\bigl(p^2+(1-p)^2\bigr).
+\]
+Here $\mathbb E|B_j-p|^3=p(1-p)(p^2+(1-p)^2)$.
+Use~\eqref{eq:beta-perm} and integrate, with
+$\int_0^1\sqrt{p(1-p)}\,dp=\pi/8$.
+For the limit use $D/A^3\le\max_j|a_j|/A$.
+\end{proof}
+
+Let $F_n$ have its usual positive Farey points through denominator
+$n$, with the initial reference point $0/1$. Its number of gaps is
+$N=\sum_{q\le n}\varphi(q)=3n^2/\pi^2+O(n\log n)$.
+The following computation records the leading term without requiring
+a refined asymptotic for the gap moments.
+\begin{corollary}
+\label{cor:fareyasymp}
+Unconditionally, as $n\to\infty$,
+\[
+ R(F_n)\sim\frac{3\sqrt6}{4\pi^{5/2}}\,n\sqrt{\log n}.
+\]
+If the ordinary Riemann hypothesis holds, then for every $\varepsilon>0$
+\[
+ \frac{r(F_n)}{R(F_n)}
+  \ll_{\varepsilon}\frac{n^{-1/2+\varepsilon}}{\sqrt{\log n}}.
+\]
+\end{corollary}
+\begin{proof}
+Neighbouring fractions of denominators $q,r$ have gap $1/(qr)$.
+Their ordered denominator pairs are exactly the coprime pairs
+$1\le q,r\le n$ with $q+r>n$. Indeed, the determinant condition
+$bq-ar=1$ for fractions $a/q<b/r$ gives a unique pair in $[0,1]$
+for each such $(q,r)$, and the smallest possible denominator of
+an intervening fraction is $q+r$. Pairs with both denominators $>n/2$
+contribute $O(n^{-2})$ to the sum of squared gaps. For $q\le n/2$,
+the other denominator runs through $n-q<r\le n$; this interval
+contains $\varphi(q)$ values coprime to $q$. Uniformly there
+$r^{-2}=n^{-2}+O(q/n^3)$. Counting both orders gives
+\[
+ \sum_j g_j^2=\frac2{n^2}\sum_{q\le n/2}\frac{\varphi(q)}{q^2}
+       + O(n^{-2})
+ =\frac{12}{\pi^2}\frac{\log n}{n^2}+O(n^{-2}).
+\]
+For the last estimate use $\varphi(q)/q=\sum_{d\mid q}\mu(d)/d$,
+the harmonic sum, and $\sum_{d\ge1}\mu(d)/d^2=6/\pi^2$.
+Consequently $A^2=\sum_jg_j^2-1/N
+=(12/\pi^2)n^{-2}\log n+O(n^{-2})$.
+The same division of pairs gives
+$\sum_jg_j^3\ll n^{-4}+n^{-3}\sum_{q\le n/2}\varphi(q)/q^3
+\ll n^{-3}$. Thus $D\ll \sum_j g_j^3+N^{-2}\ll n^{-3}$.
+Proposition~\ref{prop:fareynormal} in fact gives
+$R(F_n)=(N+1)\sqrt{2\pi}\,A/8+O(n/\log n)$.
+Substitution yields the stated leading constant. Finally, Landau's
+Farey criterion \cite{landau1924} gives
+$r(F_n)\ll_\varepsilon n^{1/2+\varepsilon}$ under RH. Dividing by the
+positive unconditional asymptotic proves the last assertion.
+\end{proof}
+
+\subsection{The fraction of permutations as regular as the native order}
+The mean alone cannot count orderings with small discrepancy. A separate
+estimate comes from permuting pairs inside blocks. Let $r_\pi(F_n)$
+denote the discrepancy for a uniform ordering of the Farey gaps.
+
+\begin{theorem}[Lower tail for permuted Farey gaps]
+\label{thm:fareytail}
+There are absolute constants $C,c>0$ such that for $n\ge2$ and $h\ge0$,
+\[
+ \mathbb P\{r_\pi(F_n)\le h\}
+ \le C\exp\!\left[-c\min\{n,n^2/(1+h)^2\}\right].
+\]
+Consequently, ordinary RH implies that for every $0<\eta<1$ and
+all sufficiently large $n$ the fraction of orderings satisfying
+$r_\pi(F_n)\le r(F_n)$ is at most $C\exp(-c_\eta n^{1-\eta})$.
+\end{theorem}
+
+\begin{proof}
+There are two sets of labelled gaps, each of size at least $bN$ for an
+absolute $b>0$, such that each value in the larger-gap set exceeds
+each value in the smaller-gap set by at least $b/n^2$.
+For the smaller gaps take denominator pairs $3n/4<q,r\le n$.
+For the larger ones take $n/8<q\le n/4$ and $7n/8<r\le n$.
+All these pairs satisfy $q+r>n$. Their gap sizes are respectively at
+most $16/(9n^2)$ and at least $4/n^2$. Each rectangle contains
+$(6/\pi^2)$ times its area plus $O(n\log n)$ coprime lattice points:
+expand coprimality by M\"obius inversion and count the multiples of
+each divisor in the two intervals. This proves the assertion for
+large $n$; a larger final constant covers bounded $n$.
+
+Divide the first $2Mm$ positions of the permutation into $m$ consecutive
+blocks of $2M$ positions, where $M=\lfloor N/(2m)\rfloor$.
+Pair the $j$th and $(M+j)$th positions within each block, $1\le j\le M$.
+Call a pair good if it contains one gap from each set. Each block has
+at least $b^2M$ good pairs except with probability $O(e^{-c_0M})$,
+with an absolute $c_0>0$. Indeed a given pair is good with probability
+at least $2b^2$. Expose the $2M$ labels of the block successively.
+Changing one exposed label while keeping earlier ones fixed admits
+a coupling by a transposition of the remaining labels, which alters
+the final good-pair count by at most two. Thus the exposure martingale
+has increments bounded by two. The Azuma--Hoeffding bound gives
+the assertion. The chance that some block fails is $O(me^{-c_0M})$.
+
+Condition on the unordered contents of all pairs and on the remaining
+positions. All orientations are now independent fair signs. Put
+$S_k=\sum_{j\le k}a_{\pi(j)}$ and let $T_\ell$ denote
+the sum of $S_k$ over block $\ell$. Earlier blocks contribute to
+$T_\ell$ only via their fixed totals. Thus the $T_\ell$ are conditionally
+independent. Swapping the two labels in a pair changes $T_\ell$ by
+$M$ times their difference. In the signed-sum expression for $T_\ell$
+(up to a fixed shift), every good pair therefore gives a coefficient
+of magnitude at least $bM/(2n^2)\gg1/m$, whenever $M\asymp n^2/m$.
+
+If the block has at least $b^2M$ good pairs, its conditional probability
+of $|T_\ell|\le 2h/m$ is at most $K(1+h)/\sqrt M$ for an absolute $K$.
+Indeed, for $s$ independent fair signs and positive coefficients
+at least $d$, the chance of hitting any half-open interval of length $d$
+is at most $2^{-s}\binom{s}{\lfloor s/2\rfloor}\ll s^{-1/2}$.
+The positive-sign sets for sums in such an interval form an antichain;
+this is the Erd\H{o}s--Littlewood--Offord argument \cite{erdoslo}.
+Cover the interval of length $4h/m$ by $O(1+h)$ such intervals and
+condition on all other signs inside the block.
+
+Take $m=\lfloor\delta\min\{n,n^2/(1+h)^2\}\rfloor$ for a sufficiently
+small absolute $\delta>0$. When the quantity inside this floor is
+less than two, enlarge $C$ and use probability at most one.
+Otherwise $M\asymp n^2/m$, $M\gg m$, and the last block probability
+is at most $1/16$, by the choice of $\delta$. Since
+$\sum_{\ell=1}^m |T_\ell|\le\sum_{k=1}^N|S_k|$, the event
+$r_\pi(F_n)\le h$ forces at least $m/2$ blocks to have
+$|T_\ell|\le2h/m$. On conditioning as above and using the union bound,
+its probability is at most $2^m(1/16)^{m/2}=2^{-m}$ when every block
+has sufficiently many good pairs. Adding $O(me^{-c_0M})$ gives the
+first bound. Under RH, Landau's criterion yields
+$r(F_n)\ll_\eta n^{1/2+\eta/2}$. Substitute $h=r(F_n)$.
+\end{proof}
+
+\section{A nonreal zero of the Mellin transform in Csordas's 1998 problem}\label{sec:mellinzero}
+
+In Problem 4 of \emph{Convexity and the Riemann $\xi$-function}
+(1998, p.~49), Csordas asks whether every zero of the meromorphic
+continuation of
+\[
+ M(z)=\int_0^\infty t^{z-1}\Phi(\sqrt t)\,dt,\qquad
+ \Phi(t)=\sum_{n=1}^{\infty}\pi n^2(2\pi n^2e^{4t}-3)
+                e^{5t-\pi n^2e^{4t}},
+ \qquad \Re z>0,
+\]
+is real and negative. A positive answer would, by a theorem of
+P\'olya cited by Csordas, imply RH.
+
+\medskip\noindent
+\textbf{Theorem (computer-assisted).}
+\emph{The continuation of $M$ has exactly one zero, counted with
+multiplicity, in the open disk $|z-z_0|<10^{-26}$, where}
+\[
+ \begin{split}
+ \Re z_0&=-11.6250611666988213619561882819297820434,\\
+ \Im z_0&=\phantom{-}6.8381748574844204734881632920867451441 .
+ \end{split}
+\]
+\emph{In particular, there is a simple nonreal conjugate pair of zeros,
+and the answer to Csordas's question is negative.}
+
+\medskip\noindent
+\emph{Continuation.} Set $R=1/5$ and $F(z)=R^{-2z}M(z)$. The substitution
+$t=x^2$ and a split at $x=R$ give
+\begin{equation}\label{eq:mellinsplit}
+ F(z)=\sum_{k\ge0}\frac{a_k}{z+k}
+       +2\int_0^\infty e^{2zu}\Phi(R\,e^u)\,du,\qquad
+ a_k=R^{2k}\frac{\Phi^{(2k)}(0)}{(2k)!}.
+\end{equation}
+Here $R\,e^u$ denotes the product $R\exp(u)$. The series follows from
+evenness of $\Phi$ and convergence on $|x|\le R$ of its power
+series. The integral is entire by the double-exponential decay of
+$\Phi(x)$ for positive $x$. The geometric coefficient bound below
+makes the series locally normally convergent off the nonpositive
+integers. This proves that \eqref{eq:mellinsplit} gives the required
+continuation and allows differentiation under both signs.
+The factor $R^{-2z}$ is zero-free.
+
+\medskip\noindent
+\emph{Bounds for the series at the origin.}
+On $|t|=3/10$ one has $\Re(e^{4t})\ge e^{-1.2}\cos(1.2)>0.1$,
+$|e^{4t}|<4$ and $|e^{5t}|<5$. The $n$th summand of $\Phi$ has
+modulus bounded by $600 n^4 e^{-0.3 n^2}$. Its sum is below $10^7$.
+The sum from $n=29$ onwards is below $10^{-90}$, as follows by
+bounding it by twice its first term. Cauchy's estimate then gives
+\[
+ |a_k|\le10^7(4/9)^k,\qquad |a_k-a_{k,28}|\le10^{-90}(4/9)^k,
+\]
+where $a_{k,28}$ uses the first 28 theta summands. In the disk of the
+theorem $|z+k|>6$ for all $k\ge0$. Replacing the series by
+$\sum_{k=0}^{159}a_{k,28}/(z+k)$ costs less than $10^{-48}$ for both
+the value and its first derivative. To evaluate the coefficients let
+$P_0(X)=2X-3$ and
+\[
+ P_{j+1}(X)=4X P_j'(X)+(5-4X)P_j(X).
+\]
+Termwise differentiation at zero gives
+$\Phi_{28}^{(j)}(0)=\sum_{n=1}^{28} x_n e^{-x_n}P_j(x_n)$ with
+$x_n=\pi n^2$.
+
+\medskip\noindent
+\emph{Bounds for the integral.}
+For $u\ge2$ put $x=R\,e^u$ and $\eta=e^{4x}>300$. From the defining
+series,
+\[
+ |\Phi(x)|\le 2\pi^2\eta^{9/4}
+              \sum_{n\ge1}n^4e^{-\pi n^2\eta}
+           \le 1000e^{-\eta}.
+\]
+For the second bound use $\eta^{9/4}<e^{\eta/2}$ and sum a
+geometric majorant. Since $du=d\eta/(\eta\log\eta)$ and
+$(2u)^j e^{-22u}<1$ for $u\ge2$, the integral tail and its first
+two $z$ derivatives have moduli below $10^{-120}$ throughout the disk.
+
+Partition $[0,2]$ into 32 equal panels. In the complex disk of
+radius $1/8$ about the midpoint of any panel, $x=R\,e^u$ satisfies
+$|x|<1.68$, $|\Im x|<0.21$, and $\Re x>0$. In particular
+$\Re(e^{4x})>0.6$ and $|e^{4x}|<1000$. The theta series gives
+$|\Phi(x)|<10^{10}$ there, for example by summing
+$10^8 n^4e^{-1.8n^2}$ termwise. In the same disks the integrands
+$2(2u)^j e^{2z_0u}\Phi(R\,e^u)$, for $j=0,1$, have modulus
+below $10^{15}$: one can use $|2u|<4.3$ and
+$|e^{2z_0u}|\le e^{2(12+7)/8}$. On the real panels, replacing $\Phi$
+by its first 12 summands costs less than $10^{-100}$ for either
+integral. Indeed $x\ge 1/5$ gives $e^{4x}>2$ in the exponential,
+while $e^{4x}<400$ and $e^{5x}<2000$ bound the prefactors.
+
+Use Fej\'er's first quadrature rule with $N=102$ nodes on each panel.
+Its nodes on $[-1,1]$ are $\cos\theta_j$ with
+$\theta_j=(2j+1)\pi/(2N)$, $0\le j<N$. Its weights are
+\[
+ w_j=\frac2N\left(1-2\sum_{k=1}^{\lfloor(N-1)/2\rfloor}
+                   \frac{\cos(2k\theta_j)}{4k^2-1}\right).
+\]
+Discrete cosine orthogonality and
+$\int_{-1}^{1}T_{2k}(v)\,dv=2/(1-4k^2)$ for the Chebyshev
+polynomials prove exactness through degree $N-1$. The weights are
+positive since $2\sum_{k=1}^{\infty}(4k^2-1)^{-1}=1$, and their
+sum equals 2. Each panel has half-width $1/32$, a quarter of the
+analytic disk radius. The midpoint Taylor polynomial of degree 101
+has uniform error bounded by $10^{15}4^{-102}/(1-1/4)$ on the panel.
+Positivity and constant exactness bound the total quadrature error,
+summed over all panels, by four times this quantity. The preceding
+three truncations and the quadrature error together are below $10^{-44}$
+for each of $F(z_0)$ and $F'(z_0)$.
+
+\medskip\noindent
+\emph{Arithmetic and zero count.} The interval certificate below uses
+110 decimal digits of working precision, encloses $\pi$, and rounds
+elementary operations outwards. Let $Q_0,Q_1$ denote the finite
+approximations computed there. Its enclosures give
+\[
+ |Q_0|<2\cdot10^{-40},\qquad \Im Q_1>4.5\cdot10^{-13}.
+\]
+For reproducibility the real and imaginary midpoints of $Q_0$ are
+approximately $1.68841555\cdot10^{-40}$ and
+$-1.51587172\cdot10^{-41}$. The analytic error implies
+$|F(z_0)|<3\cdot10^{-40}$ and $|F'(z_0)|>4\cdot10^{-13}$.
+For $|z-z_0|\le 10^{-26}$, the absolute second derivative of the
+series in \eqref{eq:mellinsplit} is at most
+$2\cdot10^7/(6^3(1-4/9))$. The central integral contributes at most
+$2\cdot2\cdot16\cdot10^{10}$, using $|2u|^2\le16$ and
+$|e^{2zu}|\le1$ on $[0,2]$. Together with the far tail this gives
+$|F''(z)|<10^{12}$. Hence, on the circle of radius $r=10^{-26}$,
+\[
+ |F(z)-F'(z_0)(z-z_0)|
+ \le 3\cdot10^{-40}+\tfrac12\,10^{12}r^2
+ <4\cdot10^{-39}< |F'(z_0)|r .
+\]
+Rouch\'e's theorem proves the stated count. Schwarz reflection gives
+the conjugate zero.\hfill$\square$
+
+\medskip\noindent
+\emph{Reading the conclusion.} This refutes the proposed zero location
+for the original meromorphic function. The implication in Csordas's
+remark uses that zero location as its hypothesis, so its failure gives
+no conclusion about RH itself.
+
+\subsection*{Executable interval certificate}
+The following Python program uses \texttt{mpmath} 1.3.0. The proof
+above bounds integrals and infinite sums analytically. The program
+encloses the two finite approximations. Its arithmetic assumptions
+are Python's integer operations and the outward enclosures in
+\texttt{mpmath.iv}.
+{\footnotesize
+\begin{verbatim}
+from mpmath import iv as I
+I.dps = 110
+Z = I.mpc
+R = I.mpf(1)/5
+z = Z('-11.6250611666988213619561882819297820434',
+      '6.8381748574844204734881632920867451441')
+N = 102
+K = 160
+L = 32
+M = 28
+P = [ -3, 2 ]
+xs = [I.pi*n*n for n in range(1,M+1)]
+wts = [x*I.exp(-x) for x in xs]
+f, df = Z(0), Z(0)
+def poly(x, p):
+    v=I.mpf(p[-1])
+    for a in reversed(p[:-1]):
+        v = v*x + a
+    return v
+fact = 1
+for k in range(2*K):
+    if k%2==0:
+        c=R**k/fact*sum(w*poly(x,P) for x,w in zip(xs,wts))
+        t=z+k//2
+        f += c/t
+        df -= c/(t*t)
+    P=[(5+4*j)*(P[j] if j<len(P) else 0)
+       -4*(P[j-1] if j else 0) for j in range(len(P)+1)]
+    fact *= k+1
+nodes=[]
+for j in range(N):
+    theta=I.pi*(2*j+1)/(2*N)
+    x=I.cos(theta)
+    w=1-2*sum(I.cos(2*k*theta)/(4*k*k-1) for k in range(1,(N-1)//2+1))
+    nodes.append((x,2*w/N))
+for ell in range(L):
+    for x,w in nodes:
+        u=(2*ell+1+x)/L
+        t=R*I.exp(u)
+        eta=I.exp(4*t)
+        h=I.exp(5*t)
+        phi=h*sum(b*(2*b*eta-3)*I.exp(-b*eta) for b in xs[:12])
+        v=2*w/L*I.exp(2*z*u)*phi
+        f += v
+        df += 2*u*v
+print('center approximation',f,flush=True)
+print('derivative approximation',df,flush=True)
+assert abs(f) < I.mpf('2e-40')
+assert df.imag > I.mpf('4.5e-13')
+\end{verbatim}
+}
+\paragraph{Independent arithmetic check.}
+A second implementation with 500-bit MPFI/MPFR intervals used 161
+Taylor coefficients, 104 quadrature nodes per panel, and 13 summands at each
+node. It enclosed the real part of the finite value between
+$1.6884155538523815\cdot10^{-40}$ and
+$1.6884155538523817\cdot10^{-40}$ and the imaginary part of the
+finite derivative between $4.581725629766680\cdot10^{-13}$ and
+$4.581725629766681\cdot10^{-13}$. The analytic error bounds above
+also cover these increased truncation orders.
+
+\section{Infinitely many strict failures for the Jacobi theta kernel}\label{sec:strict-kernel}
+Use the normalization of Csordas's Open Problem 4.13,
+\[
+ \Phi(t)=\sum_{n\ge1}\pi n^2(2\pi n^2 e^{4t}-3)
+                   \exp(5t-\pi n^2e^{4t}),\qquad
+ J_m(t)=\Phi^{(m)}(t)^2-\Phi^{(m-1)}(t)\Phi^{(m+1)}(t).
+\]
+The original Coffey--Csordas conjecture requires $J_m(t)>0$ for every
+integer $m\ge1$ and every real $t$. Koide \cite{sra} reports $J_9(0)<0$ and
+determines the sign pattern for the ninth order. Sra gives a certified
+counterexample at $t=1/50$ in Theorem 5.2 of \emph{GPT, the Counterexample
+Machine}. These preprints already disprove the original conjecture.
+The following argument explains how strict reversals recur at the same
+point for arbitrarily high orders.
+
+\medskip\noindent
+\textbf{Theorem.} \emph{All the numbers $\Phi^{(2k)}(0)$, $k\ge0$, are
+nonzero. Infinitely many odd integers $m$ satisfy $J_m(0)<0$.
+Each of these strict inequalities holds on an open interval about zero
+that may depend on $m$.}
+
+\medskip\noindent
+\emph{Proof.}
+Put $\Theta(x)=\sum_{n\in\mathbb Z}e^{-\pi n^2x}$ for $\Re x>0$, set
+$B(t)=e^t\Theta(e^{4t})$, and let $D=d/dt$. Direct termwise differentiation
+gives
+\[
+ (D^2-1)B(t)=16\Phi(t).
+\]
+Indeed, $(D^2-1)e^{t-u}=8u(2u-3)e^{t-u}$ for $u=\pi n^2 e^{4t}$,
+and the terms with indices $n$ and $-n$ coincide. Normal convergence
+on compact subsets of $|\Im t|<\pi/8$ justifies differentiation.
+Jacobi's identity $\Theta(1/x)=\sqrt{x}\,\Theta(x)$ makes $B$, and hence
+$\Phi$, even. Set $a=\pi/8$ and write
+\[
+ G(y)=\Phi(iy)=\sum_{k\ge0} b_k y^{2k},\qquad
+ b_k=\frac{(-1)^k}{(2k)!}\Phi^{(2k)}(0)\qquad (|y|<a).
+\]
+
+We first show that $G^{(j)}(y)\to0$ as $y\uparrow a$, for each fixed
+$j\ge0$. For $h=a-y$ put
+\[
+ q=e^{4iy}-i=\sin(4h)+i(\cos(4h)-1),\qquad
+ \Re(1/q)=\tfrac12\cot(2h)\sim (4h)^{-1}.
+\]
+Poisson summation of a Gaussian twisted by $(-1)^n$ gives
+\[
+ \Theta(i+q)=\sum_{n\in\mathbb Z}(-1)^n e^{-\pi n^2q}
+ =q^{-1/2}\sum_{n\in\mathbb Z}
+          \exp\!\left(-\frac{\pi(n+1/2)^2}{q}\right)
+ \qquad (\Re q>0).
+\]
+The square root is positive on the positive real axis.
+For $h>0$ sufficiently small, $|q|\asymp h$, all derivatives of $q$
+are bounded, and $\Re(1/q)\ge c/h$ for a constant $c>0$.
+At any fixed differentiation order the absolute values of the terms
+after differentiation with respect to $y$ are bounded by
+\[
+ C h^{-A}(1+|n|)^A \exp\bigl(-\pi c(n+1/2)^2/h\bigr)
+\]
+for some $A,C$. The sum is $O(h^{-A}e^{-c'/h})$ for some $c'>0$, by
+splitting the exponential in half and summing the remaining Gaussian
+at a fixed upper bound on $h$. This proves flatness of $B(iy)$ and all
+its derivatives. The differential identity proves the assertion for $G$.
+
+We next exclude zero coefficients. Romik's centered theta expansion \cite{romik}
+(Theorem 2 and equations (7)--(8) of \emph{The Taylor coefficients of
+the Jacobi theta constant $\theta_3$}), with $x=e^{4t}$, gives
+\[
+ \frac{B(t)}{\Theta(1)}=
+ (\cosh 2t)^{-1/2}
+ \sum_{j\ge0}\frac{d(j)}{(2j)!}\,\kappa^j(\tanh 2t)^{2j},\qquad
+ \kappa=\frac{\Gamma(1/4)^8}{128\pi^4},
+\]
+locally at zero, where $d(0)=1$ and all $d(j)$ are integers. Thus
+$16\Phi^{(2k)}(0)/\Theta(1)=P_k(\kappa)$ for a polynomial
+$P_k\in\mathbb Q[X]$. Only $j\le k+1$ contributes. For
+$g(t)=(\cosh 2t)^{-1/2}$ its constant term is
+\[
+ P_k(0)=g^{(2k+2)}(0)-g^{(2k)}(0).
+\]
+To see that it is nonzero, write $A(y)=g(iy)=(\cos 2y)^{-1/2}$.
+All its even Taylor coefficients are strictly positive. Indeed,
+$T(y)=\tan(2y)$ has strictly positive odd coefficients by
+$T'=2(1+T^2)$ and $T(0)=0$, and then $A'=TA$, $A(0)=1$ gives the claim
+by induction. Consequently $P_k(0)=(-1)^{k+1}
+(A^{(2k+2)}(0)+A^{(2k)}(0))\ne0$. Chudnovsky's algebraic
+independence \cite[p.~399]{roy} of $\pi$ and $\Gamma(1/4)$ implies that $\kappa$ is
+transcendental. It follows that $P_k(\kappa)\ne0$ for every $k$.
+
+Suppose the nonzero real coefficients $b_k$ eventually have one sign.
+Choose $K$ so that they have a common sign for all $k\ge K$.
+Termwise differentiation of the convergent Taylor series gives
+$|G^{(2K)}(y)|\ge (2K)!|b_K|$ for $0<y<a$. Flatness gives a
+contradiction. Thus $b_k$ takes both signs infinitely often. Since
+no $b_k$ vanishes, $b_kb_{k+1}<0$ infinitely often. Evenness yields
+\[
+ J_{2k+1}(0)=-\Phi^{(2k)}(0)\Phi^{(2k+2)}(0)
+ =(2k)!(2k+2)!\, b_kb_{k+1}.
+\]
+Continuity gives the asserted neighborhoods.\hfill$\square$
+
+\medskip\noindent
+The theorem uses no hypothesis about zeta zeros. The inequalities involve
+derivatives of the Fourier kernel $\Phi$. Csordas's distinct Open Problem
+4.7 concerns derivatives of its Fourier transform and remains outside this
+argument. The prior finite-order counterexamples rule out a first
+resolution of Problem 4.13. Priority for the infinite-order statement
+has not been established.
+In particular the residue of $M(z)$ at $z=-k$ is
+$\Phi^{(2k)}(0)/(2k)!$ by \eqref{eq:mellinsplit}. Its nonvanishing shows
+that every candidate pole of that continuation is genuine.
+
+\section{The kernel in Csordas's Open Problem 4.11}
+Let $\Phi$ be the even Jacobi kernel in Csordas's normalization. Write
+$\phi(t)=e^{\lambda t^2}\Phi(t)$ and
+$H_\lambda(x)=\int_0^\infty\phi(t)\cos(xt)\,dt$. In Open Problem~4.11
+of \emph{Fourier transforms of positive definite kernels and the Riemann
+$\xi$-function}, Csordas \cite{cs15} asks about the positive definiteness of the
+following specific kernel for $\lambda>0$:
+\[
+ C_{\lambda,m}(t)=\int_{\mathbb R}\phi(s+t)\phi(s-t)
+                        (s^2-t^2)^m s^2\,ds.
+\]
+We use the exponent $m$ printed in the question. For every $\lambda>0$
+there is a threshold $M(\lambda)$ beyond which the kernel is positive
+definite without any hypothesis. Assuming RH, the conclusion holds for
+every $\lambda>0$ and every integer $m\ge0$, including all orders
+covered by the question's preceding assumptions.
+
+\paragraph{Proof.} Use $\widehat f(\omega)=\int_{\mathbb R}f(t)e^{i\omega t}\,dt$.
+The Jacobi kernel and its derivatives decrease super-exponentially, so all the
+weighted functions below are Schwartz functions. Changing variables to
+$u=s+t$, $v=s-t$ gives $ds\,dt=du\,dv/2$, $s^2=(u+v)^2/4$, and
+$s^2-t^2=uv$. If $I_j(x)=\int_{\mathbb R}t^j\phi(t)e^{ixt}\,dt$, then
+$I_j(x)=2i^{-j}H_\lambda^{(j)}(x)$ and $I_j(-x)=(-1)^jI_j(x)$.
+Absolute convergence permits us to expand $(u+v)^2$ before integration.
+Thus
+\begin{align*}
+ 8\widehat C_{\lambda,m}(2x)
+ &= I_{m+2}(x)I_m(-x)+2I_{m+1}(x)I_{m+1}(-x)+I_m(x)I_{m+2}(-x),\\
+ \widehat C_{\lambda,m}(2x)
+ &= (H_\lambda^{(m+1)}(x))^2-H_\lambda^{(m)}(x)H_\lambda^{(m+2)}(x).
+\end{align*}
+For every real entire function $f$ in the Laguerre--P\'olya class,
+$(f')^2-ff''\ge0$ on the real axis. This follows first for real-rooted
+polynomials by their logarithmic derivatives, with the values at zeros
+obtained by continuity, and then by locally uniform approximation.
+Fourier inversion therefore gives positive definiteness of
+$C_{\lambda,m}$ whenever $H_\lambda^{(m)}$ is in this class.
+Indeed, its quadratic form at any finite set of points is the integral
+of a squared exponential sum against the nonnegative density
+$\widehat C_{\lambda,m}(\omega)/(2\pi)$.
+
+For fixed $\lambda>0$, Ki, Kim and Lee show that $H_\lambda$ has only
+finitely many nonreal zeros. The P\'olya--Wiman theorem gives
+$H_\lambda^{(m)}$ in the Laguerre--P\'olya class for every $m$ sufficiently
+large, as recalled just above (4.12) in Csordas. Under RH, $H_0$ belongs
+to the class and de Bruijn's real-zero preservation places $H_\lambda$
+in it for every $\lambda\ge0$. Differentiation preserves the class,
+proving the all-orders assertion.\hfill$\square$
+
+The derivative index matters. Equation (4.12) immediately before the
+question concerns order $2m$. The kernel as printed tests order $m$.
+The unconditional argument works for every $m\ge M(\lambda)$. It also
+answers the eventual-order reading if the existential threshold in the
+preceding paragraph may be enlarged to $2M(\lambda)$. From the single
+fact that $H_\lambda^{(2m)}$ belongs to the class we do not deduce the
+same assertion at order $m$. Under RH the distinction disappears.
+The transform identity specializes the correlation principle behind
+Csordas's Theorem~3.7; related general Wronskian transform identities
+are due to Dimitrov and Xu (\emph{Trans. Amer. Math. Soc.},
+\href{https://doi.org/10.1090/tran/7809}{doi:10.1090/tran/7809}).
+The argument establishes the implication, without a claim of a previously
+unknown RH method or priority for this specialization.
+
+Two adjacent questions have different histories. In Remark~4.8 Csordas
+already identifies RH as sufficient for Open Problem~4.7, the inequality
+$(H'_0)^2-H_0H''_0\ge0$ on $\mathbb R$. For Open Problem~4.10 the
+Rodgers--Tao theorem \cite{rt} $\Lambda\ge0$ gives a nonreal zero of $H_\lambda$
+whenever $\lambda<0$. Here $e^{\lambda t^2}\Phi(t)$ retains the strict
+log concavity on $t>0$ and admissibility required in Csordas's
+Theorem~3.7. Its criterion therefore forces at least one of the associated
+kernels of (4.11) in that paper to fail positive definiteness. This last
+existence conclusion is unconditional and follows from established results.
+
+\section{An unconditional bound for the oscillation asked about by Nicolas}
+Write $\rho=\sigma+i\tau$ for a nontrivial zero, counted with multiplicity,
+and $\gamma_E$ for Euler's constant. Nicolas (2012, (1.18) and p.~320)
+defined
+\[
+ W(x)=\sum_\rho\frac{x^{i\operatorname{Im}\rho}}{\rho(1-\rho)},
+ \qquad B=2+\gamma_E-\log(4\pi)=0.0461914179\ldots
+\]
+and asked for a smaller upper bound for $\liminf W$ than
+$-1/(1/4+\tau_1^2)=-0.00499\ldots$. He separately asked whether the
+exact value is $-B$. The following answers his quantitative request.
+
+\paragraph{Proposition.}
+Without assuming RH,
+\[
+ -B\ \le\ \liminf_{x\to\infty}W(x)\ <\ -0.0431853 .
+\]
+For $P_k=\prod_{j\le k}p_j$, put
+$c(P_k)=(P_k/\varphi(P_k)-e^{\gamma_E}\log\log P_k)\sqrt{\log P_k}$.
+Then, unconditionally, $\liminf_k c(P_k)<3.485229$.
+
+\paragraph{Proof.}
+Set $F(v)=W(e^v)$. The zero-counting formula gives absolute and uniform
+convergence. Functional-equation symmetry pairs $\sigma+i\tau$ with
+$1-\sigma+i\tau$. Thus $F$ is a uniformly almost periodic cosine series
+with coefficients represented by the positive measure
+\[
+ d\mu(t)=2\!\sum_{\operatorname{Im}\rho>0}
+ \operatorname{Re}\frac1{\rho(1-\rho)}\,\delta_{\operatorname{Im}\rho}(dt),
+ \qquad F(v)=\int\cos(vt)\,d\mu(t).
+\]
+Indeed, writing $a=t^2+\sigma(1-\sigma)$ and $b=t(1-2\sigma)$,
+the real part of the reciprocal is $1/(a+b^2/a)$ and lies between
+$1/(t^2+5/4)$ and $1/t^2$. The classical Hadamard-product evaluation
+$\sum_\rho 1/(\rho(1-\rho))=B$ gives $\mu((0,\infty))=B$.
+In particular, $|F|\le B$ without RH. Uniform almost periodicity gives
+$\liminf_{v\to\infty}F(v)=\inf_{v\in\mathbb R}F(v)$:
+apply simultaneous homogeneous approximation to any finite set of
+frequencies, then let the uniform tail tend to zero.
+
+The inhomogeneous approximation of Mossinghoff and Trudgian
+(\emph{Oscillations in the Goldbach conjecture}, (3.1), Table~4.1 and
+Fig.~4.1, DOI \texttt{10.5802/jtnb.1202}) supplies a real $y$ for which
+all the first 650 positive ordinates have $y\tau_j$ within
+$\epsilon=0.014$ of odd multiples of $\pi$. We have rounded the reported phase error upwards. This is finite information.
+The $650$th ordinate exceeds $1000$ ($\tau_{650}=1001.34948\ldots$;
+Platt's zero data). Hence $\cos(yt)\le-1+\epsilon^2/2$
+on the support up to $T=1000$.
+
+Average $F(y+u)$ against the centered Gaussian of variance
+$2s$, with $s=3\cdot10^{-7}$. Its multiplier is $h(t)=e^{-st^2}$.
+The global infimum of $F$ is at most that average. For the mass up to $T$,
+$1-h(t)\le st^2$ and each positive-ordinate summand of $t^2\,d\mu$
+has mass at most $2$. Writing $A(t)=\mu((t,\infty))$, this bounds the
+low-frequency contribution by
+\[
+ -(1-\epsilon^2/2)B + A(T)+1300s .
+\]
+For $T_j=1000+100j$, $0\le j\le70$, the high-frequency contribution is
+at most
+\[
+ h(T)A(T)-
+ \sum_{j=0}^{69}\{h(T_j)-h(T_{j+1})\}A(T_{j+1}).
+\]
+This follows by majorizing $h$ by its left-endpoint values on the
+successive intervals, with constant value $h(T_{70})$ afterwards.
+
+For $t\ge1000$ put
+\[
+ \begin{aligned} b(t)&=\frac{1+\log(t/(2\pi))}{2\pi t},\qquad
+ e(t)&=\frac{1+4\log t}{t^2},\\
+ L(t)&=\frac{2(b(t)-e(t))}{1+5/(4t^2)},\qquad U(t)&=2(b(t)+e(t)).\end{aligned}
+\]
+Lehman's unconditional zero-counting lemma, applied to $u^{-2}$, gives
+$|\sum_{\tau>t}\tau^{-2}-b(t)|\le e(t)$
+(also Mossinghoff--Trudgian, (3.4)). The preceding bounds on each
+real reciprocal give $L(t)\le A(t)\le U(t)$. The resulting upper bound is
+\[
+ D=-(1-\epsilon^2/2)B+(1+h(T))U(T)+1300s-
+ \sum_{j=0}^{69}\{h(T_j)-h(T_{j+1})\}L(T_{j+1}).
+\]
+Direct interval evaluation gives
+$-0.043185313913<D<-0.043185313910$.
+All constants after the finite phase certificate use elementary functions.
+The following Python calculation with \texttt{mpmath.iv} reproduces the enclosure.
+\begin{verbatim}
+from mpmath import iv as I
+I.dps = 50
+p = I.pi
+B = 2+I.euler-I.log(4*p)
+s, ep = I.mpf(3)/10**7, I.mpf(14)/1000
+def h(t): return I.exp(-s*t**2)
+def b(t): return (1+I.log(I.mpf(t)/(2*p)))/(2*p*t)
+def e(t): return (1+4*I.log(t))/t**2
+def lo(t): return 2*(b(t)-e(t))/(1+I.mpf(5)/(4*t**2))
+def hi(t): return 2*(b(t)+e(t))
+D = -(1-ep**2/2)*B+(1+h(1000))*hi(1000)+1300*s
+for t in range(1000,8000,100):
+    D -= (h(t)-h(t+100))*lo(t+100)
+assert I.mpf('-0.043185313913') < D < I.mpf('-0.043185313910')
+\end{verbatim}
+Under RH, Nicolas (2012, Proposition~3.1) gives
+$c(P_k)=e^{\gamma_E}(2+W(p_k))+o(1)$. Uniform continuity of $F$ and
+$\log(p_{k+1}/p_k)\to0$ show that the liminf of $W(p_k)$ equals that of
+$W(x)$ as $x\to\infty$. If RH fails, Nicolas's oscillation result (2012,
+(1.10) and the calculation immediately after it) instead gives
+$\liminf_k c(P_k)=-\infty$: $f(x)$ is constant between consecutive primes,
+$\log f(x)=\Omega_{\pm}(x^{-b})$ for some $b<1/2$, and
+$c(P_k)\sim-e^{\gamma_E}\sqrt{p_k}\log p_k\log f(p_k)$ along those
+oscillating sequences. Both cases give the stated strict upper bound
+since $e^{\gamma_E}(2+D)<3.485229$.\hfill$\square$
+
+\paragraph{Scope and provenance.}
+The absolute value of the bound is more than $93\%$ of $B$.
+The inhomogeneous phase certificate is the published one of
+Mossinghoff and Trudgian. Without any Gaussian average the same data
+already give a bound below $-0.04220$ by $-(1-\epsilon^2/2)B+2U(1000)$.
+The improvement above uses the spectral mass between successive
+thresholds after Gaussian averaging. Neither argument forces
+$\liminf W=-B$. An independent resolution of the request for a smaller
+bound, or an earlier numerical value in other notation, remains possible.
+\paragraph{A full interval of subsequential limits.}
+Every number in $[3.485229,e^{\gamma_E}(2+B)]$ is, unconditionally,
+a subsequential limit of $c(P_k)$. Under RH the endpoint on the right
+is the primorial limsup by Nicolas \cite[Section 4]{nic}. If RH fails
+the corresponding limsup is $+\infty$ and the liminf is $-\infty$,
+by the two signs in Nicolas's oscillation theorem. In either case
+the consecutive increments of $c(P_k)$ tend to zero. To see this, write
+$\theta=\log P_k\asymp p_k$, $R_k=P_k/\varphi(P_k)\ll\log p_k$,
+and $q=p_{k+1}\sim p_k$. The changes in $\theta$ and $R_k$ are
+$\log q$ and $R_k/(q-1)$. The mean-value theorem applied to
+$R_k\sqrt{\theta}-e^{\gamma_E}\sqrt{\theta}\log\theta$ bounds the
+increment by $O((\log p_k)^2/\sqrt{p_k})$. A sequence whose increments
+tend to zero visits every interval separating its liminf from its
+limsup infinitely often, and finite endpoints are subsequential limits.
+This proves the claim.
+
+\section{A conditional bound for primes between consecutive powers}
+Chamberland and Straub \cite{chstr} proved that RH gives a prime in every interval
+$[x^A,(x+1)^A]$ for real $x\ge1$ and $A\ge 9/4$. At the end
+of their Section~3 they recorded the sharper threshold $2.2253$.
+Retaining a logarithm in the prime-gap estimate gives a further reduction.
+
+\paragraph{Proposition.} Assume RH for the Riemann zeta function. For every real
+$A\ge 111/50$ and $x\ge1$, the interval $[x^A,(x+1)^A]$ contains a prime.
+
+\paragraph{Proof.} First take $A=111/50$. Put $Y=x^A$ and
+$N=7.05\cdot10^{13}$. For $1\le\sqrt Y<N$, Proposition~3.4 of Chamberland and
+Straub, using the computation of Sorenson and Webster, supplies a prime in
+$[Y,(\sqrt Y+1)^2]$. Since $(x+1)^{A/2}\ge x^{A/2}+1$, this prime belongs
+to the required interval.
+
+Suppose $Y\ge N^2$. Let $L=\log Y$, $L_0=2\log N$, $b=11/222$,
+$G=(A/2)e^{bL}$, and $c=2G/L$. The interval from $Y$ to
+$Y+c\sqrt Y\,L=Y+Ax^{A-1}$ is contained in $[x^A,(x+1)^A]$ by convexity.
+Since $bL>1$, $c$ increases with $L$, and $c(L_0)>0.81$. For $c\ge1$ the
+conclusion follows from Theorem~5 of Carneiro, Milinovich and Soundararajan,
+which gives a prime in $[Y,Y+\frac{22}{25}\sqrt Y\log Y]$.
+
+For $1/2<c\le1$ suppose that $[Y,Y+c\sqrt Y\,L]$ contains no prime.
+Put $u=cLe^{-L/2}$, $a=Y(1+u)^{1/2}$, and $d=\tfrac12\log(1+u)$.
+Equations (5.9)--(5.11), (6.11), and (6.16) in the authors' preprint \cite{cms}
+\emph{Fourier optimization and prime gaps}, together with the displayed
+inequality immediately following (6.16), give
+\[
+ J\sqrt a\,d\le \log(1/d)+1.16,\qquad J=1.1405\ldots>1.14,
+ \qquad \sqrt a\,d\ge G-0.001.
+\]
+Their assumptions are RH, $Y\ge4\cdot10^{18}$, $1/2\le c\le1$,
+and absence of a prime in this closed interval. Since
+$u\le Le^{-L/2}<10^{-11}$, the bound
+$\log(1+u)\ge u(1-u/2)$ gives $\log(1/d)\le L/2-\log G+0.001$.
+Consequently $h(L)=1.14(G-0.001)+\log G-L/2-1.161\le0$.
+But $63.77<L_0<63.78$, $G(L_0)>26.15$, and $\log G(L_0)>3.263$ imply
+$h(L_0)>0.02$. Moreover $h'(L)=1.14bG+b-1/2>0$ for $L\ge L_0$.
+This contradiction completes the proof for $A=111/50$.
+For $B>A$, take $t=x^{B/A}$ and use $t+1\le(x+1)^{B/A}$ to include
+$[t^A,(t+1)^A]$ in $[x^B,(x+1)^B]$.\hfill$\square$
+
+The comparison concerns the explicit exponent recorded by Chamberland and
+Straub. The conjecture for squares, $A=2$ and integer $x$, remains open.
+
+\section{Scope of the implications and prior results}
+A true conclusion proved unconditionally also follows under RH. This
+logical observation alone supplies no historical novelty. For the
+Erd\H{o}s--Richards question the conditional direction appears in the
+1977 paper itself; the gain in Section~\ref{sec:erdos-richards} is the
+removal of RH and a reduction of all exceptional lengths to finitely
+many fixed constellations at each logarithmic order. The explicit
+exponent uses independently published finite data. The main density
+proof and the finite-length reduction do not require those data.
+
+For Tom\'as Garc\'ia's quantitative conjecture the universal existence
+of the constants and the optimal lower constant are proved without RH.
+The sharp upper constant suggested by experiments remains undecided
+here for arbitrary multisets. A lower comparison of the mean does not
+control the number of nearly as regular permutations; the independent
+pair orientations in Theorem~\ref{thm:fareytail} supply that control.
+For Csordas's 1998 question the proof gives a negative answer in the
+precise meromorphic continuation specified by the author. Its
+sufficient condition for RH therefore fails irrespective of the
+truth of RH itself.
+
+Several direct comparisons also rule out priority. Saito's revised
+Theorem~1.8 \cite{saito} already deduces transcendence of the original
+Mills constant from the density hypothesis for the zeta function,
+which follows from RH. Rodgers and Tao \cite{rt} proved
+$\Lambda\ge0$ unconditionally, while the classical real-zero threshold
+gives $\mathrm{RH}\Leftrightarrow\Lambda\le0$. Hence the implication
+$\mathrm{RH}\Rightarrow\Lambda=0$ also has prior proofs. Neither
+serves as a new conditional discovery here.
+For a neighboring kernel problem, Rainstar publicly archived a proof
+of strict total positivity of order four for the translation kernel
+in July 2026 \cite{pf4}. That normalization is $2\Phi(t/2)$.
+Reversing the second set of nodes gives the corresponding sign
+regularity for $\Phi(u+v)$; we do not count it as a first solution.
+The Mellin transform in Csordas's 1998 Problem 4 is a separate function.
+
+The six criteria in the research question separate source identity,
+preservation of the original statement, previous open status, unconditional
+proof, mathematical gain and priority. Sections~\ref{sec:erdos-richards},
+\ref{sec:fareygaps} and \ref{sec:mellinzero} return to the statements
+in the cited primary sources. Their proposed solutions are open to
+external review. Searches of the source titles, formulations, adjacent
+problems and subsequent work did not identify an earlier proof of these
+three conclusions with the same quantifiers. This establishes the
+scope of the comparison; it cannot certify first discovery or
+establish a new historical principle. The all-start, all-length
+Hardy--Littlewood subadditivity problem and RH remain open in this
+manuscript.
+
+\begin{thebibliography}{99}
+\bibitem{er} P. Erd\H{o}s and I. Richards, Density functions for prime and relatively prime numbers, \emph{Monatsh. Math.} \textbf{83} (1977), 99--112. \href{https://renyi.hu/~p_erdos/1977-09.pdf}{Original paper}, Question 3.
+\bibitem{alkan} E. Alkan, A generalization of the Hardy--Littlewood conjecture, \emph{Integers} \textbf{22} (2022), A53. \href{https://math.colgate.edu/~integers/w53/w53.pdf}{Article}.
+\bibitem{ls} H. L. Montgomery and R. C. Vaughan, The large sieve, \emph{Mathematika} \textbf{20} (1973), 119--134. \href{https://doi.org/10.1112/S0025579300004708}{DOI}.
+\bibitem{gm} L. Guth and J. Maynard, New large value estimates for Dirichlet polynomials, \emph{Ann. of Math.} \textbf{203} (2026), 623--675. \href{https://doi.org/10.4007/annals.2026.203.2.6}{DOI}; \href{https://arxiv.org/html/2405.20552v1}{preprint}, Corollaries 1.3 and 1.4.
+\bibitem{lt} J. D. Lichtman and J. Ter\"av\"ainen, On the Hardy--Littlewood--Chowla conjecture on average, \emph{Forum Math. Sigma} \textbf{10} (2022). \href{https://doi.org/10.1017/fms.2022.54}{DOI}, Lemma 2.3 and Corollary 2.6.
+\bibitem{hensley} D. Hensley and I. Richards, Primes in intervals, \emph{Acta Arith.} \textbf{25} (1974), 375--391.
+\bibitem{poly} D. H. J. Polymath, Variants of the Selberg sieve, and bounded intervals containing many primes, \emph{Res. Math. Sci.} \textbf{1} (2014), article 12. \href{https://doi.org/10.1186/s40687-014-0012-7}{DOI}.
+\bibitem{suth} A. V. Sutherland, \emph{Sieve theory and gaps between primes: Narrow admissible tuples}, Oberwolfach lecture, 2015. \href{https://math.mit.edu/~drew/PrimeGapsOberwolfach3.pdf}{Slides}. T. J. Engelsma, \emph{Permissible patterns of primes}, 2009 working manuscript, Table 5. \href{https://www.opertech.com/primes/permissiblepatterns.pdf}{Table}.
+\bibitem{clark} D. A. Clark and N. C. Jarvis, Dense admissible sequences, \emph{Math. Comp.} \textbf{70} (2001), 1713--1718. \href{https://doi.org/10.1090/S0025-5718-01-01348-5}{DOI}.
+\bibitem{cs98} G. Csordas, Convexity and the Riemann $\xi$-function,
+\emph{Glas. Mat.} \textbf{33(53)} (1998), 37--50. \href{https://web.math.pmf.unizg.hr/glasnik/33.1/33105.pdf}{Article}, Problem 4, p.~49.
+\bibitem{cs15} G. Csordas, Fourier transforms of positive definite kernels and the Riemann $\xi$-function, \emph{Comput. Methods Funct. Theory} \textbf{15} (2015), 373--391. \href{https://arxiv.org/abs/1309.0055}{Author's preprint}.
+\bibitem{romik} D. Romik, The Taylor coefficients of the Jacobi theta constant $\theta_3$. \href{https://arxiv.org/abs/1807.06130}{arXiv:1807.06130}, Theorem 2.
+\bibitem{roy} D. Roy and M. Waldschmidt, Simultaneous approximation and algebraic independence, \emph{Ramanujan J.} \textbf{1} (1997), 379--430. \href{https://webusers.imj-prg.fr/~michel.waldschmidt/articles/pdf/RoyWaldschmidtRamaJ1.pdf}{Article}, p.~399, citing G. V. Chudnovsky.
+\bibitem{sra} S. Sra, \emph{GPT, the Counterexample Machine}, 2026 preprint, \href{https://arxiv.org/html/2608.29595v1}{Theorem 5.2}. A. Koide, independent ninth-order analysis, \href{https://doi.org/10.5281/zenodo.21944522}{Zenodo preprint}.
+\bibitem{rt} B. Rodgers and T. Tao, The de Bruijn--Newman constant is non-negative, \emph{Forum Math. Pi} \textbf{8} (2020), e6. \href{https://doi.org/10.1017/fmp.2020.6}{DOI}.
+\bibitem{nic} J.-L. Nicolas, Small values of the Euler function and the Riemann hypothesis, \emph{Acta Arith.} \textbf{155} (2012), 311--321. \href{https://arxiv.org/pdf/1202.0729}{Preprint}.
+\bibitem{mt} M. J. Mossinghoff and T. S. Trudgian, Oscillations in the Goldbach conjecture, \emph{J. Th\'eor. Nombres Bordeaux} \textbf{34} (2022), 295--307. \href{https://doi.org/10.5802/jtnb.1202}{DOI}.
+\bibitem{chstr} M. Chamberland and A. Straub, Weakening the Legendre conjecture, \emph{Amer. Math. Monthly} (2026). \href{https://doi.org/10.1080/00029890.2026.2694309}{DOI}; \href{https://arxiv.org/abs/2602.22502}{preprint}.
+\bibitem{cms} E. Carneiro, M. B. Milinovich and K. Soundararajan, Fourier optimization and prime gaps, \emph{Comment. Math. Helv.} \textbf{94} (2019), 533--568. \href{https://arxiv.org/abs/1708.04122}{Preprint}.
+\bibitem{saito} K. Saito, Transcendency of variants of Mills' constant, \href{https://arxiv.org/html/2508.16068v3}{arXiv:2508.16068v3}, Theorem 1.8.
+\bibitem{vmrc} QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus},
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c2ac34ea4622778187173f41bb1996deee8081b7}{fixed revision c2ac34ea4622}, 20 November 2026.
+
+
+\bibitem{pf4} J. Rainstar, \emph{The Riemann kernel is globally PF4}, revised 22 July 2026, \href{https://doi.org/10.5281/zenodo.21487371}{archived paper and certificates}.
+\bibitem{bl} S. Bobkov and M. Ledoux, One-dimensional empirical measures, order statistics, and Kantorovich transport distances, \emph{Mem. Amer. Math. Soc.} \textbf{261} (2019), no.~1259. \href{https://doi.org/10.1090/memo/1259}{DOI}.
+
+\bibitem{tg}
+R. Tom\'as Garc\'ia, A general lower bound for average local discrepancy and an application to the Farey sequence, \emph{Mathematics} \textbf{14} (2026), 2543. DOI 10.3390/math14142543.
+\bibitem{ht}
+A. Havrilla and T. Tkocz, Sharp Khinchin-type inequalities for symmetric discrete uniform random variables, \emph{Israel J. Math.} \textbf{246} (2021), 281--297. DOI 10.1007/s11856-021-2244-8. Preprint arXiv:1912.13345.
+\bibitem{cgs}
+L. H. Y. Chen, L. Goldstein and Q.-M. Shao, \emph{Normal Approximation by Stein's Method}, Springer, Heidelberg, 2011. DOI 10.1007/978-3-642-15007-4.
+\bibitem{landau1924}
+E. Landau, Bemerkungen zu der vorstehenden Abhandlung von Herrn Franel, \emph{Nachr. Ges. Wiss. G\"ottingen, Math.-Phys. Kl.} (1924), 202--206.
+
+\bibitem{erdoslo}
+P. Erd\H{o}s, On a lemma of Littlewood and Offord, \emph{Bull. Amer. Math. Soc.} \textbf{51} (1945), 898--902.
+
+\end{thebibliography}
+\end{document}

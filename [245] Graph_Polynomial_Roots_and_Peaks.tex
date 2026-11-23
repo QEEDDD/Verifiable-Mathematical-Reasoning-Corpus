@@ -1,0 +1,1952 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,booktabs,tabularx,array}
+\usepackage[top=22mm,bottom=23mm,left=26mm,right=26mm,headheight=14pt]{geometry}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{fancyhdr,enumitem,hyperref}
+\definecolor{ink}{HTML}{202D50}
+\definecolor{accent}{HTML}{345597}
+\hypersetup{colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent,pdftitle={Roots and coefficient peaks of graph polynomials}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\color{ink}Roots and coefficient peaks of graph polynomials}\fancyfoot[C]{\small\thepage}
+\setlist{nosep,leftmargin=*}\setlength{\emergencystretch}{2em}\raggedbottom
+\begin{document}
+\thispagestyle{plain}
+\begin{center}
+{\LARGE\bfseries\color{ink}Roots and coefficient peaks\\[2pt] of graph polynomials}\par\vspace{7pt}
+{\large Exact realization on interval graphs and simultaneous oscillation on split graphs}\par\vspace{7pt}
+{\small Research manuscript \qquad 21 November 2026}
+\end{center}
+\begin{abstract}
+Which algebraic numbers are zeros of independence polynomials of interval graphs?
+We prove that a nonzero number $z$ occurs exactly when $1/z$ is an algebraic integer with no positive real conjugate. More generally, every $p\in\mathbb Z[x]$ with $p(0)=1$ that is positive on the nonnegative axis occurs as an integral factor. We construct the entire multiple $(1+Mx)(1+x)^N p(x)$ for each sufficiently large $M$. The construction gives an exact answer to the interval-graph location question of Brown, Hickman and Nowakowski. In Cameron's question about purely imaginary roots of modulus greater than one, the smallest possible independence number is six. At that independence number the purely imaginary roots are already dense on the imaginary axis. We classify the roots of three domination polynomials and realize the full independent and total domination spectra on trees. Further consequences include counterexamples to the fixed-order Roller-Coaster Conjecture of Levit and Mandrescu, a family of connected split graphs on which the ordinary, total and connected domination polynomials and the connected-set polynomial have arbitrarily many common high coefficients separated by valleys of relative depth at least $\exp(c_r |V|^{1/5})$ for fixed peak count $r$, and a one-factor completion theorem for right-angled Coxeter growth denominators.
+\end{abstract}
+\section{Questions and main results}
+For a finite simple graph $G$, let $i_j(G)$ count its independent sets of $j$ vertices. Its independence polynomial is $I(G,x)=\sum_{j=0}^{\alpha(G)} i_j(G)x^j$, where $i_0=1$ and $\alpha(G)$ is the largest size of an independent set. All graph polynomials here use unit weight per vertex. An interval graph is the intersection graph of finitely many intervals on a line.
+
+In 2004 Brown, Hickman and Nowakowski proved that complex independence roots are dense in the plane, even for well-covered graphs. They located the closure of real interval-graph roots and expressly left the location of complex interval-graph roots for further study \cite[Section~4, p.~281]{brown2004}. We determine individual roots, with an integral factor theorem that also prescribes multiplicities. Our answer for interval graphs agrees exactly with the unrestricted answer.
+
+Brown and Cameron classified the purely imaginary roots $ib$ with rational $b$ in 2020. Their separate published existence question for irrational $b$ already has an explicit answer at $b=1/\sqrt2$ \cite{browncameron,tru}. Cameron's research page asks whether $|b|>1$ can occur \cite{cameronweb}. We exhibit such roots of unbounded modulus, determine the sharp independence number, and give a test for each individual real $b$. Brown and Cameron's separate question about the smallest \emph{number of vertices} with any purely imaginary root remains distinct.
+
+Write $\mathcal A$ for the nonzero algebraic numbers with no positive real conjugate and $\mathcal O$ for the algebraic integers. Conjugates include the number itself. The following table records the unions of actual root sets as the graph varies. An identically zero counting polynomial is omitted.
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}l l X@{}}
+\toprule
+Polynomial & Union of roots & A realizing class\\
+\midrule
+Independence & $\{1/a:a\in\mathcal A\cap\mathcal O\}$ & Connected interval graphs, or trees\\
+Independent domination & $\{0\}\cup\mathcal A$ & Trees\\
+Total domination & $\{0\}\cup(\mathcal A\cap\mathcal O)$ & Once-subdivided trees\\
+Connected domination & $\{0\}\cup(\mathcal A\cap\mathcal O)$ & Connected split graphs\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Our auxiliary problem asks for an exact vector of face counts, all coordinates of which grow proportionately to a common parameter. One construction writes the top clique count in a positional number system. A second construction appends intervals, choosing independently how far back each left endpoint reaches. At each stage we estimate the cost in the lower coordinates before prescribing the next coordinate. This is the step that turns an arithmetic candidate into a finite graph. P\'olya's positive-coefficient multiplier and the use of joins go back to earlier work. Alavi, Malde, Schwenk and Erd\H{o}s prescribed coefficient orderings \cite{alavi}. Frohmader's descending construction for flag face vectors already uses complete multipartite graphs \cite[Section~5]{frohmader}. The precise multiple and the interval realization require the estimates below.
+
+Two specific calculations in the supplied corpus inform the transfers. VMRC~214 counts configurations conditional on a selected hub and absorbs the local choices into a new vertex weight. VMRC~217 enumerates maximal independent sets by whole vertex classes and reverses their generating polynomial to analyze its zeros \cite{vmrc}. In Sections~\ref{sec:domination} and~\ref{sec:idtree} we use conditional selection and reversal together. The attachment there produces an exact reciprocal weight with an integer denominator chosen to clear the coefficients of a prescribed factor.
+
+A second auxiliary problem is to keep several classes of independent sets equally numerous while separating their typical sizes in a graph with few edges. We arrange cliques in cells along a path. Changing from one class to another requires an empty cell, which costs an exponentially small fraction of the count. Repeating a vertex adjacent to the two endpoints of an edge then transfers the same coefficient inequalities to ordinary, total and connected domination and to connected induced sets. This yields a direct answer to Alikhani and Jafari's 2016 Conjecture~2.9 \cite{alijafari}. The relation to Chalmers's earlier ordinary-domination construction is discussed after Section~\ref{sec:bipartite-peaks}.
+
+\section{Realizing prescribed factors by counting cliques}
+\label{sec:arithmetic-realization}
+
+Write $c_j(H)$ for the number of $j$-vertex cliques in a finite simple graph
+$H$, and put $c_0(H)=1$. The clique polynomial of $H$ equals the independence
+polynomial of its complement. We ask which integer polynomials with constant
+term one divide such a polynomial. The following construction prescribes every
+coefficient of a multiple.
+
+\begin{lemma}[Prescribing the top clique count]\label{lem:digit-cliques}
+For integers $r\ge2$ and $h\ge0$, there is a disjoint union $B_r(h)$ of
+complete $r$-partite graphs with precisely $h$ cliques of size $r$, no larger
+cliques, and
+\[
+ c_j(B_r(h))\le C_{r,j}h^{j/r}\quad(1\le j<r),\qquad
+ C_{r,j}=\binom rj(2^r-1)\frac{2^j}{2^j-1}.
+\]
+\end{lemma}
+\begin{proof}
+For $h=0$ take the empty graph. Otherwise write
+$h=\sum_{\ell=0}^{L}b_\ell 2^{r\ell}$ in base $2^r$, with $b_L>0$.
+For each $\ell$ take $b_\ell$ copies of the complete $r$-partite graph
+with $2^\ell$ vertices in each part. Such a graph has
+$\binom{r}{j}2^{j\ell}$ cliques of size $j$. Counts of nonempty cliques
+add across disjoint components. The formula at $j=r$ gives $h$, and for
+$j<r$ the geometric series gives
+\[
+ c_j(B_r(h))
+ \le \binom rj(2^r-1)\frac{2^{j(L+1)}}{2^j-1}
+ \le C_{r,j}h^{j/r},
+\]
+since $2^{rL}\le h$.
+\end{proof}
+
+\begin{theorem}[Exact clique counts]\label{thm:linear-clique-counts}
+Fix $d\ge1$. Suppose that $v_1(t),\ldots,v_d(t)$ are integers depending
+on a positive integer $t$, and that $a t\le v_j(t)\le b t$ simultaneously
+for all sufficiently large $t$, where $0<a\le b$ are independent of $t$.
+For every sufficiently large $t$ there is a graph $H_t$ with clique
+polynomial $1+\sum_{j=1}^d v_j(t)x^j$. Its components are balanced
+complete multipartite graphs and isolated vertices. At least $at/2$ vertices
+are isolated. One may also require any fixed graph $H_0$ of clique number
+at most $d$ as a union of components, in which case the description of
+components applies to $H_t-V(H_0)$.
+\end{theorem}
+\begin{proof}
+Start with $H_0$, which can be empty. For $r=d,d-1,\ldots,2$, adjoin
+$B_r(h_r)$, where $h_r$ is $v_r(t)$ minus the current number of
+$r$-cliques. This preserves the counts above $r$. We verify that each
+deficit is a nonnegative integer. If the steps above $r$ have succeeded,
+their deficits satisfy $h_s\le bt$. At rank $r$ the cliques already
+present number at most
+\[
+ c_r(H_0)+\sum_{s=r+1}^d C_{s,r}(bt)^{r/s}=o(t).
+\]
+The bound holds uniformly over every choice made at earlier steps, since
+the sum has fixed length and $r/s<1$. As $v_r(t)\ge at$, all the steps
+succeed for all sufficiently large $t$. The same estimate with $r=1$
+leaves at least $at/2$ additional vertices to be supplied. Adjoin these
+as isolated vertices. The resulting order is exactly $v_1(t)$ and every
+required clique count is correct. For $d=1$ only the final step is needed.
+\end{proof}
+
+\begin{lemma}[Positive coefficients after multiplication]\label{lem:factor-positivity}
+If $p\in\mathbb{R}[x]$ has positive leading coefficient and
+$p(x)>0$ for $x\ge0$, then every coefficient of $(1+x)^N p(x)$ is
+strictly positive for all sufficiently large $N$.
+\end{lemma}
+\begin{proof}
+This is the two-variable case of P\'olya's theorem. For completeness,
+let $p(x)=\sum_{j=0}^e p_jx^j$ and let $m=N+e$. The coefficient of
+$x^k$ in $(1+x)^Np(x)$, divided by $\binom mk$, equals
+\[
+ \sum_{j=0}^{e} p_j
+ \frac{(k)_j(m-k)_{e-j}}{(m)_e},
+ \qquad 0\le k\le m,
+\]
+where $(u)_a=u(u-1)\cdots(u-a+1)$ and $(u)_0=1$. For fixed $a$,
+$(u)_a/m^a=(u/m)^a+O_a(1/m)$ uniformly for integers $0\le u\le m$.
+Consequently the displayed expression differs by $O_p(1/m)$ uniformly
+in $k$ from the value at $u=k/m$ of
+$\sum_{j=0}^{e} p_j u^j(1-u)^{e-j}$. This continuous polynomial is
+positive on $[0,1)$ by substituting $x=u/(1-u)$, and at $1$ it is the
+positive leading coefficient of $p$. Its positive minimum provides the
+claim.
+\end{proof}
+
+\begin{theorem}[Integer factors of independence polynomials]
+\label{thm:independence-factor}
+Let $p\in\mathbb{Z}[x]$ with $p(0)=1$. The following statements are
+equivalent.
+\begin{enumerate}
+\item $p(x)>0$ for all $x\ge0$.
+\item $p$ divides the independence polynomial of a finite simple graph
+over $\mathbb{Z}[x]$.
+\item There is an integer $N\ge0$ such that, for every sufficiently
+large integer $M$, the polynomial
+\[
+ (1+Mx)(1+x)^N p(x)
+\]
+is the independence polynomial of a connected graph.
+\end{enumerate}
+In the third assertion the graph may be chosen to have arbitrarily many
+universal vertices as $M$ grows.
+\end{theorem}
+\begin{proof}
+A divisor with constant term one of an independence polynomial has no
+root on $[0,\infty)$ and therefore stays positive there. In the other
+direction use Lemma~\ref{lem:factor-positivity} to obtain
+$F(x)=(1+x)^Np(x)=\sum_{j=0}^k f_jx^j$ with positive integer
+coefficients and $f_0=1$. With the convention $f_{k+1}=0$, the
+nonconstant coefficients of $(1+Mx)F(x)$ are
+\[
+ v_j(M)=f_j+Mf_{j-1},\qquad 1\le j\le k+1.
+\]
+They satisfy the hypotheses of Theorem~\ref{thm:linear-clique-counts}
+for fixed $F$, including the last coefficient $Mf_k$. Use the complement
+of the resulting graph. Its universal vertices are the isolated vertices
+of the constructed graph. The displayed factorization also proves the
+remaining implication.
+\end{proof}
+
+The same proof allows any prescribed induced subgraph $J$ in the
+independence realization. First increase $N$, if necessary, until
+$\deg((1+Mx)(1+x)^Np)\ge\alpha(J)$, and start the clique construction
+with $H_0=\overline J$. With $H_0$ empty, the resulting independence
+graph is a cograph, since complete multipartite graphs, disjoint unions,
+and complements belong to the class of cographs.
+
+\begin{corollary}\label{cor:arithmetic}
+The independence roots of finite graphs are precisely $\{1/a:a\in\mathcal A\cap\mathcal O\}$. Each can be realized by a connected cograph.
+\end{corollary}
+\begin{proof}
+If $I(G,z)=0$, then $z\ne0$ and the reversal $y^{\alpha(G)}I(G,1/y)$ is a monic integral polynomial with root $1/z$. Positivity on $[0,\infty)$ excludes every positive conjugate. Conversely, if $a\in\mathcal A\cap\mathcal O$, reverse its monic minimal polynomial. The result has constant term one and has no nonnegative real zero. Apply Theorem~\ref{thm:independence-factor}.
+\end{proof}
+
+\section{The exact spectrum for interval graphs}
+\label{sec:interval}
+Brown, Hickman and Nowakowski established density on the negative real
+axis for interval graphs and asked where their complex independence
+roots lie \cite[Sec.~4, p.~281]{brown2004}. The following construction
+determines the individual roots and their possible multiplicities.
+
+\begin{theorem}[Exact independent-set counts on intervals]
+\label{thm:interval-counts}
+Fix an integer $d\ge1$ and real numbers $0<a\le b$. For all sufficiently
+large integers $M$, every integer vector $(v_1,\ldots,v_d)$ satisfying
+$aM\le v_j\le bM$ is the independence sequence in positive degrees of
+a connected interval graph of independence number $d$.
+At least $aM/2$ vertices may be taken universal. The graph can also
+contain any fixed interval graph $J$ with $\alpha(J)\le d$ as an
+induced subgraph. The threshold for $M$ may depend on $J$.
+\end{theorem}
+\begin{proof}
+Given an integer $0\le p_i<i$, take the $i$th interval to be
+$[p_i+\tfrac12,i]$. Among earlier intervals exactly those with index
+at most $p_i$ are disjoint from it. The independence polynomials of the
+successive prefixes therefore satisfy
+\[
+ D_0=1,\qquad D_i=D_{i-1}+xD_{p_i}.
+\]
+Thus a new interval can add $x$ times any previously recorded prefix
+polynomial, independently of the current polynomial.
+
+Choose $0<\epsilon<a/(4db)$. First record two prefix polynomials
+$A_j,B_j$ for each $0\le j<d$. Both have degree $j$, $A_j$ is monic,
+and the sum of the coefficients below degree $j$ in $B_j$ is less
+than $\epsilon$ times its leading coefficient. Start with $A_0=B_0=1$.
+At stage $j\ge1$ the current prefix $C$ has degree $j-1$.
+Append an interval referring to the prefix $A_{j-1}$ and record
+$A_j=C+xA_{j-1}$. Next append $L$ intervals all referring to
+$B_{j-1}$ and record $B_j=A_j+LxB_{j-1}$. As $L\to\infty$,
+the ratio of the sum of its lower coefficients to its leading coefficient
+tends to the corresponding ratio for $B_{j-1}$, which is strictly
+less than $\epsilon$. Choose a finite $L$ attaining that strict
+inequality at stage $j$.
+
+For the optional induced subgraph, order the vertices of $J$ by
+nondecreasing right endpoint in an interval representation.
+The earlier intervals disjoint from vertex $i$ form the first $q_i$
+intervals for some $0\le q_i<i$, since disjointness is equivalent to
+the earlier right endpoint lying strictly before the new left endpoint.
+Let $h_i$ be the independence number of the first $i$ designated
+vertices in $J$, and put $h_0=0$. The sequence $h_i$ is nondecreasing,
+and $h_{q_i}\le h_i-1$ by adjoining $i$ to a maximum independent
+set among the first $q_i$ vertices. Immediately after recording $B_j$,
+insert in their original order all designated vertices with $h_i=j$.
+For $j=d$, insert this last group after completing rank $d-1$ and
+its group. When inserting $i$, refer to the prefix ending at designated
+vertex $q_i$, or to $D_0$ if $q_i=0$. This gives the required adjacencies
+among designated vertices. The referenced prefix has degree at most
+$j-1$ by the inequality on $h_{q_i}$, so the current degree remains
+at most $j$ throughout the group. The resulting initial prefix and
+all recorded polynomials are fixed independently of $M$.
+
+Now work through $r=d,d-1,\ldots,1$. Write $h$ for the deficit in the
+coefficient of $x^r$ and $b_{r-1}$ for the leading coefficient of
+$B_{r-1}$. If $h\ge0$, divide $h=qb_{r-1}+s$ with
+$0\le s<b_{r-1}$. Append $q$ intervals referring to $B_{r-1}$
+and $s$ referring to $A_{r-1}$. This adds precisely $h$ at rank $r$
+and nothing above it. The sum of all increments below rank $r$ is at
+most $\epsilon h+K_r$, where $K_r=b_{r-1}A_{r-1}(1)$ is fixed.
+After successful higher stages every previous deficit was at most $bM$.
+Hence at the start of any stage $r$, the coefficient already present
+is at most $d\epsilon bM+O(1)<aM/2$ for sufficiently large $M$.
+The constant accounts for the fixed initial prefix and all $K_j$.
+This downward induction proves every step succeeds. At rank one all
+new intervals refer to $D_0$ and meet every interval, including each
+other. They supply at least $aM/2$ universal vertices.
+\end{proof}
+
+\begin{corollary}\label{cor:interval-factor}
+For $p\in\mathbb Z[x]$ with $p(0)=1$, positivity on $[0,\infty)$
+is equivalent to divisibility of a connected interval graph's
+independence polynomial by $p$. In fact for some $N$ and every
+sufficiently large $M$ one can realize the exact polynomial
+$(1+Mx)(1+x)^Np(x)$ on an interval graph containing any specified
+interval graph as an induced subgraph. Consequently interval graphs
+and chordal graphs have exactly the same independence roots as all
+finite graphs, with the same possible prescribed finite collections
+of roots and lower bounds on their multiplicities.
+\end{corollary}
+\begin{proof}
+Necessity follows from the positivity of every independence polynomial
+on the nonnegative real axis. For sufficiency take $N$ as in
+Lemma~\ref{lem:factor-positivity}, increasing it so that
+$d=1+N+\deg p\ge\alpha(J)$. As in Theorem~\ref{thm:independence-factor},
+the nonconstant coefficients of $(1+Mx)(1+x)^Np$ satisfy the
+bounds of Theorem~\ref{thm:interval-counts}. Finally one may take for
+$p$ any independence polynomial, and every interval graph is chordal.
+\end{proof}
+
+\subsection{The four classes in the 2004 location question}
+The interval and chordal cases of \cite[Section~4]{brown2004} have the full root set of Corollary~\ref{cor:arithmetic}. For completeness, two established theorems identify the other two cases. For both the claw-free graphs and the line graphs, the exact root set is
+\[
+ \{-1/a:\ a\text{ is a totally positive algebraic integer}\}.
+\]
+Indeed, the real-rootedness theorem of Chudnovsky and Seymour \cite{cs} and positivity on the nonnegative axis imply that all conjugates of each root are negative. Integral reciprocity gives necessity. Conversely, $\sqrt a$ is a totally real algebraic integer and, by Salez's theorem \cite{salez}, is an adjacency eigenvalue of some tree $T$. In a forest only fixed points and transpositions contribute to the determinant expansion, so its characteristic polynomial is $x^{|T|}I(L(T),-x^{-2})$, where $L(T)$ is its line graph. This realizes the required root; line graphs are claw-free. This argument also explains why the larger interval class can have nonreal roots despite the real-rootedness of proper interval graphs.
+
+At the level of closure alone there is a shorter argument for interval graphs. The threshold graph obtained by joining an independent set of size $k$ to a clique of size $m$ has polynomial $(1+x)^k+mx$. Its complex roots were studied in \cite{stability,browncameron}. Fix $w$ with $R=|1+w|>1$ and choose $m_k$ to be the nearest positive integer to $R^k$. Put $v=1+w$. Along a subsequence $v^k/m_k$ tends to $\eta$ of modulus one. With $x=w+v u/k$, the polynomial divided by $m_k$ converges locally uniformly in $u$ to $\eta e^u+w$. This function has a zero because $w\ne0$. Rouch\'e's theorem yields roots converging to $w$. For any nonzero $z$ some integer $h\ge1$ satisfies $|1+hz|>1$. Replacing every vertex by a clique of size $h$ scales the argument by $h$ and preserves the interval property (use $h$ identical intervals for each original one). Hence all $z$ are in the closure, with zero obtained by taking larger complete graphs. The integral factor theorem answers the stronger question of exact occurrence.
+
+\section{Limiting angles at a fixed independence number}\label{sec:limits}
+Motzkin and Straus determined the least degree of a real polynomial with nonnegative coefficients that can vanish at a specified angle \cite[Theorem~2.1]{motzkin}. The coefficient construction converts their angular criterion into an exact limit theorem for graphs. Here a limit means a limit along a sequence of graphs whose orders tend to infinity. This definition allows a root to repeat on successively larger graphs.
+\begin{theorem}\label{thm:sector}
+Fix $d\ge2$. The set of finite limits of roots of graphs with independence number exactly $d$ is
+\[
+ \{0\}\ \cup\ \{z\in\mathbb C\setminus\{0\}: |\arg z|\ge\pi/(d-1)\},
+ \qquad -\pi<\arg z\le\pi .
+\]
+The same assertion holds for connected interval graphs and for connected cographs separately. For $d=1$ the only limit is zero.
+\end{theorem}
+\begin{proof}
+Let $I_n$ be a sequence as above, with graph orders tending to infinity. Normalize by $I_n(1)$, which is at least one plus the order. A subsequence of the coefficient vectors converges to a nonnegative vector of sum one whose constant coefficient is zero. The limiting polynomial has the form $xg(x)$, where $g$ is nonzero of degree at most $d-1$ with nonnegative coefficients. Any limiting root other than zero must annihilate $g$. If $|\arg z|<\pi/(d-1)$, the powers $1,z,\ldots,z^{d-1}$ lie in one open half-plane bounded by a line through zero. Their nonzero nonnegative combinations cannot vanish.
+
+For sufficiency take $z=Re^{i\theta}$ in the upper half-plane or on the negative real axis, with $\pi/(d-1)\le\theta\le\pi$. Set $m=\lceil\pi/\theta\rceil\le d-1$. If $m\theta=\pi$, then $g(x)=1+(x/R)^m$ vanishes at $z$. Otherwise $(m-1)\theta<\pi<m\theta<2\pi$ and we take
+\[
+ g(x)=\sin\theta-\sin(m\theta)(x/R)^{m-1}
+                        +\sin((m-1)\theta)(x/R)^m.
+\]
+Its three coefficients are positive. At $z$ its imaginary parts cancel and its last two terms have real part $-\sin\theta$. Conjugation handles the lower half-plane.
+
+Approximate the vector of coefficients of $xg(x)$ in degrees $1,\ldots,d$ by strictly positive vectors $a^{(s)}$, for example by adding $1/s$ to every coordinate. For each $s$, choose an integer $M_s$ large enough that all counts $\lfloor M_s a^{(s)}_j\rfloor$ can be realized by Theorem~\ref{thm:interval-counts} or, after complementation, by Theorem~\ref{thm:linear-clique-counts}. We may ensure that the orders tend to infinity and $M_s\to\infty$. The realized polynomials divided by $M_s$ converge uniformly on compact sets to $xg(x)$. On a sufficiently small circle about any chosen zero, Rouch\'e's theorem gives zeros tending to that point, using successively smaller circles. This proves sufficiency, including the root zero of the limiting polynomial. When $d=1$ the polynomial is $1+nx$.
+\end{proof}
+For example, at $d=3$ the limiting region is the closed left half-plane. At $d=4$ its missing open sector has half-angle $\pi/3$. Brown and Cameron proved stability at independence number at most three and unbounded real parts at larger independence numbers \cite{stability}. The limiting-sector statement describes the attainable angles and moduli simultaneously.
+
+\section{Purely imaginary roots and the sharp independence number}
+\label{sec:imaginary}
+
+Cameron asks whether an independence root $ib$ can have $b\in\mathbb R$
+and $|b|>1$ \cite{cameronweb}. Brown and Cameron's published Question~2
+asks for an irrational $b$ \cite{browncameron}. A prior construction gives
+$b=1/\sqrt2$ \cite{tru}. The modulus condition distinguishes the two
+questions.
+
+\begin{theorem}\label{thm:spaced-factor}
+Let $h\ge2$ and $Q(y)=1+q_1y+\cdots+q_dy^d$ with $d\ge1$
+and positive integer coefficients $q_j$. The minimum independence
+number of a graph whose independence polynomial is divisible by
+$Q(t^h)$ is $hd+h$. A connected graph attains the minimum.
+\end{theorem}
+\begin{proof}
+Write $I(G,t)=\sum_j i_jt^j$ and $n=i_1$. If $\deg I<hd+h$,
+the quotient $I(G,t)/Q(t^h)$ has degree less than $h$, constant
+term $1$ and linear coefficient $n$. Comparison in residue classes
+$0$ and $1$ modulo $h$ gives $i_h=q_1$ and $i_{h+1}=nq_1$.
+Counting pairs consisting of an independent $(h+1)$-set and one of
+its $h$-subsets gives $(h+1)i_{h+1}\le(n-h)i_h$, a contradiction.
+Conversely,
+\[
+ F(t)=(1+t+\cdots+t^{h-1})Q(t^h)
+\]
+has positive integer coefficients in every degree through $hd+h-1$.
+Theorem~\ref{thm:linear-clique-counts}, applied to the nonconstant
+coefficients of $(1+Mt)F(t)$ and followed by complementation,
+realizes this polynomial on a connected graph for all sufficiently
+large $M$. Its degree is $hd+h$.
+\end{proof}
+
+\begin{theorem}\label{thm:imaginary-threshold}
+For graphs of independence number four or five, the possible
+nonzero purely imaginary roots are exactly
+\[
+ \left\{\pm i/\sqrt{m}:m=1,2,\ldots\right\}.
+\]
+At independence number six, purely imaginary roots are unbounded and
+dense on the entire imaginary axis. Every realization asserted here
+can be chosen connected. In particular, six is the least independence
+number that answers Cameron's modulus question.
+\end{theorem}
+\begin{proof}
+Suppose $I(G,ib)=0$ for $b\in\mathbb R\setminus\{0\}$. Write
+$I(G,t)=E(t^2)+tO(t^2)$ with $E,O\in\mathbb Z[y]$.
+The minimal polynomial $P$ of $-b^2$ over $\mathbb Q$ divides both
+$E$ and $O$. Put $e=\deg P$. If $\alpha(G)\le2e+1$, both have
+degree at most $e$. Their constant coefficients are $1$ and $n$,
+so $O=nE$. In particular $i_3=ni_2$. The incidence bound
+$3i_3\le(n-2)i_2$ precludes this when $i_2>0$. If $i_2=0$,
+$I(G,t)=1+nt$ has no imaginary root. We have proved
+\begin{equation}\label{eq:imaginary-degree}
+ \alpha(G)\ge 2[\mathbb Q(b^2):\mathbb Q]+2.
+\end{equation}
+Thus $\alpha(G)\le5$ forces $b^2$ rational. The rational root
+test on $E$, whose constant term is $1$, gives $b^2=1/m$ for
+some positive integer $m$. For each $m$, Theorem~\ref{thm:spaced-factor}
+with $Q(y)=1+my$ gives a connected realization of independence
+number four. Applying the same coefficient construction to
+$(1+Mt)(1+t)^2(1+mt^2)$ gives independence number five.
+
+For every integer $s\ge1$ take $Q_s(y)=1+(s^2+2)y+y^2$ and
+set $b_s=(s+\sqrt{s^2+4})/2$. The identity
+$b_s-b_s^{-1}=s$ gives $Q_s(-b_s^2)=0$.
+Theorem~\ref{thm:spaced-factor} with $h=2$ gives a connected
+graph $G_s$ of independence number six with roots $\pm i b_s$.
+Replacing every vertex of $G_s$ by a clique of size $r\ge1$
+and replacing each edge by all edges between the corresponding
+cliques gives a connected graph of the same independence number
+with polynomial $I(G_s,rt)$. Indeed, each independent $j$-set of
+$G_s$ has exactly $r^j$ lifts. Hence $\pm i b_s/r$ are realized.
+Given $y>0$, choose integers $s=s(r)\ge1$ with $s/r\to y$.
+Since $b_s=s+O(s^{-1})$, we have $b_s/r\to y$.
+Taking $s=1$ and $r\to\infty$ also gives zero as a limit.
+\end{proof}
+
+The bound \eqref{eq:imaginary-degree} is attained more generally whenever
+$b^{-2}$ is a totally positive algebraic integer. Indeed, if its
+conjugates are $\lambda_1,\ldots,\lambda_e$, then
+$Q(y)=\prod_{j=1}^e(1+\lambda_j y)$ has positive integer coefficients
+and $Q(-b^2)=0$. Theorem~\ref{thm:spaced-factor} gives a connected
+realization with $\alpha(G)=2e+2$.
+
+\begin{corollary}\label{cor:imaginary-arithmetic}
+For real $b\ne0$, the number $ib$ is an independence root if and only if $b^{-2}$ is an algebraic integer with no negative real conjugate. Every such root occurs even on a well-covered tree.
+\end{corollary}
+\begin{proof}
+If $ib$ is a root, $a=1/(ib)$ is an algebraic integer and $b^{-2}=-a^2$. The conjugates of $a$ are invariant under sign because complex conjugation sends $a$ to $-a$. A negative real conjugate of $-a^2$ would therefore yield a positive real conjugate of $a$, since embeddings of $\mathbb Q(-a^2)$ extend to $\mathbb Q(a)$. This contradicts Corollary~\ref{cor:arithmetic}. In the other direction, set $c=b^{-2}$. Since $a^2=-c$, integrality of $c$ implies integrality of $a$. A real conjugate of $a$ would give a negative real conjugate of $c$. Thus the conjugates of $ib=1/a$ are all nonreal. Corollary~\ref{cor:tree-arithmetic} realizes this root on a well-covered tree.
+\end{proof}
+
+\subsection{Two finite graphs with an imaginary golden-ratio root}
+
+Let $H$ be the disjoint union of the complete multipartite graphs listed
+below. Each tuple gives the sizes of the nonempty parts of one component.
+A one-part tuple $(1)$ denotes an isolated vertex. Put $G=\overline H$.
+
+\begin{center}
+\begin{tabular}{lr@{\qquad}lr}
+\hline
+Part sizes & Copies & Part sizes & Copies\\
+\hline
+$(1)$ & 2866 & $(1,1,2,7)$ & 1\\
+$(3,23)$ & 1 & $(5,5,7,17)$ & 1\\
+$(1,2,7)$ & 1 & $(3,3,3,4,4,4)$ & 1\\
+$(16,19,21)$ & 1 & & \\
+\hline
+\end{tabular}
+\end{center}
+
+A component with part sizes $a_1,\ldots,a_j$ contributes
+$\prod_{k=1}^j(1+a_k t)-1$ nonempty cliques by size. Summing these
+polynomials with the listed multiplicities and adding the empty clique
+once gives
+\begin{align*}
+ I(G,t)&=1+3024t+1731t^2+9072t^3+5185t^4+3024t^5+1728t^6\\
+       &=(1+3t^2+t^4)(1+3024t+1728t^2).
+\end{align*}
+Thus $G$ is connected, has $3024$ vertices and has independence number
+six. Its first factor vanishes at $t=\pm i(1+\sqrt5)/2$ because
+$\varphi=(1+\sqrt5)/2$ satisfies $\varphi-\varphi^{-1}=1$.
+
+There is also a threshold graph on $72$ vertices with the same root.
+Use the positive integers
+\[
+(b_0,\ldots,b_{11})=(6,16,15,12,1,1,2,12,4,1,1,1).
+\]
+Start with a clique of order $b_{11}$. For $j=10,9,\ldots,0$,
+adjoin one isolated vertex and then $b_j-1$ universal vertices.
+At each stage the polynomial $P$ becomes
+$(1+t)P+(b_j-1)t$. It follows by induction that the final polynomial
+is $1+t\sum_{j=0}^{11} b_j(1+t)^j$. The order is $\sum_j b_j=72$,
+the degree is $12$, and the last five vertices are universal. Direct
+division gives
+\begin{align*}
+\frac{1+t\sum_{j=0}^{11}b_j(1+t)^j}{1+3t^2+t^4}
+={}&1+72t+246t^2+381t^3+340t^4\\
+ &{}+187t^5+63t^6+12t^7+t^8.
+\end{align*}
+
+\subsection{All admissible imaginary roots on threshold graphs}
+A threshold graph is obtained from a single vertex by successively adjoining isolated or universal vertices. These two operations preserve the interval property (place an isolated interval to one side, or add an interval spanning the existing ones). The coefficient description underlying the following argument goes back to Stevanovi\'c \cite{stevanovic}.
+\begin{proposition}\label{prop:threshold}
+Every $p\in\mathbb Z[x]$ with $p(0)=1$ that is strictly positive on $[-1,\infty)$ divides the independence polynomial of a connected threshold graph. In particular every admissible purely imaginary root occurs on such a graph, with any prescribed lower bound on its multiplicity.
+\end{proposition}
+\begin{proof}
+Put $y=1+x$. Lemma~\ref{lem:factor-positivity} gives $N$ for which $p(y-1)(1+y)^N$ has positive coefficients. For all sufficiently large integers $M$, put
+\[
+ H(x)=p(x)\bigl[1+Mx(2+x)^N\bigr].
+\]
+In the variable $y$ the polynomial $(H(x)-1)/x$ equals the fixed integer polynomial $(p(x)-1)/x$ plus $M p(y-1)(1+y)^N$. The former has smaller degree. Hence $(H(x)-1)/x=\sum_{j=0}^{h}b_j(1+x)^j$ with positive integral $b_j$ and $b_0\ge2$. Start with $K_{b_h}$ and, for $j=h-1,\ldots,0$, add one isolated and then $b_j-1$ universal vertices. The polynomial changes from $P$ to $(1+x)P+(b_j-1)x$; the final polynomial is $H$. The last universal vertex gives connectivity (if $h=0$, the graph is complete). For a purely imaginary admissible root, the reversed minimal polynomial constructed in Corollary~\ref{cor:arithmetic} has no real zero by Corollary~\ref{cor:imaginary-arithmetic}. Any positive power of it thus meets the hypothesis.
+\end{proof}
+
+\section{Exact factors and roots for trees and well-covered trees}
+\label{sec:tree-spectra}
+
+A tree is nonempty. A graph is well-covered if all of its maximal
+independent sets have the same size. For a graph $H$, let $W(H)$ be its
+corona with $K_1$, obtained by adjoining one new leaf to each vertex.
+
+\begin{theorem}\label{thm:tree-factors}
+Let $p\in\mathbb Z[x]$ have $p(0)=1$.
+\begin{enumerate}
+\item $p$ divides the independence polynomial of some tree if and only if
+it has no nonnegative real zero.
+\item $p$ divides the independence polynomial of some well-covered tree
+if and only if every real zero of $p$ lies in $[-1,0)$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+For the first assertion, positivity of an independence polynomial on
+$[0,\infty)$ gives necessity. Conversely, Theorem~\ref{thm:independence-factor}
+gives a connected graph $G$ whose independence polynomial is divisible
+by $p$. Bencs's stable-path tree $T$ rooted at a vertex of $G$ satisfies
+$I(T,x)=I(G,x)\prod_j I(G_j,x)$ for certain induced subgraphs $G_j$ of
+$G$ \cite[Proposition~2.7]{bencs}. This proves divisibility over
+$\mathbb Z[x]$. The realizing tree can be required to contain a path on
+an arbitrarily prescribed number of vertices. Indeed, the prescribed
+induced subgraph construction following Theorem~\ref{thm:independence-factor}
+allows us to include this path in $G$. Root $T$ at one end of the path.
+Every prefix is a stable path, since there are no chords along which
+the stability condition could fail. The successive prefixes therefore
+form the required path in $T$.
+
+For the second assertion, Ravindra's characterization says that a
+well-covered tree is either $K_1$ or $W(T)$ for a tree $T$ \cite{ravindra}.
+Writing $n=|V(T)|$ and $s=\alpha(T)$, the corona identity and its
+multiplicity at $-1$ are given by Levit and Mandrescu \cite{levitcorona}.
+They follow by choosing an independent set of old vertices and then an
+arbitrary subset of the leaves whose old vertices were not selected.
+In particular,
+\begin{equation}\label{eq:tree-corona}
+ I(W(T),x)=\sum_{j=0}^{s} i_j(T)x^j(1+x)^{n-j}
+          =(1+x)^n I\!\left(T,\frac{x}{1+x}\right).
+\end{equation}
+The multiplicity at $-1$ is exactly $n-s$, as the term $j=s$ is the
+only term of least order there. For $x<-1$, the argument $x/(1+x)$
+is positive, so the right side is nonzero. For $x\ge0$ positivity is
+immediate. The exceptional tree $K_1$ has sole zero $-1$, and
+$W(K_1)=K_2$ has sole zero $-1/2$.
+
+Conversely write $p(x)=(1+x)^m p_0(x)$ with $p_0(-1)\ne0$, and put
+$d=\deg p_0$. The integer polynomial
+\[
+ q(z)=(1-z)^d p_0\!\left(\frac{z}{1-z}\right)
+\]
+has constant term one and degree $d$, since the coefficient of $z^d$
+is $(-1)^d p_0(-1)$. It has no nonnegative real zero. For $z$ in
+$[0,1)$ the argument is nonnegative, and for $z>1$ it is less than
+$-1$. At $z=1$ the polynomial equals the nonzero leading coefficient
+of $p_0$. The first assertion gives a tree $T$ with $q\mid I(T,z)$.
+If $m>0$, choose $T$ containing a path on $2m$ vertices. Its $m$
+pairwise disjoint alternate edges give $n-s\ge m$, since the complement
+of every independent set covers all of them. Write $I(T,z)=q(z)u(z)$,
+where $u\in\mathbb Z[z]$ has degree $s-d$. Equation~\eqref{eq:tree-corona}
+now gives the polynomial factorization
+\[
+ I(W(T),x)=(1+x)^{n-s}p_0(x)
+       \left[(1+x)^{s-d}u\!\left(\frac{x}{1+x}\right)\right].
+\]
+Thus $p$ divides $I(W(T),x)$. Every maximal independent set of $W(T)$
+contains precisely one vertex of each old vertex--leaf pair, so this
+tree is well-covered.
+\end{proof}
+
+\begin{corollary}\label{cor:tree-arithmetic}
+A nonzero algebraic number $a$ is an independence root of a tree
+exactly when $1/a$ is an algebraic integer and every real conjugate of
+$a$ is negative. For a well-covered tree the exact condition is that
+$1/a$ be an algebraic integer and every real conjugate of $a$ belong
+to $[-1,0)$.
+\end{corollary}
+\begin{proof}
+A polynomial in $\mathbb Z[x]$ with constant term one and root $a$
+yields a monic integer polynomial with root $1/a$ by reversal.
+Conversely reverse the monic minimal polynomial of $1/a$. The result
+has constant term one and its roots are precisely the conjugates of
+$a$. Apply Theorem~\ref{thm:tree-factors}.
+\end{proof}
+
+In particular, if $a$ has no real conjugates, its reciprocal's
+integrality suffices even for well-covered trees. On the rational
+imaginary axis this realizes every $\pm i/k$ for $k\ge1$ within this
+class. Brown and Cameron classified these rational imaginary multiples
+for general graphs \cite{browncameron}. The restriction on real
+conjugates in Corollary~\ref{cor:tree-arithmetic} uses the structure of
+well-covered trees and concerns that class specifically.
+
+\begin{corollary}\label{cor:girth-spectrum}
+Give trees infinite girth. The set of independence roots of connected
+well-covered graphs of girth at least six equals the well-covered tree
+root set together with the roots of $1+7x+14x^2+7x^3$. At girth at
+least eight it equals the well-covered tree root set.
+\end{corollary}
+\begin{proof}
+By the characterization of Finbow, Hartnell, and Nowakowski stated in
+\cite[Theorem~1.1]{levitcorona}, a connected well-covered graph of girth
+at least six apart from $K_1,C_7$ is a corona $W(H)$. The argument
+following \eqref{eq:tree-corona} applies to any $H$ and places all real
+roots in $[-1,0)$. Each root and its conjugates are therefore covered
+by Corollary~\ref{cor:tree-arithmetic}. The exceptional cycle has
+independence polynomial $1+7x+14x^2+7x^3$ and has girth seven. This
+cubic is irreducible by the rational root test and has a zero in
+$(-2,-1)$ by the endpoint signs, so all three roots are additional.
+The well-covered trees themselves furnish the reverse inclusion.
+\end{proof}
+
+\section{Exact realization by well-covered graphs}
+\label{sec:well-covered-factors}
+
+For a well-covered graph $G$ with $\alpha(G)=q\ge1$, write
+$v(G)=(i_1(G),\ldots,i_q(G))$. Cutler and Pebody's proof of the Roller
+Coaster Conjecture gives approximations by positive multiples of these
+vectors \cite[Theorem~3.1]{cutlerpebody}. We first remove the approximation
+for lattice points along every interior direction.
+
+\begin{theorem}\label{thm:well-covered-interior}
+Suppose $v,w\in\mathbb Z^q$ and
+\[
+ 0<\frac{v_1}{\binom q1}<\frac{v_2}{\binom q2}<\cdots<
+ \frac{v_q}{\binom qq}.
+\]
+For every sufficiently large integer $M$, a connected well-covered graph
+$G_M$ with $\alpha(G_M)=q$ has $v(G_M)=Mv+w$.
+\end{theorem}
+\begin{proof}
+Let $S$ be the set of realized vectors, augmented by zero. It is closed
+under addition. Indeed, in the join of two nonempty graphs every
+independent set lies in one of the two graphs, and every maximal one
+is maximal there. Joining well-covered graphs of independence number
+$q$ therefore preserves this number and adds their vectors.
+
+The group generated by $S$ equals $\mathbb Z^q$. For $0\le j\le q$,
+take the disjoint union of $j$ edges and $q-j$ single vertices. Its
+independence polynomial is $(1+x)^{q-j}(1+2x)^j$. The $k$th forward
+difference in $j$ at zero of the nonconstant parts of these polynomials
+equals $x^k(1+x)^{q-k}$ for $1\le k\le q$, by the binomial theorem.
+Their coefficient vectors form a unit triangular integer basis.
+
+Take a small $q$-dimensional simplex around $v$ all of whose vertices
+satisfy the strict inequalities of the theorem. By Cutler and Pebody,
+each vertex is a limit of positive multiples of vectors in $S$.
+Approximating the vertices sufficiently closely keeps $v$ in the
+interior of their simplex. Hence $v$ is in the interior of the cone
+spanned by a finite list $g_1,\ldots,g_h$ from $S$, to which we append
+the vectors of the preceding paragraph that come from graphs. The
+enlarged list generates $\mathbb Z^q$ as a group.
+
+There are integers $L\ge1$ and $c_i\ge1$ such that
+$Lv=\sum_i c_i g_i$. To see this, subtract a small positive rational
+multiple of $\sum_i g_i$ from $v$ while staying inside the cone. The
+remaining rational vector has a rational nonnegative representation
+by these integer generators. Indeed, one may discard linearly dependent
+generators from a nonnegative representation until the remaining
+coefficients solve a linear system with independent integer columns.
+Restore the subtracted multiple and clear denominators. For each
+$0\le r<L$, express $rv+w=\sum_i z_{r,i}g_i$ with $z_{r,i}\in\mathbb Z$.
+For $M=Lm+r$ this gives
+\[
+ Mv+w=\sum_i(mc_i+z_{r,i})g_i.
+\]
+There are finitely many residues, so all coefficients are positive and
+arbitrarily large for all sufficiently large $M$. Joining the indicated
+graphs realizes this vector and makes the result connected.
+\end{proof}
+
+\begin{theorem}\label{thm:well-covered-factors}
+If $p\in\mathbb Z[x]$ has $p(0)=1$ and is positive on $[0,\infty)$,
+there are integers $k,s\ge0$ such that for every sufficiently large
+integer $M$ a connected well-covered graph has independence polynomial
+\[
+ (1+Mx)(1+2x)^k(1+x)^s p(x).
+\]
+Consequently the integer factors with constant term one, and the possible
+algebraic roots, are exactly the same for well-covered graphs as for
+unrestricted graphs.
+\end{theorem}
+\begin{proof}
+Write $d=\deg p$. The polynomial
+\[
+ h(u)=u(1-u)^d p\!\left(\frac{u}{1-u}\right)
+\]
+satisfies $h(0)=0$, $h'(0)=1$, and $h(u)>0$ for $0<u\le1$.
+At $1$ its value is the positive leading coefficient of $p$. Choose
+$k\ge0$ so that $H(u)=(1+u)^k h(u)$ has $H'(u)>0$ on $[0,1]$.
+Indeed, $h'$ is positive near zero, and on the remaining compact
+interval $(1+u)h'(u)/h(u)$ is bounded below. Taking $k$ larger than
+the negative of that bound makes $H'$ positive throughout.
+
+For any sufficiently large $q$, the coefficients of $H'$ in the
+Bernstein basis of degree $q-1$ are positive. For a fixed monomial
+$u^j$ the coefficient of index $r$ in degree $m$ is
+$\binom rj/\binom mj=(r/m)^j+O_j(1/m)$ uniformly in $0\le r\le m$.
+Linearity gives uniform convergence of the coefficients of $H'$ to its
+values at $r/m$, and these values have a positive lower bound. If
+$b_0,\ldots,b_q$ are the Bernstein coefficients of $H$ in degree $q$,
+direct differentiation gives the coefficients $q(b_{j+1}-b_j)$ of
+$H'$. Thus $0=b_0<b_1<\cdots<b_q$.
+
+Take $q\ge d+k+1$ large enough for this conclusion, and set
+$s=q-d-k-1$ and $F(x)=(1+2x)^k(1+x)^s p(x)$. Substitution gives
+\[
+ xF(x)=(1+x)^q H\!\left(\frac{x}{1+x}\right)
+      =\sum_{j=1}^q \binom qj b_j x^j.
+\]
+The coefficient vector $v$ of $xF$ is integral and satisfies the strict
+inequalities of Theorem~\ref{thm:well-covered-interior}. Take $w$ to
+be the coefficient vector of $F-1$, with a final zero at degree $q$.
+The resulting independence polynomial is $1+Mv(x)+w(x)=(1+Mx)F(x)$,
+where $v(x)$ and $w(x)$ denote the polynomials with those nonconstant
+coefficient vectors. The converse for factors follows from positivity
+of every independence polynomial on $[0,\infty)$.
+\end{proof}
+
+\section{The sharp coefficient ratio at a fixed order}
+\label{sec:exact-ratio}
+
+For fixed order $n$ and independence number $q$, a single graph
+maximizes every ratio $i_k/i_j$ with $j<k$. Write $n=aq+b$, where
+$0\le b<q$, and define
+\[
+ t_j=[x^j](1+ax)^{q-b}(1+(a+1)x)^b\qquad(0\le j\le q).
+\]
+These are the coefficients of the independence polynomial of the disjoint
+union of $q-b$ copies of $K_a$ and $b$ copies of $K_{a+1}$. This graph
+is well-covered whenever $n\ge q\ge1$.
+
+\begin{theorem}\label{thm:sharp-order-ratio}
+For $n\ge q\ge1$ and $0\le j<k\le q$, the greatest possible value of
+$i_k(G)/i_j(G)$ among all graphs on $n$ vertices with independence
+number $q$ equals $t_k/t_j$. The same maximum holds upon restricting
+to well-covered graphs.
+\end{theorem}
+\begin{proof}
+It suffices to prove the upper bound for $k=j+1$, since the ratios
+then telescope. For $j=0$ the ratio equals $n$ for every such graph.
+Fix $1\le j<q$ and put $R=t_{j+1}/t_j$. We maximize the linear
+functional $L(H)=c_{j+1}(H)-R c_j(H)$ on the $n$-vertex graphs $H$
+with clique number at most $q$. The following symmetrization is the
+linear clique-count argument of Bollob\'as \cite{bollobascliques}.
+
+Among the maximizers choose one with the fewest classes of vertices
+having identical open neighborhoods. Each such class is independent,
+and adjacency between two classes is either complete or empty. If two
+distinct classes $A,B$ have no edges between them, each clique meets
+$A\cup B$ in at most one vertex. Thus $L$ is a fixed contribution
+from the remaining graph plus $|A|\lambda_A+|B|\lambda_B$, where
+$\lambda_A,\lambda_B$ are the contributions per vertex to $L$.
+If $\lambda_A\ge\lambda_B$, give every vertex of $B$ the same neighbors
+as a vertex of $A$. Otherwise do the reverse. The modified graph still
+has clique number at most $q$, since a clique using a changed vertex
+is represented by an old clique using one of its models. The operation
+preserves every old neighborhood equivalence within any one class,
+merges $A$ and $B$, and cannot decrease $L$. This contradicts the
+choice of maximizer. Hence a complete multipartite graph maximizes $L$.
+
+Pad its list of part sizes with zeros to obtain $q$ nonnegative integers.
+Its clique counts are the elementary symmetric functions of these
+integers. If $c_j=0$ then $c_{j+1}=0$, so assume $c_j>0$.
+For two part sizes $u,v$ put $h=u+v$, $z=uv$, and let $E_m$ be the
+elementary symmetric functions of the other $q-2$ sizes, taking $E_0=1$
+and $E_m=0$ for indices outside their range. The adjacent ratio is
+\[
+ \frac{E_{j+1}+hE_j+zE_{j-1}}{E_j+hE_{j-1}+zE_{j-2}}.
+\]
+At fixed $h$ its derivative in $z$ has the sign of
+\[
+ (E_{j-1}E_j-E_{j-2}E_{j+1})
+   +h(E_{j-1}^2-E_{j-2}E_j)\ge0.
+\]
+Both inequalities follow from Newton's inequalities, since the
+$E_m$ are log-concave with contiguous positive support. If $u\ge v+2$,
+replacing $(u,v)$ by $(u-1,v+1)$ increases $z$ and preserves a positive
+denominator. Repetition balances the sizes in finitely many steps,
+as the sum of their squares strictly decreases. It follows that
+$c_{j+1}/c_j\le R$, so the maximum of $L$ is at most zero. Passing
+to graph complements proves the required bound. The well-covered
+disjoint union above attains all of the ratios simultaneously.
+\end{proof}
+
+In particular, a strict rise $i_j<i_k$ with $j<k$ is possible at the
+prescribed $(n,q)$ exactly when $t_j<t_k$. Any collection of such
+possible rises is realized simultaneously by the same graph. For
+$q=7$ and $n=19$, the balanced sizes are $3,3,3,3,3,2,2$. The
+coefficients $t_5=2943$ and $t_6=2592$ give the sharp ratio
+$t_6/t_5=96/109$. This compares with the bound $19/21$ furnished by
+the Fisher--Ryan inequalities \cite{fisherryan}. More generally, the
+weaker bound $(q-j)n/(q(j+1))$ follows directly from the sharp one
+by applying Newton's inequalities to the balanced part sizes. Indeed,
+the positive sequence $t_j/\binom qj$ is log-concave and begins with
+$1,n/q$, so its successive quotients are at most $n/q$.
+
+\section{Prescribed orders and coefficient gaps}
+\label{sec:prescribed-order}
+
+Levit and Mandrescu posed a fixed-order refinement of the Roller-Coaster
+Conjecture \cite[Conjecture~1.5]{levitroller}. For integers $q\ge2$ and
+$2q\le n\le3q-2$, they asked whether every strict ordering of the
+coefficients indexed from $\lceil q/2\rceil$ to $\lceil(n-1)/3\rceil$
+occurs for a well-covered graph with independence number $q$ and exactly
+$n$ vertices. These quantifiers give an infinite family of obstructions.
+
+\begin{theorem}\label{thm:overhauled-counterexample}
+The fixed-order Roller-Coaster Conjecture of Levit and Mandrescu is false.
+For every $q\ge7$ and $n=3q-2$, every graph of order $n$ and independence
+number $q$ satisfies $i_{q-1}<i_{q-2}$, although the conjecture allows
+the opposite strict ordering.
+\end{theorem}
+\begin{proof}
+Theorem~\ref{thm:sharp-order-ratio} and Newton's inequalities for its
+extremal graph give the following bound, which also follows from the
+graph Maclaurin inequalities of Fisher and Ryan \cite{fisherryan}.
+\begin{equation}\label{eq:order-constraint}
+ \frac{i_{j+1}}{i_j}\le \frac{q-j}{j+1}\frac{n}{q}
+ \qquad(1\le j<q).
+\end{equation}
+Substituting $j=q-2$ and $n=3q-2$ gives the bound
+$(6q-4)/(q(q-1))<1$ for $q\ge7$. Both $q-2$ and $q-1$ belong to the
+specified interval, whose upper endpoint is $q-1$. In the first case,
+$q=7$, $n=19$, the interval is $\{4,5,6\}$ and $i_6/i_5\le19/21$.
+These graph parameters are feasible even within the well-covered class.
+For instance, take $q-2$ copies of $K_3$ and two copies of $K_2$ in
+disjoint union.
+\end{proof}
+
+For arbitrary large prescribed order there is an exact realization
+theorem. Write $\mathbf W_b$ for Staples's class in which every $b$
+pairwise disjoint independent sets can be extended to $b$ pairwise
+disjoint maximum independent sets. A graph in this class has at least
+$b$ vertices. For $b=2$ its members are 1-well-covered. Metriq PRISM
+Laboratory \cite{prismroller} previously obtained the weighted coefficient
+cone and strict tail orderings with unrestricted order, including the
+$b=2$ ordering of \cite[Conjecture~3.1]{levitroller}. We use integral
+coefficient vectors to prescribe the order and the individual gaps.
+
+\begin{theorem}\label{thm:weighted-exact}
+Fix integers $q,b\ge1$ and put $B_j=b^j\binom qj$ for $1\le j\le q$.
+For $v,w\in\mathbb Z^q$ with
+$0<v_1/B_1<\cdots<v_q/B_q$, every sufficiently large integer $M$
+admits a connected graph in $\mathbf W_b$ with independence number $q$
+and coefficient vector $Mv+w$.
+\end{theorem}
+\begin{proof}
+Replace every vertex of a well-covered graph of independence number
+$q$ by a clique of size $b$, joining two cliques completely whenever
+their original vertices were adjacent. Its nonconstant coefficient
+vector is $(b^ji_j)_{j=1}^q$. This expansion lies in $\mathbf W_b$.
+Indeed, project the $b$ prescribed independent sets separately onto
+the original graph and extend them there to maximum independent sets.
+For each original vertex, assign distinct vertices in its clique to
+the extensions using it, respecting the already distinct prescribed
+choices. There are at most $b$ assignments at each clique.
+
+The join of two members of $\mathbf W_b$ with common independence
+number $q$ belongs to that class. Assign each prescribed nonempty
+independent set to its side of the join, assigning empty sets arbitrarily.
+On each side extend the assigned sets disjointly, padding its list by
+empty sets if needed. Keep the extensions of the assigned sets. The
+resulting maximum sets have the required disjointness. By the clique
+expansion and Cutler--Pebody approximation, every vector satisfying
+the strict inequalities is a limit of positive multiples of vectors
+in this class. Its coefficient vectors generate $\mathbb Z^q$ as a
+group, as witnessed by disjoint unions of $q$ cliques of sizes $b$ and
+$b+1$. Varying the number of larger cliques and taking finite differences
+as in Theorem~\ref{thm:well-covered-interior} gives the unit triangular
+basis $x^k(1+bx)^{q-k}$, $1\le k\le q$. The simplex and residue
+argument in that theorem therefore applies unchanged.
+\end{proof}
+
+\begin{corollary}\label{cor:prescribed-gaps}
+Fix $b,q\ge1$, set $r=\lceil bq/(b+1)\rceil$, and prescribe any
+integers $t_r,\ldots,t_q$. For every sufficiently large integer $n$,
+there is a connected $\mathbf W_b$ graph of order $n$ and independence
+number $q$ satisfying
+\[
+ i_j-i_\ell=t_j-t_\ell\qquad(r\le j,\ell\le q).
+\]
+\end{corollary}
+\begin{proof}
+The weights $B_j$ strictly decrease for $r\le j\le q$ because
+$B_{j+1}/B_j=b(q-j)/(j+1)<1$ for $j\ge r$, $j<q$.
+If $r>1$, choose $v_1=1$, $v_j=jB_j$ for $2\le j<r$, and
+$v_j=rB_r$ for $r\le j\le q$. Take $w_j=0$ for $j<r$ and $w_j=t_j$
+for $j\ge r$. If $r=1$, take $v_j=1$, $w_j=t_j-t_1$ for every $j$.
+In either case the hypotheses of Theorem~\ref{thm:weighted-exact} hold,
+the first coefficient for $M=n$ is exactly $n$, and subtraction of two
+tail coefficients gives the claimed difference.
+\end{proof}
+
+\begin{corollary}\label{cor:wp-spectrum}
+For each $b\ge1$, every $p\in\mathbb Z[x]$ with $p(0)=1$ and
+$p(x)>0$ on $[0,\infty)$ divides the independence polynomial of a
+connected graph in $\mathbf W_b$. One can prescribe the polynomial as
+$(1+Mx)(1+2bx)^k(1+bx)^s p(x)$ for all sufficiently large $M$, with
+fixed integers $k,s\ge0$.
+\end{corollary}
+\begin{proof}
+Apply the Bernstein-coefficient construction of
+Theorem~\ref{thm:well-covered-factors} to the real polynomial $p(y/b)$.
+For $F(x)=(1+2bx)^k(1+bx)^s p(x)$ and $q=\deg F+1$ this says that
+the nonconstant coefficients of $yF(y/b)$, normalized by $\binom qj$,
+are strictly positive and increasing. Substituting $y=bx$ shows that
+the coefficients of $xF(x)$, normalized by $b^j\binom qj$, are strictly
+positive and increasing. They are integers. Apply
+Theorem~\ref{thm:weighted-exact} with these coefficients and the
+offset given by $F(x)-1$.
+\end{proof}
+
+\section{Exact spectra for three domination polynomials}
+\label{sec:domination}
+
+A set $S$ dominates a graph if every vertex outside $S$ has a neighbor in
+$S$. Write $D_i(G,z)$ for the generating polynomial of independent dominating
+sets and $D_c(G,z)$ for the analogous polynomial of nonempty connected
+dominating sets. For total domination every vertex, including those of $S$,
+must have a neighbor in $S$. Write $D_t(G,z)$ for the resulting generating
+polynomial. Each set contributes $z^{|S|}$. We consider nonempty graphs,
+and omit identically zero polynomials from the definition of a root set.
+
+\begin{theorem}\label{thm:domination-spectra}
+The union of the independent domination root sets consists of zero and
+all nonzero algebraic numbers with no positive real conjugate.
+Complete multipartite graphs suffice.
+The unions of the total domination and connected domination root sets
+coincide. Their common elements are zero and all nonzero algebraic
+integers with no positive real conjugate. Every such root occurs for
+both polynomials on the same connected split graph. Subdivisions of trees
+already supply the entire total domination root set.
+\end{theorem}
+
+\begin{proof}
+All three polynomials have nonnegative integer coefficients. A nonzero
+polynomial of this kind has no positive real root. The minimal polynomial
+of any of its nonzero roots therefore has no positive real root either.
+The full vertex set is a total dominating set in every graph without
+isolated vertices and a connected dominating set in every connected graph.
+Consequently every nonzero $D_t$ and $D_c$ is monic. Zero itself occurs
+for all three, for instance on a single edge.
+
+For independent domination let $p$ be the primitive integer minimal
+polynomial of any nonzero algebraic number with no positive real conjugate.
+Choose its sign to give $p(0)>0$. It stays positive on the entire
+nonnegative real axis. Lemma~\ref{lem:factor-positivity} makes
+$z(1+z)^Np(z)=\sum_{j\ge1}m_jz^j$ a polynomial with nonnegative
+integer coefficients. Take the complete multipartite graph with $m_j$
+parts of size $j$. Its independent dominating sets are exactly its
+individual parts, giving this prescribed polynomial. The join-additivity
+of $D_i$ and the special case producing negative integer roots were
+already used by Jahari and Alikhani \cite{jahari}.
+
+For the other two polynomials let $\lambda$ be a nonzero algebraic
+integer with no positive real conjugate, and $q$ its monic minimal
+polynomial of degree $d$. Its reversed polynomial
+$p(z)=z^dq(1/z)$ has integer coefficients, constant term one and is
+positive on $[0,\infty)$. By Theorem~\ref{thm:independence-factor}
+there is a connected graph $G$ with $I(G,1/\lambda)=0$. We may
+take $G$ with at least two vertices.
+
+Bencs's stable-path tree theorem \cite{bencs} gives a tree $T$ on at
+least two vertices with $I(G,z)$ dividing $I(T,z)$. Write $S(T)$ for
+the graph obtained by subdividing every edge once. Its two parts correspond
+to the vertices and edges of $T$. A set totally dominates $S(T)$ exactly
+when its selected vertices of $T$ meet every edge of $T$ and its selected
+edges of $T$ meet every vertex of $T$. Thus, writing $E(T,z)$ for the
+edge-cover polynomial, we have
+\[
+ D_t(S(T),z)=z^{|V(T)|}I(T,1/z)E(T,z).
+\]
+Here the complement of a vertex cover is an independent set, and the
+two choices are independent. All edges form an edge cover, so the last
+factor is a nonzero polynomial. Evaluating at $\lambda$ realizes the
+required root on the tree $S(T)$.
+
+For simultaneous realization first adjoin a disjoint edge to $G$ and
+call the result $H$. This multiplies $I(G,z)$ by $1+2z$ and raises the
+minimum vertex cover size to at least two. Write $n=|V(H)|$ and
+$m=|E(H)|$. Construct a split graph $J$ by making $V(H)$ a clique and
+adding one independent vertex $u_e$ adjacent precisely to the endpoints
+of each $e\in E(H)$. If $C$ is a vertex cover of $H$, then $|C|\ge2$.
+The vertices of $C$ together with any subset of the $u_e$ form a
+connected and total dominating set.
+
+Conversely, in a total dominating set the selected clique vertices
+must meet every edge $e$ to dominate $u_e$. In a connected dominating
+set an uncovered edge would force $u_e$ to be selected. That vertex
+would have no selected neighbor, so the whole set would be the singleton
+$\{u_e\}$. At least two distinct edge vertices exist, and no edge
+vertex dominates another. This excludes the singleton. Both polynomials
+therefore satisfy
+\[
+ D_c(J,z)=D_t(J,z)=(1+z)^m z^n I(H,1/z).
+\]
+This proves the asserted simultaneous realization.
+\end{proof}
+
+\paragraph{The closure questions.}
+Shao and Zhao asked for the closures of the independent and total
+domination roots and specifically for density of the real independent
+domination roots in $(-\infty,0]$ and of the total domination roots in
+$\mathbb C$ \cite[Section~5.2, Open Problems~1 and~2]{shao}.
+For each polynomial in Theorem~\ref{thm:domination-spectra}, the real
+roots have closure $(-\infty,0]$ and all roots have closure $\mathbb C$.
+For $D_i$ the theorem includes all negative rationals and all numbers
+$a+bi$ with $a,b\in\mathbb Q$ and $b\ne0$. For $D_t$ and $D_c$, the
+two constructions transfer reciprocals of the independence roots.
+Those roots have the required densities by Brown, Hickman and Nowakowski
+\cite{brown2004}, and inversion preserves density away from zero.
+
+Both closure conclusions also follow from earlier identities. In Dod's
+corona construction \cite{dod}, attaching two leaves to each vertex
+of $G$ gives an independent domination polynomial $z^{2n}I(G,1/z)$.
+The selected original vertices form an independent set, and both leaves
+are selected at each unselected original vertex. For total domination,
+a publicly recorded closed-neighborhood bipartite double graph $B(G)$
+satisfies $D_t(B(G),z)=D(G,z)^2$ \cite{mathdb}, where $D$ counts
+ordinary dominating sets. On either side the chosen vertices constitute
+an ordinary dominating set of $G$, independently of the opposite side.
+The density results for $D$ of Brown and Tufts \cite{browntufts} and
+Beaton and Brown \cite{brownbeaton} thus yield both closure statements
+for $D_t$. Earlier public counterexamples also give the integer total
+domination root $-4$ \cite{trutotal,mathdb}. Theorem~\ref{thm:domination-spectra}
+determines exactly which individual algebraic numbers occur and supplies
+the indicated restricted graph families.
+
+\section{Prescribed independent domination factors on trees}
+\label{sec:idtree}
+
+The complete multipartite construction gives the independent domination
+spectrum with arbitrary vertex degrees and cycles. Trees have the same
+spectrum. The proof uses an attachment that changes the weight of selecting
+a vertex by the reciprocal of an integer and preserves acyclicity.
+
+Write $F_0=0$, $F_1=1$, and $F_{j+2}=F_{j+1}+F_j$. For $j\ge1$, let
+$C_j$ be the tree obtained by attaching one new leaf to each vertex of the
+$j$-vertex path. Distinguish one endpoint of the original path in $C_j$.
+For a tree $T$ and $s\ge1$, form $U_s(T)$ by attaching two new leaves
+to each vertex $v$ of $T$ and joining $v$ by one edge to the distinguished
+vertex of a fresh copy of $C_j$ for every $1\le j\le s$. Put
+\[
+ J_s=\frac{s(s+1)}2,\qquad M_s=F_{s+2},\qquad
+ B_s=\prod_{j=1}^s F_{j+2}.
+\]
+
+\begin{lemma}\label{lem:idtree-gadget}
+For every tree $T$ of order $n$,
+\[
+ D_i(U_s(T),x)
+  = B_s^n x^{n(J_s+2)}
+        I\!\left(T,\frac{1}{M_s x}\right).
+\]
+\end{lemma}
+\begin{proof}
+An independent dominating set is a maximal independent set. In each $C_j$
+it selects exactly one member of every original path vertex--leaf pair.
+The original vertices selected there form an independent set of $P_j$,
+and every such set determines the choices of the leaves uniquely. There
+are $F_{j+2}$ choices, by splitting independent sets of a path according to
+whether they contain one endpoint. If $v$ is selected, the distinguished
+endpoint is unavailable, leaving $F_{j+1}$ choices. In either case the
+copy contributes exactly $j$ selected vertices.
+
+The selected vertices in $T$ form an arbitrary independent set. The two
+individual leaves attached to $v$ are both selected when $v$ is absent
+and neither is selected when $v$ is present. In particular each absent
+$v$ is dominated, irrespective of the other choices. The local weight for
+an absent $v$ is $B_s x^{J_s+2}$. The ratio of the local weight for a
+present $v$ to this weight is
+\[
+ \frac{1}{x}\prod_{j=1}^s\frac{F_{j+1}}{F_{j+2}}=
+ \frac{1}{M_s x}.
+\]
+Summing over the independent sets of $T$ proves the identity for $x\ne0$,
+and clearing negative powers gives the polynomial identity.
+\end{proof}
+
+\begin{theorem}\label{thm:idtree-universal}
+Let $p\in\mathbb Z[x]$ be nonzero and primitive. It divides the independent
+domination polynomial of some tree if and only if it has no positive real
+zero. In particular, the independent domination roots of trees are zero
+and precisely the nonzero algebraic numbers with no positive real conjugate.
+\end{theorem}
+\begin{proof}
+Necessity follows from the nonnegative coefficients and the existence of a
+maximal independent set. For sufficiency, write $p=x^e p_0$ with $p_0(0)\ne0$.
+Change the sign if needed to make the leading coefficient $a$ of $p_0$
+positive, and let $d=\deg p_0$. Choose $s$ so large that $a\mid M_s$ and
+$J_s+1\ge e$. Such $s$ exist arbitrarily far out. Indeed, the Fibonacci
+recurrence acts by the permutation $(u,v)\mapsto(v,u+v)$ on pairs modulo
+$a$, so $(F_0,F_1)$ returns to itself at a positive period. Every multiple
+of that period is the index of a Fibonacci number divisible by $a$.
+
+Write $M=M_s$. The reversed and scaled polynomial
+\[
+ q(y)=\frac{M^d}{a}\,y^d p_0\!\left(\frac1{My}\right)
+\]
+has constant term one and integral coefficients. The coefficient of $y^j$
+for $j\ge1$ is $M^j/a$ times the coefficient of $x^{d-j}$ in $p_0$.
+Its degree is $d$, and it has no nonnegative real zero.
+Theorem~\ref{thm:tree-factors} gives a tree $T$ with $I(T,y)=q(y)h(y)$.
+Let $n=|V(T)|$, $k=\deg I(T,y)\le n$. Lemma~\ref{lem:idtree-gadget}
+expresses $D_i(U_s(T),x)$ as a rational constant times
+\[
+ x^{n(J_s+2)-k}p_0(x)
+       \left[x^{k-d}h\!\left(\frac1{Mx}\right)\right].
+\]
+The bracket is a rational polynomial, and the initial exponent is at least
+$n(J_s+1)\ge e$. Thus $p$ divides $D_i(U_s(T),x)$ over $\mathbb Q[x]$.
+Primitivity and Gauss's lemma give divisibility over $\mathbb Z[x]$.
+Applying this equivalence to primitive minimal polynomials yields the root
+statement, with zero also realized by $K_1$.
+\end{proof}
+
+\section{Separated peaks in domination polynomials}
+\label{sec:dom-peaks}
+
+Alikhani and Jafari conjectured unimodality for the total domination polynomial of every graph in 2016 \cite[Conjecture~2.9]{alijafari}. Shao and Zhao ask about unimodality and log-concavity for connected
+domination polynomials \cite[Section~5.2]{shao}. The same split graph can
+exhibit an arbitrarily long alternation for both connected and total
+domination.
+
+\begin{theorem}\label{thm:dom-peaks}
+For each $r\ge2$ there is a connected split graph $G$ and there are indices
+$k_1<\ell_1<k_2<\cdots<\ell_{r-1}<k_r$ such that, for each of
+$D_c(G,x)$ and $D_t(G,x)$, every coefficient at a $k_j$ is
+larger than every coefficient at an $\ell_i$. The ratio of the smallest
+of the former coefficients to the largest of the latter can be made
+arbitrarily large. In particular neither of these coefficient sequences
+is unimodal or log-concave.
+\end{theorem}
+
+\begin{proof}
+Fix $r$. All implicit constants in this proof may depend on $r$.
+Let $s$ tend to infinity through multiples of $1,\ldots,r$, put
+$b=s^2$ and $L=bs$. Arrange $b$ cells along a path. Each cell has
+$r$ blocks. Block $j$ in each cell consists of $s/j$ disjoint cliques
+of order $2^j-1$. Join every two vertices of different block indices
+when they are in the same cell or in consecutive cells. Write $H$ for
+the resulting graph. Its order is $n=C_r L$, and the number of edges
+is $m=O_r(bs^2)=O_r(L^{4/3})$.
+
+The subgraph $H_j$ consisting of block $j$ across the whole path has
+$L/j$ disjoint cliques of order $2^j-1$. It has $2^L$ independent sets.
+Their sizes under the uniform distribution have binomial law with
+parameters $L/j$ and $1-2^{-j}$. Call an independent set mixed if it
+uses at least two block indices. Each occupied cell has just one block
+index, and that index is constant along each run of occupied cells.
+Thus a mixed set has an empty cell. If there are exactly $u$ empty cells,
+their complement has at most $u+1$ runs. There are at most
+$\binom bu r^{u+1}$ choices for these cells and the block indices
+of the runs. Each occupied cell then admits at most $2^s$ choices.
+The number of mixed sets divided by $2^L$ is at most
+\[
+ \eta_s=r\big[(1+r2^{-s})^b-1\big]=O_r(s^2 2^{-s}).
+\]
+In particular $I(H,1)\le(r+1)2^L$ for large $s$.
+
+Make $V(H)$ a clique. For every edge of $H$ add
+$h$ independent vertices adjacent precisely to its
+two endpoints, where $1\le h\le\lceil 5\log_2 L\rceil$. Write $G$ for
+this connected split graph and $M=hm$.
+The graph $H$ has two disjoint edges within $H_2$ for large $L$, so
+each vertex cover has size at least two. The split graph argument in
+Theorem~\ref{thm:domination-spectra} applies to the repeated copies,
+giving
+\[
+ D_c(G,x)=D_t(G,x)=(1+x)^M x^n I(H,1/x).
+\]
+Normalize all coefficients by $2^{M+L}$. The contribution from
+independent sets confined to block $j$, counting the empty independent
+set once for each block, is the probability mass function of
+\[
+ Y_j=n+B-X_j,\qquad B\sim\operatorname{Bin}(M,1/2),\qquad
+ X_j\sim\operatorname{Bin}(L/j,1-2^{-j}),
+\]
+with the two variables independent. All mixed independent sets
+contribute total normalized mass at most $\eta_s$.
+The repeated empty set contributes surplus mass $(r-1)2^{-L}$.
+Consequently the normalized coefficient sequence differs
+pointwise from $\sum_j\Pr(Y_j=k)$ by $O(L^{-4})$.
+
+The means $\mu_j=n+M/2-(L/j)(1-2^{-j})$ are strictly increasing
+and separated by at least $c_r L$, since
+$(1-2^{-j})/j$ is strictly decreasing. Put $V=M+L$.
+Each variance is at most $V/4$, so Chebyshev's inequality gives,
+within $\sqrt V+1$ of $\mu_j$, an integer $k_j$ with
+$\Pr(Y_j=k_j)\ge c'/\sqrt V$. Choose $\ell_j$ to be a nearest
+integer to $(\mu_j+\mu_{j+1})/2$. Each $\ell_j$ is at distance
+at least $c''L$ from every mean. Hoeffding's inequality for sums of
+independent variables of range one gives
+$\Pr(Y_i=\ell_j)\le 2\exp(-c'''L^2/V)$ for all $i,j$.
+As $V=O(L^{4/3}\log L)$, the windows around the means are disjoint
+and the midpoint probabilities are $o(L^{-4})$. The high coefficients
+therefore dominate the low coefficients by a ratio tending to infinity.
+Both polynomials have positive coefficients at every size between
+their minimum size and the order of $G$. For connected domination this
+also follows by enlarging a connected dominating set one vertex at a
+time. A positive log-concave sequence is unimodal, which finishes the proof.
+\end{proof}
+
+\paragraph{A finite choice of parameters.}
+For two blocks take $s=4096$, $b=2^{24}$, $L=2^{36}$ and $h=180$.
+Here each cell has $s$ isolated vertices in one block and $s/2$ triangles
+in the other. Counting the edges within cells and across consecutive cells gives
+\[
+ n=5L/2,\qquad m=(9b/2-3)s^2+3L/2,\qquad
+ n+180m=228\,013\,448\,133\,345\,280.
+\]
+We have $V=180m+L<2^{58}$ and $\eta_s+2^{-L}<2^{-4000}$.
+The midpoint of the two means is an integer at distance $2^{32}$ from
+each. Its normalized coefficient is at most
+$4e^{-128}+2^{-4000}<2^{-180}$. In each of the two windows of radius
+$\sqrt V$ about the means, Chebyshev's inequality places probability
+at least $3/4$ on fewer than $2^{31}$ integers. Each window therefore
+contains a normalized coefficient greater than $2^{-33}$.
+The same two windows and midpoint can be used for ordinary domination
+whenever the additional normalized mass is less than $2^{-34}$.
+
+\section{Simultaneous coefficient peaks for ordinary, connected and total domination}
+\label{sec:ordinary-domination}
+
+Alikhani and Peng conjectured in 2009 that the ordinary domination
+polynomial $D(G,x)$ of every graph is unimodal
+\cite[Section~3, after Theorem~6]{alipeng}. Beaton and Brown proved
+unimodality for several classes and for almost all graphs
+\cite{beatonshape}. Omar subsequently proved log-concavity for
+threshold graphs and developed new sufficient criteria for
+unimodality \cite{omar}. In October 2026 Chalmers constructed bounded-degree bipartite graphs with arbitrarily many deep ordinary-domination peaks \cite{chalmers}. Here we obtain arbitrarily
+many separated peaks for three domination polynomials simultaneously
+on a single split graph.
+
+\begin{lemma}\label{lem:ordinary-marker-error}
+Let $H$ have $n$ vertices and $m\ge1$ edges. Make its vertex set into
+a clique and, for each original edge, add $h\ge1$ independent vertices
+adjacent precisely to the two endpoints of that edge. Call the resulting
+split graph $G$. Set $M=hm$ and
+\[
+ B(x)=(1+x)^M x^n I(H,1/x).
+\]
+There is a polynomial $R(x)$ with nonnegative integer coefficients
+satisfying
+\[
+ D(G,x)=B(x)+R(x),\qquad
+ \frac{R(1)}{B(1)}\le(1+2^{-h})^n-1\le\exp(n2^{-h})-1.
+\]
+\end{lemma}
+\begin{proof}
+For a choice of original clique vertices, let $A$ denote the set of
+original vertices left unselected and let $e(A)=|E(H[A])|$. When
+$A\ne V(H)$, the selected clique vertices dominate the entire clique.
+Every marker belonging to one of the $e(A)$ uncovered edges must be
+selected, and all other markers may be chosen freely. When $A=V(H)$,
+all markers must be selected. They dominate the clique exactly when
+$H$ has no isolated vertices. Thus an exact counting identity is
+\[
+ D(G,x)=\sum_{A\subseteq V(H)}
+   x^{n-|A|+he(A)}(1+x)^{h(m-e(A))}
+ -\boldsymbol{1}_{\{H\text{ has an isolated vertex}\}} x^M.
+\]
+The terms with $e(A)=0$ sum to $B(x)$. Since $m\ge1$, the correction
+only removes a noncover term. The polynomial $R$ counts the remaining
+valid choices and is coefficientwise nonnegative.
+
+Fix an ordering of $V(H)$. For each $A$ with $e(A)>0$, collect in
+$U$ the smaller endpoint of every edge of $H[A]$. Then $1\le |U|\le e(A)$
+and $J=A\setminus U$ is independent in $H$. The encoding $A\mapsto(J,U)$
+is injective since $A=J\cup U$. At $x=1$, a given $A$ contributes at
+most $2^{M-he(A)}$. Summing over all independent $J$ and all nonempty
+sets $U\subseteq V(H)$ therefore gives
+\[
+ 2^{-M}R(1)\le I(H,1)\sum_{U\ne\varnothing}2^{-h|U|}
+   =I(H,1)((1+2^{-h})^n-1).
+\]
+The stated estimate follows because $B(1)=2^M I(H,1)$.
+\end{proof}
+
+\begin{theorem}\label{thm:ordinary-domination-peaks}
+For any $r\ge2$ and $C>1$ there exists a connected split graph $G$
+and indices $k_1<\ell_1<k_2<\cdots<\ell_{r-1}<k_r$ such that,
+for each of $D(G,x)$, $D_c(G,x)$, and $D_t(G,x)$, every coefficient at
+a $k_j$ exceeds $C$ times every coefficient at an $\ell_i$.
+In particular the graph gives an ordinary domination counterexample
+with every prescribed number of separated coefficient peaks.
+\end{theorem}
+\begin{proof}
+Use the construction of Theorem~\ref{thm:dom-peaks} with
+$h=\lceil5\log_2 L\rceil$. In its notation $n=C_r L$,
+$m=O_r(L^{4/3})$, and $I(H,1)\le(r+1)2^L$. Its main polynomial is
+$B=D_c=D_t$. After division by $2^{M+L}$ its coefficients at the
+$k_j$ are at least $c_r/\sqrt{M+L}$, and at the $\ell_i$ they are
+$O_r(L^{-4})$. By Lemma~\ref{lem:ordinary-marker-error},
+\[
+ \frac{R(1)}{2^{M+L}}
+ \le(r+1)\big(\exp(C_r L\,2^{-h})-1\big)=O_r(L^{-4}).
+\]
+This bound holds for each coefficient of $R$ individually. Adding $R$
+preserves the lower estimates at every $k_j$ and the upper estimates
+at every $\ell_i$. Since $M+L=O_r(L^{4/3}\log L)$, the ratio tends
+to infinity. Already $r=2$ gives a strict valley between larger
+coefficients, contradicting unimodality in its original weak sense.
+\end{proof}
+
+For the finite two-block graph in the preceding section, $h=180$ and
+$n=5L/2<2^{38}$. The additional normalized mass is therefore at most
+$3(\exp(2^{-142})-1)<2^{-139}$. The two high coefficients still
+exceed $2^{-33}$ after normalization, while the midpoint coefficient
+is less than $2^{-180}+2^{-139}<2^{-138}$. Hence the ordinary
+domination polynomial of this specified graph has peak-to-valley
+contrast exceeding $2^{105}$.
+
+The error bound can be made smaller than any prescribed inverse power
+$n^{-A}$ by choosing $h=\lceil(A+2)\log_2(n+1)\rceil$. The choice
+$h=\lceil(\log_2(n+1))^2\rceil$ works for every fixed $A>0$
+simultaneously. In both cases $hm=o(n^2)$ for the sparse family above,
+and the binomial fluctuations in the proof of Theorem~\ref{thm:dom-peaks}
+remain smaller than the linear separation between consecutive means.
+
+\subsection{Connected induced sets on the same graph}
+For a graph $G$, put $C(G,x)=\sum_S x^{|S|}$ over all nonempty
+vertex sets inducing a connected subgraph. Mol asked whether
+$C(G,x)$ is unimodal for every connected graph with at least as many
+edges as vertices \cite[Chapter~6]{molthesis}. Carptopus has reported
+four counterexample families and an eight-vertex minimum
+\cite{carptopusconnected}. The phase construction above yields unbounded
+numbers of separated peaks of arbitrarily large relative depth, at
+the same indices as the three domination sequences.
+
+\begin{corollary}\label{cor:connected-set-peaks}
+The graph and indices in Theorem~\ref{thm:ordinary-domination-peaks}
+may be chosen so that the same coefficient inequalities hold for
+$C(G,x)$. The graph has more edges than vertices.
+\end{corollary}
+\begin{proof}
+Use the notation of Lemma~\ref{lem:ordinary-marker-error}.
+If some clique vertices are selected, the chosen set is connected
+exactly when each selected marker has at least one selected endpoint.
+If no clique vertices are selected, the only nonempty connected
+choices are the $M$ singleton markers. Thus
+\[
+ C(G,x)=Mx+\sum_{A\subsetneq V(H)}
+       x^{n-|A|}(1+x)^{M-he(A)}.
+\]
+The independent $A$ contribute precisely $B$ since $m\ge1$.
+For $A\subsetneq V(H)$ with $e(A)>0$, the number of choices at $x=1$
+is $2^{M-he(A)}$, as in Lemma~\ref{lem:ordinary-marker-error}.
+Consequently $C-B$ is coefficientwise nonnegative and
+\[
+ \frac{C(G,1)-B(1)}{B(1)}
+ \le (1+2^{-h})^n-1+\frac{M}{2^M I(H,1)}.
+\]
+In the family of Theorem~\ref{thm:ordinary-domination-peaks}, even
+the first error term is $O_r(L^{-4})$. The singleton term is harmless
+at the peak and valley indices, which all exceed one for large $L$.
+The coefficient estimates there follow exactly as in that theorem.
+Finally $G$ has $\binom n2+2M$ edges and $n+M$ vertices, giving
+the asserted strict inequality for $n\ge4$.
+\end{proof}
+
+The $11,10,11$ pattern has a rooted-subtree precedent in Muldoon Brown \cite[Figure~1]{muldoon}. The construction below locates the sharp unicyclic order threshold.
+The edge boundary left open in \cite[Sec.~5]{carptopusconnected} also
+has counterexamples at every order $n\ge9$. In its rooted-block
+construction, take $L$ to consist of a root adjacent to three leaves
+with one extra edge between two of the leaves. Take $R$ to be the
+three-vertex path rooted at its middle vertex. Join the roots by a
+path of length $d=n-6\ge3$. The result is unicyclic. The rooted
+polynomials of the blocks are $A_L=x(1+x)^3$ and $A_R=x(1+x)^2$.
+In degrees $k\ge d+1$, the connected-set coefficients equal those of
+\[
+ (A_L+A_R)(1+x+\cdots+x^{d-1})+x^{d-1}A_LA_R.
+\]
+The first term counts sets containing one endpoint root, the second
+sets containing both. All sets containing neither are confined to a
+block with its root deleted or to the $d-1$ internal path vertices.
+At $k=d+1,d+2,d+3$ the two terms respectively contribute $(10,5,1)$
+and $(1,5,10)$. Thus the coefficients are $11,10,11$ at three
+consecutive indices.
+
+For completeness, the minimum order is nine. The following bounded
+enumeration gives an independent check of the lower bound. At each
+order $n=3,\ldots,8$, begin the list $\mathcal L_n$ with the cycle
+$C_n$. For $n>3$, append every graph formed by attaching one new leaf
+at each possible vertex of every member of $\mathcal L_{n-1}$.
+Repeated isomorphism classes are retained. This covers every
+unicyclic graph because deleting any leaf preserves its unique cycle.
+For each list member the following direct test uses only subsets of
+at most eight vertices.
+\begin{quote}\ttfamily\small
+Set all counts $c_0,\ldots,c_n$ to zero.\\
+For each nonempty vertex subset $S$:\\
+\hspace*{1em} Initialize $U$ to the singleton of its least vertex.\\
+\hspace*{1em} Repeat $U\gets U\cup(N(U)\cap S)$ until unchanged.\\
+\hspace*{1em} If $U=S$, increment $c_{|S|}$.\\
+Let $b$ be the first index maximizing $c_b$.\\
+Test $c_0\le\cdots\le c_b$ and $c_b\ge\cdots\ge c_n$.
+\end{quote}
+The six lists have sizes $1,4,17,86,517,3620$. The numbers failing
+the test are respectively $0,0,0,0,0,0$. This agrees with the
+minimum-order catalogue in \cite{carptopusconnected}.
+
+\subsection{Bipartite graphs of radius two}
+\label{sec:bipartite-peaks}
+
+The four coefficient sequences can also oscillate together on a sparse
+graph. Use the graph $H$, its $n$ vertices and its $m$ edges from
+Theorem~\ref{thm:dom-peaks}. Keep its vertices as an independent set
+and introduce $h=\lceil5\log_2 L\rceil$ vertices for every original
+edge, each adjacent to its two endpoints. Add one vertex $v$ adjacent
+to all $n$ original vertices and attach $h$ private leaves to $v$.
+Denote the resulting graph by $F$ and put $M=hm$. The original vertices
+and the private leaves form one side of a bipartition. Every vertex is
+at distance at most two from $v$. No universal vertex exists, so the
+radius is two and the diameter is at most four. Removing all edge
+vertices and private leaves leaves a star, proving that $F$ is
+$2$-degenerate.
+
+\begin{corollary}
+For every $r\ge2$ and $C>1$, such a graph $F$ has $r$ high
+coefficients separated by $r-1$ low coefficients at the same indices
+for ordinary domination, connected domination, total domination and
+connected induced sets. For each polynomial every high coefficient
+exceeds $C$ times every low coefficient.
+\end{corollary}
+\begin{proof}
+Every total dominating set contains $v$ to dominate the private
+leaves. A connected dominating set omitting $v$ would have to include
+all its private leaves, which would then be isolated in the selected set.
+For a selection containing $v$, connected or total domination requires
+the selected original vertices to cover $H$. Otherwise an edge
+vertex with no selected endpoint cannot have a selected neighbor.
+For connected domination, selecting that edge vertex would disconnect
+it from $v$, and omitting it would leave it undominated. Conversely a
+cover is nonempty, supplies a neighbor of $v$, and ensures that all
+edge vertices and private leaves can be chosen freely. Consequently
+\[
+ D_c(F,x)=D_t(F,x)=B_*(x):=x(1+x)^{M+h}x^n I(H,1/x).
+\]
+
+For ordinary domination with $v$ selected, omitting the set $A$ of
+original vertices forces the selection of the $he_H(A)$ edge vertices
+whose endpoints both lie in $A$. For a connected induced set containing
+$v$, the same $he_H(A)$ edge vertices are forbidden.
+In either case there are $2^{M+h-he_H(A)}$ choices of the remaining
+vertices. Independent $A$ give exactly $B_*$. By the encoding in
+Lemma~\ref{lem:ordinary-marker-error}, the surplus count from other
+$A$, divided by $B_*(1)$, is at most $(1+2^{-h})^n-1$.
+
+If $v$ is omitted from an ordinary dominating set, every private leaf
+is forced. Disregarding the requirement to dominate the original
+vertices gives an upper bound of
+$2^M I(H,1)(1+2^{-h})^n$ choices. For a connected induced set omitting
+$v$ that contains an original vertex, no private leaf is selected and
+every selected edge vertex has a selected endpoint. This yields the
+same upper bound. Connected choices with neither $v$ nor any original
+vertex are $M+h$ singletons. The combined additional count for either
+polynomial, divided by $B_*(1)$, is therefore at most
+\[
+ (1+2^{-h})^n-1+2^{-h}(1+2^{-h})^n+\frac{M+h}{B_*(1)}=O_r(L^{-4}).
+\]
+The pointwise error after the normalization $2^{M+h+L}$ has the same
+order since $I(H,1)\le(r+1)2^L$. In the concentration proof of
+Theorem~\ref{thm:dom-peaks}, the factor $x(1+x)^h$ adds a deterministic
+shift of one and an independent $\operatorname{Bin}(h,1/2)$ variable.
+The gaps between means remain unchanged and the variance bound becomes
+$(M+h+L)/4$. As $M+h+L=O_r(L^{4/3}\log L)$, the high and low estimates
+in that proof persist, proving the assertion.
+\end{proof}
+
+\begin{corollary}\label{cor:power-contrast}
+For fixed $r\ge2$, along an infinite sequence of orders $N$ the four simultaneous high-to-low ratios exceed $\exp(c_r N^{1/5})$ for some $c_r>0$. This holds in both the connected split family and the bipartite family of radius two.
+\end{corollary}
+\begin{proof}
+Retain $b=s^2$, $L=s^3$ in the path construction and increase the number of copies per edge to $h=s$. All counting identities hold for every $h$. The order of the resulting graph is $N=O_r(s^5)$, because $m=O_r(s^4)$ and $n=O_r(s^3)$. The error in counting mixed independent sets, divided by $2^L$, is $O_r(s^2 2^{-s})$. The extra mass for the other counting polynomials after the normalization used above is $O_r(s^3 2^{-s})$, by the repeated-marker estimate. In the bipartite case the additional term $2^{-s}(1+2^{-s})^n$ satisfies the same bound. Singleton terms are outside the chosen indices. The means have separation at least a positive multiple of $s^3$, and the number of independent Bernoulli summands is $O_r(s^5)$. Hoeffding's bound at each midpoint is therefore $\exp(-\Omega_r(s))$, while in each peak window there is mass at least a positive multiple of $s^{-5/2}$ by Chebyshev's inequality. The quotient exceeds $\exp(c'_r s)$ for all large $s$. Since the same estimates refer to the same indices for all four polynomials, and $N=O_r(s^5)$, the conclusion follows.
+\end{proof}
+
+\paragraph{Relation to previous peak constructions.}\label{sec:prior-modes}
+Equal-weight classes with different typical sizes were used by Bhattacharyya and Kahn for independence polynomials \cite{bk}. For ordinary domination Chalmers used rooted trees and an expander, proving arbitrarily deep oscillations on bounded-degree bipartite graphs \cite{chalmers}. There is also an indirect route from his two-phase estimate to nonunimodality of connected and total domination. Make the vertices of his graph into a clique and attach one independent marker per original closed neighborhood, joined to its members. If the minimum dominating set has size at least two, the split argument gives $D_c=D_t=(1+x)^n D(H,x)$. This hypothesis can be ensured by adding a fixed disjoint edge, which only contributes a fixed polynomial and two vertices. The equal masses, linear mean gap, exponential tail estimates and linear order in \cite[Proposition~3.2]{chalmers} survive convolution with a binomial of variance $O(n)$, as in Theorem~\ref{thm:dom-peaks}. Thus the qualitative failure of unimodality for these two variants also follows by transferring that earlier result. Our direct construction uses only two neighbors per marker and gives a common set of indices for four different counting polynomials. The explicit graph in Section~\ref{sec:dom-peaks} requires neither an expander nor an asymptotic choice of parameters.
+
+\section{Connected domination coefficients and a complex limit line}
+\label{sec:connected-shape}
+
+Shao and Zhao list log-concavity, unimodality and complex limit curves
+among the questions in Open Problem~4 \cite[Section~5.2]{shao}. The
+following family gives arbitrarily large violations of log-concavity.
+
+\begin{theorem}\label{thm:domination-logconcavity}
+There are connected split graphs whose total and connected domination
+polynomials coincide and fail log-concavity. If $d_j$ are their
+coefficients, the quotient $d_jd_{j+2}/d_{j+1}^2$ is unbounded across
+the family, already at the first nonzero coefficient.
+\end{theorem}
+\begin{proof}
+For $k\ge2$, let $H_k$ be the join of an independent set on $k+2$
+vertices and a matching on $2k$ vertices. It has $n=3k+2$ vertices
+and $m=2k^2+5k$ edges. Since every independent set lies on one side
+of the join,
+\[
+ I(H_k,z)=(1+z)^{k+2}+(1+2z)^k-1.
+\]
+The minimum vertex cover size is $2k$. Form the connected split graph
+$J$ from $H_k$ as in Theorem~\ref{thm:domination-spectra}. Both
+domination polynomials equal $(1+z)^m z^n I(H_k,1/z)$. Set
+$L=m+k+2$. Its first three nonzero coefficients, at degrees
+$2k,2k+1,2k+2$, are
+\[
+ 1,\qquad L,\qquad \binom{L}{2}+2^k.
+\]
+The log-concavity inequality at the middle index fails whenever
+$2^k>L(L+1)/2$. For $k=19$ this reads $524288>351541$.
+Since $L=2k^2+6k+2$, the displayed quotient tends to infinity.
+\end{proof}
+
+The same split construction gives an unbounded limiting curve for the
+roots. For $n\ge2$, take $H=K_{n,n}$. Its independence polynomial is
+$2(1+z)^n-1$, and the split graph has
+\[
+ D_c(J,z)=D_t(J,z)=z^n(1+z)^{n^2}
+                  \left(2(1+z)^n-z^n\right).
+\]
+Apart from the fixed roots $0$ and $-1$, the finite accumulation set as
+$n\to\infty$ is precisely the line $\operatorname{Re}z=-1/2$.
+Indeed the remaining roots satisfy $1+1/z=2^{-1/n}e^{2\pi i j/n}$
+for $0\le j<n$. These points on the right approach every point on
+the unit circle. Inverting $w=1+1/z$ sends its points other than
+$w=1$ onto the specified line, while $w\to1$ sends $|z|$ to infinity.
+The three-term construction gives a direct finite failure of log-concavity. Section~\ref{sec:dom-peaks} proves the stronger failure of unimodality.
+
+\subsection{A shifted root bound}
+The order-dependent root bound also requested in \cite[Open Problem~4]{shao}
+admits the following elementary estimate. For a connected graph on $n\ge1$
+vertices of minimum degree $\delta$, put $k=\max(1,2\delta-n+2)$. Every
+connected domination root $z$ satisfies
+\[
+ |1+z|\le
+ \min\left\{n+1,\
+  \left(\sum_{j=0}^{n-k}2^j\binom nj\right)^{1/k}\right\}.
+\]
+To prove the second bound, remove fewer than $k$ vertices. The remaining
+set is connected and dominating. For $k=1$ this follows from connectivity.
+For $k>1$, two nonadjacent vertices have at least $2\delta-n+2$ common
+neighbors, so any two remaining vertices are adjacent or have a remaining
+common neighbor. Each removed vertex has a remaining neighbor because
+at most $k-2<\delta$ other vertices were removed. The polynomial
+$(1+x)^n-D_c(G,x)$ therefore has degree at most $n-k$, with coefficient
+of $x^j$ between zero and $\binom nj$. At a root with $R=|1+z|\ge1$
+we have $|z|\le2R$ and
+$R^n\le R^{n-k}\sum_{j=0}^{n-k}2^j\binom nj$.
+For $R<1$ the assertion follows at once.
+For the first bound write $d_j=[x^j]D_c$. Every superset of a connected
+dominating set is connected and dominating. By counting one-vertex
+extensions, $(n-j)d_j\le(j+1)d_{j+1}$. Thus $d_j/d_{j+1}\le n$
+throughout the positive support. The elementary Enestr\"om--Kakeya
+bound gives $|z|\le n$ after removing the initial power of $x$. To see
+this directly, scale $x=ny$ so the remaining polynomial has nondecreasing
+coefficients; multiplying it by $1-y$ gives a leading monomial whose
+modulus exceeds the sum of the lower terms for $|y|>1$.
+
+\section{A fixed attachment for every host graph}
+\label{sec:fixed-attachment}
+
+A prescribed factor can be forced by adding the same rooted tree to every
+host, with a number of new vertices independent of the host's order.
+The construction uses the deletion identity
+$I(G,x)=I(G-u,x)+xI(G-N[u],x)$.
+
+\begin{lemma}\label{lem:attachment}
+Suppose that $p$ divides $I(J,x)$ for a nonempty connected graph $J$.
+There is a connected rooted graph $(B,u)$ on $2|V(J)|+2$ vertices for
+which $p$ divides both $I(B-u,x)$ and $I(B-N[u],x)$. If $J$ is a tree,
+so is $B$.
+\end{lemma}
+\begin{proof}
+Take disjoint copies $J_1,J_2$ of $J$, choose $v_i\in V(J_i)$, and
+join $v_1$ to $v_2$ by the new path $v_1-u-w-v_2$.
+In $B-u$, one component is $J_1$. In $B-N[u]$, one component is $J_2$.
+Independence polynomials multiply across components.
+\end{proof}
+
+\begin{theorem}\label{thm:tree-extension}
+Let $p\in\mathbb Z[x]$, with $p(0)=1$ and $p(x)>0$ on $[0,\infty)$.
+There is a single finite rooted tree $(B,u)$ with the following
+property. For every nonempty graph $H$, choose one vertex in each
+component, and join each chosen vertex to $u$ by one edge.
+The resulting connected graph $K$ contains $H$ as an induced subgraph,
+has $|V(H)|+|V(B)|$ vertices, and satisfies $p\mid I(K,x)$.
+All its cycles lie in $H$. Planarity is preserved, and every forest
+host gives a tree. For connected $H$, just one new edge meets $H$.
+\end{theorem}
+\begin{proof}
+Theorem~\ref{thm:independence-factor} supplies a connected realization.
+By the stable-path tree theorem of Bencs \cite{bencs}, its independence
+polynomial divides that of a finite tree $J$. Take $(B,u)$ from
+Lemma~\ref{lem:attachment}. If $S$ denotes the chosen vertices of the
+host, the deletion identity at $u$ reads
+\[
+ I(K,x)=I(B-u,x)I(H,x)+xI(B-N[u],x)I(H-S,x).
+\]
+Both terms have the prescribed factor. Each added edge into $H$ is a
+bridge, so adding $B$ introduces no cycle and a planar host remains planar.
+\end{proof}
+
+Brown and Cameron \cite[pp.~9--10 of the preprint]{browncameron}
+illustrated their construction with a $14$-vertex host for which it used
+$1{,}509{,}397$ vertices to force purely imaginary independence roots.
+There is a uniform explicit bound of $|V(H)|+30$ for connected graph
+extensions at $\pm i$. Indeed, the graph obtained by joining an independent
+set of size six to a clique of size eight has independence polynomial
+$(1+x)^6+8x$, which vanishes at $i$. This witness already appears in
+\cite{browncameron}. Apply Lemma~\ref{lem:attachment} to that graph
+directly. The $14$-vertex host then has a connected extension on $44$
+vertices. The tree-attachment theorem gives the additional structural
+conclusions when they are desired.
+
+\section{Denominator factors for ordinary trace monoids}
+\label{sec:trace}
+For a finite commutation graph $C$, the trace monoid has one letter per
+vertex and allows exactly the adjacent distinct letters to commute.
+When each letter has degree one, the Cartier--Foata identity \cite{cartier}
+gives the length generating series
+\[
+       \sum_{m\ge0} t_m z^m
+         =\frac{1}{I(\overline C,-z)}.
+\]
+Here $t_m$ counts traces of length $m$. Its numerator is one, so every
+denominator factor contributes its full multiplicity.
+It follows from Theorem~\ref{thm:independence-factor} that
+$q\in\mathbb Z[z]$, $q(0)=1$, divides such a denominator if and only if
+$q$ has no strictly negative real zero. In fact, for every eligible
+$q$ there is $N$ such that for every sufficiently large integer $M$ the whole
+denominator $(1-Mz)(1-z)^Nq(z)$ is realized, with $C$ a cograph and
+$\overline C$ connected. This uses the theorem for $p(x)=q(-x)$, including
+its cograph construction. It applies directly to products and powers of
+prescribed factors. For comparison, Lavall\'ee and Reutenauer
+\cite[Theorem~2.1]{lavallee} characterized the whole clique polynomials
+when letters may have arbitrary positive integer degrees as the polynomials
+$\det(I-zA)$ for nonnegative integer matrices $A$.
+
+\section{Prescribing the poles of right-angled Coxeter growth}
+\label{sec:coxeter}
+Let $W_\Gamma$ be the right-angled Coxeter group with one involutory
+generator for each vertex of $\Gamma$, commuting exactly on edges between
+distinct generators. Write $W_\Gamma(t)$ for its spherical growth series
+in these generators, and $C_\Gamma(u)$ for the unsigned clique polynomial
+of $\Gamma$. The standard growth formula \cite[Eq.~(5)]{athreya}
+and the inverse transformation used by Oh \cite{oh} give
+\[
+ W_\Gamma(t)=\frac{(1+t)^r}{D_\Gamma(t)},\qquad
+ D_\Gamma(t)=(1+t)^r C_\Gamma\!\left(-\frac{t}{1+t}\right),
+ \qquad r=\deg C_\Gamma.
+\]
+If $c_r$ is the leading coefficient of $C_\Gamma$, then
+$D_\Gamma(-1)=c_r>0$, so this fraction is reduced.
+Also $D_\Gamma(t)>0$ on $(-1,0]$.
+
+\begin{theorem}\label{thm:coxeter}
+Let $Q\in\mathbb Z[t]$ have constant term one. It divides the reduced
+denominator of a standard spherical growth series $W_\Gamma(t)$ if and
+only if it has no real zero in $[-1,0]$. For every such $Q$ and all
+sufficiently large integers $M$, the entire reduced denominator
+\[
+                    (1-(M-1)t)Q(t)
+\]
+can be realized. The defining commutation graph may be taken to be a cograph.
+\end{theorem}
+\begin{proof}
+The growth formula proves necessity. If $d=\deg Q$, write
+$S(X)=X^d Q(1/X)$, a monic polynomial with $S(0)\ne0$ and no real root
+in $(-\infty,-1]$. The polynomial
+\[
+ p(u)=(-u)^d S(-1-1/u)
+\]
+has integral coefficients, constant term one, and degree $d$ because
+$S(-1)\ne0$. It is positive on $[0,\infty)$ by continuity and the
+absence of zeros there. Theorem~\ref{thm:independence-factor} applied to
+$p$ and complementation give
+$C_\Gamma(u)=(1+Mu)(1+u)^N p(u)$ for fixed $N$ and all large $M$.
+Substitution into the growth formula yields precisely the claimed
+denominator; in reciprocal form the identity is
+\[
+             X^rD_\Gamma(1/X)=X^N(X+1-M)S(X).
+\]
+The term $X^N$ records the difference between $r$ and the degree of the
+denominator. Complementation preserves the cograph class.
+\end{proof}
+
+In particular, let $S$ be any Salem minimal polynomial. Its real roots
+are positive, so the theorem realizes all its roots simultaneously as
+reciprocals of poles, with the single additional reciprocal pole $M-1$.
+This applies to Lehmer's degree-ten polynomial. Oh \cite{oh} excludes
+that polynomial as the entire reciprocal-radius polynomial and, in the
+revised preprint, excludes its largest root as the standard growth rate
+using a golden-ratio gap. In the construction here the growth rate is
+$M-1$, chosen larger than the modulus of every root of $S$.
+
+\section*{Scope and provenance}
+The interval construction answers the location problem posed in 2004 by giving an arithmetic occurrence test and arbitrary simultaneous factors. Cameron's modulus question has an affirmative answer even on threshold graphs. The sharp independence number six applies to general graphs and also to connected interval graphs. For the latter assertion use Theorem~\ref{thm:interval-counts} in the upper-bound part of Theorem~\ref{thm:spaced-factor}. The degree and the incidence lower bound are unchanged. The 72-vertex example gives an explicit upper bound on the number of vertices needed for a root of modulus greater than one.
+
+The fixed-order conjecture in \cite[Conjecture~1.5]{levitroller} fails. Its failure can already be inferred from the older Fisher--Ryan inequalities. The exact extremal ratio determines which individual forward increases are possible at a specified order. The unrestricted-order Roller-Coaster results have proofs or public antecedents \cite{cutlerpebody,prismroller}. The same connected split graphs furnish a negative answer to Alikhani and Jafari’s unimodality conjecture \cite[Conjecture~2.9]{alijafari} and to both shape questions in \cite[Open Problem~4]{shao}. For the ordinary domination and connected-set variants, earlier counterexamples are credited in Sections~\ref{sec:ordinary-domination} and~\ref{sec:prior-modes}. Bencs's divisibility theorem supplies the passage to trees for independence factors. The independent domination construction on trees additionally requires the integral scaling in Lemma~\ref{lem:idtree-gadget}.
+
+The literature comparison covers the original problem statements, the cited graph-polynomial and clique-enumeration papers, and public solution records available for this manuscript. The unconditional proofs establish the mathematical assertions. Worldwide priority and the historical novelty of every intermediate step remain unverified.
+
+\begin{center}
+\small\begin{tabularx}{\linewidth}{@{}p{24mm}X@{}}
+\toprule
+Test & Evidence and limit of the claim\\
+\midrule
+G1 and G2 & The original interval location question is in \cite[p.~281]{brown2004}; Cameron specifies $|b|>1$ \cite{cameronweb}. Conjecture~1.5 of \cite{levitroller} fixes both $n$ and $\alpha$. All three are treated with those same parameters.\\[2pt]
+G3 & The cited authors pose these questions. The sources inspected give no competing full interval classification or earlier fixed-order disproof. The ordinary-domination and unrestricted-order Roller-Coaster questions have public predecessors.\\[2pt]
+G4 & Theorems~\ref{thm:interval-counts}, \ref{thm:imaginary-threshold}, \ref{thm:overhauled-counterexample} and \ref{thm:ordinary-domination-peaks} cover their full quantifiers. The graph constructions and coefficient inequalities are unconditional.\\[2pt]
+G5 & The interval construction controls all lower-rank contributions during exact integer completion. The repeated-marker estimate controls contributions outside the chosen vertex covers for the simultaneous inequalities.\\[2pt]
+G6 & Priority remains open to further review. The paper identifies the older realization, approximation, symmetrization and concentration arguments that enter the results.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\appendix
+\section{An alternative construction for well-covered graphs}
+\label{sec:well-covered}
+A graph is well covered if its maximal independent sets all have the same
+size. Brown, Hickman and Nowakowski \cite{brown2004} proved density of the
+independence roots of this class. The following result gives exact
+realizability with prescribed multiplicities.
+
+\begin{theorem}\label{thm:well-covered}
+A polynomial $p\in\mathbb Z[t]$ with $p(0)=1$ divides the independence
+polynomial of a connected well-covered graph if and only if $p(t)>0$
+on $[0,\infty)$. The realizing graph may contain any fixed graph as an
+induced subgraph.
+\end{theorem}
+
+\begin{proof}
+Necessity follows from Theorem~\ref{thm:independence-factor}.
+Write $p(t)=(1+t)^e p_0(t)$ with $p_0(-1)\ne0$.
+Let $Z$ be the finite set of distinct complex zeros of $p_0$.
+Every $\alpha=1/z$, $z\in Z$, is an algebraic integer, since
+$t^{\deg p_0}p_0(1/t)$ is monic. The set $Z$ is closed under conjugation
+over $\mathbb Q$ and its real elements are negative.
+
+Choose an odd integer $d\ge3$ such that $d>|z|$ for every real
+$z\in Z$. On $[d]^k$ form the lattice graph $L$ by making two distinct
+tuples adjacent when they agree in some coordinate, as in \cite{brown2004}.
+An independent $j$-set uses $j$ distinct entries in every coordinate;
+if $j<d$, choosing an unused entry in each coordinate extends the set.
+Thus $L$ is well covered of rank $d$ and
+\[
+ I(L,t)=\sum_{j=0}^{d} \frac{((d)_j)^k}{j!}t^j,
+ \qquad (d)_j=d(d-1)\cdots(d-j+1).
+\]
+The two largest falling factorials both equal $d!$, so
+$(d!)^{-k} I(L,t)\to t^{d-1}(d+t)/d!$ as $k\to\infty$.
+This limit is positive on $(-d,0)$. Fix $k$ such that
+$I(L,z)>1$ for all real $z\in Z$.
+
+Let $P_K(t)=(1+t)^d+K(I(L,t)-1)$ and $A(t)=t(1+t)^{d-1}$.
+We choose a positive integer $K$ so that every $\beta_z=P_K(z)/A(z)$ is
+a nonzero algebraic integer having no positive real conjugate. In fact,
+\[
+ \beta_z=\alpha+1+
+ K\,\frac{\alpha^d(I(L,1/\alpha)-1)}{(\alpha+1)^{d-1}}.
+\]
+The numerator of the fraction is integral over $\mathbb Z$.
+As $\alpha+1\ne0$, a common positive integer multiple clears all these
+denominators, for instance the product of the $(d-1)$st powers of the
+absolute field norms of $\alpha+1$ over all $z\in Z$.
+Restrict $K$ to multiples of this integer. For negative $z\in Z$ the
+denominator $A(z)$ is negative and $P_K(z)>0$ for large $K$.
+For nonreal $z\in Z$, the imaginary part of $\beta_z$ is an affine
+function of $K$ with nonzero intercept $\Im\alpha$, so it vanishes at
+most once. Avoid the finitely many exceptional values. Since $Z$ contains
+all conjugates and the same rational transformation acts on all of them,
+the asserted arithmetic properties follow.
+
+For each $z\in Z$ let $m_z$ be its multiplicity in $p_0$, and let
+$Q_z$ be the reverse of the monic minimal polynomial of $\beta_z$.
+The polynomial $\prod_{z\in Z}Q_z^{m_z}$ has constant term one and is
+positive on $[0,\infty)$, also when $Z$ is empty. By
+Theorem~\ref{thm:independence-factor} take a connected graph $H$ whose
+independence polynomial is divisible by this product, whose order $n$ is
+at least $\max(1,e)$, and which contains the prescribed induced graph.
+Thus $I(H,t)$ vanishes at $1/\beta_z$ to order at least $m_z$.
+
+Retain all edges of $H$ and give each vertex $v$ its own attached
+vertices as follows. Form the join of an edgeless $d$-vertex graph and
+$K$ copies of $L$, joining every pair of distinct parts completely.
+Add one further vertex $a$ isolated from these parts. Make $v$ adjacent
+to $a$ and to every lattice vertex, leaving the edgeless part
+nonadjacent to $v$. The graph so obtained is connected and the original
+vertices still induce $H$. Within each group, a maximal independent set
+containing $v$ consists locally of $v$ and the $d$ edgeless vertices.
+If it omits $v$, it must include $a$ and a maximal independent set of one
+join part, which has size $d$. Hence the graph is well covered.
+
+The choices excluding $v$ have polynomial $(1+t)P_K(t)$ and those
+including $v$ have polynomial $t(1+t)^d$. Summing over independent
+sets of retained vertices gives
+\[
+ I(G,t)=(1+t)^n P_K(t)^n
+       I\!\left(H,\frac{A(t)}{P_K(t)}\right).
+\]
+The last two factors together are a polynomial because $\deg I(H,t)\le n$.
+Thus $(1+t)^e$ divides $I(G,t)$. At each $z\in Z$, $P_K(z)\ne0$ and
+$A(z)/P_K(z)=1/\beta_z$. The substitution is nonconstant
+since it vanishes at zero with derivative one, so the order of vanishing
+there is at least $m_z$. This proves divisibility over $\mathbb C[t]$;
+Gauss's lemma gives divisibility in $\mathbb Z[t]$ since $p(0)=1$
+makes $p$ primitive.
+\end{proof}
+
+\section{A deterministic construction using a finite projective plane}
+\label{sec:projective-peaks}
+
+The separated peaks of Theorem~\ref{thm:dom-peaks} admit an explicit
+construction over a prime field. It produces a graph on $O_r(L)$ vertices
+with $O_r(L^{3/2})$ edges before the split-graph construction. This subquadratic
+edge count bounds the variance introduced by the factor $(1+x)^M$.
+
+Fix $r\ge2$, put $c=\operatorname{lcm}(1,\ldots,r)$ and $B=2^c$,
+and take a prime $q$. Let $\mathcal P$ be the triples in
+$\mathbb F_q^3\setminus\{0\}$ with first nonzero entry equal to one.
+These triples represent the points of the projective plane and
+$N=|\mathcal P|=q^2+q+1$. The line with label $b\in\mathcal P$ is
+$\{a\in\mathcal P:a\cdot b=0\}$. Set $L=cN$.
+
+Define a graph $H$ on $r$ blocks. In block $j$, for each $a\in\mathcal P$,
+create $c/j$ disjoint cliques of order $2^j-1$, called the cell at $a$.
+Include no other edges in this block. Between different blocks join every
+vertex of a cell at $a$ to every vertex of a cell at $b$ exactly when
+$a\cdot b=0$ in $\mathbb F_q$. This rule includes coincident labels
+when the dot product vanishes. There are $N(q+1)$ incident ordered
+point--line pairs, and each cell has $O_r(1)$ vertices. Consequently the
+order $n$ of $H$ is $O_r(N)$ and the number $m$ of its edges is
+$O_r(Nq)=O_r(L^{3/2})$.
+
+\begin{lemma}\label{lem:projective-mixing}
+For fixed $r$ there is $\gamma_r>0$ such that, for all sufficiently
+large primes $q$, the number of independent sets of $H$ meeting more than
+one block is at most $B^N\exp(-\gamma_r q)$.
+\end{lemma}
+\begin{proof}
+Every cell has $(2^j)^{c/j}=B$ independent sets, including the empty
+set. The support of a block selection consists of its nonempty labels.
+Choose $0<\epsilon<1/2$ so small that
+$r[\mathcal H(\epsilon)+\epsilon\log(B-1)]<\log B$, where
+$\mathcal H(u)=-u\log u-(1-u)\log(1-u)$. If every support has size
+at most $\epsilon N$, the total number of choices is at most
+\[
+ \left[\sum_{t\le\epsilon N}\binom Nt(B-1)^t\right]^r
+ \le \exp\!\left(rN[\mathcal H(\epsilon)+\epsilon\log(B-1)]\right).
+\]
+Here the binomial sum bound follows by evaluating $(1+z)^N$ at
+$z=\epsilon/(1-\epsilon)$.
+
+Suppose one block has support $A$ of size $a\ge\epsilon N$.
+Let $T$ be the union of the other blocks' occupied labels, with $t=|T|$.
+Write $U(T)$ for the union of the $t$ lines indexed by $T$. Independence
+forces $A\cap U(T)=\varnothing$. If $t>0$, count the number $d(v)$ of
+these lines through each point. Each line has $q+1$ points and two distinct
+lines meet in one point, by linear algebra in $\mathbb F_q^3$. Therefore
+\[
+ \sum_v d(v)=t(q+1),\qquad \sum_v d(v)^2=t(q+t),\qquad
+ |U(T)|\ge\frac{t(q+1)^2}{q+t}
+\]
+by Cauchy--Schwarz. Since $|U(T)|\le N-a$ and $(q+1)^2=N+q$, this yields
+\[
+ t\le\frac{q(N-a)}{q+a}\le\frac q\epsilon,
+ \qquad |U(T)|\ge\frac{\epsilon}{1+\epsilon}qt.
+\]
+For each specified $T$ there are at most $B^{(r-1)t}$ selections outside
+the chosen block and at most $B^{N-|U(T)|}$ selections inside. Dividing
+by $B^N$, summing over the $r$ possible chosen blocks and using
+$\binom Nt\le N^t$, the mixed contribution in this case is at most
+\[
+ r\sum_{t\ge1}\bigl[N B^{r-1}B^{-q\epsilon/(1+\epsilon)}\bigr]^t.
+\]
+It is exponentially small in $q$, as is the normalized count in the
+first case. This proves the lemma.
+\end{proof}
+
+\begin{corollary}\label{cor:projective-peaks}
+For each fixed $r$, the graphs $H$ above give the alternating high and
+low coefficients of Theorem~\ref{thm:dom-peaks} for all sufficiently
+large primes $q$, uniformly for every integer
+$1\le h\le\lceil5\log_2 L\rceil$ copies per edge in the split graph.
+\end{corollary}
+\begin{proof}
+Block $j$ contains $L/j$ disjoint cliques of order $2^j-1$. Its $B^N=2^L$
+independent sets have the same binomial size law as in
+Theorem~\ref{thm:dom-peaks}. The split-graph construction again gives
+$(1+x)^{hm}x^nI(H,1/x)$ for both polynomials. The error per normalized
+coefficient from all mixed selections and repeated empty selections is
+at most $\exp(-\gamma_r q)+(r-1)2^{-L}$. The gap between successive
+means is bounded below by a positive multiple of $L$, and
+$V=hm+L=O_r(L^{3/2}\log L)$. The Chebyshev and Hoeffding estimates of
+Theorem~\ref{thm:dom-peaks} give a height at least a constant times
+$V^{-1/2}$ near each mean and $O_r(\exp(-c_r L^2/V))$ from the pure
+blocks at every midpoint. Both error bounds are smaller than any fixed
+negative power of $L$. The asserted alternation and divergent ratios follow.
+\end{proof}
+
+\paragraph{A specified prime giving two peaks.}
+Take $r=2$, $q=65537$, and $h=1$. Here $c=2$, $B=4$, $L=2N$,
+$n=5N$, and $m=3N+6N(q+1)$. The primality of $q=2^{16}+1$ also
+follows by trial division: any odd prime divisor has $2$ of multiplicative
+order $32$ and hence is $1$ modulo $32$. Below $\sqrt q$ the only prime
+possibilities are $97,193$, neither of which divides $q$.
+
+Take $\epsilon=1/16$. Evaluating $(1+3z)^N$ at $z=1/32$ gives
+\[
+ \sum_{t\le N/16}\binom Nt3^t
+   \le \left(32^{1/16}\frac{35}{32}\right)^N <2^{N/2}.
+\]
+For the last inequality one may use $(35/32)^{16}<8$.
+The two small supports thus contribute less than $2^{-N}$ after
+normalization. The geometric ratio for large supports is
+$4N4^{-q/17}<2^{-200}$, since $N<2^{33}$ and $q/17>200$.
+Adding the repeated empty selection, the absolute error at each normalized
+coefficient is less than $2^{-190}$.
+
+The two means are separated by $N/4$. Here $V=m+L\le7qN<2^{53}$
+and $\sqrt V+1<N/16$. Within $\sqrt V+1$ of each mean, Chebyshev's
+inequality gives a point of mass at least $1/(4\sqrt V)>2^{-29}$ for
+its pure block. The nearest integer to the midpoint is at distance
+at least $N/9$ from either mean. The sum of its two pure block masses
+is bounded by
+\[
+ 4\exp\!\left(-\frac{2N^2}{81V}\right)
+ \le 4\exp\!\left(-\frac{2q}{567}\right)<2^{-300}.
+\]
+The normalized error established above leaves both high coefficients
+strictly greater than the intervening coefficient. This specifies one
+finite graph for the failure of unimodality without a random choice.
+
+\begin{thebibliography}{99}\small
+\bibitem{alavi} Y. Alavi, P. J. Malde, A. J. Schwenk and P. Erd\H{o}s. The vertex independence sequence of a graph is not constrained. \emph{Congr. Numer.} 58 (1987), 15--23.
+\bibitem{athreya} J. S. Athreya and A. Prasad. Growth in right-angled groups and monoids. \href{https://arxiv.org/abs/1409.4142}{arXiv:1409.4142}.
+\bibitem{brownbeaton} I. Beaton and J. I. Brown. On the real roots of domination polynomials. \emph{Contrib. Discrete Math.} 16 (2021), 175--182. \href{https://arxiv.org/abs/2012.15193}{Preprint}.
+\bibitem{bencs} F. Bencs. On trees with real-rooted independence polynomial. \emph{Discrete Math.} 341 (2018), 3321--3330. \href{https://arxiv.org/abs/1703.05409}{Preprint}.
+\bibitem{bollobascliques} B. Bollob\'as. On complete subgraphs of different orders. \emph{Math. Proc. Cambridge Philos. Soc.} 79 (1976), 19--24. \href{https://doi.org/10.1017/S0305004100052063}{Publisher}.
+\bibitem{stability} J. I. Brown and B. Cameron. On the stability of independence polynomials. \emph{Electron. J. Combin.} 25 (2018), P1.46. \href{https://doi.org/10.37236/7280}{Publisher}.
+\bibitem{browncameron} J. I. Brown and B. Cameron. A note on purely imaginary independence roots. \emph{Discrete Math.} 343 (2020), 112113. \href{https://doi.org/10.1016/j.disc.2020.112113}{Publisher}. \href{https://arxiv.org/abs/2001.08881}{Preprint}.
+\bibitem{brown2004} J. I. Brown, C. A. Hickman and R. J. Nowakowski. On the location of roots of independence polynomials. \emph{J. Algebraic Combin.} 19 (2004), 273--282. \href{https://doi.org/10.1023/B:JACO.0000030703.39946.70}{Publisher}.
+\bibitem{browntufts} J. I. Brown and J. Tufts. On the roots of domination polynomials. \emph{Graphs Combin.} 30 (2014), 527--547. \href{https://doi.org/10.1007/s00373-013-1306-z}{Publisher}.
+\bibitem{cameronweb} B. Cameron. Graph polynomials. Author's list of open questions, University of Prince Edward Island, accessed 21 November 2026. \href{https://www.smcs.upei.ca/~brcameron/graphpolys.html}{Research page}.
+\bibitem{cartier} P. Cartier and D. Foata. \emph{Problèmes combinatoires de commutation et réarrangements}. Lecture Notes in Mathematics 85, Springer, 1969.
+\bibitem{cs} M. Chudnovsky and P. Seymour. The roots of the independence polynomial of a clawfree graph. \emph{J. Combin. Theory Ser. B} 97 (2007), 350--357. \href{https://doi.org/10.1016/j.jctb.2006.06.001}{Publisher}.
+\bibitem{cutlerpebody} J. Cutler and L. Pebody. Maximal-clique partitions and the Roller Coaster Conjecture. \emph{J. Combin. Theory Ser. A} 145 (2017), 25--35. \href{https://arxiv.org/abs/1412.4595}{Preprint}.
+\bibitem{dod} M. Dod. The independent domination polynomial. \href{https://arxiv.org/abs/1602.08250}{arXiv:1602.08250}, 2016, Theorems 2.3 and 2.5.
+\bibitem{fisherryan} D. C. Fisher and J. Ryan. Bounds on the number of complete subgraphs. \emph{Discrete Math.} 103 (1992), 313--320. \href{https://doi.org/10.1016/0012-365X(92)90323-8}{Publisher}.
+\bibitem{frohmader} A. Frohmader. How to construct a flag complex with a given face vector. \href{https://arxiv.org/abs/1112.6061}{arXiv:1112.6061}, 2011.
+\bibitem{jahari} S. Jahari and S. Alikhani. On the independent domination polynomial of a graph. \emph{Discrete Appl. Math.} 289 (2021), 416--426. \href{https://arxiv.org/abs/1808.07369}{Preprint}.
+\bibitem{lavallee} S. Lavall\'ee and C. Reutenauer. Characteristic polynomials of nonnegative integral square matrices and clique polynomials. \emph{S\'em. Lothar. Combin.} 61A (2009), B61Ac. \href{https://www.mat.univie.ac.at/~slc/wpapers/s61Alavreu.pdf}{Article}.
+\bibitem{levitcorona} V. E. Levit and E. Mandrescu. On the roots of independence polynomials of almost all very well-covered graphs. \emph{Discrete Appl. Math.} 156 (2008), 478--491. \href{https://arxiv.org/abs/math/0305227}{Preprint}.
+\bibitem{levitroller} V. E. Levit and E. Mandrescu. The Roller-Coaster Conjecture revisited. \emph{Graphs Combin.} 33 (2017), 1499--1508. \href{https://arxiv.org/abs/1612.03736}{Preprint}, Conjectures 1.5 and 3.1.
+\bibitem{prismroller} Metriq PRISM Laboratory. A weighted Roller-Coaster theorem for $W_p$ graphs. Public manuscript MF-PRISM-MATH-2026-11, v1.1, 12 September 2026. \href{https://prism.metriq.org/papers/math-2026-11/}{Publication record}.
+\bibitem{motzkin} T. S. Motzkin and E. G. Straus. Divisors of polynomials and power series with positive coefficients. \emph{Pacific J. Math.} 29 (1969), 641--652. \href{https://msp.org/pjm/1969/29-3/pjm-v29-n3-p13-p.pdf}{Article}.
+\bibitem{oh} M. Oh. Strongly primitive Salem growth polynomials for right-angled Coxeter groups. \href{https://arxiv.org/abs/2606.29397}{arXiv:2606.29397}, 2026.
+\bibitem{ravindra} G. Ravindra. Well-covered graphs. \emph{J. Combin. Inform. System Sci.} 2 (1977), 20--21.
+\bibitem{salez} J. Salez. Every totally real algebraic integer is a tree eigenvalue. \emph{J. Combin. Theory Ser. B} 111 (2015), 249--256. \href{https://arxiv.org/abs/1302.4423}{Preprint}.
+\bibitem{shao} P. Shao and C. Zhao. On the roots of connected domination polynomials. \href{https://arxiv.org/pdf/2609.06569v5}{arXiv:2609.06569v5}, 2026, Section 5.2.
+\bibitem{stevanovic} D. Stevanovi\'c. Clique polynomials of threshold graphs. \emph{Publ. Elektrotehn. Fak. Ser. Mat.} 8 (1997), 84--87. \href{https://draganstevanovic.wordpress.com/wp-content/uploads/2012/09/859.pdf}{Article}.
+\bibitem{vmrc} QEEDDD. \emph{Verifiable Mathematical Reasoning Corpus}. Papers 214 (Round 21, uniform hypercomb) and 217 (Round 42, independent domination of cozero-divisor graphs). \href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/c2ac34ea4622778187173f41bb1996deee8081b7}{Repository snapshot c2ac34e}.
+\bibitem{tru} The Omega Institute, trureturing. An irrational purely imaginary independence root. Public construction with factor $1+2x^2$, accessed 21 November 2026. \href{https://www.trureturing.org/research/brown-cameron-2020-irrational-imaginary-independence-root/}{Construction and certificate}.
+\bibitem{trutotal} ProbXiv. On the roots of total domination polynomial of graphs. Public counterexample record, 2026. \href{https://probxiv.com/problems/on-the-roots-of-total-domination-polynomial-of-graphs-2}{Problem and contributions}.
+\bibitem{mathdb} MathDB. Integer-root conjecture for total domination polynomials. Public double-graph construction, 2026. \href{https://mathdb.com/p/333086/integer-root-conjecture-for-total-domination-polynomials}{Problem and construction}.
+\bibitem{alipeng} S. Alikhani and Y.-h. Peng. Introduction to domination polynomial of a graph. \emph{Ars Combin.} 114 (2014). \href{https://arxiv.org/abs/0905.2251}{Original 2009 preprint}.
+\bibitem{alijafari} S. Alikhani and N. Jafari. On the roots of total domination polynomial of graphs. \href{https://arxiv.org/abs/1605.02222}{arXiv:1605.02222}, 2016, Conjecture 2.9.
+\bibitem{beatonshape} I. Beaton and J. I. Brown. On the unimodality of domination polynomials. \emph{Graphs Combin.} 38 (2022), 90. \href{https://doi.org/10.1007/s00373-022-02487-x}{Publisher}.
+\bibitem{bk} A. Bhattacharyya and J. Kahn. A bipartite graph with non-unimodal independent set sequence. \emph{Electron. J. Combin.} 20 (2013), P11. \href{https://doi.org/10.37236/3034}{Publisher}.
+\bibitem{chalmers} L. R. Chalmers. The Alikhani--Peng conjecture is false: arbitrarily many deep peaks and sharp bounds for domination polynomials. Public preprint, October 2026. \href{https://doi.org/10.13140/RG.2.2.34268.76163}{Manuscript}. \href{https://doi.org/10.5281/zenodo.23092986}{Formalization}.
+\bibitem{omar} M. Omar. New perspectives on the unimodality of domination polynomials. \href{https://arxiv.org/abs/2601.14494}{arXiv:2601.14494}, 2026.
+\bibitem{molthesis} L. Mol. \emph{On Connectedness and Graph Polynomials}. PhD thesis, Dalhousie University, 2016. \href{https://hdl.handle.net/10222/71408}{Thesis}.
+\bibitem{carptopusconnected} Carptopus. Counterexamples to unimodality of the connected set polynomial. Public research note, September 2026. \href{https://doi.org/10.5281/zenodo.22250860}{Research record}.
+\bibitem{muldoon} T. Muldoon Brown. On the unimodality of convolutions of sequences of binomial coefficients. \emph{J. Integer Seq.} 22 (2019), 19.2.8. \href{https://cs.uwaterloo.ca/journals/JIS/VOL22/Brown/brown4.html}{Article}.
+\end{thebibliography}
+\end{document}
