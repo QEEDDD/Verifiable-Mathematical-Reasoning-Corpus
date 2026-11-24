@@ -1,0 +1,742 @@
+\begin{filecontents*}[overwrite]{verify_joint.cpp}
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <vector>
+using i64=std::int64_t;
+using i128=__int128_t;
+constexpr i64 S=10000000000LL;
+constexpr int N=601;
+i64 sl[N],su[N],il[N],iu[N],ratio[N];
+i64 up(i64 x,i64 y) { assert(x>=0&&y>0);return (x+y-1)/y; }
+i64 floor128(i128 x,i64 y) { assert(y>0);return x>=0 ? x/y : (x-y+1)/y; }
+i64 c2(i64 n){ return n*(n-1)/2; }
+i64 root(i128 z){
+    i64 a=0,b=25*S;
+    while(b-a>1){i64 m=(a+b)/2; if(i128(m)*m<=z)a=m;else b=m;}
+    return a;
+}
+i64 lower(int n,int D,i64 r,i64 b,i64 phi=0){
+    i64 L1=D*S/2+floor128(i128(S)*(S*(n-D)-phi),S+r)-b;
+    i128 u=i128(S)*S*n*n-i128(phi)*S*n-i128(r-S)*S*(n-2)-i128(r+S)*b*n;
+    i64 L2=floor128(u,2*S*n+r-S);
+    return std::max(L1,L2);
+}
+i64 tau(int n,int D,int q){
+    int p=std::min(n-q,D-1);
+    return q-1+p*(p+1)/2+(n-q-p)*p+n-2;
+}
+i64 netdrop(int n,int q,int t,int c){
+    assert(0<t&&t<q&&0<c&&c<=q-t);
+    i64 a=il[q-t]-iu[q];assert(a>=0);
+    i64 dr=sl[q]-su[q-t]+i128(a)*c*(S-iu[2])/S;
+    i64 db=su[n-1]-sl[n-t-1]+up(2*S,n)-2*S/(n-t);
+    return dr-db;
+}
+bool feasible(int n,int D,int q,int t,int c,i64 L){
+    i64 T=tau(n,D,q),dr=netdrop(n,q,t,c);
+    return i128(2)*t*S*(T-(t-1))-i128(2)*c2(n-t)*dr
+        > i128(t)*(2*n-t-1)*L;
+}
+
+int main(int argc,char**argv){
+    int begin=argc>1 ? std::atoi(argv[1]) : 4;
+    int end=argc>2 ? std::atoi(argv[2]) : 599;
+    assert(4<=begin&&begin<=end&&end<N);
+    for(int j=1;j<N;j++){
+        sl[j]=root(i128(S)*S*j);su[j]=sl[j]+1;
+        il[j]=root(i128(S)*S/j);iu[j]=il[j]+1;
+        ratio[j]=root(i128(S)*S*j/2)+1;
+    }
+    i64 rows=0, lowratio=0, candidates=0, leafcounts=0, retained=0;
+    for(int n=begin;n<=end;n++){
+        i64 C=c2(n), b=su[n-1]-2*S+up(2*S,n);
+        std::vector<i64> E(n),psi(n);
+        for(i64 l=1;l<n;l++){
+            i64 y=n-l;
+            E[l]=l*(l-1)+(y-1)*(l*l/4)+l*y*(y+1)/2+(y*y*y-y)/6;
+        }
+        for(int k=2;k<n;k++)psi[k]=std::min(il[2]-S/2,il[k]-up(S,k));
+        for(int D=3;D<n;D++){
+            std::vector<i64> L(n),LR(n);
+            for(int k=2;k<n;k++){L[k]=lower(n,D,su[k],b);LR[k]=lower(n,D,ratio[k],b);}
+            for(int d=2;d<=n-D+1;d++){
+                rows++;
+                i64 U=D*C-i64(D)*(D-1)*(3*n-D-1)/6-(D-2)*c2(d-1);
+                if(i128(S)*U<=i128(C)*L[d])continue;
+                if(i128(S)*U>i128(C)*LR[d]){
+                    std::cerr<<"UNRESOLVED LOW-RATIO CASE "<<n<<" "<<D<<" "<<d<<"\n";
+                    lowratio++;
+                }
+                for(int k=d/2+1;k<=d;k++){
+                    if(i128(S)*U<=i128(C)*L[k]||!feasible(n,D,k,1,1,L[k]))continue;
+                    candidates++;
+                    for(int ell=1;ell<=n-D+1;ell++){
+                        leafcounts++;
+                        i64 c=std::max(1,k-ell);
+                        if(!feasible(n,D,k,1,c,L[k]))continue;
+                        i128 P=i128(std::max<i64>(0,su[k]-ratio[d]))*(su[k]-S)*ell;
+                        i64 dv=k*S, penalty=(P+dv-1)/dv;
+                        i64 a=std::max({L[k],lower(n,D,ratio[d],b,penalty),
+                            D*S/2+ell*psi[k]-b,n*(ell*psi[k]-b)-(n-2)*S});
+                        if (i128(S)*std::min(U,E[ell])<=i128(C)*a ||
+                            !feasible(n,D,k,1,c,a)) continue;
+                        std::cout<<"RETAINED "<<n<<" "<<D<<" "<<d<<" "<<k<<" "<<ell<<"\n";
+                        retained++;
+                    }
+                }
+            }
+        }
+    }
+    std::cout<<"orders "<<begin<<" through "<<end<<"; "<<rows<<" (n,D,d) rows, "
+       <<candidates<<" largest leaf-support candidates, "<<leafcounts<<" leaf counts.\n";
+    std::cout<<"unresolved low ratio "<<lowratio<<", retained quintuplets "<<retained<<".\n";
+    return lowratio||retained;
+}
+\end{filecontents*}
+\begin{filecontents*}[overwrite]{verify_tail.py}
+from fractions import Fraction as F
+from math import isqrt
+import sys
+N=int(sys.argv[1]) if len(sys.argv)>1 else 600
+S=10**8
+zero=F(0);one=F(1)
+AH=F(292894,10**6)
+AL=F(292893,10**6)
+assert 2*(1-AH)**2<1<2*(1-AL)**2
+def hi(x):
+ x=F(x);a=x.numerator*S*S;b=x.denominator
+ j=isqrt(a//b)
+ return F(j+(j*j*b<a),S)
+def lo(x):
+ x=F(x);return F(isqrt(x.numerator*S*S//x.denominator),S)
+eps=hi(F(1,N))
+gamma=eps-2*eps**2+2*eps**4
+assert eps<=F(1,4)
+def qmax(A,B):
+ if B<0 and 0<A<-2*B*eps:return -A*A/(4*B)
+ return max(zero,A*eps+B*eps**2)
+def B(x,z):
+ z=min(z,1-x)
+ return (1-x*x)*z-z*z+z**3/3
+def H(h,z):
+ return h/2-h**3/6-2*h*max(zero,z-(1-h)/2)**2
+def closes(x0,x1,u0,z,m):
+ error=(u0+x1*(3*z+2*x1)+3*x1/N+F(4,N*N))/N
+ return m*((1-z)**2-x0*x0+3*x1/N)<1-F(1,N) and u0>B(x0,z)+error
+def verify(active,T0,T1):
+ unit=(zero,one)
+ stack=[((zero,F(3,4)),unit,unit,(T0,T1)) if active else ((zero,F(3,4)),unit)]
+ nbox=cap=path=drop=maxdepth=0
+ while stack:
+  box=stack.pop()
+  nbox+=1
+  x0,x1=box[0];p0,p1=box[1]
+  (E0,E1),(T0,T1)=box[2:] if active else ((zero,zero),(zero,zero))
+  E1=min(E1,x1,p1)
+  if E0>E1 or (1+T0)*x0>1 or x0+max(zero,p0-E1)>1:
+   drop+=1;continue
+  BH=zero if T1<=F(1,2) else min(AH,1-lo(1/(2*T1)))
+  res=BH*p1+(AH-BH)*E1 if active else AH*p1
+  resplus=res
+  if active and T1<=F(1,2):
+   d0=max(F(4),x0*N)
+   neg=AL*(1-lo(d0)/2)
+   if T1>0:
+    neg=max(neg,(1-lo(1/(2*T1)))*max(AL,1-hi(1/(T1*d0))))
+   res+=max(zero,p0-E1)*neg
+  y=hi(x1/2)
+  C=1-lo(x0/2)-resplus/hi(x1)
+  err=qmax(C,-3+F(4,N))
+  u0=(1-y-res-err)/(2+y*eps)
+  h=1-max(p0,x0+max(zero,p0-E1))
+  a=min(h,1-(1+T0)*x0)
+  M=H(h,x0)+(F(47,20)+2*p1-2*E0)/N
+  if T0>0:
+   M=min(M,H(a,x0)+(F(87,20)+2*p1-2*E0-2*(1+T0*T0)*x0*x0)/N)
+  assert 0<=h<=1-x0 and u0>0
+  if M<u0:
+   path+=1;continue
+  extra=2*gamma
+  if x0*N>=16:
+   c=p0/hi(x1)
+   ee=p1/x0
+   if active and T1*x0*N>=16:
+    reach=max(zero,p0-E1)
+    c+=reach*max(zero,1/hi(T1*x1)-1/lo(x1))
+    ee+=max(zero,p1-E0)*(1/T1-1)/x0
+   extra=min(extra,qmax(2*(1-c),2*(ee-2+2*eps**2)))
+  z=min(1-x0,2*u0+extra)
+  if closes(x0,x1,u0,z,F(2)):
+   cap+=1;continue
+  z=min(1-x0,2*u0+qmax(2*(1-max(zero,1-2*u0-2*gamma-res)/y),-4*(1-eps**2)))
+  if closes(x0,x1,u0,z,2+4*eps/y):
+   cap+=1;continue
+  i=max(range(len(box)),key=lambda j:box[j][1]-box[j][0])
+  aa,bb=box[i];m=(aa+bb)/2
+  if bb-aa<=F(1,16384):
+   print('stalled',nbox,[(float(a),float(b)) for a,b in box],float(M-u0),float(u0-B(x0,z)),flush=True)
+   return False
+  stack.append(box[:i]+((aa,m),)+box[i+1:])
+  stack.append(box[:i]+((m,bb),)+box[i+1:])
+  maxdepth=max(maxdepth,m.denominator)
+ print(dict(active=active,visited=nbox,discarded=drop,weighted=path,truncated=cap,maxden=maxdepth),flush=True)
+ return True
+assert verify(False,zero,one)
+assert verify(True,zero,F(1,2))
+assert verify(True,F(1,2),one)
+\end{filecontents*}
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=24mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,listings,microtype}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\supp}{\operatorname{supp}}
+\setlength{\emergencystretch}{3em}
+\lstset{basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,breaklines=true,frame=single}
+\title{The sharp additive Randi\'c--mean-distance\protect\\ inequality of Caporossi and Hansen}
+\author{Caporossi--Hansen research tournament}
+\date{November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For every finite simple connected graph of order $n\ge2$, we prove
+$R-\mu\ge\sqrt{n-1}-2+2/n$, with equality exactly for the star;
+here $R$ is the Randi\'c index and $\mu$ is the mean distance between distinct vertices.
+The proof combines a leaf-deletion induction for intermediate orders with a
+weighted quotient and interval argument covering all orders $n\ge600$ at once.
+The finite check uses only degree, diameter and leaf-count parameters,
+not graph enumeration. All certificate computations are in exact arithmetic,
+and the complete replay source is embedded in this single file.
+\end{abstract}
+\section{Main theorem and proof structure}
+For a finite simple connected graph $G$ of order $n\ge2$ and degrees $d_v$,
+put $R(G)=\sum_{uv\in E(G)}(d_ud_v)^{-1/2}$ and
+$\mu(G)=\binom n2^{-1}\sum_{\{u,v\}}\dist_G(u,v)$.
+The theorem is the additive conjecture of Caporossi and Hansen~\cite{CH},
+Conjecture 4.8 as listed by Favaron, Mah\'eo and Sacl\'e~\cite{FMS}.
+It is not the separate conjecture on vertex radius.
+\begin{theorem}\label{global}
+For every such $G$,
+\[
+ R(G)-\mu(G)\;\ge\;B_n:=\sqrt{n-1}-2+2/n.
+\]
+Equality holds if and only if $G$ is isomorphic to $K_{1,n-1}$.
+\end{theorem}
+The proof uses the published bound of Dvo\v{r}\'ak, Lidick\'y and \v{S}krekovski
+$M\ge D/2$ for $M=\sum_{uv\in E(G)}1/\max(d_u,d_v)$ and diameter $D$~\cite[Theorem 3]{DLS}.
+We reprove the separate weighted-distance input from VMRC~[227]~\cite{vmrc}.
+For $n<600$, a least-order nonstar obstruction forces incompatible
+lower and upper bounds on $\mu$, checked in directed integer arithmetic.
+For $n\ge600$, a weighted quotient and interval argument applies
+uniformly. Both parts exclude nonstar equality as well as strict violations. The star attains the displayed
+value by direct substitution.
+
+Reiwa developed the leaf-deletion screen, with the host eccentricity
+sharpening independently identified by Heisei. Taisho independently audited
+and implemented it, then extended the exact scan to all orders below 600. The upper-tail
+argument is Showa's, using Keio's leaf-transfer separation and checked
+independently by Heisei and the coordinator. This is a computer-assisted
+research proof with internal independent checks, not a claim of formal
+verification, external refereeing, or historical priority.
+\section{Weighted distance and the maximum-degree edge index}
+
+Put $K(x,x)=2$, $K(x,y)=\dist(x,y)$ for $x\ne y$, and $F(G)=\max_{p}p^{\mathsf T}Kp$, where $p$ ranges over the probability simplex. The maximum exists by compactness. We prove the weighted estimate used below
+\begin{equation} F(G)\le M(G)+1.\label{weight:weighted}\end{equation}
+For every $G$ in scope, $M\ge1$: the edges at a maximum-degree vertex contribute exactly one.
+\subsection{The possible shape of a counterexample}
+Suppose a graph violates \eqref{weight:weighted}. Choose one minimizing first its order and then its size, and fix a maximizing vector $p$. A connected proper subgraph $J$ of order at least two containing the support of any maximizing vector must have $M(J)>M(G)$. Indeed the distances of its remaining pairs can only increase, and minimality gives $F(J)\le M(J)+1$. In particular
+\begin{equation}
+ M(G-e)>M(G)\quad\text{for every edge on a cycle.}\label{weight:supportive}
+\end{equation}
+A star has $F\le2=M+1$. In a double star write $a,b$ for the masses on the two sets of leaves. Only pairs from opposite leaf sets have kernel entry above two, so $F\le2+2ab\le5/2$. The smaller number $l\ge1$ of leaves at a centre gives $M=1+l/(l+1)\ge3/2$.
+
+For a vertex of degree at least two set $g_v=d_v(d_v-1)$ and let $\ell_v$ count its strictly lower-degree neighbours. Removing a leaf at $v$ decreases $M$ by
+\begin{equation}
+ b_v=(d_v-\ell_v)/g_v\ge0.\label{weight:bleaf}
+\end{equation}
+The lost edge weighs $1/d_v$, and each of the other $\ell_v-1$ edges to a lower neighbour gains $1/g_v$. Thus a leaf in a minimal counterexample has positive mass for every maximizer.
+
+We detail the cut-vertex step, since the diagonal convention matters here. If a cut vertex $v$ separates two nontrivial components, partition $G-v=A\sqcup B$ without crossing edges and with each side containing such a component. On side $A$ retain $v$ and replace its $d_B$ neighbours across the cut by $d_B$ new leaves; construct $G_B$ symmetrically. These padded graphs have fewer vertices or, in case of a tie, fewer edges, because the discarded side contains an edge. Old degrees are preserved and the new leaves give $M(G_A)+M(G_B)=M(G)+1$. Project $A$ identically to $G_A$ and send $B\cup\{v\}$ to a single new leaf; use the symmetric projection for $G_B$. The two projected kernel values sum to at least $K(x,y)+2$ for each pair. For a pair in one side the second value is two. For opposite sides the two new terminal edges add two. For $v$ paired with another vertex the surplus is three, and for $(v,v)$ it is two. Taking expectations contradicts minimality. Hence at most one component of $G-v$ can be nontrivial.
+
+Remove all leaves and denote the remaining graph by $J$. It is connected; the one- and two-vertex possibilities were covered above. A cut vertex of $J$ would leave two components of the original graph containing non-leaf vertices, each nontrivial, contrary to the preceding paragraph. Thus $J$ is two-connected of order $h\ge3$. Two leaves at the same site have identical rows on the other vertices, and their $2\times2$ kernel is constant. Merging their masses would give a zero-mass leaf. Consequently each site $v$ in $J$ has at most one leaf $v'$. Call it \emph{loaded} when it has one, and set $\epsilon_v=1$ there and $0$ elsewhere. All core edges obey \eqref{weight:supportive}. Moving the entire mass $t=p_v$ of a loaded site to its leaf increases the objective by $2t(1-t)$, because all other distances go up by one and the diagonal is two. The case $t=1$ gives $F=2$. Thus $p_v=0$ at every loaded site.
+\subsection{Degree restrictions and local deletion}
+Put $a_v=\ell_v/g_v$, and use \eqref{weight:bleaf} to define $b_v$ at every site. Deleting a core edge $uv$ gains $1/g_u$ on each surviving lower edge at $u$, and similarly at $v$, and loses its original weight. Hence \eqref{weight:supportive} gives
+\[
+ d_u<d_v\Longrightarrow a_u>b_v,\qquad
+ d_u=d_v\Longrightarrow a_u\ge b_v,\quad a_v\ge b_u .
+\]
+In the equal-degree case the strict inequality in the count is $\ell_u+\ell_v>d_u-1$, so the weak bounds follow by integrality. A site with no lower neighbour would contradict the first relation on a rising edge, or force $b_v=0$ on an equal edge where $u$ itself is not lower. A minimum-degree site therefore has a leaf and at least two core neighbours. Every site has total degree at least three. Every degree-three site is loaded, has exactly two core neighbours, and both have degree at least four by the equal-degree condition. This also rules out $h=3$.
+
+Delete a site and its leaf if present, and denote the decrease of $M$ by $X_v$. The remaining graph is connected and has at least two vertices. Define
+\[
+ \beta_v=\epsilon_v b_v,\qquad \xi_v=\max(0,X_v,\beta_v).
+\]
+Every survivor edge can only grow in weight, while removed edges have total weight at most one. Thus $X_v\le1$. We need the following sharper bound.
+\begin{lemma}\label{weight:local}
+At each site $0\le\beta_v\le\min(\xi_v,1/3)$ and $\xi_v+\beta_v\le1$.
+\end{lemma}
+\begin{proof}
+Only a loaded site needs attention. Set $d=d_v$, $g=d(d-1)$, and let $l,e,u$ count its lower, equal and higher core neighbours. Then $l+e+u=d-1$ and $b_v=(e+u)/g\le1/d$. For a core neighbour $w$, its contribution to $X_v$ after subtracting survivor gains on its lower edges is $b_w$ if $d_w>d$, $b_w-1/g$ if $d_w=d$, and $1/d-a_w$ if $d_w<d$. If two equal-degree neighbours of $v$ are adjacent, the edge between them also gains, requiring a further subtraction. Dropping these nonnegative corrections gives an upper bound. The three preceding contributions are at most $a_v$, $a_v-1/g$ and $1/d-b_v$, respectively. Including the leaf edge gives
+\[
+ g X_v\le(d-1)+u(l+1)+el+l(d-1-e-u)=(l+1)(d-1)+u.
+\]
+Adding $gb_v=e+u$ leaves a shortfall from $g$ of $(d-2)e+(d-3)u\ge0$. Thus $X_v+b_v\le1$ and $2b_v\le2/3$, proving the claim.
+\end{proof}
+\subsection{The probability constraint}
+For $u\in\supp p$, a one-sided transfer of mass from $u$ to any $z$ shows $(Kp)_u\ge(Kp)_z$. Averaging on the support yields $(Kp)_u=F(G)$. Suppose $S$ is a set whose deletion leaves a connected graph of order at least two, and only $u\in S$ may have positive mass. Set $t=p_u$, $x=M(G)-M(G-S)$ and $F=F(G)$. If $t=0$, then $x<0$ by the subgraph argument. For $0<t<1$, renormalize the surviving vector by $1-t$. The kernels of surviving pairs can only rise and $\sum_{z\ne u}p_z\dist(u,z)=F-2t$, whence
+\[
+ (1-2t)F\le (1-t)^2(M+1-x)-2t^2 .
+\]
+For $0<t<1/2$, using $F>M+1$ on the left gives $(1-t)^2x<(M-1)t^2$.
+
+To justify the other half of the mass range, $M\ge2$ here: order the sites by decreasing degree and charge each edge to its first endpoint, putting leaves last. The first four sites contribute at least $\sum_{i=1}^4(1-(i-1)/3)=2$. Write $y=\sqrt{M-1}\ge1$ and $\theta(s)=\sqrt s/(y+\sqrt s)$. If $0<x\le1$, the last inequality gives $t>\theta(x)$ when $t<1/2$, and $\theta(x)\le1/2\le t$ otherwise. An unloaded site supplies mass for the deletion $\{v\}$. A loaded site supplies the same leaf mass for each of $\{v'\}$ and $\{v,v'\}$ because $p_v=0$. Summing these lower bounds over distinct masses yields
+\begin{equation}
+ \Theta:=\sum_{v\in V(J)}\theta(\xi_v)\le1.\label{weight:budget}
+\end{equation}
+
+\subsection{Closing the weighted inequality}
+\begin{lemma}\label{weight:saved}
+Let $l_v$ count the lower \emph{core} neighbours of $v$, and $M_0$ be the weight of the core edges. Then
+\[
+ \sum_v X_v\ \ge\ M_0+\sum_{v\ \mathrm{loaded}}\frac{l_v}{g_v},
+ \qquad M\le\sum_v(\xi_v+\beta_v).
+\]
+\end{lemma}
+\begin{proof}
+Sum the weight removed under site deletions. It is $2M_0+\sum_{v\ \mathrm{loaded}}1/d_v$ before the gains of surviving edges are subtracted. Each leaf edge at $w$ gains $1/g_w$ exactly $d_w-1$ times. For a core edge $uw$ with $d_u<d_w$, the gain $1/g_w$ occurs exactly when a core neighbour of $w$ other than $u$ is deleted. This is $d_w-1-\epsilon_w$ times, giving total $1/d_w-\epsilon_w/g_w$. On an equal-degree edge of degree $d$, gains occur only when a common neighbour is deleted, at most $d-1$ times, for total at most $1/d$. Subtract these gains. The unequal-degree term saves $1/g_w$ once for each lower core neighbour of a loaded $w$. Finally $1/d_v-l_v/g_v=b_v$ on a loaded site, since $\ell_v=l_v+1$. Adding the leaf weights to $M_0$ and using $X_v\le\xi_v$ proves the second claim.
+\end{proof}
+For a site with $x=\xi_v>0$, $b=\beta_v$, Lemma~\ref{weight:local} gives $b\le x\le1-b$. The function $\sqrt{x}+b/\sqrt{x}$ is increasing on $x\ge b$, so
+\[
+ \frac{x+b}{\theta(x)}
+   =(x+b)+y\bigl(\sqrt{x}+b/\sqrt{x}\bigr)
+   \le1+\frac{y}{\sqrt{1-b}}\le1+\sqrt{3/2}\,y .
+\]
+At $x=0$ both summands in $x+b$ vanish. Lemma~\ref{weight:saved} and \eqref{weight:budget} now force $1+y^2=M\le1+\sqrt{3/2}\,y$, or
+\begin{equation}M\le 5/2.\label{weight:fivehalf}\end{equation}
+\begin{lemma} If $h\ge5$, every surviving decorated core has $M>5/2$.\end{lemma}
+\begin{proof}
+Let $r$ be the number of sites of degree at least four. If some sites have degree three, each has two distinct higher neighbours, so $r\ge2$. For $2\le r\le4$, charge edges at the first endpoint in decreasing order. The first $r$ sites contribute at least $r-\binom r2/4$. Each remaining site contributes a separate leaf edge of weight $1/3$. At $h=5$ these lower bounds for $r=2,3,4$ are $11/4,35/12,17/6$. They increase with $h$. If $r\ge5$, the first five sites alone contribute at least $5-10/4=5/2$. For $h>5$ choose the last site in this ordering. Its lower neighbour must be a leaf, and that edge was uncounted. For $h=5$, a missing pair among the five gives strictness in counting earlier neighbours. If the core is $K_5$, an unloaded site would have degree four and no lower neighbour. All sites are therefore loaded and $M=3$.
+\end{proof}
+It remains to handle $h=4$. Every site has core degree at least two, so the missing pairs of $J$ form a matching. Project a leaf to its site and each site to itself, and write $q$ for the resulting masses. For independent samples $x,y$ from $p$, $K(x,y)\le2+\dist_J(\pi x,\pi y)$ even on the diagonal. Missing pairs have distance two, and hence
+\[
+ \mathbb E_q\dist_J
+ =1-\sum_i q_i^2+2\sum_{ij\ \mathrm{missing}}q_iq_j\le1
+\]
+by $2q_iq_j\le q_i^2+q_j^2$ on disjoint pairs. Thus $F\le3\le M+1$. This contradicts minimality in the last possible case and proves \eqref{weight:weighted}. In particular, no external computation is needed for this proof of the weighted theorem.
+
+\section{The truncated broom bound}
+
+We reuse the sorted-distance comparison in VMRC~\cite{VMRC244},
+where it bounds a truncated Wiener sum, and record its stepwise
+form for the finite certificate.
+\begin{lemma}\label{low:broom}
+For any weakly increasing function \(f\) on the positive integers,
+\(\sum_{\{u,v\}} f(\operatorname{dist}_G(u,v))\) is at most the
+corresponding sum for the broom of order \(n\) and maximum degree \(d\).
+\end{lemma}
+\begin{proof}
+Extend the incident star of a maximum-degree vertex to a spanning
+tree \(T\). This can only increase distances. Starting with this
+star, build \(T\) by adding one leaf at a time. When the new leaf
+arrives at order \(t\), its sorted distances \(b_1,\ldots,b_{t-1}\)
+satisfy \(b_i\le i\): any vertex at distance \(b_i\) provides
+\(b_i-1\) vertices at strictly smaller positive distances along its path.
+Also the tree diameter is at most \(t-d+1\). A path meeting the hub
+omits at least \(d-2\) of its neighbors; a path avoiding it meets at
+most one of its neighbors and also omits the hub.
+Thus \(b_i\le\min(i,t-d+1)\). The broom has precisely this distance
+vector when extending its long arm. The initial stars agree, and
+summing the stepwise comparison proves the claim.
+\end{proof}
+
+Write $d=\Delta(G)$, $D=\operatorname{diam} G$, $C=\binom n2$, and $W(G)=\sum_{\{u,v\}}\dist_G(u,v)$.
+The same proof gives \(D\le n-d+1\). Put \(f(t)=\min(D,t)\), and denote
+the resulting tree sum by \(W_D(T)\). A broom has a spine of length
+\(n-d\) and \(d-1\) short leaves adjacent to its hub. At each distance
+\(1\le j<D\le n-d+1\) there are \(n-j\) pairs of spine or short-leaf
+to spine vertices, with another \(\binom{d-1}2\) short-leaf pairs at
+distance two. Subtracting their savings against a baseline of \(D\)
+gives the exact bounded-diameter envelope
+\begin{equation}\label{low:boundW}
+W(G)\le W_D(T)\le
+ U(n,d,D)=DC-\frac{D(D-1)(3n-D-1)}6-(D-2)\binom{d-1}2.
+\end{equation}
+No structural assertion that a Wiener maximizer at fixed diameter is a
+broom is needed.
+
+\section{Intermediate orders: a leaf-deletion certificate}
+\label{sec:joint}
+For this section a counterexample means a nonstar with $R-\mu\le B_n$.
+Pick one of least order among the orders below $600$ if there is any.
+The orders $n\le3$ and the case $D\le2$ are excluded directly below.
+Let $d=\Delta(G)$, $C=\binom n2$, and $Q=R-M$. Uniform weighting
+of the weighted theorem gives
+\begin{equation}\label{eq:uniform}
+M\ge \frac{(n-1)\mu-(n-2)}n.
+\end{equation}
+Indeed the expected kernel is $(n-1)\mu/n+2/n$.
+
+\subsection{Upper and lower bounds before deletion}
+On an edge of degrees $a\le b$ set $Q_e=(ab)^{-1/2}-1/b\ge0$.
+Then
+\[
+ n-2R=\sum_{uv\in E}(d_u^{-1/2}-d_v^{-1/2})^2
+ =\sum_{e\in E}(\sqrt{b/a}-1)Q_e .
+\]
+If $r\ge1$ and $P\ge0$ satisfy $n-2R\le(r-1)Q+P$, then
+$(r+1)R\ge n+(r-1)M-P$.
+In particular $r=\sqrt d,P=0$ work. Also $M\ge1$, by counting
+the edges incident to a vertex of degree $d$. Thus $R\ge\sqrt{n-1}$:
+replace $r$ by $\sqrt{n-1}$ in $1+(n-2)/(1+r)$.
+When $D\le2$, $\mu=2-|E|/C\le2-2/n$ with equality in this last
+bound only for a tree of diameter at most two. So $D\ge3$ and $n\ge4$.
+
+For a counterexample, the diameter inequality $M\ge D/2$ and
+\eqref{eq:uniform} now give the respective lower bounds
+\begin{align}
+L_D(r,P)&=D/2+(n-D-P)/(r+1)-B_n,\\
+L_M(r,P)&=\frac{n^2-nP-(r-1)(n-2)-n(r+1)B_n}{2n+r-1}.
+\end{align}
+Write $L(r,P)=\max(L_D(r,P),L_M(r,P))$.
+Replacing $r$ by an upper endpoint and $P$ by an upper endpoint
+can be done at the edge inequality itself (since $Q\ge0$).
+There is no need to assume a sign for a derivative in either lower bound.
+
+The truncated-broom estimate \eqref{low:boundW} gives the upper bound
+$U(n,d,D)/C$ for $\mu$. If the graph has $\ell\ge1$ leaves, a second
+upper bound for its Wiener sum is
+\begin{equation}\label{eq:ell}
+ E_{n,\ell}=\ell(\ell-1)+(y-1)\lfloor\ell^2/4\rfloor
+        +\ell y(y+1)/2+(y^3-y)/6,\qquad y=n-\ell .
+\end{equation}
+To see this, take a spanning tree containing the leaf edges and partition
+it into these $\ell$ designated leaves and the remaining $y$ vertices,
+which form a tree. The core's own distance sum is no greater than that
+of the path by successive leaf removal. Each designated leaf has total
+distance to the core at most $y(y+1)/2$, by sorting its distances from its
+parent in the core and adding one. Leaf pairs contribute two for their
+pendant edges, and each core edge contributes at most
+$\lfloor\ell^2/4\rfloor$ across the split it induces on the designated leaves.
+The bounds $d\le n-D+1$ and $\ell\le n-D+1$ follow from a diametral path:
+for the degree bound one can take the spanning tree that retains a degree-$d$
+star and use its diameter bound from the broom argument, and for the leaf
+bound the path has $D-1$ internal nonleaves.
+
+\subsection{Host degree and a signed excess at its leaves}
+If every leaf host has degree at most $d/2$, or if there are no leaves,
+one may use $r=\sqrt{d/2}, P=0$. Thus the exact scan first checks this
+whole alternative against the truncated-broom upper bound.
+Otherwise let $k>d/2$ be the maximum leaf-host degree. Then all edge ratios
+are at most $k$, so $\mu\ge L(\sqrt k,0)$. On nonleaf edges the ratio
+is at most $d/2$. Use $r=\sqrt{d/2}$ on all edges, and bound the excess
+on leaf edges by $P=\ell\beta(k,r)$ where
+\[
+ \beta(k,r)=\max(0,1-r/\sqrt k)(1-1/\sqrt k).
+\]
+Indeed for a host of degree $b$ the excess over $(r-1)Q_e$ equals
+$(1-r/\sqrt b)(1-1/\sqrt b)$. Its positive part is increasing in
+$\sqrt b$ for $\sqrt b\ge r\ge1$, since both factors increase there.
+Additionally $Q\ge\ell\psi_*$ for
+$\psi_*:=\min(2^{-1/2}-1/2,k^{-1/2}-1/k)$, because
+$b^{-1/2}-1/b$ increases to $b=4$ and then decreases.
+Using $R=M+Q$ gives two further lower bounds
+$D/2+\ell\psi_*-B_n$ and $n(\ell\psi_*-B_n)-(n-2)$ for $\mu$.
+
+\subsection{Deleting one leaf and using the smaller order}
+Let $v$ be a host of degree $k$ and $u$ an attached leaf.
+At least $c=\max(1,k-\ell)$ neighbors of $v$ are nonleaves.
+The $1$ is available because otherwise the entire connected graph is
+a star. Write $G'=G-u$. Distances among surviving vertices are unchanged.
+The index drop is
+\[
+ R(G)-R(G')=\sqrt k-\sqrt{k-1}
+ +( (k-1)^{-1/2}-k^{-1/2})
+     \sum_{w\sim v,\ w\ne u}(1-d_w^{-1/2}),
+\]
+hence at least the same expression with the sum replaced by
+$c(1-2^{-1/2})$. This follows by subtracting the removed edge and
+the reweighted incidences at $v$; the other edge weights do not change.
+Put
+\[
+ J=\sqrt k-\sqrt{k-1}+( (k-1)^{-1/2}-k^{-1/2})c(1-2^{-1/2})
+        -(B_n-B_{n-1}).
+\]
+Minimality gives $R(G')-\mu(G')\ge B_{n-1}$ even if $G'$ is a star.
+Combining with $R(G)-\mu(G)\le B_n$ gives $\mu(G)-\mu(G')\ge J$.
+If $T(u)$ is the sum of distances from the deleted leaf, direct subtraction
+of the two Wiener sums gives
+\[
+ \mu(G)-\mu(G')=\frac{2[T(u)-(n-1)\mu(G)]}{(n-1)(n-2)}.
+\]
+The host's eccentricity is at most $D-1$: every other vertex can be
+reached from $u$ only through $v$. Moreover its first $k$ sorted
+positive distances are one. With $p=\min(n-k,D-1)$, its remaining
+distance sum together with its first $k$ distances is at most
+$k-1+p(p+1)/2+(n-k-p)p$. Thus
+\[
+ T(u)\le T^+:=k-1+p(p+1)/2+(n-k-p)p+n-2.
+\]
+Combining,
+\begin{equation}\label{eq:deletionlimit}
+ \mu(G)\le T^+/(n-1)-(n-2)J/2.
+\end{equation}
+
+\subsection{What the program checks}
+For $4\le n\le599$ and $3\le D<n$ it visits every $2\le d\le n-D+1$.
+For a survivor of the first broom bound it checks the low-ratio
+alternative. In the remaining alternative it visits every integer
+$d/2<k\le d$, screens with the broom and deletion inequality using
+$c=1$, then visits all $1\le\ell\le n-D+1$. It combines the lower bounds
+above with \eqref{eq:ell}, the truncated-broom bound, and
+\eqref{eq:deletionlimit}. This range does not require an enumeration of
+graphs: any actual counterexample must supply one of the tested tuples.
+In the implementation $B_n$ is replaced on the lower-bound side by a
+strict upper encloser $B^+$; consequently each lower bound used in an
+exclusion is strict. The deletion upper bound uses a downward
+rounding of the index drop and an upward rounding of $B_n-B_{n-1}$,
+so it stays a valid weak upper bound. Thus equality of an encoded
+upper and lower bound is sufficient for exclusion. The checker
+cross-multiplies the deletion comparison by positive denominators.
+Exact directed-arithmetic details and counts are given in the appendix.
+\section{A uniform upper tail: orders at least 600}
+We prove strictness off the star for all $n\ge600$ simultaneously.
+Write $d=\Delta(G)$, $D=\operatorname{diam}G$, $Q=R-M$, and
+$g=R-\mu$. As above, $M\ge D/2$ and uniform weighting in the
+weighted theorem gives
+$M\ge((n-1)\mu-(n-2))/n$. The path bound
+$\mu\le(n+1)/3$ follows by taking a spanning tree and repeatedly
+deleting leaves: the sorted distances from a leaf at order $j$
+are no greater than $1,\ldots,j-1$. Write $g_*=B_n$, $s=\sqrt{n-1}$,
+and $\mu_*=2-2/n$.
+
+For degrees $a\le b$ write $Q_e=1/\sqrt{ab}-1/b$. Then
+\[
+ (1/\sqrt a-1/\sqrt b)^2=(\sqrt{b/a}-1)Q_e,\qquad
+ \sum_{uv\in E}(1/\sqrt{d_u}-1/\sqrt{d_v})^2=n-2R.       \tag{1}
+\]
+Thus for $r_0=\sqrt d$ one has $(r_0+1)R\ge n+(r_0-1)M$. Always $M\ge1$ by the edges incident to a maximum-degree vertex, which implies $R\ge(n+r_0-1)/(r_0+1)\ge s$. If $D\le2$, then $\mu=2-|E|/\binom n2\le\mu_*$, with equality only for the star. Hence assume $D\ge3$ and $j=n-1-d\ge1$. Put $e=D-2$ and $t=n-1$. We use
+\[
+ \mu-\mu_*\le\min(ae,b),\quad
+ a=\frac{j(2t-j-1)}{nt},\quad b=\frac{j(j+1)(3n-7-2j)}{3nt}.
+\]
+The bound $ae$ holds since each pair inside the hub's closed neighborhood has distance at most two, and at least $j$ of the pairs meeting the complement are parent edges in a breadth-first tree. Subtract one for each edge of $G$ from the baseline distance of two for all pairs, then add at most $D-2$ per eligible nonedge. The $b$ bound is the sharp maximum-degree broom estimate. Extend the hub star to a spanning tree and add its remaining leaves successively from that star. In a partial tree of order $m$, the ordered distances from the new leaf are at most $1,\ldots,m-1$, and its distances to $d-1$ hub neighbors in other branches agree. Their repetition costs at least $\binom{d-1}2$ in the maximum possible distance sum. The single-arm broom attains the comparison at every step. Its $j$ nonleaf edges have cut sizes $2,\ldots,j+1$ on the tail side, giving the excess over the star's Wiener sum $\sum_{k=1}^j k(n-2-k)=j(j+1)(3n-7-2j)/6$.
+
+Consequently $g-g_*\ge C+\ell e-\min(ae,b)$, where
+\[
+ C=\frac{(s-r_0)(s-1)}{r_0+1},\qquad
+ \ell=\frac{r_0-1}{2(r_0+1)} .
+\]
+Indeed apply $M\ge D/2$ in the bridge. If $a\le\ell$ the gap is positive. Otherwise its minimum on $e\ge0$ is at least $C-(a-\ell)b/a$. When $d\ge3t/4$, $a\le7/16$ and $b/a\le(j+1)/2$, by the formulas above. Therefore it suffices that $2C/(j+1)>a-\ell$. Using $s-r_0=j/(s+r_0)$ gives $2C/(j+1)\ge j(s-1)/[(j+1)s(r_0+1)]$, and $a-\ell\le 1/(r_0+1)-1/16$. Their strict comparison follows from
+\[
+ (r_0+1)/16>(1+j/s)/(j+1).
+\]
+Indeed $t\ge100$ gives $r_0>\!43/5$, so the left exceeds $3/5$ and the right is at most $1/2+1/10$. This treats all $n\ge600$ with $d\ge3(n-1)/4$. For the rest we assume $x:=d/n\le3/4$ and $g\le g_*$, and obtain a contradiction.
+
+\section{Leaf transfers and the two kinds of hub}
+We may test a minimizer of $g$ on the nonstars at the specified order: if that family is nonempty, it has a minimizer because there are finitely many graphs. Its nonleaf-induced core $J$ is connected and has at least two vertices. At fixed core $J$, let $q_v$ be the core degree and $l_v$ the number of original leaves attached at $v$. Put $\epsilon_v=1$ for $q_v=1$ and $0$ otherwise. All allowable decorations obey $l_v\ge\epsilon_v$; their total is fixed. Call a support \emph{active} if $l_v>\epsilon_v$. Every leaf attached elsewhere has host degree two. If there were a better fixed-core decoration, it too would be a nonstar, so our graph is minimizing within this family.
+
+For clarity, the separation inequality from Keio's leaf-transfer theorem \cite{keio} follows from the exact curvature. At real leaf counts, with $d_v=q_v+l_v$ and $c_v=q_v-\sum_{w\sim_Jv}d_w^{-1/2}>0$, the pure derivative of $R$ in $l_v$ is $d_v^{-1/2}/2+c_v d_v^{-3/2}/2$. Its second derivative is strictly less than $-d_v^{-3/2}/4$, while the mixed second derivative of $R$ is nonnegative. The only curved part of the Wiener sum of the graph is $\sum_{u<v}l_ul_v\operatorname{dist}_J(u,v)$, since the total number of leaves is fixed. For two distinct active sites both transfers of one leaf are allowed. Writing $g(t)$ on that segment we obtain
+\[
+0\le g(-1)+g(1)-2g(0)
+< -\tfrac14(d_u^{-3/2}+d_v^{-3/2})
+      +\frac{4\operatorname{dist}_J(u,v)}{n(n-1)}.
+\]
+Indeed the exact second difference is the integral of $g''(t)$ against the probability weight $1-|t|$ over $[-1,1]$, and convexity of the inverse $3/2$ powers bounds that integral at the center. Therefore
+\[
+\operatorname{dist}_J(u,v)>
+\frac{n(n-1)}{16}\,(d_u^{-3/2}+d_v^{-3/2}).
+\]
+For $d<3(n-1)/4$ and $n\ge107$, each summand individually exceeds one: this reduces to $n^2\ge108(n-1)$. Thus active sites have distance at least three and their original closed stars are disjoint.
+
+We can also exclude $d\le4$ for $n\ge107$. In (1) take the ratio bound $r_0\le2$; the uniform $M$ bound implies $\mu-M\le4/3-5/(3n)$ and the path bound gives $\mu\le(n+1)/3$. Hence
+\[
+g\ge\frac{n-6+5/n}{9}>\sqrt n>g_*,
+\]
+where $n/9-2/3-\sqrt n>0$ at $n=107$ and increases thereafter. We henceforth have $d\ge5$.
+
+\section{A signed ratio estimate}
+Let $v$ be a maximum-degree vertex and let $p$ be the fraction of leaves. If $v$ is inactive it has no leaves. If $v$ is active, let $\eta=l_v/n\le\min(p,x)$ and let $\tau$ be the largest $d_w/d$ among the other active sites, or zero if there are none. Put $r=\sqrt{d/2}$, $y=\sqrt{x/2}$ and $A=1-1/\sqrt2$. Each nonleaf edge contributes to the variance in (1) at most $(r-1)Q_e$. The excess on a leaf edge of host degree $b$ is
+\[
+ F(1/\sqrt b),\qquad F(u)=(1-ru)(1-u).
+\]
+The $v$-leaves have excess $A(1-1/\sqrt d)$. In the inactive case use this same upper bound for all leaves. For active $v$, each other leaf has $2\le b\le\max(2,\tau d)$. When a box has upper endpoint $\tau_1>1/2$, their excess is bounded by
+\[
+ \bigl(1-1/\sqrt{2\tau_1}\bigr)(1-1/\sqrt d).
+\]
+When $\tau_1\le1/2$, retain the negative sign: convexity of $F$ gives the maximum at $b=2$ or at $b=\tau_1d$ if the latter reaches two. For $d\ge d_0$, upper bounds on those two endpoint values are
+\[
+ A(1-\sqrt{d_0}/2),\qquad
+ (1-1/\sqrt{2\tau_1})\max\bigl(A,1-1/\sqrt{\tau_1 d_0}\bigr);
+\]
+the second is omitted if $\tau_1=0$. The factor multiplying the nonpositive quantity is a lower bound, and taking the maximum preserves the required upper bound. We use $d_0=\max(4,x_0N)$ for all $n\ge N$. Rounding $A$ in each direction as appropriate preserves both signs.
+
+In a parameter box let $f_+$ be a nonnegative upper bound for the coefficient of $1-1/\sqrt d$ over all positively bounded leaf edges (all leaves except the other hosts in the low-$\tau$ active case, for which it is only the $v$-leaves). In that case let $f_-$ be an upper bound on the normalized remaining excess, using the maximum of the two negative endpoint bounds times the smallest possible fraction of leaves not at $v$. In other cases $f_-=0$. Put $f=f_++f_-$; the total variance bound is
+\begin{equation}
+ n-2R\le(r-1)Q+n(f-f_+/\sqrt d). \tag{2}
+\end{equation}
+Write $U=\mu/n$ and $q=1/\sqrt n$. The uniform $M$ bound and $g\le g_*$ yield
+\[
+ n-2\mu\le(r+1)g_*+(r-1)(1+(\mu-2)/n)+n(f-f_+/\sqrt d).
+\]
+Expansion of the first two terms gives exactly
+\[
+ (r+1)s+(U-1)r-(3+U)+4/n .
+\]
+Since $rs/n\le y$ and $s/n\le q$, we get
+\[
+ (2+yq)U\ge 1-y-f-(1-y-f_+/\sqrt x)q+(3-4/N)q^2
+\]
+for $n\ge N$, where the nonnegative $U/n$ on the right was discarded. For a parameter box take upper bounds $y_1,x_1$ and the bounds $f,f_+$ just defined and lower bound $y_0$. Use the already bounded leaf contribution $f-f_+/\sqrt d$ in (2) before grouping the right-hand terms. Then if $q\le\epsilon$ a valid lower bound is
+\[
+ u_0=\frac{1-y_1-f-E}{2+y_1\epsilon},\qquad
+ C=\max(0,1-y_0-f_+/\sqrt{x_1}),\quad
+ E=\max_{0\le q\le\epsilon}(Cq-c q^2),\quad c=3-4/N .
+\]
+The numerator here is positive on every retained box. The program increases $C$ slightly by rounding up the root in its denominator. The maximum is at an endpoint or the interior vertex of this concave quadratic. Notice that keeping the actual mean-distance term in (2) produces the divisor $2+y_1\epsilon$ rather than replacing $U$ by the generic path bound before rearrangement.
+
+\section{The metric estimate retaining a marked mass}
+\begin{lemma}
+Consider a tree with $h$ edges, node masses at least one, total mass $n$, with a marked node of mass at least $w+1$. Then for two independent samples with distribution proportional to the masses, their expected distance divided by $n$ is at most
+\[
+ \frac{h}{2n}-\frac{h(h^2-1)}{6n^3}
+       -\frac{2h}{n^3}\left(w-\frac{n-h-1}{2}\right)_+^2 .
+ \tag{5}
+\]
+\end{lemma}
+\begin{proof}
+For a fixed positive mass list a maximizing tree is a path. Otherwise choose a branching node and detach a branch. On a path joining two leaves of distinct other branches the remaining weighted transmission is convex, because every distance is an absolute deviation from its projection plus a constant. The positive mass of the branching node itself makes its value strictly below the convex interpolation of the two endpoint values. Thus moving the branch attachment to one endpoint strictly improves the Wiener sum, a contradiction. In the path keep unit baseline masses at all nodes, and consider each extra mass as a package, keeping the required $w$ together. With other packages fixed, its cross-distance cost is convex in position, and it can be moved to an endpoint without loss. The endpoints receive extras $a,b$ with $a+b=L=n-h-1$, one at least $w$. Their Wiener sum including baseline weights is
+\[
+ h(h+1)(h+2)/6+Lh(h+1)/2+hab.
+\]
+Insert $ab\le L^2/4-(w-L/2)_+^2$ and multiply by $2/n^3$. The case $h=0$ is immediate.
+\end{proof}
+
+Strip all original leaves, then contract the closed star about $v$ in the nonleaf graph, restoring each leaf as mass at its host's cell. If $v$ is inactive this removes at least $np+d$ vertices in total. Otherwise it removes at least $np+d-n\eta$, since the overlap between the two removals consists exactly of the leaves at $v$. The marked cell has mass at least $d+1$. Thus if the quotient spanning tree has $h$ edges, then $h/n\le1-x-p+\eta$, with $\eta=0$ interpreted in the inactive case. This also implies $h/n\le1-p$ since $\eta\le x$.
+
+In the active case with $\tau>0$, one may additionally contract the star of a site $w$ attaining $\tau$. The original closed stars are disjoint by separation; each original leaf in either star is attached to that very center. Counting the two star removals alone gives $h/n\le1-(1+\tau)x$; adding all leaves globally can only decrease this. The two-star contraction also makes at least as many removals as the one-star contraction. The marked cell for (5) still has mass at least $d+1$, and the other cell has mass at least $\tau d+1$.
+
+For independent uniform original endpoints, a path in the quotient tree lifts with at most two extra edges in each contracted core star and one per original leaf endpoint. If an endpoint is a $v$-leaf, its host is the center of its star, saving one edge in the star route. For two stars, if both endpoints lie in one star cell then the quotient path does not visit the other, saving a further two; this event has probability at least $x^2+(\tau x)^2$ over the two disjoint possibilities. These savings concern different star incidences and can be added.
+
+Define
+\[
+ H(a,z)=a/2-a^3/6-2a\bigl(z-(1-a)/2\bigr)_+^2 .
+\]
+By (5), averaging the lifted path and converting the independent sampling back to distinct pairs gives
+\[
+ U\le H(a,x)+L/n.
+\]
+For one star take $a=1-\max(p,x+p-\eta)$ and $L=47/20+2p-2\eta$. For two take the minimum of $a$ and $1-(1+\tau)x$ and use $L=87/20+2p-2\eta-2(1+\tau^2)x^2$. Indeed the sampling correction is $\mu/n^2\le(n+1)/(3n^2)$ and the linear correction in (5) is at most $1/(6n^2)$; these contribute at most $0.35/n$ for $n\ge30$. Replacing $(n-h-1)/2$ by $(n-h)/2$ weakens the negative correction. The derivative of $H$ with respect to $a$ is nonnegative for $0\le a\le1-z$: it is $1/2-2(z-1/2+a)^2$ on the active part and $(1-a^2)/2$ otherwise. The function decreases in $z$, so substituting the outward bounds on $a,x,L$ from a real parameter box gives a valid uniform upper bound on $U$.
+
+\section{The diameter-capped bound and its two corrections}
+For $t\in[0,1-x]$ define $P(x,t)=(1-x^2)t-t^2+t^3/3$. For $t_*=\min(D/n,1-x)$ we use the slightly sharper form
+\[
+ (1-1/n) U\le P(x,t_*)+\frac{x(3t_*+2x)}n+\frac{3x}{n^2}+\frac4{n^3}. \tag{6}
+\]
+This is the diameter-truncated broom bound of VMRC~[244]. For clarity, extend the degree-$d$ hub star to a spanning tree and successively add the remaining leaves from the star. At partial order $m$, the sorted distances from the new leaf are bounded by $\min(i,m-d+1)$ for $1\le i<m$. The cap $m-d+1$ follows since along a geodesic a maximum-degree vertex contributes at most two on-path neighbors if on it and at most three otherwise. The single-arm broom attains these ordered distances. Truncate each distance at $D$: it still dominates its distance in $G$. For the broom with path order $L=n-d+1$, count the truncated distances of leaf--leaf, extra leaf--path and path--path pairs to get
+\[
+ \begin{aligned} W={}&(d-1)(d-2)+(d-1)D(2L-D+1)/2+LD(D+1)/2\\
+   &-D(D+1)(2D+1)/6+D(L-D)(L-D-1)/2 .\end{aligned}
+\]
+Here $D\le L$ by the same geodesic count. With $t=D/n$, direct expansion gives
+\[
+ 2W=n^3P(x,t)+n^2x(3t+2x)-n(7t+18x)/3+4 .
+\]
+Indeed $t\le1-x+1/n$, so $P(x,t)\le P(x,t_*)$ by the sign of its $t$-derivative beyond its cap, and $x(3t+2x)\le x(3t_*+2x)+3x/n$. Discard the nonpositive linear term and divide the expanded identity by $n^3$ to obtain (6).
+
+Let $q=1/\sqrt n$, $\epsilon$ an outward upper bound on $1/\sqrt N$ and $\gamma=\epsilon-2\epsilon^2+2\epsilon^4$. As the polynomial is increasing on $[0,1/4]$, $g_*/n\le\gamma$ throughout the range. Put $J(A,B)=\max_{0\le q\le\epsilon}(Aq+Bq^2)$; evaluation at the endpoints and the interior vertex if applicable is exact. We bound $D/n$ by $2U$ plus a correction, initially $2\gamma$ by $D\le2M\le2R$. There are two refinements.
+
+\paragraph{Leaf correction.}
+For $b\ge2$, $\psi(b)=b^{-1/2}-b^{-1}$ increases to four and then decreases, and $\psi(16)\le\psi(2)$. If $d\ge16$, every leaf edge contributes at least $\psi(d)$ to $Q$. In the active case, if $\tau_1d\ge16$, all leaves not at $v$ contribute at least $\psi(\tau_1d)$, including mandatory degree-two hosts. Thus $Q/n\ge cq-eq^2$, where the box lower bound $c$ is for $p/\sqrt{x}+(p-\eta)(1/\sqrt{\tau_1}-1)/\sqrt{x}$, the upper bound $e$ is for $p/x+(p-\eta)(1/\tau_1-1)/x$, and the added terms are used only when $\tau_1d\ge16$ is certified. Because $D\le2M=2R-2Q$ and $g_*/n\le q-2q^2+2q^4$, use correction at most
+\[
+ \min\{2\gamma,J(2(1-c),2(e-2+2\epsilon^2))\}.
+\]
+
+\paragraph{Variance correction.}
+By (2) and $g\le g_*$ we have
+\[
+ Q/n\ge q(1-2U-2\gamma-f)_+/y_1,
+\]
+using $r-1\le y_1/q$ and discarding the nonpositive term $-f_+/\sqrt d$. With the same quadratic bound we obtain $D/n\le Z(U)$, where
+\[
+ Z(U)=2U+J\bigl(2(1-(1-2U-2\gamma-f)_+/y_1),-4(1-\epsilon^2)\bigr).
+\]
+For each fixed $q$ inside the maximization, the correction is nondecreasing with slope at most $4\epsilon/y_1$; the maximum satisfies the same bound.
+The function $Z$ has slope at most $2+4\epsilon/y_1$. Hence we use $D/n\le Z(u_0)+(2+4\epsilon/y_1)(U-u_0)$ for all $U\ge u_0$. For a constant correction the corresponding slope is just two. In either case put $z=\min(1-x_0,Z(u_0))$ and let $m$ be its slope bound. Write $v(U)=\min(1-x_0,z+m(U-u_0))$. Since capped $P$ is decreasing in $x$, (6) implies
+\[
+ (1-1/N)U\le P(x_0,v(U))+\frac{x_1(3v(U)+2x_1)}N+\frac{3x_1}{N^2}+\frac4{N^3}.
+\]
+On the uncapped part the derivative of the right is at most $m((1-z)^2-x_0^2+3x_1/N)$, and after the cap it is zero. Thus if this number is less than $1-1/N$, we exclude the whole box by checking the strict reverse inequality at $U=u_0$. This check retains the exact order correction at the local diameter bound, rather than replacing it by the uniform penalty $3/N$.
+
+\section{Certificate and conclusion}
+The code partitions $0\le x\le3/4$ and $0\le p\le1$, with $\eta$ and $\tau$ included in the active case. It discards impossible boxes using the inequalities proved above, or shows that the upper distance estimate is strictly less than $u_0$, or excludes the box by the diameter-truncated comparison. Otherwise it bisects one interval. Square roots are rounded outward by integer square tests, and every other coverage computation uses exact rational arithmetic. With $N=600$ all three initial boxes close, respectively with $103$, $25{,}029$, and $52{,}461$ visited boxes. Since every bound holds uniformly for every $n\ge N$, this proves the stated theorem, not merely a finite verification for example orders.
+
+\begin{thebibliography}{9}
+
+\bibitem{CH} G. Caporossi and P. Hansen, Variable neighborhood search
+for extremal graphs 1. The AutoGraphiX system, \emph{Discrete Math.}
+212 (2000), 29--44. \href{https://doi.org/10.1016/S0012-365X(99)00206-X}{DOI}.
+\bibitem{FMS} O. Favaron, M. Mah\'eo and J.-F. Sacl\'e, The Randi\'c index
+and other Graffiti parameters of graphs, \emph{MATCH} 47 (2003), 7--23.
+\href{https://match.pmf.kg.ac.rs/electronic_versions/Match47/match47_7-23.pdf}{Article}.
+\bibitem{DLS} Z. Dvo\v{r}\'ak, B. Lidick\'y and R. \v{S}krekovski,
+Randi\'c index and the diameter of a graph, \emph{European J. Combin.}
+32 (2011), 434--442.
+\href{https://kam.mff.cuni.cz/~bernard/pub/index.pdf}{Author's copy}.
+\bibitem{VMRC244} Shaitetsu, Distance modes and extremal graph
+inequalities, VMRC~[244] (21 November 2026), Section 7.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3/\%5B244\%5D\%20Graph_Distance_Modes_and_Extrema.tex}{Source}.
+\bibitem{keio} Keio, \emph{Concentrating pendant vertices on a fixed core}, Caporossi--Hansen additive-gap tournament, research submission 2 (November 2026), leaf-transfer separation theorem.
+\bibitem{vmrc} \emph{Verifiable Mathematical Reasoning Corpus}, entries [227] and [244], November 2026. \href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}{Pinned source revision}.
+\end{thebibliography}
+\clearpage
+\appendix
+\section{Intermediate orders and upper tail: commands and outputs}
+The standalone source emits both source files when compiled using
+a current LaTeX distribution. Compile only with assertions enabled,
+and run Python without \texttt{-O}.
+\begin{verbatim}
+g++ -std=c++17 -O3 verify_joint.cpp -o verify_joint
+./verify_joint 4 599
+python3 verify_tail.py 600
+\end{verbatim}
+The intermediate-order C++ code uses the GNU signed 128-bit integer type
+for large products. Its scale is $S=10^{10}$. For $1\le j\le600$, integer
+square root evaluates the lower endpoints for $\sqrt j$, $1/\sqrt j$,
+and $\sqrt{j/2}$ by squaring against $S^2j$, $\lfloor S^2/j\rfloor$,
+and $\lfloor S^2j/2\rfloor$, respectively. One grid unit added to a lower
+endpoint gives a strict upper endpoint. Rational divisions in the lower
+bounds are floored, including for negative numerators. The penalty is
+rounded upward; every reciprocal difference and every nonnegative factor
+in the index-drop bound is rounded downward. In the scan,
+\texttt{feasible} tests whether the deletion upper bound is strictly
+greater than the proposed lower threshold. If not, the cell is empty.
+The largest products have size below $10^{27}$ and the signed 64-bit
+quantities below $10^{15}$; thus all operations fit their stated types.
+
+The following totals were obtained by adjacent independent invocations:
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Orders & $(n,D,d)$ rows & Host cases & Leaf counts \\
+\midrule
+4--399 & 10,428,396 & 947,775 & 140,015,238 \\
+400--479 & 7,660,080 & 960,081 & 197,334,534 \\
+480--539 & 7,720,460 & 1,074,264 & 255,214,651 \\
+540--599 & 9,653,660 & 1,452,984 & 385,970,453 \\
+\midrule
+Total & 35,462,596 & 4,435,104 & 978,534,876 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Every invocation reported zero unresolved low-ratio rows and zero
+retained tuples.
+The upper-tail Python code uses only the standard library. For cutoff
+600 its three root boxes close after 103, 25029, and 52461 visits.
+\lstinputlisting[language=C++]{verify_joint.cpp}
+\lstinputlisting[language=Python]{verify_tail.py}
+\end{document}

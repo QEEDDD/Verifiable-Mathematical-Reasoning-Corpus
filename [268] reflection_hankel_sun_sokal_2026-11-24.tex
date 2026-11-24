@@ -1,0 +1,1077 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[a4paper,margin=24mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array,enumitem}
+\usepackage{xcolor,listings,fancyhdr,xurl}
+\usepackage[hidelinks]{hyperref}
+\definecolor{ink}{HTML}{17364B}
+\definecolor{teal}{HTML}{126D78}
+\definecolor{pale}{HTML}{F1F6F7}
+\definecolor{muted}{HTML}{52636D}
+\hypersetup{pdftitle={Reflection and Quantitative Hankel Certificates},
+ pdfauthor={Research manuscript prepared for Keio},
+ pdfsubject={Proofs for exact clauses of conjectures of Sun and Sokal; priority audit}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\sffamily\color{muted}REFLECTION AND HANKEL CERTIFICATES}
+\fancyhead[R]{\small\sffamily\color{muted}24 NOV 2026}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Fp}{\mathbb F_p}
+\newcommand{\Zp}{\mathbb Z_p}
+\newcommand{\LP}{LP^+}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{2em}
+\setlist{itemsep=3pt,topsep=5pt}
+\allowdisplaybreaks[2]
+\lstset{language=Python,basicstyle=\ttfamily\footnotesize,
+ keywordstyle=\color{teal}\bfseries,commentstyle=\color{muted},
+ stringstyle=\color{ink},showstringspaces=false,breaklines=true,
+ columns=fullflexible,keepspaces=true,frame=single,rulecolor=\color{pale},
+ backgroundcolor=\color{pale},framesep=6pt,aboveskip=9pt,belowskip=9pt}
+\title{\vspace{-1cm}\color{ink}\bfseries Reflection and Quantitative\\[3pt]
+ Hankel Certificates\\[8pt]\large Congruences of Sun and a finite-depth conjecture of Sokal}
+\author{Research manuscript prepared for Keio}
+\date{24 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We prove a complementary-binomial convolution congruence modulo $p^2$
+under the degree condition $ms+h<p-1$. A reflected discrete primitive
+annihilates the harmonic contribution to a row derivative; this makes
+the first-order $p$-adic perturbation vanish. The theorem proves all four
+formulas of Z.-W.~Sun's 2019 Conjecture 36(iii), with their stated prime
+ranges. It also proves three clauses of 36(ii); the remaining clause is
+a direct consequence of McCarthy--Osburn's 2008 theorem and is explicitly
+identified as such. Independently, we prove Sokal's 2022 Conjecture 8(c):
+for $b>0$ and $k-1<\gamma<k$, the first negative $S$-fraction coefficient
+of the prescribed hypergeometric logarithmic derivative is eventually
+exactly the $(2k+1)$st. Finite coefficient bounds and Hankel determinant
+gaps give an explicit sufficient threshold for every parameter pair and
+a uniform threshold on compact boxes. The limiting fraction and Hankel
+identities are classical. Detailed comparisons record substantial prior
+overlap, including existing fourth-power row congruences and a stronger
+known theorem about nonreal zeros. Mathematical proof and historical
+priority are kept separate: this manuscript does not certify that all
+six requested originality and open-status gates have been met.
+\end{abstract}
+\vspace{5pt}
+\noindent\colorbox{pale}{\parbox{\dimexpr\linewidth-2\fboxsep\relax}{%
+\small\textbf{Scope.} The proof targets are Sun 36(iii) and Sokal 8(c),
+not all of either numbered conjecture. The general congruence and the
+effective sign theorem are unconditional statements. This is an
+internally checked research draft, not an externally refereed priority
+claim or a formal proof-assistant certificate.}}
+\newpage
+\tableofcontents
+\newpage
+
+\section{Targets, provenance, and the research questions}
+\label{sec:scope}
+
+The two targets predate this work and are identifiable without reference
+to any newly defined constant. Z.-W.~Sun's \emph{Open conjectures on
+congruences} contains Conjecture 36 on printed pages 31--32
+\cite{sun2019}. Sokal's paper on hypergeometric functions in the
+Laguerre--P\'olya class contains Conjecture 8 in its appendix, on printed
+page 8 \cite{sokal2022}. We preserve the rational parameters, signs,
+prime restrictions, normalization, and quantifiers in the clauses
+proved below. A sufficient threshold used to prove Sokal's eventual
+sign statement is an additional conclusion, not a replacement target.
+
+\begin{center}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.20\linewidth}>{\raggedright\arraybackslash}p{0.33\linewidth}>{\raggedright\arraybackslash}p{0.40\linewidth}@{}}
+\toprule
+Original target & Exact coverage here & Deliberate boundary of the claim\\
+\midrule
+Sun 36(iii), 2019 & All four displayed congruences, with the source prime conditions & No assertion that these constitute a previously unsolved, first-ever resolution\\[3pt]
+Sun 36(ii), 2019 & All four clauses, one using the 2008 McCarthy--Osburn theorem & The known-theorem reduction is not counted as a new result\\[3pt]
+Sokal 8(c), 2022 & Every $b>0$, integer $k\ge1$, and $\gamma\in(k-1,k)$, for all sufficiently large $c$ & Parts 8(a) and 8(b) remain unproved here; known nonreal-zero results are not relabelled\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{How the supplied corpus was used}
+The supplied repository \cite{corpus} was fixed at commit
+\texttt{52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}.
+All 256 available \texttt{.tex} files were indexed and downloaded with
+Git-blob checks; selected relevant arguments were then read in detail.
+This was not a line-by-line validation of all 256 manuscripts. The
+repository itself presents its contents as research drafts, and none
+of its unverified claims is used as an established theorem here.
+
+Entry 230, \emph{Catalan Hankel and Sun Congruences}, suggested the
+complementary-row reduction of a triangular double sum and its Taylor
+expansion. Entry 255, \emph{Second Minima and Supercongruences}, suggested
+looking for a double vanishing mechanism. Entry 166,
+\emph{Real powers of completely monotone functions have sharp derivative
+threshold twelve}, supplied a thematic
+connection to Stieltjes and Hankel tests. The proofs below are written
+out independently and distinguish these design cues from established
+external results.
+
+\subsection{Auxiliary questions before application}
+The arithmetic auxiliary question is this: when does an antisymmetric
+polynomial over $\Fp$ annihilate a harmonic-weighted complete sum?
+The useful answer requires double roots at consecutive reflected
+endpoints. A discrete antiderivative turns the question into vanishing
+of a derivative at zero. Applying it to binomial-row derivatives gives
+a second power of $p$, beyond the elementary degree cancellation
+modulo $p$.
+
+The analytic auxiliary question is different: how can finitely many
+coefficients certify the sign of a specified continued-fraction
+coefficient on an entire parameter half-line? We bound the change in
+each logarithmic-derivative coefficient, propagate the bound to Hankel
+determinants, and compare it with explicit nonzero limiting products.
+This closes both the existence of the extracted coefficients and their
+signs. Neither an infinite continued-fraction convergence assumption
+nor a numerical search for zeros is needed.
+
+These are two concrete constructions, rather than a claim to one
+historically unprecedented universal principle. In particular, both
+harmonic reflection and confluent hypergeometric continued fractions
+have substantial antecedents, discussed in Section~\ref{sec:priority}.
+
+\subsection{Notation}
+We use $(a)_n=a(a+1)\cdots(a+n-1)$ with $(a)_0=1$ and
+$\binom zn=z(z-1)\cdots(z-n+1)/n!$. The ring of $p$-adic integers is
+$\Zp$; a congruence between its elements has its usual valuation
+meaning. A formal $S$-fraction means an iteratively extracted fraction
+of the form $1/(1-\alpha_1t/(1-\alpha_2t/\cdots))$ at the origin.
+All claims about its initial coefficients include nonvanishing of the
+necessary extraction denominators.
+\section{A reflection principle for complementary binomial rows}
+
+Let $p$ be an odd prime, let $m\in\mathbb Z_{\ge2}$, and let $h\ge1$ be odd.
+For $a\in\mathbb Z_p$ define
+\[
+ \mathcal T_{p,m,h}(a)=
+ \sum_{\substack{i,j\ge0\\i+j<p}}(2i+2j+1)^h
+       \frac{(a)_i^m(1-a)_j^m}{(i!)^m(j!)^m}.
+\]
+Every denominator in this finite sum is a $p$-adic unit.
+Write $\langle x\rangle_p\in\{0,\ldots,p-1\}$ for the least
+nonnegative residue of $x\in\mathbb Z_p$.
+
+\begin{theorem}[Degree-deficit supercongruence]\label{thm:degree-deficit}
+Put
+\[
+ s=\min\{\langle-a\rangle_p,\langle a-1\rangle_p\}.
+\]
+If $ms+h<p-1$, then
+\[
+             \mathcal T_{p,m,h}(a)\equiv0\pmod{p^2}.
+\]
+\end{theorem}
+
+The extra vanishing is supplied by the harmonic cancellation in
+Lemma~\ref{lem:antiderivative}. The construction proves a derivative
+congruence that is needed in addition to the convolution identity.
+The discrete-primitive presentation also has a direct reflection proof;
+neither presentation alone certifies historical novelty.
+
+\begin{lemma}[Reflected discrete antiderivative]\label{lem:antiderivative}
+Let $P\in\mathbb F_p[t]$ have degree at most $p-2$.
+Suppose $s\in\{0,\ldots,p-1\}$, $P(-s-1-t)=-P(t)$, and $P$ has a double zero
+at each of $-1,\ldots,-s$ (the last condition is empty if $s=0$).
+With $H_k=\sum_{j=1}^k j^{-1}\in\mathbb F_p$, one has
+\[
+                    \sum_{k=0}^{p-1}P(k)H_k=0.
+\]
+\end{lemma}
+
+\begin{proof}
+There is a unique polynomial $A\in\mathbb F_p[t]$ of degree at most
+$p-1$ such that $A(0)=0$ and $A(t+1)-A(t)=P(t)$.
+Indeed the finite difference takes $t^{d+1}$ to a polynomial whose
+leading coefficient is $d+1$, which is nonzero for $0\le d\le p-2$.
+Interchanging two finite sums gives
+\[
+ \sum_{k=0}^{p-1}P(k)H_k
+ =\sum_{j=1}^{p-1}\frac1j\sum_{k=j}^{p-1}P(k)
+ =-\sum_{j=1}^{p-1}\frac{A(j)}j=A'(0).
+\]
+Here $A(p)=A(0)=0$ in $\mathbb F_p$, and the last equality uses
+that $A(t)/t$ has degree at most $p-2$: its sum over $\mathbb F_p$
+vanishes, and its value at zero is $A'(0)$.
+
+The zeros of $P$ give $A(-s)=A(0)=0$. The polynomial
+$A(-s-t)-A(t)$ has zero finite difference and degree at most $p-1$,
+so it is constant; its value at zero is zero. Thus
+$A(-s-t)=A(t)$, whence $A'(-s)=-A'(0)$.
+On the other hand, the double zeros give
+$A'(1-j)-A'(-j)=P'(-j)=0$ for $1\le j\le s$.
+Consequently $A'(-s)=A'(0)$. Since $p$ is odd, $A'(0)=0$.
+\end{proof}
+
+\begin{remark}[A second proof of the cancellation]
+Let $B=p-1-s$ and $S=\sum_{k=0}^{p-1}P(k)H_k$.
+The roots of $P$ restrict this sum to $0\le k\le B$.
+The identities $P(B-k)=-P(k)$ and $H_{B-k}=H_{s+k}$ in $\Fp$
+give
+\[
+ 2S=-\sum_{k=0}^{B}P(k)\sum_{\ell=1}^{s}\frac1{k+\ell}.
+\]
+The summand extends to the polynomial
+$Q(t)=P(t)\sum_{\ell=1}^s(t+\ell)^{-1}$.
+For $s>0$ its degree is at most $\deg P-1$, and the double roots
+ensure that it vanishes at every omitted residue; for $s=0$ it is zero.
+Its complete sum over $\Fp$ is zero, so $S=0$.
+This independent derivation shows explicitly the relationship with
+classical harmonic reflection, including the methods in
+Meng--Sun~\cite{mengsun2015}.
+\end{remark}
+
+\begin{lemma}[A complementary row and its first derivative]\label{lem:row-jet}
+For $r\in\mathbb Z_{\ge0}$ let
+\[
+ F_r(z)=\sum_{k=0}^{p-1}(2k-z)^r(-1)^{mk}\binom zk^m
+                 \in\mathbb Z_p[z].
+\]
+Suppose $s\in\mathbb Z_{\ge0}$ and $ms+r<p-1$, and put $B=p-1-s$.
+Then $F_r(B)\equiv0\pmod p$.
+If $ms+r$ is odd, then in fact
+\[
+                F_r(B)=0,\qquad F'_r(B)\equiv0\pmod p.
+\]
+\end{lemma}
+
+\begin{proof}
+Set $C_s(t)=\binom{t+s}{s}\in\mathbb F_p[t]$ and
+$P_r(t)=(2t+s+1)^rC_s(t)^m$.
+For $0\le k<p$, the identity
+$\binom Bk\equiv(-1)^k C_s(k)\pmod p$ gives
+\[
+ F_r(B)\equiv\sum_{k=0}^{p-1}P_r(k)=0\pmod p,
+\]
+because $\deg P_r=ms+r<p-1$.
+At the integer $B$, the reflection $k\mapsto B-k$ multiplies a
+summand of $F_r(B)$ by $(-1)^{mB+r}=(-1)^{ms+r}$.
+Thus $F_r(B)=0$ whenever $ms+r$ is odd.
+
+For the derivative, terms with $k>B$ have zero derivative at $B$
+because $m\ge2$. For $0\le k\le B$,
+\[
+ \left.\frac d{dz}\binom zk^m\right|_{z=B}
+   =m\binom Bk^m(H_B-H_{B-k}).
+\]
+All harmonic numbers here have indices below $p$.
+Modulo $p$, $H_B=H_s$ and $H_{B-k}=H_{s+k}$.
+For $k\le B$, use
+$H_{s+k}=H_k+\sum_{\ell=1}^s(k+\ell)^{-1}$.
+The expression
+\[
+ P_r(t)\sum_{\ell=1}^s\frac1{t+\ell}
+\]
+is a polynomial of degree at most $ms+r-1$.
+It vanishes at $B+1,\ldots,p-1$, because $m\ge2$.
+Thus all these finite sums can be extended to $0\le k<p$ without
+introducing undefined harmonic numbers or nonzero extra terms.
+When $r=0$ the weight-derivative term is absent. When $r>0$,
+that term extends to the polynomial $-r(2t+s+1)^{r-1}C_s(t)^m$.
+The terms from differentiation of $(2k-z)^r$, the term $mH_sP_r$,
+and the displayed polynomial all have degree below $p-1$, so their
+complete sums vanish. We obtain
+\[
+                  F'_r(B)\equiv-m\sum_{k=0}^{p-1}P_r(k)H_k\pmod p.
+\]
+If $ms+r$ is odd, $P_r(-s-1-t)=-P_r(t)$, and $P_r$ has zeros of
+multiplicity at least two at $-1,\ldots,-s$.
+Lemma~\ref{lem:antiderivative} proves the derivative congruence.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:degree-deficit}]
+Put $X=-a$, $Y=a-1$ and let $A=\langle X\rangle_p$,
+$B=\langle Y\rangle_p$. Then $A+B=p-1$.
+By symmetry we may assume $A=s\le B$.
+If $i>A$ then $\binom Xi^m\in p^m\mathbb Z_p$; likewise for the
+second row beyond $B$. For $i+j\ge p$, at least one of $i>A,j>B$
+holds. Hence modulo $p^2$ the triangular sum can be replaced by
+the full square $0\le i,j<p$.
+Since $X+Y=-1$, its weight is
+$(2i+2j+1)^h=((2i-X)+(2j-Y))^h$. Therefore
+\[
+ \mathcal T_{p,m,h}(a)
+ \equiv\sum_{r=0}^h\binom hr F_r(X)F_{h-r}(Y)\pmod{p^2}.
+\]
+Write $X=A+p\sigma$, $Y=B+p\tau$ with $\sigma,\tau\in\mathbb Z_p$.
+The values and derivatives of every $F_r$ are $p$-integral because
+$k!$ is a unit for $k<p$. Taylor expansion modulo $p^2$ gives
+\[
+ F_r(X)F_{h-r}(Y)\equiv
+ F_r(A)F_{h-r}(B)
+ +p\sigma F'_r(A)F_{h-r}(B)
+ +p\tau F_r(A)F'_{h-r}(B).
+\]
+The first product is identically zero: $A,B$ have the same parity,
+and $h$ is odd, so exactly one of its factors is killed by reflection.
+The coefficient of $p\sigma$ is divisible by $p$, by the first assertion of
+Lemma~\ref{lem:row-jet} applied at $B$.
+For the coefficient of $p\tau$, either $mA+r$ is odd and $F_r(A)=0$, or
+$mA+r$ is even and $mB+h-r$ is odd. In the latter case,
+Lemma~\ref{lem:row-jet} gives $F'_{h-r}(B)\equiv0\pmod p$.
+Thus every summand vanishes modulo $p^2$.
+\end{proof}
+
+
+\begin{remark}[Two genuine limits of the general theorem]
+The modulus cannot be strengthened uniformly to $p^3$.
+For $a=0$, $h=1$, and every integer $m\ge2$, only the $i=0$
+row survives and
+\[
+ \mathcal T_{p,m,1}(0)=\sum_{j=0}^{p-1}(2j+1)=p^2.
+\]
+The strict degree inequality also cannot simply be replaced by a weak
+one. For $p=5$, $a=4$, $m=3$, and $h=1$, one has $s=1$ and
+$ms+h=p-1$, but direct exact summation gives
+\[
+ \mathcal T_{5,3,1}(4)=-1\,440\,005\equiv20\pmod{25}.
+\]
+Thus the degree condition is a substantive hypothesis, not an omitted
+boundary case.
+\end{remark}
+
+\section{Literal applications to Sun's Conjecture 36}
+\label{sec:sun}
+
+For comparison with Sun's original binomial notation \cite{sun2019}, set
+\begin{equation}\label{eq:original-C}
+ C_{p,m,h}(a)=\sum_{k=0}^{p-1}(-1)^{mk}(2k+1)^h
+       \sum_{j=0}^k\binom{-a}{j}^m\binom{a-1}{k-j}^m.
+\end{equation}
+The identities
+$\binom{-a}{j}=(-1)^j(a)_j/j!$ and
+$\binom{a-1}{k-j}=(-1)^{k-j}(1-a)_{k-j}/(k-j)!$
+give the exact, termwise equality
+\begin{equation}\label{eq:equivalence}
+                         C_{p,m,h}(a)=\mathcal T_{p,m,h}(a).
+\end{equation}
+There is no transformation of the target congruence: the two factors
+$(-1)^{mk}$ cancel. Thus even powers in \eqref{eq:original-C} have no
+alternating sign and odd powers have the source factor $(-1)^k$.
+
+\begin{corollary}[All four assertions of Sun 36(iii)]\label{cor:sun36iii}
+For primes in the stated ranges,
+\begin{align*}
+ C_{p,4,3}(1/5)&\equiv0\pmod{p^2}
+ &&(p>11,\ p\equiv\pm1\pmod5),\\
+ C_{p,4,3}(2/5)&\equiv0\pmod{p^2}
+ &&(p>11,\ p\equiv\pm2\pmod5),\\
+ C_{p,5,1}(1/5)&\equiv0\pmod{p^2}
+ &&(p\equiv4\pmod5),\\
+ C_{p,5,1}(2/5)&\equiv0\pmod{p^2}
+ &&(p\equiv3\pmod5).
+\end{align*}
+\end{corollary}
+
+\begin{proof}
+In the first line, the smaller residue $s$ is $(p-1)/5$ when
+$p\equiv1\pmod5$, and $(p-4)/5$ when $p\equiv4\pmod5$.
+In the second line it is $(p-2)/5$ when $p\equiv2\pmod5$, and
+$(p-3)/5$ when $p\equiv3\pmod5$.
+To check every small-prime boundary, write $p=5t+r$.
+The inequality $4s+3<p-1$ is equivalent to
+\[
+\begin{array}{c|cccc}
+r&1&2&3&4\\ \hline
+\text{required condition}&t>3&t>2&t>1&t>0 .
+\end{array}
+\]
+Every prime $p>11$ in the corresponding residue class satisfies this:
+the excluded small values are either composite or at most $11$.
+For the third line $s=(p-4)/5$ and $5s+1=p-3$.
+For the fourth line $s=(p-3)/5$ and $5s+1=p-2$.
+Theorem~\ref{thm:degree-deficit} and \eqref{eq:equivalence} now apply.
+The fourth line includes $p=3$, for which $s=0$; no additional
+exception is required.
+\end{proof}
+
+\begin{corollary}[All four assertions of Sun 36(ii)]\label{cor:sun36ii}
+For an odd prime $p$, the following statements hold:
+\begin{align*}
+ C_{p,4,1}(1/4)&\equiv0\pmod{p^2}&&(p\equiv3\pmod4),\\
+ \sum_{k=0}^{p-1}(2k+1)\sum_{j=0}^k
+    \binom{-1/2}{j}^{5}\binom{-1/2}{k-j}^{5}
+       &\equiv0\pmod{p^3}&&(p\equiv3\pmod4),\\
+ C_{p,6,1}(1/6)&\equiv0\pmod{p^2}&&(p\equiv5\pmod6),\\
+ C_{p,6,3}(1/6)&\equiv0\pmod{p^2}&&(p\equiv5\pmod6).
+\end{align*}
+The second line is obtained from an already established theorem;
+it is not claimed as an independent new supercongruence.
+\end{corollary}
+
+\begin{proof}
+In the first line $s=(p-3)/4$, so $4s+1=p-2<p-1$.
+In the last two lines $s=(p-5)/6$, so $6s+1=p-4$ and
+$6s+3=p-2$. The general theorem proves these three lines.
+
+For the second line, use McCarthy--Osburn's Theorem 1.2
+\cite{mccarthyosburn2008}, which proves the relevant case of
+van Hamme's (A.2) supercongruence:
+\begin{equation}\label{eq:known-MO}
+ \sum_{j=0}^{(p-1)/2}(4j+1)\binom{-1/2}{j}^{5}
+       \equiv0\pmod{p^3}\qquad(p\equiv3\pmod4).
+\end{equation}
+Put $N=(p-1)/2$ and $b_j=\binom{-1/2}{j}^{5}$.
+For $N<j<p$ the identity
+$\binom{-1/2}{j}=(-1)^j4^{-j}\binom{2j}{j}$ implies
+$b_j\in p^5\Zp$. Thus the triangle reduces modulo $p^3$ to
+$0\le i,j\le N$, a square wholly inside the original triangle.
+On this square,
+\[
+ \sum_{i,j=0}^N(2i+2j+1)b_ib_j
+ =\left(\sum_{j=0}^Nb_j\right)
+  \left(\sum_{j=0}^N(4j+1)b_j\right)\equiv0\pmod{p^3}.
+\]
+The first factor is $p$-integral and the second satisfies
+\eqref{eq:known-MO}. In particular $p=3$ is included.
+Notice that the second line has no $(-1)^k$ factor; inserting one
+would change the source problem.
+\end{proof}
+
+\paragraph{Additional unambiguous clauses.}
+The same theorem proves the first three formulas of 36(i):
+\[
+\begin{array}{c|c}
+\text{congruence modulo }p^2&\text{prime range}\\\hline
+C_{p,4,1}(1/6)\equiv0&p>3\\
+C_{p,4,3}(1/6)\equiv0&p>7\\
+C_{p,5,1}(1/6)\equiv0&p>7.
+\end{array}
+\]
+Indeed $s=(p-1)/6$ or $(p-5)/6$ according as $p\equiv1$ or $5$
+modulo $6$; substitution verifies the degree bound. We make no claim
+to literal coverage of all of 36(i): the retrieved source rendering
+of its last formula leaves a free inner index and does not display
+the required inner sum. Repairing that expression would require an
+editorial interpretation, which is excluded from the principal claims.
+\section{An effective finite-depth form of Sokal's Conjecture 8(c)}
+
+Let $b,c>0$, put $a=b+\gamma$, and write
+\[
+ f_c(z)={}_1F_2(a;b,c;z),\qquad
+ \frac{bc}{a}\frac{f_c'(-t)}{f_c(-t)}
+ =\cfrac{1}{1-\cfrac{\alpha_1(c)t}{1-\cfrac{\alpha_2(c)t}{1-\ddots}}}.
+\]
+The continued fraction is understood formally at the origin, up to any
+specified depth at which its extraction denominators are nonzero.
+Here $f_c'$ denotes differentiation in its argument before evaluation
+at $-t$. Recall that
+${}_1F_2(a;b,c;z)=\sum_{n\ge0}(a)_n z^n/((b)_n(c)_n n!)$.
+This is exactly the normalization used by Sokal, \emph{When does a
+hypergeometric function ${}_pF_q$ belong to the Laguerre--P\'olya class
+$LP^+$?}, J. Math. Anal. Appl. 515 (2022), 126432, Appendix,
+Conjecture 8(c) \cite{sokal2022}.
+
+\begin{theorem}[Sokal 8(c), with an explicit threshold]\label{thm:sokal}
+Fix an integer $k\ge1$, $b>0$, and $k-1<\gamma<k$. There is an explicitly
+computable finite number $C_*(b,\gamma,k)$, defined below solely by finite
+arithmetic, such that, whenever $c\ge C_*$, the first $2k+1$ coefficients
+exist and satisfy
+\[
+ \alpha_j(c)>0\quad(1\le j\le2k),\qquad \alpha_{2k+1}(c)<0.
+\]
+In particular Sokal's Conjecture 8(c), with all its original quantifiers,
+holds. In fact, for every fixed integer $j\ge0$,
+\begin{align*}
+ \lim_{c\to\infty}c\alpha_{2j+1}(c)
+   &=\frac{\gamma-j}{(b+2j)(b+2j+1)},\\
+ \lim_{c\to\infty}c\alpha_{2j+2}(c)
+   &=\frac{b+\gamma+j+1}{(b+2j+1)(b+2j+2)}.
+\end{align*}
+For these limits, $\gamma$ can be any positive noninteger and each fixed
+depth is considered separately. No assertion concerning the denominator
+polynomials in Conjecture 8(a), or the primitive numerator polynomials in
+Conjecture 8(b), is made here.
+\end{theorem}
+
+\subsection{The limiting continued fraction, derived directly}
+Denote ${}_1F_1(A;B;z)$ by $M(A;B;z)$. Comparing power-series coefficients
+gives
+\begin{align}
+ M(A;B;z)-M(A+1;B+1;z)
+ &=\frac{A-B}{B(B+1)}zM(A+1;B+2;z),\label{eq:sokal-contig-one}\\
+ M(A;B;z)-M(A;B+1;z)
+ &=\frac{A}{B(B+1)}zM(A+1;B+2;z).\label{eq:sokal-contig-two}
+\end{align}
+Define
+\[
+ P_{2j}(t)=M(a+j;b+2j;-t),\qquad
+ P_{2j+1}(t)=M(a+j+1;b+2j+1;-t),
+\]
+and
+\[
+ \beta_{2j+1}=\frac{\gamma-j}{(b+2j)(b+2j+1)},\qquad
+ \beta_{2j+2}=\frac{a+j+1}{(b+2j+1)(b+2j+2)}.
+\]
+The two contiguous identities say precisely
+\[
+ P_i=P_{i+1}-\beta_{i+1}tP_{i+2}\qquad(i\ge0).
+\]
+Since every $P_i(0)=1$, successive division is valid in formal power
+series and yields
+\[
+ \frac{b}{a}\frac{M'(a;b;-t)}{M(a;b;-t)}
+ =\frac{P_1}{P_0}
+ =\cfrac{1}{1-\cfrac{\beta_1t}{1-\cfrac{\beta_2t}{1-\ddots}}}.
+\]
+This is the classical confluent Gauss continued fraction; see
+DLMF 13.5.1--13.5.2 \cite{dlmf}. The elementary
+derivation is included to fix every sign and index.
+
+\subsection{Finite jets and explicit perturbation bounds}
+Set $N=2k+1$, and for $0\le j\le N+1$ put
+\[
+ U_j=\frac{(a)_j}{(b)_j j!},\qquad K_j=\frac{j(j-1)}2.
+\]
+The rescaled function $F_c(z)=f_c(cz)$ has coefficients
+\[
+ F_c(z)=\sum_{j\ge0}u_j(c)z^j,\qquad
+ u_j(c)=U_jr_j(c),\qquad
+ r_j(c)=\prod_{i=0}^{j-1}\left(1+\frac{i}{c}\right)^{-1}.
+\]
+For every $c>0$,
+\begin{equation}\label{eq:sokal-jet-error}
+ 0\le U_j-u_j(c)\le\frac{U_jK_j}{c}.
+\end{equation}
+Indeed, if $v_i=i/(c+i)$, then $0\le v_i<1$ and
+$1-\prod_i(1-v_i)\le\sum_i v_i\le K_j/c$.
+
+Write $F_c'/F_c=\sum_{j\ge0}q_j(c)z^j$ and $M'/M=\sum q_j(\infty)z^j$.
+Define nonnegative finite sequences recursively by
+\begin{align*}
+ Q_j&=(j+1)U_{j+1}+\sum_{i=1}^{j}U_iQ_{j-i},\\
+ E_j&=(j+1)U_{j+1}K_{j+1}
+       +\sum_{i=1}^{j}U_i\bigl(E_{j-i}+K_iQ_{j-i}\bigr)
+       \qquad(0\le j\le N).
+\end{align*}
+Empty sums are zero, so $Q_0=U_1$ and $E_0=0$.
+From
+\[
+ q_j(c)=(j+1)u_{j+1}(c)-\sum_{i=1}^{j}u_i(c)q_{j-i}(c)
+\]
+and \eqref{eq:sokal-jet-error}, induction gives
+\begin{equation}\label{eq:sokal-log-jet-error}
+ |q_j(c)|,\ |q_j(\infty)|\le Q_j,\qquad
+ |q_j(c)-q_j(\infty)|\le E_j/c.
+\end{equation}
+This estimate uses only finite jets; no uniform convergence of an infinite
+continued fraction is being assumed.
+
+Let
+\[
+ G_c(t)=\frac ba\frac{F_c'(-t)}{F_c(-t)}=\sum_{j\ge0}m_j(c)t^j,
+ \qquad m_j(c)=\frac ba(-1)^jq_j(c),
+\]
+and use $G_\infty$ for the analogous Kummer quotient. In particular
+$m_0(c)=m_0(\infty)=1$. Put
+\[
+ B=\max\left(1,\max_{0\le j\le N}\frac baQ_j\right),\qquad
+ E=\max_{0\le j\le N}\frac baE_j.
+\]
+Then all relevant moments have absolute value at most $B$, and each
+moment changes by at most $E/c$.
+
+\subsection{The determinant sign certificate}
+For $s\ge1$ and $\epsilon\in\{0,1\}$ define
+\[
+ H_s^{(\epsilon)}(c)
+   =\det\bigl(m_{i+j+\epsilon}(c)\bigr)_{i,j=0}^{s-1},\qquad
+ H_0^{(\epsilon)}=1.
+\]
+All matrices below use moments of index at most $N$. The standard formal
+Hankel identities for an $S$-fraction give
+\begin{align*}
+ h_s^{(0)}:=H_s^{(0)}(\infty)
+ &=\prod_{j=1}^{s-1}(\beta_{2j-1}\beta_{2j})^{s-j},\\
+ h_s^{(1)}:=H_s^{(1)}(\infty)
+ &=\left(\prod_{j=1}^{s}\beta_{2j-1}\right)h_s^{(0)}.
+\end{align*}
+These are classical algebraic identities and require no positivity
+assumption; see, for example, Sokal's Theorem 9.5(b,c)
+\cite{sokal2023}.
+For example, contraction to a $J$-fraction gives diagonal coefficients
+$\beta_1,\beta_2+\beta_3,\beta_4+\beta_5,\ldots$ and lower coefficients
+$\beta_1\beta_2,\beta_3\beta_4,\ldots$; Gaussian elimination gives the first
+formula. The monic polynomial recurrence at zero gives
+$\pi_s(0)=(-1)^s\beta_1\beta_3\cdots\beta_{2s-1}$ for the monic
+orthogonal polynomials $\pi_s$, and the usual bordered
+Hankel formula gives the second.
+
+Here $\beta_1,\ldots,\beta_{2k}>0$ and $\beta_{2k+1}<0$. Consequently
+\[
+ h_s^{(0)}>0\ (1\le s\le k+1),\qquad
+ h_s^{(1)}>0\ (1\le s\le k),\qquad h_{k+1}^{(1)}<0.
+\]
+The determinant expansion and telescoping each product imply
+\begin{equation}\label{eq:sokal-det-error}
+ \left|H_s^{(\epsilon)}(c)-h_s^{(\epsilon)}\right|
+ \le \frac{s!\,s\,E B^{s-1}}{c}.
+\end{equation}
+Indeed there are $s!$ permutation products, each has $s$ factors bounded
+by $B$ at both endpoints, and changing one factor costs at most $E/c$.
+Thus the following entirely explicit number suffices:
+\begin{equation}\label{eq:sokal-effective-threshold}
+ C_*(b,\gamma,k)=\max\left\{1,
+ \max_{\substack{1\le s\le k+1\\\epsilon\in\{0,1\}}}
+ \frac{2s!\,s\,E B^{s-1}}{|h_s^{(\epsilon)}|}\right\}.
+\end{equation}
+Every denominator in this expression is nonzero. For $c\ge C_*$, every
+$H_s^{(\epsilon)}(c)$ has the sign of $h_s^{(\epsilon)}$ and absolute value
+at least $|h_s^{(\epsilon)}|/2$.
+
+The extraction formulas are
+\begin{align*}
+ \widetilde\alpha_{2s-1}(c)
+ &=\frac{H_s^{(1)}(c)H_{s-1}^{(0)}(c)}
+        {H_s^{(0)}(c)H_{s-1}^{(1)}(c)},\\
+ \widetilde\alpha_{2s}(c)
+ &=\frac{H_{s+1}^{(0)}(c)H_{s-1}^{(1)}(c)}
+        {H_s^{(1)}(c)H_s^{(0)}(c)}.
+\end{align*}
+All needed denominators are nonzero; these formulas prove positivity up
+to index $2k$ and negativity at index $2k+1$. Finally
+$G_c(t)=(bc/a)f_c'(-ct)/f_c(-ct)$, so
+$\widetilde\alpha_j(c)=c\alpha_j(c)$. As $c>0$, the desired signs follow.
+The same formulas, together with the coefficient limits and nonzero
+limiting determinants, prove all the asserted fixed-depth limits.
+
+\subsection{A uniform explicit threshold on parameter boxes}
+Fix $0<b_-\le b_+$ and $0<\eta\le1/2$, and allow
+\[
+ b\in[b_-,b_+],\qquad \gamma\in[k-1+\eta,k-\eta].
+\]
+An explicit uniform version follows without taking an unknown supremum.
+Replace $U_j$ above by
+\[
+ U_j^+=\frac{(b_++k)_j}{(b_-)_j j!}
+\]
+and form $Q_j^+,E_j^+$ by the same nonnegative recursions. Put
+\[
+ B^+=\max(1,Q_0^+,\ldots,Q_N^+),\qquad
+ E^+=\max(E_0^+,\ldots,E_N^+),\qquad
+ \delta=\frac{\eta}{(b_++2k)(b_++2k+1)}.
+\]
+Then $0<\delta<1$ and $|\beta_j|\ge\delta$ for $1\le j\le2k+1$.
+(The odd numerators have magnitude at least $\eta$; the even numerators
+are at least $b_-+1>\eta$.) Since $b/a<1$, all moment bounds above are
+bounded by $B^+,E^+$, while
+\[
+ |h_s^{(0)}|\ge\delta^{s(s-1)},\qquad
+ |h_s^{(1)}|\ge\delta^{s^2}.
+\]
+Therefore a single valid threshold throughout the box is
+\[
+ C_{\rm box}=\max\left\{1,
+ 2(k+1)!(k+1)E^+(B^+)^k\delta^{-(k+1)^2}\right\}.
+\]
+This bound is deliberately conservative, but effective in every original
+parameter range and independent of any finite numerical search.
+
+\paragraph{One fully evaluated certificate.}
+For $b=1$, $\gamma=1/2$, and $k=1$, the finite recursions give
+\[
+ C_*(1,1/2,1)=\frac{2\,454\,627}{2}.
+\]
+Consequently every real $c\ge2\,454\,627/2$ has
+$\alpha_1(c),\alpha_2(c)>0$ and $\alpha_3(c)<0$.
+This is a rigorous sufficient bound, not a claim of an optimal threshold.
+Direct exact arithmetic at $c=1\,227\,314$ independently verifies the
+three signs, and the illustrative table in Section~\ref{sec:checks}
+shows that successful points can occur much earlier.
+
+
+\subsection{Existing zero theorems and delayed sign detection}
+\label{sec:zeros}
+The conclusion here is a specified coefficient sign. Eventual failure
+of $\LP$, the subject of Sokal 8(d), already follows from his
+Theorem 5 \cite{sokal2022}. A stronger zero-count result is also known.
+Cho--Chung--Park \cite{cho2026}, Definition 2.1 and Proposition 5.1(i),
+prove that
+\[
+ \Phi(z)={}_1F_2(a;b,c;-z^2/4)
+\]
+has infinitely many nonreal zeros if
+\[
+ b+c>3a+\tfrac12,\qquad
+ b-a,c-a\notin\{0,-1,-2,\ldots\}.
+\]
+For $a=b+\gamma$ with positive nonintegral $\gamma$, these hypotheses
+hold whenever $c>2b+3\gamma+\tfrac12$; this also gives $c>a$.
+All coefficients of $f_c$ are positive, so $f_c(x)>0$ for $x\ge0$.
+Consequently $\Phi$ has no purely imaginary zeros. A nonreal zero of
+$\Phi$ is therefore mapped by $z\mapsto-z^2/4$ to a nonreal zero of
+$f_c$. This finite-to-one map yields infinitely many nonreal zeros of
+$f_c$, and real coefficients arrange them in conjugate pairs.
+
+Combining this established theorem with Theorem~\ref{thm:sokal} gives
+the precise comparison
+\begin{equation}\label{eq:delayed}
+ c>\max\{C_*(b,\gamma,k),\,2b+3\gamma+\tfrac12\}.
+\end{equation}
+Under \eqref{eq:delayed}, $f_c$ has infinitely many nonreal conjugate
+zero pairs, yet its first $2k$ prescribed $S$-fraction coefficients are
+positive and its next coefficient is negative. The infinitely-many-zero
+assertion is credited to \cite{cho2026}; the finite detection depth is
+the assertion proved here. No new zero-count range is claimed.
+
+\section{Prior results and the six research gates}\label{sec:priority}
+\subsection{What overlaps with prior mathematics}
+Harmonic reflection and low-degree polynomial summation modulo a prime
+are established techniques. Meng--Sun \cite{mengsun2015} use related
+reflection and harmonic cancellations in a different, single-sum
+supercongruence. The direct proof following
+Lemma~\ref{lem:antiderivative} makes the family resemblance explicit.
+The general derivative statement here is proved in full, but naming
+its discrete primitive does not establish a new historical principle.
+
+Z.-H.~Sun's 2022 paper \cite{zhsun2022} gives fourth-power centered
+row congruences and a cubic-to-linear moment identity. Those results
+substantially overlap with the fourth-power specializations of the
+present theorem. In particular, they supply previously available row
+estimates for the first two clauses of Sun 36(iii); an elementary
+convolution reduction then suffices. These clauses must not be counted
+as wholly new vanishing estimates merely because the double-sum
+notation is different. The general theorem here allows arbitrary
+integer powers $m\ge2$ and odd weights subject to $ms+h<p-1$;
+whether this full theorem or its fifth-power applications duplicate a
+prior result remains a bibliographic question.
+
+\paragraph{Explicit reduction of the fourth-power clauses.}
+For clarity, set $m=4$ in the notation $F_r$ of
+Lemma~\ref{lem:row-jet}, and orient $X=-a$, $Y=a-1$ so that their
+residues are $s$ and $p-1-s$. In these clauses $s\ge1$ and
+$4s+3<p-1$, hence $\langle Y\rangle_p>p/2$; both $X,Y$ are units
+and neither has residue $-1$. Theorem 5.1 and equation (5.2) of
+\cite{zhsun2022}, printed p.~18, give
+$F_1(Y)\equiv0\pmod{p^2}$. Lemma 2.1 of that paper, printed p.~5,
+specialized to fourth powers, gives the exact identity
+\[
+ F_3(z)=-z^2F_1(z)-2z^3\binom{z-1}{p-1}^{4}.
+\]
+For the parameters in question the final term is zero modulo $p^4$,
+so $F_3(Y)\equiv0\pmod{p^2}$ as well. Reflection at the smaller
+integer residue gives $F_1(X),F_3(X)\equiv0\pmod p$.
+The elementary complete-field sums of degrees $4s$ and $4s+2$ give
+$F_0(Y),F_2(Y)\equiv0\pmod p$.
+Rectangularization and weight expansion now give
+\begin{align*}
+ C_{p,4,3}(a)\equiv{}&F_3(X)F_0(Y)+3F_2(X)F_1(Y)\\
+ &+3F_1(X)F_2(Y)+F_0(X)F_3(Y)\equiv0\pmod{p^2}.
+\end{align*}
+Thus the overlap is an explicit deduction, not just a similarity of
+titles or subject matter.
+
+The nonalternating fifth-power clause of 36(ii) reduces directly to
+a 2008 theorem, as its proof explicitly shows. It fails the requested
+test for an independent new result. The present proof of the other
+clauses remains valid regardless of that historical overlap.
+
+On the analytic side, the Kummer continued fraction, confluence, and
+Hankel extraction formulas are classical \cite{dlmf,sokal2023}.
+The useful additional statements here are the application to the
+exact subclaim 8(c), the first negative index, and the explicit
+parameter thresholds. We do not prove positivity of Sokal's primitive
+denominator polynomials for every $c>0$, nor the degree and leading
+coefficient formula for his primitive numerator polynomials. In
+particular, replacing a reduced numerator by an unreduced Hankel
+numerator would not solve 8(b).
+
+\subsection{Audit outcome}
+The following table reports the evidence, rather than assigning a
+global success label unsupported by that evidence.
+
+\small
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.07\linewidth}>{\raggedright\arraybackslash}p{0.22\linewidth}>{\raggedright\arraybackslash}p{0.64\linewidth}@{}}
+\toprule
+Gate & Requirement & Outcome for this manuscript\\
+\midrule
+\endhead
+G1 & Pre-existing named target & Verified for Sun 36(iii), the literal clauses of 36(ii), and Sokal 8(c), with primary sources and publication dates.\\[4pt]
+G2 & Original statement preserved & Exact binomial/Pochhammer identity established before application; original signs, moduli, prime ranges, and Sokal normalization retained. The ambiguous last formula of Sun 36(i) is not counted.\\[4pt]
+G3 & Actually open at the time of solution & The targets were published as conjectures in 2019 and 2022. That does not establish their status in November 2026. Some clauses already follow from earlier theorems; current global open status is not certified.\\[4pt]
+G4 & Unconditional complete proof & Detailed proofs close all quantifiers of the stated general congruence and Sokal 8(c). Established inputs are named. Finite checks are supplementary; no conjectural corpus result is assumed. External peer review and formal verification have not occurred.\\[4pt]
+G5 & Substantive advance, not repackaging & The arbitrary-power degree criterion and finite determinant error bound are substantive statements. Several specializations and all basic tools have antecedents. A historically new methodology is not established, and the known-theorem reductions are explicitly excluded from novelty credit.\\[4pt]
+G6 & No prior identical theorem or essential proof & Not certified. Exact-target searches and comparisons with primary papers found important overlaps. Failure to locate an exact duplicate cannot prove priority.\\
+\bottomrule
+\end{longtable}
+\normalsize
+
+Thus this document supplies complete mathematical arguments for the
+identified clauses, but does not assert that the user's conjunction
+G1--G6 has been satisfied. Nor does it rank these results above every
+claim in the supplied corpus. Such a ranking would require validating
+those claims and establishing the historical status of the present
+ones.
+
+\section{Reproducibility and exact checks}\label{sec:checks}
+Every proof above is symbolic and covers its whole stated range.
+As an independent transcription check, direct summation of the original
+triangle was performed for 39,200 admissible tuples: odd primes
+$p\le31$, $2\le m\le8$, $h\in\{1,3,5,7\}$, and every lift
+$a\bmod p^2$ satisfying the degree condition. All residues were zero.
+For the four literal clauses of 36(iii), every applicable prime
+$p\le251$ was tested: the clause counts were $24,25,12,14$.
+A separate direct implementation checked 9,234 smaller admissible
+tuples and the source clauses through $p=101$, with the same outcome.
+These are finite checks of the formulas, not the proof of the theorem.
+
+For the analytic statement, exact rational series inversion, without
+Hankel formulas or floating-point sign decisions, gave the following
+examples. In this table $b=1$ and $\gamma=k-\tfrac12$.
+The listed $c$ values are illustrative successful points, not claimed
+to equal the sufficient bound $C_*$.
+\begin{center}
+\begin{tabular}{@{}rrcc@{}}
+\toprule
+$k$ & $c$ & Signs of $\alpha_1,\ldots,\alpha_{2k+1}$ & First negative index\\
+\midrule
+1 & $10^2$ & $++-$ & 3\\
+2 & $10^3$ & $++++-$ & 5\\
+3 & $10^5$ & $++++++-$ & 7\\
+4 & $10^6$ & $++++++++-$ & 9\\
+5 & $10^8$ & $++++++++++-$ & 11\\
+6 & $10^{10}$ & $++++++++++++-$ & 13\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Appendix~\ref{app:code} embeds a complete standard-library Python
+checker in this single source file. It evaluates the original
+triangular sums, extracts continued-fraction coefficients by series
+inversion, and computes the explicit threshold. No external data,
+bibliography file, image, or separate code file is needed to compile
+the manuscript. Compile twice with \texttt{pdflatex}; the first run
+creates references and the second resolves them.
+
+\appendix
+\section{An exact arithmetic verifier}\label{app:code}
+The following Python 3 program uses integer modular arithmetic and
+\texttt{fractions.Fraction}. The threshold check at the end uses the
+theorem's explicit bound, but verifies the resulting sign by direct
+formal inversion. Copy the listing as one program to run it.
+\begin{lstlisting}
+from fractions import Fraction as F
+from math import factorial, prod, ceil
+
+
+def primes(bound):
+    for p in range(2, bound + 1):
+        if all(p % d for d in range(2, int(p**0.5) + 1)):
+            yield p
+
+
+def triangle(p, a, m, h):
+    mod = p*p
+    rows = []
+    for z in (a % mod, (1-a) % mod):
+        row, u = [1], 1
+        for j in range(1, p):
+            u = u * (z+j-1) * pow(j, -1, mod) % mod
+            row.append(pow(u, m, mod))
+        rows.append(row)
+    return sum(pow(2*k+1, h, mod) *
+               sum(rows[0][j]*rows[1][k-j]
+                   for j in range(k+1))
+               for k in range(p)) % mod
+
+
+def exact_s_fraction(b, gamma, c, depth):
+    a = b + gamma
+    u = [F(1)]
+    for j in range(1, depth+2):
+        u.append(u[-1]*(a+j-1)*c /
+                 ((b+j-1)*(c+j-1)*j))
+    q = []
+    for j in range(depth+1):
+        q.append((j+1)*u[j+1] -
+                 sum((u[i]*q[j-i] for i in range(1, j+1)), F(0)))
+    g = [b/a * (-1)**j * q[j] for j in range(depth+1)]
+    alpha = []
+    for unused in range(depth):
+        first = g[1]
+        assert first != 0
+        alpha.append(first/c)
+        inverse = [F(1)]
+        for j in range(1, len(g)):
+            inverse.append(-sum((g[i]*inverse[j-i]
+                                  for i in range(1, j+1)), F(0)))
+        g = [-inverse[j+1]/first for j in range(len(g)-1)]
+    return alpha
+
+
+def effective_threshold(b, gamma, k):
+    a, n = b+gamma, 2*k+1
+    u = [F(1)]
+    for j in range(1, n+2):
+        u.append(u[-1]*(a+j-1)/((b+j-1)*j))
+    weight = [F(j*(j-1), 2) for j in range(n+2)]
+    q, e = [], []
+    for j in range(n+1):
+        q.append((j+1)*u[j+1] +
+                 sum((u[i]*q[j-i] for i in range(1, j+1)), F(0)))
+        e.append((j+1)*u[j+1]*weight[j+1] +
+                 sum((u[i]*(e[j-i]+weight[i]*q[j-i])
+                      for i in range(1, j+1)), F(0)))
+    big_b = max([F(1)] + [b/a*x for x in q])
+    big_e = max(b/a*x for x in e)
+    beta = [F(0)]  # one-based indices
+    for j in range(k+1):
+        beta.append((gamma-j)/((b+2*j)*(b+2*j+1)))
+        beta.append((a+j+1)/((b+2*j+1)*(b+2*j+2)))
+    bound = F(1)
+    for s in range(1, k+2):
+        h0 = prod((beta[2*j-1]*beta[2*j])**(s-j)
+                  for j in range(1, s))
+        h1 = h0*prod(beta[2*j-1] for j in range(1, s+1))
+        for determinant in (h0, h1):
+            assert determinant != 0
+            bound = max(bound, 2*factorial(s)*s*big_e *
+                        big_b**(s-1)/abs(determinant))
+    return bound
+
+
+def main():
+    count = 0
+    for p in primes(31):
+        if p == 2:
+            continue
+        for m in range(2, 9):
+            for h in (1, 3, 5, 7):
+                for a0 in range(p):
+                    s = min((-a0) % p, (a0-1) % p)
+                    if m*s+h >= p-1:
+                        continue
+                    for lift in range(p):
+                        a = a0 + p*lift
+                        assert triangle(p, a, m, h) == 0
+                        count += 1
+    assert count == 39200
+    print('General tuples:', count)
+    counts = [0, 0, 0, 0]
+    for p in primes(251):
+        if p in (2, 5):
+            continue
+        fifth = pow(5, -1, p*p)
+        clauses = [
+            (p > 11 and p % 5 in (1, 4), fifth, 4, 3),
+            (p > 11 and p % 5 in (2, 3), 2*fifth, 4, 3),
+            (p % 5 == 4, fifth, 5, 1),
+            (p % 5 == 3, 2*fifth, 5, 1)]
+        for i, (active, a, m, h) in enumerate(clauses):
+            if active:
+                assert triangle(p, a, m, h) == 0
+                counts[i] += 1
+    assert counts == [24, 25, 12, 14]
+    print('Sun 36(iii) clauses:', counts)
+    for k, c in enumerate((100, 1000, 10**5, 10**6,
+                           10**8, 10**10), start=1):
+        b, gamma = F(1), F(2*k-1, 2)
+        alpha = exact_s_fraction(b, gamma, F(c), 2*k+1)
+        assert all(x > 0 for x in alpha[:-1]) and alpha[-1] < 0
+        print('Sokal example:', k, c, '+'*(2*k)+'-')
+    # One exact end-to-end check of the proved sufficient bound.
+    bound = effective_threshold(F(1), F(1, 2), 1)
+    c = F(ceil(bound))
+    alpha = exact_s_fraction(F(1), F(1, 2), c, 3)
+    assert alpha[0] > 0 and alpha[1] > 0 and alpha[2] < 0
+    print('C_*(1, 1/2, 1) =', bound, '; ceil =', c)
+
+
+if __name__ == '__main__':
+    main()
+\end{lstlisting}
+
+\section{Source identification and search limitations}
+The bibliography distinguishes Zhi-Wei Sun, who posed Conjecture 36,
+from Zhi-Hong Sun, who proved the 2022 single-row formulas. These are
+different authors. The 2019 journal text, rather than the differently
+numbered earlier version of arXiv:0911.5665, supplies the conjecture
+number and formulas used in this manuscript.
+
+The literature comparison was conducted through 24 November 2026.
+It included the original sources, exact conjecture labels, variations
+of the displayed sums, the relevant single-row and double-sum
+supercongruence literature, and papers on hypergeometric
+Laguerre--P\'olya classification and continued fractions. This was a
+targeted research review, not an exhaustive mathematical bibliography.
+Search engines may miss papers, alternate notation, unpublished
+arguments, or results embedded in more general theorems. Hence no
+absence-of-search-result inference is used to certify G3 or G6.
+
+\clearpage
+\begin{thebibliography}{10}
+\bibitem{sun2019}
+Z.-W.~Sun, \emph{Open conjectures on congruences}, Nanjing Univ.
+J. Math. Biquarterly \textbf{36} (2019), no.~1, 1--99.
+\href{https://doi.org/10.3969/j.issn.0469-5097.2019.01.01}{doi:10.3969/j.issn.0469-5097.2019.01.01}.
+Author-uploaded text:
+\url{https://www.researchgate.net/publication/336577970_Open_Conjectures_on_Congruences}.
+Conjecture 36, printed pp.~31--32.
+
+\bibitem{mengsun2015}
+X.-Z.~Meng and Z.-W.~Sun, \emph{Proof of a conjectural supercongruence},
+Finite Fields Appl. \textbf{35} (2015), 86--91.
+\url{https://arxiv.org/abs/1502.06909}.
+
+\bibitem{zhsun2022}
+Z.-H.~Sun, \emph{Supercongruences for sums involving
+$\binom ak^m$}, preprint, 2022, arXiv:2204.10132.
+\url{https://arxiv.org/abs/2204.10132}.
+See Lemma 2.1 and Theorems 2.1 and 5.1.
+
+\bibitem{mccarthyosburn2008}
+D.~McCarthy and R.~Osburn, \emph{A $p$-adic analogue of a formula
+of Ramanujan}, Arch. Math. \textbf{91} (2008), 492--504.
+\href{https://doi.org/10.1007/s00013-008-2828-0}{doi:10.1007/s00013-008-2828-0}.
+\url{https://arxiv.org/abs/0708.3307}. Theorem 1.2.
+
+\bibitem{sokal2022}
+A.~D.~Sokal, \emph{When does a hypergeometric function ${}_pF_q$
+belong to the Laguerre--P\'olya class $LP^+$?}, J. Math. Anal.
+Appl. \textbf{515} (2022), 126432.
+\href{https://doi.org/10.1016/j.jmaa.2022.126432}{doi:10.1016/j.jmaa.2022.126432}.
+\url{https://arxiv.org/abs/2204.01045}. Theorem 5 and Appendix,
+Conjecture 8.
+
+\bibitem{sokal2023}
+A.~D.~Sokal, \emph{A simple algorithm for expanding a power series
+as a continued fraction}, Exposition. Math. \textbf{41} (2023),
+245--287.
+\href{https://doi.org/10.1016/j.exmath.2022.12.001}{doi:10.1016/j.exmath.2022.12.001}.
+\url{https://arxiv.org/abs/2206.15434}. Theorem 9.5(b,c).
+
+\bibitem{dlmf}
+NIST Digital Library of Mathematical Functions, \emph{Confluent
+hypergeometric functions: continued fractions}, \S13.5,
+equations 13.5.1--13.5.2.
+\url{https://dlmf.nist.gov/13.5}. Accessed 24 November 2026.
+
+\bibitem{cho2026}
+Y.-K.~Cho, S.-Y.~Chung, and Y.~W.~Park,
+\emph{A sampling theorem of hypergeometric ${}_1F_2$ functions and
+the Laguerre--P\'olya class}, Numer. Algorithms \textbf{102}
+(2026), 1713--1741; published online 5 July 2025.
+\href{https://doi.org/10.1007/s11075-025-02158-x}{doi:10.1007/s11075-025-02158-x}.
+Definition 2.1 and Proposition 5.1(i).
+
+\bibitem{corpus}
+QEEDDD, \emph{Verifiable Mathematical Reasoning Corpus}, GitHub
+repository, snapshot reviewed 24 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}.
+Relevant inspected entries: [230] \texttt{Catalan\_Hankel\_and\_Sun\_Congruences.tex};
+[255] \texttt{Second\_Minima\_and\_Supercongruences.tex};
+[166] \texttt{cm\_power\_preservation.tex}.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,1694 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=24mm,top=23mm,bottom=24mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs,array,tabularx,enumitem,xcolor,fancyhdr,listings,tikz,float}
+\usetikzlibrary{positioning,calc}
+\definecolor{ink}{HTML}{17394A}
+\definecolor{accent}{HTML}{126D71}
+\definecolor{muted}{HTML}{53656D}
+\usepackage[colorlinks=true,linkcolor=accent,citecolor=accent,urlcolor=accent,hypertexnames=false,
+pdfauthor={Keio and Shaitetsu},
+pdftitle={The Sharp Caporossi--Hansen Gap: All-Order Classes and a Million-Vertex Cutoff}]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\supp}{supp}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\doi}[1]{\href{https://doi.org/#1}{doi:#1}}
+\setlist{topsep=4pt,itemsep=3pt,parsep=0pt,leftmargin=*}
+\setlength{\parindent}{1.1em}
+\setlength{\parskip}{2pt}
+\setlength{\emergencystretch}{3em}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.15}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{muted}The sharp Caporossi--Hansen gap}
+\fancyhead[R]{\small\color{muted}All-order classes and an explicit cutoff}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\raggedbottom
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,columns=fullflexible,
+keepspaces=true,showstringspaces=false,breaklines=true,breakatwhitespace=false,
+frame=single,rulecolor=\color{muted!25},framesep=5pt,
+aboveskip=8pt,belowskip=8pt,tabsize=4}
+\begin{document}
+\thispagestyle{plain}
+\noindent{\sffamily\small\bfseries\color{accent}GRAPH THEORY\quad /\quad PROOF CONTINUATION}\par
+\vspace{9pt}
+\noindent{\LARGE\bfseries\color{ink}The Sharp Caporossi--Hansen Gap}\par
+\vspace{6pt}
+\noindent{\large All-Order Classes and a Million-Vertex Cutoff}\par
+\vspace{9pt}
+\noindent Keio and Shaitetsu\hfill 24 November 2026\par
+\vspace{10pt}\hrule\vspace{10pt}
+\noindent\textbf{Abstract.}
+The sharp additive Caporossi--Hansen assertion is
+$R(G)-\mu(G)\ge\sqrt{n-1}-2+2/n$, with the star as its unique equality
+graph. We continue an earlier corpus-based proof valid for $n\ge10^{10}$.
+Using the full weighted-distance theorem of the fixed VMRC source [227],
+a shared budget for degree irregularity, and a two-block probability
+measure, we lower the sufficient order to $n\ge10^6$.
+We also establish the assertion at every order for graphs of minimum
+degree at least two, and, independently of the corpus theorem, for all
+trees with at most two vertices of degree at least three.
+The latter includes every spider, broom, double star, double broom,
+and arbitrary subdivisions of the pendant arms of a two-branching-vertex tree.
+All finite parameter checks use exact integer or rational arithmetic,
+and their complete programs are embedded in this single source.
+\emph{This paper does not prove the unrestricted all-order conjecture.}
+It identifies the remaining range and records a concrete obstruction to
+a tempting cycle-deletion reduction.
+
+\section{The target and the exact scope of the results}
+
+Graphs in this paper are finite, simple, undirected and connected, with
+$n\ge2$ vertices. For $d_v=\deg(v)$, put
+\[
+ R(G)=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}},\qquad
+ M(G)=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)},\qquad
+ \mu(G)=\binom n2^{-1}\sum_{\{u,v\}}\dist_G(u,v).
+\]
+Let
+\[
+ \gamma_n=\sqrt{n-1}-2+\frac2n,
+ \qquad \mathcal S(G)=R(G)-\mu(G)-\gamma_n.
+\]
+The sharp additive proposal of Caporossi and Hansen \cite{cap}, also
+stated explicitly in Dalf\'o \cite{dalfo}, asks whether
+\begin{equation}\label{eq:target}\tag{CH}
+ \mathcal S(G)\ge0,
+ \qquad\mathcal S(G)=0\Longleftrightarrow G\cong K_{1,n-1}.
+\end{equation}
+The star has $R=\sqrt{n-1}$ and $\mu=2-2/n$, so the constant is forced.
+The weaker conclusion $R\ge\mu$ does not imply \eqref{eq:target}.
+For comparison, the published tree theorem of Cygan, Pilipczuk and
+\v Skrekovski \cite{cygan} gives $R-\mu\ge\max\{0,\sqrt\ell-2\}$
+in terms of the number $\ell$ of leaves. It does not supply the
+order-dependent sharp gap required in \eqref{eq:target}.
+
+\begin{theorem}[Results established here]\label{thm:summary}
+The inequality \eqref{eq:target}, with its stated equality condition,
+holds in each of the following classes:
+\begin{enumerate}
+\item Every connected graph of order $n\ge10^6$.
+\item Every connected graph of minimum degree at least two, at every order;
+in this class the inequality is strict.
+\item Every tree with at most two branching vertices, at every order,
+where a branching vertex means a vertex of degree at least three.
+\item Every connected graph of diameter at most two, at every order.
+\end{enumerate}
+Items 1 and 2 use the corpus weighted-distance theorem stated below.
+Items 3 and 4 are proved directly.
+\end{theorem}
+
+The previous sufficient thresholds $10^{27}$ in VMRC [227] \cite{vmrc227}
+and $10^{10}$ in \emph{Graffiti Arithmetic Transfers} \cite{transfers}
+are thresholds of those manuscripts, not thresholds attributed to an
+external journal paper. The new $10^6$ threshold improves the immediately
+preceding one by a factor of $10^4$.
+
+Taking the exact small-order verification for $2\le n\le9$ recorded in
+[227] together with the present theorems, the still-unresolved class in
+this continuation is contained in
+\begin{equation}\label{eq:remaining}
+ 10\le n\le999\,999,\qquad \delta(G)=1,\qquad \diam(G)\ge3.
+\end{equation}
+If such a graph is a tree, it must have at least three branching vertices.
+Connected graphs with cycles and leaves also remain in scope. No check
+of finitely many sample graphs closes this class; no unrestricted closure
+is asserted here.
+
+\section{Inputs and elementary estimates}
+\label{sec:inputs}
+
+\subsection{The fixed corpus theorem}
+
+The non-elementary input is the weighted-distance theorem in the
+Verifiable Mathematical Reasoning Corpus, manuscript [227], at commit
+\begin{center}\small\ttfamily
+52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3.
+\end{center}
+For every probability vector $p$ on $V(G)$ it states
+\begin{equation}\label{eq:weighted-input}\tag{W}
+ \sum_{u,v}p_up_v\dist_G(u,v)+2\sum_vp_v^2\le M(G)+1.
+\end{equation}
+This is a stated dependency on the corpus proof; it is not represented
+as a separately located externally refereed theorem.
+The preceding eighteen-conjecture synthesis reproduces that proof
+\cite{status}. This paper gives the new deductions in full.
+Uniform mass in \eqref{eq:weighted-input} gives
+\begin{equation}\label{eq:uniform}\tag{CH-U}
+ M\ge\frac{(n-1)\mu-(n-2)}n.
+\end{equation}
+The million-vertex argument will use nonuniform mass as well; its
+dependence is therefore on the full statement \eqref{eq:weighted-input}.
+The minimum-degree argument uses only \eqref{eq:uniform}.
+
+\subsection{A degree bridge and the maximum-degree broom bound}
+
+\begin{lemma}\label{lem:basic}
+Write $d=\Delta(G)$, $r=\sqrt d$ and $k=n-1-d$. Then $M\ge1$ and
+\begin{align}
+ n-2R&\le(r-1)(R-M),& (r+1)R&\ge n+(r-1)M,\label{eq:bridge}\\
+ \mu&\le B(n,d):=
+ \frac{n(n-1)(n+1)-(d-1)(d-2)(3n-2d-3)}{3n(n-1)}
+ \nonumber\\[-2pt]
+ &=2-\frac2n+
+ \frac{k(k+1)(3n-2k-7)}{3n(n-1)}.\label{eq:broom}
+\end{align}
+In particular, $\mu\le(n+1)/3$.
+\end{lemma}
+
+\begin{proof}
+Every edge at a vertex of maximum degree contributes exactly $1/d$ to
+$M$, so these edges contribute one in total. For $1\le a\le b\le d$,
+\[
+ (a^{-1/2}-b^{-1/2})^2
+ =(\sqrt{b/a}-1)\bigl((ab)^{-1/2}-b^{-1}\bigr).
+\]
+The sum of the squares over edges is $n-2R$, because
+$\sum_{uv\in E}(d_u^{-1}+d_v^{-1})=n$.
+The factor $\sqrt{b/a}-1$ is at most $r-1$, proving the bridge.
+
+For the mean-distance bound, extend the complete star at a degree-$d$
+vertex to a spanning tree. Starting with this $(d+1)$-vertex star, grow
+the rest of the tree one leaf at a time. At a step of resulting order
+$t$, sort the new leaf's distances as $b_1\le\cdots\le b_{t-1}$.
+A path to distance $j$ contains all smaller positive distances, so
+$b_i\le i$. A tree with a degree-$d$ vertex has diameter at most
+$t-d+1$, giving $b_i\le t-d+1$. Consequently its new transmission
+is at most
+\[
+ \sum_{i=1}^{t-1}\min(i,t-d+1)
+ =\binom t2-\binom{d-1}{2}.
+\]
+The initial star has Wiener sum $d^2$. Summing these increments for
+$t=d+2,\ldots,n$, and dividing by $\binom n2$, yields \eqref{eq:broom}.
+The broom formed by extending one arm attains this bound.
+\end{proof}
+
+\begin{corollary}\label{cor:diameter-two}
+Every connected graph of diameter at most two satisfies \eqref{eq:target},
+with equality only on a star.
+\end{corollary}
+\begin{proof}
+Put $s=\sqrt{n-1}$. The bridge and $M\ge1$ yield
+\[
+ R\ge1+\frac{n-2}{r+1}\ge1+\frac{n-2}{s+1}=s.
+\]
+If $e=|E(G)|$ and the diameter is at most two, then
+$\mu=2-e/\binom n2\le2-2/n$. Equality in the latter estimate forces
+$e=n-1$; a tree of diameter at most two is a star. The case $K_2$ is
+included.
+\end{proof}
+
+\subsection{The exact weighted-tree estimate}
+
+For the concentration step we reproduce the weighted-tree lemma from
+the immediately preceding manuscript \cite{transfers}. Its precise cubic
+deficit is needed; the weaker asymptotic estimate loses too much.
+\begin{lemma}\label{lem:weighted-tree}
+Let $T$ have $h$ edges and positive integer vertex weights $w_v$ with total
+$n$. Let $X,Y$ be independent samples with probability $w_v/n$ at $v$.
+Then
+\begin{equation}\label{eq:weighted-tree}
+ \mathbb E d_T(X,Y)
+ \le \frac h2-\frac{h(h^2-1)}{6n^2}
+       -\frac{h}{2n^2}\,\boldsymbol{1}_{\{n+h\ \text{even}\}}.
+\end{equation}
+For $h\ge1$, equality holds precisely when $T$ is a path, every internal
+vertex has weight one, and its two endpoint weights differ by at most one.
+For $h=0$ the assertion is the equality $0=0$.
+\end{lemma}
+
+\begin{proof}
+An edge whose deletion leaves weights $a_e,n-a_e$ contributes
+$2a_e(n-a_e)/n^2$ to the expected distance. Let
+$s_e=\min(a_e,n-a_e)$.
+
+Fix an integer $a$ with $1\le a\le\lfloor n/2\rfloor$. The edges with
+$s_e\ge a$, if any, form a connected subtree $S$: every edge on the path
+between two such edges separates an outer side of each of those two cuts,
+and both outer sides have weight at least $a$. Suppose $S$ has $m\ge1$
+edges and $\ell\ge2$ leaves. At each leaf of $S$, the component pointing
+away from its unique incident edge in $S$ has weight at least $a$. These
+$\ell$ components are disjoint. The other $m+1-\ell$ vertices of $S$
+each have weight at least one and lie outside those components. Consequently
+\[
+ n\ge \ell a+(m+1-\ell)\ge m+2a-1,
+ \qquad m\le n-2a+1.
+\]
+Order the cut sizes as $s_1\ge\cdots\ge s_h$. Taking $a=s_j$ gives
+\[
+ s_j\le \left\lfloor\frac{n-j+1}{2}\right\rfloor
+       \quad(1\le j\le h).
+\]
+Since $s(n-s)$ increases on $0\le s\le n/2$, the sum of the cut products
+is at most the sum of the $h$ largest cut products of the unit-weight path
+on $n$ vertices. The corresponding deficits from $n/2$ are the first $h$
+entries of
+\[
+ 0,1,1,2,2,\ldots\quad(n\text{ even}),
+ \qquad
+ \tfrac12,\tfrac12,\tfrac32,\tfrac32,\ldots\quad(n\text{ odd}).
+\]
+Their squared sum equals
+\[
+ \frac{h(h^2-1)}{12}
+   +\frac h4\,\boldsymbol{1}_{\{n+h\ \text{even}\}}.
+\]
+Substitute this into
+\[
+ \mathbb E d_T(X,Y)
+   =\frac h2-\frac2{n^2}\sum_e(n/2-s_e)^2
+\]
+to obtain the bound.
+
+The path in the statement attains exactly these central cut sizes, so the
+bound is sharp. For completeness, equality also forces that form. Every
+ordered cut size must attain its upper bound, since the integer cut-product
+function is strictly increasing up to $\lfloor n/2\rfloor$. If $n$ is even,
+there is a central edge cutting the total weight equally. The next required
+cut sizes, one on each side, are $n/2-1$, then $n/2-2$, and so on. To obtain
+a component of weight one less within a side, the intervening vertex must
+have weight one and must have just one continuing branch. This forces two
+chains from the central edge, of lengths differing by at most one. If $n$
+is odd and $h\ge2$, the two cuts of smaller-side weight $(n-1)/2$ isolate
+two disjoint components, leaving a single intervening vertex of weight one;
+the same argument then forces the two chains. At the final unpaired cut
+either chain may be extended. All edges are exhausted, and the remaining
+endpoint weights are the two integers nearest $(n-h+1)/2$. The case $h=1$
+states directly that the two endpoint weights are as equal as possible.
+\end{proof}
+
+
+\section{A cutoff of one million from the full weighted-distance theorem}
+\label{sec:ch-million}
+This section uses the full input \eqref{eq:weighted-input}, including
+nonuniform probability mass, in addition to Lemma~\ref{lem:basic}.
+For an edge whose endpoint degrees are $a\le b$, write
+\begin{equation}\label{eq:chm-edge-identity}
+ X_e=\frac1{\sqrt{ab}}-\frac1b,\quad
+ S_e=(a^{-1/2}-b^{-1/2})^2
+     =(\sqrt{b/a}-1)X_e,\quad
+ \sum_eS_e=n-2R.
+\end{equation}
+\subsection{A two-block use of the weighted theorem}
+\begin{lemma}[Two-block estimate]\label{lem:chm-two-block}
+Assume \eqref{eq:weighted-input}, and suppose $k=n-1-\Delta\ge1$ and
+$\Delta+1\ge k$. Then
+\begin{equation}\label{eq:chm-block}
+ \mu\le\lambda M+B,\qquad
+ \lambda=\frac{4(\Delta+1)(n-\Delta-1)}{n(n-1)},\qquad
+ B=\frac{2\Delta}{n-1}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Choose a maximum-degree vertex $v$, and partition $V(G)$ into
+$A=N[v]$ and $B_0=V(G)\setminus A$, of orders $a=\Delta+1$ and $k$.
+Define the symmetric kernel
+$L_{uv}=d_G(u,v)+2\boldsymbol{1}_{\{u=v\}}$, and let $x$ and $z$ be
+its averages on $A\times A$ and $B_0\times B_0$, respectively, and
+$y$ its average on $A\times B_0$. All pairs in $A$ have distance at
+most two, so $x\le2$, whereas $z\ge0$.
+
+Assign total mass $1/2$ uniformly to each block. Inequality
+\eqref{eq:weighted-input} gives $(x+2y+z)/4\le M+1$. Put $p=k/n\le1/2$.
+For the uniform probability vector on all of $V(G)$, the kernel average
+is
+\begin{align*}
+ \frac{(n-1)\mu+2}{n}
+ &=(1-p)^2x+2p(1-p)y+p^2z\\
+ &=p(1-p)(x+2y+z)
+      +(1-p)(1-2p)x-p(1-2p)z\\
+ &\le4p(1-p)(M+1)+2(1-p)(1-2p)\\
+ &=\frac{4ak}{n^2}M+\frac{2a}{n}.
+\end{align*}
+Rearrangement gives \eqref{eq:chm-block}.
+\end{proof}
+
+\subsection{A degree split that shares the same gap budget}
+
+\begin{lemma}\label{lem:chm-concentration}
+Let $2\le K\le\Delta$ be an integer and put
+$t=\sqrt{K-1}$, $r=\sqrt\Delta$, $X=R-M$, and
+\[
+ q=\frac{t-1}{r-1},\qquad 0\le q<1.
+\]
+There exist integers $c\ge1$, $b\ge0$, and $0\le h\le n-1$ such that
+\begin{align}
+ &c\le\frac n{K+1},\qquad b\ge h-c+1,\label{eq:chm-concentration-counts}\\
+ &R\ge\frac{(1-q)b+qn-(t-1)X}{2},\label{eq:chm-refined-split}\\
+ &\mu\le\frac n{n-1}
+       \left(\frac h2-\frac{h^3-h}{6n^2}+7c\right).
+       \label{eq:chm-quotient}
+\end{align}
+The last estimate uses Lemma~\ref{lem:weighted-tree}.
+\end{lemma}
+
+\begin{proof}
+Call a vertex high if its degree is at least $K$. Choose a maximal set
+of $c$ high vertices at pairwise distance at least three. Their closed
+radius-one balls are disjoint, which gives $c(K+1)\le n$. Let $A$ be
+the union of their closed radius-three balls, and let $b=n-|A|$.
+Every high vertex is within distance two of a chosen vertex, so both
+ends of any edge incident to a high vertex belong to $A$.
+
+Split the edge quantities in \eqref{eq:chm-edge-identity} into sums
+$(S_H,X_H)$ over edges incident to a high vertex and $(S_L,X_L)$ over
+the remaining edges. Then
+\[
+ S_H\le(r-1)X_H,\qquad S_H\le |A|=n-b,\qquad
+ S_L\le(t-1)X_L.
+\]
+For the middle inequality, use
+$S_e\le1/d_u+1/d_v$ and sum the incident fractions at each vertex
+of $A$. The other two follow from the same identity, since both
+endpoint degrees of a low edge are at most $K-1$. In particular,
+$X_H\ge S_H/(r-1)$, and hence
+\begin{align*}
+ n-2R=S_H+S_L
+ &\le S_H+(t-1)(X-X_H)\\
+ &\le(t-1)X+(1-q)S_H\\
+ &\le(t-1)X+(1-q)(n-b).
+\end{align*}
+This proves \eqref{eq:chm-refined-split}.
+
+Contract each component of the induced graph $G[A]$ to a vertex whose
+positive integer weight is its order, and give every vertex outside
+$A$ weight one. If there are $c_A$ contracted components, then
+$1\le c_A\le c$. Choose a spanning tree of the connected quotient;
+it has $h=b+c_A-1$ edges, so $0\le h\le n-1$ and $b\ge h-c+1$.
+
+A component containing $c_i$ chosen balls has internal diameter at
+most $7c_i-1$. To see this, connect its balls in the auxiliary graph
+whose edges indicate intersection or an edge between the balls. A
+chain involving at most $c_i$ balls needs at most $6c_i$ edges within
+balls and $c_i-1$ edges between balls. Every simple quotient-tree path
+therefore lifts to a walk in $G$ with at most $7c$ additional edges.
+The same estimate covers two original endpoints in the same
+contracted component.
+
+For two independent uniform original vertices, the projected
+vertices have probabilities equal to their weights divided by $n$.
+Lemma~\ref{lem:weighted-tree}, with its nonnegative parity correction
+discarded, bounds their mean tree distance by
+$h/2-(h^3-h)/(6n^2)$. Their original mean distance is
+$(n-1)\mu/n$. Adding the lifting cost proves
+\eqref{eq:chm-quotient}.
+\end{proof}
+
+\subsection{The explicit eventual theorem}
+
+\begin{theorem}\label{thm:ch-million}
+Let $G$ be a finite simple connected graph of order $n\ge10^6$
+satisfying the full weighted-distance inequality \eqref{eq:weighted-input}.
+Then
+\begin{equation}\label{eq:chm-conclusion}
+ R(G)-\mu(G)\ge\sqrt{n-1}-2+\frac2n,
+\end{equation}
+with equality precisely for $K_{1,n-1}$. Consequently, the corpus
+weighted-distance theorem proves the Caporossi--Hansen additive
+bound, including its unique equality graph, for every $n\ge10^6$.
+\end{theorem}
+
+\begin{proof}
+Write
+\[
+ N=10^6,\quad s=\sqrt{n-1},\quad r=\sqrt\Delta,\quad
+ g=R-\mu,\quad \gamma=s-2+\frac2n,\quad X=R-M.
+\]
+We show that $g\le\gamma$ forces $G$ to be a star. By the uniform
+specialization \eqref{eq:uniform},
+\begin{equation}\label{eq:chm-gap-budget}
+ 0\le X\le g+1+\frac{\mu-2}{n}
+       \le s-1+\frac\mu n<s<\sqrt n.
+\end{equation}
+Here $\mu<n$ suffices for the strict inequality. Choose
+\[
+ K=\lceil n/175\rceil,\qquad t=\sqrt{K-1}<\sqrt{n/175}.
+\]
+There are four cases.
+
+\paragraph{Case 1: $\Delta<K$.}
+In this case $r\le t<\sqrt n/10$. Equations
+\eqref{eq:bridge} and \eqref{eq:chm-gap-budget} yield
+$n-2R<n/10$, so $R>9n/20$. Thus
+\[
+ g>\frac{9n}{20}-\frac{n+1}{3}
+   =\frac{7n}{60}-\frac13>\sqrt n>\gamma
+ \qquad(n\ge N),
+\]
+a contradiction.
+
+\paragraph{Case 2: $K\le\Delta\le27n/50$.}
+Use $q,c,b,h$ from Lemma~\ref{lem:chm-concentration}. In particular,
+$1\le c\le175$. Combining the refined split with
+$R=\mu+g$ and the first upper bound on $X$ in
+\eqref{eq:chm-gap-budget} gives
+\begin{equation}\label{eq:chm-mu-lower}
+ \left(2+\frac{t-1}{n}\right)\mu
+ \ge qn+(1-q)(h-c+1)
+       -(t+1)\gamma-(t-1)\left(1-\frac2n\right).
+\end{equation}
+Here we used $g\le\gamma$ and $1-q\ge0$.
+
+Put
+\[
+ x=\frac hn\in[0,1],\quad z=\frac1{\sqrt n}\le\frac1{1000},
+ \quad\tau=\frac t{\sqrt n},\quad
+ \alpha=\frac{2+\tau z-z^2}{1-z^2}.
+\]
+Substitute \eqref{eq:chm-quotient} into
+\eqref{eq:chm-mu-lower} and divide by $n$. We obtain
+\begin{align}
+ 0\le{}&\alpha\left(\frac x2-\frac{x^3}{6}
+                         +\frac{x}{6n^2}+\frac{7c}{n}\right)
+             -(1-q)x-q+\frac{(1-q)(c-1)}n\nonumber\\
+       &+(\tau+z)\sqrt{1-z^2}-\tau z-3z^2+4z^4.
+       \label{eq:chm-cubic-exact}
+\end{align}
+The last line is exactly
+$[(t+1)\gamma+(t-1)(1-2/n)]/n$.
+
+We now bound this expression by a rational cubic. Set
+\[
+ \tau_- =\frac{3779}{50000},\quad
+ \tau_+ =\frac{189}{2500},\quad
+ \rho_+ =\frac{147}{200},\quad
+ q_0=\frac{127}{1250},\quad
+ \alpha_0=\frac{20001}{10000}.
+\]
+The following rational comparisons hold:
+\begin{align}
+ &\tau_-^2<\frac1{175}-\frac1N
+                \le\tau^2<\frac1{175}<\tau_+^2,
+                \qquad\frac{27}{50}<\rho_+^2,
+                \label{eq:chm-tau-bounds}\\
+ &q\ge\frac{\tau_- -1/1000}{\rho_+ -1/1000}>q_0,
+                \qquad
+ \alpha\le
+ \frac{2+\tau_+/1000-1/N}{1-1/N}<\alpha_0.
+                \label{eq:chm-q-alpha-bounds}
+\end{align}
+For the lower bound on $q$, use $r/\sqrt n\le\sqrt{27/50}<\rho_+$
+and observe that $(\tau_- -z)/(\rho_+ -z)$ decreases with $z$.
+For the bound on $\alpha$, use
+$\alpha=2+(\tau z+z^2)/(1-z^2)$, which increases with both
+$\tau$ and $z$ in the ranges under consideration.
+
+For fixed $x\in[0,1]$, $c\ge1$, and $n$, the first line of
+\eqref{eq:chm-cubic-exact} decreases with $q$, since its derivative
+is $x-1-(c-1)/n\le0$. It increases with $\alpha$ and $c$.
+We may therefore replace $q,\alpha,c$ by $q_0,\alpha_0,175$,
+respectively. Also
+\begin{align*}
+ (\tau+z)\sqrt{1-z^2}-\tau z-3z^2+4z^4
+ &\le\tau+(1-\tau)z+4z^4\\
+ &\le\tau_++\frac{1-\tau_+}{1000}+\frac4{N^2}.
+\end{align*}
+Using $1/n\le1/N$ and $x\le1$ for the remaining positive error
+terms, the right side of \eqref{eq:chm-cubic-exact} is at most
+\begin{equation}\label{eq:chm-rational-cubic}
+ \beta x-\frac{\alpha_0}{6}x^3+C,
+ \qquad \beta=\frac{\alpha_0}{2}-1+q_0=\frac{2033}{20000},
+\end{equation}
+where
+\begin{align}
+ C&=-q_0+\tau_++\frac{1-\tau_+}{1000}
+       +\frac{174(1-q_0)+1225\alpha_0}{N}
+       +\frac{\alpha_0/6+4}{N^2}\nonumber\\
+  &=-\frac{449383117913333}{20000000000000000}.
+       \label{eq:chm-cubic-constant}
+\end{align}
+The maximum of $\beta x-\alpha_0x^3/6$ on $x\ge0$ occurs at
+$x_* =\sqrt{2\beta/\alpha_0}<319/1000$ and equals
+$2\beta x_*/3$. Consequently the expression in
+\eqref{eq:chm-rational-cubic} is strictly less than
+\begin{equation}\label{eq:chm-negative-certificate}
+ \frac23\frac{2033}{20000}\frac{319}{1000}+C
+  =-\frac{51095353739999}{60000000000000000}
+  <-\frac1{1250}<0.
+\end{equation}
+This contradicts \eqref{eq:chm-cubic-exact}.
+
+\paragraph{Case 3: $27n/50<\Delta\le13n/20$.}
+Here $k=n-1-\Delta\ge1$ and $\Delta+1\ge k$, so
+Lemma~\ref{lem:chm-two-block} applies. The function $u(1-u)$
+decreases for $u\ge1/2$; with $u=(\Delta+1)/n>27/50$, it gives
+\begin{equation}\label{eq:chm-middle-coefficients}
+ \lambda<\frac{621n}{625(n-1)}<\frac{497}{500}<1,
+ \qquad B\le\frac{13n}{10(n-1)}<\frac32.
+\end{equation}
+Also $r>\sqrt{27n/50}>700$, and hence
+\[
+ \frac{r-1}{r+1}>\frac{349}{350}>\frac{497}{500}>\lambda.
+\]
+The bridge can be written as
+$R\ge[n+(r-1)M]/(r+1)$. Combining it with
+\eqref{eq:chm-block}, and then using $M\ge1$, yields
+\begin{align*}
+ g&\ge\frac n{r+1}-B+
+           \left(\frac{r-1}{r+1}-\lambda\right)M\\
+  &\ge1+\frac{n-2}{r+1}-B-\lambda
+   >\frac{n-2}{r+1}-\frac32.
+\end{align*}
+Since $r\le\sqrt{13n/20}<9\sqrt n/10$ and $n\ge N$, we have
+$r+1<\sqrt n$. It follows that
+\[
+ g>\sqrt n-\frac2{\sqrt n}-\frac32
+   >\sqrt n-2+\frac2n>\gamma.
+\]
+The middle strict inequality follows from
+$1/2-2/1000-2/N>0$. This is again a contradiction.
+
+\paragraph{Case 4: $\Delta>13n/20$.}
+Put $k=n-1-\Delta$. Suppose first that $k\ge1$ and let
+$A_r=2+(r-1)/n$. The bridge and \eqref{eq:uniform} give
+\[
+ (r+1)g\ge n-2\mu-(r-1)\left(1+\frac{\mu-2}{n}\right).
+\]
+Use $g\le\gamma$ and the identity
+$n-r-3=(r+1)(s-2)+(s-1)(s-r)$ to obtain
+\[
+ (s-1)(s-r)\le\frac{2(r+1)}n+A_r(\mu-2).
+\]
+Insert the broom bound \eqref{eq:broom}, use
+$s-r=k/(s+r)$, and divide by $k$. This forces
+\begin{equation}\label{eq:chm-forced}
+ \frac{s-1}{s+r}
+ \le\frac{2(r-1)(n-1)}{n^2k}
+       +A_r\frac{(k+1)(3n-2k-7)}{3n(n-1)}.
+\end{equation}
+Put $x=k/n$, so $0<x<7/20$, and let $f(x)=x-2x^2/3$.
+The function $f$ is increasing on $[0,7/20]$, since $f'(x)=1-4x/3>0$. The two terms on the right satisfy
+\begin{align}
+ &\frac{2(r-1)(n-1)}{n^2k}\le\frac2{\sqrt n}
+              \le\frac1{500},\qquad
+ A_r\le\frac{2001}{1000},\label{eq:chm-high-errors}\\
+ &\frac{(k+1)(3n-2k-7)}{3n(n-1)}
+              \le f(x)+\frac2n\le f(x)+\frac2N.
+              \label{eq:chm-high-fraction}
+\end{align}
+For the last estimate, put $\varepsilon=1/n$. Its left side is
+\[
+ \frac{(x+\varepsilon)(1-2x/3-7\varepsilon/3)}{1-\varepsilon}
+ \le\frac{f(x)+\varepsilon}{1-\varepsilon}
+ \le f(x)+2\varepsilon,
+\]
+because $f(x)\le f(7/20)=161/600$ and
+$161/600+2/N<1$.
+
+If $x\le3/10$, the right side of \eqref{eq:chm-forced} is at most
+\[
+ \frac1{500}+\frac{2001}{1000}
+          \left(\frac6{25}+\frac2N\right)
+ <\frac{483}{1000},
+\]
+whereas its left side is at least
+$(s-1)/(2s)>499/1000$. If $3/10<x<7/20$, then
+$r<\sqrt{7n/10}<21\sqrt n/25$ and $s-1\ge\sqrt n-2$.
+The left side of \eqref{eq:chm-forced} is therefore greater than
+\[
+ \frac{1-2/1000}{1+21/25}
+   =\frac{499}{920}>\frac{27}{50},
+\]
+while its right side is at most
+\[
+ \frac1{500}+\frac{2001}{1000}
+          \left(\frac{161}{600}+\frac2N\right)
+ <\frac{539}{1000}<\frac{27}{50}.
+\]
+Both alternatives contradict \eqref{eq:chm-forced}. Thus $k=0$.
+
+\paragraph{Equality and completion.}
+Only the possibility $\Delta=n-1$ remains. Its dominating vertex
+gives $M\ge1$; with $r=s$, the bridge gives
+\[
+ R\ge\frac{n+(s-1)M}{s+1}
+       \ge\frac{n+s-1}{s+1}=s.
+\]
+All pair distances are at most two, so
+\[
+ \mu=2-\frac{|E(G)|}{\binom n2}\le2-\frac2n.
+\]
+If any edge beyond the spanning star is present, this last inequality
+is strict. Hence $g\ge\gamma$, and $g\le\gamma$ forces the star.
+Conversely the star has $R=\sqrt{n-1}$ and
+$\mu=2-2/n$, so it attains equality.
+\end{proof}
+
+\paragraph{Scope.}
+This argument lowers the sufficient order threshold from $10^{10}$
+to $10^6$. It relies on the full weighted-distance theorem through
+both its uniform specialization and Lemma~\ref{lem:chm-two-block}.
+It does not establish the bound for every order below $10^6$.
+If combined with the earlier recorded verification for $2\le n\le9$,
+the interval still requiring a universal argument is
+$10\le n<10^6$. The accompanying rational-arithmetic certificate
+checks the fixed numerical comparisons in this proof; it is not
+a verification of the graphs in that remaining interval.
+
+% Input file, not a standalone document.
+% Requires amsmath/amssymb and theorem/lemma environments.
+% Inputs supplied elsewhere: (CH-U), labelled eq:uniform,
+% and the sharp maximum-degree broom bound, labelled eq:broom.
+% The full standard-library arithmetic certificate is
+% research_external/ch_mindegree2_certificate.py.
+
+\section{The complete case of minimum degree at least two}
+\label{sec:ch-mindegree2}
+
+This section closes every order for graphs without leaves. Its inputs are
+the uniform weighted-distance inequality \eqref{eq:uniform} and the sharp
+broom bound \eqref{eq:broom}; the remaining estimates are proved here.
+The finite part checks inequalities on invariant ranges, rather than
+enumerating or sampling graphs.
+
+\begin{theorem}\label{thm:ch-mindegree2}
+Let $G$ be a connected finite simple graph of order $n$ and minimum degree
+at least two. Then
+\[
+ R(G)-\mu(G)>\sqrt{n-1}-2+\frac2n.
+\]
+Thus any equality graph or counterexample to the unrestricted
+Caporossi--Hansen additive statement must have a leaf.
+\end{theorem}
+
+Write $d=\Delta(G)$, $e=|E(G)|$, $Q=\binom n2$ and
+\[
+ t=\sqrt{d/2},\qquad
+ B=B(n,d)=
+ \frac{n(n-1)(n+1)-(d-1)(d-2)(3n-2d-3)}
+      {3n(n-1)}.
+\]
+Here $n\ge3$ and $2\le d\le n-1$. The two previously established inputs are
+\begin{equation}\label{eq:md2-inputs}
+ M\ge\frac{(n-1)\mu-(n-2)}n,\qquad \mu\le B.
+\end{equation}
+
+\subsection{Degree ratios, edge counts and distance deficits}
+
+\begin{lemma}\label{lem:md2-bounds}
+For every upper bound $A\ge\mu$,
+\begin{equation}\label{eq:md2-g}
+ R-\mu\ge
+ g_{n,t}(A):=
+ \frac{n-(2+(t-1)/n)A-(t-1)(1-2/n)}{t+1}.
+\end{equation}
+Moreover,
+\begin{align}
+ R&\ge L(n,d):=\frac{n\sqrt{2d}}{d+2},\label{eq:md2-dalfo}\\
+ R&\ge P(n,d,e):=
+ \frac n2-\frac{t-1}{2(t+1)}(e-n),\label{eq:md2-energy}\\
+ \mu&\le A(n,d,e):=B(n,d)-\frac{e-n+1}{Q}.\label{eq:md2-edge-distance}
+\end{align}
+The permitted integer edge counts lie in the interval
+\begin{equation}\label{eq:md2-edge-range}
+ n+\left\lceil\frac{d-2}{2}\right\rceil
+ \le e\le\left\lfloor\frac{nd}{2}\right\rfloor.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For an edge with endpoint degrees $2\le a\le b\le d$, the identity
+\[
+ (a^{-1/2}-b^{-1/2})^2
+ =(\sqrt{b/a}-1)\bigl((ab)^{-1/2}-b^{-1}\bigr)
+\]
+has $\sqrt{b/a}\le t$. Summing and using
+$\sum_{uv\in E}(d_u^{-1}+d_v^{-1})=n$ gives
+\[
+ n-2R\le(t-1)(R-M),\qquad
+ (t+1)R\ge n+(t-1)M.
+\]
+Combining with \eqref{eq:md2-inputs} yields \eqref{eq:md2-g}, since its
+right-hand side is decreasing in $A$. The same argument remains valid
+if $t$ is replaced by any larger number.
+
+For \eqref{eq:md2-dalfo}, the degree ratio lies between $2/d$ and $d/2$,
+and hence
+\[
+ \frac{\sqrt{ab}}{a+b}\ge\frac{\sqrt{2d}}{d+2}.
+\]
+Multiply by $a^{-1}+b^{-1}$ and sum over all edges.
+
+For \eqref{eq:md2-energy}, charge each contribution to
+\[
+ E=n-2R=\sum_{uv\in E}(d_u^{-1/2}-d_v^{-1/2})^2
+\]
+to an endpoint of larger degree. A vertex $v$ receives at most $d_v$
+charges, each no larger than $(2^{-1/2}-d_v^{-1/2})^2$.
+Writing $t_v=\sqrt{d_v/2}$ therefore gives
+\[
+ \begin{aligned}
+ E
+ &\le\sum_v(t_v-1)^2
+ =\sum_v(d_v-2)\frac{t_v-1}{2(t_v+1)}\\
+ &\le\frac{t-1}{2(t+1)}\sum_v(d_v-2)
+ =\frac{t-1}{t+1}(e-n).
+ \end{aligned}
+\]
+The coefficient is increasing in $t_v$, and $d_v-2\ge0$.
+Since $R=(n-E)/2$, this proves \eqref{eq:md2-energy}.
+
+For \eqref{eq:md2-edge-distance}, choose a vertex of degree $d$ and a
+spanning tree containing all of its incident edges. This tree exists
+because a star is acyclic and extends to a spanning tree, and it has
+maximum degree exactly $d$. Every one of the $e-n+1$ omitted edges
+corresponds to a distinct vertex pair whose tree distance is at least two
+and whose distance in $G$ is one. Thus the Wiener sum decreases by at
+least $e-n+1$ from this tree to $G$. Apply the broom bound to the tree.
+
+Finally, the degree sum is at least $d+2(n-1)$ and at most $nd$,
+which proves \eqref{eq:md2-edge-range}.
+\end{proof}
+
+\subsection{A uniform analytic argument for \texorpdfstring{$n\ge289$}{n >= 289}}
+
+\begin{lemma}\label{lem:md2-one-variable}
+For $0\le x\le1$,
+\[
+ a(x)-\sqrt{x/2}>\frac1{16},
+ \qquad a(x)=\frac13+2x^2-\frac43x^3.
+\]
+\end{lemma}
+
+\begin{proof}
+If $0\le x\le1/2$, then $a(x)\ge1/3+(4/3)x^2$.
+Put $y=\sqrt{x/2}$. Differentiation, or the corresponding quartic
+Young inequality, gives
+\[
+ y-\frac{16}{3}y^4\le\frac{3\sqrt[3]{3}}{16}
+ \qquad(y\ge0);
+\]
+the maximum occurs at $y=\sqrt[3]{3}/4$. Since
+$9\sqrt[3]{3}<13$, as follows from $2187<2197$, we obtain
+\[
+ a(x)-\sqrt{x/2}
+ \ge\frac13-\frac{3\sqrt[3]{3}}{16}
+ >\frac13-\frac{13}{48}=\frac1{16}.
+\]
+If $1/2\le x\le1$, then
+\[
+ a(x)-\frac{2x+1}{3}
+ =\frac23x(1-x)(2x-1)\ge0.
+\]
+For $z=\sqrt{2x}\ge1$,
+\[
+ \frac{2x+1}{3}-\sqrt{x/2}
+ =\frac16+\frac{(2z-1)(z-1)}6
+ \ge\frac16>\frac1{16}.
+\]
+\end{proof}
+
+\begin{lemma}\label{lem:md2-large}
+For all integers $n\ge289$ and $2\le d\le n-1$,
+\[
+ g_{n,\sqrt{d/2}}\bigl(B(n,d)\bigr)
+ >\sqrt{n-1}-2+\frac2n.
+\]
+\end{lemma}
+
+\begin{proof}
+Set $x=d/n$, $s=\sqrt{n-1}$ and
+$f(x)=1-3x^2+2x^3$, so that $a(x)=1-\frac23f(x)$.
+We will use
+\begin{equation}\label{eq:md2-broom-relaxation}
+ B\le\frac n3f(x)+2,\qquad B\le\frac{n+1}{3}.
+\end{equation}
+For the first inequality, its difference multiplied by $3n(n-1)$
+is exactly
+\[
+ n^2(1-x)(2x^2-4x+5)+n(5x+1)-6>0.
+\]
+The first summand is nonnegative and the last terms equal
+$5d+n-6\ge7$. The second inequality follows directly from the formula
+for $B$.
+
+Put $\gamma=s-2+2/n$. Direct subtraction in \eqref{eq:md2-g} gives
+\[
+ \begin{aligned}
+ (t+1)\bigl(g_{n,t}(B)-\gamma\bigr)
+ &=n-2B+t+3-(t+1)s-\frac{(t-1)B}{n}-\frac4n\\
+ &\ge na(x)-ts-s
+   +t\left(\frac23-\frac1{3n}\right)-\frac23-\frac{11}{3n}\\
+ &\ge n\bigl(a(x)-\sqrt{x/2}\bigr)
+       -\sqrt n-\frac23-\frac{11}{3n}\\
+ &>\frac n{16}-\sqrt n-\frac23-\frac{11}{3n}.
+ \end{aligned}
+\]
+We used \eqref{eq:md2-broom-relaxation}, $t=\sqrt{nx/2}$,
+$s\le\sqrt n$, and Lemma~\ref{lem:md2-one-variable}; the discarded
+$t$ term is nonnegative. If $n\ge289$, then $\sqrt n\ge17$ and
+\[
+ \frac n{16}-\sqrt n
+ =\sqrt n\left(\frac{\sqrt n}{16}-1\right)\ge\frac{17}{16}.
+\]
+The last displayed lower bound is consequently at least
+$17/16-2/3-11/867>0$.
+\end{proof}
+
+\subsection{An exact finite arithmetic certificate}
+
+For $3\le n\le288$ and $2\le d\le n-1$ there are exactly $41\,041$
+integer pairs. The standard-library certificate
+\texttt{ch\_mindegree2\_certificate.py}, reproduced in the appendix,
+first tests
+\begin{equation}\label{eq:md2-base-test}
+ \max\{g_{n,t}(B),\,L(n,d)-B\}
+ >\sqrt{n-1}-2+\frac2n.
+\end{equation}
+Only the following thirteen pairs require the edge-sensitive bounds:
+\[
+ \begin{gathered}
+ (20,6),(21,6),(22,6),(23,6),(24,6),(24,7),(25,6),\\
+ (25,7),(26,6),(26,7),(27,7),(28,7),(29,7).
+ \end{gathered}
+\]
+For them, the certificate tests all $699$ integer edge counts in
+\eqref{eq:md2-edge-range}, putting $A=A(n,d,e)$ and checking
+\begin{equation}\label{eq:md2-edge-test}
+ \max\{g_{n,t}(A),\,P(n,d,e)-A,\,L(n,d)-A\}
+ >\sqrt{n-1}-2+\frac2n.
+\end{equation}
+All tests succeed.
+
+For completeness, the decisions use only rational lower bounds.
+Let $H=10^6$ and compute by integer square roots
+\[
+ u=\lfloor H\sqrt{2d}\rfloor,\qquad
+ v=\lfloor H\sqrt{n-1}\rfloor.
+\]
+Use
+\[
+ t_+=\frac{u+1}{2H},\qquad
+ \gamma_+=\frac{v+1}{H}-2+\frac2n,\qquad
+ L_-=\frac{nu}{(d+2)H}.
+\]
+The bridge is valid with $t_+\ge t$. In \eqref{eq:md2-energy},
+the coefficient $(t-1)/(2(t+1))$ is increasing, so substitution of
+$t_+$ also gives a valid lower bound for $R$. Replacing the target by
+$\gamma_+$ and $L$ by $L_-$ therefore produces rational lower bounds
+for every tested margin. Python's \texttt{Fraction} and \texttt{isqrt}
+perform all decisions exactly; no floating-point computation enters.
+
+The smallest certified margin among the executed tests is
+\[
+ \frac{23\,130\,813\,383}{15\,982\,498\,350\,000}>0,
+\]
+at $(n,d)=(27,6)$ in the first stage.
+These tests exhaust necessary invariant ranges; they do not presume
+that every tested parameter tuple is realizable by a graph.
+
+\begin{proof}[Proof of Theorem~\ref{thm:ch-mindegree2}]
+For $n\ge289$, combine \eqref{eq:md2-g} with
+Lemma~\ref{lem:md2-large}. For $3\le n\le288$, use the exhaustive
+rational certificate \eqref{eq:md2-base-test}--\eqref{eq:md2-edge-test},
+whose bounds apply by Lemma~\ref{lem:md2-bounds}. Every resulting
+inequality is strict.
+\end{proof}
+
+\section{All trees with at most two branching vertices}
+\label{sec:ch-two-branch}
+A branching vertex of a tree means a vertex of degree at least three.
+Write
+\[
+ \Gamma_n=\sqrt{n-1}-2+\frac2n,\qquad
+ \mathcal S(T)=R(T)-\mu(T)-\Gamma_n.
+\]
+The arguments in this section use only elementary tree identities and a
+fixed finite collection of certified integer comparisons. In particular,
+they do not use the corpus weighted-distance theorem.
+
+\begin{theorem}\label{thm:ch-two-branch}
+Every tree $T$ of order $n\ge2$ with at most two branching vertices satisfies
+\[
+ R(T)-\mu(T)\ge\sqrt{n-1}-2+\frac2n.
+\]
+Equality holds if and only if $T$ is a star. Thus the assertion includes all
+spiders and all trees obtained by arbitrarily subdividing the pendant arms
+and the central path of a double star.
+\end{theorem}
+
+\subsection{Brooms and spiders}
+A broom is obtained from a star of center degree $d\ge2$ by extending one
+arm with $k\ge0$ additional vertices. Its order is $n=d+k+1$. Put
+\[
+ c=1-\frac1{\sqrt2},\qquad
+ A(d)=\frac1{\sqrt2}-\frac12-\frac c{\sqrt d}.
+\]
+Then $A(d)\ge0$ for $d\ge2$, with equality exactly at $d=2$.
+
+\begin{lemma}\label{lem:ch-all-brooms}
+Every nonstar broom has strictly positive CH slack $\mathcal S$.
+\end{lemma}
+\begin{proof}
+For $k\ge1$, summing the edge weights and the tree cut contributions to
+the Wiener index gives
+\begin{align}
+ R&=\frac{k-1}{2}+\frac{d-1}{\sqrt d}
+        +\frac1{\sqrt{2d}}+\frac1{\sqrt2},\label{eq:ch-broom-R}\\
+ \mu&=2-\frac2n+E,\qquad
+ E=\frac{k(k+1)(3n-2k-7)}{3n(n-1)}.
+ \label{eq:ch-broom-E}
+\end{align}
+Thus
+\[
+ \mathcal S=\frac k2+A(d)
+       -\bigl(\sqrt{d+k}-\sqrt d\bigr)-E.
+\]
+Set $z=k+1$. Completing a square yields
+\[
+ \frac Ek=\frac{z(3n-5-2z)}{3n(n-1)}
+ \le\frac{(3n-5)^2}{24n(n-1)}<\frac38,
+\]
+because $(3n-5)^2<9n(n-1)$ for $n\ge2$. Consequently
+\begin{equation}\label{eq:ch-broom-simple}
+ \mathcal S>\frac k8+A(d)
+       -\bigl(\sqrt{d+k}-\sqrt d\bigr).
+\end{equation}
+If $d\ge16$, the radical difference is
+$k/(\sqrt{d+k}+\sqrt d)<k/8$. If $k\ge64$, it is smaller than
+$\sqrt k\le k/8$. Either condition gives strict positivity.
+
+The remaining rectangle is
+\[
+ 2\le d\le15,\qquad1\le k\le63.
+\]
+It has 882 points. The exact-arithmetic verifier supplied with this paper
+checks \eqref{eq:ch-broom-R}--\eqref{eq:ch-broom-E} at every point.
+Its minimum certified lower bound is
+\[
+ \frac{4304594327}{375000000000}>0,
+\]
+attained by the certificate at $d=2,k=3$, namely $P_6$. These are finite
+parameter comparisons, not sampled graphs. More explicitly, with
+$Q=10^{12}$ each term $1/\sqrt j$ is bounded below by
+$\lfloor Q/\sqrt j\rfloor/Q$, computed as
+$\operatorname{isqrt}(Q^2\mathbin{//}j)/Q$, and
+$\sqrt{n-1}$ is bounded above by its integer-square-root ceiling at scale
+$Q$. After multiplying by $3n(n-1)Q$, every test is an integer inequality.
+The cases $k=0$ are stars and attain equality; $K_2$ is handled directly.
+\end{proof}
+
+\begin{lemma}\label{lem:ch-all-spiders}
+Every nonstar spider has strictly positive CH slack.
+\end{lemma}
+\begin{proof}
+Let the spider have center degree $d\ge2$, and let $b$ count its arms
+of length at least two. Directly summing the three edge types gives
+\begin{equation}\label{eq:ch-spider-R}
+ R=\frac{n-1-d}{2}+\sqrt d+bA(d).
+\end{equation}
+For a nonstar, $b\ge1$, so this is at least the Randi\'c index of the
+broom having the same $n,d$.
+
+The mean distance is at most that of the same broom. For a direct tree
+proof, suppose two arm lengths satisfy $a\ge b\ge2$, and move one unit
+of length from the shorter arm to the longer one. With $f(t)=t(n-t)$,
+the Wiener-index change is
+\[
+ f(a+1)-f(b)=(a+1-b)(n-a-b-1)\ge0.
+\]
+The last factor counts vertices in the other arms. The number of long
+arms does not increase, so \eqref{eq:ch-spider-R} also shows that $R$
+does not increase. Repeat until only one arm has length greater than one.
+The resulting broom therefore has no larger $R$ and no smaller $\mu$.
+Apply Lemma~\ref{lem:ch-all-brooms}. For $d=2$ these transformations simply
+re-root the same path, which is already included.
+\end{proof}
+
+\subsection{Every double broom}
+Let $D(a,b,L)$ consist of a path of $L\ge1$ edges between two designated
+hubs, with $a,b\ge0$ leaves at its two ends. Its order is
+$n=a+b+L+1$. When $L\ge2$, write $x=a+1,y=b+1$. Direct calculation gives
+\begin{align}
+ R&=\frac{L-2}{2}+\sqrt x+\sqrt y
+                  -c\left(\frac1{\sqrt x}+\frac1{\sqrt y}\right),
+                  \label{eq:ch-db-R}\\
+ W&=(a+b)(n-1)+\sum_{i=1}^L(a+i)(n-a-i),\label{eq:ch-db-W}\\
+ W-(n-1)^2&=\frac L6
+ \bigl(L^2+3L(a+b)-3L+6ab-3(a+b)+2\bigr).
+ \label{eq:ch-db-excess}
+\end{align}
+
+\begin{lemma}\label{lem:ch-double-broom-reduction}
+For fixed $n,L\ge2$, the smallest slack among the integer double brooms
+$D(a,b,L)$ occurs either when $a=0$ or $b=0$, or when $|a-b|\le1$.
+\end{lemma}
+\begin{proof}
+Keep $S=x+y$ fixed and put $z=\sqrt{xy}$. Since $ab=z^2-S+1$, the
+part of the slack depending on $z$ is
+\[
+ q_c(z)-Cz^2,\qquad
+ q_c(z)=\sqrt{S+2z}\left(1-\frac cz\right),\qquad
+ C=\frac{2L}{n(n-1)}>0.
+\]
+Its first term has derivative
+\[
+ q_c'(z)=\frac{1+c/z+cS/z^2}{\sqrt{S+2z}}.
+\]
+The positive numerator decreases and the denominator increases, so $q_c$
+is strictly concave. Subtracting $Cz^2$ preserves strict concavity.
+For integer $x,y\ge1$ with fixed sum, the extreme values of $z$ are
+$\sqrt{S-1}$ and
+$\sqrt{\lfloor S/2\rfloor\lceil S/2\rceil}$. A concave function on
+the interval is at least the lesser of its endpoint values. These are
+exactly the two cases stated. The first is a broom or a path and was
+settled above.
+\end{proof}
+
+\begin{lemma}\label{lem:ch-balanced-double-brooms}
+Every balanced nonstar double broom with $L\ge2$ has positive slack.
+\end{lemma}
+\begin{proof}
+Put $x=d$, $y=e$, where $e=d$ or $d+1$, so $n=L+d+e-1$.
+Summing the consecutive path-cut products in \eqref{eq:ch-db-W} gives
+\[
+ \mu\le\frac{nL}{2(n-1)}
+       -\frac{L(L^2-1)}{6n(n-1)}+\frac{2(n-L-1)}n.
+\]
+When $e=d+1$, an additional nonpositive parity term has been dropped.
+Together with \eqref{eq:ch-db-R}, this implies
+\begin{align*}
+ \mathcal S\ge{}&\sqrt d+\sqrt e
+       -c\left(\frac1{\sqrt d}+\frac1{\sqrt e}\right)
+       -\sqrt{n-1}-1
+       +\frac{L(L^2+9n-13)}{6n(n-1)}.
+\end{align*}
+Use $e\ge d$, $n\le L+2d$, $L\ge2$ and $c<3/10$.
+In particular,
+$c(1/\sqrt d+1/\sqrt e)<3/5$ and $9n-13>0$, so
+\[
+ \mathcal S>
+ 2\sqrt d-\sqrt{L+2d}-\frac85+
+                 \frac{L^3}{6(L+2d)^2}.
+\]
+Since $-8/5>-7/4$, this gives the convenient strict bound
+\begin{equation}\label{eq:ch-db-coarse}
+ \mathcal S>
+ 2\sqrt d-\sqrt{L+2d}-\frac74+
+                 \frac{L^3}{6(L+2d)^2}.
+\end{equation}
+If $d\ge400$, consider three cases. For $L\le d$, the radical
+difference is at least $(2-\sqrt3)\sqrt d>\sqrt d/4\ge5$.
+For $d<L\le2d$, that difference is nonnegative and the cubic term is
+larger than $d/96\ge400/96>7/4$. For $L>2d$, the difference is larger
+than $-\sqrt L$ and the cubic term is larger than $L/24$. Here $L>800$.
+The function $L/24-\sqrt L-7/4$ is increasing for $L\ge800$ and at 800
+is greater than
+\[
+ \frac{800}{24}-29-\frac74=\frac{31}{12}>0.
+\]
+The last case also treats every $L\ge800$ with $d\le399$.
+
+It remains to check the fixed rectangle
+\[
+ 1\le d\le399,\qquad e\in\{d,d+1\},\qquad2\le L\le799.
+\]
+There are 636,804 parameter points. The point $(d,e,L)=(1,1,2)$ is
+$P_3$, which is itself a star and has zero slack. The other 636,803
+points are strictly positive by the supplied integer verifier, using
+\eqref{eq:ch-db-R} and \eqref{eq:ch-db-excess}. The smallest certified
+lower bound is again $4304594327/375000000000>0$, at $P_6$.
+This closes every balanced case.
+\end{proof}
+
+\begin{lemma}\label{lem:ch-adjacent-double-stars}
+Every nonstar double broom with $L=1$ has positive slack.
+\end{lemma}
+\begin{proof}
+Now $S=n=x+y$, and with $z=\sqrt{xy}$,
+\[
+ R=\sqrt{S+2z}\left(1-\frac1z\right)+\frac1z,
+ \qquad \mu=2-\frac2n+\frac{2ab}{n(n-1)}.
+\]
+The variable part of the slack is $q_1(z)+1/z-Cz^2$.
+Differentiation gives
+\begin{align*}
+ z^3(S+2z)^{3/2}\left(q_1(z)+\frac1z\right)''
+ ={}&-z^3-3z^2-6Sz-2S^2+2(S+2z)^{3/2}.
+\end{align*}
+Since $z\le S/2$, for $S\ge8$ the final term is at most
+$2(2S)^{3/2}\le2S^2$. Strict concavity follows. The same endpoint
+argument reduces the problem to a star or balanced integer hub degrees.
+
+For a balanced case with $n\ge17$, put $u=\sqrt{n-1}\ge4$.
+Both hub degrees are at least $(n-1)/2$, so
+\[
+ R-\sqrt{n-1}>
+ (\sqrt2-1)u-\frac{2\sqrt2}{u}
+ \ge\frac72\sqrt2-4>\frac12.
+\]
+The last inequality follows from $\sqrt2>9/7$. On the other hand,
+$2ab/[n(n-1)]<1/2$. Thus the balanced slack is positive.
+For $4\le n\le16$, all 91 nonstar choices $2\le x\le n-2$
+are covered by the exact verifier. Their minimum certified slack is
+$46488264409/3000000000000>0$, at $P_4$. At $n=2,3$ the double stars
+are stars. This finishes the adjacent-hub case.
+\end{proof}
+
+The preceding three lemmas prove the CH inequality for every double broom,
+with equality precisely on stars. The finite certificates used here are
+summarized below; they form part of the proof and are independently
+reproducible from the supplied integer code.
+\begin{center}\small
+\begin{tabular}{@{}lrl@{}}\hline
+Finite comparison set & Nonstar points & Certified minimum slack\\\hline
+Brooms, $2\le d\le15$, $1\le k\le63$ &882&
+ $4304594327/375000000000$\\
+Balanced double brooms, bounded rectangle &636,803&
+ $4304594327/375000000000$\\
+Adjacent hubs, $4\le n\le16$ &91&
+ $46488264409/3000000000000$\\\hline
+\end{tabular}
+\end{center}
+
+\subsection{Moving arbitrary pendant arms into the central path}
+\begin{proof}[Proof of Theorem~\ref{thm:ch-two-branch}]
+Paths and spiders were settled above. Suppose that $T$ has exactly two
+branching vertices $u,v$, of degrees $d,e\ge3$, joined by a path of length
+$L\ge1$. Every component off this path is itself a pendant path.
+Consider an arm of length $a\ge2$ at $u$. Let $B$ be the total length
+of the other arms at $u$, and let $C$ be the total length of all arms at
+$v$. Then
+\[
+ n=a+B+1+L+C,\qquad B\ge1,\quad C\ge2.
+\]
+Shorten the selected arm to length one and insert its $a-1$ removed
+vertices into the $u$--$v$ path. The order and the two branching degrees
+are preserved.
+
+For the Wiener index write $f(t)=t(n-t)$. The old arm contributes
+$\sum_{j=1}^a f(j)$. The old central path has consecutive cut sizes
+$a+B+1,\ldots,a+B+L$; the new path adds the sizes $B+2,\ldots,B+a$.
+All other edge-cut contributions are unchanged. Hence the exact difference is
+\begin{align}
+ W(T')-W(T)
+ &=\sum_{j=2}^a\bigl(f(B+j)-f(j)\bigr)\nonumber\\
+ &=B(a-1)(n-B-a-2)
+   =B(a-1)(L+C-1)>0.\label{eq:ch-arm-W}
+\end{align}
+This is a comparison of the completed transformation; an individual
+intermediate shortening need not increase $W$.
+
+For $R$, deleting a degree-two vertex from a pendant arm of length at
+least three subtracts $1/2$. Inserting it into a central path of length
+at least two adds $1/2$. The last arm shortening from length two to one
+has the additional decrease $A(d)\ge0$. If the original central path
+has length one, the first subdivision instead contributes the additional
+change
+\[
+ \frac1{\sqrt{2d}}+\frac1{\sqrt{2e}}
+       -\frac1{\sqrt{de}}-\frac12
+ =-\left(\frac1{\sqrt d}-\frac1{\sqrt2}\right)
+    \left(\frac1{\sqrt e}-\frac1{\sqrt2}\right)\le0.
+\]
+For the completed transformation, the exact change is therefore
+\[
+ R(T')-R(T)=
+ \begin{cases}
+  -A(d),&L\ge2,\\[2pt]
+  -A(d)-\left(\dfrac1{\sqrt d}-\dfrac1{\sqrt2}\right)
+          \left(\dfrac1{\sqrt e}-\dfrac1{\sqrt2}\right),&L=1.
+ \end{cases}
+\]
+Consequently $R(T')\le R(T)$ while \eqref{eq:ch-arm-W} gives
+$\mu(T')>\mu(T)$.
+
+Apply this operation to every arm longer than one at both hubs. The
+result is a double broom of the same order, with no larger $R$ and no
+smaller mean distance. Its slack is positive, since two branching
+vertices exclude a star. The original slack is therefore positive too.
+The only equality graphs in the classes already handled are stars,
+which do attain the required value. This proves the theorem.
+\end{proof}
+
+
+\section{Why the remaining class has not been closed}
+\label{sec:remaining}
+
+The preceding arguments prove the classes in Theorem~\ref{thm:summary}.
+They do not establish a reduction from an arbitrary graph in
+\eqref{eq:remaining} to one of those classes. Two different logical steps
+would be required: handling trees with three or more branching vertices,
+and handling graphs with both cycles and leaves. Neither is supplied by
+the small-order verification or by the new asymptotic cutoff.
+
+A natural route would be to remove a nonbridge edge without increasing
+$R-\mu$, and repeat until a tree remains. That route is false in this
+unrestricted form.
+
+\begin{proposition}\label{prop:deletion-obstruction}
+There is a connected graph in which deleting any nonbridge edge strictly
+increases $R-\mu$.
+\end{proposition}
+\begin{proof}
+Take $K_6$ and attach two leaves to each core vertex. The graph has
+$18$ vertices, and every core degree is seven. Only its core edges are
+nonbridges. By symmetry it suffices to delete one such edge $uv$.
+The change in the Randi\'c index is
+\[
+ \Delta R=
+ 4\left(\frac1{\sqrt6}-\frac1{\sqrt7}\right)
+ +8\left(\frac1{\sqrt{42}}-\frac17\right)-\frac17.
+\]
+The only increased distances are the nine pairs joining
+$\{u,\text{its two leaves}\}$ to
+$\{v,\text{its two leaves}\}$. Each increases by one, hence
+$\Delta\mu=9/\binom{18}{2}=1/17$.
+Integer square-root enclosures at scale $10^{12}$, included in the
+constant certificate below, give
+\[
+ \Delta(R-\mu)>\frac{11}{1000}>0.
+\]
+Thus every allowed edge deletion worsens this objective.
+This graph is an obstruction to the proposed reduction, not a
+counterexample to \eqref{eq:target}.
+\end{proof}
+
+The all-order tree theorem established here uses a specific transformation
+valid when there are at most two branching vertices. Extending it to
+arbitrary branch configurations requires an additional proved statement.
+The most direct extension of the branch-moving rule also fails.
+
+\begin{proposition}\label{prop:branch-obstruction}
+There is a tree with more than two branching vertices for which moving
+the middle off-spine component to either end branching vertex of the
+spine increases both the Wiener index and $R-\mu$.
+\end{proposition}
+\begin{proof}
+Start with the path $v_0,\ldots,v_{14}$. Attach a two-edge pendant path
+at each of $v_3$ and $v_{11}$. Attach a vertex $u$ to $v_7$, and attach
+$24$ leaves to $u$. This gives $44$ vertices. Extend each of the two
+ends $v_0,v_{14}$ by a path of $228$ new edges, giving $n=500$.
+Replace $v_7u$ by $v_3u$ or by $v_{11}u$.
+In either case, summing tree-cut contributions $a(n-a)$ gives
+\[
+ \Delta W=400,\qquad
+ \Delta\mu=\frac{800}{500\cdot499}.
+\]
+Only edges at the two changed attachment vertices contribute to
+the change of the Randi\'c index, and their exact sum is
+\[
+ \Delta R=
+ \frac{11}{10}+\frac3{2\sqrt2}
+ -\frac5{\sqrt6}-\frac1{5\sqrt3}.
+\]
+The exact certificate constructs this tree, checks both cut sums, and
+encloses the radicals to prove
+\[
+ \Delta(R-\mu)>\frac7{10000}>0.
+\]
+Thus neither transfer provides the desired monotonic reduction.
+Again, this is not a counterexample to \eqref{eq:target}.
+\end{proof}
+
+No general reduction is silently assumed. In particular, a finite interval of
+orders is still a mathematical gap until every graph in that interval
+is covered by an argument or a completed exhaustive certificate.
+
+\section{Verification and provenance}
+\label{sec:verification}
+
+Each displayed theorem is accompanied by its proof. The exceptional
+parameter boxes in the minimum-degree and two-branching-vertex arguments
+are finite \emph{invariant} boxes whose coverage is established before
+computation. The exact certificates then check every tuple in those boxes.
+They are therefore proof components, not an extrapolation from randomly
+chosen graphs. The analytic parts handle all parameters outside the boxes.
+
+The certificates use Python's standard library only. Integer square roots
+produce lower or upper bounds for radicals, and all decisions are integer
+or rational inequalities. Decimal values printed for readability play no
+role in the decisions. The full programs are reproduced below and are
+embedded in this TeX file. No external data file, graph generator or
+optimization solver is needed to run them.
+
+The source versions are identified in Section~\ref{sec:inputs} and the
+bibliography. The exact conclusions are Theorem~\ref{thm:summary}, with
+the unclosed class \eqref{eq:remaining}; no publication-priority or
+external-referee-acceptance claim is made.
+
+\clearpage
+\appendix
+\section{Exact constant and obstruction certificate}
+\label{app:constants}
+The following certificate checks the rational comparisons in the
+million-vertex argument and the cycle-deletion obstruction.
+
+\begin{lstlisting}
+"""Exact fixed-constant certificate for CH_million_section.tex.
+
+Run with Python 3. Uses fractions.Fraction only: no floating-point arithmetic,
+no graph enumeration, and no claim about the remaining orders 10 <= n < 10**6.
+Analytic monotonicity reductions are proved in the accompanying TeX section.
+"""
+
+from fractions import Fraction as F
+
+
+def positive(name, value):
+    assert value > 0, (name, value)
+    print(f"PASS {name}: margin = {value}")
+
+
+N = 10**6
+z0 = F(1, 1000)
+tau_lo, tau_hi = F(3779, 50000), F(189, 2500)
+rho_hi = F(147, 200)
+q0, alpha0 = F(127, 1250), F(20001, 10000)
+
+# Case 1: sqrt(n)/10 is a valid relaxed degree bound; the quadratic
+# 7 y**2/60 - y - 1/3 is positive and increasing for y >= 1000.
+positive("1/sqrt(175) < 1/10 (squared)", F(1, 100) - F(1, 175))
+positive("case 1 endpoint", F(7, 60) * N - 1000 - F(1, 3))
+positive("case 1 derivative", F(7, 30) * 1000 - 1)
+
+# Case 2: square-root enclosures and the rational cubic upper bound.
+positive("tau lower bound", F(1, 175) - F(1, N) - tau_lo**2)
+positive("tau upper bound", tau_hi**2 - F(1, 175))
+positive("rho upper bound", rho_hi**2 - F(27, 50))
+positive("q lower bound", (tau_lo-z0)/(rho_hi-z0) - q0)
+positive("alpha upper bound", alpha0 - (2+tau_hi*z0-z0**2)/(1-z0**2))
+
+beta = alpha0/2 - 1 + q0
+assert beta == F(2033, 20000)
+C = (-q0 + tau_hi + (1-tau_hi)*z0
+     + (174*(1-q0) + 1225*alpha0)/N
+     + (alpha0/6+4)/N**2)
+assert C == -F(449383117913333, 20000000000000000)
+positive("cubic maximizer enclosure", F(319, 1000)**2 - 2*beta/alpha0)
+cubic_bound = F(2, 3)*beta*F(319, 1000) + C
+assert cubic_bound == -F(51095353739999, 60000000000000000)
+positive("negative cubic margin beyond 1/1250", -cubic_bound-F(1, 1250))
+
+# Case 3: the relevant rational functions decrease with n >= N.
+positive("middle lambda bound", F(497, 500) - F(621*N, 625*(N-1)))
+positive("middle B bound", F(3, 2) - F(13*N, 10*(N-1)))
+positive("r > 700 (squared)", F(27*N, 50) - 700**2)
+positive("positive M coefficient", F(349, 350)-F(497, 500))
+positive("r < 9 sqrt(n)/10 (squared)", F(81, 100)-F(13, 20))
+positive("r+1 < sqrt(n) endpoint", 1-F(9, 10)-z0)
+positive("middle final gap", F(1, 2)-2*z0-F(2, N))
+
+# Case 4: the error bounds are largest at n=N.
+positive("fraction relaxation", 1-F(161, 600)-F(2, N))
+positive("s > 500 (squared)", F(N-1)-500**2)
+upper_low = F(1, 500)+F(2001, 1000)*(F(6, 25)+F(2, N))
+positive("high-degree x<=3/10 bound", F(483, 1000)-upper_low)
+positive("high-degree first separation", F(499, 1000)-F(483, 1000))
+positive("sqrt(7/10) < 21/25 (squared)", F(21, 25)**2-F(7, 10))
+lower_high = (1-2*z0)/(1+F(21, 25))
+assert lower_high == F(499, 920)
+positive("high-degree second lower bound", lower_high-F(27, 50))
+upper_high = F(1, 500)+F(2001, 1000)*(F(161, 600)+F(2, N))
+positive("high-degree second upper bound", F(539, 1000)-upper_high)
+positive("high-degree second separation", F(27, 50)-F(539, 1000))
+
+print("All exact fixed-constant checks passed.")
+
+
+# The cycle-deletion obstruction of Section 6.
+from math import isqrt
+from fractions import Fraction as F
+scale=10**12
+def inv_interval(d):
+    a=isqrt(scale*scale//d)
+    return F(a,scale),F(a+1,scale)
+a6,b6=inv_interval(6)
+a7,b7=inv_interval(7)
+a42,b42=inv_interval(42)
+change_lower=4*a6-4*b7+8*a42-F(9,7)-F(1,17)
+assert change_lower>F(11,1000)
+print('Cycle deletion increases the gap by more than 11/1000.')
+
+# The 500-vertex branch-transfer obstruction.
+def tree_wiener(n,edges):
+    adj=[[] for _ in range(n)]
+    for u,v in edges:
+        adj[u].append(v)
+        adj[v].append(u)
+    parent=[-1]*n
+    parent[0]=0
+    order=[0]
+    for u in order:
+        for v in adj[u]:
+            if parent[v]<0:
+                parent[v]=u
+                order.append(v)
+    assert len(edges)==n-1 and len(order)==n
+    size=[1]*n
+    for v in reversed(order[1:]):
+        size[parent[v]]+=size[v]
+    return sum(size[v]*(n-size[v]) for v in order[1:])
+edges=[(i,i+1) for i in range(14)]
+edges += [(3,15),(15,16),(11,17),(17,18),(7,19)]
+edges += [(19,j) for j in range(20,44)]
+next_vertex=44
+for end in (0,14):
+    previous=end
+    for step in range(228):
+        edges.append((previous,next_vertex))
+        previous=next_vertex
+        next_vertex+=1
+assert next_vertex==500
+old_w=tree_wiener(500,edges)
+from collections import Counter
+def edge_products(n,edge_list):
+    deg=[0]*n
+    for u,v in edge_list:
+        deg[u]+=1
+        deg[v]+=1
+    return Counter(deg[u]*deg[v] for u,v in edge_list)
+old_products=edge_products(500,edges)
+for end in (3,11):
+    new_edges=[e for e in edges if e!=(7,19)]+[(end,19)]
+    assert tree_wiener(500,new_edges)-old_w==400
+    new_products=edge_products(500,new_edges)
+    diff={p:new_products[p]-old_products[p]
+          for p in set(old_products)|set(new_products)
+          if new_products[p]!=old_products[p]}
+    assert diff=={4:2,8:3,6:-5,75:-1,100:1}
+a2,b2=inv_interval(2)
+a3,b3=inv_interval(3)
+delta_R_lower=F(11,10)+F(3,2)*a2-5*b6-F(1,5)*b3
+delta_gap_lower=delta_R_lower-F(800,500*499)
+assert delta_gap_lower>F(7,10000)
+print('Both branch transfers increase the gap by more than 7/10000.')
+
+\end{lstlisting}
+\section{Minimum-degree certificate}\label{app:md2}
+\begin{lstlisting}
+#!/usr/bin/env python3
+"""Exact finite certificate for the CH additive inequality when delta >= 2.
+
+The analytic argument in ch_mindegree2_proof.md handles every n >= 289.
+This program checks n = 3,...,288 and all integer Delta = 2,...,n-1.
+It uses rational arithmetic only; square roots are enclosed by integer sqrt.
+It checks bounds on graph invariants, not a sample or enumeration of graphs.
+Inputs: CH-U, the maximum-degree broom bound, and the elementary bounds
+proved in the accompanying argument. No numerical solver is required.
+"""
+from fractions import Fraction as Q
+from math import isqrt
+import json
+
+
+SCALE = 10**6
+
+
+def broom_mean(n, d):
+    return Q(n*(n-1)*(n+1) - (d-1)*(d-2)*(3*n-2*d-3),
+             3*n*(n-1))
+
+
+def bounds(n, d):
+    # sqrt(2*d) >= a/SCALE and sqrt(d/2) < (a+1)/(2*SCALE).
+    a = isqrt(2*d*SCALE*SCALE)
+    b = isqrt((n-1)*SCALE*SCALE)
+    r_upper = Q(a+1, 2*SCALE)
+    s_upper = Q(b+1, SCALE)
+    target_upper = s_upper - 2 + Q(2, n)
+    dalfo_lower = Q(n*a, (d+2)*SCALE)
+    return r_upper, target_upper, dalfo_lower
+
+
+def bridge_gap(n, A, r_upper, target_upper):
+    # A is an upper bound on mu. The ratio parameter r_upper exceeds
+    # sqrt(Delta/2), so the edge identity directly justifies this bridge.
+    numerator = n - (2+(r_upper-1)/n)*A - (r_upper-1)*(1-Q(2,n))
+    return numerator/(r_upper+1) - target_upper
+
+
+def main():
+    base_cases = 0
+    edge_cases = 0
+    exceptions = []
+    best = None
+    for n in range(3, 289):
+        for d in range(2, n):
+            base_cases += 1
+            B = broom_mean(n, d)
+            r, target, dalfo = bounds(n, d)
+            first = max(bridge_gap(n, B, r, target), dalfo-B-target)
+            if first > 0:
+                if best is None or first < best[0]:
+                    best = (first, (n,d,None))
+                continue
+
+            exceptions.append((n,d))
+            q = Q(n*(n-1), 2)
+            # Degree sum: 2e >= 2(n-1)+d. Simple graph: 2e <= n*d.
+            lower_e = n + (d-1)//2
+            upper_e = n*d//2
+            for e in range(lower_e, upper_e+1):
+                edge_cases += 1
+                # An n-1 edge spanning tree keeps a full maximum-degree
+                # star. Each of the e-n+1 omitted edges improves its own
+                # endpoint-pair distance by at least one.
+                A = B-Q(e-n+1, q)
+                energy_R = Q(n,2)-(r-1)/(2*(r+1))*(e-n)
+                gap = max(bridge_gap(n,A,r,target),
+                          energy_R-A-target,
+                          dalfo-A-target)
+                assert gap > 0, (n,d,e,gap)
+                if best is None or gap < best[0]:
+                    best = (gap, (n,d,e))
+
+    expected = [(20,6),(21,6),(22,6),(23,6),(24,6),(24,7),
+                (25,6),(25,7),(26,6),(26,7),(27,7),(28,7),(29,7)]
+    assert exceptions == expected
+    assert base_cases == 41041
+    # Constants used in the analytic n >= 289 proof.
+    assert 9**3*3 < 13**3
+    assert Q(17,16)-Q(2,3)-Q(11,3*289) > 0
+    report = dict(base_cases=base_cases, edge_cases=edge_cases,
+                  exceptional_pairs=exceptions,
+                  minimum_certified_margin=str(best[0]),
+                  minimum_margin_location=best[1],
+                  square_root_scale=SCALE,
+                  result='Every finite case is strictly positive.')
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == '__main__':
+    main()
+
+\end{lstlisting}
+\section{Broom and double-broom certificate}\label{app:brooms}
+\begin{lstlisting}
+"""Finite exact comparisons used with the analytic broom/double-broom proof.
+Only integer arithmetic and integer square roots; Python3 standard library.
+"""
+from math import isqrt
+from fractions import Fraction
+import json
+S=10**12
+inv=lambda d:isqrt(S*S//d)
+rootup=lambda d:(lambda x:x+(x*x<d*S*S))(isqrt(d*S*S))
+
+def check_brooms():
+    count=0;best=None;arg=None
+    for d in range(2,16):
+        for k in range(1,64):
+            n=d+k+1
+            rlo=(d-1)*inv(d)+inv(2*d)+inv(2)+S*(k-1)//2
+            den=3*n*(n-1);num=k*(k+1)*(3*n-2*k-7)
+            margin=Fraction((rlo-rootup(n-1))*den-S*num,S*den)
+            assert margin>0,(d,k,margin)
+            if best is None or margin<best:best,arg=margin,(d,k,n)
+            count+=1
+    return {'count':count,'minimum_certified':str(best),'minimum_decimal':float(best),'arg':arg}
+
+def check_balanced_double_brooms():
+    # Analytic inequalities handle min(hubdegree)>=400 or hub-pathlength>=800.
+    iv={d:inv(d) for d in range(1,802)}
+    rt={d:rootup(d) for d in range(1,1600)}
+    count=0;best=None;arg=None
+    for d in range(1,400):
+        for e in (d,d+1):
+            a,b=d-1,e-1
+            base=(d-1)*iv[d]+(e-1)*iv[e]+iv[2*d]+iv[2*e]
+            for L in range(2,800):
+                if (d,e,L)==(1,1,2):continue # P3 is itself a star.
+                n=L+d+e-1
+                rlo=S*(L-2)//2+base
+                num=L*(L*L+3*L*(a+b)-3*L+6*a*b-3*(a+b)+2)
+                den=3*n*(n-1)
+                top=(rlo-rt[n-1])*den-S*num
+                assert top>0,(d,e,L,n,top)
+                count+=1
+                if best is None or top*best.denominator<best.numerator*S*den:
+                    best=Fraction(top,S*den);arg=(d,e,L,n)
+    return {'count':count,'minimum_certified':str(best),'minimum_decimal':float(best),'arg':arg}
+
+def check_adjacent_hubs():
+    count=0;best=None;arg=None
+    # For n>=8, concavity reduces to stars or balanced hub degrees;
+    # n>=17 balanced cases are treated analytically. Exhaust the smaller set.
+    for n in range(4,17):
+        for d in range(2,n-1):
+            e=n-d;a,b=d-1,e-1
+            rlo=a*inv(d)+b*inv(e)+inv(d*e)
+            den=n*(n-1);num=2*a*b
+            margin=Fraction((rlo-rootup(n-1))*den-S*num,S*den)
+            assert margin>0,(n,d,e,margin)
+            if best is None or margin<best:best,arg=margin,(n,d,e)
+            count+=1
+    return {'count':count,'minimum_certified':str(best),'minimum_decimal':float(best),'arg':arg}
+
+if __name__=='__main__':
+    result={'brooms':check_brooms(),
+            'balanced_double_brooms':check_balanced_double_brooms(),
+            'adjacent_hubs':check_adjacent_hubs()}
+    with open('CH_agent_broom_certificate_results.json','w') as f:json.dump(result,f,indent=2)
+    print(json.dumps(result,indent=2))
+
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{cap}
+G.~Caporossi and P.~Hansen,
+Variable neighborhood search for extremal graphs: 1. The AutoGraphiX system,
+\emph{Discrete Mathematics} \textbf{212} (2000), 29--44.
+\doi{10.1016/S0012-365X(99)00206-X}.
+\bibitem{dalfo}
+C.~Dalf\'o, On the Randi\'c index of graphs,
+\emph{Discrete Mathematics} \textbf{342} (2019), 2792--2796.
+\doi{10.1016/j.disc.2018.08.020}.
+\bibitem{cygan}
+M.~Cygan, M.~Pilipczuk and R.~\v Skrekovski,
+Relation between Randi\'c index and average distance of trees,
+\emph{MATCH Communications in Mathematical and in Computer Chemistry}
+\textbf{66} (2011), 605--612.
+\href{https://users.fmf.uni-lj.si/skreko/Old/MyPapers/01130.pdf}{Author preprint}.
+\bibitem{vmrc227}
+Verifiable Mathematical Reasoning Corpus, manuscript [227],
+\emph{Fajtlowicz Proof Audit}, source at commit
+\texttt{52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3/%5B227%5D%20Fajtlowicz_Proof_Audit.tex}{Frozen source}.
+The weighted statement is (W); the earlier sufficient cutoff is in the
+section on the Caporossi--Hansen gap.
+\bibitem{transfers}
+Keio and Shaitetsu, \emph{Graffiti Transfers: A Sharper Extremal Bound,
+Arithmetic Counterexamples, and a Log-Rank Reformulation},
+research manuscript, 24 November 2026.
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-1194bbf4fa3c819195f961b370223ba2_67c74a3277a88191acd4edb2733e13fb&account_id=personal}{Identified TeX predecessor},
+\texttt{Graffiti\_Arithmetic\_Transfers.tex}.
+\bibitem{status}
+Keio and Shaitetsu, \emph{The Eighteen Conjectures of Fajtlowicz (1988):
+Truth Values, Proofs, and Counterexamples}, research synthesis,
+24 November 2026.
+\href{https://chatgpt.com/library?file_id=libfile_fde3_f-d8451b980f7c8191958608b0992ffc0e_67c74a3277a88191acd4edb2733e13fb&account_id=personal}{Identified PDF synthesis}.
+\end{thebibliography}
+\end{document}

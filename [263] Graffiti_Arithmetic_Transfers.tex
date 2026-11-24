@@ -1,0 +1,1026 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,tabularx,longtable}
+\usepackage{xcolor,enumitem,fancyhdr,listings}
+\usepackage[unicode,hypertexnames=false,colorlinks=true,linkcolor=blue!40!black,urlcolor=blue!50!black,citecolor=blue!40!black]{hyperref}
+\definecolor{ink}{HTML}{153047}
+\definecolor{quiet}{HTML}{516371}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\ad}{ad}
+\DeclareMathOperator{\diam}{diam}
+\DeclareMathOperator{\wt}{wt}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\gcdop}{gcd}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\F}{\mathbb F}
+\newcommand{\N}{\mathbb N}
+\newcommand{\one}{\mathbf 1}
+\newcommand{\dd}{d}
+\newcommand{\cchi}{\chi_{\rm cop}}
+\newcommand{\eps}{\varepsilon}
+\numberwithin{equation}{section}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlist{topsep=4pt,itemsep=2pt}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{quiet}Graffiti transfers}
+\fancyhead[R]{\small\color{quiet}Research report / 24 November 2026}
+\fancyfoot[C]{\small\thepage}
+\setlength{\headheight}{14pt}
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+  breaklines=true,columns=fullflexible,keepspaces=true,
+  showstringspaces=false,frame=single,rulecolor=\color{quiet!35},
+  aboveskip=8pt,belowskip=8pt}
+\hypersetup{pdftitle={Graffiti Transfers: Sharper Extremal Bounds and Arithmetic Rank Obstructions},
+pdfauthor={Keio and Shaitetsu},pdfsubject={Research deductions with explicit dependencies and scope}}
+\begin{document}
+\begin{center}
+{\small\color{quiet}VERIFIABLE MATHEMATICAL REASONING / RESEARCH CONTINUATION}\\[9pt]
+{\LARGE\bfseries\color{ink}Graffiti Transfers}\\[6pt]
+{\Large A sharper extremal bound, arithmetic counterexamples,\\[3pt]
+and a Log-Rank reformulation}\\[10pt]
+{\large Keio and Shaitetsu}\\[4pt]
+24 November 2026
+\end{center}
+\vspace{3pt}\hrule\vspace{9pt}
+
+\textbf{Abstract.}
+Starting from the weighted distance theorem recorded in VMRC manuscript
+[227], we lower its explicit sufficient order for the sharp
+Caporossi--Hansen additive bound from $10^{27}$ to $10^{10}$.
+The star is the unique minimizer throughout the new range.
+The key improvement is an independently proved, exact extremal formula
+for the distance of two samples on a tree with positive integer vertex
+weights. We also transport finite graphs to squarefree integers and
+construct an explicit family whose noncoprimality indicator matrix has
+rank $29^k$, while partitioning the integers into pairwise-coprime classes
+requires exactly $32^k$ classes. This transfers and amplifies a classical
+Alon--Seymour counterexample; it is not a new historical conjecture
+resolution. The same dictionary gives an exact arithmetic version of
+the Log-Rank conjecture. Finally, applying the corpus weighted theorem
+coordinate by coordinate gives a packing bound for products of graph
+alphabets, including a sharp gcd-chain example.
+
+\section{Results, dependencies, and scope}
+
+The starting question is whether the resolved assertions in
+Fajtlowicz's 1988 list can be transferred to other fields.
+The original list contains statements later disproved as well as
+statements proved. For example, its original item 18 is
+$\chi(G)\le 1+\rank A_G$; the graph of Alon and Seymour has
+$\chi=32$ and $\rank A=29$ \cite{fajtlowicz,alonseymour}.
+Accordingly, a transfer must preserve whether it uses a theorem
+or a counterexample.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{.27\linewidth}X>{\raggedright\arraybackslash}p{.24\linewidth}@{}}
+\toprule
+Result & Exact scope & Dependency/status\\
+\midrule
+Caporossi--Hansen gap &
+All connected graphs of every order $n\ge10^{10}$;
+equality exactly on stars &
+New deduction here from the corpus weighted theorem\\
+Weighted tree extremum &
+Every number of edges and every admissible integer total weight &
+Independent proof; sharp formula\\
+Arithmetic rank obstruction &
+An explicit family for every integer $k\ge1$ &
+Classical graph seed, exact transfer and tensor proof\\
+Arithmetic Log-Rank statement &
+Equivalent to the full graph formulation &
+Reformulation; unresolved\\
+Product alphabet packing &
+Arbitrary finite connected graph factors and positive coordinate costs &
+Corollary of the corpus weighted theorem\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The all-order Caporossi--Hansen conjecture is \emph{not} proved here.
+Relative to the small-order verification reported in [227], the
+remaining interval is $10\le n<10^{10}$. Neither the Log-Rank conjecture
+nor a general prime-distribution or irrationality problem is resolved.
+The exact tree estimate and the new numerical cutoff are proved in this
+report; historical priority for these deductions has not been established.
+
+\subsection{The corpus input}
+
+Graphs are finite, simple and undirected. Metric assertions concern
+connected graphs of order at least two. Write
+\[
+R(G)=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}},\qquad
+M(G)=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)},\qquad
+\mu(G)=\binom n2^{-1}\sum_{\{u,v\}}d_G(u,v).
+\]
+Here $M$ always denotes the modified Randi\'c sum, not a modal distance.
+The weighted distance statement used from [226--227] is
+\begin{equation}
+ \sum_{u,v}p_up_vd_G(u,v)+2\sum_vp_v^2\le M(G)+1
+ \quad\text{for every probability vector }p.
+ \tag{W}\label{eq:W}
+\end{equation}
+The distances have zero diagonal; the diagonal correction is explicitly
+$2\sum p_v^2$. We use (W) as the stated corpus theorem, with its proof
+located in the frozen source \cite{vmrc227}. The present report supplies
+the proofs of the additional deductions, not a new external
+certification of every manuscript in the corpus.
+
+Uniform mass and mass $1/2$ at two diameter endpoints give
+\begin{equation}
+ M(G)\ge\frac{(n-1)\mu(G)-(n-2)}n,\qquad M(G)\ge\frac{\diam(G)}2.
+ \label{eq:uniform-input}
+\end{equation}
+We also need the following elementary identity and its consequence.
+For $1\le a\le b\le\Delta$,
+\[
+(a^{-1/2}-b^{-1/2})^2
+ =(\sqrt{b/a}-1)\bigl((ab)^{-1/2}-b^{-1}\bigr).
+\]
+Summing, and writing $r=\sqrt\Delta$, yields
+\begin{equation}
+ n-2R=\sum_{uv\in E}(d_u^{-1/2}-d_v^{-1/2})^2
+ \le (r-1)(R-M),
+ \quad (r+1)R\ge n+(r-1)M.
+ \label{eq:bridge-input}
+\end{equation}
+These use no conjecture: $\sum_{uv\in E}(1/d_u+1/d_v)=n$.
+
+% The next section is expanded into this single source at build time.
+
+% Internal research component. Main document must define theorem/lemma environments.
+% Dependencies: the corpus weighted-distance theorem, only through (CH-U).
+% This improves an eventual cutoff; it does not prove the remaining finite range.
+
+\section{A sharp weighted-tree bound and a smaller Caporossi--Hansen cutoff}
+\label{sec:ch-improved-cutoff}
+
+For a finite simple connected graph of order $n\ge2$, put
+\[
+ R=\sum_{uv\in E(G)}\frac1{\sqrt{d_ud_v}},\qquad
+ M=\sum_{uv\in E(G)}\frac1{\max(d_u,d_v)},\qquad
+ \mu=\binom n2^{-1}\sum_{\{u,v\}\subset V(G)}d_G(u,v).
+\]
+The only input taken from the corpus weighted-distance theorem is its uniform
+specialization
+\begin{equation}\label{eq:ch-uniform-input}\tag{CH-U}
+ M\ge \frac{(n-1)\mu-(n-2)}n.
+\end{equation}
+Indeed, the corpus theorem states that
+\[
+ \sum_{u,v}p_up_vd_G(u,v)+2\sum_vp_v^2\le M+1
+\]
+for every probability vector $p$; setting $p_v=1/n$ gives
+\eqref{eq:ch-uniform-input}. All further estimates used in this section are
+proved below. In particular, the argument does not presume the desired
+Caporossi--Hansen additive inequality.
+
+\subsection{An exact weighted-tree extremum}
+
+\begin{lemma}\label{lem:ch-exact-weighted-tree}
+Let $T$ have $h$ edges and positive integer vertex weights $w_v$ with total
+$n$. Let $X,Y$ be independent samples with probability $w_v/n$ at $v$.
+Then
+\begin{equation}\label{eq:ch-exact-weighted-tree}
+ \mathbb E d_T(X,Y)
+ \le \frac h2-\frac{h(h^2-1)}{6n^2}
+       -\frac{h}{2n^2}\,\boldsymbol{1}_{\{n+h\ {
+m even}\}}.
+\end{equation}
+For $h\ge1$, equality holds precisely when $T$ is a path, every internal
+vertex has weight one, and its two endpoint weights differ by at most one.
+For $h=0$ the assertion is the equality $0=0$.
+\end{lemma}
+
+\begin{proof}
+An edge whose deletion leaves weights $a_e,n-a_e$ contributes
+$2a_e(n-a_e)/n^2$ to the expected distance. Let
+$s_e=\min(a_e,n-a_e)$.
+
+Fix an integer $a$ with $1\le a\le\lfloor n/2\rfloor$. The edges with
+$s_e\ge a$, if any, form a connected subtree $S$: every edge on the path
+between two such edges separates an outer side of each of those two cuts,
+and both outer sides have weight at least $a$. Suppose $S$ has $m\ge1$
+edges and $\ell\ge2$ leaves. At each leaf of $S$, the component pointing
+away from its unique incident edge in $S$ has weight at least $a$. These
+$\ell$ components are disjoint. The other $m+1-\ell$ vertices of $S$
+each have weight at least one and lie outside those components. Consequently
+\[
+ n\ge \ell a+(m+1-\ell)\ge m+2a-1,
+ \qquad m\le n-2a+1.
+\]
+Order the cut sizes as $s_1\ge\cdots\ge s_h$. Taking $a=s_j$ gives
+\[
+ s_j\le \left\lfloor\frac{n-j+1}{2}\right\rfloor
+       \quad(1\le j\le h).
+\]
+Since $s(n-s)$ increases on $0\le s\le n/2$, the sum of the cut products
+is at most the sum of the $h$ largest cut products of the unit-weight path
+on $n$ vertices. The corresponding deficits from $n/2$ are the first $h$
+entries of
+\[
+ 0,1,1,2,2,\ldots\quad(n\text{ even}),
+ \qquad
+ \tfrac12,\tfrac12,\tfrac32,\tfrac32,\ldots\quad(n\text{ odd}).
+\]
+Their squared sum equals
+\[
+ \frac{h(h^2-1)}{12}
+   +\frac h4\,\boldsymbol{1}_{\{n+h\ {
+m even}\}}.
+\]
+Substitute this into
+\[
+ \mathbb E d_T(X,Y)
+   =\frac h2-\frac2{n^2}\sum_e(n/2-s_e)^2
+\]
+to obtain the bound.
+
+The path in the statement attains exactly these central cut sizes, so the
+bound is sharp. For completeness, equality also forces that form. Every
+ordered cut size must attain its upper bound, since the integer cut-product
+function is strictly increasing up to $\lfloor n/2\rfloor$. If $n$ is even,
+there is a central edge cutting the total weight equally. The next required
+cut sizes, one on each side, are $n/2-1$, then $n/2-2$, and so on. To obtain
+a component of weight one less within a side, the intervening vertex must
+have weight one and must have just one continuing branch. This forces two
+chains from the central edge, of lengths differing by at most one. If $n$
+is odd and $h\ge2$, the two cuts of smaller-side weight $(n-1)/2$ isolate
+two disjoint components, leaving a single intervening vertex of weight one;
+the same argument then forces the two chains. At the final unpaired cut
+either chain may be extended. All edges are exhausted, and the remaining
+endpoint weights are the two integers nearest $(n-h+1)/2$. The case $h=1$
+states directly that the two endpoint weights are as equal as possible.
+\end{proof}
+
+\subsection{Two elementary graph estimates}
+
+\begin{lemma}\label{lem:ch-bridge-and-broom}
+Write $\Delta=\max_vd_v$, $r=\sqrt\Delta$, and $k=n-1-\Delta$.
+Then
+\begin{align}
+ n-2R&\le(r-1)(R-M),\label{eq:ch-edge-bridge}\\
+ \mu&\le 2-\frac2n+
+ \frac{k(k+1)(3n-2k-7)}{3n(n-1)}.\label{eq:ch-broom-sharp}
+\end{align}
+\end{lemma}
+
+\begin{proof}
+For an edge with endpoint degrees $a\le b$,
+\[
+ (a^{-1/2}-b^{-1/2})^2
+   =\left(\sqrt{b/a}-1\right)
+      \left((ab)^{-1/2}-b^{-1}\right).
+\]
+The first factor lies in $[0,r-1]$. The sum of the squares on the left is
+$n-2R$, because every vertex contributes its degree times the reciprocal
+of its degree. Summation proves \eqref{eq:ch-edge-bridge}.
+
+For \eqref{eq:ch-broom-sharp}, choose a vertex of degree $d=\Delta$ and a
+spanning tree containing all $d$ of its incident edges. Start with that
+$(d+1)$-vertex star and add the remaining tree vertices one at a time, each
+as a leaf. At a step whose resulting order is $t$, let
+$b_1\le\cdots\le b_{t-1}$ be the distances from the new leaf to the earlier
+vertices. A path realizing distance $j$ contains all smaller positive
+distances, so $b_i\le i$. A tree on $t$ vertices containing a vertex of
+degree at least $d$ has diameter at most $t-d+1$: a path contains at most
+two of the edges incident to a vertex on it, and counting off-path vertices
+gives this bound; if the vertex is off the path, the tree condition gives
+an even stronger count. Thus $b_i\le t-d+1$ as well. Hence the new
+transmission is at most
+\[
+ \sum_{i=1}^{t-1}\min(i,t-d+1)
+      =\binom t2-\binom{d-1}{2}.
+\]
+The initial star has unordered distance sum $d^2$. Distances in the original
+graph are no greater than those of the spanning tree. Therefore
+\[
+ \binom n2\mu
+ \le d^2+\sum_{t=d+2}^{n}
+                  \left(\binom t2-\binom{d-1}{2}\right).
+\]
+Evaluate the sum and put $d=n-1-k$ to obtain
+\eqref{eq:ch-broom-sharp}. The bound is attained by the broom obtained by
+extending one arm of the initial star.
+\end{proof}
+
+\subsection{The improved eventual result}
+
+\begin{theorem}\label{thm:ch-cutoff-ten-billion}
+For every $n\ge10^{10}$, every finite simple connected graph $G$ of order
+$n$ satisfying \eqref{eq:ch-uniform-input} obeys
+\[
+ R(G)-\mu(G)\ge\sqrt{n-1}-2+\frac2n.
+\]
+Equality holds precisely for the star $K_{1,n-1}$. Thus the corpus
+weighted-distance theorem proves the Caporossi--Hansen additive bound, with
+its unique equality graph, for all $n\ge10^{10}$.
+\end{theorem}
+
+\begin{proof}
+Set
+\[
+ s=\sqrt{n-1},\quad r=\sqrt\Delta,\quad
+ g=R-\mu,\quad \gamma=s-2+\frac2n,\quad X=R-M.
+\]
+It suffices to show that $g\le\gamma$ forces $G$ to be the star.
+From \eqref{eq:ch-uniform-input},
+\begin{equation}\label{eq:ch-X-bound}
+ 0\le X\le g+1+\frac{\mu-2}{n}
+             \le s-1+\frac\mu n<s<\sqrt n.
+\end{equation}
+Here $M\le R$ follows termwise, and $\mu\le n-1<n$ suffices for the
+strict bound. We also have $g\le\gamma<\sqrt n$.
+
+\paragraph{Concentrating the graph around vertices of large degree.}
+Choose
+\[
+ K=\lceil10n^{1/3}\rceil,\qquad t=\sqrt{K-1}<\sqrt{10}\,n^{1/6}.
+\]
+Call a vertex high if its degree is at least $K$, and choose a maximal
+collection of $c$ high vertices at pairwise distance at least three. Their
+closed radius-one balls are disjoint, giving
+\begin{equation}\label{eq:ch-c-bound}
+ c\le\frac n{K+1}\le\frac{n^{2/3}}{10}.
+\end{equation}
+Let $A$ be the union of their closed radius-three balls, and put
+$b=n-|A|$. Every high vertex is within distance two of a chosen vertex,
+so both ends of every edge incident to a high vertex belong to $A$.
+
+In the sum representing $n-2R$, the edges incident to a high vertex
+contribute at most $|A|$, by replacing each squared difference by
+$1/d_u+1/d_v$ and summing the incident fractions at each vertex of $A$.
+On every other edge both degrees are at most $K-1$, and the first factor
+in the proof of \eqref{eq:ch-edge-bridge} is at most $t-1$. Thus
+\begin{equation}\label{eq:ch-R-split}
+ R\ge\frac b2-\frac{t-1}{2}X.
+\end{equation}
+
+Contract each connected component of $G[A]$ to a vertex of weight equal
+to its order, and leave each vertex outside $A$ with weight one. Let
+$c_A$ be the number of contracted components; then $c_A\le c$. Choose a
+spanning tree of the connected quotient. Its number of edges is
+\[
+ h=b+c_A-1,\qquad 0\le h\le n-1,
+ \qquad b\ge h-c+1.
+\]
+These identities also cover $A=\varnothing$, when $c_A=c=0$ and $h=n-1$.
+A component containing $c_i$ chosen balls has internal diameter at most
+$7c_i-1$: each ball has radius three, and a chain of balls can be joined
+using at most one extra edge between consecutive balls. Every path in the
+quotient tree consequently lifts to a walk in $G$ with at most $7c$
+additional edges. This estimate also handles two endpoints in the same
+contracted component.
+
+Apply Lemma~\ref{lem:ch-exact-weighted-tree}, dropping only its nonnegative
+parity correction. Two independent uniform original vertices have mean
+distance $(n-1)\mu/n$. Therefore
+\begin{equation}\label{eq:ch-mu-quotient}
+ \mu\le\frac n{n-1}
+       \left(\frac h2-\frac{h^3-h}{6n^2}+7c\right).
+\end{equation}
+Subtract this from \eqref{eq:ch-R-split}, using $b\ge h-c+1$ and
+$h\le n-1$. Rearrangement gives
+\begin{align}
+ \frac{h^3}{6n(n-1)}
+ &\le g+\frac{t-1}{2}X+
+     \left(\frac12+\frac{7n}{n-1}\right)c+\frac1{6n}
+       \label{eq:ch-cubic-before}\\
+ &<\left(\frac{\sqrt{10}}2+\frac34\right)n^{2/3}
+       +\frac12\sqrt n+\frac{7n^{2/3}}{10(n-1)}+\frac1{6n}
+       \nonumber\\
+ &<\frac73n^{2/3}+\frac12\sqrt n+1.
+       \label{eq:ch-cubic-after}
+\end{align}
+For the first line, the terms $h/[2(n-1)]$ and $-1/2$ cancel in the
+required direction, and $h/[6n(n-1)]\le1/(6n)$. For the last line,
+$\sqrt{10}<19/6$ and
+$7n^{2/3}/[10(n-1)]+1/(6n)<1$ at every $n\ge10^{10}$.
+
+Consequently
+\[
+ \left(\frac hn\right)^3
+   <14n^{-1/3}+3n^{-1/2}+\frac6n.
+\]
+For $n\ge10^{10}$, use $n^{-1/3}<1/2100$,
+$n^{-1/2}\le1/100000$ and $n^{-1}\le10^{-10}$. The rational comparison
+\[
+ \frac1{150}+\frac3{100000}+\frac6{10^{10}}
+        <\left(\frac{189}{1000}\right)^3
+\]
+shows $h/n<189/1000$. Since $h^3-h\ge0$, equations
+\eqref{eq:ch-mu-quotient} and \eqref{eq:ch-c-bound} then give
+\begin{equation}\label{eq:ch-mu-small}
+ \frac\mu n
+ <\frac n{n-1}\left(\frac{189}{2000}+\frac7{10}n^{-1/3}\right)
+ <\frac{10^{10}}{10^{10}-1}
+       \left(\frac{189}{2000}+\frac1{3000}\right)
+ <\frac{19}{200}.
+\end{equation}
+
+\paragraph{A vertex adjacent to more than $65\%$ of the graph.}
+Combining \eqref{eq:ch-edge-bridge}, $R\le\mu+\gamma$ and
+\eqref{eq:ch-X-bound} gives
+\[
+ n-2\mu-2\gamma\le(r-1)X\le(r-1)s.
+\]
+Because $1-2\mu/n>0$, substitution of $\gamma$ yields
+\[
+ \frac r{\sqrt n}
+ \ge \frac{\sqrt n}{s}\left(1-\frac{2\mu}{n}\right)
+      -\frac1{\sqrt n}+\frac{4(1-1/n)}{s\sqrt n}
+ >\frac{81}{100}-\frac1{100000}>\frac{809}{1000}.
+\]
+In particular, $(809/1000)^2>13/20$ implies
+\begin{equation}\label{eq:ch-k-small}
+ \frac{k}{n}=1-\frac1n-\frac{r^2}{n}<\frac7{20},
+ \qquad k=n-1-\Delta.
+\end{equation}
+
+\paragraph{Eliminating every positive deficit in the maximum degree.}
+Suppose $k\ge1$, and put $A_r=2+(r-1)/n$. The bridge together with
+\eqref{eq:ch-uniform-input} gives
+\[
+ (r+1)g\ge n-2\mu-(r-1)\left(1+\frac{\mu-2}{n}\right).
+\]
+Using the identity
+$n-r-3=(r+1)(s-2)+(s-1)(s-r)$ and $g\le\gamma$, we obtain
+\[
+ (s-1)(s-r)\le\frac{2(r+1)}n+A_r(\mu-2).
+\]
+Now apply \eqref{eq:ch-broom-sharp}, use $s-r=k/(s+r)$, and divide by
+$k>0$. This forces
+\begin{equation}\label{eq:ch-final-forced}
+ \frac{s-1}{s+r}
+ \le\frac{2(r-1)(n-1)}{n^2k}
+   +A_r\frac{(k+1)(3n-2k-7)}{3n(n-1)}.
+\end{equation}
+
+Let $x=k/n$. Throughout $0<x<7/20$ by \eqref{eq:ch-k-small}. The right
+side of \eqref{eq:ch-final-forced} has the elementary upper bounds
+\[
+ \frac{2(r-1)(n-1)}{n^2k}\le\frac2{\sqrt n}\le\frac1{50000},
+ \qquad A_r\le2+\frac1{100000},
+\]
+and
+\begin{equation}\label{eq:ch-final-fraction}
+ \frac{(k+1)(3n-2k-7)}{3n(n-1)}
+ \le x-\frac23x^2+\frac2n.
+\end{equation}
+To check the last bound, write $\varepsilon=1/n$ and
+$f(x)=x-2x^2/3$. The left side is
+$(x+\varepsilon)(1-2x/3-7\varepsilon/3)/(1-\varepsilon)$,
+at most $(f(x)+\varepsilon)/(1-\varepsilon)$.
+Here $f(x)\le f(7/20)=161/600$ and $\varepsilon\le10^{-10}$, so this
+is at most $f(x)+2\varepsilon$.
+
+If $x\le3/10$, the right side of \eqref{eq:ch-final-forced} is at most
+\[
+ \frac1{50000}+
+ \left(2+\frac1{100000}\right)
+ \left(\frac6{25}+\frac2{10^{10}}\right)
+ <\frac{481}{1000}.
+\]
+But its left side is at least $(s-1)/(2s)>499/1000$, a contradiction.
+
+If $3/10<x<7/20$, then $r<\sqrt{7n/10}$ and $s-1\ge\sqrt n-2$.
+Since $\sqrt{7/10}<21/25$, its left side is greater than
+\[
+ \frac{1-2/100000}{1+21/25}>\frac{27}{50}.
+\]
+Its right side is at most
+\[
+ \frac1{50000}+
+ \left(2+\frac1{100000}\right)
+ \left(\frac{161}{600}+\frac2{10^{10}}\right)
+ <\frac{537}{1000}<\frac{27}{50},
+\]
+another contradiction. Hence $k=0$.
+
+\paragraph{Equality.}
+The graph therefore has a dominating vertex. Its incident edges contribute
+exactly one to $M$, so $M\ge1$. With $r=s$, the bridge gives
+\[
+ R\ge\frac{n+(s-1)M}{s+1}
+       \ge\frac{n+s-1}{s+1}=s.
+\]
+All pair distances are at most two, so
+$\mu=2-|E(G)|/\binom n2\le2-2/n$. If any edge beyond the spanning star
+is present, this last inequality is strict. Thus $g\ge\gamma$, with
+equality precisely on the star. Since the proof started from $g\le\gamma$,
+it also excludes every strict counterexample.
+\end{proof}
+
+\paragraph{Exact scope of the improvement.}
+This argument replaces the earlier sufficient cutoff $10^{27}$ by
+$10^{10}$, while retaining the same corpus weighted-distance input.
+Together with the previously recorded verification for $2\le n\le9$, the
+remaining interval for a universal proof is exactly
+\[
+                    10\le n<10^{10}.
+\]
+No claim of an all-order resolution is made by this section.
+
+\section{Exact transport from graphs to arithmetic}
+
+For a finite set $S=\{a_1,\ldots,a_n\}$ of distinct positive integers,
+define its \emph{noncoprimality indicator matrix} by
+\[
+C(S)_{ij}=
+\begin{cases}
+1,&i\ne j\text{ and }\gcd(a_i,a_j)>1,\\
+0,&\text{otherwise}.
+\end{cases}
+\]
+It is important that this is a zero-diagonal $0$--$1$ matrix,
+not the usual gcd-value matrix $(\gcd(a_i,a_j))$.
+Write $\rho(S)=\rank_{\R}C(S)$, and let $\cchi(S)$ be the smallest
+number of classes in a partition of $S$ such that every two distinct
+integers in the same class are relatively prime.
+These are respectively adjacency rank and chromatic number of the
+noncoprimality graph.
+
+\begin{theorem}[Squarefree representation]\label{thm:representation}
+Every finite simple graph $G=(V,E)$ has distinct squarefree integer
+labels $(a_v)_{v\in V}$ such that
+\[
+uv\in E\quad\Longleftrightarrow\quad \gcd(a_u,a_v)>1
+\qquad(u\ne v).
+\]
+Every nontrivial gcd can be required to be a single prime, and
+no prime need divide more than two labels. The labels can also all
+be required to have exactly $\Delta(G)+1$ distinct prime factors.
+\end{theorem}
+\begin{proof}
+Choose a distinct prime $p_e$ for every edge. At vertex $v$ choose
+$\Delta+1-d_v$ additional private primes, all disjoint from the edge
+primes and from each other's private primes. Let $a_v$ be the product
+of its incident edge primes and its private primes. A prime common to
+two labels can only be the prime on their common edge. Each label has
+at least one private prime, so the labels are distinct. All the asserted
+properties follow.
+\end{proof}
+
+This is a prime-product form of the classical representation of graphs
+by intersections of finite sets \cite{egp}. No originality is claimed
+for the underlying representation. Its value here is the exact
+preservation of all relevant parameters.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Graph parameter & Arithmetic meaning\\
+\midrule
+Independence number & Largest pairwise-coprime subfamily\\
+Chromatic number & Fewest pairwise-coprime classes in a partition\\
+Adjacency rank & Real rank of $C(S)$\\
+Vertex degree & Number of other integers sharing a prime factor\\
+Graph distance & Shortest chain of nontrivial gcds\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{A direct arithmetic consequence of items 13 and 14}
+
+Suppose the noncoprimality graph of $S$ is connected. Put
+$d(a)=|\{b\in S\setminus\{a\}:\gcd(a,b)>1\}|$ and let
+$\ell(a,b)$ be its gcd-chain distance. The corpus mean-distance bound
+translates exactly into
+\[
+\binom{|S|}{2}^{-1}\sum_{\{a,b\}\subset S}\ell(a,b)
+\le
+\sum_{\substack{\{a,b\}\subset S\\\gcd(a,b)>1}}
+\frac1{\sqrt{d(a)d(b)}}.
+\]
+Chung's inequality from original item 14 also guarantees a
+pairwise-coprime subfamily of size at least the ceiling of the
+left-hand side \cite{fajtlowicz}.
+These are transfer corollaries; they do not assert new facts about
+the distribution of prime numbers.
+
+\subsection{An elementary strengthening of the rank input}
+
+\begin{proposition}\label{prop:rank-density}
+For every nonempty finite simple graph,
+\[
+\rank A_G\ \ge\ \omega(G)\
+\ge\ \sum_{v\in V(G)}\frac1{n-d_v}.
+\]
+Consequently, if $C(S)\ne0$, then
+$\sum_{a\in S}1/(|S|-d(a))\le\rho(S)$.
+\end{proposition}
+\begin{proof}
+Order the vertices of the complement uniformly at random and select
+each vertex that precedes all its complement-neighbours.
+The selected vertices are independent in the complement, hence a
+clique in $G$. Vertex $v$ is selected with probability
+$1/(n-d_v)$, proving the second inequality by expectation.
+A maximum clique has size at least two, and its adjacency matrix is
+$J-I$, with eigenvalues $\omega-1,-1,\ldots,-1$. It is nonsingular.
+As a principal submatrix of $A_G$, its rank cannot exceed $\rank A_G$.
+\end{proof}
+
+The original average-temperature expression is
+$T(G)=n^{-1}\sum_vd_v/(n-d_v)=\sum_v1/(n-d_v)-1$.
+Thus Proposition~\ref{prop:rank-density} is already stronger than
+original item 1. It is the classical random-order independent-set bound
+applied to the complement, not a new rank theorem.
+
+\section{An infinite arithmetic rank obstruction}
+
+\begin{theorem}\label{thm:arithmetic-family}
+For every integer $k\ge1$ there is an explicit finite set $S_k$ of
+distinct squarefree positive integers such that
+\[
+|S_k|=64^k,\qquad \rho(S_k)=29^k,\qquad \cchi(S_k)=32^k.
+\]
+Each integer has exactly $64^k-8^k$ distinct prime factors.
+Every prime used divides exactly two integers, and the gcd of any
+two distinct members is either $1$ or a single prime.
+\end{theorem}
+
+\subsection{The classical 64-vertex seed}
+
+Let $V=\F_2^6$. Join $x,y$ when $2\le\wt(x+y)\le5$.
+This is the Alon--Seymour graph \cite{alonseymour}.
+Its complement has difference set
+$\{e_1,\ldots,e_6,\one\}$. The sum of two distinct members of this
+set has weight $2$ or $5$, so the complement is triangle-free.
+It has edges; hence $\alpha(G)=2$.
+Color $x$ by its last five coordinates. Each color class has two
+nonadjacent vertices. Therefore $\chi(G)=32$.
+
+Put $B=J_{64}-A_G$. Its Walsh character indexed by $s\in\F_2^6$
+has eigenvalue
+$\lambda_j=1+6-2j+(-1)^j$, where $j=\wt(s)$.
+Indeed, the eigenvalue is the character sum over
+$\{0,e_1,\ldots,e_6,\one\}$.
+
+\begin{center}
+\begin{tabular}{@{}crrrrrrr@{}}
+\toprule
+$j$ &0&1&2&3&4&5&6\\
+\midrule
+$\lambda_j$ &8&4&4&0&0&$-4$&$-4$\\
+Multiplicity &1&6&15&20&15&6&1\\
+\bottomrule
+\end{tabular}
+\end{center}
+Thus $B$ has rank $29$. On the constant character $A_G$ has
+eigenvalue $56$; on other characters it has eigenvalue
+$-\lambda_j$. In particular,
+\[
+\operatorname{spec}(A_G)=
+\{56^{(1)},\,(-4)^{(21)},\,0^{(35)},\,4^{(7)}\},\qquad \rank A_G=29.
+\]
+
+\subsection{Tensor amplification with an exact rank count}
+
+On $V^k$ join two tuples if at least one coordinate pair is an edge
+of $G$. The resulting simple graph has adjacency matrix
+\[
+A_k=J_{64^k}-B^{\otimes k}.
+\]
+The diagonal is zero because all diagonal entries of $B$ are one.
+The tensor Walsh basis diagonalizes $A_k$. The constant eigenvalue is
+$64^k-8^k\ne0$. All other eigenvalues are the negatives of products of
+the $k$ corresponding $B$-eigenvalues. There are $29^k$ choices with
+all factors nonzero, including the constant one. Therefore
+\[
+\rank A_k=29^k.
+\]
+An independent set projects in each coordinate to an independent set
+of $G$, of size at most two. It therefore has size at most $2^k$,
+and the product of $k$ independent pairs attains this bound.
+The product coloring uses $32^k$ colors, while
+$|V^k|/\alpha(G_k)=32^k$ proves the reverse inequality. Hence
+\[
+\alpha(G_k)=2^k,\qquad\chi(G_k)=32^k.
+\]
+
+\subsection{Integer labels and the false universal assertion}
+
+Assign the first $|E(G_k)|$ primes to the edges in lexicographic order.
+For every vertex $v$, define
+\[
+a_v=\prod_{e\ni v}p_e.
+\]
+The graph is regular of degree $d_k=64^k-8^k\ge56$. Distinct vertices
+share at most one incident edge, so their prime sets and their labels
+are distinct. Every prime occurs twice. Moreover $C(S_k)=A_k$ for
+$S_k=\{a_v:v\in V^k\}$. This proves
+Theorem~\ref{thm:arithmetic-family}.
+
+\begin{center}
+\begin{tabular}{@{}rrrr@{}}
+\toprule
+$k$ & Number of integers & $\rho(S_k)$ & $\cchi(S_k)$\\
+\midrule
+1&64&29&32\\
+2&4,096&841&1,024\\
+3&262,144&24,389&32,768\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{corollary}
+There is no absolute constant $C$ such that
+$\cchi(S)\le C\rho(S)$ for every finite integer set $S$, even under
+the squarefree and prime-sharing restrictions above.
+More generally $\cchi(S)\le C\rho(S)^\beta$ fails for every
+$\beta<\log32/\log29=1.0292341623\ldots$.
+\end{corollary}
+\begin{proof}
+The ratio in the first assertion is $(32/29)^k\to\infty$.
+For the second it is $(32/29^\beta)^k\to\infty$.
+\end{proof}
+
+This closes a precise proposed \emph{linear arithmetic principle} by a
+full counterexample family. It does not constitute a new disproof of
+the historical rank-coloring conjecture: the seed is classical, and
+stronger graph rank--coloring separations are already known
+\cite{razborov,cioabatait}.
+
+\section{A major equivalent target: arithmetic Log-Rank}
+
+The graph formulation of the Log-Rank conjecture asks whether there
+are absolute constants $C,c>0$ such that
+\begin{equation}
+\log\chi(G)\le C\bigl(\log(\rank A_G+2)\bigr)^c
+\quad\text{for every finite simple graph }G.
+\label{eq:graph-logrank}
+\end{equation}
+The harmless $+2$ covers small or zero rank. Its equivalence to the
+communication-complexity formulation is established in the literature;
+recent sources continue to treat the conjecture as open
+\cite{rankramsey,ccc2026}.
+
+\begin{proposition}[Arithmetic equivalence]\label{prop:logrank}
+Equation~\eqref{eq:graph-logrank} is equivalent to the existence of
+absolute $C,c>0$ such that
+\[
+\cchi(S)\le
+\exp\!\left(C\bigl(\log(\rho(S)+2)\bigr)^c\right)
+\quad\text{for every finite integer set }S.
+\]
+It is enough to establish the arithmetic assertion on squarefree sets
+with uniform numbers of prime factors, at most two uses of each prime,
+and pairwise gcds equal to $1$ or a prime.
+\end{proposition}
+\begin{proof}
+Apply the graph assertion to the noncoprimality graph of $S$.
+Conversely, represent an arbitrary graph by
+Theorem~\ref{thm:representation}; both its rank and its chromatic
+number are preserved. The restricted version suffices because that
+representation has all the stated restrictions.
+\end{proof}
+
+The family of Theorem~\ref{thm:arithmetic-family} does not disprove
+Log-Rank: it exhibits a fixed polynomial separation. On this family,
+the rank-density lower bound is only
+\[
+\sum_v\frac1{64^k-d_k}=8^k,
+\]
+whereas the rank is $29^k$ and the chromatic number is $32^k$.
+The bound controls clique size or density, not a sufficiently small
+coloring. A new upper bound on partition complexity is still required.
+
+\section{Coordinatewise transfer to packing and coding}
+
+\subsection{One graph: separated sets and collision probability}
+
+Let $C\subseteq V(G)$ have size $K$ and pairwise distances at least
+$\delta$. Put uniform mass on $C$ in (W). Then
+\[
+\delta(1-1/K)+2/K\le M(G)+1.
+\]
+If $\delta>M(G)+1$, this gives
+\begin{equation}
+K\le\left\lfloor\frac{\delta-2}{\delta-M(G)-1}\right\rfloor.
+\label{eq:single-packing}
+\end{equation}
+For any probability vector supported on such a separated set, the
+collision probability $Q=\sum p_v^2$ satisfies
+\[
+Q\ge\frac{\delta-M(G)-1}{\delta-2}.
+\]
+There is no sign issue in these rearrangements: $M(G)\ge1$, so the
+assumption implies $\delta>2$.
+For a path of length $D>2$ and its two endpoints, $M=D/2$ and
+\eqref{eq:single-packing} is attained with equality.
+
+\subsection{Products without an exponential graph budget}
+
+\begin{theorem}[Coordinatewise packing bound]\label{thm:product-packing}
+Let $G_i$ be finite connected graphs, let
+$S_i\subseteq V(G_i)$ have size $s_i\ge1$, and let $c_i>0$.
+For a code $C\subseteq\prod_{i=1}^t S_i$ of size $K$ use the metric
+$d(x,y)=\sum_i c_i d_{G_i}(x_i,y_i)$.
+If its minimum distance is $\delta$, put
+\[
+B_*=\sum_{i=1}^t c_i\left(M(G_i)+1-\frac2{s_i}\right).
+\]
+Then
+\[
+\delta(1-1/K)\le B_*.
+\]
+In particular, if $\delta>B_*$, then
+$K\le\lfloor\delta/(\delta-B_*)\rfloor$.
+\end{theorem}
+\begin{proof}
+Choose $X,Y$ independently and uniformly from the code.
+Then $\E d(X,Y)\ge\delta(1-1/K)$.
+Let $p_i$ be the $i$th marginal distribution. Apply (W) to each factor:
+\[
+\E d_{G_i}(X_i,Y_i)
+\le M(G_i)+1-2\sum_{a\in S_i}p_i(a)^2
+\le M(G_i)+1-2/s_i.
+\]
+The last step is Cauchy--Schwarz. Multiply by $c_i$ and sum.
+\end{proof}
+
+Keeping the actual marginal counts $n_{i,a}$ gives the stronger exact
+necessary condition
+\[
+\delta K(K-1)\le\sum_i c_i
+\left[(M(G_i)+1)K^2-2\sum_a n_{i,a}^2\right].
+\]
+For rational $c_i$, all denominators can be cleared, giving an
+integer-arithmetic certificate.
+
+\subsection{A sharp arithmetic example}
+
+For each coordinate use the integer graph $\{2,3,6\}$, with the path
+$2-6-3$, and allow symbols only from $\{2,3\}$.
+Here $M=1$, $s_i=2$, and the two symbols have gcd-chain distance two.
+For three coordinates $B_*=3$. The four tuples
+\[
+(2,2,2),\quad(2,3,3),\quad(3,2,3),\quad(3,3,2)
+\]
+have minimum distance four. Theorem~\ref{thm:product-packing} gives
+$K\le4/(4-3)=4$, so the optimum is exactly four.
+
+Applying the single-graph bound directly to the full Cartesian product
+$P_3^{\square3}$ would give
+\[
+M(P_3^{\square3})=\frac{24}4+\frac{24}5+\frac66=\frac{59}5.
+\]
+Its threshold $M+1=64/5$ exceeds the distance four under consideration.
+The coordinatewise application preserves information that is lost in
+the full-graph budget.
+
+For star factors with $q$ allowed leaves this reproduces the classical
+$q$-ary Plotkin bound. The sharp four-word example is the standard
+binary even-parity code written in arithmetic symbols
+\cite{plotkin}. These special cases are established mathematics,
+not newly solved coding conjectures.
+
+\section{What a valid closure of another problem requires}
+
+Suppose a corpus theorem is $\forall G\,[H(G)\Rightarrow Q(G)]$.
+To prove a new statement $P$, it suffices to construct, from a
+hypothetical counterexample to $P$, a graph satisfying $H$ and
+violating $Q$:
+\[
+\neg P\quad\Longrightarrow\quad
+\exists G\,\bigl(H(G)\ \text{and}\ \neg Q(G)\bigr).
+\]
+For instance, a number-theoretic counterexample would be excluded if
+it forced a connected graph with $R(G)-\mu(G)<0$.
+Full two-way equivalence is unnecessary for such a proof.
+
+A map that always produces a valid graph, followed merely by testing
+a universally true graph inequality, supplies a constant affirmative
+answer. The target-specific work lies in proving the incompatible
+bounds or preserving an equality condition. The squarefree
+representation by itself supplies no quantitative information about
+the numerical height of the integers or the distribution of primes.
+
+There can be no effective procedure settling \emph{every}
+integer-polynomial solvability question by reducing it to finitely
+decidable graph tests: that would contradict the undecidability of
+Hilbert's tenth problem \cite{matiyasevich}. This is a limitation on a
+universal decision algorithm, not on research into particular problems.
+
+\subsection{The two remaining frontiers}
+
+For the Caporossi--Hansen additive conjecture, the new theorem removes
+all orders $n\ge10^{10}$ from the outstanding range, using the same
+weighted corpus input as [227]. A proof for every order in the remaining
+interval has not been obtained here.
+
+For the arithmetic Log-Rank formulation, exact encoding is complete.
+What remains is a quasi-polynomial partition upper bound. The six
+affirmative graph inequalities from the original list do not themselves
+supply that bound. The explicit rank family is a useful test case for
+any proposed strengthening.
+
+\section{Verification and provenance}
+
+The corpus snapshot used was
+\texttt{52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}.
+The relevant manuscripts were [226], [227], [243] and [244].
+The comparison with the previous $10^{27}$ cutoff refers specifically
+to Section 6 of [227], not to an exhaustive literature priority claim.
+
+The supplemental standard-library Python script constructs the seed
+graph and all 64 integer labels, retaining every prime factor and
+decimal integer. It verifies all 64 Walsh eigenvectors against both
+$A$ and $J-A$, 4,096 Walsh inner products, all 41,664 vertex triples for
+the complement triangle check, the explicit 32-coloring, and all
+2,016 pairwise gcds. The labels use 1,792 primes, each exactly twice;
+every label has 56 prime factors.
+
+An independent finite check of the weighted tree formula covered all
+1,441 labelled trees on two through six vertices and all positive
+integer weight assignments of total at most nine: 126,918 cases.
+It also checked the 30 indicated path extremizers.
+All tests passed. These finite checks are supporting diagnostics.
+The all-order and all-$k$ conclusions rest on the proofs above,
+not on extrapolation from these checks.
+
+\begin{thebibliography}{99}
+\bibitem{fajtlowicz}
+S. Fajtlowicz, On conjectures of Graffiti,
+\emph{Discrete Mathematics} \textbf{72} (1988), 113--118.
+\href{https://doi.org/10.1016/0012-365X(88)90199-9}{doi:10.1016/0012-365X(88)90199-9}.
+The original open list is on p.~115.
+
+\bibitem{vmrc227}
+Verifiable Mathematical Reasoning Corpus,
+\emph{A proof audit of Fajtlowicz's average-distance conjecture},
+manuscript [227], 21 November 2026.
+\href{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/blob/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3/\%5B227\%5D\%20Fajtlowicz_Proof_Audit.tex}{Frozen TeX source}.
+The weighted statement is (W); the previous explicit cutoff is in
+the section on the Caporossi--Hansen gap.
+
+\bibitem{favaron}
+O. Favaron, M. Mah\'eo and J.-F. Sacl\'e,
+The Randi\'c index and other Graffiti parameters of graphs,
+\emph{MATCH} \textbf{47} (2003), 7--23, Conjecture 4.8.
+\url{https://match.pmf.kg.ac.rs/electronic_versions/Match47/match47_7-23.pdf}.
+
+\bibitem{egp}
+P. Erd\H{o}s, A. W. Goodman and L. P\'osa,
+The representation of a graph by set intersections,
+\emph{Canadian Journal of Mathematics} \textbf{18} (1966), 106--112.
+\href{https://doi.org/10.4153/CJM-1966-014-3}{doi:10.4153/CJM-1966-014-3}.
+
+\bibitem{alonseymour}
+N. Alon and P. D. Seymour,
+A counterexample to the rank-coloring conjecture,
+\emph{Journal of Graph Theory} \textbf{13} (1989), 523--525.
+\href{https://doi.org/10.1002/jgt.3190130413}{doi:10.1002/jgt.3190130413}.
+
+\bibitem{razborov}
+A. A. Razborov,
+The gap between the chromatic number of a graph and the rank of its
+adjacency matrix is superlinear,
+\emph{Discrete Mathematics} \textbf{108} (1992), 393--396.
+\href{https://doi.org/10.1016/0012-365X(92)90691-8}{doi:10.1016/0012-365X(92)90691-8}.
+
+\bibitem{cioabatait}
+S. M. Cioab\u{a} and M. Tait,
+More counterexamples to the Alon--Saks--Seymour and rank-coloring conjectures,
+\emph{Electronic Journal of Combinatorics} \textbf{18} (2011), P26.
+\href{https://doi.org/10.37236/513}{doi:10.37236/513}.
+
+\bibitem{rankramsey}
+G. Beniamini, N. Linial and A. Shraibman,
+The Rank-Ramsey problem and the Log-Rank conjecture,
+\emph{Combinatorics, Probability and Computing} \textbf{35} (2026), 568--597.
+\href{https://doi.org/10.1017/S0963548326100455}{doi:10.1017/S0963548326100455}.
+
+\bibitem{ccc2026}
+L. Hambardzumyan, S. Lovett and M. Shirley,
+The Log-Rank Conjecture: New Equivalent Formulations,
+\emph{CCC 2026}, LIPIcs \textbf{383}, Article 7.
+\href{https://doi.org/10.4230/LIPIcs.CCC.2026.7}{doi:10.4230/LIPIcs.CCC.2026.7}.
+
+\bibitem{plotkin}
+M. Plotkin, Binary codes with specified minimum distance,
+\emph{IRE Transactions on Information Theory} \textbf{6} (1960), 445--450.
+\href{https://doi.org/10.1109/TIT.1960.1057584}{doi:10.1109/TIT.1960.1057584}.
+
+\bibitem{matiyasevich}
+Yu. V. Matiyasevich,
+Diophantine representation of enumerable predicates,
+\emph{Mathematics of the USSR-Izvestiya} \textbf{5} (1971), 1--28.
+\href{https://doi.org/10.1070/IM1971v005n01ABEH001004}{doi:10.1070/IM1971v005n01ABEH001004}.
+\end{thebibliography}
+\end{document}

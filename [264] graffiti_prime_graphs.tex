@@ -1,0 +1,339 @@
+\documentclass[11pt]{amsart}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array}
+\usepackage{enumitem}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{question}[theorem]{Question}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\PR}{\mathrm{PR}}
+\newcommand{\pp}{p^{+}}
+\newcommand{\N}{\mathbb N}
+\newcommand{\R}{\mathbb R}
+\newcommand{\nuge}[1]{\nu_{\ge #1}}
+\newcommand{\nule}[1]{\nu_{\le #1}}
+
+\title[Graffiti's prime graphs]{Graffiti's prime graphs:\\ non-negative eigenvalues of the gcd graph\\ and the prime counting function}
+\author{Verifiable Mathematical Reasoning Corpus}
+\date{23 November 2026}
+
+\begin{document}
+
+\begin{abstract}
+The eighteen conjectures of the first period of the program Graffiti (Fajtlowicz, 1988), in the form recorded in the catalogue \emph{Written on the Wall}, are inequalities between graph invariants. We first record their status: twelve are false and six are true, three of the latter only by recent unrefereed manuscripts. Applied to graphs defined by divisibility, the true ones hold with unbounded slack, so they do not decide arithmetic questions. The catalogue \emph{Written on the Wall}, however, contains number-theoretic conjectures of Graffiti itself. For $n\ge2$ let $\PR[2..n]$ be the graph on $\{2,\dots,n\}$ in which two integers are adjacent when they are not coprime, and let $\pp(n)$ be the number of its non-negative adjacency eigenvalues. Entry~446 asserted $\pp(n)=\pi(n)$; a counterexample at $n=90$ was found numerically by K.~Ramsay in 1994, and Fajtlowicz asked whether the equality holds asymptotically, whether the eigenvalue $0$ comes only from the primes in $(n/2,n]$, and whether there are sets of integers of positive density for which the equality persists. We answer these questions.
+\begin{itemize}[leftmargin=*]
+\item $\pp(n)=\pi(n)$ exactly for $2\le n\le 89$, and $\pp(n)-\pi(n)$ is non-decreasing. For square-free integers (entry~470) the equality holds exactly for $n\le209$.
+\item $\pp(n)\ge(\tfrac13-o(1))\,\pi(n)\log\log n$, so $\pp(n)/\pi(n)\to\infty$; and $\pp(n)\le\#\{d\le n:\mu(d)=-1\}\sim 3n/\pi^2$.
+\item Every eigenvalue $\lambda$ of the coprimality matrix $([\gcd(a,b)=1])_{a,b\le k}$ gives the eigenvalue $\lambda-1$ of $\PR[2..n]$, with multiplicity at least one less than the number of primes in $(n/(k+1),n/k]$, when $k<\sqrt n-1$.
+\item The multiplicity of the eigenvalue $0$ equals the number of primes in $(n/2,n]$ for $n\le740$ but not for $n=741$, and it exceeds that number by at least $(\tfrac1{1560}-o(1))\pi(n)$.
+\item The set of all primes and all even numbers is ``spectral'' in Fajtlowicz's sense; it has density $\tfrac12$. So is the set of integers with at most two distinct prime factors.
+\item Entry~809 is false: it fails at $n=218$ and for all large $n$.
+\end{itemize}
+The proofs use Cauchy interlacing, a block decomposition along the primes above $\sqrt n$, and elementary prime number estimates; the finitely many numerical statements are verified in exact integer arithmetic. Whether $\pp(n)\ge cn$ for some $c>0$ remains open.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+\subsection{The 1988 list and what it can decide}
+Fajtlowicz's article \cite{Faj88} reports conjectures made by the program Graffiti. In his later catalogue \emph{Written on the Wall} \cite{WOW} (abbreviated WoW) the conjectures of that first period are the entries numbered $1$ to $18$, dated February 1987. All of them are inequalities between invariants of a finite graph: the mean distance $\mu$, the radius $r$, the most frequent distance $m$, the independence number $\alpha$, the chromatic number $\chi$, the Randi\'c index $R=\sum_{uv\in E}(d_ud_v)^{-1/2}$, the sum $J$ of reciprocal degrees, the variance $V$ of the degrees, the maximal number $F$ of vertices of equal degree, the mean $\theta$ of the ``temperatures'' $d_v/(n-d_v)$, the matching number $\nu$ and the rank of the adjacency matrix. Table~\ref{tab:1988} records their status as far as we could determine it. We could not consult \cite{Faj88} itself; the statements are those of \cite{WOW}, and the list and the numbering of the article may differ in details. For instance the manuscript \cite{V243} quotes from the article the inequality $J\le R+F$, which it refutes, and which is not among the entries $1$ to $18$ as we read them.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}rlll@{}}
+\toprule
+WoW & statement & status & source\\
+\midrule
+1 & $\chi\le\operatorname{rank}$ & false & Alon and Seymour \cite{AS}\\
+2 & $\mu\le\alpha$ & true & Chung \cite{Chung}\\
+3 & $\mu\le R$ & true$^{*}$ & unrefereed manuscripts \cite{V226,V227}\\
+4 & $\mu\le V+J$ & false$^{*}$ & unrefereed, see \cite{V243}\\
+5 & $\mu\le m+J$ & false$^{*}$ & unrefereed, see \cite{V243}\\
+6 & $\mu\le V+F$ & false & Shearer, see \cite{WOW}\\
+7 & $m\le r+R$ & true & from $R\ge\operatorname{diam}/2$ \cite{DLS}\\
+8 & $m\le\mu+R$ & false$^{*}$ & unrefereed manuscript \cite{V244}\\
+9 & $m\le\mu+\nu$ & false & Qi, see \cite{WOW}\\
+10 & $\theta\le\operatorname{rank}$ & true & Fajtlowicz, see \cite{WOW}\\
+11 & $\theta\le V+F$ & false & Staton, see \cite{WOW}\\
+12 & $r\le1+R$ & true$^{*}$ & unrefereed manuscript \cite{V161}\\
+13 & $r\le\mu+J$ & false & Shearer, see \cite{WOW}\\
+14 & $r\le\mu+R$ & true$^{*}$ & from entry 12\\
+15 & $r\le V+R$ & false & Caporossi and Hansen, see \cite{WOW}\\
+16 & $r\le\theta+R$ & false & Caporossi and Hansen, see \cite{WOW}\\
+17 & $r\le V+F$ & false & Shearer, see \cite{WOW}\\
+18 & $r\le(\text{number of vertices of maximum degree})+F$ & false & Chen, see \cite{WOW}\\
+\bottomrule
+\end{tabular}
+\caption{The first eighteen entries of \emph{Written on the Wall}. An asterisk marks a status that rests on manuscripts of the Verifiable Mathematical Reasoning Corpus or on other unrefereed notes cited there. We have not verified those manuscripts, and nothing below depends on them.}
+\label{tab:1988}
+\end{table}
+
+So the list is settled, but not ``proved'': twelve entries are false. The six true ones bound a distance invariant by a sum over edges or by $\alpha$. They are sharp only for stars, paths and similar graphs. On graphs defined by divisibility they hold with unbounded slack. For example, let $H_n$ be $\PR[2..n]$ without its isolated vertices. Every vertex of $H_n$ is at distance at most $2$ from the vertex $2$, so $r\le2$ and $\mu\le4$, whereas $\alpha(H_n)=\pi(n/2)$ and $R(H_n)\ge\sqrt{|H_n|-1}$ by \cite{BE}. Thus entries $2$, $3$, $7$, $12$, $14$ say nothing about primes, and the same happens for coprime graphs, divisor graphs and Cayley graphs of cyclic groups (where $R$ is half the number of vertices). We see no way to transfer an open arithmetic problem into one of the eighteen statements.
+
+\subsection{Graffiti's own number theory}
+The catalogue \cite{WOW} does contain arithmetic. For a set $S$ of integers Fajtlowicz writes $\PR[S]$ for the graph on $S$ in which two elements are adjacent if and only if they are not relatively prime. Entry~446 (October 1988) reads:
+\begin{quote}\itshape
+446. the number of non-negative eigenvalues of $\PR[2,..r]$ is equal to $\pi(r)$ -- the number of primes smaller or equal to $r$.
+\end{quote}
+One inequality is a theorem: the primes form an independent set, and by a result of Cvetkovi\'c the independence number is at most the number of non-negative eigenvalues. The catalogue reproduces a letter of K.~Ramsay (April 1994) with the decomposition of Proposition~\ref{prop:inertia} below and a numerical counterexample at $r=90$, and then asks (we quote):
+\begin{quote}\itshape
+It would be equally interesting to know whether asymptotically the original conjecture as well as the last statement of Ramsay's letter are the same as the number of corresponding eigenvalues.
+\end{quote}
+The ``last statement'' is that the eigenvalues $0$ correspond exactly to the primes between $n/2$ and $n$. Fajtlowicz relates the question to the size of $\pi(n)-\operatorname{li}(n)$. Entry~470 is the same conjecture for the square-free integers in $[2,r]$; a comment of May 1995 says that the first failure seems to be at $r=210$. The entry continues with a definition and two questions (April 1994): a set $S$ of integers greater than $1$ is \emph{spectral} if it contains all primes and, for every $n$, the number of non-negative eigenvalues of $\PR[S\cap[2,n]]$ is $\pi(n)$;
+\begin{quote}\itshape
+Can one give an explicit example of a maximal spectral set? Is there a spectral set of positive density?
+\end{quote}
+Entries 800--813 (June 1995) are conjectures about $\PR[S]$ for the square-free integers; entry~809 says that the number of positive eigenvalues is at most the residue minus one. We found no later work on these entries; recent papers on the coprime graph \cite{SS,CG} treat other questions.
+
+\subsection{Results}
+For a finite set $S$ of integers $\ge2$ let $A_S$ be the adjacency matrix of $\PR[S]$, $\pp(S)$ the number of its eigenvalues that are $\ge0$, and $z(S)$ the multiplicity of the eigenvalue $0$. Put $\pp(n)=\pp(\{2,\dots,n\})$, $z(n)=z(\{2,\dots,n\})$, and let $\pp_{\mathrm{sf}}(n)$ refer to the square-free integers in $[2,n]$. Let $C_k$ be the $k\times k$ matrix with entries $[\gcd(a,b)=1]$, $1\le a,b\le k$.
+
+\begin{theorem}\label{thm:main}
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $\pp(n)-\pi(n)$ and $\pp_{\mathrm{sf}}(n)-\pi(n)$ are non-negative and non-decreasing in $n$. Moreover $\pp(n)=\pi(n)$ if and only if $n\le89$, and $\pp_{\mathrm{sf}}(n)=\pi(n)$ if and only if $n\le209$.
+\item As $n\to\infty$,
+\[
+\bigl(\tfrac13-o(1)\bigr)\,\pi(n)\log\log n\ \le\ \pp_{\mathrm{sf}}(n)\ \le\ \pp(n)\ \le\ \#\{d\le n:\mu(d)=-1\}=\bigl(\tfrac{3}{\pi^2}+o(1)\bigr)n .
+\]
+\item Let $k\ge1$ and let $t$ be the number of primes $p$ with $\max(\sqrt n,\,n/(k+1))<p\le n/k$. If $\lambda$ is an eigenvalue of $C_k$ of multiplicity $m$, then $\lambda-1$ is an eigenvalue of $\PR[2..n]$ of multiplicity at least $(t-1)m$.
+\item $z(n)\ge\pi(n)-\pi(n/2)$, with equality for $2\le n\le740$ and strict inequality for $n=741$. For $n>1600$,
+$z(n)\ge\pi(n)-\pi(n/2)+\pi(n/39)-\pi(n/40)-1$; hence $z(n)-(\pi(n)-\pi(n/2))\ge(\tfrac1{1560}-o(1))\pi(n)$.
+\item Every set of integers that consists of all primes and of composite numbers having a common prime factor is spectral; so is the set of integers with at most two distinct prime factors. In particular there is a spectral set of density $\tfrac12$. No spectral set contains $\{2,\dots,90\}$, and none contains all square-free integers up to $210$.
+\item For the square-free integers in $[2,n]$, the number of positive eigenvalues of $\PR$ exceeds the residue minus one when $n=218$ and for all sufficiently large $n$.
+\end{enumerate}
+\end{theorem}
+
+Part (b) answers the first question negatively in a strong form, part (d) the second, and part (e) the density question positively. Part (c) explains an observation recorded in entry 446, that $-g$ and $g-1$, with $g$ the golden ratio, are multiple eigenvalues: $C_2$ has the eigenvalues $(1\pm\sqrt5)/2$. We do not know the true order of $\pp(n)$; see Section~\ref{sec:open}.
+
+\section{Preliminaries}
+
+For a real symmetric matrix $M$ and a real $t$ let $\nuge{t}(M)$, $\nu_{>t}(M)$, $\nule{t}(M)$, $\nu_{<t}(M)$ be the numbers of eigenvalues, with multiplicity, that are $\ge t$, $>t$, $\le t$, $<t$. We use two standard facts.
+
+\begin{enumerate}[label=\textup{(M\arabic*)},leftmargin=3em]
+\item \emph{Min--max.} If $x^{\mathsf T}Mx\ge t|x|^2$ for all $x$ in a subspace of dimension $d$, then $\nuge{t}(M)\ge d$; if the inequality is strict for $x\ne0$, then $\nu_{>t}(M)\ge d$. The same holds with the inequalities reversed.
+\item \emph{Interlacing.} If $M'$ is a principal submatrix of $M$ with one row and column fewer, then $\nuge{t}(M')\le\nuge{t}(M)\le\nuge{t}(M')+1$, and similarly for the other three counts.
+\end{enumerate}
+
+\begin{proposition}\label{prop:mono}
+Let $S$ be a set of integers $\ge2$ that contains all primes, $S(n)=S\cap[2,n]$ and $\Delta_S(n)=\pp(S(n))-\pi(n)$. Then $\Delta_S(n)\ge0$, and $\Delta_S$ is non-decreasing. In particular $S$ is spectral if and only if $\Delta_S(n)=0$ for arbitrarily large $n$.
+\end{proposition}
+\begin{proof}
+$\Delta_S(1)=0$. Passing from $n$ to $n+1$ adds at most one vertex, so $\pp$ does not decrease, by (M2). If $n+1$ is prime, the new vertex is isolated, because no element of $S(n+1)$ other than $n+1$ is divisible by $n+1$; then the spectrum gains one eigenvalue $0$ and both $\pp$ and $\pi$ increase by exactly $1$.
+\end{proof}
+
+The next statement is essentially contained in Ramsay's letter in \cite{WOW}.
+
+\begin{proposition}\label{prop:inertia}
+Let $N=A_S+I$ for $S=\{2,\dots,n\}$. Then $N=\sum_{d=2}^{n}(-\mu(d))\,b_db_d^{\mathsf T}$, where $b_d\in\R^S$ is the indicator vector of the multiples of $d$. The matrix $N$ has exactly $\#\{d\le n:\mu(d)=-1\}$ positive and $\#\{2\le d\le n:\mu(d)=1\}$ negative eigenvalues. Consequently $\pp(S')\le\#\{d\le n:\mu(d)=-1\}$ for every $S'\subseteq\{2,\dots,n\}$.
+\end{proposition}
+\begin{proof}
+For $i,j\ge2$ we have $\sum_{d\mid\gcd(i,j),\,d>1}\mu(d)=[\gcd(i,j)=1]-1$, which gives the formula. The vectors $b_d$ with $d$ square-free are linearly independent, since the first non-zero coordinate of $b_d$ is at $d$. Completing them to a basis shows that $N$ is congruent to the diagonal matrix with entries $-\mu(d)$ and zeros, and Sylvester's law of inertia gives the counts. Finally $\pp(S')=\nuge1(A_{S'}+I)\le\nu_{>0}(A_{S'}+I)\le\nu_{>0}(N)$ by (M2).
+\end{proof}
+
+The number of $d\le n$ with $\mu(d)=-1$ is $(3/\pi^2+o(1))n$; this is classical.
+
+\section{Thresholds}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(a)]
+Non-negativity and monotonicity are Proposition~\ref{prop:mono}, applied to the set of all integers $\ge2$ and to the set of square-free integers $\ge2$. The characteristic polynomials of the adjacency matrices of $\PR[2..89]$, $\PR[2..90]$ and of the square-free graphs for $n=209$ and $n=210$ were computed in exact integer arithmetic. Since all roots are real, Descartes' rule of signs gives the exact numbers of positive and zero roots:
+\[
+\pp(89)=14+10=24=\pi(89),\qquad \pp(90)=15+10=25>\pi(90)=24,
+\]
+\[
+\pp_{\mathrm{sf}}(209)=27+19=46=\pi(209),\qquad \pp_{\mathrm{sf}}(210)=28+19=47>\pi(210)=46 .
+\]
+By monotonicity the differences vanish up to $89$, respectively $209$, and are positive afterwards.
+\end{proof}
+
+\section{The block decomposition}
+
+Let $\mathcal A$ be either the set $\N$ of positive integers or the set of square-free positive integers. In both cases $1,2,3\in\mathcal A$, and for a prime $p$ and an integer $a<p$ we have $pa\in\mathcal A$ if and only if $a\in\mathcal A$. Put $\mathcal A_k=\mathcal A\cap[1,k]$, let $C_k=C_k^{\mathcal A}$ be the matrix $([\gcd(a,b)=1])_{a,b\in\mathcal A_k}$, and let $A_n=A_n^{\mathcal A}$ be the adjacency matrix of $\PR[\mathcal A\cap[2,n]]$.
+
+Fix $n\ge4$. Let $\mathcal P_n$ be the set of primes in $(\sqrt n,n]$ and $k_p=\lfloor n/p\rfloor$ for $p\in\mathcal P_n$; thus $k_p<\sqrt n<p$. The integers $pa$ with $p\in\mathcal P_n$, $a\in\mathcal A_{k_p}$ are distinct elements of $\mathcal A\cap[2,n]$, and they are all the elements divisible by a prime of $\mathcal P_n$. For two such integers,
+\begin{equation}\label{eq:gcd}
+\gcd(pa,qb)>1\iff p=q\ \text{ or }\ \gcd(a,b)>1 ,
+\end{equation}
+because $p\nmid b$ and $q\nmid a$ when $p\ne q$. For a vector $x$ supported on these integers write $x_p=(x_{pa})_{a\in\mathcal A_{k_p}}$, and let $U$ be the space of such vectors with
+\[
+\sum_{p\in\mathcal P_n,\ k_p\ge a}x_{pa}=0\qquad\text{for every }a .
+\]
+These are at most $\sqrt n$ linear conditions, since $a\le k_p<\sqrt n$.
+
+\begin{lemma}\label{lem:blocks}
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item For $x\in U$,
+\[
+x^{\mathsf T}A_nx=\sum_{p\in\mathcal P_n}x_p^{\mathsf T}(C_{k_p}-I)x_p,\qquad x^{\mathsf T}C_nx=-\sum_{p\in\mathcal P_n}x_p^{\mathsf T}C_{k_p}x_p .
+\]
+\item Consequently
+\begin{align*}
+\nuge0(A_n)&\ge\sum_{p}\nuge1(C_{k_p})-\sqrt n, & \nu_{>0}(A_n)&\ge\sum_{p}\nu_{>1}(C_{k_p})-\sqrt n,\\
+\nuge1(C_n)&\ge\sum_{p}\nule{-1}(C_{k_p})-\sqrt n, & \nu_{>1}(C_n)&\ge\sum_{p}\nu_{<-1}(C_{k_p})-\sqrt n .
+\end{align*}
+\item Let $p\ne q$ be primes of $\mathcal P_n$ with $k_p=k_q=k$, let $C_kv=\lambda v$, and let $x$ be the vector with $x_p=v$, $x_q=-v$ and all other coordinates $0$. Then $A_nx=(\lambda-1)x$.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+Put $g(a,b)=[\gcd(a,b)>1]$ for all $a,b$, so that $1-g(a,b)$ is the $(a,b)$ entry of the matrices $C_k$, including the diagonal. (i) By \eqref{eq:gcd},
+\[
+x^{\mathsf T}A_nx=\sum_p\sum_{a\ne b}x_{pa}x_{pb}+\sum_{a,b}g(a,b)\sum_{p\ne q}x_{pa}x_{qb}.
+\]
+For $x\in U$ the inner sum is $(\sum_px_{pa})(\sum_qx_{qb})-\sum_px_{pa}x_{pb}=-\sum_px_{pa}x_{pb}$. Hence
+\[
+x^{\mathsf T}A_nx=\sum_p\Bigl(\sum_{a,b}(1-g(a,b))x_{pa}x_{pb}-\sum_ax_{pa}^2\Bigr),
+\]
+which is the first formula. For $C_n$ the entry at $(pa,qb)$ is $0$ if $p=q$ and $1-g(a,b)$ if $p\ne q$, and the same computation gives the second formula.
+
+(ii) Let $E$ be the direct sum over $p$ of the spans of the eigenvectors of $C_{k_p}$ with eigenvalue $\ge1$. On $E\cap U$ the form $x^{\mathsf T}A_nx$ is non-negative by (i), and $\dim(E\cap U)\ge\sum_p\nuge1(C_{k_p})-\sqrt n$. Now apply (M1). The other three inequalities are proved in the same way.
+
+(iii) Let $m$ be a vertex not divisible by $p$ or $q$. Then $\gcd(m,pa)>1$ if and only if $\gcd(m,a)>1$, and likewise for $q$, so $(A_nx)_m=\sum_a g(m,a)(v_a-v_a)=0$. For $m=pb$ we get, by \eqref{eq:gcd},
+\[
+(A_nx)_{pb}=\sum_{a\ne b}v_a-\sum_ag(a,b)v_a=(C_kv)_b-v_b=(\lambda-1)v_b ,
+\]
+and for $m=qb$ the same with the opposite sign.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(c)]
+Take $\mathcal A=\N$. The primes in question lie in $\mathcal P_n$ and have $k_p=k$. For a basis $v_1,\dots,v_m$ of the $\lambda$-eigenspace of $C_k$ and a fixed prime $p_1$ among them, the vectors of Lemma~\ref{lem:blocks}(iii) for the pairs $(p_1,q)$, $q\ne p_1$, and $v_1,\dots,v_m$ are $(t-1)m$ linearly independent eigenvectors.
+\end{proof}
+
+\begin{lemma}\label{lem:base}
+For both choices of $\mathcal A$: $\nuge1(C_k)\ge1$ for $k\ge1$; $\nule{-1}(C_k)\ge1$ for $k\ge3$; $\nu_{>1}(C_k)\ge1$ for $k\ge2$; and $\nu_{<-1}(C_k)\ge1$ for $k\ge6$.
+\end{lemma}
+\begin{proof}
+By (M2) each of the four counts is non-decreasing in $k$, so it suffices to check $k=1,3,2,6$. For $x=e_1$ we have $x^{\mathsf T}C_kx=1$, and for $x=e_2-e_3$ we have $x^{\mathsf T}C_kx=-2=-|x|^2$; this gives the first two claims by (M1). The matrix $C_2$ has the eigenvalue $(1+\sqrt5)/2$. For $k=6$ the exact computation of Appendix~\ref{app:comp} shows an eigenvalue smaller than $-1$ in both cases.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(b)]
+The upper bound is Proposition~\ref{prop:inertia}, and $\pp_{\mathrm{sf}}(n)\le\pp(n)$ by (M2). For the lower bound let $\mathcal A$ be the set of square-free integers. By Lemma~\ref{lem:blocks}(ii) and Lemma~\ref{lem:base}, for every $k\ge1$,
+\[
+\nuge1(C_k)\ \ge\ \#\{q\text{ prime}:\sqrt k<q\le k/3\}-\sqrt k ,
+\]
+since $\lfloor k/q\rfloor\ge3$ for these $q$. Applying Lemma~\ref{lem:blocks}(ii) again,
+\[
+\pp_{\mathrm{sf}}(n)\ \ge\ \sum_{p\in\mathcal P_n}\Bigl(\#\{q:\sqrt{k_p}<q\le k_p/3\}-\sqrt{k_p}\Bigr)-\sqrt n .
+\]
+A pair of primes $(p,q)$ with $3pq\le n$ and $pq^2>n$ satisfies $q\le k_p/3$ and $q>\sqrt{n/p}\ge\sqrt{k_p}$; if moreover $q\le n^{1/4}$, then $p>n/q^2\ge\sqrt n$. Hence the double count is at least
+\[
+\sum_{5\le q\le n^{1/4}}\bigl(\pi(n/3q)-\pi(n/q^2)\bigr)
+\ \ge\ (1-o(1))\frac{n}{3\log n}\sum_{5\le q\le n^{1/4}}\frac1q-O\Bigl(\frac n{\log n}\Bigr)
+=\bigl(\tfrac13-o(1)\bigr)\frac{n\log\log n}{\log n},
+\]
+by the prime number theorem and Mertens' theorem. The subtracted terms are $\sum_{p\le n}\sqrt{n/p}+\sqrt n=O(n/\log n)$, by Chebyshev's bound and partial summation.
+\end{proof}
+
+\begin{remark}
+The same proof with the strict inequalities of Lemma~\ref{lem:blocks}(ii) and with $\nu_{<-1}(C_j)\ge1$ for $j\ge6$ gives $\nu_{>0}(A_n)\ge(\tfrac16-o(1))\pi(n)\log\log n$ in both cases. Iterating Lemma~\ref{lem:blocks}(ii) further improves the power of $\log\log n$; we do not pursue this.
+\end{remark}
+
+\section{The eigenvalue zero}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(d)]
+The primes in $(n/2,n]$ are isolated vertices, so $z(n)\ge\pi(n)-\pi(n/2)$. For $2\le n\le741$ the rank of $A_n$ modulo the prime $2^{31}-1$ was computed; it is a lower bound for the rank over $\mathbb Q$. For $n\le740$ it equals $(n-1)-(\pi(n)-\pi(n/2))$, which proves equality. For $n=741$ the vector
+\[
+x=\sum_{a\in\{2,3\}}\ \sum_{b\in\{11,13\}}\ \sum_{c\in\{17,19\}}\varepsilon_a\varepsilon_b\varepsilon_c\,e_{abc},\qquad \varepsilon_2=\varepsilon_{11}=\varepsilon_{17}=1,\ \ \varepsilon_3=\varepsilon_{13}=\varepsilon_{19}=-1,
+\]
+lies in the kernel of $A_{741}$: the eight products are at most $3\cdot13\cdot19=741$, and for every $m\le741$ one computes $((A+I)x)_m=-\prod_{i=1}^{3}\sigma_i(m)$, where $\sigma_i(m)$ is the sum of the signs of those members of the $i$-th pair that do not divide $m$; this product is $-x_m$ when $m$ is one of the eight products and $0$ otherwise. So $z(741)\ge59>58$; the exact kernel has dimension $59$ (Appendix~\ref{app:comp}).
+
+Let $n>1600$. The exact computation shows that $1$ is an eigenvalue of $C_{39}$. The primes in $(n/40,n/39]$ exceed $\sqrt n$ and have $k_p=39$, so Lemma~\ref{lem:blocks}(iii) gives $\pi(n/39)-\pi(n/40)-1$ linearly independent vectors in the kernel of $A_n$, supported on multiples of primes $\le n/39$. They are independent of the vectors $e_p$, $p>n/2$. The last claim follows from the prime number theorem.
+\end{proof}
+
+\begin{remark}
+The matrices $C_k$ with $k\le45$ that have the eigenvalue $1$ are those with $k\in\{1,39,40,41,42,43\}$ (Appendix~\ref{app:comp}); numerically it also occurs for $k=51$ and for most $k$ between $57$ and $160$. Each such $k$ adds a term $\pi(n/k)-\pi(n/(k+1))-1$ to the lower bound.
+\end{remark}
+
+\section{Spectral sets}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(e)]
+Let $S$ consist of all primes and of a set $M$ of composite numbers divisible by a fixed prime $p_0$. For $n\ge p_0$ the set $\{p_0\}\cup(M\cap[2,n])$ is a clique of $\PR[S(n)]$, and a clique with $s$ vertices has $s-1$ eigenvalues equal to $-1$. By (M2), $\nu_{<0}(A_{S(n)})\ge|M\cap[2,n]|$, so $\pp(S(n))\le|S(n)|-|M\cap[2,n]|=\pi(n)$, and equality holds by Proposition~\ref{prop:mono}. For $p_0=2$ and $M$ the set of even numbers $\ge4$ the density is $\tfrac12$.
+
+Let $S$ be the set of integers $\ge2$ with at most two distinct prime factors, and let $B$ be the $S(n)\times\{\text{primes}\le n\}$ incidence matrix of divisibility. For $i,j\in S(n)$ the number of common prime factors is $0$, $1$ or $2$, and it is $2$ exactly when $i$ and $j$ have the same two prime factors. Hence $A_{S(n)}+I=BB^{\mathsf T}-E$, where $E$ is a direct sum of all-ones blocks and zeros, so $E$ is positive semidefinite. For $x$ with $B^{\mathsf T}x=0$ we get $x^{\mathsf T}A_{S(n)}x=-x^{\mathsf T}Ex-|x|^2<0$ if $x\ne0$. This space has dimension at least $|S(n)|-\pi(n)$, so $\pp(S(n))\le\pi(n)$ by (M1).
+
+If $S\supseteq\{2,\dots,90\}$, then $\pp(S(90))=\pp(90)>\pi(90)$, and similarly for the square-free integers up to $210$, by part (a).
+\end{proof}
+
+\begin{remark}
+By Proposition~\ref{prop:mono} the greedy procedure, which runs through the integers and keeps a composite number whenever the number of non-negative eigenvalues does not increase, produces a maximal spectral set; it contains $\{2,\dots,89\}$ and rejects $90$. We do not know an explicit description of a maximal spectral set, nor the supremum of the densities of spectral sets.
+\end{remark}
+
+\section{Entry 809}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}(f)]
+For $n=218$ the exact computation gives $30$ positive eigenvalues and residue $30$. The residue of a graph is at most its independence number \cite{FMS}, which here is $\pi(n)$, whereas the number of positive eigenvalues is at least $(\tfrac16-o(1))\pi(n)\log\log n$ by the remark after the proof of part (b).
+\end{proof}
+
+\section{Open questions}\label{sec:open}
+
+\begin{question}
+Is $\pp(n)\ge cn$ for some $c>0$? Numerically $\pp(n)/n$ decreases slowly, from $0.228$ at $n=500$ to $0.211$ at $n=3000$, while $\#\{d\le n:\mu(d)=-1\}/n\approx0.305$.
+\end{question}
+
+The matrix $A_n+I$ is the restriction of $J-C_n$ to the indices $2,\dots,n$, where $J$ is the all-ones matrix. Since $J$ has rank one, (M2) shows that $\pp(n)$ differs by at most $2$ from $\nule{-1}(C_n)$, the number of eigenvalues $\le-1$ of the coprimality matrix. Lemma~\ref{lem:blocks}(ii) bounds $\nule{-1}(C_n)$ and $\nuge1(C_n)$ from below in terms of each other at the arguments $\lfloor n/p\rfloor$; a heuristic evaluation of this recursion alone suggests a lower bound of the shape $n/(\log n)^{c}$ with $c\approx0.23$, which is consistent with the data but does not decide the question.
+
+\begin{question}
+Is $z(n)=O(\pi(n))$? What is the supremum of the upper densities of spectral sets?
+\end{question}
+
+\section{Audit against the acceptance criteria}
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{@{}p{0.27\textwidth}p{0.10\textwidth}p{0.55\textwidth}@{}}
+\toprule
+Criterion & Status & Comment\\
+\midrule
+G1: named problem with pre-existing text & met & Entries 446, 470, 809 of \cite{WOW} and the questions of Fajtlowicz attached to 446 and 470, quoted in the Introduction.\\
+G2: original statement, unchanged & met in part & The questions are answered as posed. Entries 446 and 470 themselves were already known to fail at $90$ and (numerically) at $210$; we determine the exact ranges. The question about an explicit maximal spectral set is not answered.\\
+G3: open at the time & unclear & We found no published answer, but these entries are little known, and the proofs are short; we cannot exclude that the answers are known to specialists.\\
+G4: unconditional and complete & met & All statements of Theorem~\ref{thm:main} are proved; the numerical ones are verified in exact arithmetic.\\
+G5: not a restatement & met & The block decomposition of Lemma~\ref{lem:blocks} and the resulting lower bound are not in \cite{WOW}.\\
+G6: no prior identical theorem & unclear & The inertia formula is Ramsay's. A search does not prove priority for the rest.\\
+\bottomrule
+\end{tabular}
+\caption{Status against the acceptance criteria. The results concern Graffiti's number-theoretic entries; no open problem of number theory proper is solved here.}
+\end{table}
+
+\appendix
+\section{Computations}\label{app:comp}
+The folder \texttt{graffiti-prime-graphs/} of the accompanying repository contains the scripts and their outputs.
+\begin{itemize}[leftmargin=*]
+\item \texttt{exact\_counts.py}: exact characteristic polynomials (SymPy, integer arithmetic) and root counts by Descartes' rule for $\PR[2..89]$, $\PR[2..90]$, the square-free graphs at $209$ and $210$, and for $C_k$, $k\le45$ (numbers of eigenvalues $\ge1$, $\le-1$, $=1$, $=-1$).
+\item \texttt{nullity\_check.py}: ranks modulo $2^{31}-1$ for $n\le741$, and the exact kernel for $n=741$.
+\item \texttt{entry809\_and\_tables.py}: the exact check of entry 809 at $n=218$, the square-free matrices $C_k$ for $k\le15$, and a floating-point table of $\pp(n)$, $\pi(n)$, $z(n)$ for $n\le3000$.
+\end{itemize}
+Selected values: $(n,\pp(n),\pi(n))=(100,26,25)$, $(500,114,95)$, $(1000,219,168)$, $(2000,426,303)$, $(3000,634,430)$; the last four are floating-point values.
+
+\section*{Provenance}
+This paper was prepared within the Verifiable-Mathematical-Reasoning-Corpus project with the assistance of an AI system. It has not been peer reviewed. The text of \cite{WOW} was read from a scanned copy by optical character recognition, and the article \cite{Faj88} could not be consulted.
+
+\begin{thebibliography}{99}
+\bibitem{AS} N.~Alon, P.~D. Seymour, \emph{A counterexample to the rank-coloring conjecture}, J. Graph Theory \textbf{13} (1989), 523--525.
+\bibitem{BE} B.~Bollob\'as, P.~Erd\H{o}s, \emph{Graphs of extremal weights}, Ars Combin. \textbf{50} (1998), 225--233.
+\bibitem{Chung} F.~R.~K. Chung, \emph{The average distance and the independence number}, J. Graph Theory \textbf{12} (1988), 229--235.
+\bibitem{CG} \emph{On structural properties and adjacency spectrum of coprime graph of integers}, preprint, arXiv:2506.10583.
+\bibitem{DLS} Z.~Dvo\v{r}\'ak, B.~Lidick\'y, R.~\v{S}krekovski, \emph{Randi\'c index and the diameter of a graph}, European J. Combin. \textbf{32} (2011), 434--442.
+\bibitem{Faj88} S.~Fajtlowicz, \emph{On conjectures of Graffiti}, Discrete Math. \textbf{72} (1988), 113--118.
+\bibitem{WOW} S.~Fajtlowicz, \emph{Written on the Wall}, electronic catalogue of conjectures of Graffiti, copy of July 2004.
+\bibitem{FMS} O.~Favaron, M.~Mah\'eo, J.-F.~Sacl\'e, \emph{On the residue of a graph}, J. Graph Theory \textbf{15} (1991), 39--64.
+\bibitem{SS} J.~W. Sander, T.~Sander, \emph{On the kernel of the coprime graph of integers}, Integers \textbf{9} (2009), 569--579.
+\bibitem{V161} Verifiable Mathematical Reasoning Corpus, manuscript [161], \emph{Randi\'c index and vertex radius}, November 2026, unrefereed.
+\bibitem{V226} Verifiable Mathematical Reasoning Corpus, manuscript [226], \emph{Fajtlowicz's average-distance conjecture}, November 2026, unrefereed.
+\bibitem{V227} Verifiable Mathematical Reasoning Corpus, manuscript [227], \emph{A proof audit of Fajtlowicz's average-distance conjecture}, November 2026, unrefereed.
+\bibitem{V243} Verifiable Mathematical Reasoning Corpus, manuscript [243], \emph{Inverse degrees, modal distances and coordinates of maximal independent sets}, November 2026, unrefereed.
+\bibitem{V244} Verifiable Mathematical Reasoning Corpus, manuscript [244], \emph{Graph distance modes and extrema}, November 2026, unrefereed.
+\end{thebibliography}
+
+\end{document}

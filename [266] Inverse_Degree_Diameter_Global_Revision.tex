@@ -1,0 +1,993 @@
+\documentclass[11pt]{amsart}
+\usepackage[a4paper,margin=1.05in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,fancyvrb,needspace}
+\usepackage{xurl}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
+  pdftitle={Sharp diameter bounds under an inverse-degree constraint},
+  pdfauthor={Research manuscript prepared for Keio}]{hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Lz}{\mathcal{L}}
+\newcommand{\mulay}{\mu_{\mathrm{lay}}}
+\title[Sharp diameter under an inverse-degree constraint]{Sharp diameter bounds under an inverse-degree constraint:\\
+integer budgets and the transition above an integer}
+\author{Revised research manuscript, unrefereed}
+\date{24 November 2026}
+\begin{document}
+\begin{abstract}
+For a finite simple connected graph put $r(G)=\sum_v1/\deg(v)$, and let
+$\diam(n,r)$ be the largest diameter of an $n$-vertex graph with $r(G)\le r$.
+We give a self-contained proof that, for every fixed real $r>1$,
+\[
+ \diam(n,r)=\bigl(2\lceil r\rceil-2+o(1)\bigr)
+             \frac{\log n}{\log\log n}.
+\]
+This closes the integer-budget gap in the supplied manuscript, which had
+matching bounds only for noninteger $r$. The key refinement is to charge
+long growth runs only to the inverse-degree mass outside peak clusters.
+If an integer budget $m$ supports $m$ peak clusters, their almost-unit costs
+leave so little mass for the runs that each run has at most half the usual
+asymptotic length. We also determine the transition when the budget is
+$m+\varepsilon_n$ and $\log(1/\varepsilon_n)/\log\log n\to\alpha$:
+the leading constant is $\max\{2m-2,2m/(1+\alpha)\}$.
+For graphs formed by chains of cliques, the maximum mean distance has
+leading constant $\lceil r\rceil-2$ for every fixed $r>2$.
+The latter assertion is restricted to that graph class. For arbitrary graphs
+with $r(G)\le2$ we additionally prove $\mu(G)=O(\log(\diam(G)+1))$,
+and hence $\mu(n,2)=O(\log\log n)$.
+A sharp general mean-distance constant for $r>2$ is not proved here. The proofs do not depend
+on computational enumeration. A reproducible exact-arithmetic diagnostic
+and a review of the source manuscript are included.
+\end{abstract}
+\maketitle
+
+\section{Results, scope, and historical context}
+All graphs in this paper are finite, simple, and connected, with at least
+two vertices. Write $\mu(G)$ for the mean distance over unordered pairs of
+distinct vertices. For $r>1$ and sufficiently large $n$ define
+\begin{align*}
+ r(G)&=\sum_{v\in V(G)}\frac1{\deg(v)},\\
+ \diam(n,r)&=\max\{\diam(G): |V(G)|=n,\ r(G)\le r\},\\
+ \mu(n,r)&=\max\{\mu(G): |V(G)|=n,\ r(G)\le r\},\\
+ \Lz(n)&=\frac{\log n}{\log\log n}.
+\end{align*}
+The feasible set is nonempty for all sufficiently large $n$, since
+$r(K_n)=n/(n-1)$. Logarithms are natural. Every $o(1)$ in a fixed-budget
+theorem is uniform over the graphs under consideration, with the fixed
+budget allowed to affect the error.
+
+\begin{theorem}[All fixed real budgets]\label{thm:main}
+For every fixed real $r>1$,
+\begin{equation}\label{eq:sharp}
+ \diam(n,r)=\bigl(2\lceil r\rceil-2+o(1)\bigr)\Lz(n).
+\end{equation}
+Equivalently, the leading constant is $2k$ on every interval
+$k<r\le k+1$, for integers $k\ge1$.
+\end{theorem}
+
+The asymptotic formula includes every integer $r\ge2$. It is not an exact
+finite-$n$ formula, and its fixed-budget error is not claimed to be uniform
+as $r$ approaches an integer. Section~\ref{sec:transition} treats that
+nonuniformity explicitly.
+
+\Needspace{8\baselineskip}
+\begin{theorem}[General mean-distance bounds]\label{thm:mean}
+For each fixed real $r>2$,
+\[
+ (\lceil r\rceil-2-o(1))\Lz(n)
+ \le\mu(n,r)\le(2\lceil r\rceil-2+o(1))\Lz(n).
+\]
+For the class of layered clique graphs defined in Section~2, the lower
+constant is optimal; see Theorem~\ref{thm:layermean}.
+\end{theorem}
+
+For $1<r\le2$, Section~\ref{sec:meantwo} proves the stronger bound
+$\mu(n,r)=O(\log(\Lz(n)+1))=o(\Lz(n))$ for general connected graphs.
+
+\subsection*{The classical benchmark}
+Erd\H{o}s, Pach and Spencer~\cite{EPS} disproved the Graffiti conjecture
+$\mu(G)\le r(G)$ and proved, for fixed $r\ge3$,
+\[
+ \left(\frac23\left\lfloor\frac r3\right\rfloor+o(1)\right)\Lz(n)
+ \le\mu(n,r)\le\diam(n,r)\le(6r+o(1))\Lz(n).
+\]
+Their layered construction itself has diameter with leading constant
+$2\lfloor r/3\rfloor$, a stronger diameter lower bound than the displayed
+mean-distance lower bound. Dankelmann, Swart and van den Berg~\cite{DSB}
+proved the upper constant $3r+2$. The full argument is also available in
+van den Berg's thesis~\cite[Chapter~3, Theorem~5]{VdB}. It already uses peaks,
+troughs, and monotone layer-size intervals. Li and Shi~\cite{LS} record the
+same general benchmark, and Bifulco and Kerner~\cite[Remark~2]{BK} still
+quote it in a paper published in March 2026.
+
+The supplied manuscript~\cite{Supplied} proves the improved upper constant
+$2\lfloor r\rfloor$ and lower constant $2\lceil r\rceil-2$. Its useful
+refinement of the classical approach is the use of steep-step clusters,
+each peak cluster costing almost one unit, together with a uniform bound
+on the number of nonsteep steps. We retain and prove that framework, then
+add the outside-peak budget argument that closes all integer cases.
+
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Budget & Supplied diameter constant & Present exact constant\\
+\midrule
+$1<r<2$ & $2$ & $2$\\
+$r=2$ & $[2,4]$ & $2$\\
+$2<r<3$ & $4$ & $4$\\
+$r=3$ & $[4,6]$ & $4$\\
+$3<r<4$ & $6$ & $6$\\
+$r=m\ge2$ & $[2m-2,2m]$ & $2m-2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{Corpus connection and verification status}
+Item [243] of the user's corpus~\cite{Corpus243}, in its section on the
+order of the largest violation, directs each nonpeak layer toward a larger
+neighbor. Telescoping logarithmic growth along the resulting paths and
+applying Jensen's inequality gives the correct order
+$O(\log n/\log\log n)$. The present proof makes that budget argument sharp
+by separating peak mass from the mass available to growth runs. No theorem
+from the corpus is needed as an unproved assumption here.
+
+The proofs below were checked by separate derivations during preparation.
+This is an unrefereed manuscript, not a record of external peer review or
+formal proof-assistant verification. The primary sources above were
+consulted directly; the targeted literature search did not find the same
+sharp staircase constant, but does not establish exhaustive priority.
+\section{Reduction to layer sequences}
+
+For a sequence $x=(x_0,\dots,x_D)$ of positive integers, $D\ge1$, put $x_{-1}=x_{D+1}=0$ and
+\[
+S(x)=\sum_{i=0}^{D}\frac{x_i}{x_{i-1}+x_i+x_{i+1}-1},\qquad
+T(x)=\sum_{i=0}^{D}\tau_i,\quad \tau_i=\frac{x_i}{x_{i-1}+x_i+x_{i+1}} .
+\]
+Clearly $T(x)<S(x)$.
+The \emph{layered graph} $G(x)$ has vertex set $L_0\cup\dots\cup L_D$ with $|L_i|=x_i$; two distinct vertices are adjacent if and only if they lie in the same layer or in consecutive layers.
+
+\begin{lemma}\label{lem:reduction}
+{\rm(i)} If $G$ is connected of order $n$ and diameter $D\ge1$, and $x_i$ is the number of vertices at distance $i$ from a vertex of eccentricity $D$, then $\sum x_i=n$ and $r(G)\ge S(x)$.
+
+{\rm(ii)} $G(x)$ is connected, has order $\sum x_i$, diameter $D$ and $r(G(x))=S(x)$.
+
+Consequently
+\[
+\diam(n,r)=\max\Bigl\{D:\ \exists\,x\in\N^{D+1},\ \textstyle\sum_i x_i=n,\ S(x)\le r\Bigr\}.
+\]
+\end{lemma}
+
+\begin{proof}
+(i) Every neighbour of a vertex at distance $i$ lies at distance $i-1$, $i$ or $i+1$, so its degree is at most $x_{i-1}+x_i+x_{i+1}-1$.
+(ii) In $G(x)$ a vertex of $L_i$ has degree exactly $x_{i-1}+x_i+x_{i+1}-1$, which is positive because $D\ge1$, and the distance between distinct vertices of $L_i$ and $L_j$ is $\max(|i-j|,1)$.
+\end{proof}
+
+\section{The lower bound: chains of mountains}
+
+For integers $P\ge1$, $L\ge1$, $k\ge2$ and $N_1,\dots,N_P\ge k^L$ consider the sequence
+\begin{align*}
+x=\bigl(1,\ &k,k^2,\dots,k^{L-1},N_1,k^{L-1},\dots,k,\ 1,\\
+&k,k^2,\dots,k^{L-1},N_2,k^{L-1},\dots,k,\ 1,\ \dots,\ k,\dots,k^{L-1},N_P,k^{L-1},\dots,k,\ 1\bigr),
+\end{align*}
+which has $P$ ``mountains'' separated by layers of size $1$. It has $2LP+1$ terms, so $D=2LP$.
+
+\begin{proposition}\label{prop:lower}
+For the sequence above, $S(x)<P+\dfrac{2LP+1}{k}$.
+Consequently, for all integers $P,L\ge1$, $k\ge2$ and every $n\ge 4Pk^L$ there is a connected graph of order $n$, diameter $2LP$ and inverse degree less than $P+(2LP+1)/k$.
+\end{proposition}
+
+\begin{proof}
+A peak layer contributes $N_j/(2k^{L-1}+N_j-1)<1$ (if $L=1$ the neighbours are the layers of size $1$ and the term is $N_j/(N_j+1)<1$).
+Every other layer has a neighbouring layer at least $k$ times as large: a layer of size $1$ has a neighbour of size at least $k$ and contributes at most $1/k$; a layer of size $k^j$, $1\le j\le L-1$, has the neighbour $k^{j+1}$ or $N_j\ge k^{j+1}$ and contributes at most $k^j/k^{j+1}=1/k$, because the remaining part $k^{j-1}+k^j-1$ of the denominator is non-negative.
+There are $2LP+1-P$ such layers.
+The order of $G(x)$ is $\sum_jN_j+2P(k+\dots+k^{L-1})+P+1$; with all $N_j=k^L$ this is at most $P\cdot3k^L+P+1\le4Pk^L$, and any larger order is obtained by increasing $N_1$.
+Now apply Lemma~\ref{lem:reduction}(ii).
+\end{proof}
+
+
+\begin{proof}[Proof of the lower bounds in Theorems~\ref{thm:main} and~\ref{thm:mean}]
+Put $P=\lceil r\rceil-1$ and $\varepsilon=r-P\in(0,1]$.
+Fix $0<c<1$, and for sufficiently large $n$ set
+\[
+ L=\lfloor c\Lz(n)\rfloor,
+ \qquad k=\left\lceil\frac{2LP+1}{\varepsilon}\right\rceil.
+\]
+Then $\log k=\log\log n+o(\log\log n)$, so
+$4Pk^L=n^{c+o(1)}=o(n)$. Proposition~\ref{prop:lower} therefore gives a
+graph of exactly $n$ vertices with $r(G)<r$ and diameter $2LP$.
+Letting $c\uparrow1$ proves the diameter lower bound.
+
+If $r>2$, then $P\ge2$. Choose the nonterminal peaks minimally and
+distribute the remaining $n-o(n)$ vertices as equally as possible between
+the first and last peaks. Their sizes satisfy
+$N_1N_P=(1/4-o(1))n^2$, and their mutual distance is $2L(P-1)$.
+Consequently
+\[
+ \mu(G)\ge\frac{2L(P-1)N_1N_P}{\binom n2}
+          =(1-o(1))(P-1)L.
+\]
+Letting $c\uparrow1$ proves the stated mean-distance lower bound, already
+within the layered class.
+\end{proof}
+\section{Peak clusters and the original run bound}\label{sec:clusters}
+
+Throughout this section $x=(x_0,\dots,x_D)$ is a sequence of positive integers with $\sum x_i=n$, and $T=T(x)$.
+
+\begin{lemma}[Blocks]\label{lem:block}
+For $0\le a\le b\le D$,
+\[
+\sum_{i=a}^{b}\tau_i\ \ge\ 1-\frac{x_{a-1}}{x_{a-1}+x_a}-\frac{x_{b+1}}{x_{b+1}+x_b}.
+\]
+In particular $T\ge1$.
+\end{lemma}
+
+\begin{proof}
+Let $y=(x_a,\dots,x_b)$ and $y_{a-1}=y_{b+1}=0$, and consider the layered graph $G(y)$ (a complete graph if $a=b$). Order its vertices uniformly at random. A vertex of layer $i$ precedes all its neighbours with probability $1/(y_{i-1}+y_i+y_{i+1})$, the reciprocal of the size of its closed neighbourhood, and the first vertex of the order always precedes its neighbours. Hence the expected number of vertices that precede all their neighbours is at least $1$:
+\[
+\sum_{i=a}^{b}\frac{y_i}{y_{i-1}+y_i+y_{i+1}}\ \ge\ 1 .
+\]
+The terms of this sum agree with $\tau_i$ for $a<i<b$.
+If $a<b$, then
+\[
+\tau_a=\frac{x_a}{x_a+x_{a+1}}\Bigl(1-\frac{x_{a-1}}{x_{a-1}+x_a+x_{a+1}}\Bigr)\ \ge\ \frac{x_a}{x_a+x_{a+1}}-\frac{x_{a-1}}{x_{a-1}+x_a},
+\]
+and similarly for $\tau_b$.
+If $a=b$, put $u=x_{a-1}/x_a$ and $v=x_{a+1}/x_a$; then $\tau_a=1/(1+u+v)$ and
+$1-\frac u{1+u}-\frac v{1+v}=\frac{1-uv}{(1+u)(1+v)}\le\frac1{1+u+v}$.
+\end{proof}
+
+Fix $\delta\in(0,\tfrac14]$.
+The \emph{step} $i$ ($0\le i<D$) joins the layers $i$ and $i+1$; its \emph{ratio} is $\rho_i=\min(x_i,x_{i+1})/\max(x_i,x_{i+1})$.
+The step is \emph{steep} if $\rho_i\le\delta$; a steep step is \emph{upward} if $x_i<x_{i+1}$ and \emph{downward} otherwise.
+A \emph{cluster} is a maximal interval $[a,b]$ of indices such that none of the steps $a,\dots,b-1$ is steep.
+The clusters partition $\{0,\dots,D\}$, and consecutive clusters are separated by exactly one steep step.
+For a cluster $C=[a,b]$ we say that it is \emph{entered upward} if $a=0$ or the step $a-1$ is upward, and \emph{left downward} if $b=D$ or the step $b$ is downward.
+A \emph{peak cluster} is entered upward and left downward; a \emph{valley cluster} is entered downward and left upward; the other clusters are \emph{through clusters}.
+Let $Q$ be the number of peak clusters and $w$ the number of steps that are not steep.
+
+\begin{lemma}\label{lem:peaks}
+{\rm(i)} Every peak cluster $C$ satisfies $\sum_{i\in C}\tau_i>1-2\delta$. Hence $Q(1-2\delta)<T$.
+
+{\rm(ii)} The number of valley clusters is $Q-1$.
+
+{\rm(iii)} $w<6T/\delta+2Q-1$.
+\end{lemma}
+
+\begin{proof}
+(i) If $a>0$ the step $a-1$ is steep and upward, so $x_{a-1}\le\delta x_a$ and $x_{a-1}/(x_{a-1}+x_a)\le\delta/(1+\delta)<\delta$; similarly on the right. Apply Lemma~\ref{lem:block}. The peak clusters are disjoint.
+
+(ii) Write down the word consisting of the letter \emph{up}, then the directions of the steep steps from left to right, then the letter \emph{down}. The clusters correspond to the pairs of consecutive letters; peak clusters are the changes from \emph{up} to \emph{down} and valley clusters the changes from \emph{down} to \emph{up}. The word begins with \emph{up} and ends with \emph{down}.
+
+(iii) Let $j$ be an interior index of a cluster $[a,b]$, that is $a<j<b$. Both steps at $j$ are not steep, so $x_{j\pm1}<x_j/\delta$ and $\tau_j>\delta/(2+\delta)\ge\delta/3$.
+Let $[a,a+1]$ be a through cluster of size two, entered and left upward. Then $x_{a-1}\le\delta x_a$ (or $a=0$) and $x_{a+1}<x_a/\delta$, so $\tau_a>1/(\delta+1+1/\delta)\ge\delta/3$; if it is entered and left downward, the same holds for $\tau_{a+1}$.
+Let $I_1$ be the set of interior indices of clusters and $I_2$ the set of the indices just chosen in the through clusters of size two. These sets are disjoint, so $|I_1|+|I_2|<3T/\delta$.
+Finally
+\[
+w=\sum_C(|C|-1)=|I_1|+\#\{C:|C|\ge3\}+\#\{C:|C|=2\}\le|I_1|+|I_1|+|I_2|+Q+(Q-1),
+\]
+because a cluster of size at least three has an interior index, and a cluster of size two is a through cluster, a peak cluster or a valley cluster.
+\end{proof}
+
+A \emph{run} is a maximal set of consecutive steep steps (consecutive in the list of steep steps) that have the same direction.
+
+\begin{lemma}[Runs]\label{lem:runs}
+{\rm(i)} There are at most $2Q$ runs.
+
+{\rm(ii)} Put $A=n\,\delta^{-w}$. A run with $\ell\ge2$ steps satisfies $(\ell-1)\,A^{-1/(\ell-1)}\le3T$.
+\end{lemma}
+
+\begin{proof}
+(i) Two consecutive runs are separated by a peak cluster or a valley cluster, and there are $2Q-1$ of these.
+
+(ii) By symmetry let the run be upward, with steps $i_1<\dots<i_\ell$.
+For $j\ge2$ the step $i_j-1$ is either the steep upward step $i_{j-1}$, in which case $x_{i_j-1}\le\delta x_{i_j}$, or it is not steep, in which case $x_{i_j-1}<x_{i_j}/\delta$.
+In both cases $x_{i_j-1}+x_{i_j}\le(1+1/\delta)x_{i_j}\le(1+\delta)x_{i_j+1}$, hence
+\[
+\tau_{i_j}\ \ge\ \frac{x_{i_j}}{(2+\delta)x_{i_j+1}}\ \ge\ \frac{\rho_{i_j}}3\qquad(2\le j\le\ell).
+\]
+Between the layers $i_2$ and $i_\ell+1$ the sizes are multiplied by $1/\rho_{i_j}$ at the steep steps and by a factor greater than $\delta$ at each of the at most $w$ other steps, so
+\[
+n\ \ge\ x_{i_\ell+1}\ \ge\ x_{i_2}\,\delta^{w}\prod_{j=2}^{\ell}\rho_{i_j}^{-1}\ \ge\ \delta^{w}\prod_{j=2}^{\ell}\rho_{i_j}^{-1},
+\]
+that is $\prod_{j=2}^\ell\rho_{i_j}\ge1/A$. By the inequality of arithmetic and geometric means,
+$3T\ge3\sum_{j=2}^{\ell}\tau_{i_j}\ge\sum_{j=2}^\ell\rho_{i_j}\ge(\ell-1)A^{-1/(\ell-1)}$.
+\end{proof}
+
+For $A\ge1$ and $t\ge1$ let $\Lambda(A,t)$ be the largest integer $\ell\ge1$ with $\ell A^{-1/\ell}\le3t$; it exists because $\ell\mapsto\ell A^{-1/\ell}$ is increasing and unbounded, and it is non-decreasing in $A$ and in $t$.
+
+\begin{theorem}\label{thm:upper}
+Let $G$ be a connected graph of order $n$ and diameter $D\ge1$ with $r(G)\le r$, and let $\delta\in(0,\frac14]$.
+Put $Q_0=\lceil r/(1-2\delta)\rceil-1$, $w_0=\lfloor6r/\delta\rfloor+2Q_0-1$ and $A_0=n\,\delta^{-w_0}$. Then
+\[
+\diam(G)\ \le\ 2Q_0\bigl(\Lambda(A_0,r)+1\bigr)+w_0 .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $x$ be the layer sequence of Lemma~\ref{lem:reduction}(i); then $T(x)<S(x)\le r(G)\le r$.
+By Lemma~\ref{lem:peaks}, $Q<r/(1-2\delta)$, so $Q\le Q_0$, and $w\le w_0$.
+The $D-w$ steep steps form at most $2Q$ runs, and by Lemma~\ref{lem:runs} each run has at most $\Lambda(A,T)+1\le\Lambda(A_0,r)+1$ steps.
+\end{proof}
+
+\begin{lemma}\label{lem:lambda}
+Let $y=\log A$ and $\eta=2\log(3t\log y)/\log y$. If $y>e$ and $\eta\le1$, then $\Lambda(A,t)\le(1+\eta)\,y/\log y$.
+\end{lemma}
+
+\begin{proof}
+Let $\ell>(1+\eta)y/\log y$. Then $\log\ell>\log y-\log\log y$ and $y/\ell<\log y/(1+\eta)$, so
+\[
+\log\bigl(\ell A^{-1/\ell}\bigr)>\frac{\eta}{1+\eta}\log y-\log\log y\ \ge\ \frac\eta2\log y-\log\log y=\log(3t).\qedhere
+\]
+\end{proof}
+
+
+\begin{proof}[The noninteger upper bound]
+Suppose $r>1$ is not an integer. Choose a fixed
+$\delta\in(0,1/4]$ so small that
+$r/(1-2\delta)<\lfloor r\rfloor+1$. Theorem~\ref{thm:upper} has
+$Q_0=\lfloor r\rfloor$, $w_0=O_r(1)$, and
+$\log A_0=\log n+O_r(1)$. Lemma~\ref{lem:lambda} gives
+$\Lambda(A_0,r)\le(1+o(1))\Lz(n)$. Thus
+\[
+ \diam(n,r)\le(2\lfloor r\rfloor+o(1))\Lz(n)
+             =(2\lceil r\rceil-2+o(1))\Lz(n).
+\]
+Together with the lower bound this proves Theorem~\ref{thm:main} for
+noninteger budgets.
+\end{proof}
+\section{Closing the integer boundary}\label{sec:integer}
+
+Write $h=\log n$, $b=\log\log n$, and $\mathcal L=h/b$.
+For sufficiently large $n$ choose
+\[
+ \delta=\frac{b^3}{h}.
+\]
+Then $0<\delta\le1/4$ and $\delta\to0$.
+All estimates below are uniform over the positive integer layer sequences
+under consideration; implied constants may depend on the fixed integer $m$.
+
+\begin{lemma}[The budget outside peak clusters]\label{lem:residual}
+For a layer sequence let $\mathcal P$ be the union of its peak clusters and put
+\[
+ B=\sum_{i\notin\mathcal P}\tau_i.
+\]
+Then
+\[
+ B<T-Q(1-2\delta).
+\]
+Every steep step has its smaller endpoint outside $\mathcal P$.
+Consequently, if a run has $\ell\ge2$ steep steps, then
+\[
+ (\ell-1)(n\delta^{-w})^{-1/(\ell-1)}\le3B.
+\]
+\end{lemma}
+
+\begin{proof}
+The inequality for $B$ follows by adding the lower bounds
+$\sum_{i\in C}\tau_i>1-2\delta$ over the $Q$ disjoint peak clusters.
+For an upward steep step from layer $i$ to layer $i+1$, its smaller endpoint
+$i$ belongs to a cluster which is left upward.  That cluster is not a peak
+cluster, since a peak cluster must be left downward.  For a downward steep
+step, its smaller endpoint $i+1$ belongs to a cluster entered downward;
+again this is not a peak cluster.
+
+For an upward run, write its steep steps as
+$i_1<\cdots<i_\ell$.  Exactly as in the original run lemma, for
+$j=2,\ldots,\ell$ one has
+\[
+ \tau_{i_j}\ge\rho_{i_j}/3,
+ \qquad
+ \prod_{j=2}^{\ell}\rho_{i_j}\ge(n\delta^{-w})^{-1}.
+\]
+The indices $i_2,\ldots,i_\ell$ are distinct and lie outside
+$\mathcal P$, so
+\[
+ 3B\ge3\sum_{j=2}^{\ell}\tau_{i_j}
+ \ge\sum_{j=2}^{\ell}\rho_{i_j}
+ \ge(\ell-1)(n\delta^{-w})^{-1/(\ell-1)}.
+\]
+For a downward run, reverse the whole sequence, replacing $x_i$ by
+$x_{D-i}$.  The values of $T$, $B$, $Q$, $w$ and $n$ are unchanged,
+peak clusters remain peak clusters, and the run becomes upward.  The same
+argument applies, using the smaller endpoint at each step and omitting the
+first step in the reversed orientation.
+\end{proof}
+
+\begin{lemma}[Two uniform run estimates]\label{lem:uniform}
+Suppose $y=h+o(h)$, with the $o(h)$ uniform.  If positive integers $s$
+satisfy $s\exp(-y/s)\le C$ for a fixed $C>0$, then
+\[
+ s\le(1+o(1))\mathcal L.
+\]
+If instead
+\[
+ s\exp(-y/s)\le C\frac{b^3}{h},
+\]
+then
+\[
+ s\le\bigl(\tfrac12+o(1)\bigr)\mathcal L.
+\]
+\end{lemma}
+
+\begin{proof}
+For fixed $y\ge0$, the function $f_y(s)=s\exp(-y/s)$ is strictly
+increasing for $s>0$.
+At $s=c\mathcal L=ch/b$, with fixed $c>0$, one has
+\[
+ \log f_y(c\mathcal L)
+ =\left(1-\frac1c+o(1)\right)b-\log b+\log c.
+\]
+If $c>1$, this tends to $+\infty$, proving the first assertion.
+For the second assertion, note that
+\[
+ \log\left(C\frac{b^3}{h}\right)
+ =-b+3\log b+\log C.
+\]
+Thus, for every fixed $c>1/2$,
+\[
+ \log f_y(c\mathcal L)
+ -\log\left(C\frac{b^3}{h}\right)
+ =\left(2-\frac1c+o(1)\right)b-4\log b+\log(c/C)
+ \longrightarrow+\infty.
+\]
+Monotonicity proves the second assertion.  The argument is uniform because
+the only varying input, $y/h-1$, tends to zero uniformly.
+\end{proof}
+
+\begin{theorem}[Integer boundary]\label{thm:integer}
+For every fixed integer $m\ge2$,
+\[
+ \diam(n,m)=\bigl(2m-2+o(1)\bigr)
+             \frac{\log n}{\log\log n}.
+\]
+\end{theorem}
+
+\begin{proof}
+The lower bound is the original mountain construction with $P=m-1$.
+For the upper bound, let $G$ have order $n$ and $r(G)\le m$, and let $x$
+be the distance-layer sequence from an endpoint of a diametral path.
+Then $T(x)<S(x)\le m$.  Use the above choice $\delta=b^3/h$.
+The peak-cluster lemma gives
+\[
+ Q(1-2\delta)<m,
+ \qquad
+ w<\frac{6m}{\delta}+2Q-1.
+\]
+For all sufficiently large $n$, $m/(1-2\delta)<m+1$, so $Q\le m$.
+Consequently
+\[
+ w=O(h/b^3)=o(\mathcal L),
+ \qquad
+ \log(n\delta^{-w})
+ =h+w\log(1/\delta)
+ =h+O(h/b^2)=h+o(h).
+\]
+
+If $Q\le m-1$, the original run lemma and the first uniform estimate
+show that every run has at most $(1+o(1))\mathcal L$ steep steps.
+There are at most $2Q$ runs, hence
+\[
+ D\le w+2Q(1+o(1))\mathcal L
+ \le(2m-2+o(1))\mathcal L.
+\]
+
+If $Q=m$, the outside budget satisfies
+\[
+ 0\le B<T-m(1-2\delta)<2m\delta.
+\]
+Every run of at least two steps therefore satisfies
+\[
+ (\ell-1)(n\delta^{-w})^{-1/(\ell-1)}<6m\frac{b^3}{h}.
+\]
+The second uniform estimate shows that every run has at most
+$(1/2+o(1))\mathcal L$ steps.  This also includes runs with only one
+step, since $\mathcal L\to\infty$.  With at most $2m$ runs,
+\[
+ D\le w+2m(1/2+o(1))\mathcal L
+   =(m+o(1))\mathcal L
+   \le(2m-2+o(1))\mathcal L,
+\]
+where the last inequality uses $m\ge2$.
+The estimates are uniform in $G$, so they hold for $\diam(n,m)$.
+\end{proof}
+
+
+\begin{proof}[Completion of Theorems~\ref{thm:main} and~\ref{thm:mean}]
+The noninteger upper bound was proved in Section~\ref{sec:clusters};
+Theorem~\ref{thm:integer} covers every integer $r\ge2$. The matching
+lower bound was proved in Section~3. Finally $\mu(G)\le\diam(G)$ gives
+the general mean-distance upper bound.
+\end{proof}
+
+\begin{remark}[What closes the gap]
+The conclusion does not require every individual long-sided mountain to
+cost more than one. Such a local assertion is false in general; see
+Section~\ref{sec:audit}. Instead, the disjoint peak clusters use nearly
+the whole integer budget, and the remaining mass simultaneously bounds
+every run. The shrinking threshold makes this distinction quantitative.
+\end{remark}
+\section{Budgets approaching an integer}\label{sec:transition}
+
+\begin{theorem}[The transition above an integer budget]\label{thm:transition}
+Fix an integer $m\ge2$ and a sequence $\varepsilon_n$ satisfying
+$0<\varepsilon_n\le1/2$.  Suppose
+\[
+ \frac{\log(1/\varepsilon_n)}{\log\log n}\longrightarrow
+ \alpha\in[0,\infty].
+\]
+With the convention $1/(1+\infty)=0$, one has
+\[
+ \diam(n,m+\varepsilon_n)
+ =\left(\max\left\{2m-2,\frac{2m}{1+\alpha}\right\}+o(1)\right)
+ \frac{\log n}{\log\log n}.
+\]
+\end{theorem}
+
+\begin{proof}
+Put $h=\log n$, $b=\log\log n$ and $\mathcal L=h/b$.
+The fixed-budget result at $m$ gives the lower bound
+$(2m-2-o(1))\mathcal L$ by monotonicity of the budget.
+If $\alpha<\infty$, fix $0<c<1/(1+\alpha)$, and set
+\[
+ L=\lfloor c\mathcal L\rfloor,
+ \qquad
+ k=\left\lceil\frac{2mL+1}{\varepsilon_n}\right\rceil.
+\]
+Then
+\[
+ \log k=(1+\alpha+o(1))b,
+ \qquad
+ \log(4mk^L)=(c(1+\alpha)+o(1))h<h.
+\]
+Thus the original mountain construction with $P=m$ has an exact-order-$n$
+realization, with inverse degree less than $m+\varepsilon_n$ and diameter
+$2mL$.  Letting $c$ increase to $1/(1+\alpha)$ proves the other lower
+bound.  For $\alpha=\infty$ the first lower bound suffices.
+
+For the upper bound use $\delta=b^3/h$ and a layer sequence with
+$T<S\le m+\varepsilon_n\le m+1/2$.  The peak inequality gives $Q\le m$
+for all sufficiently large $n$, while
+\[
+ w=O(h/b^3)=o(\mathcal L),
+ \qquad
+ y=\log(n\delta^{-w})=h+o(h).
+\]
+If $Q\le m-1$, the usual run estimate gives
+$D\le(2m-2+o(1))\mathcal L$.
+If $Q=m$, the outside budget satisfies
+\[
+ B<U_n:=\varepsilon_n+2m\delta
+   =\exp\bigl(-\beta b+o(b)\bigr),
+ \qquad \beta=\min\{\alpha,1\}.
+\]
+Each run of at least two steps satisfies
+$s\exp(-y/s)\le3B<3U_n$ with $s=\ell-1$.
+For fixed $c>1/(1+\beta)$,
+\[
+ \log\bigl(c\mathcal L\exp(-y/(c\mathcal L))\bigr)
+ -\log(3U_n)
+ \ge\left(1+\beta-\frac1c+o(1)\right)b-\log b+O(1)
+ \longrightarrow+\infty.
+\]
+Monotonicity implies
+$\ell\le(1/(1+\beta)+o(1))\mathcal L$.
+There are at most $2m$ runs, so
+\[
+ D\le\left(\frac{2m}{1+\beta}+o(1)\right)\mathcal L.
+\]
+For $\alpha\le1$ this is the claimed second upper bound.
+For $\alpha\ge1$, it is $m\mathcal L+o(\mathcal L)$, which is no larger
+than $(2m-2+o(1))\mathcal L$ because $m\ge2$.
+Combining the alternatives and lower bounds proves the theorem.
+\end{proof}
+
+\begin{remark}
+The transition occurs at $\alpha=1/(m-1)$, since
+$2m/(1+\alpha)=2m-2$ exactly there.  In particular the limiting fixed-budget
+step is resolved on the scale
+$\varepsilon_n=(\log n)^{-1/(m-1)+o(1)}$.
+\end{remark}
+
+For example, if $m=2$ and $\varepsilon_n=(\log n)^{-\alpha}$, the
+constant is $\max\{2,4/(1+\alpha)\}$. It equals $8/3$ at $\alpha=1/2$
+and equals $2$ for every $\alpha\ge1$. If $m=3$, the transition to
+the integer constant $4$ already occurs at $\alpha=1/2$.
+Approach from below is simpler: if $\eta_n\downarrow0$, then
+\[
+ \diam(n,m-\eta_n)=(2m-2+o(1))\Lz(n),\qquad m\ge2.
+\]
+Indeed the upper bound follows from $m-\eta_n\le m$, while the lower
+bound uses $m-1$ mountains and a budget margin bounded away from zero.
+\section{Sharp mean distance for layered clique graphs}
+\begin{theorem}[Sharp mean distance within the layered class]\label{thm:layermean}
+For fixed $r>2$, let $\mu_{\mathrm{lay}}(n,r)$ denote the maximum mean distance
+among graphs $G(x)$ with $\sum x_i=n$ and $S(x)\le r$. Then
+\[
+\mu_{\mathrm{lay}}(n,r)
+ =\bigl(\lceil r\rceil-2+o(1)\bigr)
+   \frac{\log n}{\log\log n}.
+\]
+\end{theorem}
+\begin{proof}
+The lower bound is the first-and-last-peak mass construction already proved.
+Write $L=\log n/\log\log n$. For the upper bound use the same steep-step
+clusters, their number $Q$ of peak clusters, the number $w$ of nonsteep steps,
+and the largest length $R$ of a steep run, setting $R=0$ when no such run
+exists. In all cases considered below,
+$D=O(L)$, $w=o(L)$, and $R=O(L)$.
+Call layer $i$ heavy when $x_i\ge n/L^2$. The total number of vertices in
+nonheavy layers is at most $(D+1)n/L^2=O(n/L)$.
+
+Every heavy layer is within distance
+\[
+ h=2w+\frac{2\log L}{\log(1/\delta)}
+\]
+of a peak cluster. Indeed, if its cluster is not a peak, follow the
+same-direction steep run toward a peak, reversing the sequence when necessary.
+Across $t$ steep steps sizes increase by at least $\delta^{-t}$, while the
+interspersed nonsteep steps decrease sizes by at most a factor $\delta^w$.
+The terminal size is at most $n$, so
+$n\ge x_i\delta^{w-t}$ and
+$t\le w+\log(n/x_i)/\log(1/\delta)$. Adding at most $w$ nonsteep steps
+proves the claim. For a peak cluster the claim is immediate from its
+length being at most $w+1$.
+
+From the right end of the first peak cluster to the left end of the last
+there are $2(Q-1)$ same-direction runs when $Q>1$, and none when $Q=1$.
+All intervening and within-cluster nonsteep steps together number at most
+$w$. Hence all heavy layers lie in an interval of length
+\[
+ H\le 2(Q-1)R+w+2h.
+\]
+For any random variable $Z$ supported on a real interval of length $H$,
+and an independent copy $Z'$, one has
+\[
+ \mathbb E|Z-Z'|=2\int F(t)(1-F(t))\,dt\le H/2.
+\]
+Apply this to the layer indices of uniformly sampled vertices, conditional
+on both lying in heavy layers. The probability that either vertex belongs
+to a nonheavy layer is $O(1/L)$, and all distances of layer indices are at
+most $D=O(L)$. Thus the unconditional expectation of the absolute difference
+of layer indices is at most $H/2+O(1)$. Within-layer distances in $G(x)$
+contribute at most $1$, and sampling distinct vertices instead of independent
+vertices changes the normalization by $n/(n-1)$. Consequently
+\[
+ \mu(G(x))\le (Q-1)R+o(L),
+\]
+provided $h=o(L)$.
+
+If $r$ is not an integer, choose a fixed $\delta>0$ with
+$r/(1-2\delta)<\lfloor r\rfloor+1$. Then $Q\le\lfloor r\rfloor$,
+$w=O(1)$, $h=O(\log L)=o(L)$, and the original run estimate yields
+$R\le(1+o(1))L$. This gives
+$\mu(G(x))\le(\lfloor r\rfloor-1+o(1))L$.
+
+If $r=m\ge3$ is an integer, take
+\[
+ \delta=\frac{(\log\log n)^3}{\log n}.
+\]
+Then $Q\le m$ and $h=o(L)$, while
+\[
+ w=O\!\left(\frac{\log n}{(\log\log n)^3}\right)=o(L).
+\]
+If $Q\le m-1$, the usual run estimate gives
+$\mu(G(x))\le(m-2+o(1))L$.
+If $Q=m$, the total $T$-mass outside the peak clusters is less than
+$2m\delta$. The residual-budget run inequality gives
+$R\le(1/2+o(1))L$, whence
+\[
+ \mu(G(x))\le\bigl((m-1)/2+o(1)\bigr)L
+ \le(m-2+o(1))L,
+\]
+since $m\ge3$. The lower and upper constants now agree.
+\end{proof}
+
+\begin{remark}[The restriction is essential in this proof]
+Completing distance layers to cliques, and completing consecutive layers
+bipartitely, preserves the diameter but can decrease the mean distance.
+Consequently the layered theorem alone does not imply the corresponding
+sharp upper bound for arbitrary connected graphs. At $r=2$ the preceding argument alone gives the upper constant $1/2$;
+Section~\ref{sec:meantwo} improves this to zero on the $\Lz(n)$ scale,
+even for general connected graphs.
+\end{remark}
+\section{The mean distance at inverse-degree budget two}\label{sec:meantwo}
+
+The following argument does not complete distance layers to cliques.
+Throughout this section $G$ is a finite simple connected graph of order
+$n\ge2$, diameter $D$, and inverse degree $r(G)\le2$.
+
+\begin{lemma}[A large set of small diameter]\label{lem:large_core}
+Let $k$ be an integer with $1\le k<n/7$. There is a nonempty set
+$W\subseteq V(G)$ such that
+\[
+ |V(G)\setminus W|<53k,
+ \qquad
+ \max_{u,v\in W}d_G(u,v)< \frac{3n}{k}.
+\]
+\end{lemma}
+\begin{proof}
+Repeatedly remove a vertex whose degree in the remaining induced graph is
+at most $k$, until no such vertex remains. Let $v_1,\ldots,v_t$ be the
+removed vertices, in their removal order, and let $H$ be the remaining
+induced graph. The original degree of $v_i$ is at most $k+i-1$. Therefore
+\[
+ 2\ge r(G)\ge\sum_{i=1}^t\frac1{k+i-1}
+ \ge\int_k^{k+t}\frac{du}{u}
+ =\log(1+t/k).
+\]
+Thus $t\le(e^2-1)k<7k<n$, so $H$ is nonempty.
+Let $W$ be a largest component of $H$.
+If $t=0$, then $H=G$ is connected and $W=V(G)$.
+Suppose henceforth that $t>0$.
+
+The removed vertices contribute strictly more than
+\[
+ \frac{t}{k+t}>\frac{t}{8k}
+\]
+to $r(G)$. A component $C$ of $H$ of order $s$ contributes at least
+\[
+ \sum_{v\in C}\frac1{d_G(v)}
+ \ge\frac{s}{s-1+t}
+ >\frac{s}{s+t}
+ =1-\frac{t}{s+t}\ge1-\frac{t}{s},
+\]
+since a vertex of $C$ has neighbors only in $C$ and among the removed
+vertices. If two components each had order at least $16k$, their
+combined contribution would be at least $2-t/(8k)$. Adding the removed
+vertices would force $r(G)>2$, a contradiction.
+Therefore every component other than $W$ has order less than $16k$.
+Every vertex in those components has original degree less than
+$16k+t<23k$. Since $r(G)\le2$, there are fewer than $46k$ such vertices.
+Including the $t<7k$ removed vertices proves
+$|V(G)\setminus W|<53k$.
+
+Finally $H[W]$ has minimum degree at least $k+1$. Along an internal
+geodesic choose vertices in positions $0,3,6,\ldots$. Their closed
+neighborhoods in $H[W]$ are pairwise disjoint, each of size at least
+$k+2$. If the geodesic has length $d$, this gives
+\[
+ (\lfloor d/3\rfloor+1)(k+2)\le |W|,
+ \qquad d<\frac{3|W|}{k+2}<\frac{3n}{k}.
+\]
+Distances in $G$ are no larger than these internal distances, completing
+all cases of the proof.
+\end{proof}
+
+\begin{theorem}[A general-graph mean-distance bound at budget two]\label{thm:meantwo}
+Every finite simple connected graph with $r(G)\le2$ satisfies
+\[
+ \mu(G)\le148+318\log\bigl(\operatorname{diam}(G)+1\bigr).
+\]
+Consequently, with $\mathcal L(n)=\log n/\log\log n$,
+\[
+ \mu(n,2)=O\bigl(\log(\mathcal L(n)+1)\bigr)
+          =o\bigl(\mathcal L(n)\bigr).
+\]
+The same upper estimate holds for every fixed budget $1<r\le2$.
+The numerical constants are not asserted to be optimal.
+\end{theorem}
+\begin{proof}
+Let $X,Y$ be a uniformly chosen ordered pair of distinct vertices.
+For an integer $s$ with $42\le s\le D-1$, take
+$k=\lceil3n/s\rceil$. Since $n\ge s+1\ge43$, one has
+\[
+ 1\le k\le n/14+1<n/7.
+\]
+Apply Lemma~\ref{lem:large_core}. Its set $W$ has ambient diameter
+less than $3n/k\le s$. If $m=|V(G)\setminus W|$, then
+\[
+ \mathbb P(d_G(X,Y)>s)
+ \le1-\frac{(n-m)(n-m-1)}{n(n-1)}
+ \le\frac{2m}{n}
+ <\frac{106k}{n}
+ \le\frac{318}{s}+\frac{106}{n}.
+\]
+The inequality with $2m/n$ is immediate at $m=0$; for the integer
+$m\ge1$, expand the preceding fraction as
+$m(2n-m-1)/(n(n-1))$.
+Summing the tail probabilities gives
+\[
+ \mu(G)=\sum_{s=0}^{D-1}\mathbb P(d_G(X,Y)>s)
+ \le42+318\sum_{s=42}^{D-1}\frac1s+\frac{106D}{n}
+ \le148+318\log(D+1).
+\]
+For $D\le42$, the same final bound follows from $\mu(G)\le D$.
+
+The diameter theorem gives $\operatorname{diam}(n,2)=O(\mathcal L(n))$,
+so maximizing the first bound over graphs of order $n$ proves the second.
+The last assertion follows from inclusion of the admissible graph classes.
+\end{proof}
+
+\section{Review of the supplied manuscript}\label{sec:audit}
+The supplied manuscript's exact diameter reduction, construction,
+block inequality, cluster counting, and run estimates have been retained
+with their proofs. The additional argument in Section~\ref{sec:integer}
+supplies what its original proof did not establish at integer budgets.
+
+\subsection*{A local assertion that must be removed}
+The original integer-budget remark stated that a mountain with at least
+two steep steps on each side costs more than one. This need not hold
+when its neighboring mountains have very different sizes. At threshold
+$\delta=1/4$, take
+\[
+ x=(100000,16,64,256,4,1,100000).
+\]
+The central peak $256$ has two steep steps on each side. Yet the sum of
+the $S$-terms of its five-layer interval is
+\begin{align*}
+ &\frac{16}{100079}+\frac{64}{335}+\frac{256}{323}
+       +\frac1{65}+\frac1{100004}\\
+ &\hspace{1cm}=\frac{827448565224371}{828136809647420}<1.
+\end{align*}
+This refutes that local cost justification, not the sharp global
+diameter formula. The outside-peak budget proof avoids it completely.
+
+\subsection*{Computational and bibliographic corrections}
+The source manuscript reports exhaustive graph checks and a further
+sequence experiment, but its cited scripts were not among the two
+attachments. Those reported counts have not been independently reproduced
+here. Appendix~\ref{app:checks} contains the distinct diagnostic actually
+performed for this revision, together with its complete code.
+
+The original dynamic-programming table restricts individual layer sizes
+to powers of two up to $2^m$, but evaluates $\Lz$ at $n=2^m$.
+The sum of the layer sizes need not equal $2^m$. Consequently that table
+does not certify the claimed fixed-order optimum at $n=2^m$, and is not
+reused as evidence for the asymptotic theorem.
+
+The historical diameter comparison should use the $2\lfloor r/3\rfloor$
+lower constant implicit in the EPS construction, as noted in Section~1.
+Layering and peak decomposition have classical precedents. The specific
+new step in this revision is the outside-peak charging lemma and its use
+with a threshold depending on $n$.
+
+\subsection*{What remains open in this manuscript}
+All fixed-budget diameter leading constants are determined. Exact finite
+optima and sharp second-order asymptotics are not determined. For general
+connected graphs the matching mean-distance formula
+\[
+ \mu(n,r)\stackrel{?}{=}(\lceil r\rceil-2+o(1))\Lz(n),\qquad r>2,
+\]
+is not proved here. Completing the edges of a distance layering is valid
+for the diameter extremal problem but can reduce mean distance, so it
+does not transfer Theorem~\ref{thm:layermean} to arbitrary graphs.
+For budgets $1<r\le2$, Theorem~\ref{thm:meantwo} determines the normalized
+coefficient $\mu(n,r)/\Lz(n)$ to be zero. It does not determine the exact
+growth rate of $\mu(n,2)$ below that scale.
+
+\appendix
+\section{Reproducible exact-arithmetic diagnostic}\label{app:checks}
+The following Python program uses only the standard library. It checks
+cluster charges, valley and run counts, the discarded-step bound, the
+selected endpoints' exclusion from peaks, the local ratio estimate, and
+the new residual-budget AM--GM inequality. The last inequality is checked
+after raising to an integer power, so it involves only exact rational
+arithmetic. The experiment used 58,575 exhaustive sequence/threshold
+pairs and 4,500 seeded random pairs, a total of 63,075 pairs and 160,021
+runs. Every applicable assertion passed. These finite checks are a
+diagnostic; the universal claims follow from the proofs above.
+
+\begin{Verbatim}[fontsize=\scriptsize,baselinestretch=1.0]
+from fractions import Fraction as F
+from itertools import product, groupby
+import random
+
+DELTAS=(F(1,10),F(1,5),F(1,4))
+
+def check(x,delta):
+    d=len(x)-1
+    ext=(0,)+tuple(x)+(0,)
+    tau=[F(ext[i+1],sum(ext[i:i+3])) for i in range(d+1)]
+    T=sum(tau,F(0))
+    rho=[F(min(x[i:i+2]),max(x[i:i+2])) for i in range(d)]
+    steep=[i for i in range(d) if rho[i]<=delta]
+    edges=set(steep)
+    clusters=[];a=0
+    for i in steep:
+        clusters.append((a,i));a=i+1
+    clusters.append((a,d))
+    peaks=[];valleys=[]
+    for a,b in clusters:
+        enterup=(a==0 or x[a-1]<x[a])
+        leavedown=(b==d or x[b]>x[b+1])
+        if enterup and leavedown: peaks.append((a,b))
+        if not enterup and not leavedown: valleys.append((a,b))
+    Q=len(peaks);w=d-len(steep)
+    peak_indices=set()
+    for a,b in peaks:
+        peak_indices.update(range(a,b+1))
+        assert sum(tau[a:b+1],F(0))>1-2*delta,(x,delta,'peak')
+    assert len(valleys)==Q-1,(x,delta,'valleys')
+    assert w<6*T/delta+2*Q-1,(x,delta,'w')
+    B=sum((tau[i] for i in range(d+1) if i not in peak_indices),F(0))
+    runs=[(up,list(g)) for up,g in groupby(steep,key=lambda i:x[i]<x[i+1])]
+    assert len(runs)<=2*Q,(x,delta,'runs')
+    A=sum(x)*delta**(-w)
+    for up,steps in runs:
+        chosen=steps[1:] if up else steps[:-1]
+        if not chosen: continue
+        lower=[i if up else i+1 for i in chosen]
+        assert all(i not in peak_indices for i in lower),(x,delta,'outside')
+        assert all(tau[j]>=rho[i]/3 for i,j in zip(chosen,lower)),(x,delta,'local')
+        q=F(1)
+        for i in chosen:q*=rho[i]
+        assert q>=1/A,(x,delta,'product')
+        k=len(chosen)
+        assert k**k <= (3*B)**k*A,(x,delta,'residual')
+    return len(runs)
+
+count=0;run_count=0
+for size in range(2,7):
+    for x in product((1,2,3,8,40),repeat=size):
+        for delta in DELTAS:
+            run_count+=check(x,delta);count+=1
+print('exhaustive sequence/delta pairs:',count)
+rng=random.Random(20261124)
+for _ in range(1500):
+    size=rng.randrange(2,45)
+    x=tuple(rng.choice((1,2,3,5))*10**rng.randrange(0,11) for _ in range(size))
+    for delta in DELTAS:
+        run_count+=check(x,delta);count+=1
+print('total sequence/delta pairs:',count)
+print('total runs checked:',run_count)
+print('all exact rational checks passed')
+
+\end{Verbatim}
+
+\clearpage
+\begin{thebibliography}{9}
+\bibitem{EPS}
+P. Erd\H{o}s, J. Pach, and J. Spencer,
+On the mean distance between points of a graph,
+\emph{Congressus Numerantium} \textbf{64} (1988), 121--124.
+\url{https://www.renyi.hu/~p_erdos/1988-23.pdf}.
+
+\bibitem{DSB}
+P. Dankelmann, H. C. Swart, and P. van den Berg,
+Diameter and inverse degree,
+\emph{Discrete Mathematics} \textbf{308} (2008), 670--673.
+\url{https://doi.org/10.1016/j.disc.2007.07.053}.
+
+\bibitem{VdB}
+P. van den Berg, \emph{Bounds on distance parameters of graphs},
+Ph.D. thesis, University of KwaZulu-Natal, August 2007,
+Chapter 3, Theorem 5, pp. 34--38.
+\url{https://researchspace.ukzn.ac.za/server/api/core/bitstreams/e0f05373-ab73-4365-be88-b71e81eb4cd8/content}.
+
+\bibitem{LS}
+X. Li and Y. Shi, On the diameter and inverse degree,
+\emph{Ars Combinatoria} \textbf{101} (2011), 481--487.
+\url{https://combinatorialpress.com/article/ars/Volume%20101/volume-101-paper-36.pdf}.
+
+\bibitem{BK}
+P. Bifulco and J. Kerner,
+On the Surface Area of Graphs, Related Connectivity Measures and Spectral Estimates,
+\emph{Complex Analysis and Operator Theory} \textbf{20} (2026), article 71.
+Published 6 March 2026.
+\url{https://doi.org/10.1007/s11785-026-01932-6}.
+
+\bibitem{Corpus243}
+Verifiable Mathematical Reasoning Corpus, item [243],
+\emph{Graffiti Degree Multiplicity and Distance},
+section ``The order of the largest violation.''
+Repository snapshot \texttt{52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3},
+accessed 24 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus/tree/52c1e4ae1f82bd3fdc8b809b9a94e2e4c6ef4cb3}.
+
+\bibitem{Supplied}
+\emph{The diameter of graphs with given inverse degree: the constant in a
+theorem of Erd\H{o}s, Pach and Spencer}, supplied unrefereed research
+manuscript dated 24 November 2026, six pages; source file
+\texttt{Inverse\_Degree\_Diameter.tex}.
+\end{thebibliography}
+\end{document}

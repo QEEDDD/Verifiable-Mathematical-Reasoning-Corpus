@@ -1,0 +1,344 @@
+\documentclass[11pt]{amsart}
+\usepackage[a4paper,margin=1.15in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Lz}{\mathcal{L}}
+
+\title[Diameter and inverse degree]{The diameter of graphs with given inverse degree:\\ the constant in a theorem of Erd\H{o}s, Pach and Spencer}
+\author{Research manuscript (unrefereed), 24 November 2026}
+
+\begin{document}
+
+\begin{abstract}
+The inverse degree of a graph $G$ is $r(G)=\sum_{v}1/\deg(v)$.
+Refuting the Graffiti conjecture that the mean distance is at most the inverse degree, Erd\H{o}s, Pach and Spencer (1988) proved that the largest diameter $\diam(n,r)$ of a connected graph of order $n$ and inverse degree at most $r$ satisfies
+\[
+\bigl(\tfrac23\lfloor r/3\rfloor+o(1)\bigr)\Lz\ \le\ \diam(n,r)\ \le\ \bigl(6r+o(1)\bigr)\Lz,\qquad \Lz=\frac{\log n}{\log\log n};
+\]
+Dankelmann, Swart and van den Berg (2008) lowered the upper constant to $3r+2$.
+We prove that for every fixed real $r>1$
+\[
+\bigl(2\lceil r\rceil-2-o(1)\bigr)\Lz\ \le\ \diam(n,r)\ \le\ \bigl(2\lfloor r\rfloor+o(1)\bigr)\Lz .
+\]
+Hence $\diam(n,r)=(2\lfloor r\rfloor+o(1))\log n/\log\log n$ for every non-integer $r$: the constant is a step function of $r$, and for integer $r$ it lies in $[2r-2,2r]$.
+For the mean distance $\mu(n,r)$ we obtain the bounds $(\lceil r\rceil-2-o(1))\Lz$ from below and $(2\lfloor r\rfloor+o(1))\Lz$ from above.
+The proof reduces the problem exactly to an extremal problem for sequences of layer sizes and analyses that problem through ``mountains'': each local maximum of the layer sizes costs one unit of inverse degree and pays for two monotone runs of length $\Lz$.
+The manuscript has not been refereed. Every inequality used was tested by computer; the tests are described in the appendix.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+
+All graphs are finite, simple and connected. For a graph $G$ of order $n$ let
+\[
+r(G)=\sum_{v\in V(G)}\frac1{\deg(v)}
+\]
+be its \emph{inverse degree}, $\diam(G)$ its diameter and $\mu(G)$ the mean distance between two distinct vertices. Always $r(G)\ge n/(n-1)>1$.
+For real $r>1$ put
+\begin{align*}
+\diam(n,r)&=\max\{\diam(G): |V(G)|=n,\ r(G)\le r\},\\
+\mu(n,r)&=\max\{\mu(G): |V(G)|=n,\ r(G)\le r\},
+\end{align*}
+and write throughout
+\[
+\Lz=\Lz(n)=\frac{\log n}{\log\log n}.
+\]
+
+The inverse degree entered the subject through a conjecture of the program Graffiti of Fajtlowicz \cite{F88}, $\mu(G)\le r(G)$.
+Erd\H{o}s, Pach and Spencer \cite{EPS} refuted it and proved, for fixed $r\ge3$,
+\begin{equation}\label{eq:eps}
+\Bigl(\tfrac23\bigl\lfloor\tfrac r3\bigr\rfloor+o(1)\Bigr)\Lz\ \le\ \mu(n,r)\ \le\ \diam(n,r)\ \le\ \bigl(6r+o(1)\bigr)\Lz .
+\end{equation}
+Dankelmann, Swart and van den Berg \cite{DSB} improved the upper bound to
+\begin{equation}\label{eq:dsb}
+\diam(G)\le\bigl(3r(G)+2+o(1)\bigr)\Lz .
+\end{equation}
+Sharp bounds are known for trees and unicyclic graphs \cite{LS,M10} and for planar graphs \cite{FMP}.
+For general graphs we are not aware of a result closing the gap between the constants $\tfrac23\lfloor r/3\rfloor$ and $3r+2$; our literature search was limited, see Section~\ref{sec:remarks}.
+
+\begin{theorem}\label{thm:main}
+Let $r>1$ be a fixed real number. As $n\to\infty$,
+\[
+\bigl(2\lceil r\rceil-2-o(1)\bigr)\frac{\log n}{\log\log n}\ \le\ \diam(n,r)\ \le\ \bigl(2\lfloor r\rfloor+o(1)\bigr)\frac{\log n}{\log\log n}.
+\]
+In particular, if $r$ is not an integer then
+\[
+\diam(n,r)=\bigl(2\lfloor r\rfloor+o(1)\bigr)\frac{\log n}{\log\log n}.
+\]
+\end{theorem}
+
+\begin{theorem}\label{thm:mean}
+Let $r>2$ be a fixed real number. As $n\to\infty$,
+\[
+\bigl(\lceil r\rceil-2-o(1)\bigr)\frac{\log n}{\log\log n}\ \le\ \mu(n,r)\ \le\ \bigl(2\lfloor r\rfloor+o(1)\bigr)\frac{\log n}{\log\log n}.
+\]
+\end{theorem}
+
+Compared with \eqref{eq:eps} and \eqref{eq:dsb}: the upper constant for the diameter drops from $3r+2$ to $2\lfloor r\rfloor$, the lower constant rises from $\tfrac23\lfloor r/3\rfloor$ to $2\lceil r\rceil-2$, and the two coincide off the integers.
+Both bounds are explicit; see Proposition~\ref{prop:lower} and Theorem~\ref{thm:upper}.
+
+\medskip\noindent\textbf{Idea.}
+Let $x_0,\dots,x_D$ be the sizes of the distance layers from an end of a diametral path. A vertex of layer $i$ has degree at most $x_{i-1}+x_i+x_{i+1}-1$, so
+$r(G)\ge\sum_i x_i/(x_{i-1}+x_i+x_{i+1}-1)$, with equality for the graph in which layers are cliques and consecutive layers are completely joined.
+The diameter problem is therefore exactly a problem about sequences (Lemma~\ref{lem:reduction}).
+In such a sequence a layer that is much smaller than its larger neighbour is cheap, a layer that is a local maximum costs about $1$, and a monotone run of length $\ell$ between sizes at most $n$ must contain steps of ratio at least $n^{-1/\ell}$, each of which costs about that ratio.
+A run can therefore be cheap only if $\ell\le(1+o(1))\Lz$, and with budget $r$ one can afford fewer than $r$ (if $r\notin\N$: at most $\lfloor r\rfloor$) local maxima, each serving two runs.
+
+\section{Reduction to layer sequences}
+
+For a sequence $x=(x_0,\dots,x_D)$ of positive integers, $D\ge1$, put $x_{-1}=x_{D+1}=0$ and
+\[
+S(x)=\sum_{i=0}^{D}\frac{x_i}{x_{i-1}+x_i+x_{i+1}-1},\qquad
+T(x)=\sum_{i=0}^{D}\tau_i,\quad \tau_i=\frac{x_i}{x_{i-1}+x_i+x_{i+1}} .
+\]
+Clearly $T(x)<S(x)$.
+The \emph{layered graph} $G(x)$ has vertex set $L_0\cup\dots\cup L_D$ with $|L_i|=x_i$; two distinct vertices are adjacent if and only if they lie in the same layer or in consecutive layers.
+
+\begin{lemma}\label{lem:reduction}
+{\rm(i)} If $G$ is connected of order $n$ and diameter $D\ge1$, and $x_i$ is the number of vertices at distance $i$ from a vertex of eccentricity $D$, then $\sum x_i=n$ and $r(G)\ge S(x)$.
+
+{\rm(ii)} $G(x)$ is connected, has order $\sum x_i$, diameter $D$ and $r(G(x))=S(x)$.
+
+Consequently
+\[
+\diam(n,r)=\max\Bigl\{D:\ \exists\,x\in\N^{D+1},\ \textstyle\sum_i x_i=n,\ S(x)\le r\Bigr\}.
+\]
+\end{lemma}
+
+\begin{proof}
+(i) Every neighbour of a vertex at distance $i$ lies at distance $i-1$, $i$ or $i+1$, so its degree is at most $x_{i-1}+x_i+x_{i+1}-1$.
+(ii) In $G(x)$ a vertex of $L_i$ has degree exactly $x_{i-1}+x_i+x_{i+1}-1$, which is positive because $D\ge1$, and the distance between vertices of $L_i$ and $L_j$ is $\max(|i-j|,1)$.
+\end{proof}
+
+\section{The lower bound: chains of mountains}
+
+For integers $P\ge1$, $L\ge1$, $k\ge2$ and $N_1,\dots,N_P\ge k^L$ consider the sequence
+\begin{align*}
+x=\bigl(1,\ &k,k^2,\dots,k^{L-1},N_1,k^{L-1},\dots,k,\ 1,\\
+&k,k^2,\dots,k^{L-1},N_2,k^{L-1},\dots,k,\ 1,\ \dots,\ k,\dots,k^{L-1},N_P,k^{L-1},\dots,k,\ 1\bigr),
+\end{align*}
+which has $P$ ``mountains'' separated by layers of size $1$. It has $2LP+1$ terms, so $D=2LP$.
+
+\begin{proposition}\label{prop:lower}
+For the sequence above, $S(x)<P+\dfrac{2LP+1}{k}$.
+Consequently, for all integers $P,L\ge1$, $k\ge2$ and every $n\ge 4Pk^L$ there is a connected graph of order $n$, diameter $2LP$ and inverse degree less than $P+(2LP+1)/k$.
+\end{proposition}
+
+\begin{proof}
+A peak layer contributes $N_j/(2k^{L-1}+N_j-1)<1$ (if $L=1$ the neighbours are the layers of size $1$ and the term is $N_j/(N_j+1)<1$).
+Every other layer has a neighbouring layer at least $k$ times as large: a layer of size $1$ has a neighbour of size at least $k$ and contributes at most $1/k$; a layer of size $k^j$, $1\le j\le L-1$, has the neighbour $k^{j+1}$ or $N_j\ge k^{j+1}$ and contributes at most $k^j/k^{j+1}=1/k$, because the remaining part $k^{j-1}+k^j-1$ of the denominator is non-negative.
+There are $2LP+1-P$ such layers.
+The order of $G(x)$ is $\sum_jN_j+2P(k+\dots+k^{L-1})+P+1$; with all $N_j=k^L$ this is at most $P\cdot3k^L+P+1\le4Pk^L$, and any larger order is obtained by increasing $N_1$.
+Now apply Lemma~\ref{lem:reduction}(ii).
+\end{proof}
+
+\begin{proof}[Proof of the lower bounds in Theorems~\ref{thm:main} and~\ref{thm:mean}]
+Let $P=\lceil r\rceil-1\ge1$ and $\varepsilon=r-P\in(0,1]$.
+For an integer $L\ge1$ let $k=k(L)=\lceil(2LP+1)/\varepsilon\rceil$; then $P+(2LP+1)/k\le r$.
+Let $L=L(n)$ be the largest integer with $4Pk(L)^L\le n/\log n$.
+Since $\log k(L)=\log L+O(1)$, we have $L\log L=(1+o(1))\log n$, that is $L=(1-o(1))\Lz$.
+By Proposition~\ref{prop:lower} there is a graph of order $n$, diameter $2LP$ and inverse degree less than $r$, which gives $\diam(n,r)\ge(2\lceil r\rceil-2-o(1))\Lz$.
+
+For the mean distance let $r>2$, so $P\ge2$, and distribute the $n-O(n/\log n)$ vertices that are not needed for the basic sequence equally between the first and the last peak.
+Then $N_1N_P=(\tfrac14-o(1))n^2$, any vertex of the first peak is at distance $2L(P-1)$ from any vertex of the last peak, and
+$\mu\ge 2L(P-1)N_1N_P/\binom n2=(1-o(1))(P-1)L$.
+\end{proof}
+
+\section{The upper bound}
+
+Throughout this section $x=(x_0,\dots,x_D)$ is a sequence of positive integers with $\sum x_i=n$, and $T=T(x)$.
+
+\begin{lemma}[Blocks]\label{lem:block}
+For $0\le a\le b\le D$,
+\[
+\sum_{i=a}^{b}\tau_i\ \ge\ 1-\frac{x_{a-1}}{x_{a-1}+x_a}-\frac{x_{b+1}}{x_{b+1}+x_b}.
+\]
+In particular $T\ge1$.
+\end{lemma}
+
+\begin{proof}
+Let $y=(x_a,\dots,x_b)$ and $y_{a-1}=y_{b+1}=0$, and consider the layered graph $G(y)$ (a complete graph if $a=b$). Order its vertices uniformly at random. A vertex of layer $i$ precedes all its neighbours with probability $1/(y_{i-1}+y_i+y_{i+1})$, the reciprocal of the size of its closed neighbourhood, and the first vertex of the order always precedes its neighbours. Hence the expected number of vertices that precede all their neighbours is at least $1$:
+\[
+\sum_{i=a}^{b}\frac{y_i}{y_{i-1}+y_i+y_{i+1}}\ \ge\ 1 .
+\]
+The terms of this sum agree with $\tau_i$ for $a<i<b$.
+If $a<b$, then
+\[
+\tau_a=\frac{x_a}{x_a+x_{a+1}}\Bigl(1-\frac{x_{a-1}}{x_{a-1}+x_a+x_{a+1}}\Bigr)\ \ge\ \frac{x_a}{x_a+x_{a+1}}-\frac{x_{a-1}}{x_{a-1}+x_a},
+\]
+and similarly for $\tau_b$.
+If $a=b$, put $u=x_{a-1}/x_a$ and $v=x_{a+1}/x_a$; then $\tau_a=1/(1+u+v)$ and
+$1-\frac u{1+u}-\frac v{1+v}=\frac{1-uv}{(1+u)(1+v)}\le\frac1{1+u+v}$.
+\end{proof}
+
+Fix $\delta\in(0,\tfrac14]$.
+The \emph{step} $i$ ($0\le i<D$) joins the layers $i$ and $i+1$; its \emph{ratio} is $\rho_i=\min(x_i,x_{i+1})/\max(x_i,x_{i+1})$.
+The step is \emph{steep} if $\rho_i\le\delta$; a steep step is \emph{upward} if $x_i<x_{i+1}$ and \emph{downward} otherwise.
+A \emph{cluster} is a maximal interval $[a,b]$ of indices such that none of the steps $a,\dots,b-1$ is steep.
+The clusters partition $\{0,\dots,D\}$, and consecutive clusters are separated by exactly one steep step.
+For a cluster $C=[a,b]$ we say that it is \emph{entered upward} if $a=0$ or the step $a-1$ is upward, and \emph{left downward} if $b=D$ or the step $b$ is downward.
+A \emph{peak cluster} is entered upward and left downward; a \emph{valley cluster} is entered downward and left upward; the other clusters are \emph{through clusters}.
+Let $Q$ be the number of peak clusters and $w$ the number of steps that are not steep.
+
+\begin{lemma}\label{lem:peaks}
+{\rm(i)} Every peak cluster $C$ satisfies $\sum_{i\in C}\tau_i>1-2\delta$. Hence $Q(1-2\delta)<T$.
+
+{\rm(ii)} The number of valley clusters is $Q-1$.
+
+{\rm(iii)} $w<6T/\delta+2Q-1$.
+\end{lemma}
+
+\begin{proof}
+(i) If $a>0$ the step $a-1$ is steep and upward, so $x_{a-1}\le\delta x_a$ and $x_{a-1}/(x_{a-1}+x_a)\le\delta/(1+\delta)<\delta$; similarly on the right. Apply Lemma~\ref{lem:block}. The peak clusters are disjoint.
+
+(ii) Write down the word consisting of the letter \emph{up}, then the directions of the steep steps from left to right, then the letter \emph{down}. The clusters correspond to the pairs of consecutive letters; peak clusters are the changes from \emph{up} to \emph{down} and valley clusters the changes from \emph{down} to \emph{up}. The word begins with \emph{up} and ends with \emph{down}.
+
+(iii) Let $j$ be an interior index of a cluster $[a,b]$, that is $a<j<b$. Both steps at $j$ are not steep, so $x_{j\pm1}<x_j/\delta$ and $\tau_j>\delta/(2+\delta)\ge\delta/3$.
+Let $[a,a+1]$ be a through cluster of size two, entered and left upward. Then $x_{a-1}\le\delta x_a$ (or $a=0$) and $x_{a+1}<x_a/\delta$, so $\tau_a>1/(\delta+1+1/\delta)\ge\delta/3$; if it is entered and left downward, the same holds for $\tau_{a+1}$.
+Let $I_1$ be the set of interior indices of clusters and $I_2$ the set of the indices just chosen in the through clusters of size two. These sets are disjoint, so $|I_1|+|I_2|<3T/\delta$.
+Finally
+\[
+w=\sum_C(|C|-1)=|I_1|+\#\{C:|C|\ge3\}+\#\{C:|C|=2\}\le|I_1|+|I_1|+|I_2|+Q+(Q-1),
+\]
+because a cluster of size at least three has an interior index, and a cluster of size two is a through cluster, a peak cluster or a valley cluster.
+\end{proof}
+
+A \emph{run} is a maximal set of consecutive steep steps (consecutive in the list of steep steps) that have the same direction.
+
+\begin{lemma}[Runs]\label{lem:runs}
+{\rm(i)} There are at most $2Q$ runs.
+
+{\rm(ii)} Put $A=n\,\delta^{-w}$. A run with $\ell\ge2$ steps satisfies $(\ell-1)\,A^{-1/(\ell-1)}\le3T$.
+\end{lemma}
+
+\begin{proof}
+(i) Two consecutive runs are separated by a peak cluster or a valley cluster, and there are $2Q-1$ of these.
+
+(ii) By symmetry let the run be upward, with steps $i_1<\dots<i_\ell$.
+For $j\ge2$ the step $i_j-1$ is either the steep upward step $i_{j-1}$, in which case $x_{i_j-1}\le\delta x_{i_j}$, or it is not steep, in which case $x_{i_j-1}<x_{i_j}/\delta$.
+In both cases $x_{i_j-1}+x_{i_j}\le(1+1/\delta)x_{i_j}\le(1+\delta)x_{i_j+1}$, hence
+\[
+\tau_{i_j}\ \ge\ \frac{x_{i_j}}{(2+\delta)x_{i_j+1}}\ \ge\ \frac{\rho_{i_j}}3\qquad(2\le j\le\ell).
+\]
+Between the layers $i_2$ and $i_\ell+1$ the sizes are multiplied by $1/\rho_{i_j}$ at the steep steps and by a factor greater than $\delta$ at each of the at most $w$ other steps, so
+\[
+n\ \ge\ x_{i_\ell+1}\ \ge\ x_{i_2}\,\delta^{w}\prod_{j=2}^{\ell}\rho_{i_j}^{-1}\ \ge\ \delta^{w}\prod_{j=2}^{\ell}\rho_{i_j}^{-1},
+\]
+that is $\prod_{j=2}^\ell\rho_{i_j}\ge1/A$. By the inequality of arithmetic and geometric means,
+$3T\ge3\sum_{j=2}^{\ell}\tau_{i_j}\ge\sum_{j=2}^\ell\rho_{i_j}\ge(\ell-1)A^{-1/(\ell-1)}$.
+\end{proof}
+
+For $A\ge1$ and $t\ge1$ let $\Lambda(A,t)$ be the largest integer $\ell\ge1$ with $\ell A^{-1/\ell}\le3t$; it exists because $\ell\mapsto\ell A^{-1/\ell}$ is increasing and unbounded, and it is non-decreasing in $A$ and in $t$.
+
+\begin{theorem}\label{thm:upper}
+Let $G$ be a connected graph of order $n$ and diameter $D\ge1$ with $r(G)\le r$, and let $\delta\in(0,\frac14]$.
+Put $Q_0=\lceil r/(1-2\delta)\rceil-1$, $w_0=\lfloor6r/\delta\rfloor+2Q_0-1$ and $A_0=n\,\delta^{-w_0}$. Then
+\[
+\diam(G)\ \le\ 2Q_0\bigl(\Lambda(A_0,r)+1\bigr)+w_0 .
+\]
+\end{theorem}
+
+\begin{proof}
+Let $x$ be the layer sequence of Lemma~\ref{lem:reduction}(i); then $T(x)<S(x)\le r(G)\le r$.
+By Lemma~\ref{lem:peaks}, $Q<r/(1-2\delta)$, so $Q\le Q_0$, and $w\le w_0$.
+The $D-w$ steep steps form at most $2Q$ runs, and by Lemma~\ref{lem:runs} each run has at most $\Lambda(A,T)+1\le\Lambda(A_0,r)+1$ steps.
+\end{proof}
+
+\begin{lemma}\label{lem:lambda}
+Let $y=\log A$ and $\eta=2\log(3t\log y)/\log y$. If $y>e$ and $\eta\le1$, then $\Lambda(A,t)\le(1+\eta)\,y/\log y$.
+\end{lemma}
+
+\begin{proof}
+Let $\ell>(1+\eta)y/\log y$. Then $\log\ell>\log y-\log\log y$ and $y/\ell<\log y/(1+\eta)$, so
+\[
+\log\bigl(\ell A^{-1/\ell}\bigr)>\frac{\eta}{1+\eta}\log y-\log\log y\ \ge\ \frac\eta2\log y-\log\log y=\log(3t).\qedhere
+\]
+\end{proof}
+
+\begin{proof}[Proof of the upper bounds in Theorems~\ref{thm:main} and~\ref{thm:mean}]
+Fix $r>1$ and choose $\delta\in(0,\frac14]$ so small that $r/(1-2\delta)<\lfloor r\rfloor+1$. Then $Q_0=\lfloor r\rfloor$ and $w_0$ does not depend on $n$.
+With $A_0=n\delta^{-w_0}$ we have $\log A_0=\log n+O(1)$, and Lemma~\ref{lem:lambda} gives $\Lambda(A_0,r)=(1+o(1))\Lz$.
+Theorem~\ref{thm:upper} yields $\diam(G)\le(2\lfloor r\rfloor+o(1))\Lz$, and $\mu(G)\le\diam(G)$.
+\end{proof}
+
+\section{Remarks}\label{sec:remarks}
+
+\begin{remark}[Integer $r$]
+For an integer $r\ge2$ Theorem~\ref{thm:main} leaves the constant between $2r-2$ and $2r$.
+A mountain whose two sides both contain at least two steep steps costs more than $1$ (the expectation in the proof of Lemma~\ref{lem:block} then exceeds $1$ by more than the two boundary corrections), so $r$ such mountains are not affordable with budget exactly $r$; a mountain can cost less than $1$ only when one of its sides is short.
+We therefore expect $\diam(n,r)=(2\lceil r\rceil-2+o(1))\Lz$ for all $r>1$, but we have not proved this.
+\end{remark}
+
+\begin{remark}[Mean distance]
+The chain of mountains with the mass at its two ends suggests $\mu(n,r)=(\lceil r\rceil-2+o(1))\Lz$ for $r>2$.
+Theorem~\ref{thm:mean} leaves a factor of about two.
+The diameter argument uses one layering; for the mean distance one would have to control all layerings at once.
+\end{remark}
+
+\begin{remark}[Finite sizes]
+The convergence is slow, as in all results of this type: the lower-order terms are of relative size $\log\log\log n/\log\log n$.
+Table~\ref{tab:dp} gives exact optima of the sequence problem on a restricted grid.
+\end{remark}
+
+\begin{remark}[Scope of the literature search]
+The bounds \eqref{eq:eps} and \eqref{eq:dsb} are quoted from the introduction of \cite{LS}.
+We searched for later improvements for general graphs and found none, but the search was short and we could not read \cite{EPS,DSB,M10} in full; the bibliographic details of \cite{DSB,EPS,FMP,LS} were not checked against the originals.
+No claim of priority is made.
+\end{remark}
+
+\appendix
+\section{Computational checks}
+
+The scripts are in the repository folder of this manuscript. They can refute a statement; they are not part of the proofs.
+
+\smallskip\noindent\textbf{Reduction} (\texttt{check\_reduction.py}).
+For every connected graph with at most nine vertices ($273{,}192$ graphs), and every start vertex, $r(G)\ge S(x)$ holds for the layer sequence $x$; and for every $n\le9$ and every $D$, the minimum of $r(G)$ over graphs of order $n$ and diameter $D$ equals the minimum of $S(x)$ over sequences, in exact rational arithmetic.
+
+\smallskip\noindent\textbf{Construction} (\texttt{construct.py}).
+For small parameters the layered graphs are built explicitly; diameter and inverse degree agree with $2LP$ and $S(x)$. For $(P,k,L)$ up to $(9,10^5,8)$ the exact value of $S(x)$ is below $P+(2LP+1)/k$.
+
+\smallskip\noindent\textbf{Upper bound} (\texttt{check\_upper.py}).
+Lemma~\ref{lem:block}, the three parts of Lemma~\ref{lem:peaks}, both parts of Lemma~\ref{lem:runs} and the final inequality $D\le2Q(\Lambda+1)+w$ were tested for $\delta\in\{\frac1{10},\frac15,\frac14\}$ on $133{,}590$ sequences: all sequences of length at most six with entries in $\{1,2,3,7,40\}$, random walks in the logarithm of the size, and random chains of mountains. No violation occurred.
+
+\smallskip\noindent\textbf{Exact optima on a grid} (\texttt{dp\_fast.py}).
+Table~\ref{tab:dp} lists $\max\{D: \min S(x)\le r\}$ over sequences with all $x_i\in\{1,2,4,\dots,2^m\}$, computed by dynamic programming. The optimal sequences are chains of mountains. The value for $r=1.5$ is close to $2\Lz$ with $n=2^m$, and one more unit of $r$ buys one more mountain.
+
+\begin{table}[ht]
+\centering
+\caption{Largest $D$ with $\min S(x)\le r$, layer sizes powers of two up to $2^m$; $\Lz$ is evaluated at $n=2^m$.}\label{tab:dp}
+\begin{tabular}{@{}rrrrrrr@{}}
+\toprule
+$m$ & $\Lz$ & $r=1.5$ & $r=2.5$ & $r=3.5$ & $r=4.5$ & $D(1.5)/(2\Lz)$\\
+\midrule
+20 & 5.27 & 10 & 19 & 26 & 34 & 0.95\\
+40 & 8.35 & 17 & 30 & 43 & 55 & 1.02\\
+80 & 13.81 & 28 & 51 & 72 & 92 & 1.01\\
+160 & 23.55 & 49 & 88 & 126 & 161 & 1.04\\
+240 & 32.53 & 68 & 124 & 174 & 225 & 1.05\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{thebibliography}{9}
+\bibitem{DSB} P.~Dankelmann, H.~C.~Swart and P.~van den Berg, Diameter and inverse degree, \emph{Discrete Math.} \textbf{308} (2008), 670--673.
+\bibitem{EPS} P.~Erd\H{o}s, J.~Pach and J.~Spencer, On the mean distance between points of a graph, \emph{Congr. Numer.} \textbf{64} (1988), 121--124.
+\bibitem{F88} S.~Fajtlowicz, On conjectures of Graffiti, \emph{Discrete Math.} \textbf{72} (1988), 113--118.
+\bibitem{FMP} R.~Fulek, F.~Mori\'c and D.~Pritchard, Diameter bounds for planar graphs, \emph{Discrete Math.} \textbf{311} (2011), 327--335.
+\bibitem{LS} X.~Li and Y.~Shi, On the diameter and inverse degree, \emph{Ars Combin.} \textbf{101} (2011), 481--487.
+\bibitem{M10} S.~Mukwembi, On diameter and inverse degree of a graph, \emph{Discrete Math.} \textbf{310} (2010), 940--946.
+\end{thebibliography}
+
+\end{document}

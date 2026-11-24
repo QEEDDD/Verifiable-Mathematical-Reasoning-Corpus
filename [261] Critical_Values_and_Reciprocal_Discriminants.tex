@@ -1,0 +1,1732 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable}
+\usepackage{xcolor,enumitem,listings,fancyhdr,needspace}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
+\definecolor{inkblue}{HTML}{173B57}
+\definecolor{softblue}{HTML}{EEF4F8}
+\hypersetup{colorlinks=true,linkcolor=inkblue,citecolor=inkblue,urlcolor=inkblue,
+ pdftitle={Critical Values and Reciprocal Discriminants},
+ pdfauthor={Research manuscript prepared for Keio}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textsc{Critical values and reciprocal discriminants}}
+\fancyhead[R]{\small 23 November 2026}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{1.25em}
+\setlength{\emergencystretch}{1.5em}
+\setlist[enumerate]{itemsep=3pt,topsep=4pt}
+\setlist[itemize]{itemsep=3pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\QQ}{\mathbb Q}
+\newcommand{\ZZ}{\mathbb Z}
+\newcommand{\CC}{\mathbb C}
+\newcommand{\FF}{\mathbb F}
+\newcommand{\PP}{\mathbb P}
+\newcommand{\Disc}{\operatorname{Disc}}
+\newcommand{\Res}{\operatorname{Res}}
+\newcommand{\den}{\operatorname{den}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\lc}{\operatorname{lc}}
+\newcommand{\status}[1]{\par\medskip\noindent\fcolorbox{inkblue}{softblue}{%
+ \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{#1}}\par\medskip}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,
+ keepspaces=true,showstringspaces=false,frame=single,rulecolor=\color{inkblue},
+ xleftmargin=0pt,xrightmargin=0pt,tabsize=4}
+
+\title{\textbf{Critical Values and Reciprocal Discriminants}\\[6pt]
+ \large A proof of Jones's Conjecture 3.3 in its integral-parameter setting\\[3pt]
+ \normalsize With a global integral-weight extension of a quadrinomial gcd law}
+\author{\normalsize Research manuscript prepared for Keio}
+\date{23 November 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+Let $q\ge5$ be prime, $d=(q-1)/2$, and let $H_q\in\ZZ[u]$ be the monic
+polynomial determined by $x^dH_q(x+x^{-1})=\Phi_q(x)$. We prove that
+\[
+ q^{1-d}\Disc_u\bigl(H_q(u)+q(Y-1)\bigr)
+\]
+is an Eisenstein polynomial at $q$. Consequently, the normalized
+discriminants in Jones's 2021 Conjecture~3.3 are primitive irreducible
+integer polynomials of degree $(q-3)/2$ for every prime $q\ge5$ and
+every nonzero integer parameter $r$. Together with a self-contained
+proof of the reciprocal discriminant formula, this proves the full
+conjecture in the integral-parameter formulation used in the subsequent
+literature. The factorization formula itself was proved previously by
+Barman, Narode and Wagh. Our proof of irreducibility passes from the
+exact valuation $1/(d-1)$ of a shifted critical point to the exact
+valuation $d/(d-1)$ of its shifted critical value. An independent proof
+recovers every critical point rationally from the square of its critical
+value. As a second application of exact valuation and trace arguments,
+we prove the quadrinomial gcd law for every integer weight other than
+$0$ and $1$, and obtain a denominator obstruction for rational weights.
+All assertions are proved throughout the stated parameter ranges; finite exact
+computations serve only as checks. Historical priority is not certified
+by the literature search reported here.
+\end{abstract}
+
+\status{\textbf{Scope.} This manuscript contains complete mathematical
+arguments, not a finite-height reduction or a conditional proof.
+The claims concern the stated polynomial families. The separate
+existence problem for infinitely many squarefree prime specializations
+is not resolved. This is a research manuscript, not an externally
+refereed publication.}
+
+\begingroup
+\small\setcounter{tocdepth}{1}\setlength{\parskip}{0pt}
+\makeatletter
+\renewcommand*\l@section{\@dottedtocline{1}{0em}{1.5em}}
+\makeatother
+\tableofcontents
+\endgroup
+\newpage
+
+\section{The existing problem and the exact conclusions}\label{sec:target}
+
+Jones \cite[Conjecture~3.3, p.~1476]{Jones} considered, for an odd prime
+$q$, $a\in\{0,1\}$, and a nonzero integer $r$, the reciprocal family
+\begin{equation}\label{eq:jones-family}
+ \mathcal F_{2^a q,t}(x)=\Phi_{2^a q}(x)+4rq^2t\,x^{(q-1)/2}.
+\end{equation}
+Here $t$ is an indeterminate and $\Phi_N$ is the $N$th cyclotomic
+polynomial. His conjecture specifies the exact discriminant
+factorization and the degree, primitivity, and irreducibility of its
+normalized half-degree discriminant factors.
+
+The 2026 paper of Barman, Narode and Wagh
+\cite[Theorem~1.3]{BNW} proves the discriminant factorization and
+explicitly describes its contribution as a partial proof. The
+irreducibility assertion is distinct from that formula. We prove it
+below for every odd prime and include the formula's proof to make the
+completion self-contained. The related monogeneity criterion of
+Narode \cite{Narode} concerns a different conclusion and is not used
+as an irreducibility theorem for these factors.
+
+\paragraph{Parameter convention.}
+Jones writes ``arbitrary nonzero constant'' for $r$ after introducing
+integer coefficients. We use the explicit convention
+$r\in\ZZ\setminus\{0\}$ in \cite[(1.4)--(1.6)]{BNW}.
+Irreducibility extends to every $r\in\QQ^\times$, but integer
+coefficients need not: at $q=5,r=1/25$ the normalized factor is
+$1-16t/5$. Thus the integer-parameter hypothesis is stated rather
+than silently extended.
+
+\paragraph{Conventions.}
+For a monic degree-$n$ polynomial with roots $\alpha_1,\ldots,\alpha_n$,
+\[
+ \Disc(f)=\prod_{i<j}(\alpha_i-\alpha_j)^2
+ =(-1)^{n(n-1)/2}\Res(f,f').
+\]
+The discriminant of a monic linear polynomial is $1$.
+The content of an integer polynomial is the positive gcd of its
+coefficients. Irreducibility is over $\QQ$, unless another field is
+specified. The symbol $\doteq$ means equality up to a nonzero rational
+constant. We normalize $v_p(p)=1$ on algebraic extensions of $\QQ_p$.
+
+Define the monic trace polynomials by
+\begin{equation}\label{eq:trace-recurrence}
+ C_0(u)=2,\qquad C_1(u)=u,\qquad
+ C_{j+1}(u)=uC_j(u)-C_{j-1}(u).
+\end{equation}
+For $j\ge1$, $C_j$ is monic of degree $j$, and
+$C_j(z+z^{-1})=z^j+z^{-j}$. Put
+\begin{equation}\label{eq:H-definition}
+ d=\frac{q-1}{2},\qquad \varepsilon=(-1)^d,\qquad
+ H_q(u)=1+\sum_{j=1}^{d}C_j(u),\qquad
+ D_q(Z)=\Disc_u(H_q(u)+Z).
+\end{equation}
+The half-degree polynomials corresponding to
+\eqref{eq:jones-family} are
+\begin{equation}\label{eq:g-definition}
+ g_0(u;t)=H_q(u)+4rq^2t,\qquad
+ g_1(u;t)=\varepsilon H_q(-u)+4rq^2t.
+\end{equation}
+Both are monic of degree $d$ in $u$.
+
+\begin{theorem}[Jones's discriminant conjecture]\label{thm:jones}
+For every odd prime $q$, every $r\in\ZZ\setminus\{0\}$, and
+$a\in\{0,1\}$, the polynomials in
+\eqref{eq:jones-family}--\eqref{eq:g-definition} satisfy
+\begin{align}
+ \Disc_x(\mathcal F_{q,t})
+ &=q(4qrt+1)(4q^2rt+\varepsilon)\Disc_u(g_0)^2,
+ \label{eq:jones-zero}\\
+ \Disc_x(\mathcal F_{2q,t})
+ &=q(4qrt+\varepsilon)(4q^2rt+1)\Disc_u(g_1)^2.
+ \label{eq:jones-one}
+\end{align}
+There exist $h_0,h_1\in\ZZ[t]$ such that
+\begin{equation}\label{eq:normalized-h}
+ \Disc_u(g_a)=q^{d-1}h_a(t),\qquad h_a(0)=1.
+\end{equation}
+For $q=3$, $h_0=h_1=1$. For $q\ge5$, each $h_a$ is primitive,
+irreducible over $\QQ_q$ and over $\QQ$, and has degree $d-1$.
+Moreover $h_1(t)=h_0(\varepsilon t)$.
+\end{theorem}
+
+The mechanism proving the nontrivial irreducibility assertion is the
+stronger certificate
+\begin{equation}\label{eq:E-certificate}
+ \boxed{E_q(Y)=q^{1-d}D_q(q(Y-1))\in\ZZ[Y]
+ \quad\text{is Eisenstein at }q.}
+\end{equation}
+Indeed $h_0(t)=E_q(1+4rqt)$. This affine substitution is invertible
+over $\QQ$ and $\QQ_q$ because $r\ne0$; it preserves irreducibility.
+
+\begin{theorem}[Integral weights]\label{thm:integer-main}
+Let
+\[
+ A_0(t)=0,\quad A_1(t)=1,\quad
+ A_{j+2}(t)=-A_{j+1}(t)-tA_j(t).
+\]
+For all integers $k>m\ge1$ and
+$\lambda\in\ZZ\setminus\{0,1\}$, put $\delta=\gcd(k,m)$ and
+\[
+ F_\lambda(t)=A_k(t)^2-\lambda A_{k-m}(t)A_{k+m}(t).
+\]
+Then
+\begin{equation}\label{eq:integral-main}
+ \gcd_{\QQ[t]}(F_\lambda,F'_\lambda)\doteq A_\delta.
+\end{equation}
+In particular, $F_\lambda=A_\delta^2B_\lambda$ with
+$B_\lambda\in\ZZ[t]$ squarefree and coprime to $A_\delta$,
+$\deg B_\lambda=k-\delta$, and the smooth projective normalization of
+$y^2=F_\lambda(t)$ has genus
+$\lfloor(k-\delta-1)/2\rfloor$.
+\end{theorem}
+
+The weight $4$ case is the corrected gcd conjecture in \cite{KSL};
+it was established in the preceding research manuscript \cite{Previous}.
+The unrestricted integer-weight conclusion is a genuine enlargement
+of that parameter range. We do not claim that the enlarged statement
+was itself a previously named conjecture. Its proof is included in
+Section~\ref{sec:integral-weights}.
+
+\section{A critical-value form of Eisenstein's criterion}\label{sec:criterion}
+
+The following lemma isolates the valuation calculation. It uses
+classical nonarchimedean valuation properties; no new status is
+claimed for Eisenstein's criterion itself.
+
+\begin{theorem}[Critical-value certificate]\label{thm:criterion}
+Let $p$ be prime and let
+\[
+ P(X)=X^n+\sum_{j=0}^{n-1}a_jX^j\in\ZZ[X],\qquad n\ge2.
+\]
+Assume $p\nmid n(n-1)$, $p\mid a_j$ for $1\le j\le n-1$, and
+$v_p(a_1)=1$. There is no condition on $a_0$. Then
+\begin{equation}\label{eq:general-certificate}
+ \mathcal E_P(Y)=p^{-(n-1)}
+ \Disc_X\bigl(P(X)-P(0)+pY\bigr)
+\end{equation}
+belongs to $\ZZ[Y]$, has degree $n-1$, and is Eisenstein at $p$.
+Its leading coefficient is $(-1)^{n(n-1)/2}n^n$.
+Consequently it is irreducible over $\QQ_p$ and $\QQ$.
+\end{theorem}
+
+\begin{proof}
+Let $c$ be any root of $P'$ in $\overline{\QQ}_p$ and write $v=v_p$.
+Since $a_1\ne0$, $c\ne0$. If $v(c)\le0$, the term $nc^{n-1}$
+in $P'(c)$ has strictly smaller valuation than each other nonzero
+term: for $1\le j\le n-1$,
+\[
+ v(ja_jc^{j-1})-v(nc^{n-1})
+ \ge 1-(n-j)v(c)>0.
+\]
+A sum with a unique least-valuation term is nonzero, a contradiction.
+Thus $v(c)>0$. The constant term $a_1$ has valuation $1$, whereas
+every intermediate derivative term, with $j\ge2$, has valuation
+at least $1+(j-1)v(c)>1$. Cancellation therefore requires
+\begin{equation}\label{eq:critical-point-v}
+ v(c)=\frac1{n-1}.
+\end{equation}
+
+Subtract $cP'(c)=0$ from $P(c)-a_0$ to obtain
+\begin{equation}\label{eq:critical-value-identity}
+ P(c)-a_0=-(n-1)c^n
+ -\sum_{j=2}^{n-1}(j-1)a_jc^j.
+\end{equation}
+The first term has valuation $n/(n-1)$, using $p\nmid n-1$.
+Each remaining nonzero term has valuation at least
+$1+j/(n-1)>n/(n-1)$. Thus there is again a unique term of least
+valuation, and this time it gives the exact equality
+\begin{equation}\label{eq:critical-value-v}
+ \boxed{v(P(c)-a_0)=\frac n{n-1}.}
+\end{equation}
+
+Let $c_1,\ldots,c_{n-1}$ be the roots of $P'$, counted with
+multiplicity. The resultant formula gives
+\begin{align*}
+ \Disc_X(P(X)-a_0+pY)
+ &=(-1)^{n(n-1)/2}n^n
+   \prod_{i=1}^{n-1}(P(c_i)-a_0+pY).
+\end{align*}
+The sign from interchanging the two resultant arguments is $1$,
+since $n(n-1)$ is even. Hence $\mathcal E_P$ has leading
+coefficient $L=(-1)^{n(n-1)/2}n^n$, a $p$-adic unit, and roots
+\[
+ y_i=-\frac{P(c_i)-a_0}{p},\qquad v(y_i)=\frac1{n-1}.
+\]
+Write $\mathcal E_P(Y)=LY^{n-1}+b_1Y^{n-2}+\cdots+b_{n-1}$.
+Initially $b_j\in\ZZ[1/p]$. The elementary symmetric expressions
+in the $y_i$ show that $v(b_j)\ge j/(n-1)>0$ for $j\ge1$.
+Since $b_j$ is rational, its valuation is an integer (or $+\infty$).
+It follows that $b_j\in p\ZZ$: there were no possible denominator
+primes other than $p$. For the constant term there is no sum,
+so $v(b_{n-1})=1$ exactly. This proves the asserted Eisenstein
+conditions and integrality.
+
+For completeness, local irreducibility also follows directly from
+these root valuations. A monic factor in $\QQ_p[Y]$ of positive
+degree $s<n-1$ would have constant term of valuation $s/(n-1)$,
+which is not an integer. This is impossible for a nonzero element
+of $\QQ_p$. Thus the polynomial is irreducible over $\QQ_p$ and
+therefore over $\QQ$.
+\end{proof}
+
+\begin{remark}[Content and the base field]
+The general polynomial $\mathcal E_P$ need not be primitive over
+$\ZZ$. For example, $n=2$, $p=3$, and $P(X)=X^2+6X$ give
+$\mathcal E_P(Y)=12-4Y$. The theorem asserts irreducibility over
+$\QQ_p$ and $\QQ$, where nonzero constants are units. The
+primitivity needed for Jones's factors will follow separately from
+their constant coefficient $1$.
+\end{remark}
+
+\begin{corollary}[A critical value generates the critical-point field]
+\label{cor:critical-field}
+Under the hypotheses of Theorem~\ref{thm:criterion}, if $P'(c)=0$,
+then
+\[
+ \QQ_p(P(c))=\QQ_p(c),\qquad [\QQ_p(c):\QQ_p]=n-1.
+\]
+The corresponding equality $\QQ(P(c))=\QQ(c)$ holds for every
+algebraic critical point in characteristic zero. Distinct critical
+points have distinct critical values.
+\end{corollary}
+
+\begin{proof}
+The derivative $P'$ has degree $n-1$, leading coefficient $n$,
+and is Eisenstein at $p$, so its local and rational degrees are
+$n-1$. The polynomial in \eqref{eq:general-certificate} is
+irreducible of the same degree; its roots are affine transforms of
+the critical values. Field inclusion in each direction of the
+degree comparison gives the equalities. In characteristic zero an
+irreducible polynomial is separable, so its $n-1$ displayed roots
+are distinct. This also proves distinctness of critical values.
+\end{proof}
+
+\section{The cyclotomic trace polynomial}\label{sec:cyclotomic}
+
+\begin{lemma}[Shift and first coefficient]\label{lem:shift}
+For every odd prime $q$, the polynomial $H_q$ in
+\eqref{eq:H-definition} satisfies
+\begin{align}
+ x^dH_q(x+x^{-1})&=\Phi_q(x),\label{eq:cyclotomic-trace}\\
+ H_q(u)&\equiv(u-2)^d\pmod q,\label{eq:shift-congruence}\\
+ H_q(2)&=q,\qquad H_q(-2)=(-1)^d,\label{eq:endpoints}\\
+ H'_q(2)&=\frac{q(q^2-1)}{24}.\label{eq:first-coefficient}
+\end{align}
+For $q\ge5$, $v_q(H'_q(2))=1$.
+\end{lemma}
+
+\begin{proof}
+The trace recurrence gives
+\[
+ x^dH_q(x+x^{-1})
+ =x^d+\sum_{j=1}^d(x^{d+j}+x^{d-j})
+ =1+x+\cdots+x^{2d}=\Phi_q(x).
+\]
+Modulo $q$ this is $(x-1)^{q-1}=(x-1)^{2d}$, which also equals
+$x^d(x+x^{-1}-2)^d$. The substitution
+$u\mapsto x+x^{-1}$ is injective from $\FF_q[u]$ into
+$\FF_q[x,x^{-1}]$: the highest positive Laurent exponent of a
+nonzero degree-$j$ polynomial is $j$, with the same nonzero
+leading coefficient. This proves \eqref{eq:shift-congruence}.
+
+By recurrence $C_j(2)=2$ and $C_j(-2)=2(-1)^j$, giving the
+endpoint values. Differentiating the recurrence at $2$ shows by
+induction that $C'_j(2)=j^2$. Consequently
+\[
+ H'_q(2)=\sum_{j=1}^dj^2
+ =\frac{d(d+1)(2d+1)}6
+ =\frac{q(q^2-1)}{24}.
+\]
+For $q\ge5$ neither $24$ nor $q^2-1$ is divisible by $q$.
+\end{proof}
+
+\begin{theorem}[An Eisenstein discriminant for every odd prime]
+\label{thm:Eq}
+For every prime $q\ge5$, the polynomial $E_q$ in
+\eqref{eq:E-certificate} is Eisenstein at $q$ and has degree
+$d-1$ and leading coefficient $(-1)^{d(d-1)/2}d^d$.
+In particular, $D_q$ is irreducible over $\QQ_q$ and $\QQ$.
+\end{theorem}
+
+\begin{proof}
+Set $P(X)=H_q(X+2)$. Lemma~\ref{lem:shift} gives
+$P(X)\equiv X^d\pmod q$, $P(0)=q$, and $v_q(P'(0))=1$.
+Since $2\le d<q$ and $1\le d-1<q$, $q\nmid d(d-1)$.
+Theorem~\ref{thm:criterion} therefore applies with $p=q,n=d$.
+Translation of $u$ does not change a discriminant, and
+\[
+ P(X)-P(0)+qY=H_q(X+2)+q(Y-1).
+\]
+Thus $\mathcal E_P(Y)=E_q(Y)$. The inverse affine substitution
+and multiplication by $q^{d-1}$ recover $D_q$ from $E_q$.
+\end{proof}
+
+\paragraph{Where noncancellation enters.}
+The congruence alone proves only the known Eisenstein behavior of
+the shifted trace polynomial, as in \cite[Lemma~3.2]{Jones}.
+What is needed for the conjecture is the exact additional calculation
+\[
+ P'(c)=0\quad\Longrightarrow\quad
+ v_q(c)=\frac1{d-1},\qquad
+ v_q(P(c)-q)=\frac d{d-1}.
+\]
+The second equality does not follow merely by substituting into
+$P$ and estimating each term: the derivative equation must first
+remove the linear term as in \eqref{eq:critical-value-identity}.
+It is this equality that forces the full degree of the critical
+value and establishes \eqref{eq:E-certificate}.
+
+\section{Discriminants, primitivity, and completion of the conjecture}
+\label{sec:completion}
+
+\begin{lemma}[Reciprocal discriminant identity]\label{lem:reciprocal-disc}
+If $g(u)$ is monic of degree $d$ and $f(x)=x^dg(x+x^{-1})$, then
+\begin{equation}\label{eq:reciprocal-disc}
+ \Disc_x(f)=g(2)g(-2)\Disc_u(g)^2.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+If the roots of $g$ are $\beta_i$, then
+$f(x)=\prod_i f_i(x)$ with $f_i(x)=x^2-\beta_i x+1$.
+Here $\Disc(f_i)=\beta_i^2-4$. Moreover, if $\rho$ is a root
+of $f_i$, then $f_j(\rho)=(\beta_i-\beta_j)\rho$, and the
+product of the two roots of $f_i$ is $1$. Thus
+\[
+ \Res(f_i,f_j)=(\beta_i-\beta_j)^2.
+\]
+The product formula for discriminants gives
+\[
+ \Disc(f)=\prod_i(\beta_i^2-4)
+ \prod_{i<j}(\beta_i-\beta_j)^4.
+\]
+Its first product is $g(2)g(-2)$ and its second is $\Disc(g)^2$.
+The identity holds initially for distinct roots and then identically
+in the coefficients, including cases with repeated roots.
+\end{proof}
+
+\begin{lemma}[The constant coefficient]\label{lem:constant}
+For every odd prime $q$, $\Disc(H_q)=q^{d-1}$.
+\end{lemma}
+
+\begin{proof}
+Write $\zeta$ for a primitive $q$th root. The $d$ roots of $H_q$
+are $\zeta^j+\zeta^{-j}=2\cos(2\pi j/q)$, $1\le j\le d$.
+They are distinct and real, so $\Disc(H_q)>0$.
+
+For a root $\alpha\ne1$ of $\Phi_q$, differentiating
+$(x-1)\Phi_q(x)=x^q-1$ gives
+$\Phi'_q(\alpha)=q\alpha^{q-1}/(\alpha-1)$.
+The product of the roots $\alpha$ is $1$, and
+$\prod_\alpha(\alpha-1)=\Phi_q(1)=q$, since $q-1$ is even.
+It follows that $\prod_\alpha\Phi'_q(\alpha)=q^{q-2}$, and hence
+\[
+ \Disc(\Phi_q)=(-1)^dq^{2d-1}.
+\]
+Apply Lemma~\ref{lem:reciprocal-disc} to
+\eqref{eq:cyclotomic-trace} and use \eqref{eq:endpoints}:
+\[
+ (-1)^dq^{2d-1}=q(-1)^d\Disc(H_q)^2.
+\]
+Taking the positive square root proves the claim, including $d=1$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:jones}]
+First suppose $q\ge5$. By Theorem~\ref{thm:Eq},
+\[
+ h_0(t):=q^{1-d}D_q(4rq^2t)=E_q(1+4rqt)
+\]
+is an integer polynomial of degree $d-1$, irreducible over
+$\QQ_q$ and $\QQ$. Lemma~\ref{lem:constant} gives
+$h_0(0)=q^{1-d}D_q(0)=1$. Its content is therefore $1$.
+
+Since $g_1(u;t)=\varepsilon\bigl(H_q(-u)+\varepsilon4rq^2t\bigr)$,
+reflection of the variable and multiplication by $\varepsilon$
+do not change the discriminant: the powers in their transformation
+laws are $d(d-1)$ and $2d-2$, both even. Thus
+\[
+ \Disc_u(g_1)=D_q(\varepsilon4rq^2t),\qquad
+ h_1(t)=h_0(\varepsilon t).
+\]
+This proves all normalized-factor assertions for both $a$.
+
+For $q=3$ the polynomials $g_0,g_1$ are monic linear, their
+discriminants are $1$, and $h_0=h_1=1$.
+
+It remains to establish the two exact factorizations, for all $q$.
+Equation~\eqref{eq:cyclotomic-trace}, together with
+$\Phi_{2q}(x)=\Phi_q(-x)$, gives
+\[
+ \mathcal F_{2^a q,t}(x)=x^dg_a(x+x^{-1};t).
+\]
+The endpoint values are
+\begin{align*}
+ g_0(2;t)&=q(1+4rqt),&g_0(-2;t)&=\varepsilon+4rq^2t,\\
+ g_1(2;t)&=1+4rq^2t,&g_1(-2;t)&=q(\varepsilon+4rqt).
+\end{align*}
+Substitution in Lemma~\ref{lem:reciprocal-disc} gives
+\eqref{eq:jones-zero} and \eqref{eq:jones-one} exactly.
+\end{proof}
+
+\begin{remark}[Coefficient normalization]
+Our normalization is fixed by the standard discriminant and
+$h_a(0)=1$. Some displayed factors in the computational tables
+of \cite{Jones} have the opposite overall sign. Multiplying such
+a factor by $-1$ has no effect on the squared factor in the reciprocal
+discriminant formula, on content, or on irreducibility. The
+definition \eqref{eq:normalized-h} fixes the sign throughout this
+manuscript.
+\end{remark}
+
+\subsection{Small examples of the global certificate}
+
+For $q=5$,
+\[
+ H_5(u)=u^2+u-1,\quad D_5(Z)=5-4Z,\quad E_5(Y)=5-4Y,
+\]
+and $h_0(t)=h_1(t)=1-80rt$.
+For $q=7$,
+\begin{align*}
+ H_7(u)&=u^3+u^2-2u-1,\\
+ D_7(Z)&=49+14Z-27Z^2,\\
+ E_7(Y)&=-27Y^2+56Y-28,\\
+ h_0(t)&=1+56rt-21168r^2t^2,\qquad h_1(t)=h_0(-t).
+\end{align*}
+The coefficients visibly satisfy the respective Eisenstein
+conditions. These examples illustrate the universal argument;
+the proof does not infer the all-prime assertion from them.
+
+\section{A second proof by rational reconstruction}\label{sec:inverse}
+
+\subsection{An explicit inverse from a critical value}
+\label{subsec:critical-value-inverse}
+
+The field generated by a critical value can also be identified directly,
+without using its valuation.  The identity below supplies an independent
+route from irreducibility of the derivative to irreducibility of the
+discriminant polynomial.
+
+\begin{lemma}[Recovery of a critical point]
+\label{lem:critical-value-inverse}
+Let $q\geq 3$ be odd, put $d=(q-1)/2$, and define
+\[
+ H_q(u)=1+\sum_{j=1}^{d}C_j(u),
+ \qquad
+ A_q(u)=2(q^2+1)-(q^2-1)u.
+\]
+The following identity holds in $\ZZ[u]$:
+\begin{equation}
+\label{eq:critical-value-polynomial-identity}
+ \begin{split}
+ A_q(u)H_q(u)^2
+ &-4(4-u^2)H_q(u)H_q'(u)\\
+ &+4(4-u^2)(2-u)H_q'(u)^2
+ =4q^2.
+ \end{split}
+\end{equation}
+Consequently, if $c\in\CC$ satisfies $H_q'(c)=0$, then $H_q(c)\neq 0$,
+\begin{equation}
+\label{eq:critical-value-rational-inverse}
+ c=\frac{2(q^2+1)}{q^2-1}
+   -\frac{4q^2}{(q^2-1)H_q(c)^2},
+\end{equation}
+and
+\begin{equation}
+\label{eq:critical-value-field-equality}
+ \QQ(c)=\QQ\bigl(H_q(c)^2\bigr)=\QQ\bigl(H_q(c)\bigr).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For $0<x<\pi/2$, set $u=2\cos(2x)$.  The finite geometric-series identity
+for the Dirichlet kernel gives
+\[
+ H_q(u)=1+2\sum_{j=1}^{d}\cos(2jx)
+       =\frac{\sin(qx)}{\sin x}.
+\]
+Differentiating $\sin(qx)=\sin x\,H_q(u)$ and using
+$du/dx=-8\sin x\cos x$ yields
+\[
+ q\cos(qx)
+ =\cos x\bigl(H_q(u)-2(2-u)H_q'(u)\bigr).
+\]
+Squaring this equation and the equation for $\sin(qx)$, and adding after
+multiplying the latter square by $q^2$, gives
+\[
+ (2+u)\bigl(H_q(u)-2(2-u)H_q'(u)\bigr)^2
+ +q^2(2-u)H_q(u)^2=4q^2.
+\]
+Expanding the left-hand side proves
+\eqref{eq:critical-value-polynomial-identity} for every real $u\in(-2,2)$.
+Both sides are polynomials, so the identity holds identically, and in
+particular at every complex $u$.
+
+At a critical point $c$, the identity reduces to
+\[
+ \bigl(2(q^2+1)-(q^2-1)c\bigr)H_q(c)^2=4q^2.
+\]
+Its right-hand side is nonzero.  Thus $H_q(c)\neq 0$, and solving for $c$
+proves \eqref{eq:critical-value-rational-inverse}.  Since $H_q$ has rational
+coefficients, this inverse gives the inclusions
+\[
+ \QQ(c)\subseteq\QQ\bigl(H_q(c)^2\bigr)
+ \subseteq\QQ\bigl(H_q(c)\bigr)\subseteq\QQ(c),
+\]
+which prove \eqref{eq:critical-value-field-equality}.
+\end{proof}
+
+\begin{corollary}[A second proof of discriminant irreducibility]
+\label{cor:critical-inverse-discriminant}
+If $q\geq 5$ is prime, then
+\[
+ D_q(Z)=\Disc_u\bigl(H_q(u)+Z\bigr)
+\]
+is irreducible over $\QQ$ and has degree $d-1=(q-3)/2$.
+\end{corollary}
+
+\begin{proof}
+Recall the shifted Eisenstein calculation:
+\[
+ H_q(X+2)\equiv X^d\pmod q,
+ \qquad
+ H_q'(2)=\sum_{j=1}^{d}j^2=\frac{q(q^2-1)}{24}.
+\]
+All nonleading coefficients of $H_q'(X+2)$ are therefore divisible by $q$;
+its constant coefficient is divisible by $q$ but not by $q^2$, and its
+leading coefficient $d$ is not divisible by $q$.  Hence $H_q'(X+2)$ is
+$q$-Eisenstein.  It follows that $H_q'$ is irreducible over $\QQ$ and that
+every root $c$ of $H_q'$ satisfies
+\[
+ [\QQ(c):\QQ]=d-1.
+\]
+Lemma~\ref{lem:critical-value-inverse} now gives
+$[\QQ(H_q(c)):\QQ]=d-1$.
+
+Writing $c_1,\ldots,c_{d-1}$ for the roots of $H_q'$, the resultant formula
+for the discriminant gives
+\[
+ D_q(Z)=(-1)^{d(d-1)/2}d^d
+        \prod_{i=1}^{d-1}\bigl(Z+H_q(c_i)\bigr).
+\]
+Thus $D_q$ has degree $d-1$ and vanishes at $-H_q(c)$.  The latter element
+has degree $d-1$ over $\QQ$, so its minimal polynomial accounts for all of
+$D_q$, up to a nonzero rational constant.  This proves irreducibility.
+\end{proof}
+
+\begin{remark}[Ordered absolute critical values]
+\label{rem:absolute-critical-values}
+For odd $q\geq5$, the roots of $H_q$ are the $d$ distinct real numbers
+$2\cos(2\pi j/q)$, $1\leq j\leq d$.  Rolle's theorem therefore places all
+$d-1$ roots of $H_q'$ in $(-2,2)$.  At each such root $c$, the identity above
+reads
+\[
+ |H_q(c)|^2
+ =\frac{4q^2}{2(q^2+1)-(q^2-1)c}.
+\]
+The right-hand side is strictly increasing as a function of $c\in(-2,2)$.
+Consequently, distinct critical points have distinct absolute critical
+values.  Equivalently, writing $c=2\cos(2x)$ with $0<x<\pi/2$, the absolute
+value at a critical point is
+\[
+ \left|\frac{\sin(qx)}{\sin x}\right|
+ =\frac{q}{\sqrt{1+(q^2-1)\sin^2x}},
+\]
+whose displayed right-hand side is strictly decreasing in $x$.  These
+formulas apply at critical points; they are not formulas for $|H_q|$ at
+arbitrary points.  For $q=3$, the derivative is constant and there are no
+critical points; the discriminant polynomial is $D_3(Z)=1$.
+\end{remark}
+
+
+\section{Consequences and the precise remaining boundary}\label{sec:consequences}
+
+\subsection{Local degree and full generic symmetric group}
+
+The certificate proves more than rational irreducibility. Every
+critical value of $H_q$ has degree $d-1$ over $\QQ_q$ and generates
+the same local field as the associated critical point. This is the
+field-degree obstruction in Corollary~\ref{cor:critical-field}.
+
+\begin{corollary}[Generic Galois group]\label{cor:generic-galois}
+For every odd prime $q$, the Galois group of $H_q(u)+T$ over
+$\CC(T)$ is $S_d$, and the Galois group over $\QQ(T)$ is also $S_d$.
+\end{corollary}
+
+\begin{proof}
+The case $d=1$ is immediate. For $d\ge2$, the derivative is separable
+because $H'_q(X+2)$ is irreducible in characteristic zero. The
+discriminant polynomial $D_q(T)$ is likewise separable by
+Theorem~\ref{thm:Eq}. Therefore $H_q$ has $d-1$ simple critical
+points with pairwise distinct critical values.
+
+Consider the degree-$d$ map of complex projective lines
+$u\mapsto-H_q(u)$. Removing its branch values and their preimages
+gives a connected covering. Its monodromy group is transitive.
+A small loop about each finite branch value exchanges exactly the
+two sheets meeting at its unique simple critical point; it is a
+transposition. These finite loops generate the monodromy, since a
+loop about infinity is the inverse of their product. A transitive
+permutation group generated by transpositions is $S_d$: the graph
+whose edges are those transpositions is connected, and edge
+transpositions of a connected graph generate all permutations.
+This proves the geometric assertion. The arithmetic group contains
+the geometric group and is a subgroup of $S_d$, so it too is $S_d$.
+\end{proof}
+
+This is a standard monodromy consequence of simple critical points
+and distinct critical values. It is a generic assertion with
+indeterminate $T$, not a claim that every rational specialization
+has Galois group $S_d$. It is not presented as an additional
+previously named conjecture.
+
+\subsection{What changes in the monogeneity applications}
+
+Theorem~\ref{thm:jones} removes the explicit assumption of
+Conjecture~3.3 from \cite[Theorem~3.4]{Jones}. That theorem still
+assumes the existence of appropriate squarefree values of its
+auxiliary polynomials. Its deductions at such values are now
+available without the discriminant conjecture, but the existence
+and infinitude of suitable prime values remain separate questions.
+In particular, this manuscript supplies no unconditional proof of
+the number-field $abc$ conjecture or of infinitely many monogenic
+prime specializations in every higher degree. The distinction is
+also present in \cite[Theorem~1.4]{BNW}.
+
+\section{Integral weights and rational denominator obstructions}
+\label{sec:integral-weights}
+
+The notation in this section is independent of the cyclotomic notation:
+here $d$ denotes $\gcd(k,m)$, not $(q-1)/2$.
+
+% A self-contained section-body fragment for incorporation into the main manuscript.
+% Requires amsmath, amssymb, amsthm, and the theorem, lemma, proposition,
+% corollary, and remark environments. All labels have the prefix iw:.
+% Insert after the main manuscript's existing integral-weights section heading.
+% No external mathematical statement from the main manuscript is assumed.
+
+This section establishes a generalization of the weight-four identity.
+The generalization is stated on its own mathematical merits; we do not
+assert that the entire weighted family was previously posed as a named
+conjecture, or that the results below have certified historical priority.
+
+Define the integer polynomials
+\begin{equation}\label{iw:A}
+ A_0(t)=0,\qquad A_1(t)=1,\qquad
+ A_{j+2}(t)=-A_{j+1}(t)-tA_j(t)\quad(j\ge0).
+\end{equation}
+For integers \(k>m\ge1\) and a rational number \(\lambda\), put
+\begin{equation}\label{iw:F}
+ F_{\lambda;k,m}(t)
+   =A_k(t)^2-\lambda A_{k-m}(t)A_{k+m}(t).
+\end{equation}
+We will abbreviate this polynomial to \(F_\lambda\), and write
+\begin{equation}\label{iw:parameters}
+ d=\gcd(k,m),\qquad K=k/d,\qquad M=m/d,\qquad
+ \Delta=K^2-M^2.
+\end{equation}
+Thus \(K>M\ge1\), \(\gcd(K,M)=1\), and \(\Delta\ge3\).
+Association in \(\mathbb Q[t]\) is denoted by \(\doteq\).
+Squarefreeness throughout this section means absence of repeated
+complex roots, or equivalently squarefreeness over \(\mathbb Q\);
+nonzero constant polynomials are squarefree.
+
+\begin{theorem}[All integral weights]\label{iw:integral}
+For every integer \(\lambda\notin\{0,1\}\) and every pair \(k>m\ge1\),
+\begin{equation}\label{iw:integral-gcd}
+ \boxed{\gcd_{\mathbb Q[t]}(F_\lambda,F_\lambda')\doteq A_d.}
+\end{equation}
+Every root of \(A_d\) is a double root of \(F_\lambda\), and every
+other root of \(F_\lambda\) is simple. Moreover,
+\begin{equation}\label{iw:integral-quotient}
+ F_\lambda=A_d^2B_\lambda,\qquad B_\lambda\in\mathbb Z[t],
+ \qquad \gcd(B_\lambda,B_\lambda')=
+ \gcd(A_d,B_\lambda)=1,
+\end{equation}
+where the last two gcds are monic gcds over \(\mathbb Q\).
+One has
+\begin{equation}\label{iw:integral-degree-genus}
+ \deg B_\lambda=k-d\ge1,\qquad
+ g\bigl(\operatorname{Norm}(y^2=F_\lambda(t))\bigr)
+ =\left\lfloor\frac{k-d-1}{2}\right\rfloor.
+\end{equation}
+Here \(\operatorname{Norm}\) means the smooth projective normalization,
+and \(g\) is its geometric genus.
+\end{theorem}
+
+The assertion includes all negative integral weights, all prime
+weights, and all integral square weights greater than one.
+The proof will give a stronger necessary condition for an extra
+multiple root when the coefficient is rational.
+
+\subsection{The reciprocal representation and its exceptional points}
+
+For later use, define
+\begin{align}
+ \phi(z)&=\frac{z}{(1+z)^2},\label{iw:phi}\\
+ D_\lambda(z)
+   &=(z^k-1)^2-\lambda(z^{k-m}-1)(z^{k+m}-1)\notag\\
+   &=(1-\lambda)(z^{2k}+1)
+        +\lambda(z^{k+m}+z^{k-m})-2z^k,\label{iw:D}\\
+ H_\lambda(z)
+   &=z^{-k}D_\lambda(z)\notag\\
+   &=(1-\lambda)(z^k+z^{-k})
+       +\lambda(z^m+z^{-m})-2.\label{iw:H}
+\end{align}
+
+\begin{lemma}[Exact substitution]\label{iw:substitution}
+For \(j\ge1\) and \(z\ne\pm1\),
+\begin{equation}\label{iw:A-substitution}
+ A_j(\phi(z))
+ =(-1)^{j-1}\frac{z^j-1}{(z-1)(z+1)^{j-1}},
+\end{equation}
+and
+\begin{equation}\label{iw:F-substitution}
+ F_\lambda(\phi(z))
+ =\frac{D_\lambda(z)}{(z-1)^2(z+1)^{2k-2}}.
+\end{equation}
+Also,
+\begin{align}
+ A_j(0)&=(-1)^{j-1},&
+ A_j(1/4)&=j(-1/2)^{j-1},\label{iw:A-endpoints}\\
+ F_\lambda(0)&=1-\lambda,&
+ F_\lambda(1/4)&=
+ \frac{k^2-\lambda(k^2-m^2)}{4^{k-1}}.\label{iw:F-endpoints}
+\end{align}
+Every root of \(A_j\) is simple, and its root set is
+\begin{equation}\label{iw:A-roots}
+ \left\{\phi(\zeta):\zeta^j=1,\ \zeta\ne1,-1\right\}.
+\end{equation}
+Reciprocal values of \(\zeta\) give the same root and are the only
+duplication. In particular,
+\begin{equation}\label{iw:degree-A}
+ \deg A_j=\left\lfloor\frac{j-1}{2}\right\rfloor.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+At \(t=\phi(z)\), the two roots of \(U^2+U+t\) are
+\(\alpha=-z/(1+z)\) and \(\beta=-1/(1+z)\). For \(z\ne\pm1\)
+they are distinct. The sequence
+\((\alpha^j-\beta^j)/(\alpha-\beta)\) has initial values \(0,1\)
+and satisfies \eqref{iw:A}, giving \eqref{iw:A-substitution}.
+Substitution in \eqref{iw:F} gives \eqref{iw:F-substitution};
+the signs cancel in both products. The endpoint evaluations follow
+from \eqref{iw:A} by induction and then from \eqref{iw:F}.
+
+For every finite \(t\ne0,1/4\), the inverse equation
+\begin{equation}\label{iw:inverse}
+ tz^2+(2t-1)z+t=0
+\end{equation}
+has two distinct nonzero roots, neither of which is \(1\) or \(-1\).
+Its discriminant is \(1-4t\); substitution of \(1\) and \(-1\)
+gives \(4t-1\) and \(1\), respectively. At either inverse point,
+\begin{equation}\label{iw:phi-derivative}
+ \phi'(z)=\frac{1-z}{(1+z)^3}\ne0.
+\end{equation}
+Since neither endpoint in \eqref{iw:A-endpoints} is zero,
+\eqref{iw:A-substitution} now gives every root of \(A_j\).
+The numerator \(z^j-1\) has simple roots, the denominator does not
+vanish there, and \(\phi\) is unramified there. Thus each root of
+\(A_j\) is simple. Equation \eqref{iw:inverse} identifies its two
+inverse points as \(z,z^{-1}\). Counting the \(j\)-th roots of unity
+after excluding \(1\) and, for even \(j\), \(-1\), proves
+\eqref{iw:degree-A}.
+\end{proof}
+
+The exceptional points of \(\phi:\mathbb P^1_z\to\mathbb P^1_t\)
+will be retained throughout the proof. They satisfy
+\[
+ \phi(0)=\phi(\infty)=0,\qquad
+ \phi(1)=1/4,\qquad \phi(-1)=\infty.
+\]
+The map is ramified at \(z=1,-1\). More precisely,
+\begin{equation}\label{iw:ramification}
+ \phi(z)-\frac14=-\frac{(z-1)^2}{4(z+1)^2},
+ \qquad
+ \operatorname{ord}_{z=-1}\phi=-2.
+\end{equation}
+For \(\lambda\ne1\), \(D_\lambda(0)=1-\lambda\ne0\), its leading
+coefficient is also \(1-\lambda\), and neither inverse point above
+\(t=0\) produces a root. The behavior at \(z=1,-1\) is determined
+below, rather than inferred from an unramified substitution.
+
+\subsection{Descent to a rational trace}
+
+Set \(w=z^d\), and define
+\begin{equation}\label{iw:h}
+ h_\lambda(w)
+ =(1-\lambda)(w^K+w^{-K})
+     +\lambda(w^M+w^{-M})-2,
+ \qquad \Theta=w\frac{d}{dw}.
+\end{equation}
+Then \(H_\lambda(z)=h_\lambda(z^d)\). At every \(z\ne0\), the map
+\(z\mapsto z^d\) is unramified, so these two functions have equal
+orders of vanishing at corresponding points.
+
+\begin{lemma}[Descent and the tangent equation]\label{iw:descent}
+Let \(\lambda\in\mathbb Q\setminus\{0,1\}\). Suppose that
+\(w\in\mathbb C^*\), \(w\ne1\), and
+\begin{equation}\label{iw:multiple-h}
+ h_\lambda(w)=\Theta h_\lambda(w)=0.
+\end{equation}
+Put \(X=w^K+w^{-K}\) and \(Y=w^M+w^{-M}\). Then \(w\ne-1\),
+\(w^K\ne1\), \(w^M\ne1\), and
+\begin{equation}\label{iw:branch-values}
+ Y=\frac{4K^2}{\lambda\Delta}-2,\qquad
+ X=\frac{4M^2}{(\lambda-1)\Delta}-2.
+\end{equation}
+In particular, \(X,Y\in\mathbb Q\), and
+\begin{equation}\label{iw:rational-trace}
+ s=w+w^{-1}\in\mathbb Q.
+\end{equation}
+Furthermore,
+\begin{equation}\label{iw:L}
+ L_{K,M}(w):=
+ (K-M)(w^{K+M}-1)-(K+M)(w^K-w^M)=0.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+The equations in \eqref{iw:multiple-h} say
+\begin{align}
+ (1-\lambda)X+\lambda Y&=2,\label{iw:value-eq}\\
+ (1-\lambda)K(w^K-w^{-K})
+   +\lambda M(w^M-w^{-M})&=0.\label{iw:derivative-eq}
+\end{align}
+Squaring the second equation and substituting the first gives
+\[
+ (Y-2)\bigl(\lambda\Delta(Y+2)-4K^2\bigr)=0.
+ \tag{\(\ast\)}
+\]
+If \(Y=2\), then \(w^M=1\); since \(\lambda\ne1\), the first
+equation gives \(X=2\), hence \(w^K=1\). Coprimality would imply
+\(w=1\), contrary to the hypothesis. This proves the formula for
+\(Y\), and substitution gives the formula for \(X\).
+The same value equation shows that \(w^K=1\) would force
+\(w^M=1\), because \(\lambda\ne0\). Thus neither power equals one.
+
+Because \(K,M\) are coprime, they are not both even. Directly,
+\[
+ h_\lambda(-1)=
+ \begin{cases}
+  -4,&K,M\text{ both odd},\\
+  -4\lambda,&K\text{ even},\ M\text{ odd},\\
+  4(\lambda-1),&K\text{ odd},\ M\text{ even}.
+ \end{cases}
+\]
+This excludes \(w=-1\).
+
+We next prove rationality of the basic trace, without any
+assumption that it is nonintegral. Set
+\(\alpha=w^K\), \(\beta=w^M\). Since
+\(\beta^2-Y\beta+1=0\), the field \(\mathbb Q(\beta)\) has degree
+at most two. Equation \eqref{iw:derivative-eq}, in its original
+unsquared form, gives
+\begin{equation}\label{iw:quadratic-field}
+ \alpha=\frac12\left(
+ X+\frac{\lambda M}{(\lambda-1)K}
+       (\beta-\beta^{-1})\right)\in\mathbb Q(\beta).
+\end{equation}
+Choose integers \(r,u\) with \(rK+uM=1\). The numbers \(\alpha,\beta\)
+are nonzero, so negative powers cause no problem, and
+\(w=\alpha^r\beta^u\in\mathbb Q(\beta)\).
+If \(\mathbb Q(\beta)=\mathbb Q\), this already proves the claim.
+Otherwise its nontrivial conjugation sends \(\beta\) to
+\(\beta^{-1}\). By \eqref{iw:quadratic-field}, it sends \(\alpha\)
+to \(X-\alpha=\alpha^{-1}\), and therefore sends \(w\) to \(w^{-1}\).
+The number \(s=w+w^{-1}\) is fixed by this conjugation and is rational.
+
+Finally, \eqref{iw:value-eq} is equivalent to
+\((\lambda-1)(X-2)=\lambda(Y-2)\).
+Together with \eqref{iw:derivative-eq}, and with \(X,Y\ne2\),
+this gives at the point under consideration
+\[
+ \frac{\Theta X}{X-2}=\frac{\Theta Y}{Y-2}.
+\]
+This is a consequence of both equations at the point; no identity
+valid only at a point is being differentiated. For any \(j\ge1\)
+with \(w^j\ne1\),
+\[
+ \frac{\Theta(w^j+w^{-j})}{w^j+w^{-j}-2}
+ =j\frac{w^j+1}{w^j-1}.
+\]
+Consequently
+\[
+ K(w^K+1)(w^M-1)=M(w^M+1)(w^K-1).
+\]
+Expansion gives \eqref{iw:L}.
+\end{proof}
+
+\subsection{Two incompatible denominator divisibilities}
+
+Define \(C_j\in\mathbb Z[S]\) by
+\begin{equation}\label{iw:C}
+ C_0(S)=2,\qquad C_1(S)=S,\qquad
+ C_{j+1}(S)=SC_j(S)-C_{j-1}(S).
+\end{equation}
+Induction gives
+\[
+ C_j(w+w^{-1})=w^j+w^{-j},
+\]
+and \(C_j\) is monic of degree \(j\) for \(j\ge1\).
+If \(s=p/q\) is in lowest terms, with \(q>0\), then
+\begin{equation}\label{iw:monic-denominator}
+ \operatorname{den}(C_j(s))=q^j.
+\end{equation}
+Indeed, after multiplication by \(q^j\), the numerator is
+congruent to \(p^j\) modulo each prime dividing \(q\), and therefore
+no factor of \(q\) cancels. This statement includes \(q=1\).
+
+\begin{lemma}[Denominator bound from the tangent equation]
+\label{iw:tangent-denominator}
+Suppose that \(K>M\ge1\) are coprime, \(w\in\mathbb C^*\),
+\(L_{K,M}(w)=0\), and \(w+w^{-1}=p/q\) in lowest terms, with
+\(q>0\). Set
+\[
+ \varepsilon=\gcd(K-M,K+M)\in\{1,2\}.
+\]
+Then
+\begin{equation}\label{iw:upper-divisibility}
+ q^M\mid\frac{K-M}{\varepsilon}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+There is nothing to prove if \(q=1\). Suppose that a prime
+\(\ell\) divides \(q\), and set \(e=v_\ell(q)>0\).
+The number \(w\) is algebraic, since it solves
+\(W^2-(p/q)W+1=0\). Embed its number field in an algebraic closure
+of \(\mathbb Q_\ell\), with \(v_\ell(\ell)=1\).
+The equation \(w+w^{-1}=p/q\), whose right side has valuation
+\(-e\), implies \(v_\ell(w)\in\{-e,e\}\): if \(v_\ell(w)=0\)
+the sum is integral, while otherwise its two summands have
+different valuations and the smaller one is the valuation of the sum.
+The identity
+\[
+ L_{K,M}(w^{-1})=-w^{-(K+M)}L_{K,M}(w)
+\]
+allows replacement by the inverse if necessary, so assume
+\(v_\ell(w)=-e\).
+
+Write \(r=K-M\) and \(u=K+M\).
+The four nonzero terms
+\[
+ rw^{K+M},\quad -uw^K,\quad uw^M,\quad -r
+\]
+have valuations
+\[
+ v_\ell(r)-(K+M)e,\quad v_\ell(u)-Ke,\quad
+ v_\ell(u)-Me,\quad v_\ell(r).
+\]
+The second is strictly smaller than the third, and the first
+is strictly smaller than the fourth. A vanishing sum cannot
+have a unique term of smallest valuation. Thus the first two
+valuations are equal, giving
+\[
+ Me=v_\ell(r)-v_\ell(u)>0.
+\]
+Since \(v_\ell(\varepsilon)=
+\min\{v_\ell(r),v_\ell(u)\}=v_\ell(u)\), it follows that
+\(v_\ell(q^M)=v_\ell(r/\varepsilon)\).
+Combining these conclusions for all \(\ell\mid q\) proves
+\eqref{iw:upper-divisibility}.
+Finally, \(\varepsilon\) divides \(2\), because
+\(\gcd(K-M,M)=1\); it equals two precisely when \(K,M\) are both odd.
+\end{proof}
+
+\begin{theorem}[Restriction imposed by the coefficient denominator]
+\label{iw:denominator-obstruction}
+Let \(\lambda=a/b\in\mathbb Q\setminus\{0,1\}\), with
+\(\gcd(a,b)=1\) and \(b>0\). If \(h_\lambda\) has a multiple root
+other than \(w=1\), then
+\begin{equation}\label{iw:obstruction}
+ \boxed{\frac{K+M}{\gcd(K+M,2)}\mid b.}
+\end{equation}
+In particular, for an integral weight \(\lambda\ne0,1\),
+\(h_\lambda\) has no multiple root other than \(1\).
+The assertion and its proof remain valid when the rational trace
+\(w+w^{-1}\) is an integer.
+\end{theorem}
+
+\begin{proof}
+Apply Lemma~\ref{iw:descent}, and write \(s=w+w^{-1}=p/q\) in
+lowest terms. By \eqref{iw:branch-values},
+\[
+ C_M(s)+2=\frac{4bK^2}{a\Delta}.
+\]
+Adding an integer does not change a reduced denominator.
+For a prime \(\ell\mid\Delta\), coprimality of \(K\) and \(M\)
+implies \(\ell\nmid K\). The \(\ell\)-part of the reduced
+denominator of the right side has exponent
+\[
+ \max\{0,v_\ell(|a|)+v_\ell(\Delta)-v_\ell(4b)\}
+ \ \ge\ \max\{0,v_\ell(\Delta)-v_\ell(4b)\}.
+\]
+Using \eqref{iw:monic-denominator}, this proves
+\begin{equation}\label{iw:lower-divisibility}
+ \frac{\Delta}{\gcd(\Delta,4b)}\mid q^M.
+\end{equation}
+On the other hand, Lemma~\ref{iw:tangent-denominator} gives
+\eqref{iw:upper-divisibility}. Write
+\(g_0=\gcd(\Delta,4b)\), \(r=K-M\), \(u=K+M\). Since \(\Delta=ru\),
+the two divisibilities imply
+\[
+ \frac{ru}{g_0}\mid\frac r\varepsilon,
+ \qquad\text{hence}\qquad
+ \varepsilon u\mid g_0\mid4b.
+\]
+If \(K,M\) have opposite parity, then \(\varepsilon=1\) and
+\(u\) is odd, so \(u\mid b\). If they are both odd, then
+\(\varepsilon=2\), \(u\) is even, and \(u/2\mid b\).
+These are exactly \eqref{iw:obstruction}.
+Neither argument requires \(q>1\): for \(q=1\) the upper
+divisibility is immediate and the lower one is unchanged.
+
+For \(b=1\), the obstruction is impossible. In the odd case
+\(u\ge3\), and in the even case \(u\ge4\), so the positive
+integer \(u/\gcd(u,2)\) is always at least two.
+\end{proof}
+
+\subsection{The resonant coefficient and exact multiplicities}
+
+\begin{proposition}[All possible multiplicities]\label{iw:multiplicities}
+Let \(\lambda\in\mathbb Q\setminus\{0,1\}\), and put
+\begin{equation}\label{iw:resonance}
+ \lambda_*=\frac{K^2}{K^2-M^2}.
+\end{equation}
+The root \(w=1\) of \(h_\lambda\) has multiplicity two when
+\(\lambda\ne\lambda_*\), and multiplicity four when
+\(\lambda=\lambda_*\). Every multiple root other than \(1\)
+has multiplicity exactly two. Such roots do not exist at
+\(\lambda=\lambda_*\).
+
+For the original polynomial, \(t=0\) is never a root;
+\(t=1/4\) is a root exactly when \(\lambda=\lambda_*\), and then
+it is simple. In the resonant case,
+\begin{equation}\label{iw:resonant-gcd}
+ \gcd(F_{\lambda_*},F_{\lambda_*}')\doteq A_d^3,
+\end{equation}
+and \(F_{\lambda_*}/A_d^4\) is squarefree and coprime to \(A_d\).
+The number \(\lambda_*\) is not an integer.
+\end{proposition}
+
+\begin{proof}
+At \(w=1\),
+\[
+ h_\lambda=\Theta h_\lambda=0,\qquad
+ \Theta^2h_\lambda=2(K^2-\lambda\Delta).
+ \tag{\(\dagger\)}
+\]
+The local coordinate \(w=e^u\) identifies \(\Theta\) with
+\(d/du\), and
+\[
+ h_\lambda(e^u)
+ =2\bigl((1-\lambda)\cosh(Ku)+\lambda\cosh(Mu)-1\bigr)
+\]
+is even in \(u\). At \(\lambda=\lambda_*\), its second
+derivative vanishes, while its fourth derivative is
+\[
+ 2\bigl((1-\lambda_*)K^4+\lambda_*M^4\bigr)
+ =-2K^2M^2\ne0.
+ \tag{\(\ddagger\)}
+\]
+This proves the claimed multiplicities at \(1\).
+
+At a multiple root different from \(1\), substitute
+\eqref{iw:branch-values} into
+\[
+ \Theta^2h_\lambda=(1-\lambda)K^2X+\lambda M^2Y
+\]
+to obtain
+\begin{equation}\label{iw:extra-second-derivative}
+ \Theta^2h_\lambda=2(\lambda\Delta-K^2).
+\end{equation}
+If \(\lambda=\lambda_*\), the formula for \(Y\) in
+\eqref{iw:branch-values} gives \(Y=2\), which was excluded in
+Lemma~\ref{iw:descent}. Otherwise
+\eqref{iw:extra-second-derivative} is nonzero. At a multiple
+root \(w\ne0\), one has \(\Theta^2h=w^2h''\), so that root is
+exactly double.
+
+Equation \eqref{iw:F-endpoints} handles \(t=0\), and shows that
+\(1/4\) can be a root only at \(\lambda_*\). At this coefficient
+\(D_\lambda\) has order four at \(z=1\): multiplication by \(z^k\)
+and the map \(z\mapsto z^d\) do not change the order.
+The denominator in \eqref{iw:F-substitution} has order two there,
+so \(F_{\lambda_*}(\phi(z))\) has order two at \(z=1\).
+By \eqref{iw:ramification}, \(F_{\lambda_*}\) has a simple root
+at \(t=1/4\).
+
+At every other finite root, the inverse points from
+\eqref{iw:inverse} lie outside \(0,1,-1\), and \(\phi\) is
+unramified. The multiplicity of \(F_\lambda\) therefore equals
+that of \(D_\lambda\), and hence that of \(h_\lambda\).
+At \(\lambda_*\), all multiple roots of \(D_\lambda\) satisfy
+\(z^d=1\), and have multiplicity four. Their finite images other
+than \(1/4\) are exactly the simple roots of \(A_d\), by
+Lemma~\ref{iw:substitution}. The point \(z=-1\) is over infinity
+and contributes no finite root. This proves
+\eqref{iw:resonant-gcd} and the assertions about the quotient.
+
+Finally, \(\gcd(K^2,\Delta)=1\) and \(\Delta\ge3\), so the
+reduced denominator of \(\lambda_*\) is \(\Delta>1\).
+\end{proof}
+
+\begin{corollary}[Restriction for the original polynomial]
+\label{iw:restriction-F}
+If \(\lambda=a/b\ne0,1\) is in lowest terms and \(F_\lambda\)
+has a repeated root that is not a root of \(A_d\), then
+\eqref{iw:obstruction} holds.
+\end{corollary}
+
+\begin{proof}
+The points \(0\) and \(1/4\) cannot be repeated roots by
+Proposition~\ref{iw:multiplicities}. Every remaining repeated
+root lifts unramified to a multiple root of \(D_\lambda\).
+If its image were \(w=z^d=1\), it would be a root of \(A_d\).
+Thus Theorem~\ref{iw:denominator-obstruction} applies.
+\end{proof}
+
+\subsection{An exact description for rational weights}
+
+The preceding results also give a finite description of all
+additional repeated factors, without asserting that the obstruction
+\eqref{iw:obstruction} alone is sufficient.
+Define
+\begin{equation}\label{iw:R}
+ R_{K,M,\lambda}(S)
+ =(1-\lambda)C_K(S)+\lambda C_M(S)-2,
+\end{equation}
+and, for \(\lambda\ne0,1,\lambda_*\), set
+\begin{equation}\label{iw:S}
+ \mathcal S_{K,M,\lambda}
+ =\{s\in\mathbb Q\setminus\{-2,2\}:
+         R_{K,M,\lambda}(s)=R_{K,M,\lambda}'(s)=0\}.
+\end{equation}
+For \(s\ne\pm2\), put
+\begin{equation}\label{iw:E}
+ E_{d,s}(t)=t^d\bigl(C_d(t^{-1}-2)-s\bigr).
+\end{equation}
+
+\begin{theorem}[Rational-weight repeated factors]\label{iw:rational}
+For \(\lambda\in\mathbb Q\setminus\{0,1,\lambda_*\}\),
+\(\mathcal S=\mathcal S_{K,M,\lambda}\) is finite, and
+\begin{equation}\label{iw:rational-gcd}
+ \gcd(F_\lambda,F_\lambda')
+ \doteq A_d\prod_{s\in\mathcal S}E_{d,s}.
+\end{equation}
+Each factor \(E_{d,s}\) is a squarefree polynomial in
+\(\mathbb Q[t]\) of degree \(d\), with constant term \(1\).
+These factors are pairwise coprime and are coprime to \(A_d\).
+All roots represented in \eqref{iw:rational-gcd} are double
+roots of \(F_\lambda\), and all other roots of \(F_\lambda\)
+are simple.
+
+If \(\mathcal S\ne\varnothing\) and \(\lambda=a/b\) is reduced,
+then \eqref{iw:obstruction} holds. Hence, for a fixed rational
+weight, only finitely many primitive pairs \(K>M\) can have
+additional repeated factors; the common multiplier \(d\) remains
+unrestricted.
+\end{theorem}
+
+\begin{proof}
+The identity \(h_\lambda(w)=R_{K,M,\lambda}(w+w^{-1})\) gives
+\[
+ \Theta h_\lambda(w)
+ =(w-w^{-1})R_{K,M,\lambda}'(w+w^{-1}).
+ \tag{\(\star\)}
+\]
+A multiple root of \(h_\lambda\) other than \(1\) is not \(-1\),
+has a rational trace by Lemma~\ref{iw:descent}, and therefore
+determines an element of \(\mathcal S\). Conversely, for
+\(s\in\mathcal S\), both roots of \(w^2-sw+1=0\) are different
+from \(0,1,-1\), and \((\star)\) makes them multiple roots of
+\(h_\lambda\). Proposition~\ref{iw:multiplicities} shows that
+they are exactly double. The set is finite because
+\(R_{K,M,\lambda}\) has degree \(K\), with nonzero leading
+coefficient \(1-\lambda\). In particular, this argument also
+proves that every multiple root of \(R_{K,M,\lambda}\) other
+than \(2\) is rational; rationality is not an additional
+restriction that discards possible repeated factors.
+
+The expression \eqref{iw:E} is a polynomial because \(C_d\)
+has degree \(d\). Its constant term is \(1\), and its coefficient
+of \(t^d\) is \(C_d(-2)-s=2(-1)^d-s\ne0\).
+For \(t=\phi(z)\ne0\),
+\[
+ t^{-1}-2=z+z^{-1},\qquad
+ C_d(t^{-1}-2)=z^d+z^{-d}.
+\]
+Thus the roots of \(E_{d,s}\) are the images of the \(2d\)
+distinct solutions of \(z^d+z^{-d}=s\). None equals \(1\) or
+\(-1\), and reciprocal pairs give exactly \(d\) distinct
+finite images. The logarithmic derivative of this trace is
+\(d(z^d-z^{-d})\ne0\), and \(\phi'\ne0\) there, proving
+squarefreeness. Different \(s\)'s have disjoint root sets.
+A root of \(A_d\) has trace \(z^d+z^{-d}=2\), so it is not
+a root of any \(E_{d,s}\).
+
+The endpoint and multiplicity analysis in
+Proposition~\ref{iw:multiplicities} now proves
+\eqref{iw:rational-gcd}, including the exact multiplicities.
+The denominator condition follows from
+Theorem~\ref{iw:denominator-obstruction}. If \(K+M\) is odd,
+it divides \(b\); if it is even, it divides \(2b\).
+There are finitely many such positive sums and hence finitely
+many primitive pairs. Formula \eqref{iw:E} treats every
+positive common multiplier \(d\).
+\end{proof}
+
+\subsection{Degrees, normalization, and completion of the integral theorem}
+
+\begin{proposition}[Degrees and geometric genus]\label{iw:geometry}
+For \(\lambda\in\mathbb Q\setminus\{0,1\}\),
+\begin{equation}\label{iw:degree-F}
+ \deg F_\lambda=
+ \begin{cases}
+ k-1,&d\text{ odd},\\
+ k-2,&d\text{ even and }\lambda\ne\lambda_*,\\
+ k-3,&d\text{ even and }\lambda=\lambda_*.
+ \end{cases}
+\end{equation}
+In the resonant case,
+\[
+ Q_\lambda=F_{\lambda_*}/A_d^4
+\]
+is squarefree, has degree \(k-2d+1\ge1\), and the smooth
+projective normalization of \(y^2=F_{\lambda_*}(t)\) has genus
+\begin{equation}\label{iw:resonant-genus}
+ \left\lfloor\frac{k-2d}{2}\right\rfloor.
+\end{equation}
+
+For \(\lambda\ne0,1,\lambda_*\), let
+\(\nu=|\mathcal S_{K,M,\lambda}|\). The polynomial
+\begin{equation}\label{iw:squarefree-model}
+ Q_\lambda=
+ \frac{F_\lambda}
+ {A_d^2\prod_{s\in\mathcal S_{K,M,\lambda}}E_{d,s}^2}
+\end{equation}
+is squarefree, and
+\begin{equation}\label{iw:general-branch-degree}
+ N:=\deg Q_\lambda=k-d-2d\nu\ge0.
+\end{equation}
+If \(N\ge1\), the curve is geometrically integral and its
+smooth projective normalization has genus
+\(\lfloor(N-1)/2\rfloor\).
+If \(N=0\), its normalization over \(\mathbb C\) consists
+of two copies of \(\mathbb P^1\); a genus formula for a single
+geometrically integral double cover is not applicable.
+\end{proposition}
+
+\begin{proof}
+All possible degree losses are visible at \(z=-1\).
+The denominator in \eqref{iw:F-substitution} has order \(2k-2\)
+there, and \(\phi\) has a pole of order two.
+If \(d\) is odd, \(w=(-1)^d=-1\) and
+Lemma~\ref{iw:descent}'s direct evaluation of \(h_\lambda(-1)\)
+is nonzero; hence \(D_\lambda(-1)\ne0\).
+If \(d\) is even, \(w=1\), and
+Proposition~\ref{iw:multiplicities} gives order two for
+\(D_\lambda\), or order four at \(\lambda_*\).
+For any nonzero polynomial \(F\) of degree \(n\),
+\(\operatorname{ord}_{z=-1}F(\phi(z))=-2n\).
+Consequently, if the order of \(D_\lambda\) at \(-1\) is
+\(j\in\{0,2,4\}\), then
+\[
+ -2\deg F_\lambda=j-(2k-2).
+ \tag{\(\diamond\)}
+\]
+This proves \eqref{iw:degree-F} and accounts explicitly for
+the pole over \(t=\infty\).
+
+By \eqref{iw:degree-A}, \(2\deg A_d\) is \(d-1\) for odd \(d\),
+and \(d-2\) for even \(d\). Using \eqref{iw:degree-F} gives
+\(\deg(F_{\lambda_*}/A_d^4)=k-2d+1\) in both parities.
+Since \(k=dK\) with \(K\ge2\), this degree is at least one.
+In the nonresonant case, Theorem~\ref{iw:rational} and
+\(\deg E_{d,s}=d\) give \eqref{iw:general-branch-degree}.
+The quotient is nonzero, so its degree is nonnegative.
+
+In either case, removal of the displayed square factors is
+a birational transformation to \(v^2=Q_\lambda(t)\).
+If \(Q_\lambda\) is squarefree of degree \(N\ge1\), it is not
+a square in \(\mathbb C(t)\), so the resulting curve is
+geometrically integral. Its double cover of the projective
+\(t\)-line is ramified at the \(N\) simple finite roots, and
+at infinity exactly when \(N\) is odd. There are no other
+branch points. Riemann--Hurwitz \cite[Tag~0C1B]{Stacks} gives
+\[
+ 2g-2=-4+
+ \begin{cases}
+ N,&N\text{ even},\\
+ N+1,&N\text{ odd},
+ \end{cases}
+\]
+so \(g=\lfloor(N-1)/2\rfloor\).
+For the resonant degree \(N=k-2d+1\), this is
+\eqref{iw:resonant-genus}.
+If \(N=0\), then \(Q_\lambda=c\in\mathbb Q^*\) and, over
+\(\mathbb C\), the equation is \(v=\pm\sqrt c\).
+Each component is a rational curve, with projective
+normalization \(\mathbb P^1\).
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{iw:integral}]
+For an integral \(\lambda\ne0,1\),
+Theorem~\ref{iw:denominator-obstruction} excludes every
+multiple root of \(h_\lambda\) except \(1\).
+Proposition~\ref{iw:multiplicities} shows that the resonant
+coefficient is not integral. Thus the roots of \(D_\lambda\)
+at \(z^d=1\) are exactly double. The point \(t=0\) is not a
+root, and \(t=1/4\) is not a root because the coefficient
+is nonresonant. The unramified inverse points
+\eqref{iw:inverse} transfer every other finite multiplicity
+exactly. Lemma~\ref{iw:substitution} identifies the finite
+repeated roots with the simple roots of \(A_d\), proving
+\eqref{iw:integral-gcd}. The point \(z=-1\) lies over
+infinity and has already been included in the degree
+calculation; \(z=0,\infty\) lie over the nonroot \(t=0\).
+No finite root is omitted.
+
+The root classification gives \(A_d^2\mid F_\lambda\)
+over \(\mathbb C[t]\), hence over \(\mathbb Q[t]\) by
+polynomial division. The quotient is squarefree and
+coprime to \(A_d\). Because \(A_d(0)=\pm1\), \(A_d\) is
+primitive in \(\mathbb Z[t]\). Gauss's lemma therefore
+shows that the quotient belongs to \(\mathbb Z[t]\).
+In Theorem~\ref{iw:rational} the set \(\mathcal S\) is
+empty, so Proposition~\ref{iw:geometry} gives degree
+\(k-d>0\) and the genus in \eqref{iw:integral-degree-genus}.
+\end{proof}
+
+\subsection{The two degenerate weights and rational examples}
+
+\begin{proposition}[Weights zero and one]\label{iw:degenerate}
+For \(k>m\ge1\),
+\begin{align}
+ F_0&=A_k^2,&
+ \gcd(F_0,F_0')&\doteq A_k,\label{iw:lambda-zero}\\
+ F_1&=t^{k-m}A_m^2,&
+ \gcd(F_1,F_1')&\doteq t^{k-m-1}A_m.\label{iw:lambda-one}
+\end{align}
+These formulas include constant \(A_k\) or \(A_m\).
+The degrees are \(2\lfloor(k-1)/2\rfloor\) and
+\(k-m+2\lfloor(m-1)/2\rfloor\), respectively.
+Over \(\mathbb C\), the curve for \(\lambda=0\) has two
+rational components. For \(\lambda=1\), it has two rational
+components when \(k-m\) is even, and is geometrically
+integral and rational when \(k-m\) is odd.
+\end{proposition}
+
+\begin{proof}
+The first identity is the definition. For the second,
+\eqref{iw:D} at \(\lambda=1\) simplifies to
+\[
+ D_1(z)=z^{k-m}(z^m-1)^2.
+ \tag{\(\triangle\)}
+\]
+Together with \eqref{iw:A-substitution} and
+\eqref{iw:F-substitution}, this gives
+\(F_1(\phi(z))=\phi(z)^{k-m}A_m(\phi(z))^2\).
+It is therefore an identity of polynomials in \(t\).
+The roots of \(A_j\) are simple and \(A_j(0)\ne0\), so
+the stated gcds follow by their exact root multiplicities.
+The degree formulas follow from \eqref{iw:degree-A}.
+
+For \(\lambda=0\), the equation factors as
+\((y-A_k)(y+A_k)=0\).
+For \(\lambda=1\), remove \(A_m^2\) and the largest even
+power of \(t\). The remaining equation is either \(v^2=1\)
+or \(v^2=t\), according as \(k-m\) is even or odd.
+The asserted normalizations follow.
+\end{proof}
+
+The denominator obstruction is necessary, not sufficient,
+and additional repeated roots do occur for rational weights.
+For example, direct substitution in \eqref{iw:A} gives
+\begin{align}
+ F_{4/5;3,2}(t)&=\frac{(t+1)^2}{5},\label{iw:example-one}\\
+ F_{32/5;4,1}(t)&=\frac{(2t-3)^2(8t-3)}5,\label{iw:example-two}\\
+ F_{25/9;5,1}(t)&=
+   \frac{(3t-2)^2(t^2+12t-4)}9.\label{iw:example-three}
+\end{align}
+All three pairs have \(d=1\). Their additional rational traces
+are respectively \(-3,-4/3,-1/2\).
+The last coefficient is the rational square \((5/3)^2\);
+thus the integral-square consequence cannot be extended
+without qualification to every rational square.
+As a resonant example,
+\[
+ F_{4/3;6,3}(t)=\frac{(t-1)^4(4t-1)}3,
+\]
+which displays both the fourth-order common root and the
+simple root at \(t=1/4\).
+
+\begin{remark}[Extent of the generalization]\label{iw:scope}
+The integral-weight theorem is a statement for every
+integer coefficient and every admissible pair of exponents,
+apart from the two completely described degenerate weights.
+No numerical bound on the coefficient or the exponents is
+used in its proof. For rational weights the stronger
+denominator restriction and the exact factor description
+are separate assertions: the former narrows the possible
+primitive exponent pairs, while the latter determines the
+actual repeated factors for each pair. These results do not
+by themselves certify the historical novelty of the
+weighted statements or resolve a different named conjecture.
+\end{remark}
+
+
+\section{Method transfer and the six research gates}\label{sec:gates}
+
+The previous corpus calculations used exact valuation and
+ramification information, including the Eisenstein shift
+$\Phi_{2^h}(1+X)$, to determine a field requirement in a paired
+cancellation system. The preceding quadrinomial manuscript
+\cite{Previous} used rational traces and exact reduced denominators
+to exclude repeated roots. The present two applications retain
+those verified mechanisms in distinct settings:
+\begin{enumerate}
+ \item In the cyclotomic trace family, translation gives an
+ Eisenstein derivative. The derivative equation then isolates a
+ unique least-valuation term in a critical value. Its denominator
+ forces the full algebraic degree, or equivalently makes the
+ transformed discriminant Eisenstein.
+ \item In the weighted recurrence family, two coprime traces and
+ the unsquared derivative equation give a rational fundamental
+ trace. A rational coefficient denominator must simultaneously
+ satisfy two opposing divisibility conditions. For integer
+ weights the conditions are incompatible.
+\end{enumerate}
+The rational reconstruction formula of Section~\ref{sec:inverse}
+also supplies a second, global algebraic route in the first
+application. None of these transfers assumes a solution of
+Kaplansky's zero-divisor conjecture. No result about arbitrary
+torsion-free groups is asserted here.
+
+\Needspace{27\baselineskip}
+\subsection{G1--G6 audit}
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}p{0.07\linewidth}p{0.20\linewidth}p{0.66\linewidth}@{}}
+\toprule
+Gate & Assessment & Evidence and limit\\
+\midrule
+G1 & Existing named target & Jones's Conjecture~3.3 was published in
+2021, with the exact family and normalized factors stated on p.~1476
+of \cite{Jones}.\\
+G2 & Statement retained & Theorem~\ref{thm:jones} uses the original
+polynomials, normalization, and prime range, with the integer
+parameter convention explicitly used in \cite{BNW}. Every change
+of variable used for irreducibility is invertible over the
+specified field.\\
+G3 & Primary-source evidence & The 2026 published follow-up
+\cite{BNW} states a partial proof and proves the factorization
+formula. We did not identify an earlier complete proof of the
+remaining assertions in the sources examined. This is a bounded
+literature finding, not an exhaustive historical theorem.\\
+G4 & Full proof & Theorem~\ref{thm:criterion} and the proof of
+Theorem~\ref{thm:jones} cover every odd prime, both reciprocal families, and every nonzero
+integer $r$, including $q=3$. There is no unproved conjectural
+assumption or finite computation in the proof.\\
+G5 & Substantive range & The exact critical-value valuation establishes
+irreducibility for unbounded degree, beyond the already proved
+factorization. The integer-weight theorem also extends the earlier
+weight-$4$ result to all nondegenerate integer weights. The basic
+valuation and Eisenstein tools are classical.\\
+G6 & Not certified & No identical full solution was found in the
+focused search, but negative search results cannot certify
+priority. External literature review and mathematical review
+remain necessary for a historical-first claim.\\
+\bottomrule
+\end{longtable}
+\renewcommand{\arraystretch}{1}
+
+\clearpage
+\appendix
+\section{Exact computational checks}\label{sec:checks}
+
+The all-prime proof uses no computation. As checks on signs,
+normalization, and boundary cases, exact symbolic arithmetic was
+performed with SymPy 1.14.0. For
+\[
+ q\in\{5,7,11,13,17,19,23,29,31\},
+\]
+the trace identity, shifted congruence, exact first coefficient,
+degree and constant of $D_q$, all Eisenstein coefficient conditions
+for $E_q$, and $E_q(1)=1$ were verified. For
+$q\in\{3,5,7,11\}$ and both $a$, the discriminant of the original
+reciprocal polynomial was computed with $r,t$ symbolic and
+compared with \eqref{eq:jones-zero}--\eqref{eq:jones-one}.
+All checks passed.
+
+For the integer-weight theorem, exact gcd calculations were checked
+for all $2\le k\le15$, $1\le m<k$, and
+$\lambda\in\{-5,-4,-3,-2,-1,2,3,\ldots,10\}$, a total of
+$1470$ cases. All passed. These checks test finite examples;
+the proofs in the main text establish the unrestricted statements.
+
+The following compact verification program is included so that the
+single \texttt{.tex} file contains a reproducible check as well as
+the mathematical argument. It requires Python and SymPy; it is not
+required to compile the document.
+
+\begin{lstlisting}[language=Python]
+import sympy as S
+u, Z, Y, t, r = S.symbols("u Z Y t r")
+C = [S.Integer(2), u]
+for j in range(1, 15):
+    C.append(S.expand(u*C[-1] - C[-2]))
+for q in [5, 7, 11, 13, 17, 19, 23, 29, 31]:
+    d = (q-1)//2
+    H = 1 + sum(C[1:d+1])
+    P = S.Poly(S.expand(H.subs(u, u+2)), u)
+    assert all(c % q == 0 for c in P.all_coeffs()[1:])
+    assert S.diff(H, u).subs(u, 2) == q*(q*q-1)//24
+    D = S.discriminant(H+Z, u)
+    E = S.Poly(S.expand(D.subs(Z, q*(Y-1))/q**(d-1)),
+               Y, domain=S.ZZ)
+    assert E.degree() == d-1 and E.LC() % q != 0
+    assert all(c % q == 0 for c in E.all_coeffs()[1:])
+    assert E.TC() % (q*q) != 0 and E.eval(1) == 1
+    h = S.Poly(E.as_expr().subs(Y, 1+4*r*q*t), t, r)
+    assert h.content() == 1
+A = [S.Integer(0), S.Integer(1)]
+for j in range(1, 30):
+    A.append(S.expand(-A[-1]-t*A[-2]))
+count = 0
+for k in range(2, 16):
+    for m in range(1, k):
+        for lam in list(range(-5, 0)) + list(range(2, 11)):
+            F = S.Poly(A[k]**2-lam*A[k-m]*A[k+m], t,
+                       domain=S.QQ)
+            G = S.gcd(F, F.diff()).monic()
+            expected = S.Poly(A[S.igcd(k, m)], t,
+                              domain=S.QQ).monic()
+            assert G == expected
+            count += 1
+assert count == 1470
+print("Exact finite checks passed; see text for global proofs.")
+\end{lstlisting}
+
+\clearpage
+\section{Literature search and document provenance}\label{sec:provenance}
+
+The focused search on 23 November 2026 examined Jones's original
+paper, Barman--Narode--Wagh's published abstract and public full
+manuscript, and Narode's related 2026 paper. Searches used the
+original title and conjecture number together with
+\emph{irreducibility}, \emph{critical values},
+\emph{reciprocal discriminant}, and \emph{Eisenstein}.
+No identical proof of the normalized factors' all-prime
+irreducibility was identified in the sources examined. Other
+results described as proofs of a Jones conjecture must be matched
+to their actual statement: the conjecture concerning
+$x^n+A(Bx+1)^m$ is a different problem.
+
+The exact conjecture is cited from the original 2021 journal
+article. The 2026 follow-up's explicit integral-parameter
+formulation is also cited, preventing the ambiguous phrase
+``nonzero constant'' from being used to claim false integrality
+over all rational parameters. The content and sign conventions
+are fixed in the text. No claim of priority relies on a lack of
+search results.
+
+This manuscript was developed with ChatGPT assistance. Independent
+internal proof checks and symbolic checks were used to audit the
+argument; they do not constitute external peer review. The PDF
+is compiled from this one \texttt{.tex} file, which contains the
+entire text, bibliography, and verification program. There are no
+external figure assets, bibliography databases, or
+\texttt{\string\input} dependencies. Preparation of the files does
+not imply an external submission or a public priority claim.
+
+\begin{thebibliography}{9}
+
+\bibitem{Jones}
+Lenny Jones,
+\emph{Infinite families of reciprocal monogenic polynomials and
+their Galois groups},
+New York Journal of Mathematics \textbf{27} (2021), 1465--1493,
+especially Lemma~3.2, Conjecture~3.3, and Theorem~3.4.
+\url{https://nyjm.albany.edu/j/2021/27-57p.pdf}.
+
+\bibitem{BNW}
+Rupam Barman, Anuj Narode, and Vinay Wagh,
+\emph{On monogeneity of reciprocal polynomials},
+The Ramanujan Journal \textbf{69} (2026), Article~56,
+published 12 February 2026.
+DOI: \href{https://doi.org/10.1007/s11139-026-01328-2}{10.1007/s11139-026-01328-2}.
+Public manuscript: arXiv:2601.22453v1, especially
+equations~(1.4)--(1.6) and Theorem~1.3.
+\url{https://arxiv.org/html/2601.22453v1}.
+
+\bibitem{Narode}
+Anuj Narode,
+\emph{Necessary and sufficient condition for reciprocal polynomials
+to be monogenic}, arXiv:2609.33766, 2026.
+\url{https://arxiv.org/pdf/2609.33766}.
+
+\bibitem{BU}
+Andrew Bremner and Maciej Ulas,
+\emph{Some observations concerning reducibility of quadrinomials},
+arXiv:1310.5346v1, 20 October 2013.
+Journal version: Acta Mathematica Hungarica \textbf{145} (2015),
+320--349, DOI: 10.1007/s10474-015-0478-9.
+\url{https://arxiv.org/pdf/1310.5346}.
+
+\bibitem{KSL}
+Korea Superintelligence Labs (generated by Machina Mathematica),
+\emph{$A_{\gcd(m,n)}^2$ always divides $F_{m,n}$: multiple roots of
+the Bremner--Ulas quadrinomial discriminants}, Version~1, 2026,
+especially Conjecture~A.
+\url{https://ideosphere.ai/papers/quadrinomial-sqfree-v1.pdf}.
+
+\bibitem{Previous}
+\emph{Exact Multiplicities in the Bremner--Ulas Quadrinomial
+Discriminants: A proof of the published corrected gcd conjecture},
+research manuscript prepared for Keio, 23 November 2026.
+Unpublished preceding manuscript in this research session.
+The present integer-weight proof is self-contained and does not
+require access to that manuscript.
+
+\bibitem{Stacks}
+The Stacks Project Authors,
+\emph{The Stacks Project}, Section~53.12, Riemann--Hurwitz,
+Tag~0C1B, consulted 23 November 2026.
+\url{https://stacks.math.columbia.edu/tag/0C1B}.
+
+\end{thebibliography}
+\end{document}
