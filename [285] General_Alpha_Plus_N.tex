@@ -1,0 +1,1240 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{booktabs,array,tabularx,enumitem,xcolor,fancyhdr,listings,hyperref}
+\definecolor{ink}{HTML}{17324D}
+\definecolor{accent}{HTML}{176B78}
+\definecolor{codebg}{HTML}{F5F7F9}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+pdftitle={Integral palette lifting in arbitrary degree: a constructive proof of the alpha+n conjecture},
+pdfsubject={Hermite cancellation, unimodular nested palettes, and integral chromatic factors}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\fall}[2]{(#1)_{#2}}
+\newcommand{\He}{\operatorname{He}}
+\newcommand{\htf}{\mathcal H}
+\newcommand{\calP}{\mathcal P}
+\newcommand{\Split}{\operatorname{Split}_{\Q}}
+\newcommand{\wt}{\gamma}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small\color{ink}Integral palette lifting in arbitrary degree}
+\fancyhead[R]{\small 28 November 2026}
+\fancyfoot[C]{\small\thepage}
+\setlength{\emergencystretch}{3em}
+\setlist{nosep,leftmargin=*}
+\raggedbottom
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+keywordstyle=\color{ink}\bfseries,commentstyle=\color{accent},
+backgroundcolor=\color{codebg},frame=single,rulecolor=\color{black!12},
+breaklines=true,columns=fullflexible,keepspaces=true,
+showstringspaces=false,tabsize=4,aboveskip=10pt,belowskip=10pt}
+\title{\color{ink}\bfseries Integral palette lifting in arbitrary degree\\[3pt]
+\large A constructive proof of the \texorpdfstring{$\alpha+n$}{alpha+n} conjecture}
+\author{\normalsize Research manuscript for independent verification}
+\date{28 November 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+For every monic polynomial $f\in\Z[x]$ of degree $d\ge1$, we construct
+positive integers $N,n$ and a connected graph $G$, consisting of an
+$N$-clique and a $d$-clique with specified cross-edges, such that
+$P_G(q)=\fall qN f(q-n)$ and $\chi(G)=N$.
+The construction combines a strictly positive Boolean intersection profile
+with three uniform mechanisms. Hermite roots cancel the leading matching
+polynomial to $X^d$. Restricting all corrections to intersections containing
+one distinguished row makes the coefficient map exactly affine. Finally,
+nested palettes supply a coefficient matrix of determinant one modulo
+$(d-1)!$, permitting a descending sequence of integral corrections.
+All corrections have size $O_d(\htf t)$, whereas every palette atom has a
+positive leading term of order $t^2$, where
+$\htf=1+\sum_{j=1}^d|a_j|$ for $f=x^d+\sum_{j=1}^d a_jx^{d-j}$.
+This proves termination of an exact algorithm and gives
+$|V(G)|\le C_d\htf^2$ for a constant depending only on $d$.
+The factor identity implies Cameron--Morgan's original $\alpha+n$
+statement in every degree and Gilmore's prescribed-degree splitting-field
+conjecture. We include a rational alternative to the Hermite profile,
+a complete sextic certificate, and a reference implementation with an
+independent matching check. The proof is presented for external scrutiny;
+the literature search and its limits are recorded separately from the
+mathematical argument.
+\end{abstract}
+
+\section{The original problem and the result}
+
+For a finite simple graph $G$, let $P_G(q)$ denote its chromatic polynomial.
+A \emph{chromatic root} is a complex zero of such a polynomial.
+Cameron and Morgan's Conjecture~4 asks whether every algebraic integer
+$\alpha$ has an integer translate $\alpha+n$, with $n$ natural, that is a
+chromatic root \cite{CM}. There is no restriction on the degree or on the
+number of real conjugates of $\alpha$.
+
+Write $\fall qN=q(q-1)\cdots(q-N+1)$, with $\fall q0=1$.
+A \emph{$(d,N)$-biclique} in the terminology of the cited literature is
+a graph partitioned into cliques of orders $d$ and $N$, with arbitrary
+cross-edges. This is the complement of a bipartite graph; it need not be a
+complete bipartite graph.
+
+\begin{theorem}[Exact realization in every degree]\label{thm:main}
+For every integer $d\ge1$ and every monic polynomial
+\[
+ f(x)=x^d+a_1x^{d-1}+\cdots+a_d\in\Z[x],
+\]
+there exist positive integers $N,n$ and a connected finite simple
+$(d,N)$-biclique $G$ such that
+\begin{equation}\label{eq:main}
+ P_G(q)=\fall qN f(q-n),\qquad \chi(G)=N.
+\end{equation}
+An exact algorithm producing $N,n$ and a finite description of $G$
+terminates for every input. For every fixed $d$, there is a constant
+$C_d>0$ such that the output satisfies
+\begin{equation}\label{eq:size}
+ |V(G)|=N+d\le C_d\htf^2,
+ \qquad \htf=1+\sum_{j=1}^d|a_j|.
+\end{equation}
+No irreducibility, signature, coefficient-sign, or Galois-group assumption
+is imposed.
+\end{theorem}
+
+\begin{corollary}[The original $\alpha+n$ statement]\label{cor:alpha}
+For every algebraic integer $\alpha$, there is a positive integer $n$
+and a connected finite simple graph $G$ with $P_G(\alpha+n)=0$.
+\end{corollary}
+\begin{proof}
+The monic minimal polynomial $f\in\Z[x]$ of $\alpha$ satisfies the
+hypotheses of Theorem~\ref{thm:main}. Substitute $q=\alpha+n$ in
+\eqref{eq:main}.
+\end{proof}
+
+\subsection{Prior work and the auxiliary problem}
+
+The quadratic case was established by the original study group, and
+Bohn proved the cubic case \cite{CM,Bohn}. Gilmore's thesis contains
+quartic and quintic computational evidence and formulates a
+prescribed-degree splitting-field question \cite[Chapter 7]{Gilmore}.
+The official abstract of Delbourgo--Morgan's 2019 paper describes an
+algorithm in degrees at most four, conditional on existence of an
+appropriate biclique \cite{DM19}. Their 2022 paper calculates the fifth
+chromatic coefficient and discusses the earlier evidence \cite{DM22}.
+The source-access limitations are stated in Section~\ref{sec:status}.
+
+The auxiliary problem here is to prescribe the entire palette polynomial
+while every one of the $2^d-1$ nonempty Boolean atoms remains a positive
+integer. Its solution has two logically separate parts: exact integral
+coefficient completion, and a uniform size estimate ensuring that this
+completion stays inside the positive region. The partition formula alone
+does not provide either conclusion.
+
+The supplied corpus manuscript on roots and coefficient peaks of graph
+polynomials uses descending coefficient corrections with a positive
+margin \cite[Sections 2--3]{VMRC}. That organizing idea motivates the
+present construction. The proof below establishes all necessary lemmas
+directly and assumes no theorem asserted in that corpus. The earlier
+degree-four and degree-five working constructions are likewise not
+prerequisites for this argument.
+
+\section{Palette atoms and an affine coefficient map}\label{sec:palettes}
+
+Fix $d\ge2$, and put $[d]=\{1,\ldots,d\}$. For every nonempty
+$J\subseteq[d]$, take $m_J$ vertices of type $J$ in a clique $C$.
+Set $N=\sum_{J\ne\varnothing}m_J$. Add a disjoint clique
+$\{v_1,\ldots,v_d\}$, and make a vertex of type $J$ nonadjacent to
+$v_i$ exactly when $i\in J$. Thus $A_i\subseteq C$, the set of
+nonneighbors of $v_i$, has intersection moments
+\begin{equation}\label{eq:moments}
+ H_B=\left|\bigcap_{i\in B}A_i\right|
+     =\sum_{J\supseteq B}m_J\qquad(\varnothing\ne B\subseteq[d]).
+\end{equation}
+Conversely, integer moments determine the atoms by Boolean inversion:
+\begin{equation}\label{eq:inversion}
+ m_J=\sum_{B\supseteq J}(-1)^{|B|-|J|}H_B.
+\end{equation}
+If all these integers are nonnegative, the type construction realizes
+every moment exactly. There are no additional set-realizability
+conditions. We will make every $m_J$ strictly positive.
+
+Choose an integer $L$ and write
+\begin{equation}\label{eq:parameters}
+ H_{\{i\}}=L+z_i,\qquad H_B=L-D_B\quad(|B|\ge2),
+ \qquad c_{\{i\}}=z_i,\quad c_B=-D_B\quad(|B|\ge2).
+\end{equation}
+For any $R\subseteq[d]$, define the formal palette polynomial
+\begin{equation}\label{eq:palette}
+ F_R(x)=\sum_{\pi\in\calP(R)}\prod_{B\in\pi}
+       \mu_B(x+c_B),\qquad
+ \mu_B=(-1)^{|B|-1}(|B|-1)!,\qquad F_\varnothing=1.
+\end{equation}
+Here $\calP(R)$ is the set of partitions of $R$. The formula is meaningful
+for arbitrary integer parameters, including intermediate choices that
+do not yet give nonnegative atoms.
+
+\begin{lemma}[The graph identity]\label{lem:graph}
+Whenever the atoms in \eqref{eq:inversion} are nonnegative integers,
+the graph just described satisfies
+\begin{equation}\label{eq:graph}
+ P_G(q)=\fall qN F_{[d]}(q-N+L).
+\end{equation}
+Moreover, $F_R$ is monic of degree $|R|$, and
+\begin{equation}\label{eq:trace}
+ [x^{d-1}]F_{[d]}=\sum_{i=1}^d z_i-\binom d2.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Color $C$ first, using $N$ distinct colors. For $q\ge N$, each $v_i$
+can use the $q-N$ unused colors and the old colors corresponding to
+$A_i$. The intersection of the available color lists for a nonempty
+block $B$ therefore has size $q-N+H_B=x+c_B$, where $x=q-N+L$.
+The number of assignments giving pairwise different colors to the
+vertices indexed by $R$ is \eqref{eq:palette}.
+
+For completeness, this last assertion can be verified by summing over
+permutations of $R$. Give a permutation the weight
+$(-1)^{|R|-\text{number of cycles}}$, and require an assignment to be
+constant on each cycle. For a fixed assignment the sum factors over its
+color fibers. A fiber of size $s$ contributes the sum of the signs of
+all permutations in $S_s$, which is $1$ for $s=1$ and $0$ for $s\ge2$.
+Thus only injective assignments survive. Grouping permutations by their
+cycle partition gives the factor $(-1)^{|B|-1}(|B|-1)!$ for each block.
+Multiplication by $\fall qN$ proves \eqref{eq:graph} for all integers
+$q\ge N$, hence as a polynomial identity.
+
+Only the singleton partition contributes degree $|R|$. For
+$R=[d]$, the degree $d-1$ term comes from the singleton partition
+and from the $\binom d2$ partitions with one pair and all other blocks
+singletons. The latter each contribute $-1$, giving \eqref{eq:trace}.
+\end{proof}
+
+\begin{lemma}[One distinguished row]\label{lem:affine}
+Keep $z_1,\ldots,z_d$ and all $D_B$ with $d\notin B$ fixed.
+The polynomial $F_{[d]}$ is jointly affine in the variables
+$D_B$ with $d\in B$ and $|B|\ge2$. For such a block of size $k$,
+\begin{equation}\label{eq:derivative}
+ \frac{\partial F_{[d]}}{\partial D_B}
+   =\eta_k F_{[d]\setminus B},\qquad
+ \eta_k=(-1)^k(k-1)!.
+\end{equation}
+All polynomials on the right depend only on the fixed outer rows
+$\{1,\ldots,d-1\}$.
+\end{lemma}
+\begin{proof}
+Every partition has exactly one block containing $d$.
+Consequently it contains at most one of the variables under discussion.
+For a specified block $B$, the remaining blocks form an arbitrary
+partition of $[d]\setminus B$, and differentiation of
+$\mu_B(x-D_B)$ contributes $-\mu_B=\eta_k$.
+\end{proof}
+
+In particular, simultaneous changes of these variables have exactly the
+sum of their individual effects. There is no error term involving a
+product of changes. The estimates later in the proof rely on this exact
+property.
+
+\section{Hermite cancellation and uniform rank}\label{sec:hermite}
+
+On the finite-dimensional space of polynomials, let
+\[
+ T=\exp\!\left(\tfrac12\partial_X^2\right),\qquad
+ \He_d(X)=T^{-1}X^d
+ =\sum_{j=0}^{\lfloor d/2\rfloor}
+ \frac{(-1)^j d!}{2^j j!(d-2j)!}X^{d-2j}.
+\]
+The exponential is a finite sum on every polynomial, and its inverse is
+$\exp(-\partial_X^2/2)$.
+
+\begin{lemma}[The Hermite slopes]\label{lem:hermite}
+The polynomial $\He_d$ has $d$ distinct real roots
+$\lambda_1<\cdots<\lambda_d$. Their sum is zero, and
+\begin{equation}\label{eq:hermite-cancel}
+ \prod_{i=1}^d(X+\lambda_i)=\He_d(X),\qquad
+ T\prod_{i=1}^d(X+\lambda_i)=X^d.
+\end{equation}
+\end{lemma}
+\begin{proof}
+The displayed coefficient formula gives the recurrence
+$\He_{r+1}=X\He_r-r\He_{r-1}$, with $\He_0=1$, $\He_1=X$.
+It follows by expanding a tridiagonal determinant that $\He_d$ is the
+characteristic polynomial of the real symmetric $d\times d$ matrix with
+zero diagonal and off-diagonal entries $\sqrt{1},\sqrt{2},\ldots,
+\sqrt{d-1}$. Its eigenvalues are real. An eigenvector is determined by
+its first coordinate through the successive row equations, and a zero
+first coordinate forces the whole vector to be zero. Every eigenspace
+is therefore one-dimensional. Symmetric diagonalizability implies that
+all eigenvalues are simple.
+The coefficient of $X^{d-1}$ is zero, so their sum is zero. The parity
+$\He_d(-X)=(-1)^d\He_d(X)$ makes the root set invariant under negation,
+which gives the first identity in \eqref{eq:hermite-cancel}; the second
+follows from the definition of $T$.
+\end{proof}
+
+For a finite index set $R$, put
+\begin{equation}\label{eq:leading-Q}
+ Q_R(X)=T\prod_{i\in R}(X+\lambda_i).
+\end{equation}
+These polynomials admit a useful counting expansion:
+\begin{equation}\label{eq:heat-matching}
+ Q_R(X)=\sum_{\mathcal M\text{ a matching on }R}
+             \prod_{i\text{ unmatched by }\mathcal M}(X+\lambda_i).
+\end{equation}
+Indeed, applying $\partial_X^{2j}/(2^j j!)$ to the product first selects
+$2j$ distinct factors and then gives the number
+$(2j)!/(2^j j!)$ of pairings of those factors.
+
+\begin{lemma}[Every leading correction matrix is invertible]
+\label{lem:rank}
+For any $I\subseteq[d-1]$ of size $r+1$, the $r+1$ polynomials
+\[
+ Q_{I\setminus\{i\}}(X),\qquad i\in I,
+\]
+are a basis of the polynomials of degree at most $r$.
+\end{lemma}
+\begin{proof}
+Before applying $T$, these are the products
+$\prod_{j\in I\setminus\{i\}}(X+\lambda_j)$.
+Evaluation at $X=-\lambda_i$ kills every product except the $i$th,
+whose value is nonzero because the slopes are distinct. The products
+are independent. Applying the invertible linear map $T$ preserves
+independence.
+\end{proof}
+
+\section{An integral seed inside the positive region}\label{sec:seed}
+
+Fix $d\ge2$ and the input polynomial $f$. Throughout the remaining
+construction let
+\begin{equation}\label{eq:scale}
+ m=d-1,\qquad M=m!,\qquad U=2^dM,\qquad t\in U\Z_{>0},
+ \qquad L=2t^2,\qquad \wt=2^{2-d}.
+\end{equation}
+Choose integers $z_i$ for $1\le i\le m$ such that
+\begin{equation}\label{eq:singleton-round}
+ z_i\equiv i-1\pmod M,\qquad
+ |z_i-t\lambda_i|\le2M.
+\end{equation}
+This is an effective finite operation. For example, isolate each simple
+root in a rational interval of width at most $M/(4t)$, use its midpoint
+$b_i$, and set
+\[
+ z_i=(i-1)+M\left\lfloor\frac{tb_i-(i-1)}{M}\right\rfloor.
+\]
+The midpoint contributes an error of at most $M/8$, and rounding
+contributes less than $M$, so \eqref{eq:singleton-round} follows.
+Rational isolation of roots of an integer polynomial can be carried out
+by Sturm division and rational bisection; no numerical oracle is needed.
+Now set
+\begin{equation}\label{eq:center-trace}
+ z_d=a_1+\binom d2-\sum_{i=1}^m z_i.
+\end{equation}
+This fixes the coefficient of $x^{d-1}$ exactly.
+
+For a nonempty set $B$ of size $k\ge2$, initialize its deficit by
+\begin{equation}\label{eq:initial-D}
+ D_B^{(0)}=(2-2^{2-k})t^2-\varepsilon_B,\qquad
+ \varepsilon_B=
+ \begin{cases}
+  \min B-1,&d\notin B,\\
+  0,&d\in B.
+ \end{cases}
+\end{equation}
+Every quadratic term here is an integer multiple of $M$ by
+\eqref{eq:scale}. For all nonempty outer sets $B\subseteq[m]$, the
+parameters in \eqref{eq:parameters} consequently satisfy
+\begin{equation}\label{eq:nested-congruence}
+ c_B\equiv \min B-1\pmod M.
+\end{equation}
+
+The quadratic part of these moments is especially simple. Giving every
+nonempty atom the weight $\wt t^2$ gives singleton moment $2t^2$ and
+moment $2^{2-|B|}t^2$ on every nonempty set $B$. Thus the initialized
+moments differ from this strictly positive uniform profile only in terms
+of order at most $t$ for fixed $f$.
+
+\begin{lemma}[Uniform scaled limits]\label{lem:limits}
+Use the seed just specified, and keep the outer data fixed thereafter.
+For each outer set $R$ of size $r$,
+\begin{equation}\label{eq:outer-limit}
+ t^{-r}F_R(tX)=Q_R(X)+O_d(t^{-1})
+\end{equation}
+coefficient by coefficient, uniformly over all choices permitted in
+\eqref{eq:singleton-round}. For the initial full polynomial,
+\begin{equation}\label{eq:full-limit}
+ t^{-d}F_{[d]}^{(0)}(tX)=X^d+O_d(\htf/t).
+\end{equation}
+After its leading and next-to-leading coefficients are matched, the
+initial residual $E^{(0)}=f-F_{[d]}^{(0)}$ has degree at most $d-2$ and
+\begin{equation}\label{eq:initial-error}
+ |[x^j]E^{(0)}|\le A_d\htf\,t^{d-1-j}
+ \qquad(0\le j\le d-2)
+\end{equation}
+for some constant $A_d$ independent of $f$ and $t\ge U$.
+\end{lemma}
+\begin{proof}
+In a singleton block, $tX+z_i=t(X+\lambda_i)+O_d(1)$ for an
+outer row. A pair block contributes
+$-(tX-D_B^{(0)})=t^2+O_d(t)$.
+A block of size $k\ge3$ contributes a polynomial of size $O_d(t^2)$
+coefficientwise in $X$, which has strictly smaller order than $t^k$.
+In the sum over partitions of $R$, only singleton-pair partitions have
+order $t^r$. Their sum is \eqref{eq:heat-matching}; every other partition
+has order at most $t^{r-1}$. All errors are uniform because the rounding
+errors lie in fixed bounded intervals.
+
+For the full set, \eqref{eq:center-trace} and
+$\sum_i\lambda_i=0$ give
+$z_d=t\lambda_d+O_d(\htf)$. There is only one block containing row $d$
+in each partition, so the dependence on this larger error is linear.
+The same expansion therefore has error $O_d(\htf t^{d-1})$.
+Equation~\eqref{eq:hermite-cancel} gives the leading polynomial $X^d$.
+Both leading coefficients match $f$ by monicity and
+\eqref{eq:center-trace}. Comparing coefficients of $X^j$ in
+$f(tX)-F_{[d]}^{(0)}(tX)$ proves \eqref{eq:initial-error}.
+\end{proof}
+
+\section{Nested palettes remove the lattice obstruction}\label{sec:lattice}
+
+For $s\ge1$, consider the formal outer model $c_B=\min B-1$ on
+$[s]$. At every sufficiently large integer $x$, realize it by nested
+color lists of sizes $x,x+1,\ldots,x+s-1$.
+
+\begin{lemma}[A nested basis of determinant one]\label{lem:nested}
+For $1\le i\le s$ in this model,
+\begin{equation}\label{eq:nested-basis}
+ F_{[s]\setminus\{i\}}(x)=x^{i-1}(x+1)^{s-i}.
+\end{equation}
+These $s$ polynomials have an integer coefficient matrix of determinant
+$1$ in the ascending monomial basis $1,x,\ldots,x^{s-1}$.
+For the actual seed, the same identities hold modulo $M$ for every
+prefix $[s]\subseteq[m]$.
+\end{lemma}
+\begin{proof}
+Color the remaining rows in increasing order. Before the omitted row,
+row $j$ has a list of size $x+j-1$ and $j-1$ previously used colors,
+all lying in its list, leaving $x$ choices. After the omitted row it
+has only $j-2$ previously used colors, leaving $x+1$ choices. This gives
+\eqref{eq:nested-basis} on infinitely many integer values of $x$, hence
+identically. The $i$th column starts with $i-1$ zeros and has coefficient
+$1$ at $x^{i-1}$, so the coefficient matrix is triangular with diagonal
+$1$. Finally, \eqref{eq:palette} has integer coefficients in the
+parameters $c_B$; reducing \eqref{eq:nested-congruence} modulo $M$
+therefore gives the congruence assertion.
+\end{proof}
+
+Let the current residual be $E=f-F_{[d]}$. Initially $\deg E\le d-2$.
+Changing the star deficits $D_{\{i,d\}}$, for $1\le i\le m$, changes
+$F_{[d]}$ by the columns $F_{[m]\setminus\{i\}}$, since $\eta_2=1$.
+Lemma~\ref{lem:nested} makes their coefficient matrix invertible
+modulo $M$. Choose residues
+\begin{equation}\label{eq:rho}
+ \rho_i\in\{0,1,\ldots,M-1\}
+\end{equation}
+so that replacing $D_{\{i,d\}}$ by $D_{\{i,d\}}+\rho_i$ makes every
+coefficient of $E$ divisible by $M$. For $M=1$ take every $\rho_i=0$.
+These bounded changes do not affect the leading or next-to-leading
+coefficients.
+
+We now use blocks of sizes $k=2,3,\ldots,d$, in that order.
+At stage $k$, put
+\begin{equation}\label{eq:stage-blocks}
+ r=d-k,\qquad I=[r+1],\qquad
+ R_i=I\setminus\{i\},\qquad B_i=[d]\setminus R_i
+ \quad(1\le i\le r+1).
+\end{equation}
+Each $B_i$ contains $d$ and has size $k$. Its derivative column is
+$\eta_k F_{R_i}$, a polynomial of degree $r$ with leading coefficient
+$\eta_k$.
+
+\begin{lemma}[Integral completion with controlled rounding]
+\label{lem:completion}
+Suppose at the start of stage $k$ that $\deg E\le r$ and
+$E\in M\Z[x]$. There are integral changes of the deficits indexed by
+\eqref{eq:stage-blocks} that remove the coefficient of $x^r$ exactly
+and leave the entire residual in $M\Z[x]$.
+They differ by a bounded amount depending only on $d$ from the unique
+rational changes that would remove all remaining coefficients at once.
+After stage $d$ the residual is zero.
+\end{lemma}
+\begin{proof}
+The matrix with columns $F_{R_i}$ has determinant $1$ modulo $M$ by
+Lemma~\ref{lem:nested}. For $d\ge3$ this determinant is nonzero, because
+$M\ge2$. For $d=2$ the only matrix is $[1]$. Thus the matrix with columns
+$\eta_k F_{R_i}$ is invertible over $\Q$ at every admissible scale.
+Let $\delta_1^*,\ldots,\delta_{r+1}^*$ solve
+\begin{equation}\label{eq:exact-stage}
+ E(x)=\sum_{i=1}^{r+1}\delta_i^*\eta_kF_{R_i}(x).
+\end{equation}
+Put
+\begin{equation}\label{eq:lattice-step}
+ h_k=\frac{M}{(k-1)!}.
+\end{equation}
+For the first $r$ coordinates choose
+\begin{equation}\label{eq:round-stage}
+ \widehat\delta_i=h_k\left\lfloor\delta_i^*/h_k\right\rfloor,
+ \qquad
+ \widehat\delta_{r+1}=
+ \frac{[x^r]E}{\eta_k}-\sum_{i=1}^r\widehat\delta_i.
+\end{equation}
+Since $[x^r]E$ is divisible by $M$, its quotient by $\eta_k$ lies in
+$h_k\Z$. Therefore every $\widehat\delta_i$ belongs to $h_k\Z$.
+All column leading coefficients equal $\eta_k$, so
+\eqref{eq:round-stage} removes the degree $r$ term exactly.
+Also $\eta_kh_k=\pm M$ and $F_{R_i}\in\Z[x]$, which preserves
+divisibility of every residual coefficient by $M$.
+
+For $i\le r$, the error
+$e_i=\widehat\delta_i-\delta_i^*$ belongs to $(-h_k,0]$.
+Taking leading coefficients in \eqref{eq:exact-stage} shows
+$e_{r+1}=-\sum_{i=1}^re_i$. Hence
+\begin{equation}\label{eq:round-error}
+ |e_i|\le r h_k\quad(1\le i\le r+1),\qquad \sum_i e_i=0
+\end{equation}
+when $r\ge1$. At the final stage $r=0$, the single derivative is the
+constant $\eta_d=\pm M$, and the remaining constant is removed exactly
+with an integer change; the rounding error is zero.
+All changes are additive by Lemma~\ref{lem:affine}, so the stage
+calculation is exact even after the preceding stages.
+\end{proof}
+
+\section{The corrections stay inside the positive region}\label{sec:bounds}
+
+We now establish the quantitative assertion needed to turn the formal
+integer solution into a graph. In all estimates below, $d$ is fixed,
+and the constants are independent of the input coefficients and of
+the permitted root-rounding choices.
+
+\begin{lemma}[Uniform bound for every correction]\label{lem:bound}
+There is a constant $K_d>0$ such that, for every input $f$ and
+every admissible $t\ge U$, the residue repair and all stages of
+Lemma~\ref{lem:completion} change each initialized deficit by at most
+$K_d\htf t$ in absolute value. The outer deficits remain fixed.
+\end{lemma}
+\begin{proof}
+At stage $k$, with $r=d-k$, define the scaled matrix $A_k(t)$ by
+\begin{equation}\label{eq:scaled-matrix}
+ (A_k(t))_{j,i}=t^{j-r}[x^j](\eta_k F_{R_i}(x)),
+ \qquad 0\le j\le r,\quad 1\le i\le r+1.
+\end{equation}
+By Lemma~\ref{lem:limits}, this converges uniformly to the coefficient
+matrix with columns $\eta_kQ_{R_i}$. The latter is invertible by
+Lemma~\ref{lem:rank}. Thus, beyond a degree-dependent threshold, all
+inverses $A_k(t)^{-1}$ are bounded in any fixed matrix norm.
+There are only $d-1$ stages, so one threshold and one bound suffice.
+Below that threshold there are only finitely many admissible scales
+and finitely many permitted integer outer data. Every corresponding
+matrix is nonsingular by Lemma~\ref{lem:completion}. Increasing the
+degree-dependent bound over these finitely many matrices therefore
+bounds all the scaled inverses for every admissible $t\ge U$.
+The coefficients $t^{j-r}[x^j]F_{R_i}$ are likewise uniformly bounded.
+
+For the first stage, \eqref{eq:initial-error} gives
+$[x^j]E=O_d(\htf t^{r+1-j})$.
+The bounded residue repair contributes only $O_d(t^{r-j})$ and
+preserves this bound. Multiplying the right side of
+\eqref{eq:exact-stage} by the row scalings in
+\eqref{eq:scaled-matrix} gives a vector $O_d(\htf t)$.
+The inverse bound therefore gives
+$\delta_i^*=O_d(\htf t)$ in this first stage.
+
+After any stage of residual degree $r\ge1$, the new residual is
+\[
+ -\sum_i e_i\eta_kF_{R_i}(x).
+\]
+By \eqref{eq:round-error} its coefficient at $x^j$ is
+$O_d(t^{r-j})$, and its coefficient at $x^r$ is exactly zero.
+At the next stage the degree is at most $r-1$; scaling the rows for
+that degree makes this new right side $O_d(t)$.
+Every later exact correction is consequently $O_d(t)$, and its rounded
+version has the same bound. The final constant stage satisfies the
+same assertion and removes its residual without rounding error.
+
+The initial residue changes are bounded by $M$, and there are finitely
+many stages and coordinates depending only on $d$. Summing the changes
+gives $O_d(\htf t)$ for each affected deficit. All blocks changed
+contain $d$, so all outer data used in the matrices stay fixed.
+\end{proof}
+
+\begin{lemma}[Positive atoms and a positive shift]\label{lem:positive}
+For the final moments after integral completion,
+\begin{align}
+ m_J&=\wt t^2+O_d(\htf t)\qquad(\varnothing\ne J\subseteq[d]),
+     \label{eq:atoms-asymp}\\
+ N&=(4-\wt)t^2+O_d(\htf t),\qquad
+ n=N-L=(2-\wt)t^2+O_d(\htf t).\label{eq:N-asymp}
+\end{align}
+There is a constant $B_d>0$ such that all final atoms and $n$ are
+strictly positive whenever $t\ge B_d\htf$ is admissible.
+\end{lemma}
+\begin{proof}
+Before the corrections, the quadratic part of every moment comes from
+the uniform atom weights $\wt t^2$. The singleton perturbations are
+$O_d(t+\htf)$ and the initial outer offsets are $O_d(1)$.
+Lemma~\ref{lem:bound} changes the other moments by
+$O_d(\htf t)$. Boolean inversion is a fixed finite linear transform
+for this degree, proving \eqref{eq:atoms-asymp} uniformly for every
+nonempty $J$. Summing its $2^d-1$ terms gives
+$(2^d-1)\wt=4-\wt$, proving \eqref{eq:N-asymp}.
+
+For $d\ge2$, both $\wt=2^{2-d}$ and $2-\wt$ are positive.
+Choose $B_d\ge U$ large enough that the absolute error bounds in
+\eqref{eq:atoms-asymp} and \eqref{eq:N-asymp} are smaller than half
+their respective positive leading terms whenever $t\ge B_d\htf$.
+This is possible because every such error is bounded by a constant
+depending only on $d$ times $\htf t$. It proves simultaneous positivity
+of all atoms and of $n$ for all sufficiently large admissible scales.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:main}]
+Suppose first that $d\ge2$. Starting with $t=U$, successively try
+$t=U,2U,4U,\ldots$. At each scale carry out the finite root isolation,
+the residue repair, and all the exact rational systems and lattice
+roundings above. Accept the first scale at which all computed atoms
+and $n=N-L$ are positive. Lemma~\ref{lem:positive} proves that this
+unbounded doubling search terminates for every input. At the accepted
+scale, Lemma~\ref{lem:completion} gives $F_{[d]}=f$ exactly, and the
+positive integer atoms give an actual graph. Lemma~\ref{lem:graph}
+then gives
+\[
+ P_G(q)=\fall qN f(q-N+L)=\fall qN f(q-n).
+\]
+
+The graph contains the $N$-clique $C$. For each $i$, choose a vertex of
+the positive singleton type $\{i\}$ and reuse its color on $v_i$.
+These are distinct colors and each is allowed on its corresponding
+row, so $\chi(G)=N$. A vertex of type $\{1\}$ is adjacent to $v_2$;
+there is therefore an edge joining the two cliques. Both cliques are
+connected, so the graph is connected.
+
+The first accepted scale is at most
+$2\max(U,B_d\htf)$, after enlarging $B_d$ if necessary.
+Equation~\eqref{eq:N-asymp} now gives
+$N+d=O_d(\htf^2)$, which is \eqref{eq:size}.
+
+For $d=1$, write $f(x)=x+a_1$ and take
+\[
+ N=\max(2,2-a_1),\qquad n=N+a_1-1\ge1,\qquad
+ G=K_{N+1}-e.
+\]
+Partition the graph into an $N$-clique and a single vertex that is
+nonadjacent to exactly one vertex of the clique. Direct counting gives
+\[
+ P_G(q)=\fall qN(q-N+1)=\fall qN f(q-n).
+\]
+This graph is connected, has chromatic number $N$, and has
+$O(\htf)$ vertices. This completes all cases.
+\end{proof}
+
+\begin{remark}[Quantifiers and effectiveness]\label{rem:quantifiers}
+For each $d\ge2$, one degree-dependent constant $B_d$ works for every
+input $f$ and for every admissible scale $t\ge B_d\htf$.
+Thus the positivity argument proves existence
+for every input and termination of the stated algorithm, rather than
+giving a sufficient condition whose attainability is left open.
+The constants in the size bound are degree dependent; no bound uniform
+in unbounded $d$ is asserted. They can be made effective from the finite
+partition formulas and certified bounds for the distinct algebraic
+slopes and the inverses of their limiting matrices. Their numerical
+optimization is not needed by the algorithm or the existence proof.
+\end{remark}
+
+\section{Prescribed-degree splitting fields}\label{sec:fields}
+
+Gilmore's Conjecture~7.1 asks whether a field that is the splitting field
+of a degree-$j$ polynomial over $\Q$ is the splitting field of the
+chromatic polynomial of a $(j,k)$-biclique for some $k$
+\cite[p.~63]{Gilmore}. The parameter $j$ is the degree of the given
+polynomial, not the degree of its splitting field.
+
+\begin{corollary}[Exact splitting-field realization]\label{cor:field}
+Let $g\in\Q[x]$ have degree $d\ge1$. There is a connected
+$(d,N)$-biclique $G$ such that
+\[
+ \Split(P_G)=\Split(g).
+\]
+Consequently the prescribed-degree statement in Gilmore's
+Conjecture~7.1 follows from Theorem~\ref{thm:main}.
+\end{corollary}
+\begin{proof}
+Divide $g$ by its leading coefficient, obtaining
+$g_0(x)=x^d+b_1x^{d-1}+\cdots+b_d$.
+Choose a positive common denominator $s$ of the rational $b_i$.
+Then
+\[
+ f(x)=s^d g_0(x/s)
+     =x^d+s b_1x^{d-1}+\cdots+s^d b_d\in\Z[x]
+\]
+is monic of degree $d$ and has exactly the same splitting field as $g$:
+its roots are $s$ times the roots of $g$.
+Theorem~\ref{thm:main} gives
+$P_G(q)=\fall qN f(q-n)$ with a small clique of exactly $d$ vertices.
+Translation by a rational integer and adjoining the rational roots of
+$\fall qN$ do not change the splitting field. Hence the asserted
+equality holds.
+\end{proof}
+
+This realizes splitting fields already arising from polynomials over
+$\Q$. It does not assert that every finite abstract group occurs as a
+Galois group over $\Q$.
+
+\section{An exact certificate and independent verification}\label{sec:certificate}
+
+The reference implementation in Appendix~\ref{app:code} accepts the
+coefficient list $[a_1,\ldots,a_d]$. It uses rational isolating intervals
+only to choose the auxiliary Hermite slopes; the original target roots
+are never approximated. All subsequent arithmetic is integral or
+rational, and each acceptance test is exact.
+
+\subsection{A complete sextic certificate}
+
+For $f(x)=x^6-2$, the implementation returns
+\begin{align*}
+ t&=15360,&L&=471859200,&N&=951531708,\\
+ n&=479672508,&|V(G)|&=951531714,&\min_J m_J&=3894438,
+\end{align*}
+and
+\[
+ (z_1,\ldots,z_6)=(-51120,-29039,-9478,9363,28924,51365).
+\]
+Initialize every deficit by \eqref{eq:initial-D} and then add the
+following corrections; all unlisted corrections are zero.
+The moments \eqref{eq:parameters} and inversion
+\eqref{eq:inversion} specify every vertex type and its multiplicity,
+so the certificate is a complete compressed description of the graph.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lr@{\qquad}lr@{}}
+\toprule
+$B$ & $D_B-D_B^{(0)}$ & $B$ & $D_B-D_B^{(0)}$\\
+\midrule
+$\{1,6\}$ & $6\,662\,758$ & $\{4,5,6\}$ & $-193\,500$ \\
+$\{2,6\}$ & $1\,849\,209$ & $\{1,4,5,6\}$ & $-551\,280$ \\
+$\{3,6\}$ & $339\,460$ & $\{2,4,5,6\}$ & $-369\,520$ \\
+$\{4,6\}$ & $4\,592\,431$ & $\{3,4,5,6\}$ & $-127\,780$ \\
+$\{5,6\}$ & $2\,100\,692$ & $\{1,3,4,5,6\}$ & $-187\,975$ \\
+$\{1,5,6\}$ & $-4\,560\,780$ & $\{2,3,4,5,6\}$ & $-10\,645$ \\
+$\{2,5,6\}$ & $-1\,656\,900$ & $\{1,2,3,4,5,6\}$ & $-9\,071$ \\
+$\{3,5,6\}$ & $-1\,462\,200$ &  &  \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Exact substitution gives
+\begin{equation}\label{eq:sextic}
+ P_G(q)=\fall q{951531708}\bigl((q-479672508)^6-2\bigr).
+\end{equation}
+In particular, $\sqrt[6]{2}+479672508$ is a chromatic root.
+The very large order is an artifact of this universal construction;
+no claim of minimal order or minimal shift is made.
+
+\subsection{A verification route independent of the partition sum}
+
+Form the bipartite graph of cross-\emph{nonedges}, with its $d$ row
+vertices on one side and $C$ on the other. Let $r_k$ be its number of
+$k$-edge matchings. Coloring the two cliques with exactly $k$ reused
+old colors gives
+\begin{equation}\label{eq:rook}
+ \frac{P_G(q)}{\fall qN}=\sum_{k=0}^d r_k\fall{q-N}{d-k}.
+\end{equation}
+Indeed, a matching chooses the rows using old colors and assigns
+distinct old colors to them. The other $d-k$ rows choose distinct new
+colors in $\fall{q-N}{d-k}$ ways. This is the matching formula used in
+earlier biclique work \cite[Section 2.1]{Bohn}, and the counting argument
+also proves it here.
+
+For a type $J$ with $m_J$ vertices, assigning a chosen set $S\subseteq J$
+of still-unmatched rows to that type can be done in
+$\fall{m_J}{|S|}$ ways. A subset dynamic program over the row sets
+therefore computes all $r_k$ directly from the atoms. The verifier
+checks the independent identity
+\begin{equation}\label{eq:rook-verify}
+ \sum_{k=0}^d r_k\fall{x-L}{d-k}=f(x).
+\end{equation}
+It does not reuse the partition polynomial or the affine correction
+matrices.
+
+The included implementation was run on $x^d-2$ and on a mixed-sign
+coefficient polynomial in every degree $1\le d\le9$ (18 inputs).
+All exact factor checks, positive-atom checks, positive-shift checks,
+and matching checks passed. Separate implementations checked the same
+mechanism through degree nine and further mixed inputs through degree
+eight, including coefficients of magnitude up to $10^9$.
+These finite checks support transcription and implementation accuracy;
+the universal assertion is proved by the preceding lemmas.
+
+\section{Claim boundaries and literature status}\label{sec:status}
+
+The original statement is kept unchanged: arbitrary algebraic integers,
+positive integer translation, and zeros of ordinary unweighted chromatic
+polynomials of finite simple graphs. The affine coordinates used here
+are accompanied by the exact identity \eqref{eq:graph}. The coefficient
+completion and the $t^2$ versus $\htf t$ estimate provide an actual
+positive integral graph for every input.
+
+As checked on 28 November 2026, Cameron's conjecture page, dated
+2 November 2026, still lists the $\alpha+n$ conjecture among the
+conjectures he would like to see settled \cite{CameronWeb}. The search
+and primary sources consulted did not identify an earlier unrestricted
+all-degree theorem or the same proof. This is evidence about the
+consulted literature, not a proof of absolute priority.
+
+The reviewed full texts were Cameron--Morgan (2017), Bohn (2012),
+Gilmore (2015), and Delbourgo--Morgan (2022).
+For the 2019 article, the official abstract and bibliographic record
+were reviewed; its full text was not available and was not reviewed.
+This access limit is material to an exhaustive comparison of methods.
+The corpus snapshot was fixed at commit
+\begin{center}
+\small\texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33}.
+\end{center}
+Manuscript 245 supplies the methodological connection stated in Section 1.
+
+\begin{center}
+\small
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\toprule
+Criterion & What this manuscript establishes or documents\\
+\midrule
+G1: named predecessor & Cameron--Morgan Conjecture 4 and Gilmore
+Conjecture 7.1 are identified in primary texts.\\[3pt]
+G2: unchanged target & Equation~\eqref{eq:main} implies the original
+translation statement without changing $\alpha$ or restricting its degree.\\[3pt]
+G3: prior open status & The current author-maintained problem list and
+the inspected papers support the recorded status; exhaustive historical
+absence is not certified.\\[3pt]
+G4: unconditional proof & Sections 2--6 give the complete construction,
+integer completion, positivity estimates, and termination argument for
+all inputs, with no conjectural hypothesis.\\[3pt]
+G5: substantive extension & The Hermite interior, all-degree basis rank,
+factorial lattice correction, and uniform size control provide
+unrestricted degree and input coefficients.\\[3pt]
+G6: originality and priority & No identical resolution was identified
+in the sources searched. Absence of an earlier identical theorem or
+essentially identical proof is not independently certified.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+The document is a research manuscript with internal proof audits and
+exact computational checks. It has not received external peer review
+or proof-assistant verification. Thus it records a complete proposed
+mathematical proof while leaving independent validation, exhaustive
+novelty assessment, and priority determination open.
+
+\appendix
+\section{An optional rational version of the leading profile}
+\label{app:rational-profile}
+
+This appendix is not needed for the main theorem. It shows that the
+Hermite profile can, if desired, be replaced by a fixed strictly positive
+rational profile for each degree. Algebraic-root isolation is then needed
+only during a degree-dependent preliminary construction.
+
+\begin{proposition}[A rational profile in every degree]
+\label{prop:rational-profile}
+Fix $d\ge2$, put $m=d-1$ and $\gamma=2^{2-d}$, and let
+\[
+ h(X)=\operatorname{He}_d(X)
+     =\exp\!\left(-\frac12\frac{d^2}{dX^2}\right)X^d.
+\]
+Choose distinct rational numbers $u_1,\ldots,u_m$, set
+$u_d=-\sum_{i=1}^m u_i$, and define
+\begin{equation}\label{eq:rational-star}
+ p(X)=\prod_{i=1}^m(X+u_i),\qquad
+ v_i=1+\frac{h(-u_i)}{p'(-u_i)}.
+\end{equation}
+Give every outer pair $ij\subseteq[m]$ weight $1$ and the pair $id$
+weight $v_i$. Then the weighted matching polynomial
+\[
+ \sum_{\mathcal M\text{ a matching of }K_d}
+       \prod_{ij\in\mathcal M}v_{ij}
+       \prod_{k\text{ unmatched}}(X+u_k)
+\]
+is exactly $X^d$.
+Moreover, the rational $u_i$ can be chosen so that these pair weights
+extend to strictly positive rational palette atoms whose singleton
+moments are $2$. The outer pair weights remain $1$, and all leading
+coefficient matrices required by the integral correction are nonsingular.
+\end{proposition}
+
+\begin{proof}
+Write $T=\exp(\partial_X^2/2)$. A matching either leaves row $d$ unmatched
+or pairs it with one of the outer rows. The matching polynomial is therefore
+\[
+ (X+u_d)Tp+\sum_{i=1}^m v_i\,T\!\left(\frac{p}{X+u_i}\right).
+\]
+The identity $T^{-1}XT=X-\partial_X$ shows that this equals $X^d$ if and
+only if
+\begin{equation}\label{eq:rational-interpolation}
+ h=(X+u_d)p-p'+\sum_{i=1}^m v_i\frac{p}{X+u_i}.
+\end{equation}
+Both sides of \eqref{eq:rational-interpolation} are monic of degree $d$
+and have zero coefficient of $X^{d-1}$. Their difference thus has degree
+at most $d-2=m-1$. At $X=-u_i$, the right side has value
+$(v_i-1)p'(-u_i)=h(-u_i)$ by \eqref{eq:rational-star}.
+The difference vanishes at $m$ distinct points, proving the identity.
+All the numbers $v_i$ are rational.
+
+Let $\lambda_1,\ldots,\lambda_d$ be the distinct real roots of
+$\operatorname{He}_d$. Choose the rational outer numbers $u_i$ close to
+$-\lambda_i$, for $i\le m$. Their distinctness persists in a sufficiently
+small neighborhood. Since the sum of the Hermite roots is zero,
+$u_d$ approaches $-\lambda_d$. Formula \eqref{eq:rational-star} is
+continuous there, with nonzero denominators, and every $v_i$ approaches
+$1$. We may consequently arrange
+\begin{equation}\label{eq:rational-smallness}
+ \delta_i:=v_i-1,\qquad
+ |\delta_i|<\frac{\gamma}{2m}\quad(1\le i\le m).
+\end{equation}
+
+Start with weight $\gamma$ on each of the $2^d-1$ nonempty atoms.
+Its singleton moments are $2$, and its moments on a set $B$ of size
+at least two are $2^{2-|B|}$; in particular its pair deficits are $1$
+when the leading value of $L$ is $2$. Change only the star-pair deficits
+from $1$ to $v_i$. Boolean inversion gives the following atom weights:
+\[
+ \begin{aligned}
+ w_{\{i,d\}}&=\gamma-\delta_i,&
+ w_{\{i\}}&=\gamma+\delta_i\qquad(i\le m),\\
+ w_{\{d\}}&=\gamma+\sum_{i=1}^m\delta_i,&
+ w_J&=\gamma\quad\text{for every other nonempty }J.
+ \end{aligned}
+\]
+They are all at least $\gamma/2>0$ by
+\eqref{eq:rational-smallness}. The changes in each singleton moment
+cancel, so all those moments remain $2$. All outer data remain the
+uniform data. The total atom mass is
+$4-\gamma+\sum_i\delta_i>2$, as required for a positive leading shift.
+
+Finally, for any $r+1$ distinct outer indices $J$, the polynomials
+\[
+ \prod_{j\in J\setminus\{i\}}(X+u_j),\qquad i\in J,
+\]
+form a basis of the polynomials of degree at most $r$: evaluation at
+$-u_i$ isolates its $i$th member. Applying the invertible operator $T$
+preserves their independence. These are exactly the leading complementary
+palette polynomials used in the correction matrices, because every
+outer pair weight remains $1$.
+\end{proof}
+
+The choice is effective. Successively refine rational isolating intervals
+for the simple Hermite roots, choose distinct rational outer values, and
+compute \eqref{eq:rational-star} exactly until
+\eqref{eq:rational-smallness} holds. Continuity proves termination, and
+the acceptance test uses rational arithmetic only. A common denominator
+of this fixed profile can then be incorporated into the admissible scale.
+This preliminary search depends on $d$, not on the coefficients of the
+polynomial subsequently realized.
+
+
+\section{Reference implementation}\label{app:code}
+
+The following code is included literally in this single source file.
+It was executed with Python 3.12.14 and SymPy 1.14.0. SymPy supplies
+rational isolating intervals for the explicit auxiliary Hermite
+polynomial; Gaussian elimination, lattice rounding, Boolean inversion,
+and matching verification use Python integers and
+\texttt{fractions.Fraction}. Copy the listing to a Python file and run
+it to reproduce the complete sextic certificate. For another input,
+call \texttt{construct([a1,...,ad])} followed by
+\texttt{verify\_matching(result)}. The scale loop has no fixed cap.
+The returned atoms give a compressed graph description, avoiding
+expansion of its potentially enormous vertex set.
+
+\begin{lstlisting}
+"""Integral palette lifting in arbitrary degree.
+
+Input [a1,...,ad] represents x**d+a1*x**(d-1)+...+ad.
+SymPy supplies rational Hermite root intervals only. All construction,
+lattice correction and certificate arithmetic is exact.
+"""
+from fractions import Fraction as Q
+from functools import lru_cache
+from math import comb, factorial
+import sympy as sp
+
+
+def multiply(p, q):
+    out = [0] * (len(p) + len(q) - 1)
+    for i, a in enumerate(p):
+        for j, b in enumerate(q):
+            out[i + j] += a * b
+    return out
+
+
+def add_scaled(p, q, c=1):
+    out = list(p) + [0] * max(0, len(q) - len(p))
+    for j, b in enumerate(q):
+        out[j] += c * b
+    return out
+
+
+def solve(columns, rhs):
+    n = len(rhs)
+    a = [[Q(columns[j][i]) for j in range(n)] + [Q(rhs[i])]
+         for i in range(n)]
+    for j in range(n):
+        pivot = next(i for i in range(j, n) if a[i][j])
+        a[j], a[pivot] = a[pivot], a[j]
+        v = a[j][j]
+        a[j] = [x / v for x in a[j]]
+        for i in range(n):
+            if i != j:
+                v = a[i][j]
+                a[i] = [x - v * y for x, y in zip(a[i], a[j])]
+    return [row[-1] for row in a]
+
+
+@lru_cache(None)
+def hermite(d):
+    x = sp.Symbol("x")
+    p, q = sp.Integer(1), x
+    for j in range(1, d):
+        p, q = q, sp.expand(x * q - j * p)
+    return sp.Poly(q, x)
+
+
+def singleton_values(d, t, M, a1):
+    intervals = hermite(d).intervals(eps=sp.Rational(M, 4 * t))
+    assert len(intervals) == d and all(e == 1 for _, e in intervals)
+    z = []
+    for i, ((lo, hi), _) in enumerate(intervals[:-1]):
+        midpoint = (lo + hi) / 2
+        u = Q(int(midpoint.p), int(midpoint.q))
+        z.append(i + M * ((t * u - i) // M))
+    z.append(a1 + comb(d, 2) - sum(z))
+    return z
+
+
+def construct_at(coeff, t):
+    d = len(coeff)
+    assert d >= 2 and all(isinstance(a, int) for a in coeff)
+    M = factorial(d - 1)
+    assert t > 0 and t % (2**d * M) == 0
+    full = (1 << d) - 1
+    center = 1 << (d - 1)
+    outer = center - 1
+    L = 2 * t * t
+    z = singleton_values(d, t, M, coeff[0])
+    deficits = {}
+    for B in range(1, full + 1):
+        k = B.bit_count()
+        if k >= 2:
+            assert t * t % (2**(k - 2)) == 0
+            deficits[B] = L - t * t // (2**(k - 2))
+            if not B & center:
+                deficits[B] -= (B & -B).bit_length() - 1
+    original = dict(deficits)
+
+    @lru_cache(None)
+    def outer_poly(S):
+        assert not S & center
+        if not S:
+            return (1,)
+        bit = S & -S
+        tail = S ^ bit
+        sub = tail
+        out = [0] * (S.bit_count() + 1)
+        while True:
+            B = sub | bit
+            k = B.bit_count()
+            mu = (-1)**(k - 1) * factorial(k - 1)
+            c = z[bit.bit_length() - 1] if k == 1 else -deficits[B]
+            out = add_scaled(out, multiply([c, 1], outer_poly(S ^ B)), mu)
+            if sub == 0:
+                return tuple(out)
+            sub = (sub - 1) & tail
+
+    actual = multiply([z[-1], 1], outer_poly(outer))
+    for B, D in deficits.items():
+        if B & center:
+            mu = (-1)**(B.bit_count() - 1) * factorial(B.bit_count() - 1)
+            actual = add_scaled(actual, multiply([-D, 1], outer_poly(full ^ B)), mu)
+    target = list(reversed(coeff)) + [1]
+
+    def residual():
+        return [a - b for a, b in zip(target, actual)]
+
+    def derivative(B):
+        k = B.bit_count()
+        c = (-1)**k * factorial(k - 1)
+        return [c * a for a in outer_poly(full ^ B)]
+
+    def change(B, delta):
+        nonlocal actual
+        assert Q(delta).denominator == 1 and B & center
+        delta = int(delta)
+        deficits[B] += delta
+        actual = add_scaled(actual, derivative(B), delta)
+
+    assert residual()[d - 1:] == [0, 0]
+    # The nested basis x^i (x+1)^(d-2-i) is unit triangular.
+    r = residual()
+    rho = []
+    for j in range(d - 1):
+        rho.append((r[j] - sum(comb(d - 2 - i, j - i) * rho[i]
+                              for i in range(j))) % M)
+    for i, v in enumerate(rho):
+        change(center | (1 << i), v)
+    assert all(a % M == 0 for a in residual())
+
+    stage_maxima = []
+    for k in range(2, d + 1):
+        r = d - k
+        I = (1 << (r + 1)) - 1
+        complements = [I ^ (1 << i) for i in range(r + 1)]
+        blocks = [full ^ R for R in complements]
+        columns = [derivative(B) for B in blocks]
+        error = residual()
+        assert all(a == 0 for a in error[r + 1:])
+        # Check the exact modular rank certificate at every layer.
+        for i, R in enumerate(complements):
+            for j, a in enumerate(outer_poly(R)):
+                expected = comb(r - i, j - i) if j >= i else 0
+                assert (a - expected) % M == 0
+        exact = solve(columns, error[:r + 1])
+        c = (-1)**k * factorial(k - 1)
+        h = M // abs(c)
+        rounded = [h * (v // h) for v in exact[:-1]]
+        assert error[r] % c == 0
+        rounded.append(error[r] // c - sum(rounded))
+        assert all(v % h == 0 for v in rounded)
+        for B, v in zip(blocks, rounded):
+            change(B, v)
+        assert all(a == 0 for a in residual()[r:])
+        assert all(a % M == 0 for a in residual())
+        stage_maxima.append(max(abs(v) for v in rounded))
+    assert actual == target
+
+    moments = [0] * (full + 1)
+    for B in range(1, full + 1):
+        moments[B] = L + z[B.bit_length() - 1] if B.bit_count() == 1 else L - deficits[B]
+    atoms = list(moments)
+    for i in range(d):
+        for B in range(full + 1):
+            if not B & (1 << i):
+                atoms[B] -= atoms[B | (1 << i)]
+    atoms = dict(enumerate(atoms[1:], 1))
+    N = sum(atoms.values())
+    return dict(degree=d, coefficients=list(coeff), t=t, M=M, L=L, z=z,
+                deficits=deficits, atoms=atoms, empty_atom=0, N=N, shift=N-L,
+                min_atom=min(atoms.values()), stage_maxima=stage_maxima,
+                corrections={B: deficits[B]-original[B] for B in deficits
+                             if deficits[B] != original[B]})
+
+
+def construct(coeff):
+    assert coeff and all(isinstance(a, int) for a in coeff)
+    d = len(coeff)
+    if d == 1:
+        a = coeff[0]
+        N = max(2, 2 - a)
+        return dict(degree=1, coefficients=list(coeff), t=0, M=1, L=1-a,
+                    z=[a], deficits={}, atoms={1: 1}, empty_atom=N-1,
+                    N=N, shift=N+a-1, min_atom=1,
+                    stage_maxima=[], corrections={})
+    t = 2**d * factorial(d - 1)
+    while True:
+        result = construct_at(coeff, t)
+        if result["min_atom"] > 0 and result["shift"] > 0:
+            return result
+        t *= 2
+
+
+def verify_matching(w):
+    """Count matchings in the nonedge bipartite graph independently."""
+    d = w["degree"]
+    full = (1 << d) - 1
+    assert w["N"] == sum(w["atoms"].values()) + w["empty_atom"]
+    assert w["shift"] > 0 and min(w["atoms"].values()) > 0
+    dp = [0] * (full + 1)
+    dp[0] = 1
+    for J, count in w["atoms"].items():
+        falling = [1]
+        for k in range(1, d + 1):
+            falling.append(falling[-1] * (count - k + 1))
+        nxt = [0] * (full + 1)
+        for used, ways in enumerate(dp):
+            if not ways:
+                continue
+            available = J & (full ^ used)
+            sub = available
+            while True:
+                nxt[used | sub] += ways * falling[sub.bit_count()]
+                if sub == 0:
+                    break
+                sub = (sub - 1) & available
+        dp = nxt
+    rook = [sum(v for S, v in enumerate(dp) if S.bit_count() == k)
+            for k in range(d + 1)]
+    result = [0] * (d + 1)
+    for k, number in enumerate(rook):
+        basis = [number]
+        for j in range(d - k):
+            basis = multiply(basis, [-w["L"] - j, 1])
+        result = add_scaled(result, basis)
+    assert result == list(reversed(w["coefficients"])) + [1]
+    return rook
+
+
+if __name__ == "__main__":
+    import json
+    w = construct([0, 0, 0, 0, 0, -2])
+    w["rook_numbers"] = verify_matching(w)
+    print(json.dumps(w, indent=2))
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{CM}
+P.~J. Cameron and K. Morgan,
+\emph{Algebraic properties of chromatic roots},
+Electronic Journal of Combinatorics \textbf{24}(1) (2017), P1.21.
+\href{https://doi.org/10.37236/6578}{doi:10.37236/6578}.
+\href{https://emis.de/ft/29131}{Full text}.
+
+\bibitem{Bohn}
+A. Bohn, \emph{Chromatic roots as algebraic integers},
+Discrete Mathematics and Theoretical Computer Science Proceedings
+\textbf{AR} (2012), 543--554.
+\href{https://doi.org/10.46298/dmtcs.3061}{doi:10.46298/dmtcs.3061}.
+\href{https://www.math.nagoya-u.ac.jp/fpsac12/download/contributed/dmAR0148.pdf}{Full text}.
+
+\bibitem{Gilmore}
+H.~J. Gilmore,
+\emph{Algebraic Properties of Chromatic Polynomials and Their Roots},
+MSc thesis, University of Waikato, 2015.
+\url{https://hdl.handle.net/10289/9367}.
+
+\bibitem{DM19}
+D. Delbourgo and K. Morgan,
+\emph{An algorithm which outputs a graph with a specified chromatic factor},
+Discrete Applied Mathematics \textbf{257} (2019), 128--150.
+\href{https://doi.org/10.1016/j.dam.2018.10.033}{doi:10.1016/j.dam.2018.10.033}.
+Official abstract consulted through the author's
+\href{https://profiles.auckland.ac.nz/daniel-delbourgo/publications}{University of Auckland publications record};
+full text not reviewed.
+
+\bibitem{DM22}
+D. Delbourgo and K. Morgan, \emph{On the fifth chromatic coefficient},
+Australasian Journal of Combinatorics \textbf{84}(1) (2022), 56--85.
+\url{https://ajc.maths.uq.edu.au/pdf/84/ajc_v84_p056.pdf}.
+
+\bibitem{VMRC}
+Verifiable Mathematical Reasoning Corpus, manuscript 245,
+\emph{Roots and coefficient peaks of graph polynomials},
+research manuscript dated 21 November 2026, Sections 2--3.
+Snapshot \texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33},
+accessed 28 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{CameronWeb}
+P.~J. Cameron, \emph{Peter Cameron's conjectures},
+page dated 2 November 2026, accessed 28 November 2026.
+\url{https://cameroncounts.github.io/web/problems/cameronconjs.html}.
+\end{thebibliography}
+\end{document}

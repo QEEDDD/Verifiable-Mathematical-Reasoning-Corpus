@@ -1,0 +1,928 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=26mm,headheight=14pt]{geometry}
+\usepackage{booktabs,array,tabularx,enumitem}
+\usepackage{xcolor,fancyhdr,listings,hyperref}
+\definecolor{ink}{HTML}{17324D}
+\definecolor{accent}{HTML}{176B78}
+\definecolor{codebg}{HTML}{F5F7F9}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+  pdftitle={A constructive proof of the quartic alpha+n conjecture},
+  pdfsubject={Exact realization of every monic integer quartic by a chromatic factor}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\N}{\mathbb N}
+\newcommand{\pairs}{\mathcal P}
+\newcommand{\parts}{\mathcal M}
+\newcommand{\fall}[2]{(#1)_{#2}}
+\newcommand{\bit}[1]{[#1]_2}
+\newcommand{\htf}{\mathcal H}
+\DeclareMathOperator{\Gal}{Gal}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ink}Quartic chromatic factors}
+\fancyhead[R]{\small 28 November 2026}
+\fancyfoot[C]{\small\thepage}
+\setlength{\emergencystretch}{3em}
+\setlist{nosep,leftmargin=*}
+\raggedbottom
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{ink}\bfseries,commentstyle=\color{accent},
+  backgroundcolor=\color{codebg},frame=single,rulecolor=\color{black!12},
+  breaklines=true,columns=fullflexible,keepspaces=true,
+  showstringspaces=false,tabsize=4,aboveskip=10pt,belowskip=10pt}
+\title{\color{ink}\bfseries A constructive proof of the quartic~\texorpdfstring{\boldmath $\alpha+n$}{alpha+n} conjecture}
+\author{\normalsize Research manuscript}
+\date{28 November 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+For every monic quartic $f\in\Z[x]$, we construct positive integers $N,n$
+and a finite simple graph $G$, whose vertices are the union of an $N$-clique
+and a four-clique, such that
+\[
+ P_G(q)=\fall qN f(q-n).
+\]
+Consequently every quartic algebraic integer becomes a chromatic root after
+addition of a positive integer. The construction uses a rational quadratic
+profile for six palette intersections. Its degree-four and degree-three
+contributions to the remaining constant-term equation cancel identically.
+All fifteen palette atoms retain strictly positive quadratic margins;
+parity choices and a bounded congruence correction then give exact integers.
+For $f(x)=x^4+ax^3+bx^2+cx+d$ and
+$\htf=10+|a|+|b|+|c|+|d|$, the construction gives
+$|V(G)|\le 54\,080\,000\,\htf^4$.
+The proof is elementary and does not depend on computational search.
+A complete integer-arithmetic implementation and an independent matching
+verification are included.
+\end{abstract}
+
+\section{The named problem and the result}
+
+Write $P_G(q)$ for the chromatic polynomial of a finite simple graph $G$.
+A chromatic root is a complex zero of some $P_G$. Cameron and Morgan's
+$\alpha+n$ conjecture asks whether every algebraic integer $\alpha$ admits
+a natural number $n$ for which $\alpha+n$ is a chromatic root
+\cite[Conjecture 4]{CM}. The problem arose in the 2008 Isaac Newton
+Institute programme. The study group established the quadratic case,
+and Bohn established the cubic case \cite{CM,Bohn}. This paper addresses the degree-four case of that same
+statement, without changing the number, the permitted translation, or the
+class of finite simple graphs.
+
+For $N\ge0$, let $\fall qN=q(q-1)\cdots(q-N+1)$, with
+$\fall q0=1$. We prove a polynomial realization statement stronger than
+the assertion about one root.
+
+\begin{theorem}[Exact quartic realization]\label{thm:main}
+Let $f(x)=x^4+ax^3+bx^2+cx+d$ with $a,b,c,d\in\Z$. There exist
+positive integers $N,n$ and a connected finite simple graph $G$ on $N+4$
+vertices such that
+\begin{equation}\label{eq:main}
+ P_G(q)=\fall qN f(q-n).
+\end{equation}
+The graph consists of two cliques of orders $N$ and $4$, with specified
+edges between them, and has chromatic number $N$. No irreducibility
+assumption on $f$ is needed.
+
+More explicitly, with
+\begin{equation}\label{eq:height}
+ \htf=10+|a|+|b|+|c|+|d|,\qquad t=5200\htf^2,
+\end{equation}
+the formulas below produce such a graph and satisfy
+\begin{equation}\label{eq:size}
+ 0<n<t^2,\qquad N+4\le2t^2=54\,080\,000\,\htf^4.
+\end{equation}
+\end{theorem}
+
+The graph class just described is called a $(4,N)$-\emph{biclique} in
+\cite{Bohn,CM,Gilmore}. In that terminology a biclique is the complement
+of a bipartite graph; the word does not mean a complete bipartite graph.
+
+\begin{corollary}\label{cor:root}
+Every algebraic integer of degree at most four has a positive integer
+translate that is a chromatic root.
+\end{corollary}
+\begin{proof}
+If $\alpha$ has monic minimal polynomial $g$ of degree $e\le4$, apply
+Theorem~\ref{thm:main} to $f(x)=x^{4-e}g(x)$. Then
+$P_G(\alpha+n)=0$.
+\end{proof}
+
+\subsection{What is inherited and what is proved here}
+
+The biclique formulas and the use of nonnegative Venn-region sizes are
+established tools. Gilmore's cubic construction already uses positive
+quadratic leading terms and congruence conditions; its discussion of the
+quartic case ends with a system of fourteen inequalities in eleven
+variables \cite[Section 6.4, pp.~59--62]{Gilmore}. The available abstract
+of Delbourgo and Morgan's algorithm explicitly conditions its output on
+existence of the required biclique \cite{DM19}. Their later paper describes
+the quartic results as computational evidence \cite[Section 1.1]{DM22}.
+
+The substantive step here is an explicit quartic solution of the integer
+realization problem: a rational profile with simultaneous leading-term
+cancellation, positive margins for every palette atom, and an exact
+integer lift. Neither a change of coordinates nor a numerical existence
+test supplies that step. Sections~\ref{sec:construction}--\ref{sec:positive}
+prove it for all four integer coefficients. Section~\ref{sec:effective}
+makes the size choice completely explicit.
+
+The supplied VMRC manuscript~245 uses a related proof-design principle:
+prescribe upper coefficients while keeping lower correction costs smaller
+than a positive realization margin \cite[Sections 2--3]{VMRC}. That
+independence-polynomial theorem does not imply a chromatic realization
+theorem. Here its role is methodological inspiration; the required
+chromatic counting and positivity arguments are proved below.
+
+\section{Four palettes and an exact counting formula}\label{sec:palettes}
+
+Let $C$ be an $N$-clique, and let $v_1,v_2,v_3,v_4$ form another clique.
+For each $i$, specify a set $A_i\subseteq C$ of vertices
+\emph{not} adjacent to $v_i$. All other cross-pairs are edges. After the
+vertices of $C$ receive distinct colors, $A_i$ is the set of old colors
+available to $v_i$. If $y=q-N$, all four vertices also have the same
+$y$ new colors available.
+
+For a nonempty $J\subseteq[4]=\{1,2,3,4\}$, let $m_J$ be the
+number of vertices of $C$ belonging to exactly the sets $A_i$ with
+$i\in J$. We use no vertices belonging to none of the $A_i$.
+Any fifteen nonnegative integers $m_J$ define actual sets and an actual
+finite graph in this way.
+
+Introduce integer parameters $L,z_i,D_{ij},T_i,U$ by prescribing
+\begin{align}
+ |A_i|&=L+z_i, & |A_i\cap A_j|&=L-D_{ij},\label{eq:intersections1}\\
+ \left|\bigcap_{j\ne i}A_j\right|&=L-T_i,
+ & |A_1\cap A_2\cap A_3\cap A_4|&=L-U.\label{eq:intersections2}
+\end{align}
+The parameter $T_i$ always indexes the triple \emph{omitting} $i$.
+
+Let $\pairs$ be the six two-element subsets of $[4]$, and let $\parts$
+be the three partitions of $[4]$ into two unordered pairs. When
+$\{i,j\}\in\pairs$, write $\{k,\ell\}=[4]\setminus\{i,j\}$.
+
+\begin{lemma}[Palette inversion]\label{lem:venn}
+The prescribed intersections are realized by the following atom counts:
+\begin{align}
+ m_{1234}&=L-U,\label{eq:atom4}\\
+ m_{[4]\setminus\{i\}}&=U-T_i,\label{eq:atom3}\\
+ m_{ij}&=T_k+T_\ell-D_{ij}-U,\label{eq:atom2}\\
+ m_i&=z_i+\sum_{j\ne i}D_{ij}-\sum_{j\ne i}T_j+U.\label{eq:atom1}
+\end{align}
+Thus nonnegativity of these fifteen integers is sufficient, with no
+additional set-realizability condition. Their sum is
+\begin{equation}\label{eq:N}
+ N=L+\sum_i z_i+\sum_{i<j}D_{ij}-\sum_iT_i+U.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Create $m_J$ distinct elements of type $J$ and put an element into $A_i$
+exactly when its type contains $i$. Equations
+\eqref{eq:atom4}--\eqref{eq:atom1} are inclusion--exclusion for the
+specified intersections. For example, the intersection $A_i\cap A_j$
+has the pair atom, the two triple atoms omitting $k$ and $\ell$, and
+the quadruple atom; their sum is $L-D_{ij}$. Summing the atoms containing
+a fixed $i$ gives $L+z_i$. The other identities follow in the same way.
+Inclusion--exclusion for the union gives \eqref{eq:N}.
+\end{proof}
+
+\begin{lemma}[The centered quartic]\label{lem:quartic}
+Put $x=y+L=q-N+L$. The number of extensions of a fixed coloring of $C$
+is the following polynomial in $x$:
+\begin{align}
+ F(x)={}&\prod_{i=1}^4(x+z_i)
+ -\sum_{\{i,j\}\in\pairs}(x-D_{ij})(x+z_k)(x+z_\ell)\notag\\
+ &+\sum_{\{\{i,j\},\{k,\ell\}\}\in\parts}(x-D_{ij})(x-D_{k\ell})
+ +2\sum_i(x-T_i)(x+z_i)-6(x-U).\label{eq:F}
+\end{align}
+Consequently
+\begin{equation}\label{eq:Pfactor}
+ P_G(q)=\fall qN F(q-N+L).
+\end{equation}
+\end{lemma}
+\begin{proof}
+The common palette of a set of small-clique vertices has size $x+z_i$
+for a singleton, $x-D_{ij}$ for a pair, $x-T_i$ for a triple omitting
+$i$, and $x-U$ for all four. Count assignments in which all four colors
+are distinct by inclusion--exclusion on the partition lattice. A block of
+size $r$ contributes the factor $(-1)^{r-1}(r-1)!$. The five partition
+types $1+1+1+1$, $2+1+1$, $2+2$, $3+1$, and $4$ give precisely
+\eqref{eq:F}. This argument is a specialization of the standard biclique
+formula \cite[Proposition 9]{CM}.
+It applies to every integer $q\ge N$; hence it is a polynomial identity.
+Multiplication by the $\fall qN$ colorings of $C$ proves
+\eqref{eq:Pfactor}.
+\end{proof}
+
+Let $S=\sum_i z_i$, and let $e_j=e_j(z_1,z_2,z_3,z_4)$ denote the
+elementary symmetric functions. Define
+\begin{equation}\label{eq:M}
+ M=e_4+\sum_{\{i,j\}\in\pairs}D_{ij}z_kz_\ell
+     +D_{12}D_{34}+D_{13}D_{24}+D_{14}D_{23}.
+\end{equation}
+Expansion of \eqref{eq:F} gives
+\begin{align}
+ [x^3]F&=S-6,\label{eq:coef3}\\
+ [x^2]F&=e_2-3S+\sum_{i<j}D_{ij}+11,\label{eq:coef2}\\
+ [x]F&=e_3-e_2+\sum_{\{i,j\}\in\pairs}D_{ij}(z_k+z_\ell)
+       -\sum_{i<j}D_{ij}+2S-2\sum_iT_i-6,\label{eq:coef1}\\
+ [1]F&=M-2\sum_i z_iT_i+6U.\label{eq:coef0}
+\end{align}
+These four equations will be solved exactly, while maintaining positivity
+in Lemma~\ref{lem:venn}.
+
+\section{A rational cancellation profile}\label{sec:construction}
+
+Fix arbitrary $a,b,c,d\in\Z$. In this section $t$ is any positive
+multiple of $52$; its sufficient size will be established later. Put
+\begin{equation}\label{eq:Sdelta}
+ S=a+6,\qquad \Delta=2-S=-a-4,
+\end{equation}
+and choose
+\begin{equation}\label{eq:z}
+ (z_1,z_2,z_3,z_4)=(t+1,\ t,\ -t,\ -t+S-1).
+\end{equation}
+In particular, $\sum z_i=S$ and $z_1-z_2=1$.
+
+For an integer $r$, $\bit r$ denotes its least nonnegative residue modulo
+$2$. Start with the following six bits:
+\begin{center}
+\begin{tabular}{c cccccc}
+\toprule
+ & $\varepsilon_{12}$ & $\varepsilon_{13}$ & $\varepsilon_{14}$
+ & $\varepsilon_{23}$ & $\varepsilon_{24}$ & $\varepsilon_{34}$\\
+\midrule
+$a$ odd & $1$ & $\bit{1+c}$ & $0$ & $\bit{b+c+d}$ & $0$ & $\bit d$\\
+$a$ even & $1$ & $\bit{b+d+1}$ & $0$ & $\bit{c+1}$ & $0$ & $\bit{c+d+1}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Let $K=b+2a+2$. Set $\delta_{ij}=\varepsilon_{ij}$ except at $24$, and set
+\begin{equation}\label{eq:deltacorrection}
+ \delta_{24}=K-\sum_{\{i,j\}\ne\{2,4\}}\varepsilon_{ij}.
+\end{equation}
+The six initial bits sum to $b$ modulo $2$, so $\delta_{24}$ is even.
+Thus every $\delta_{ij}$ has the prescribed parity and
+$\sum\delta_{ij}=K$.
+
+Define
+\begin{align}
+ D_{12}&=\frac{2}{13}t^2-t+\delta_{12},
+ &D_{34}&=\frac{2}{13}t^2+t+\delta_{34},\notag\\
+ D_{13}&=\frac{6}{13}t^2+4\Delta t+\delta_{13},
+ &D_{24}&=\frac{6}{13}t^2+\delta_{24},\label{eq:D}\\
+ D_{14}&=\frac{5}{13}t^2-3\Delta t+\delta_{14},
+ &D_{23}&=\frac{5}{13}t^2+\delta_{23}.\notag
+\end{align}
+All these quantities are integers. The individual corrections need not be
+positive; positivity is required of the final atom counts, and will be
+proved for those counts.
+
+\begin{lemma}[The first two equations and the two parity conditions]
+\label{lem:parity}
+For \eqref{eq:z} and \eqref{eq:D}, the cubic and quadratic coefficients
+in \eqref{eq:coef3}--\eqref{eq:coef2} are $a,b$. Moreover
+\begin{equation}\label{eq:Bsum}
+ B_*:=\frac12\left(e_3-e_2+
+ \sum_{\{i,j\}\in\pairs}D_{ij}(z_k+z_\ell)
+ -\sum_{i<j}D_{ij}+2S-6-c\right)
+\end{equation}
+is an integer, and $M\equiv d\pmod2$.
+\end{lemma}
+\begin{proof}
+The cubic coefficient is $S-6=a$. Directly from \eqref{eq:z},
+\[
+ e_2=-2t^2-\Delta t+S-1,
+ \qquad \sum D_{ij}=2t^2+\Delta t+K.
+\]
+Substitution in \eqref{eq:coef2} gives $K-2S+10=b$.
+
+Since $t$ is a multiple of $52$, its contributions to all the $D_{ij}$
+are even. Also $D_{24}$ is even and $D_{14}$ is even. If $a$ is odd,
+$z\equiv(1,0,0,0)\pmod2$. The numerator in \eqref{eq:Bsum} reduces to
+$D_{12}+D_{13}+D_{14}-c\equiv0$, while
+$M\equiv D_{12}D_{34}\equiv d$.
+If $a$ is even, $z\equiv(1,0,0,1)\pmod2$. The same numerator reduces
+to $1+D_{14}+D_{23}-c\equiv0$, and
+$M\equiv D_{23}+D_{12}D_{34}\equiv d$.
+These are precisely the two rows of the parity table.
+\end{proof}
+
+\begin{lemma}[Cancellation]\label{lem:cancellation}
+For fixed $f$, as $t$ tends to infinity through positive multiples of $52$,
+\begin{equation}\label{eq:cancellation}
+ B_*=2t^2+O_f(t),\qquad M=O_f(t^2).
+\end{equation}
+In particular, the $t^4$ and $t^3$ coefficients of $M$ vanish identically.
+\end{lemma}
+\begin{proof}
+Here is a full expansion that also records the dependence on the input.
+Write
+\[
+ u=\delta_{13},\quad v=\delta_{23},\quad w=\delta_{34},\quad
+ r=\delta_{24}=b+2a+1-u-v-w.
+\]
+Then $u,v,w\in\{0,1\}$, and substitution in
+\eqref{eq:Bsum} and \eqref{eq:M} gives
+\begin{align}
+ B_*&=2t^2+h_1t+h_0,\label{eq:Bexpansion}\\
+ h_1&=-2a^2-\frac{37}{2}a+w-43,\notag\\
+ h_0&=\frac{a(u+v)}2+a-\frac c2+2u+\frac52v+\frac52,\notag\\[2pt]
+ M&=m_2t^2+m_1t+m_0,\label{eq:Mexpansion}\\
+ m_2&=-4a^2-\frac{463}{13}a+
+       \frac{-1000-7u-8v-7r+15w}{13},\notag\\
+ m_1&=-a+au+4av-4ar-4+5u+16v-17r,\notag\\
+ m_0&=av+w+ur+5v.\notag
+\end{align}
+These identities prove the lemma.
+
+For clarity, the leading cancellation has a small rational origin.
+Ignoring lower terms in $z$, take $z/t=(1,1,-1,-1)$ and take the
+complementary-pair coefficients of $D/t^2$ to be $p,q_0,r_0$.
+The quadratic-coefficient equation requires $p+q_0+r_0=1$.
+The leading coefficient of $M$ then becomes
+\[
+ -1+4p+p^2+q_0^2+r_0^2.
+\]
+The rational choice
+$(p,q_0,r_0)=(2,6,5)/13$ makes this zero. It is the rational point
+$3(p+1)^2+(q_0-r_0)^2=4$ with
+$(p+1,q_0-r_0)=(15,1)/13$.
+The linear terms in \eqref{eq:D} cancel the next, cubic term of $M$
+and give the coefficient $2$ in \eqref{eq:Bexpansion}.
+\end{proof}
+
+\section{Solving the last two equations over the integers}\label{sec:lift}
+
+Set
+\begin{equation}\label{eq:baseline}
+ L=\frac7{13}t^2,\qquad T_0=\frac12t^2,\qquad
+ U_0=\frac{27}{52}t^2,
+\end{equation}
+which are integers, and define
+\begin{equation}\label{eq:W}
+ W=\frac{M+6U_0-d}{2},\qquad h=B_*-2T_0.
+\end{equation}
+Lemma~\ref{lem:parity} makes both $W$ and $h$ integers. Let
+\begin{equation}\label{eq:theta}
+ \theta=\frac{W-(z_2+z_4)T_0-z_3h}{z_1-z_3}
+       =\frac{W-(z_2+z_4)T_0+th}{2t+1}.
+\end{equation}
+First put
+\begin{equation}\label{eq:Tpre}
+ (\widetilde T_1,\widetilde T_2,\widetilde T_3,\widetilde T_4)
+ =\bigl(\lfloor\theta\rfloor,\ T_0,\ h-\lfloor\theta\rfloor,\ T_0\bigr).
+\end{equation}
+Define
+\begin{equation}\label{eq:R}
+ R=W-\sum_i z_i\widetilde T_i,
+ \qquad \eta=R-3\lfloor R/3\rfloor\in\{0,1,2\}.
+\end{equation}
+Finally set
+\begin{align}
+ T_1&=\widetilde T_1+\eta,&
+ T_2&=\widetilde T_2-\eta,&
+ T_3&=\widetilde T_3,&
+ T_4&=\widetilde T_4,\label{eq:Tfinal}\\
+ U&=U_0+\frac{\eta-R}{3}=U_0-\lfloor R/3\rfloor.\label{eq:Ufinal}
+\end{align}
+
+\begin{lemma}[Exact integer lift]\label{lem:lift}
+All parameters in \eqref{eq:Tfinal}--\eqref{eq:Ufinal} are integers,
+and they satisfy
+\begin{equation}\label{eq:twolast}
+ \sum_iT_i=B_*,\qquad 2\sum_i z_iT_i-6U=M-d.
+\end{equation}
+Moreover $0\le R\le2t$ and $|U-U_0|\le t$.
+\end{lemma}
+\begin{proof}
+The definition of $\theta$ is the exact real solution of
+$T_1+T_3=h$ and
+$z_1T_1+z_3T_3=W-(z_2+z_4)T_0$.
+Thus
+\[
+ R=(2t+1)(\theta-\lfloor\theta\rfloor)
+\]
+is an integer in $\{0,1,\ldots,2t\}$.
+The preliminary $\widetilde T_i$ sum to $B_*$; the correction preserves
+that sum. Because $z_1-z_2=1$, it increases their weighted sum by
+exactly $\eta$. Consequently
+\[
+ \sum_i z_iT_i=W-R+\eta=W+3(U-U_0),
+\]
+which is the second equation in \eqref{eq:twolast}.
+The definition of $\eta$ ensures integrality of $U$, and the residual
+bound gives $|U-U_0|\le2t/3\le t$.
+\end{proof}
+
+Together, Lemmas~\ref{lem:parity} and~\ref{lem:lift} imply the exact
+polynomial identity
+\begin{equation}\label{eq:Fisf}
+ F(x)=x^4+ax^3+bx^2+cx+d=f(x).
+\end{equation}
+It remains essential to prove that the parameters define an actual graph.
+
+\section{Every palette atom has a positive margin}\label{sec:positive}
+
+\begin{lemma}[Uniform leading profile]\label{lem:positive}
+For each fixed $f$, the atom counts in
+\eqref{eq:atom4}--\eqref{eq:atom1}, with the parameters constructed above,
+satisfy
+\begin{equation}\label{eq:atomprofile}
+ m_J=\lambda_Jt^2+O_f(t),
+\end{equation}
+where all the constants $\lambda_J$ are strictly positive:
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+Atom type & $\lambda_J$\\
+\midrule
+Each singleton $\{i\}$ & $1/52$\\
+Each triple $[4]\setminus\{i\}$ & $1/52$\\
+$[4]$ & $1/52$\\
+$\{1,2\},\{3,4\}$ & $17/52$\\
+$\{1,3\},\{2,4\}$ & $1/52$\\
+$\{1,4\},\{2,3\}$ & $5/52$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Furthermore
+\begin{equation}\label{eq:Nnasymptotic}
+ N=\frac{55}{52}t^2+O_f(t),\qquad
+ n:=N-L=\frac{27}{52}t^2+O_f(t).
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $E=B_*-4T_0$. From Lemma~\ref{lem:cancellation}, $E=O_f(t)$
+and $W-ST_0=O_f(t^2)$. Equation~\eqref{eq:theta} can be rewritten as
+\begin{equation}\label{eq:thetadiff}
+ \theta-T_0=\frac{W-ST_0+tE}{2t+1}=O_f(t).
+\end{equation}
+Rounding and the bounded correction $\eta$ therefore give
+$T_i=T_0+O_f(t)$ for every $i$. Lemma~\ref{lem:lift} gives
+$U=U_0+O(t)$.
+
+The quadruple and triple leading coefficients are respectively
+$7/13-27/52=1/52$ and $27/52-1/2=1/52$.
+For a pair with $D_{ij}/t^2\longrightarrow\beta_{ij}$, the coefficient
+is $1-\beta_{ij}-27/52$, giving $17/52,1/52,5/52$ in the three
+cases of \eqref{eq:D}. At a singleton, the sum of the three incident
+$D_{ij}$ has leading coefficient $(2+6+5)/13=1$. The singleton
+coefficient is therefore $1-3/2+27/52=1/52$.
+
+Summing the fifteen coefficients gives $55/52$. Alternatively,
+\eqref{eq:N} and $\sum D_{ij}=2t^2+O_f(t)$,
+$\sum T_i=2t^2+O_f(t)$ immediately yield \eqref{eq:Nnasymptotic}.
+\end{proof}
+
+\begin{proof}[Proof of the existence assertion in Theorem~\ref{thm:main}]
+Choose a sufficiently large positive multiple $t$ of $52$.
+Lemma~\ref{lem:positive} makes all fifteen integer atom counts positive,
+and also makes $n=N-L$ a positive integer. Lemma~\ref{lem:venn}
+constructs actual subsets $A_i$ of an $N$-element set. Form the two-clique
+graph described in Section~\ref{sec:palettes}. Equations
+\eqref{eq:Pfactor} and \eqref{eq:Fisf} give
+$P_G(q)=\fall qNf(q-n)$.
+
+The four positive singleton atoms supply four distinct old colors for
+$v_1,\ldots,v_4$, so the graph is $N$-colorable. Since it contains
+$K_N$, its chromatic number is $N$. It is connected: for example, a
+vertex of type $\{1\}$ is adjacent to $v_2$, joining the two cliques.
+The explicit choice of $t$ and the bounds in \eqref{eq:size} are proved
+next.
+\end{proof}
+
+\section{An explicit size bound}\label{sec:effective}
+
+The preceding argument already closes all existence quantifiers. This
+section supplies a predetermined input-dependent value of $t$, so even
+the search for a sufficiently large scale can be omitted.
+
+\begin{proposition}\label{prop:effective}
+Let $\htf$ and $t$ be as in \eqref{eq:height}. Then every atom is strictly
+positive, $0<n<t^2$, and $N+4\le2t^2$.
+\end{proposition}
+\begin{proof}
+We give explicit bounds, keeping generous constants. Since $\htf\ge10$,
+$u,v,w\in\{0,1\}$, and $r=b+2a+1-u-v-w$, we have
+\[
+ |S|\le\htf,\quad |\Delta|\le\htf,\quad |r|\le2\htf.
+\]
+The exact expansions \eqref{eq:Bexpansion}--\eqref{eq:Mexpansion} imply
+\begin{equation}\label{eq:boundscoeff}
+ |h_1|\le5\htf^2,\quad |h_0|\le4\htf,\quad
+ |m_2|\le9\htf^2,\quad |m_1|\le21\htf^2,\quad |m_0|\le\htf^2.
+\end{equation}
+For example, $|h_1|\le2\htf^2+\tfrac{37}{2}\htf+44<5\htf^2$;
+the remaining bounds follow directly by the triangle inequality in the
+displayed formulas, using $\htf\ge10$.
+For $t\ge1$, these give
+\[
+ |E|=|B_*-2t^2|\le6\htf^2t,\qquad |M|\le31\htf^2t^2.
+\]
+As $W=(M+6U_0-d)/2$ and $T_0=t^2/2$, it follows that
+\begin{equation}\label{eq:Wbound}
+ |W-ST_0|\le20\htf^2t^2.
+\end{equation}
+Equation~\eqref{eq:thetadiff} consequently gives
+$|\theta-T_0|\le13\htf^2t$. The exact real value of the third
+coordinate is $T_0+E-(\theta-T_0)$, at distance at most
+$19\htf^2t$ from $T_0$. Applying the floor and the correction
+$\eta\in\{0,1,2\}$ gives the convenient common bound
+\begin{equation}\label{eq:Tbound}
+ |T_i-T_0|\le20\htf^2t\quad(1\le i\le4),\qquad |U-U_0|\le t.
+\end{equation}
+
+Our chosen $t$ is at least $\htf$ and at least $52$. Thus
+$|z_i|\le2t$, and each $D_{ij}$ differs from its quadratic leading
+term by at most $5\htf t$. Equations
+\eqref{eq:atom4}--\eqref{eq:atom1} now bound the deviation from the
+profile in Lemma~\ref{lem:positive} as follows:
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+Atom type & An upper bound for $|m_J-\lambda_Jt^2|$\\
+\midrule
+Quadruple & $t$\\
+Triple & $21\htf^2t$\\
+Pair & $41\htf^2t$\\
+Singleton & $62\htf^2t$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For instance, the singleton error is at most
+$2t+15\htf t+60\htf^2t+t<62\htf^2t$.
+The common upper bound $70\htf^2t$ is therefore valid for every atom.
+Since $t=5200\htf^2$ and every $\lambda_J\ge1/52$,
+\begin{equation}\label{eq:strictmargin}
+ m_J\ge\frac{t^2}{52}-70\htf^2t
+      =30\htf^2t>0.
+\end{equation}
+
+Finally, \eqref{eq:N} gives the exact relation
+\[
+ n-U_0=S+\Delta t+K-E+(U-U_0).
+\]
+Using $|K|\le2\htf$ and the previous bounds yields
+\begin{equation}\label{eq:nbound}
+ \left|n-\frac{27}{52}t^2\right|\le7\htf^2t.
+\end{equation}
+Because $7\htf^2/t=7/5200$, this proves $0<n<t^2$.
+Also
+\[
+ N+4\le\left(\frac{55}{52}+\frac7{5200}\right)t^2+4<2t^2.
+\]
+This completes the proof of Proposition~\ref{prop:effective} and
+Theorem~\ref{thm:main}.
+\end{proof}
+
+\section{Arithmetic consequences and algorithmic content}
+
+\begin{corollary}[Fields and splitting fields]\label{cor:fields}
+Every quartic number field is generated by a chromatic root. Moreover,
+the splitting field of every monic integer quartic is exactly the
+splitting field of a chromatic polynomial of a connected graph.
+\end{corollary}
+\begin{proof}
+Every number field has an integral primitive element. If
+$K=\Q(\alpha)$ has degree four, apply Theorem~\ref{thm:main} to its
+monic minimal polynomial. Then $\alpha+n$ is a chromatic root and
+$\Q(\alpha+n)=\Q(\alpha)=K$.
+For the second assertion, translation by $n\in\Z$ preserves a
+polynomial's splitting field, and the extra factor $\fall qN$ splits
+over $\Q$. Equation~\eqref{eq:main} therefore gives equality of
+splitting fields, and hence the same Galois group over $\Q$.
+\end{proof}
+
+The second assertion proves the degree-four instance of the splitting-field
+realization statement posed in \cite[Conjecture 7.1]{Gilmore}.
+Indeed, after making a rational quartic $g$ monic, choose a positive
+integer $m$ clearing its coefficient denominators. The polynomial
+$m^4g(x/m)$ is monic and integral and has the same splitting field as $g$.
+The distinction between a root field and a splitting field matters:
+a nonnormal quartic field is realized as a root field, not asserted to
+be itself a splitting field.
+
+\begin{corollary}[A bounded arithmetic construction]\label{cor:algorithm}
+There is an algorithm that, on input $(a,b,c,d)\in\Z^4$, produces a
+positive shift and a fifteen-integer description of $G$ using a bounded
+number of exact arithmetic operations. The integers in this compressed
+description have $O(\log\htf)$ bits.
+\end{corollary}
+\begin{proof}
+Use the predetermined $t=5200\htf^2$ and the displayed formulas, including
+the two integer divisions in \eqref{eq:Tpre} and \eqref{eq:R}.
+All intermediate quantities are polynomials of bounded degree in the
+input and $t$, followed by division by positive explicitly known integers.
+Their bit lengths are therefore $O(\log\htf)$. The graph is specified
+by its two cliques and the fifteen atom multiplicities.
+\end{proof}
+
+The stated operation count concerns the compressed description. Writing
+out all vertices and edges has the corresponding output cost.
+For small examples one may try $t=52,104,208,\ldots$ and stop when the
+fifteen atoms and $n$ are positive. Theorem~\ref{thm:main} proves eventual
+termination, but no such search is required by the theorem.
+
+\section{An exact example and independent verification}\label{sec:example}
+
+Take $f(x)=x^4+x+1$. The construction already works at $t=3328$, which
+is much smaller than the uniform sufficient value. It gives
+\[
+ L=5\,963\,776,\qquad N=11\,840\,301,\qquad n=5\,876\,525.
+\]
+The complete graph certificate consists of the following atom counts.
+An element of type $J$ is nonadjacent to precisely the small-clique
+vertices indexed by $J$.
+\begin{center}
+\begin{tabular}{cr@{\qquad}cr@{\qquad}cr}
+\toprule
+$J$ & $m_J$ & $J$ & $m_J$ & $J$ & $m_J$\\
+\midrule
+$1$ & 203\,420 & $12$ & 3\,620\,454 & $123$ & 212\,263\\
+$2$ & 352\,037 & $13$ & 266\,968 & $124$ & 216\,729\\
+$3$ & 294\,324 & $14$ & 1\,021\,286 & $134$ & 212\,264\\
+$4$ & 391\,979 & $23$ & 930\,382 & $234$ & 347\,570\\
+ & & $24$ & 73\,948 & $1234$ & 213\,721\\
+ & & $34$ & 3\,482\,956 & &\\
+\bottomrule
+\end{tabular}
+\end{center}
+Every entry is positive, and the entries sum to $N$. This defines a
+specific graph on $11\,840\,305$ vertices and proves the exact identity
+\[
+ P_G(q)=\fall q{11\,840\,301}
+ \left((q-5\,876\,525)^4+(q-5\,876\,525)+1\right).
+\]
+No minimality claim is made for its order or shift.
+
+There is a counting check that does not use the intersection-coefficient
+equations of Section~\ref{sec:palettes}. Let $B=\overline G$, a bipartite
+graph with parts of sizes $4,N$, and let $r_k$ count its matchings of
+size $k$. A coloring of $G$ can identify at most one vertex of each
+clique in a color class, so the standard matching expansion is
+\begin{equation}\label{eq:rook}
+ P_G(q)=\sum_{k=0}^4r_k\fall q{N+4-k}
+       =\fall qN\sum_{k=0}^4r_k\fall{q-N}{4-k}.
+\end{equation}
+This is also the biclique matching formula of \cite[Section 2.1]{Bohn}.
+For the example, direct injection counting on the fifteen atom types gives
+\begin{align*}
+ r_0&=1,\\
+ r_1&=23\,855\,110,\\
+ r_2&=213\,399\,816\,634\,375,\\
+ r_3&=848\,445\,732\,099\,071\,934\,466,\\
+ r_4&=1\,264\,984\,755\,431\,613\,627\,400\,650\,753.
+\end{align*}
+Substitution in \eqref{eq:rook} gives $f(y+L)$ exactly, with $y=q-N$.
+
+The implementation in Appendix~\ref{app:code} was checked on the displayed
+example and four additional named inputs, on 1000 deterministic-seed
+random inputs with coefficient sizes up to $10^8$, and by a separately
+written injection-counting routine on 256 further inputs with coefficient
+sizes up to $10^{18}$. Separate symbolic expansions checked the cancellations
+and all sixteen coefficient-parity patterns. These are implementation
+checks; the universal proof is the explicit construction and inequalities
+above, and uses no probabilistic inference.
+
+\section{Scope, provenance, and priority}\label{sec:scope}
+
+The result is the unrestricted \emph{quartic case}: there is no restriction
+on coefficient signs, coefficient height, real signature, Galois group,
+or the particular quartic algebraic integer. The same construction also
+handles reducible monic quartics. Nothing in the proof resolves the
+degree-five or arbitrary-degree case of the $\alpha+n$ conjecture.
+
+The original problem and the biclique framework are due to the cited
+literature. The new mathematical ingredient presented here is the
+specific rational cancellation profile and its positive integral lift,
+including a uniform quartic height bound. The supplied corpus was inspected
+at commit \texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33}; the
+relevant proof-design connection is manuscript~245, not an assumed theorem
+about chromatic roots.
+
+The literature assessment consulted the full texts of
+\cite{Bohn,CM,Gilmore,DM22}, the official abstract of \cite{DM19}, and
+Cameron's conjecture list dated 2 November 2026 \cite{CameronWeb}.
+The full text of \cite{DM19} was not available during preparation; it has
+therefore not been checked line by line for overlap of intermediate
+constructions. No identical general quartic solution was identified in
+the consulted material. This is not a certification of absolute publication
+priority, and the manuscript has not undergone external peer review.
+The algebraic proof is provided in full so that correctness can be assessed
+independently of those bibliographic questions.
+
+\appendix
+\section{Self-contained exact-arithmetic implementation}\label{app:code}
+
+The following Python 3 code uses only the standard library. Its input
+is four integers $(a,b,c,d)$. The deterministic function
+\texttt{construct\_bounded} uses the proved bound; \texttt{construct}
+tries smaller powers-of-two scales for convenience. The independent
+\texttt{rook\_numbers} routine counts matchings from the atom multiplicities.
+It does not call the centered coefficient formula. An integer mask
+$1\le m\le15$ denotes $\{i+1: \text{bit }i\text{ of }m\text{ is }1\}$.
+For example, mask $10$ denotes $\{2,4\}$.
+
+\begin{lstlisting}
+"""Exact quartic biclique construction. Research verification, 2026-11-28.
+
+All graph counts are arbitrary-precision integers.  A column of type mask
+means a vertex in a large clique whose NON-neighbours in the four-clique
+are the rows in mask.  No expansion of the large graph is required.
+"""
+from itertools import combinations
+from math import prod
+import json
+
+PAIRS = list(combinations(range(4), 2))
+
+def elementary(z, k):
+    return sum(prod(z[i] for i in I) for I in combinations(range(4), k))
+
+def make_certificate(a, b, c, d, t):
+    assert t > 0 and t % 52 == 0
+    S = a + 6
+    delta = 2 - S
+    z = [t + 1, t, -t, -t + S - 1]
+    if a % 2:
+        eps = {(0,1):1, (0,2):(1+c)%2, (0,3):0,
+               (1,2):(b+c+d)%2, (1,3):0, (2,3):d%2}
+    else:
+        eps = {(0,1):1, (0,2):(b+d+1)%2, (0,3):0,
+               (1,2):(c+1)%2, (1,3):0, (2,3):(d+c+1)%2}
+    K = b + 2*a + 2
+    correction = K - sum(eps.values())
+    assert correction % 2 == 0
+    eps[(1,3)] += correction
+    D = {
+        (0,1):2*t*t//13 - t + eps[(0,1)],
+        (0,2):6*t*t//13 + 4*delta*t + eps[(0,2)],
+        (0,3):5*t*t//13 - 3*delta*t + eps[(0,3)],
+        (1,2):5*t*t//13 + eps[(1,2)],
+        (1,3):6*t*t//13 + eps[(1,3)],
+        (2,3):2*t*t//13 + t + eps[(2,3)],
+    }
+    def comp(I): return [i for i in range(4) if i not in I]
+    e2, e3, e4 = [elementary(z,k) for k in (2,3,4)]
+    Hnum = e3-e2+sum(D[I]*sum(z[j] for j in comp(I)) for I in PAIRS)-sum(D.values())+2*S-6-c
+    assert Hnum % 2 == 0
+    H = Hnum//2
+    M = e4 + sum(D[I]*prod(z[j] for j in comp(I)) for I in PAIRS)
+    M += D[(0,1)]*D[(2,3)] + D[(0,2)]*D[(1,3)] + D[(0,3)]*D[(1,2)]
+    assert (M-d) % 2 == 0
+    L = 7*t*t//13
+    T0 = t*t//2
+    U0 = 27*t*t//52
+    W = (M+6*U0-d)//2
+    h = H - 2*T0
+    numerator = W-(z[1]+z[3])*T0-z[2]*h
+    denominator = z[0]-z[2]
+    T1 = numerator//denominator
+    T = [T1,T0,h-T1,T0]
+    R = W-sum(zi*Ti for zi,Ti in zip(z,T))
+    eta = R % 3
+    T[0] += eta
+    T[1] -= eta
+    U = U0+(eta-R)//3
+    assert sum(T) == H
+    assert 2*sum(zi*Ti for zi,Ti in zip(z,T))-6*U == M-d
+    atoms = {15:L-U}
+    for i in range(4):
+        atoms[15 ^ (1<<i)] = U-T[i]
+    for i,j in PAIRS:
+        k,l = comp((i,j))
+        atoms[(1<<i)|(1<<j)] = T[k]+T[l]-D[(i,j)]-U
+    for i in range(4):
+        atoms[1<<i] = z[i]-sum(T[j] for j in range(4) if j != i)+sum(v for I,v in D.items() if i in I)+U
+    N = sum(atoms.values())
+    n = N-L
+    assert N == L+S+sum(D.values())-sum(T)+U
+    centered = [1,S-6,e2-3*S+sum(D.values())+11,
+                e3-e2+sum(D[I]*sum(z[j] for j in comp(I)) for I in PAIRS)-sum(D.values())+2*S-2*sum(T)-6,
+                M-2*sum(zi*Ti for zi,Ti in zip(z,T))+6*U]
+    assert centered == [1,a,b,c,d], (centered,[1,a,b,c,d])
+    return dict(coefficients=[1,a,b,c,d],t=t,z=z,D={str(I):v for I,v in D.items()},T=T,U=U,L=L,N=N,n=n,
+                atoms={str(m):atoms[m] for m in range(1,16)},minimum_atom=min(atoms.values()),
+                valid=min(atoms.values())>0 and n>0)
+
+def rook_numbers(atomdict):
+    """Independent injection DP on the four labelled rows."""
+    dp=[0]*16
+    dp[0]=1
+    for maskstr,count in atomdict.items():
+        mask=int(maskstr)
+        assert count>=0
+        ff=[1]
+        for k in range(1,5): ff.append(ff[-1]*(count-k+1))
+        ndp=[0]*16
+        for used,ways in enumerate(dp):
+            if not ways: continue
+            available=mask & (15^used)
+            chosen=available
+            while True:
+                ndp[used|chosen]+=ways*ff[chosen.bit_count()]
+                if chosen==0: break
+                chosen=(chosen-1)&available
+        dp=ndp
+    return [sum(dp[mask] for mask in range(16) if mask.bit_count()==k) for k in range(5)]
+
+def verify_independently(cert):
+    assert cert['valid']
+    m=rook_numbers(cert['atoms'])
+    got=[1,m[1]-6,m[2]-3*m[1]+11,m[3]-m[2]+2*m[1]-6,m[4]]
+    _,a,b,c,d=cert['coefficients']
+    L=cert['L']
+    want=[1,4*L+a,6*L*L+3*a*L+b,4*L**3+3*a*L*L+2*b*L+c,L**4+a*L**3+b*L*L+c*L+d]
+    assert got==want, (got,want)
+    return m
+
+def construct(a,b,c,d):
+    t=52
+    while True:
+        cert=make_certificate(a,b,c,d,t)
+        if cert['valid']:
+            cert['rook_numbers']=verify_independently(cert)
+            return cert
+        t*=2
+
+def construct_bounded(a,b,c,d):
+    height=10+abs(a)+abs(b)+abs(c)+abs(d)
+    cert=make_certificate(a,b,c,d,5200*height*height)
+    assert cert['valid']
+    assert cert['minimum_atom'] > 0
+    assert 0 < cert['n'] < cert['t']**2
+    assert cert['N']+4 <= 2*cert['t']**2
+    cert['rook_numbers']=verify_independently(cert)
+    return cert
+
+if __name__ == '__main__':
+    # A smaller exact certificate for x^4+x+1:
+    cert=make_certificate(0,0,1,1,3328)
+    cert['rook_numbers']=verify_independently(cert)
+    print(json.dumps(cert,sort_keys=True,indent=2))
+    # The uniform construction requires no search:
+    bounded=construct_bounded(0,0,1,1)
+    print('Bounded construction verified:',bounded['N']+4)
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+
+\bibitem{CM}
+P. J. Cameron and K. Morgan,
+\emph{Algebraic properties of chromatic roots},
+Electronic Journal of Combinatorics \textbf{24}(1) (2017), P1.21.
+\href{https://doi.org/10.37236/6578}{doi:10.37236/6578}.
+\href{https://emis.de/ft/29131}{Full text}.
+
+\bibitem{Bohn}
+A. Bohn, \emph{Chromatic roots as algebraic integers},
+Discrete Mathematics and Theoretical Computer Science Proceedings
+\textbf{AR} (2012), 543--554.
+\href{https://doi.org/10.46298/dmtcs.3061}{doi:10.46298/dmtcs.3061}.
+\href{https://www.math.nagoya-u.ac.jp/fpsac12/download/contributed/dmAR0148.pdf}{Full text}.
+
+\bibitem{Gilmore}
+H. J. Gilmore,
+\emph{Algebraic Properties of Chromatic Polynomials and Their Roots},
+MSc thesis, University of Waikato, 2015.
+\url{https://hdl.handle.net/10289/9367}.
+
+\bibitem{DM19}
+D. Delbourgo and K. Morgan,
+\emph{An algorithm which outputs a graph with a specified chromatic factor},
+Discrete Applied Mathematics \textbf{257} (2019), 128--150.
+\href{https://doi.org/10.1016/j.dam.2018.10.033}{doi:10.1016/j.dam.2018.10.033}.
+Official abstract consulted through the author's
+\href{https://profiles.auckland.ac.nz/daniel-delbourgo/publications}{University of Auckland publication record}.
+
+\bibitem{DM22}
+D. Delbourgo and K. Morgan, \emph{On the fifth chromatic coefficient},
+Australasian Journal of Combinatorics \textbf{84}(1) (2022), 56--85.
+\url{https://ajc.maths.uq.edu.au/pdf/84/ajc_v84_p056.pdf}.
+
+\bibitem{VMRC}
+Verifiable Mathematical Reasoning Corpus,
+manuscript 245, \emph{Roots and coefficient peaks of graph polynomials},
+research manuscript dated 21 November 2026, Sections 2--3.
+Snapshot \texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33},
+accessed 28 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{CameronWeb}
+P. J. Cameron, \emph{Peter Cameron's conjectures},
+page dated 2 November 2026, accessed 28 November 2026.
+\url{https://cameroncounts.github.io/web/problems/cameronconjs.html}.
+
+\end{thebibliography}
+\end{document}

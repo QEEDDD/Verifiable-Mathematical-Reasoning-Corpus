@@ -1,0 +1,1070 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage[margin=25mm,headheight=14pt]{geometry}
+\usepackage{booktabs,array,tabularx,enumitem,xcolor,fancyhdr,listings,hyperref}
+\definecolor{ink}{HTML}{17324D}
+\definecolor{accent}{HTML}{176B78}
+\definecolor{codebg}{HTML}{F5F7F9}
+\hypersetup{colorlinks=true,linkcolor=ink,citecolor=accent,urlcolor=accent,
+pdftitle={A constructive proof of the quintic alpha+n conjecture},
+pdfsubject={Positive integral palette lifting and exact quintic chromatic factors}}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\fall}[2]{(#1)_{#2}}
+\newcommand{\htf}{\mathcal H}
+\DeclareMathOperator{\diag}{diag}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{ink}Quintic chromatic factors}
+\fancyhead[R]{\small 28 November 2026}
+\fancyfoot[C]{\small\thepage}
+\setlength{\emergencystretch}{3em}
+\setlist{nosep,leftmargin=*}
+\raggedbottom
+\lstset{language=Python,basicstyle=\ttfamily\scriptsize,
+keywordstyle=\color{ink}\bfseries,commentstyle=\color{accent},
+backgroundcolor=\color{codebg},frame=single,rulecolor=\color{black!12},
+breaklines=true,columns=fullflexible,keepspaces=true,
+showstringspaces=false,tabsize=4,aboveskip=10pt,belowskip=10pt}
+\title{\color{ink}\bfseries A constructive proof of the quintic\\
+\texorpdfstring{\boldmath $\alpha+n$}{alpha+n} conjecture}
+\author{\normalsize Research manuscript}
+\date{28 November 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+For every monic quintic $f\in\Z[x]$, we construct positive integers $N,n$
+and a connected finite simple graph $G$ such that
+$P_G(q)=\fall qN f(q-n)$.
+The graph consists of an $N$-clique and a five-clique with specified
+edges between them. The construction starts from thirty-one strictly
+positive rational palette atoms whose leading matching polynomial is $X^5$.
+Changing only intersections containing one distinguished row makes the
+coefficient map jointly affine. An explicit matrix of determinant one
+modulo $24$, followed by corrections in $12\Z$, $4\Z$, and $\Z$,
+then gives an exact integral solution. Uniform bounds prove that all atoms
+remain positive at the predetermined scale
+$t=96000\htf$, where
+$\htf=10+|a|+|b|+|c|+|d|+|e|$ for
+$f=x^5+ax^4+bx^3+cx^2+dx+e$.
+In particular, $|V(G)|\le18\,432\,000\,000\,\htf^2$.
+The argument is self-contained and applies to every quintic, including
+reducible polynomials. It implies the $\alpha+n$ statement for every
+algebraic integer of degree at most five and an exact splitting-field
+realization result in these degrees. A standard-library implementation
+and an independent matching verification are included.
+\end{abstract}
+
+\section{The named problem and the result}
+
+A chromatic root is a complex zero of the chromatic polynomial $P_G$ of
+a finite simple graph $G$. Cameron and Morgan's $\alpha+n$ conjecture asks
+whether, for every algebraic integer $\alpha$, some natural number $n$
+makes $\alpha+n$ a chromatic root \cite[Conjecture 4]{CM}.
+The quadratic case was established by the original study group, and Bohn
+established the cubic case \cite{CM,Bohn}. We address the unrestricted
+degree-five case of that same statement.
+
+For $N\ge0$, write $\fall qN=q(q-1)\cdots(q-N+1)$, with $\fall q0=1$.
+
+\begin{theorem}[Exact quintic realization]\label{thm:main}
+Let
+\[
+ f(x)=x^5+ax^4+bx^3+cx^2+dx+e,\qquad a,b,c,d,e\in\Z.
+\]
+There are positive integers $N,n$ and a connected finite simple graph $G$
+with $N+5$ vertices such that
+\begin{equation}\label{eq:main}
+ P_G(q)=\fall qN f(q-n).
+\end{equation}
+The graph is the union of cliques of orders $N$ and $5$, with specified
+cross-edges, and its chromatic number is $N$.
+Set
+\begin{equation}\label{eq:scale}
+ \htf=10+|a|+|b|+|c|+|d|+|e|,\qquad t=96000\htf.
+\end{equation}
+The explicit construction below works at this scale and satisfies
+\begin{equation}\label{eq:bounds}
+ 0<n<t^2,\qquad N+5\le2t^2
+ =18\,432\,000\,000\,\htf^2.
+\end{equation}
+No irreducibility, coefficient-sign, signature, or Galois-group assumption
+is imposed.
+\end{theorem}
+
+\begin{corollary}\label{cor:degree}
+Every algebraic integer of degree at most five has a positive integer
+translate that is a chromatic root.
+\end{corollary}
+\begin{proof}
+For a monic minimal polynomial $g$ of degree $j\le5$, apply
+Theorem~\ref{thm:main} to $x^{5-j}g(x)$. If $g(\alpha)=0$, then
+$P_G(\alpha+n)=0$.
+\end{proof}
+
+\subsection{Prior work and the role of the auxiliary problem}
+
+The complement-of-a-bipartite-graph class used here is called a
+$(5,N)$-\emph{biclique} in the cited literature; it is not a complete
+bipartite graph. Partition and matching formulas for bicliques are
+established tools \cite{Bohn,CM}. Gilmore's thesis gives computational
+evidence for quartic and quintic fields and for possible quintic
+signature/Galois-group types \cite[Chapter 7]{Gilmore}. Those statements
+do not assert that every prescribed quintic algebraic integer has the
+required integer translate. Delbourgo and Morgan's 2019 abstract describes
+an algorithm for degrees at most four, conditional on existence of an
+appropriate biclique \cite{DM19}. Their 2022 paper computes a fifth
+chromatic coefficient and discusses the earlier evidence
+\cite[Sections 1.1 and 1.3]{DM22}.
+
+The auxiliary problem solved here is to prescribe all five coefficients
+while retaining thirty-one positive integer palette atoms. The partition
+identity alone does not solve this realization problem. The substantive
+construction consists of the rational interior point in
+Section~\ref{sec:profile}, the congruence matrix and integral corrections in
+Sections~\ref{sec:matrices}--\ref{sec:lift}, and the uniform positivity
+bounds in Section~\ref{sec:effective}. The affine observation is proved
+directly and is not asserted, by itself, to be historically new.
+
+Earlier quartic work in this research programme motivated the choice of a
+positive quadratic margin. The supplied VMRC manuscript 245 likewise uses
+descending coefficient correction with controlled lower-coordinate costs
+\cite[Sections 2--3]{VMRC}. No theorem from either working manuscript is
+assumed here. The present proof, including the case of degree at most four,
+is self-contained. The scope of the literature review and its priority
+limitation are stated in Section~\ref{sec:scope}.
+
+\section{Palette atoms and affine dependence}\label{sec:palettes}
+
+Let $C$ be an $N$-clique, and let $v_1,\ldots,v_5$ form a disjoint
+five-clique. For each $i$, let $A_i\subseteq C$ be the vertices not
+adjacent to $v_i$; every other cross-pair is an edge.
+A vertex of type $\varnothing\ne J\subseteq[5]$ belongs to precisely
+those $A_i$ with $i\in J$. Denote the number of such vertices by $m_J$.
+We use no vertices of empty type.
+
+For each nonempty $B\subseteq[5]$, prescribe an intersection moment $H_B$.
+The corresponding atom counts are
+\begin{equation}\label{eq:mobius}
+ m_J=\sum_{B\supseteq J}(-1)^{|B|-|J|}H_B.
+\end{equation}
+If these thirty-one integers are nonnegative, they define actual sets:
+create $m_J$ distinct vertices of each type. In particular, there is no
+further set-realizability condition. Their union has size
+\begin{equation}\label{eq:N}
+ N=\sum_{\varnothing\ne B\subseteq[5]}(-1)^{|B|+1}H_B
+   =\sum_{\varnothing\ne J\subseteq[5]}m_J.
+\end{equation}
+
+Fix an integer $L$, and write the moments as
+\begin{equation}\label{eq:momentparams}
+ H_{\{i\}}=L+z_i,\qquad H_B=L-D_B\quad (|B|\ge2).
+\end{equation}
+For a block $B$, let $c_{\{i\}}=z_i$, let $c_B=-D_B$ for $|B|\ge2$,
+and let $\mu(B)=(-1)^{|B|-1}(|B|-1)!$.
+For $R\subseteq[5]$, define
+\begin{equation}\label{eq:FR}
+ F_R(x)=\sum_{\pi\text{ a partition of }R}
+          \prod_{B\in\pi}\mu(B)(x+c_B),\qquad F_\varnothing(x)=1.
+\end{equation}
+Write $F=F_{[5]}$.
+
+\begin{lemma}[Exact counting]\label{lem:count}
+When the moments are realized by nonnegative atoms,
+\begin{equation}\label{eq:count}
+ P_G(q)=\fall qN F(q-N+L).
+\end{equation}
+Moreover,
+\begin{equation}\label{eq:trace}
+ [x^4]F=\sum_{i=1}^5z_i-10.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Color $C$ first with distinct colors and put $y=q-N$.
+A collection of small-clique vertices indexed by $B$ has $y+H_B$
+common available colors. With $x=y+L$, this is $x+c_B$.
+Inclusion--exclusion on the partition lattice counts assignments in which
+the five colors are all distinct, giving \eqref{eq:FR}. This is the standard
+biclique partition formula specialized to five rows
+\cite[Proposition 9]{CM}. For every sufficiently large integer $q$ the
+count is valid, so it is a polynomial identity. The $N$-clique contributes
+$\fall qN$.
+The degree-four term comes from the singleton partition and the ten
+partitions with one pair and three singletons, proving \eqref{eq:trace}.
+\end{proof}
+
+\begin{lemma}[One distinguished row]\label{lem:affine}
+Hold all parameters on subsets of $[4]$ fixed, and distinguish row $5$.
+The polynomial $F$ is jointly affine in $z_5$ and in all $D_B$ with
+$5\in B$. For $5\in B$ and $|B|\ge2$,
+\begin{equation}\label{eq:derivative}
+ \frac{\partial F}{\partial D_B}
+ =(-1)^{|B|}(|B|-1)!\,F_{[5]\setminus B}(x).
+\end{equation}
+Every polynomial on the right uses only the fixed outer rows.
+\end{lemma}
+\begin{proof}
+Every set partition has exactly one block containing $5$.
+Consequently no product in \eqref{eq:FR} contains two of the variable
+parameters. Differentiating the factor of the block $B$ leaves its
+Möbius coefficient with a minus sign and the sum over all partitions of
+the complement, which is \eqref{eq:derivative}.
+\end{proof}
+
+For blocks of sizes $2,3,4,5$, the multipliers in
+\eqref{eq:derivative} are $1,-2,6,-24$, and the complementary palette
+polynomials have degrees $3,2,1,0$. The effects of successive corrections
+add exactly by Lemma~\ref{lem:affine}.
+
+\section{A strictly positive rational profile}\label{sec:profile}
+
+For every $J\subseteq[5]$, write $\sigma_i(J)=1$ if $i\in J$ and
+$\sigma_i(J)=-1$ otherwise. For nonempty $J$, set
+\begin{equation}\label{eq:weights}
+ w_J=\frac1{16}
+ +\frac{\sigma_5(J)\bigl(\sigma_1(J)+\sigma_4(J)
+                         -\sigma_2(J)-\sigma_3(J)\bigr)}{192}.
+\end{equation}
+The expression in parentheses has absolute value at most $4$, so
+\begin{equation}\label{eq:wpositive}
+ \frac1{24}\le w_J\le\frac1{12}.
+\end{equation}
+Direct summation, or cancellation of the sign characters, gives
+\begin{equation}\label{eq:wmoments}
+ \sum_{J\ni i}w_J=1,\qquad
+ \sum_{J\ne\varnothing}w_J=\frac{31}{16}.
+\end{equation}
+For $|B|\ge2$, define
+\begin{equation}\label{eq:dprofile}
+ d_B=1-\sum_{J\supseteq B}w_J.
+\end{equation}
+The pair values are
+\begin{equation}\label{eq:pairprofile}
+ d_{ij}=\frac12\quad(1\le i<j\le4),\qquad
+ (d_{15},d_{25},d_{35},d_{45})
+ =\frac1{24}(11,13,13,11).
+\end{equation}
+
+\begin{lemma}[Leading cancellation]\label{lem:leading}
+Let $u=(2,1,-1,-2,0)$.
+With $z_i=tu_i+O(1)$ and $D_B=t^2d_B+O(1)$,
+\begin{equation}\label{eq:leading}
+ t^{-5}F(tX)\longrightarrow X^5
+\end{equation}
+coefficientwise as $t\longrightarrow\infty$.
+\end{lemma}
+\begin{proof}
+A singleton factor in \eqref{eq:FR} has order $t$ and a nonsingleton
+factor has order at most $t^2$. A partition contributes to order $t^5$
+only when every block has size one or two. Hence the limit is
+\[
+ M(X)=\sum_{\mathcal M\text{ a matching of }K_5}
+       \prod_{\{i,j\}\in\mathcal M}d_{ij}
+       \prod_{k\text{ unmatched}}(X+u_k).
+\]
+Reflection interchanging $1$ with $4$ and $2$ with $3$, and fixing $5$,
+preserves the weights and negates $u$. Thus $M$ is odd.
+It is monic, and its $X^3$ coefficient is
+$e_2(u)+\sum d_{ij}=-5+5=0$.
+
+If all ten weights were $1/2$, its $X$ coefficient would be
+$4-15/2+15/4=1/4$.
+Only the four weights incident to $5$ are changed in
+\eqref{eq:pairprofile}, by $-1/24$ on rows $1,4$ and $+1/24$ on rows
+$2,3$. The $X$ coefficient of the derivative for the edge $i5$ is
+$u_i^2-7/2$. Since a matching contains at most one such edge, the change
+is exactly
+\[
+ 2\left(-\frac1{24}\right)\left(4-\frac72\right)
+ +2\left(\frac1{24}\right)\left(1-\frac72\right)=-\frac14.
+\]
+The remaining $X$ coefficient is therefore zero, and $M(X)=X^5$.
+\end{proof}
+
+\section{An integer baseline and three coefficient matrices}\label{sec:matrices}
+
+Fix the five input coefficients. For the moment let $t$ be any positive
+multiple of $96$, and set
+\begin{equation}\label{eq:baseline}
+ L=t^2,\qquad
+ z=(2t,\ t,\ -t,\ 1-2t,\ a+9).
+\end{equation}
+Initially put $D_B=t^2d_B$ for every $|B|\ge2$, and add $1$ to
+$D_{23}$ and $D_{34}$. All these parameters are integers. In fact
+$t^2/192$ is a multiple of $24$, so every quadratic profile term is a
+multiple of $24$.
+The trace identity \eqref{eq:trace} gives $[x^4]F=a$ exactly.
+
+We change only parameters whose subsets contain $5$. Throughout the
+construction, all outer data remain those just specified.
+All coefficient vectors in the mathematical construction below are in
+\emph{descending} degree order.
+
+\subsection{Four star-pair variables}
+
+Use $D_{15},D_{25},D_{35},D_{45}$. Their derivative coefficient matrix,
+with rows $(x^3,x^2,x,1)$, is
+\begin{equation}\label{eq:A}
+ A(t)=
+ \begin{pmatrix}
+ 1&1&1&1\\
+ -2t-2&-t-2&t-2&2t-3\\
+ \frac12t^2+2t+3&-\frac52t^2+2t+2&-\frac52t^2+2t+1&
+                    \frac12t^2-2t+3\\
+ p_1&p_2&p_3&p_4
+ \end{pmatrix},
+\end{equation}
+where
+\begin{align*}
+ p_1&=t^3-2t^2-t+1,&
+ p_2&=\frac72t^3-3t^2+2t,\\
+ p_3&=-\frac72t^3+t^2,&
+ p_4&=-t^3-\frac32t^2+2t.
+\end{align*}
+For example, for a three-element outer subset $R$ its palette polynomial is
+\begin{align*}
+ F_R(x)={}&x^3+\left(\sum_{i\in R}z_i-3\right)x^2\\
+ &+\left(e_2(z_R)-\sum_{i\in R}z_i+\sum_{\{i,j\}\subset R}D_{ij}+2\right)x\\
+ &+e_3(z_R)+\sum_{\{i,j\}\subset R}D_{ij}z_{R\setminus\{i,j\}}-2D_R.
+\end{align*}
+Here $z_{\{k\}}$ in the last term means $z_k$.
+Substitution gives \eqref{eq:A}. Its determinant factors as
+\begin{equation}\label{eq:detA}
+ \det A=(3t-1)(2t^2-2t+1)(12t^3-3t^2+5t-1)>0
+ \quad(t\ge1).
+\end{equation}
+Modulo $24$, the same matrix is
+\begin{equation}\label{eq:Amod}
+ A\equiv\overline A:=
+ \begin{pmatrix}
+ 1&1&1&1\\
+ -2&-2&-2&-3\\
+ 3&2&1&3\\
+ 1&0&0&0
+ \end{pmatrix}\pmod{24},
+ \qquad \det\overline A=1.
+\end{equation}
+Thus its coefficient map is invertible over $\Z/24\Z$.
+
+\subsection{Three triple variables and two quadruple variables}
+
+Use the triples $345,245,125$, whose complementary outer pairs are
+$12,13,34$. Their derivatives are $-2F_{12},-2F_{13},-2F_{34}$.
+Since $F_{ij}=(x+z_i)(x+z_j)-(x-D_{ij})$, their matrix in degrees
+$(x^2,x,1)$ is
+\begin{equation}\label{eq:B}
+ \begin{aligned}
+ B(t)&=
+ \begin{pmatrix}
+ -2&-2&-2\\
+ 2-6t&2-2t&6t\\
+ -5t^2&3t^2&-5t^2+2t-2
+ \end{pmatrix},\\
+ \det B&=16t(12t^2-3t+1)>0.
+ \end{aligned}
+\end{equation}
+Finally, use $D_{2345},D_{1345}$, complementary to rows $1,2$.
+Their derivatives are $6(x+2t),6(x+t)$, with matrix
+\begin{equation}\label{eq:C}
+ C(t)=\begin{pmatrix}6&6\\12t&6t\end{pmatrix},
+ \qquad \det C=-36t\ne0.
+\end{equation}
+The remaining full-set derivative is
+$\partial F/\partial D_{12345}=-24$.
+
+\section{Exact integral correction}\label{sec:lift}
+
+Every change in this section is added to the indicated deficit $D_B$.
+The row-affine identity, Lemma~\ref{lem:affine}, makes the effect of all
+changes exactly the sum of their derivative polynomials.
+
+\begin{proposition}[The integral lift]\label{prop:lift}
+For every input $(a,b,c,d,e)\in\Z^5$ and every positive multiple $t$ of $96$,
+the following finite procedure produces integer parameters with
+\begin{equation}\label{eq:Fisf}
+ F(x)=f(x).
+\end{equation}
+For each fixed input, all changes to the initial deficits are $O_f(t)$.
+\end{proposition}
+\begin{proof}
+The monic and degree-four coefficients already agree. Let
+$r=(r_3,r_2,r_1,r_0)^T$ be the remaining coefficients of $f-F$.
+
+\paragraph{Star pairs.}
+Solve $A v=r$ over $\Q$, and let $v^\flat$ be its componentwise floor.
+After applying $v^\flat$ to the four star variables, the residual is
+$r'=r-A v^\flat$.
+Choose the unique residue vector
+$\rho\in\{0,\ldots,23\}^4$ satisfying
+$\overline A\rho\equiv r'\pmod{24}$, and apply it.
+Now every residual coefficient is divisible by $24$.
+Let $s_3$ be the current coefficient of $x^3$ in $f-F$.
+Apply the additional change $s_3$ to $D_{15}$.
+Its derivative has leading coefficient $1$, so the cubic coefficient
+now agrees exactly. This last change is a multiple of $24$ and
+preserves divisibility of all residual coefficients. Write the residual as
+\[
+ R_2x^2+R_1x+R_0,\qquad R_2,R_1,R_0\in24\Z.
+\]
+
+\paragraph{Triples.}
+Solve
+$Bv=(R_2,R_1,R_0)^T$ over $\Q$. Put
+\[
+ \tau_1=12\left\lfloor\frac{v_1}{12}\right\rfloor,\qquad
+ \tau_2=12\left\lfloor\frac{v_2}{12}\right\rfloor,\qquad
+ \tau_3=-\frac{R_2}{2}-\tau_1-\tau_2.
+\]
+All three integers lie in $12\Z$.
+Apply these changes to $D_{345},D_{245},D_{125}$.
+Their sum is the exact sum of the real solution, so the $x^2$
+coefficient is removed. Since the derivative coefficients are multiples
+of $2$, these changes preserve divisibility of the remaining coefficients
+by $24$. Write the new residual as $S_1x+S_0$, with $S_1,S_0\in24\Z$.
+
+\paragraph{Quadruples.}
+Solve $Cv=(S_1,S_0)^T$ over $\Q$, and set
+\[
+ \kappa_1=4\left\lfloor\frac{v_1}{4}\right\rfloor,\qquad
+ \kappa_2=\frac{S_1}{6}-\kappa_1.
+\]
+Both changes belong to $4\Z$. Apply them to $D_{2345},D_{1345}$.
+The linear coefficient is removed, and the remaining constant
+$V=f-F$ is divisible by $24$.
+
+\paragraph{The full set.}
+Apply the integer change $-V/24$ to $D_{12345}$.
+Its derivative is $-24$, so the final residual is zero.
+
+All inverse matrices exist by \eqref{eq:detA}--\eqref{eq:C}.
+The bounded-size statements follow either from the estimates in
+Section~\ref{sec:effective}, or from the following scaling argument.
+The initial residual has orders
+$(O_f(t),O_f(t^2),O_f(t^3),O_f(t^4))$.
+The matrix $A$ is
+$\diag(1,t,t^2,t^3)(M+O(t^{-1}))$, where
+\[
+ M=\begin{pmatrix}
+ 1&1&1&1\\-2&-1&1&2\\
+ 1/2&-5/2&-5/2&1/2\\
+ 1&7/2&-7/2&-1
+ \end{pmatrix},\qquad \det M=72.
+\]
+Hence its exact rational correction is $O_f(t)$.
+Rounding and the residue repair have bounded error, leaving residual
+orders $(O(t),O(t^2),O(t^3))$ after the cubic coefficient is fixed.
+The scaled triple matrix has a nonsingular limit, so its correction
+is $O(t)$. The two floored coordinates have bounded error, and fixing
+the sum gives bounded error also in the third coordinate. The new residual
+has orders $(O(t),O(t^2))$.
+The same argument for $C$ gives $O(t)$ corrections, and the final constant
+residual is $O(t)$. Thus the full-set correction is $O(t)$ as well.
+\end{proof}
+
+\begin{proof}[Existence in Theorem~\ref{thm:main}]
+The initial intersection moments differ from those of the atoms
+$w_Jt^2$ by $O_f(t)$, and Proposition~\ref{prop:lift} preserves that
+property. Möbius inversion therefore gives
+\[
+ m_J=w_Jt^2+O_f(t),\qquad
+ N=\frac{31}{16}t^2+O_f(t),\qquad
+ n:=N-L=\frac{15}{16}t^2+O_f(t).
+\]
+Since all $w_J\ge1/24$, for every fixed input all sufficiently large
+multiples of $96$ give positive integer atoms and $n>0$.
+These atoms construct the actual graph. Equations \eqref{eq:count}
+and \eqref{eq:Fisf} prove \eqref{eq:main}.
+
+The five positive singleton atoms supply distinct old colors to
+$v_1,\ldots,v_5$, so $G$ is $N$-colorable; its $N$-clique shows
+$\chi(G)=N$. A large-clique vertex of type $\{1\}$ is adjacent to $v_2$,
+joining the two cliques, so $G$ is connected.
+The next section proves that the fixed choice \eqref{eq:scale} is sufficient
+and establishes the quantitative bounds \eqref{eq:bounds}.
+\end{proof}
+
+\section{A predetermined scale and uniform height bound}\label{sec:effective}
+
+The existence proof above already treats every integer input.
+We now give explicit constants, so the construction need not search for
+a sufficiently large $t$.
+
+\begin{proposition}\label{prop:effective}
+With \eqref{eq:scale}, every atom satisfies
+\begin{equation}\label{eq:atomexplicit}
+ m_J\ge\frac{t^2}{96}>0.
+\end{equation}
+Furthermore,
+\begin{equation}\label{eq:Nnexplicit}
+ \frac{29}{32}t^2\le n\le\frac{31}{32}t^2,\qquad
+ N+5\le2t^2.
+\end{equation}
+\end{proposition}
+\begin{proof}
+All estimates before the final scale choice hold for $t\ge1$ whenever
+the baseline and residue steps are integral. Denote the baseline
+coefficients in degrees $3,2,1,0$ by $F_3,F_2,F_1,F_0$.
+Expanding \eqref{eq:FR} gives
+\begin{align}
+ F_3={}&-5a+2t-14,\notag\\
+ F_2={}&-2at^2+2at+10a-\frac{743}{24}t^2+15t+46,\notag\\
+ F_1={}&-\frac72at^2+at-5a+\frac76t^3+\frac{61}{24}t^2+12t-24,\label{eq:Fbaseline}\\
+ F_0={}&\frac94at^4-at^3+\frac{11}{4}at^2+2at
+        +\frac{333}{16}t^4-\frac{85}{8}t^3
+        +\frac{245}{48}t^2+18t.\notag
+\end{align}
+For $r=(b-F_3,c-F_2,d-F_1,e-F_0)^T$, the triangle inequality,
+$t\ge1$, and $\htf\ge10$ give
+\begin{equation}\label{eq:rbound}
+ \left\|\diag(1,t^{-1},t^{-2},t^{-3})r\right\|_\infty
+ \le14\htf t.
+\end{equation}
+For instance, the quadratic residual divided by $t$ is at most
+\[
+ \left(14|a|+|c|+\frac{743}{24}+61\right)t
+ \le14\htf t.
+\]
+The other three coordinates have bounds $7\htf t,10\htf t,8\htf t$,
+respectively.
+
+\paragraph{The first inverse and its rounding error.}
+The factors in \eqref{eq:detA} give $\det A\ge18t^6$ for $t\ge1$.
+For $\widetilde A=\diag(1,t^{-1},t^{-2},t^{-3})A$,
+the coefficient sums of the scaled adjugate entries are bounded by
+\[
+ K_A=\begin{pmatrix}
+ 380&110&40&20\\
+ 150&101/2&38&37\\
+ 91&48&36&24\\
+ 109&119/2&28&7
+ \end{pmatrix}.
+\]
+More precisely, the polynomial $(\operatorname{adj}A)_{ij}$ has degree
+at most $6-(j-1)$ and coefficient absolute sum $(K_A)_{ij}$ or less.
+After multiplication of column $j$ by $t^{j-1}$ and division by
+$\det A$, this yields
+\begin{equation}\label{eq:Ainversebound}
+ \|\widetilde A^{-1}\|_\infty\le\frac{550}{18}=\frac{275}{9}.
+\end{equation}
+These finite coefficient bounds follow by expanding the explicit matrix
+\eqref{eq:A}. Therefore every exact rational star correction has magnitude
+at most $428\htf t$.
+
+After flooring and the residue adjustment, its error relative to the
+rational solution is in $(-1,23]$ in each coordinate.
+The last cubic repair makes the first error equal to minus the sum of
+the other three. The error vector consequently has zero sum and
+$\ell^1$ norm at most $138$.
+The remaining residual satisfies
+\begin{equation}\label{eq:rtriplebound}
+ |R_2|\le690t,\qquad |R_1|\le897t^2,\qquad |R_0|\le1173t^3.
+\end{equation}
+For example, the coefficient absolute bounds for a column of $A$ in these
+three rows are $5t,(13/2)t^2,(17/2)t^3$; multiplication by $138$ gives
+the displayed bounds. This residual is independent of the size of the
+original real correction.
+
+\paragraph{Triples.}
+For $\widetilde B=\diag(1,t^{-1},t^{-2})B$, we have
+$\det B\ge160t^3$ and the corresponding adjugate coefficient-sum bounds
+\[
+ K_B=\begin{pmatrix}34&24&20\\102&8&28\\44&16&8\end{pmatrix}.
+\]
+The degrees in its columns are at most $3,2,1$, respectively.
+Thus
+\[
+ \|\widetilde B^{-1}\|_\infty\le\frac{138}{160}=\frac{69}{80}.
+\]
+Equation~\eqref{eq:rtriplebound} bounds each rational triple correction
+by $1012t$.
+Rounding two coordinates downward to multiples of $12$ and preserving
+their sum gives a rounding error of $\ell^1$ norm less than $48$.
+The total magnitude of the three actual changes is at most $3036t+48$.
+The new residual obeys
+\begin{equation}\label{eq:rquadbound}
+ |S_1|\le384t,\qquad |S_0|\le432t^2,
+\end{equation}
+by applying that rounding-error bound to the last two rows of $B$.
+
+\paragraph{Quadruples and the full set.}
+The inverse of $\diag(1,t^{-1})C$ has infinity norm $1/2$.
+Hence every rational quadruple correction has magnitude at most $216t$.
+The two integer corrections have total magnitude at most $432t+8$.
+Their rounding errors are opposite and have magnitude less than $4$
+in each coordinate. Since $z_1-z_2=t$, the remaining constant has
+magnitude less than $24t$, and the final full-set deficit correction has
+magnitude less than $t$.
+
+\paragraph{Atoms and the shift.}
+Relative to the unperturbed moments
+$t^2\sum_{J\supseteq B}w_J$, the singleton changes have total magnitude
+at most $6t+\htf-2$, and the two initial outer-pair offsets contribute $2$.
+The preceding estimates give the following bound for the sum of the
+absolute changes of \emph{all thirty-one moments}:
+\begin{equation}\label{eq:totalerror}
+ 1712\htf t+3475t+\htf+194
+ <2080\htf t<3000\htf t.
+\end{equation}
+Each atom in \eqref{eq:mobius}, and also $N$ in \eqref{eq:N}, is an
+alternating sum of a subset of these moments. Therefore
+\[
+ |m_J-w_Jt^2|\le3000\htf t,\qquad
+ \left|N-\frac{31}{16}t^2\right|\le3000\htf t.
+\]
+At $t=96000\htf$, the right-hand error is $t^2/32$, and hence
+\[
+ m_J\ge\frac{t^2}{24}-\frac{t^2}{32}=\frac{t^2}{96},
+ \qquad
+ \left|n-\frac{15}{16}t^2\right|\le\frac{t^2}{32}.
+\]
+This proves the atom and shift bounds.
+Finally,
+$N+5\le(63/32)t^2+5\le2t^2$, since $t\ge96$.
+Proposition~\ref{prop:effective}, and therefore Theorem~\ref{thm:main},
+are proved.
+\end{proof}
+
+\section{Arithmetic consequences and algorithmic form}\label{sec:corollaries}
+
+\begin{corollary}[Root fields and exact splitting fields]\label{cor:fields}
+Every number field of degree at most five is generated by a chromatic root.
+For every nonzero polynomial $g\in\Q[x]$ of degree at most five, its splitting field
+over $\Q$ is exactly the splitting field of the chromatic polynomial of
+a connected finite simple graph.
+\end{corollary}
+\begin{proof}
+A number field has an integral primitive element $\alpha$.
+Corollary~\ref{cor:degree} gives a chromatic root $\alpha+n$ and
+$\Q(\alpha+n)=\Q(\alpha)$.
+
+For the second statement, first make $g$ monic, let $j=\deg g$, and choose
+a positive integer $m$ clearing its coefficient denominators.
+Then $m^j g(x/m)$ is monic and integral and has the same splitting field
+as $g$. Multiply it by $x^{5-j}$ and apply Theorem~\ref{thm:main}.
+Integer translation preserves the splitting field, and all zeros of the
+extra falling-factorial factor are rational. Thus equality of splitting
+fields follows from \eqref{eq:main}.
+For constant polynomials the splitting field is $\Q$, which is realized
+by a complete graph.
+\end{proof}
+
+This proves the degree-five instance ($j=5$) of the splitting-field
+realization statement in \cite[Conjecture 7.1]{Gilmore}.
+It concerns the splitting field of a polynomial of degree $j$; the
+splitting field itself can have larger degree.
+In particular, a nonnormal quintic field is asserted to occur as a
+\emph{root field}, not to be itself a splitting field.
+
+\begin{corollary}[Bounded arithmetic description]\label{cor:algorithm}
+There is an algorithm that takes five integers and returns $n,N$ and
+thirty-one atom counts using a bounded number of exact rational and
+integer arithmetic operations. With scale \eqref{eq:scale}, every
+integer numerator, denominator, and output in this computation has
+$O(\log\htf)$ bits.
+\end{corollary}
+\begin{proof}
+All matrices have fixed size, and their entries are fixed-degree
+polynomials in $t$ and the input. The only divisions are those in three
+nonsingular rational systems, the fixed residue inverse, and the
+displayed floor operations. At $t=96000\htf$, each resulting numerator
+and denominator has polynomially bounded magnitude in $\htf$.
+The graph is specified by its two cliques and the thirty-one atom
+multiplicities.
+\end{proof}
+
+The bounded operation count concerns this compressed description.
+Listing all vertices and edges has its own output cost.
+For smaller examples, one may instead try $t=96,192,384,\ldots$ and stop
+at the first positive certificate. The existence proof guarantees
+termination, but the theorem itself uses the predetermined scale.
+
+\section{An irreducible quintic example and independent counting}
+\label{sec:example}
+
+Take $f(x)=x^5-2$, which is irreducible by Eisenstein's criterion at $2$.
+The construction is already valid at
+\[
+ t=1536,\qquad L=2\,359\,296,\qquad
+ N=4\,510\,002,\qquad n=2\,150\,706.
+\]
+To specify the entire graph, encode a nonempty type $J$ by the integer
+$s(J)=\sum_{i\in J}2^{i-1}$. Thus type $19$ is $\{1,2,5\}$.
+The thirty-one atom counts are:
+\begin{center}
+\begin{tabular}{cr@{\qquad}cr@{\qquad}cr}
+\toprule
+$s(J)$ & $m_J$ & $s(J)$ & $m_J$ & $s(J)$ & $m_J$\\
+\midrule
+1 & 72\,406 & 12 & 152\,623 & 23 & 122\,604\\
+2 & 132\,031 & 13 & 100\,548 & 24 & 202\,058\\
+3 & 165\,600 & 14 & 184\,732 & 25 & 174\,276\\
+4 & 166\,742 & 15 & 147\,180 & 26 & 125\,656\\
+5 & 169\,788 & 16 & 86\,319 & 27 & 171\,756\\
+6 & 183\,907 & 17 & 225\,578 & 28 & 142\,288\\
+7 & 172\,308 & 18 & 164\,418 & 29 & 194\,364\\
+8 & 89\,784 & 19 & 129\,312 & 30 & 110\,180\\
+9 & 120\,636 & 20 & 126\,636 & 31 & 147\,732\\
+10 & 169\,256 & 21 & 125\,124 &  & \\
+11 & 123\,156 & 22 & 111\,004 &  & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Every entry is positive; the minimum is $72\,406$.
+Their sum is $N$. The graph has $4\,510\,007$ vertices and satisfies
+\begin{equation}\label{eq:example}
+ P_G(q)=\fall q{4\,510\,002}
+       \bigl((q-2\,150\,706)^5-2\bigr).
+\end{equation}
+In particular, $2^{1/5}+2\,150\,706$ is a chromatic root.
+No minimality claim is made for the graph order or the shift.
+
+A check independent of the partition-coefficient calculation is available.
+Let $r_k$ count the $k$-edge matchings of the bipartite complement of $G$.
+A color class of $G$ contains at most one vertex from each of its two
+cliques, so matching color classes gives the standard expansion
+\begin{equation}\label{eq:rook}
+ P_G(q)=\sum_{k=0}^5r_k\fall q{N+5-k}
+       =\fall qN\sum_{k=0}^5r_k\fall{q-N}{5-k}.
+\end{equation}
+This is the biclique matching formula \cite[Section 2.1]{Bohn}.
+Direct injection counting on the atom types gives, for the example,
+\begin{align*}
+ r_0&=1,\\
+ r_1&=11\,796\,490,\\
+ r_2&=55\,662\,846\,935\,065,\\
+ r_3&=131\,325\,132\,122\,534\,707\,215,\\
+ r_4&=154\,917\,363\,795\,559\,508\,146\,913\,281,\\
+ r_5&=73\,099\,121\,379\,762\,419\,852\,518\,386\,302\,974.
+\end{align*}
+Substitution in \eqref{eq:rook} gives $(y+L)^5-2$ exactly for $y=q-N$.
+
+Three independently written implementations were compared within this work.
+One separate matching routine checked six selected inputs and 128
+deterministic-seed random inputs with coefficient magnitudes up to $10^{24}$.
+Another implementation checked four selected inputs and 100 random inputs
+in $[-100,100]^5$. The implementation below was also checked at the fixed
+scale \eqref{eq:scale}, including mixed coefficients of magnitude $10^{25}$.
+These are implementation checks. The proof of universality is the
+construction and the inequalities above, not an inference from sampling.
+
+\section{Scope, provenance, and priority}\label{sec:scope}
+
+The result addresses every monic integer quintic and therefore the original
+$\alpha+n$ assertion for all algebraic integers of degree at most five.
+The proof has no conditional conjectural input. It does not establish the
+degree-six or arbitrary-degree case.
+
+The partition and matching identities, the biclique framework, and Boolean
+inversion are standard parts of the prior approach.
+The specific contribution presented here is the combination of the strict
+rational profile, the invertible residue matrix, the layered integral
+correction, and the uniform estimates that give a genuine graph for every
+quintic input. These estimates supply the existence step, beyond a
+coordinate transformation or a system of necessary equations.
+
+The supplied VMRC corpus was inspected at the following commit:
+\begin{center}
+\texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33}.
+\end{center}
+Its manuscript 245 informed the proof-design principle of controlling
+correction costs inside a positive realization margin. The present
+chromatic proof does not assume that manuscript's independence-polynomial
+results, or any earlier quartic theorem, as established lemmas.
+
+The literature assessment consulted the full texts of
+\cite{CM,Bohn,Gilmore,DM22}, the official abstract of \cite{DM19}, and
+Cameron's conjecture list dated 2 November 2026 \cite{CameronWeb}.
+The last list concerns the general conjecture and does not by itself
+certify the separate status of degree five.
+The full text of \cite{DM19} was not available during preparation, and
+its intermediate constructions have not been compared line by line.
+No identical unrestricted quintic solution was identified in the
+consulted material. Absence of an identified prior result is not a proof
+of absolute publication priority. The manuscript has not undergone
+external peer review or proof-assistant formalization.
+
+\appendix
+\section{Self-contained exact-arithmetic implementation}\label{app:code}
+
+The following code uses Python 3.10 or later and only the standard library.
+All polynomial arrays in the code are in \emph{ascending} coefficient
+order, while matrices in the mathematical text use descending order.
+Row indices in the code are $0,\ldots,4$, with row $4$ distinguished.
+Integer masks encode types as in Section~\ref{sec:example}.
+
+The function \texttt{construct\_bounded} uses the proved scale and performs
+no search. The optional \texttt{construct} tries smaller doubling scales.
+The independent \texttt{rook\_numbers} function counts injections into atom
+types and does not use the partition formula. It verifies the full
+polynomial in \eqref{eq:rook} with exact integers.
+
+\begin{lstlisting}
+"""Exact quintic palette construction, standard-library implementation.
+
+Rows 0,1,2,3 are fixed; row 4 is the extension row.
+All polynomial coefficient arrays are ascending.
+"""
+from fractions import Fraction as Q
+from itertools import combinations
+from math import factorial, comb
+import json
+
+ALL=31
+OUTER=(0,1,2,3)
+ROWS=(0,1,2,3,4)
+SLOPE=(2,1,-1,-2,0)
+
+def multiply(p,q):
+    out=[0]*(len(p)+len(q)-1)
+    for i,a in enumerate(p):
+        for j,b in enumerate(q): out[i+j]+=a*b
+    return out
+
+def partitions(rows):
+    if not rows:
+        yield ()
+        return
+    first,*tail=rows
+    for p in partitions(tail):
+        yield (1<<first,)+p
+        for j in range(len(p)):
+            yield p[:j]+(p[j]|(1<<first),)+p[j+1:]
+
+PARTS={m:tuple(partitions([i for i in ROWS if m>>i&1])) for m in range(32)}
+
+def poly(z,D,mask=ALL):
+    out=[0]*(mask.bit_count()+1)
+    for p in PARTS[mask]:
+        term=[1]
+        for block in p:
+            k=block.bit_count()
+            mu=(-1)**(k-1)*factorial(k-1)
+            value=z[block.bit_length()-1] if k==1 else -D[block]
+            term=multiply(term,[mu*value,mu])
+        for i,v in enumerate(term): out[i]+=v
+    return out
+
+def derivative(z,D,block):
+    k=block.bit_count()
+    scalar=(-1)**k*factorial(k-1)
+    return [scalar*v for v in poly(z,D,ALL^block)]
+
+def solve(columns,rhs):
+    n=len(rhs)
+    M=[[Q(columns[j][i]) for j in range(n)]+[Q(rhs[i])] for i in range(n)]
+    for j in range(n):
+        pivot=next(i for i in range(j,n) if M[i][j])
+        M[j],M[pivot]=M[pivot],M[j]
+        v=M[j][j]
+        M[j]=[x/v for x in M[j]]
+        for i in range(n):
+            if i==j: continue
+            v=M[i][j]
+            M[i]=[a-v*b for a,b in zip(M[i],M[j])]
+    return [M[i][-1] for i in range(n)]
+
+def leading_atoms():
+    result={}
+    for m in range(1,32):
+        s=[1 if m>>i&1 else -1 for i in ROWS]
+        result[m]=Q(1,16)+Q(s[4]*(s[0]+s[3]-s[1]-s[2]),192)
+    return result
+
+WEIGHT=leading_atoms()
+BASE={m:sum(v for J,v in WEIGHT.items() if J&m==m) for m in range(1,32)}
+A0_COLUMNS=((1,3,-2,1),(0,2,-2,1),(0,1,-2,1),(0,3,-3,1))
+
+def initial(coeff,t):
+    assert t>0 and t%96==0
+    a,b,c,d,e=coeff
+    z=[2*t,t,-t,-2*t+1,a+9]
+    D={m:Q((1-v)*t*t) for m,v in BASE.items() if m.bit_count()>1}
+    D[6]+=1                 # outer pair {2,3}
+    D[12]+=1                # outer pair {3,4}
+    assert all(v.denominator==1 for v in D.values())
+    return z,{m:int(v) for m,v in D.items()}
+
+def atoms_from(z,D,L):
+    intersections={m:L+z[m.bit_length()-1] if m.bit_count()==1 else L-D[m]
+                   for m in range(1,32)}
+    return {m:sum((-1)**((J^m).bit_count())*v for J,v in intersections.items() if J&m==m)
+            for m in range(1,32)}
+
+def construct_at(coeff,t):
+    a,b,c,d,e=coeff
+    target=[e,d,c,b,a,1]
+    z,D=initial(coeff,t)
+    stage_changes={}
+    def residual():
+        return [f-g for f,g in zip(target,poly(z,D))]
+    def change(m,delta,stage):
+        assert Q(delta).denominator==1
+        D[m]+=int(delta)
+        stage_changes.setdefault(stage,[]).append(int(delta))
+    r=residual()
+    assert r[4:]==[0,0]
+
+    stars=[16|(1<<i) for i in OUTER]
+    A=[derivative(z,D,m) for m in stars]
+    assert [[v%24 for v in p] for p in A]==[[v%24 for v in p] for p in A0_COLUMNS]
+    solution=solve(A,r[:4])
+    for m,v in zip(stars,solution): change(m,v//1,'pairs')
+    r=residual()
+    residue=solve(A0_COLUMNS,r[:4])
+    assert all(v.denominator==1 for v in residue)
+    for m,v in zip(stars,residue): change(m,int(v)%24,'pairs')
+    r=residual()
+    assert all(v%24==0 for v in r)
+    change(stars[0],r[3],'pairs')
+    r=residual()
+    assert r[3:]==[0,0,0]
+
+    # The complementary outer pairs are {1,2}, {1,3}, {3,4}.
+    triples=[28,26,19]
+    B=[derivative(z,D,m) for m in triples]
+    solution=solve(B,r[:3])
+    corrections=[12*(v//12) for v in solution[:2]]
+    corrections.append(-r[2]//2-sum(corrections))
+    for m,v in zip(triples,corrections): change(m,v,'triples')
+    r=residual()
+    assert r[2:]==[0,0,0,0] and all(v%24==0 for v in r)
+
+    quads=[30,29]
+    C=[derivative(z,D,m) for m in quads]
+    solution=solve(C,r[:2])
+    corrections=[4*(solution[0]//4)]
+    corrections.append(r[1]//6-corrections[0])
+    for m,v in zip(quads,corrections): change(m,v,'quadruples')
+    r=residual()
+    assert r[1:]==[0,0,0,0,0] and r[0]%24==0
+    change(31,-r[0]//24,'quintuple')
+    assert poly(z,D)==target
+
+    atoms=atoms_from(z,D,t*t)
+    N=sum(atoms.values())
+    result=dict(coefficients=[1,a,b,c,d,e],t=t,L=t*t,z=z,D=D,atoms=atoms,
+                N=N,n=N-t*t,minimum_atom=min(atoms.values()),stage_changes=stage_changes)
+    result['valid']=result['minimum_atom']>0 and result['n']>0
+    return result
+
+def rook_numbers(atoms):
+    dp=[0]*32
+    dp[0]=1
+    for mask,count in atoms.items():
+        mask=int(mask)
+        assert count>=0
+        falling=[1]
+        for k in range(1,6): falling.append(falling[-1]*(count-k+1))
+        nxt=[0]*32
+        for used,ways in enumerate(dp):
+            if not ways: continue
+            available=mask & (31^used)
+            sub=available
+            while True:
+                nxt[used|sub]+=ways*falling[sub.bit_count()]
+                if sub==0: break
+                sub=(sub-1)&available
+        dp=nxt
+    return [sum(v for m,v in enumerate(dp) if m.bit_count()==k) for k in range(6)]
+
+def verify(cert):
+    assert cert['valid']
+    rook=rook_numbers(cert['atoms'])
+    actual=[0]*6
+    for k,r in enumerate(rook):
+        p=[1]
+        for j in range(5-k): p=multiply(p,[-j,1])
+        for j,v in enumerate(p): actual[j]+=r*v
+    target=[0]*6
+    descending=cert['coefficients']
+    L=cert['L']
+    for degree,coefficient in enumerate(reversed(descending)):
+        for j in range(degree+1):
+            target[j]+=coefficient*comb(degree,j)*L**(degree-j)
+    assert actual==target,(actual,target)
+    return rook
+
+def construct(coeff):
+    t=96
+    while True:
+        result=construct_at(coeff,t)
+        if result['valid']:
+            result['rook_numbers']=verify(result)
+            return result
+        t*=2
+
+def construct_bounded(coeff):
+    height=10+sum(abs(v) for v in coeff)
+    result=construct_at(coeff,96000*height)
+    assert result['minimum_atom']>=result['t']**2//96
+    assert 0<result['n']<result['t']**2
+    assert result['N']+5<=2*result['t']**2
+    result['rook_numbers']=verify(result)
+    return result
+
+if __name__ == '__main__':
+    example=construct((0,0,0,0,-2))
+    print(json.dumps(example,indent=2,sort_keys=True))
+    bounded=construct_bounded((0,0,0,0,-2))
+    print('Uniform scale verified:', bounded['N']+5)
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{CM}
+P.~J. Cameron and K. Morgan,
+\emph{Algebraic properties of chromatic roots},
+Electronic Journal of Combinatorics \textbf{24}(1) (2017), P1.21.
+\href{https://doi.org/10.37236/6578}{doi:10.37236/6578}.
+\href{https://emis.de/ft/29131}{Full text}.
+
+\bibitem{Bohn}
+A. Bohn, \emph{Chromatic roots as algebraic integers},
+Discrete Mathematics and Theoretical Computer Science Proceedings
+\textbf{AR} (2012), 543--554.
+\href{https://doi.org/10.46298/dmtcs.3061}{doi:10.46298/dmtcs.3061}.
+\href{https://www.math.nagoya-u.ac.jp/fpsac12/download/contributed/dmAR0148.pdf}{Full text}.
+
+\bibitem{Gilmore}
+H.~J. Gilmore,
+\emph{Algebraic Properties of Chromatic Polynomials and Their Roots},
+MSc thesis, University of Waikato, 2015.
+\url{https://hdl.handle.net/10289/9367}.
+
+\bibitem{DM19}
+D. Delbourgo and K. Morgan,
+\emph{An algorithm which outputs a graph with a specified chromatic factor},
+Discrete Applied Mathematics \textbf{257} (2019), 128--150.
+\href{https://doi.org/10.1016/j.dam.2018.10.033}{doi:10.1016/j.dam.2018.10.033}.
+Official abstract consulted through the author's
+\href{https://profiles.auckland.ac.nz/daniel-delbourgo/publications}{University of Auckland publications record}.
+
+\bibitem{DM22}
+D. Delbourgo and K. Morgan, \emph{On the fifth chromatic coefficient},
+Australasian Journal of Combinatorics \textbf{84}(1) (2022), 56--85.
+\url{https://ajc.maths.uq.edu.au/pdf/84/ajc_v84_p056.pdf}.
+
+\bibitem{VMRC}
+Verifiable Mathematical Reasoning Corpus, manuscript 245,
+\emph{Roots and coefficient peaks of graph polynomials},
+research manuscript dated 21 November 2026, Sections 2--3.
+Snapshot \texttt{9f8547bfd3b8f6560f20c1b63028dc87a07a2e33},
+accessed 28 November 2026.
+\url{https://github.com/QEEDDD/Verifiable-Mathematical-Reasoning-Corpus}.
+
+\bibitem{CameronWeb}
+P.~J. Cameron, \emph{Peter Cameron's conjectures},
+page dated 2 November 2026, accessed 28 November 2026.
+\url{https://cameroncounts.github.io/web/problems/cameronconjs.html}.
+\end{thebibliography}
+\end{document}
+
+
